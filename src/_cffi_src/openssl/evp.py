@@ -206,7 +206,7 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
     EVP_MD_CTX_free(ctx);
 #endif
 }
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 1;
 #else
 static const long Cryptography_HAS_SCRYPT = 0;
