@@ -210,10 +210,9 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
 static const long Cryptography_HAS_SCRYPT = 1;
 #else
 static const long Cryptography_HAS_SCRYPT = 0;
-#endif
 int (*EVP_PBE_scrypt)(const char *pass, size_t passlen,
                       const unsigned char *salt, size_t saltlen, uint64_t N,
                       uint64_t r, uint64_t p, uint64_t maxmem,
                       unsigned char *key, size_t keylen) = NULL;
-
+#endif
 """
