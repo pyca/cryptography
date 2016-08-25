@@ -40,7 +40,6 @@ static const int BIO_C_FILE_SEEK;
 static const int BIO_C_FILE_TELL;
 static const int BIO_TYPE_NONE;
 static const int BIO_TYPE_NBIO_TEST;
-static const int BIO_TYPE_BER;
 static const int BIO_TYPE_BIO;
 static const int BIO_TYPE_DESCRIPTOR;
 static const int BIO_FLAGS_READ;
