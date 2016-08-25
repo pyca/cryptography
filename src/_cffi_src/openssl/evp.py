@@ -209,10 +209,9 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER) \
     || defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 0;
-int (*EVP_PBE_scrypt)(const char *pass, size_t passlen,
-                      const unsigned char *salt, size_t saltlen, uint64_t N,
-                      uint64_t r, uint64_t p, uint64_t maxmem,
-                      unsigned char *key, size_t keylen) = NULL;
+int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
+                      uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                      size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
 #endif
