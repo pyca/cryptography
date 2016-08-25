@@ -164,9 +164,9 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
-int EVP_PBE_scrypt(const char *pass, size_t passlen, const unsigned char *salt,
-                   size_t saltlen, uint64_t N, uint64_t r, uint64_t p,
-                   uint64_t maxmem, unsigned char *key, size_t keylen);
+int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
+                   uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                   size_t);
 """
 
 CUSTOMIZATIONS = """
