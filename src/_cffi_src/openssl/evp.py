@@ -28,6 +28,7 @@ static const int EVP_CTRL_GCM_SET_TAG;
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
+static const int Cryptography_HAS_SCRYPT;
 """
 
 FUNCTIONS = """
@@ -162,6 +163,10 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
+
+int EVP_PBE_scrypt(const char *pass, size_t passlen, const unsigned char *salt,
+                   size_t saltlen, uint64_t N, uint64_t r, uint64_t p,
+                   uint64_t maxmem, unsigned char *key, size_t keylen);
 """
 
 CUSTOMIZATIONS = """
@@ -201,4 +206,14 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
     EVP_MD_CTX_free(ctx);
 #endif
 }
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+static const long Cryptography_HAS_SCRYPT = 1;
+#else
+static const long Cryptography_HAS_SCRYPT = 0;
+#endif
+int (*EVP_PBE_scrypt)(const char *pass, size_t passlen,
+                      const unsigned char *salt, size_t saltlen, uint64_t N,
+                      uint64_t r, uint64_t p, uint64_t maxmem,
+                      unsigned char *key, size_t keylen) = NULL;
+
 """
