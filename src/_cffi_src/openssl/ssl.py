@@ -133,24 +133,9 @@ static const long TLS_ST_OK;
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
-typedef struct {
-    int master_key_length;
-    unsigned char master_key[...];
-    unsigned char sid_ctx[...];
-    ...;
-} SSL_SESSION;
+typedef ... SSL_SESSION;
 
-typedef struct {
-    unsigned char server_random[...];
-    unsigned char client_random[...];
-    ...;
-} SSL3_STATE;
-
-typedef struct {
-    SSL3_STATE *s3;
-    SSL_SESSION *session;
-    ...;
-} SSL;
+typedef ... SSL;
 
 static const long TLSEXT_NAMETYPE_host_name;
 
