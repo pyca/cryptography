@@ -21,7 +21,7 @@ class TestOpenSSL(object):
 
     def test_crypto_lock_init(self):
         b = Binding()
-        if b.lib.OPENSSL_VERSION_NUMBER >= 0x1010000:
+        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             pytest.skip("Requires an older OpenSSL. Must be < 1.1.0")
 
         b.init_static_locks()
