@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.5 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.5 - 2016-08-26
+~~~~~~~~~~~~~~~~
 
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.padding.calculate_max_pss_salt_length`.
