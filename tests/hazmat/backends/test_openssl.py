@@ -728,7 +728,10 @@ class TestGOSTCertificate(object):
             x509.load_der_x509_certificate,
             backend
         )
-        if not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if (
+            not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
+            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
             with pytest.raises(ValueError) as exc:
                 cert.subject
 
