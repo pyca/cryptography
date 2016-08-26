@@ -34,6 +34,7 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
+* ``OpenSSL 1.1.0``
 
 .. warning::
     OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography

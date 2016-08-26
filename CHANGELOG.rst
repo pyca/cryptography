@@ -24,6 +24,7 @@ Changelog
   :class:`~cryptography.x509.CertificateRevocationListBuilder`, and
   :class:`~cryptography.x509.RevokedCertificateBuilder` now accept timezone
   aware ``datetime`` objects as method arguments
+* ``cryptography`` now supports OpenSSL 1.1.0 as a compilation target.
 
 
 1.4 - 2016-06-04
