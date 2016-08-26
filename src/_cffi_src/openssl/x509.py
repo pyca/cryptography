@@ -227,6 +227,7 @@ X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
                                              ASN1_OBJECT *, int,
                                              ASN1_OCTET_STRING *);
 
+
 /* This became const X509_EXTENSION * in 1.1.0 */
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 
