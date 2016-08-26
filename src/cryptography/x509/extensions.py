@@ -174,13 +174,15 @@ class AuthorityKeyIdentifier(object):
                 "must both be present or both None"
             )
 
-        if authority_cert_issuer is not None and not all(
-            isinstance(x, GeneralName) for x in authority_cert_issuer
-        ):
-            raise TypeError(
-                "authority_cert_issuer must be a list of GeneralName "
-                "objects"
-            )
+        if authority_cert_issuer is not None:
+            authority_cert_issuer = list(authority_cert_issuer)
+            if not all(
+                isinstance(x, GeneralName) for x in authority_cert_issuer
+            ):
+                raise TypeError(
+                    "authority_cert_issuer must be a list of GeneralName "
+                    "objects"
+                )
 
         if authority_cert_serial_number is not None and not isinstance(
             authority_cert_serial_number, six.integer_types
@@ -273,6 +275,7 @@ class AuthorityInformationAccess(object):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
+        descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
                 "Every item in the descriptions list must be an "
@@ -386,6 +389,7 @@ class CRLDistributionPoints(object):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(self, distribution_points):
+        distribution_points = list(distribution_points)
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
         ):
@@ -426,22 +430,22 @@ class DistributionPoint(object):
                 "least one must be None."
             )
 
-        if full_name and not all(
-            isinstance(x, GeneralName) for x in full_name
-        ):
-            raise TypeError(
-                "full_name must be a list of GeneralName objects"
-            )
+        if full_name:
+            full_name = list(full_name)
+            if not all(isinstance(x, GeneralName) for x in full_name):
+                raise TypeError(
+                    "full_name must be a list of GeneralName objects"
+                )
 
         if relative_name and not isinstance(relative_name, Name):
             raise TypeError("relative_name must be a Name")
 
-        if crl_issuer and not all(
-            isinstance(x, GeneralName) for x in crl_issuer
-        ):
-            raise TypeError(
-                "crl_issuer must be None or a list of general names"
-            )
+        if crl_issuer:
+            crl_issuer = list(crl_issuer)
+            if not all(isinstance(x, GeneralName) for x in crl_issuer):
+                raise TypeError(
+                    "crl_issuer must be None or a list of general names"
+                )
 
         if reasons and (not isinstance(reasons, frozenset) or not all(
             isinstance(x, ReasonFlags) for x in reasons
@@ -569,6 +573,7 @@ class CertificatePolicies(object):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
     def __init__(self, policies):
+        policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
                 "Every item in the policies list must be a "
@@ -605,15 +610,17 @@ class PolicyInformation(object):
             raise TypeError("policy_identifier must be an ObjectIdentifier")
 
         self._policy_identifier = policy_identifier
-        if policy_qualifiers and not all(
-            isinstance(
-                x, (six.text_type, UserNotice)
-            ) for x in policy_qualifiers
-        ):
-            raise TypeError(
-                "policy_qualifiers must be a list of strings and/or UserNotice"
-                " objects or None"
-            )
+
+        if policy_qualifiers:
+            policy_qualifiers = list(policy_qualifiers)
+            if not all(
+                    isinstance(x, (six.text_type, UserNotice))
+                    for x in policy_qualifiers
+            ):
+                raise TypeError(
+                    "policy_qualifiers must be a list of strings and/or "
+                    "UserNotice objects or None"
+                )
 
         self._policy_qualifiers = policy_qualifiers
 
@@ -676,9 +683,8 @@ class UserNotice(object):
 class NoticeReference(object):
     def __init__(self, organization, notice_numbers):
         self._organization = organization
-        if not isinstance(notice_numbers, list) or not all(
-            isinstance(x, int) for x in notice_numbers
-        ):
+        notice_numbers = list(notice_numbers)
+        if not all(isinstance(x, int) for x in notice_numbers):
             raise TypeError(
                 "notice_numbers must be a list of integers"
             )
@@ -712,6 +718,7 @@ class ExtendedKeyUsage(object):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
     def __init__(self, usages):
+        usages = list(usages)
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
             raise TypeError(
                 "Every item in the usages list must be an ObjectIdentifier"
@@ -866,6 +873,7 @@ class NameConstraints(object):
 
     def __init__(self, permitted_subtrees, excluded_subtrees):
         if permitted_subtrees is not None:
+            permitted_subtrees = list(permitted_subtrees)
             if not all(
                 isinstance(x, GeneralName) for x in permitted_subtrees
             ):
@@ -877,6 +885,7 @@ class NameConstraints(object):
             self._validate_ip_name(permitted_subtrees)
 
         if excluded_subtrees is not None:
+            excluded_subtrees = list(excluded_subtrees)
             if not all(
                 isinstance(x, GeneralName) for x in excluded_subtrees
             ):
@@ -965,6 +974,7 @@ class Extension(object):
 
 class GeneralNames(object):
     def __init__(self, general_names):
+        general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
             raise TypeError(
                 "Every item in the general_names list must be an "

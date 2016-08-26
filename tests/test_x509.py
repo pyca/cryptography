@@ -3680,6 +3680,14 @@ class TestName(object):
         assert hash(name1) == hash(name2)
         assert hash(name1) != hash(name3)
 
+    def test_iter_input(self):
+        attrs = [
+                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ]
+        name = x509.Name(iter(attrs))
+        assert list(name) == attrs
+        assert list(name) == attrs
+
     def test_repr(self):
         name = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
@@ -3700,3 +3708,7 @@ class TestName(object):
                 "=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, val"
                 "ue=u'PyCA')>])>"
             )
+
+    def test_not_nameattribute(self):
+        with pytest.raises(TypeError):
+            x509.Name(["not-a-NameAttribute"])
