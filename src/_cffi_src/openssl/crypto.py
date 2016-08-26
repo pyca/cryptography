@@ -33,8 +33,6 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-int CRYPTO_is_mem_check_on(void);
-void CRYPTO_mem_leaks(struct bio_st *);
 """
 
 MACROS = """
