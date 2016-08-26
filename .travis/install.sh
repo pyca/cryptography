@@ -63,6 +63,10 @@ else
         OPENSSL_VERSION_NUMBER="1.0.0t"
         OPENSSL_DIR="ossl-100t"
     fi
+    if [[ "${OPENSSL}" == "1.1.0" ]]; then
+        OPENSSL_VERSION_NUMBER="1.1.0"
+        OPENSSL_DIR="ossl-110"
+    fi
     # download, compile, and install if it's not already present via travis
     # cache
     if [ -n "$OPENSSL_DIR" ]; then
@@ -72,7 +76,8 @@ else
             cd openssl-$OPENSSL_VERSION_NUMBER
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             # modify the shlib version to a unique one to make sure the dynamic
-            # linker doesn't load the system one.
+            # linker doesn't load the system one. This isn't required for 1.1.0 at the
+            # moment since our Travis builders have a diff shlib version, but it doesn't hurt
             sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
             sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
             sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile

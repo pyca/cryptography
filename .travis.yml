@@ -30,6 +30,10 @@ matrix:
         - python: 3.5
           env: TOXENV=py35 OPENSSL=1.0.0
         - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.1.0
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=1.1.0
+        - python: 2.7
           env: TOXENV=docs
           addons:
               apt:
