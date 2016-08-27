@@ -357,3 +357,12 @@ class DHBackend(object):
         """
         Returns whether the backend supports DH with these parameter values.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
+    @abc.abstractmethod
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        """
+        Return bytes derived from provided Scrypt parameters.
+        """
