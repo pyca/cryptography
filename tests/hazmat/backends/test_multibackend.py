@@ -16,7 +16,7 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
-from cryptography.hazmat.primitives import cmac, hashes, hmac, kdf
+from cryptography.hazmat.primitives import cmac, hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
