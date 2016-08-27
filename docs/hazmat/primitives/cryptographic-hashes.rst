@@ -120,8 +120,8 @@ SHA-2 family
 BLAKE2
 ~~~~~~
 
-`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. It supports
-keying, personalization, and salting.
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. It
+supports keying, personalization, and salting.
 
 .. note::
 
