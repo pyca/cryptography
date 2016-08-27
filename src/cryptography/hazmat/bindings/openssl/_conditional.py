@@ -312,5 +312,8 @@ CONDITIONAL_NAMES = {
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
         "CRYPTO_lock",
+    ],
+    "Cryptography_HAS_SCRYPT": [
+        "EVP_PBE_scrypt",
     ]
 }
