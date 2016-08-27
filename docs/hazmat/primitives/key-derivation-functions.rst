@@ -751,7 +751,7 @@ Different KDFs are suitable for different tasks such as:
     :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
     interface.
 
-    .. doctest::
+    .. code-block:: python
 
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
