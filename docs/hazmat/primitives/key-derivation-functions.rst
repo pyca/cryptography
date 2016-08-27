@@ -786,6 +786,17 @@ Different KDFs are suitable for different tasks such as:
         power of 2.
     :param int r: Block size parameter.
     :param int p: Parallelization parameter.
+
+    The computational and memory cost of Scrypt can be adjusted by manipulating
+    the 3 parameters: n, r and p. In general, the memory cost of Scrypt is
+    affected by the values of both n and r while n also determines the number
+    of iterations performed. p increases the computational cost without
+    affecting memory usage. A more in-depth explanation of the 3 parameters can
+    be found `here`_.
+
+    :rfc:`7914` `recommends`_ values of r=8 and p=1 while scaling n to the
+    number appropriate for your system.
+
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
 
@@ -881,4 +892,5 @@ Interface
 .. _`RFC 5869`: https://tools.ietf.org/html/rfc5869
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
 .. _`RFC 7914`: https://tools.ietf.org/html/rfc7914
-
+.. _`here`: http://stackoverflow.com/a/30308723/1170681
+.. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
