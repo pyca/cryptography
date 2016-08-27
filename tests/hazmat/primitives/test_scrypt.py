@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidKey
+from cryptography.exceptions import InvalidKey, UnsupportedAlgorithm
 
 from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
@@ -36,6 +36,44 @@ class TestScrypt(object):
         scrypt = Scrypt(salt, length, work_factor, block_size,
                         parallelization_factor, backend)
         assert binascii.hexlify(scrypt.derive(password)) == derived_key
+
+    def test_unsupported_backend(self):
+        work_factor = 1024
+        block_size = 8
+        parallelization_factor = 16
+        length = 64
+        salt = b"NaCl"
+        backend = object()
+
+        with pytest.raises(UnsupportedAlgorithm):
+            Scrypt(salt, length, work_factor, block_size,
+                   parallelization_factor, backend)
+
+    def test_salt_not_bytes(self, backend):
+        work_factor = 1024
+        block_size = 8
+        parallelization_factor = 16
+        length = 64
+        salt = 1
+
+        with pytest.raises(TypeError):
+            Scrypt(salt, length, work_factor, block_size,
+                   parallelization_factor, backend)
+
+    def test_password_not_bytes(self, backend):
+        password = 1
+        work_factor = 1024
+        block_size = 8
+        parallelization_factor = 16
+        length = 64
+        salt = b"NaCl"
+        derived_key = b"fdbabe1c9d3472007856e7190d01e9fe7c6ad7cbc8237830e773"
+
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
+
+        with pytest.raises(TypeError):
+            scrypt.derive(password)
 
     @pytest.mark.parametrize("params", vectors)
     def test_verify(self, backend, params):
