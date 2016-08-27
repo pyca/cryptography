@@ -743,9 +743,9 @@ Different KDFs are suitable for different tasks such as:
 
     .. versionadded:: 1.6
 
-    Scrypt is a KDF designed by Colin Percival to be resistant against
-    hardware-assisted attackers by having a tunable memory cost. It is
-    described in `RFC 7914`_.
+    Scrypt is a KDF designed for password storage by Colin Percival to be
+    resistant against hardware-assisted attackers by having a tunable memory
+    cost. It is described in :rfc:`7914`.
 
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
