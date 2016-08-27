@@ -125,7 +125,7 @@ keying, personalization, and salting.
 
 .. note::
 
-    As of OpenSSL 1.1.0 BLAKE2 is only supported as an un-keyed hash with no
+    As of OpenSSL 1.1.0 BLAKE2 is only supported as an unkeyed hash with no
     personalization or salting features.
 
 .. class:: BLAKE2b(digest_size)
