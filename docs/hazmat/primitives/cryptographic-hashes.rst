@@ -125,7 +125,7 @@ keying, personalization, and salting.
 
 .. note::
 
-    As of OpenSSL 1.1.0 BLAKE2 is only supported as an unkeyed hash with no
+    As of OpenSSL 1.1.0 BLAKE2 is only supported as an un-keyed hash with no
     personalization or salting features.
 
 .. class:: BLAKE2b(digest_size)
@@ -135,7 +135,7 @@ keying, personalization, and salting.
 
     :param int digest_size: The desired size of the hash output in bytes.
 
-    :raises ValueError: If the digest_size is invalid.
+    :raises ValueError: If the ``digest_size`` is invalid.
 
 .. class:: BLAKE2s(digest_size)
 
@@ -144,7 +144,7 @@ keying, personalization, and salting.
 
     :param int digest_size: The desired size of the hash output in bytes.
 
-    :raises ValueError: If the digest_size is invalid.
+    :raises ValueError: If the ``digest_size`` is invalid.
 
 RIPEMD160
 ~~~~~~~~~
