@@ -166,7 +166,6 @@ class MD5(object):
 @utils.register_interface(HashAlgorithm)
 class BLAKE2b(object):
     name = "blake2b"
-    digest_size = None
     _max_digest_size = 64
     _min_digest_size = 1
     block_size = 128
@@ -180,14 +179,15 @@ class BLAKE2b(object):
                 self._min_digest_size, self._max_digest_size)
             )
 
-        self.digest_size = digest_size
+        self._digest_size = digest_size
+
+    digest_size = utils.read_only_property("_digest_size")
 
 
 @utils.register_interface(HashAlgorithm)
 class BLAKE2s(object):
     name = "blake2s"
     block_size = 64
-    digest_size = None
     _max_digest_size = 32
     _min_digest_size = 1
 
@@ -200,4 +200,6 @@ class BLAKE2s(object):
                 self._min_digest_size, self._max_digest_size)
             )
 
-        self.digest_size = digest_size
+        self._digest_size = digest_size
+
+    digest_size = utils.read_only_property("_digest_size")
