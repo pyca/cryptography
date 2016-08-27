@@ -219,9 +219,9 @@ class Binding(object):
 def _verify_openssl_version(version):
     if version < 0x10001000:
         warnings.warn(
-            "OpenSSL versions less than 1.0.1 are no longer supported by the "
-            "OpenSSL project, please upgrade. A future version of "
-            "cryptography will drop support for these versions of OpenSSL.",
+            "OpenSSL version 1.0.0 is no longer supported by the OpenSSL "
+            "project, please upgrade. The next version of cryptography will "
+            "drop support for it.",
             DeprecationWarning
         )
 
