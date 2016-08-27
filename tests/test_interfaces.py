@@ -18,7 +18,7 @@ def test_register_interface_if_true():
     class SimpleInterface(object):
         pass
 
-    @register_interface_if(1==1, SimpleInterface)
+    @register_interface_if(1 == 1, SimpleInterface)
     class SimpleClass(object):
         pass
 
@@ -30,7 +30,7 @@ def test_register_interface_if_false():
     class SimpleInterface(object):
         pass
 
-    @register_interface_if(1==2, SimpleInterface)
+    @register_interface_if(1 == 2, SimpleInterface)
     class SimpleClass(object):
         pass
 
