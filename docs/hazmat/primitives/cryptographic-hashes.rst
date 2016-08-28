@@ -120,13 +120,12 @@ SHA-2 family
 BLAKE2
 ~~~~~~
 
-`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. It
-supports keying, personalization, and salting.
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`.
 
 .. note::
 
-    As of OpenSSL 1.1.0 BLAKE2 is only supported as an unkeyed hash with no
-    personalization or salting features.
+    While the RFC specifies keying, personalization, and salting features,
+    these are not supported at this time due to limitations in OpenSSL 1.1.0.
 
 .. class:: BLAKE2b(digest_size)
 
