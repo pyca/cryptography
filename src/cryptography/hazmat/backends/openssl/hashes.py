@@ -27,7 +27,7 @@ class _HashContext(object):
             if evp_md == self._backend._ffi.NULL:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend.".format(
-                        algorithm.name),
+                        name),
                     _Reasons.UNSUPPORTED_HASH
                 )
             res = self._backend._lib.EVP_DigestInit_ex(ctx, evp_md,
