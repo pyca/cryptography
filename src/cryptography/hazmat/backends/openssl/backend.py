@@ -185,8 +185,19 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
+    def _build_openssl_digest_name(self, algorithm):
+        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+            alg = "{0}{1}".format(
+                algorithm.name, algorithm.digest_size * 8
+            ).encode("ascii")
+        else:
+            alg = algorithm.name.encode("ascii")
+
+        return alg
+
     def hash_supported(self, algorithm):
-        digest = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        name = self._build_openssl_digest_name(algorithm)
+        digest = self._lib.EVP_get_digestbyname(name)
         return digest != self._ffi.NULL
 
     def hmac_supported(self, algorithm):

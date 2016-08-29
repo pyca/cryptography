@@ -6,6 +6,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
+  :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
+  1.1.0.
+
 1.5 - 2016-08-26
 ~~~~~~~~~~~~~~~~
 
