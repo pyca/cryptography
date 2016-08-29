@@ -120,7 +120,9 @@ SHA-2 family
 BLAKE2
 ~~~~~~
 
-`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`.
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. BLAKE2 is
+not vulnerable to `length-extension attacks`_, which the SHA-family of hashes
+are.
 
 .. note::
 
@@ -224,3 +226,4 @@ Interfaces
 
 .. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
 .. _`BLAKE2`: https://blake2.net
+.. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
