@@ -132,7 +132,8 @@ BLAKE2
     BLAKE2b is optimized for 64-bit platforms and produces an 1 to 64-byte
     message digest.
 
-    :param int digest_size: The desired size of the hash output in bytes.
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``64`` is supported at this time.
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
@@ -141,7 +142,8 @@ BLAKE2
     BLAKE2s is optimized for 8 to 32-bit platforms and produces a
     1 to 32-byte message digest.
 
-    :param int digest_size: The desired size of the hash output in bytes.
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``32`` is supported at this time.
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
