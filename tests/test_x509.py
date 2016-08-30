@@ -3682,7 +3682,7 @@ class TestName(object):
 
     def test_iter_input(self):
         attrs = [
-                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
         ]
         name = x509.Name(iter(attrs))
         assert list(name) == attrs
