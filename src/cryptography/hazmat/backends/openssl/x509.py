@@ -105,17 +105,9 @@ class _Certificate(object):
         self._backend.openssl_assert(subject != self._backend._ffi.NULL)
         return _decode_x509_name(self._backend, subject)
 
-    def _get_signature_algorithm_oid(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_get0_signature(
-            self._backend._ffi.NULL, alg, self._x509
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        return _obj2txt(self._backend, alg[0].algorithm)
-
     @property
     def signature_hash_algorithm(self):
-        oid = self._get_signature_algorithm_oid()
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -125,7 +117,12 @@ class _Certificate(object):
 
     @property
     def signature_algorithm_oid(self):
-        oid = self._get_signature_algorithm_oid()
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_get0_signature(
+            self._backend._ffi.NULL, alg, self._x509
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
     @property
@@ -229,17 +226,9 @@ class _CertificateRevocationList(object):
         h.update(der)
         return h.finalize()
 
-    def _get_signature_algorithm_oid(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_CRL_get0_signature(
-            self._x509_crl, self._backend._ffi.NULL, alg
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        return _obj2txt(self._backend, alg[0].algorithm)
-
     @property
     def signature_hash_algorithm(self):
-        oid = self._get_signature_algorithm_oid()
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -249,7 +238,12 @@ class _CertificateRevocationList(object):
 
     @property
     def signature_algorithm_oid(self):
-        oid = self._get_signature_algorithm_oid()
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_CRL_get0_signature(
+            self._x509_crl, self._backend._ffi.NULL, alg
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
     @property
@@ -369,17 +363,9 @@ class _CertificateSigningRequest(object):
         self._backend.openssl_assert(subject != self._backend._ffi.NULL)
         return _decode_x509_name(self._backend, subject)
 
-    def _get_signature_algorithm_oid(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_REQ_get0_signature(
-            self._x509_req, self._backend._ffi.NULL, alg
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        return _obj2txt(self._backend, alg[0].algorithm)
-
     @property
     def signature_hash_algorithm(self):
-        oid = self._get_signature_algorithm_oid()
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -389,7 +375,12 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature_algorithm_oid(self):
-        oid = self._get_signature_algorithm_oid()
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_REQ_get0_signature(
+            self._x509_req, self._backend._ffi.NULL, alg
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
     @property

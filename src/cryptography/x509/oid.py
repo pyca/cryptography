@@ -135,20 +135,20 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
 _SIG_OIDS_TO_HASH = {
-    SignatureAlgorithmOID.RSA_WITH_MD5.dotted_string: hashes.MD5(),
-    SignatureAlgorithmOID.RSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    SignatureAlgorithmOID.RSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    SignatureAlgorithmOID.RSA_WITH_SHA256.dotted_string: hashes.SHA256(),
-    SignatureAlgorithmOID.RSA_WITH_SHA384.dotted_string: hashes.SHA384(),
-    SignatureAlgorithmOID.RSA_WITH_SHA512.dotted_string: hashes.SHA512(),
-    SignatureAlgorithmOID.ECDSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    SignatureAlgorithmOID.ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    SignatureAlgorithmOID.ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
-    SignatureAlgorithmOID.ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
-    SignatureAlgorithmOID.ECDSA_WITH_SHA512.dotted_string: hashes.SHA512(),
-    SignatureAlgorithmOID.DSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    SignatureAlgorithmOID.DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    SignatureAlgorithmOID.DSA_WITH_SHA256.dotted_string: hashes.SHA256()
+    SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
+    SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
+    SignatureAlgorithmOID.RSA_WITH_SHA224: hashes.SHA224(),
+    SignatureAlgorithmOID.RSA_WITH_SHA256: hashes.SHA256(),
+    SignatureAlgorithmOID.RSA_WITH_SHA384: hashes.SHA384(),
+    SignatureAlgorithmOID.RSA_WITH_SHA512: hashes.SHA512(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA1: hashes.SHA1(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA224: hashes.SHA224(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA256: hashes.SHA256(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA384: hashes.SHA384(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA512: hashes.SHA512(),
+    SignatureAlgorithmOID.DSA_WITH_SHA1: hashes.SHA1(),
+    SignatureAlgorithmOID.DSA_WITH_SHA224: hashes.SHA224(),
+    SignatureAlgorithmOID.DSA_WITH_SHA256: hashes.SHA256()
 }
 
 
