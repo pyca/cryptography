@@ -31,7 +31,8 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature
 )
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
+    NameOID, SignatureAlgorithmOID
 )
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
@@ -75,6 +76,10 @@ class TestCertificateRevocationList(object):
         fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
         assert fingerprint == b"3234b0cb4c0cedf6423724b736729dcfc9e441ef"
         assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        assert (
+            crl.signature_algorithm_oid ==
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
 
     def test_load_der_crl(self, backend):
         crl = _load_cert(
@@ -493,6 +498,9 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"2b619ed04bfc9c3b08eb677d272192286a0947a8"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
+        assert (
+            cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
+        )
 
     def test_cert_serial_number(self, backend):
         cert = _load_cert(
@@ -1053,6 +1061,10 @@ class TestRSACertificateRequest(object):
     def test_load_rsa_certificate_request(self, path, loader_func, backend):
         request = _load_cert(path, loader_func, backend)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert (
+            request.signature_algorithm_oid ==
+            SignatureAlgorithmOID.RSA_WITH_SHA1
+        )
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
