@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated support for OpenSSL 1.0.0. Support will be removed in
+  ``cryptography`` 1.7.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
   1.1.0.
