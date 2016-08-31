@@ -354,6 +354,22 @@ X.509 Certificate Object
             >>> isinstance(cert.signature_hash_algorithm, hashes.SHA256)
             True
 
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the certificate. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+
+        .. doctest::
+
+            >>> cert.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
+
     .. attribute:: extensions
 
         :type: :class:`Extensions`
@@ -463,6 +479,21 @@ X.509 CRL (Certificate Revocation List) Object
             >>> from cryptography.hazmat.primitives import hashes
             >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
             True
+
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the CRL. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+        .. doctest::
+
+            >>> crl.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
 
     .. attribute:: issuer
 
@@ -710,6 +741,21 @@ X.509 CSR (Certificate Signing Request) Object
             >>> from cryptography.hazmat.primitives import hashes
             >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
             True
+
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the request. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+        .. doctest::
+
+            >>> csr.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.5, name=sha1WithRSAEncryption)>
 
     .. attribute:: extensions
 
