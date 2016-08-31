@@ -31,3 +31,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Amaury Forgeot d'Arc <amauryfa@google.com>
 * Dirkjan Ochtman <dirkjan@ochtman.nl> (25BB BAC1 13C1 BFD5 AA59  4A4C 9F96 B929 3038 0381)
 * Maximilian Hils <max@maximilianhils.com>
+* Simo Sorce <simo@redhat.com>
