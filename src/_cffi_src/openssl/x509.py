@@ -30,39 +30,15 @@ typedef struct {
 } X509_ALGOR;
 
 typedef ... X509_ATTRIBUTE;
-
-typedef struct {
-    X509_ALGOR *signature;
-    ...;
-} X509_CINF;
-
+typedef ... X509_CINF;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
 typedef ... X509_REQ_INFO;
-
-typedef struct {
-    ASN1_INTEGER *serialNumber;
-    ASN1_TIME *revocationDate;
-    X509_EXTENSIONS *extensions;
-    ...;
-} X509_REVOKED;
-
-typedef struct {
-    Cryptography_STACK_OF_X509_REVOKED *revoked;
-    ...;
-} X509_CRL_INFO;
-
-typedef struct {
-    X509_CRL_INFO *crl;
-    ...;
-} X509_CRL;
-
-typedef struct {
-    X509_CINF *cert_info;
-    ASN1_BIT_STRING *signature;
-    ...;
-} X509;
+typedef ... X509_REVOKED;
+typedef ... X509_CRL_INFO;
+typedef ... X509_CRL;
+typedef ... X509;
 
 typedef ... NETSCAPE_SPKI;
 

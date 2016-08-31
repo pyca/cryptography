@@ -31,6 +31,15 @@ def register_interface(iface):
     return register_decorator
 
 
+def register_interface_if(predicate, iface):
+    def register_decorator(klass):
+        if predicate:
+            verify_interface(iface, klass)
+            iface.register(klass)
+        return klass
+    return register_decorator
+
+
 if hasattr(int, "from_bytes"):
     int_from_bytes = int.from_bytes
 else:

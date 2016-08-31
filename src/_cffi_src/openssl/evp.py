@@ -12,7 +12,7 @@ TYPES = """
 typedef ... EVP_CIPHER;
 typedef ... EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct { ...; } EVP_MD_CTX;
+typedef ... EVP_MD_CTX;
 
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
@@ -28,6 +28,7 @@ static const int EVP_CTRL_GCM_SET_TAG;
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
+static const int Cryptography_HAS_SCRYPT;
 """
 
 FUNCTIONS = """
@@ -59,7 +60,6 @@ int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
-int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
 const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
 int EVP_MD_size(const EVP_MD *);
@@ -163,6 +163,10 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
+
+int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
+                   uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                   size_t);
 """
 
 CUSTOMIZATIONS = """
@@ -202,4 +206,13 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
     EVP_MD_CTX_free(ctx);
 #endif
 }
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER) \
+    || defined(OPENSSL_NO_SCRYPT)
+static const long Cryptography_HAS_SCRYPT = 0;
+int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
+                      uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                      size_t) = NULL;
+#else
+static const long Cryptography_HAS_SCRYPT = 1;
+#endif
 """

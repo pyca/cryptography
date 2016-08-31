@@ -178,7 +178,7 @@ Different KDFs are suitable for different tasks such as:
         long as the hash output. Worse (shorter, less entropy) salt values can
         still meaningfully contribute to security. May be reused. Does not have
         to be secret, but may cause stronger security guarantees if secret; see
-        `RFC 5869`_ and the `HKDF paper`_ for more details. If ``None`` is
+        :rfc:`5869` and the `HKDF paper`_ for more details. If ``None`` is
         explicitly passed a default salt of ``algorithm.digest_size // 8`` null
         bytes will be used.
 
@@ -793,6 +793,5 @@ Interface
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: https://en.wikipedia.org/wiki/Scrypt
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
-.. _`HKDF`:
-.. _`RFC 5869`: https://tools.ietf.org/html/rfc5869
+.. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264

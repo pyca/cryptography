@@ -185,8 +185,19 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
+    def _build_openssl_digest_name(self, algorithm):
+        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+            alg = "{0}{1}".format(
+                algorithm.name, algorithm.digest_size * 8
+            ).encode("ascii")
+        else:
+            alg = algorithm.name.encode("ascii")
+
+        return alg
+
     def hash_supported(self, algorithm):
-        digest = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        name = self._build_openssl_digest_name(algorithm)
+        digest = self._lib.EVP_get_digestbyname(name)
         return digest != self._ffi.NULL
 
     def hmac_supported(self, algorithm):
@@ -1475,7 +1486,9 @@ class Backend(object):
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("EC point not on curve")
 
             res = get_func(group, point, check_x, check_y, bn_ctx)
             self.openssl_assert(res == 1)

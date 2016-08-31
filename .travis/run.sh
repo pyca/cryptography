@@ -29,6 +29,9 @@ else
     if [[ "${OPENSSL}" == "1.0.0" ]]; then
         OPENSSL_DIR="ossl-100t"
     fi
+    if [[ "${OPENSSL}" == "1.1.0" ]]; then
+        OPENSSL_DIR="ossl-110"
+    fi
 
     if [ -n "$OPENSSL_DIR" ]; then
         export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"

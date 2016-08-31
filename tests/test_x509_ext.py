@@ -268,6 +268,11 @@ class TestNoticeReference(object):
         with pytest.raises(TypeError):
             x509.NoticeReference("org", None)
 
+    def test_iter_input(self):
+        numbers = [1, 3, 4]
+        nr = x509.NoticeReference(u"org", iter(numbers))
+        assert list(nr.notice_numbers) == numbers
+
     def test_repr(self):
         nr = x509.NoticeReference(u"org", [1, 3, 4])
 
@@ -357,6 +362,11 @@ class TestPolicyInformation(object):
         with pytest.raises(TypeError):
             x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [1, 2])
 
+    def test_iter_input(self):
+        qual = [u"foo", u"bar"]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), iter(qual))
+        assert list(pi.policy_qualifiers) == qual
+
     def test_repr(self):
         pq = [u"string", x509.UserNotice(None, u"hi")]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
@@ -413,6 +423,13 @@ class TestCertificatePolicies(object):
         assert len(cp) == 1
         for policyinfo in cp:
             assert policyinfo == pi
+
+    def test_iter_input(self):
+        policies = [
+            x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [u"string"])
+        ]
+        cp = x509.CertificatePolicies(iter(policies))
+        assert list(cp) == policies
 
     def test_repr(self):
         pq = [u"string"]
@@ -859,6 +876,15 @@ class TestAuthorityKeyIdentifier(object):
         assert aki.authority_cert_issuer == [dns]
         assert aki.authority_cert_serial_number == 0
 
+    def test_iter_input(self):
+        dirnames = [
+            x509.DirectoryName(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
+            )
+        ]
+        aki = x509.AuthorityKeyIdentifier(b"digest", iter(dirnames), 1234)
+        assert list(aki.authority_cert_issuer) == dirnames
+
     def test_repr(self):
         dirname = x509.DirectoryName(
             x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
@@ -972,6 +998,14 @@ class TestExtendedKeyUsage(object):
             ExtendedKeyUsageOID.SERVER_AUTH,
             ExtendedKeyUsageOID.CLIENT_AUTH
         ]
+
+    def test_iter_input(self):
+        usages = [
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.1"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.2"),
+        ]
+        aia = x509.ExtendedKeyUsage(iter(usages))
+        assert list(aia) == usages
 
     def test_repr(self):
         eku = x509.ExtendedKeyUsage([
@@ -1417,18 +1451,16 @@ class TestDirectoryName(object):
 
     def test_repr(self):
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'value1')])
-        gn = x509.DirectoryName(x509.Name([name]))
+        gn = x509.DirectoryName(name)
         if six.PY3:
             assert repr(gn) == (
-                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
-                "Identifier(oid=2.5.4.3, name=commonName)>, value='value1')>])"
-                ">])>)>"
+                "<DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.3, name=commonName)>, value='value1')>])>)>"
             )
         else:
             assert repr(gn) == (
-                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
-                "Identifier(oid=2.5.4.3, name=commonName)>, value=u'value1')>]"
-                ")>])>)>"
+                "<DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.3, name=commonName)>, value=u'value1')>])>)>"
             )
 
     def test_eq(self):
@@ -1438,8 +1470,8 @@ class TestDirectoryName(object):
         name2 = x509.Name([
             x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
         ])
-        gn = x509.DirectoryName(x509.Name([name]))
-        gn2 = x509.DirectoryName(x509.Name([name2]))
+        gn = x509.DirectoryName(name)
+        gn2 = x509.DirectoryName(name2)
         assert gn == gn2
 
     def test_ne(self):
@@ -1449,8 +1481,8 @@ class TestDirectoryName(object):
         name2 = x509.Name([
             x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
         ])
-        gn = x509.DirectoryName(x509.Name([name]))
-        gn2 = x509.DirectoryName(x509.Name([name2]))
+        gn = x509.DirectoryName(name)
+        gn2 = x509.DirectoryName(name2)
         assert gn != gn2
         assert gn != object()
 
@@ -1648,6 +1680,14 @@ class TestGeneralNames(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
         ]
+
+    def test_iter_input(self):
+        names = [
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ]
+        gns = x509.GeneralNames(iter(names))
+        assert list(gns) == names
 
     def test_indexing(self):
         gn = x509.GeneralNames([
@@ -2371,6 +2411,16 @@ class TestAuthorityInformationAccess(object):
             )
         ]
 
+    def test_iter_input(self):
+        desc = [
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            )
+        ]
+        aia = x509.AuthorityInformationAccess(iter(desc))
+        assert list(aia) == desc
+
     def test_repr(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
@@ -2743,6 +2793,12 @@ class TestNameConstraints(object):
         assert nc.permitted_subtrees is not None
         assert nc.excluded_subtrees is None
 
+    def test_iter_input(self):
+        subtrees = [x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24"))]
+        nc = x509.NameConstraints(iter(subtrees), iter(subtrees))
+        assert list(nc.permitted_subtrees) == subtrees
+        assert list(nc.excluded_subtrees) == subtrees
+
     def test_repr(self):
         permitted = [x509.DNSName(u"name.local"), x509.DNSName(u"name2.local")]
         nc = x509.NameConstraints(
@@ -3050,6 +3106,24 @@ class TestDistributionPoint(object):
         assert dp != dp2
         assert dp != object()
 
+    def test_iter_input(self):
+        name = [x509.UniformResourceIdentifier(u"http://crypt.og/crl")]
+        issuer = [
+            x509.DirectoryName(
+                x509.Name([
+                    x509.NameAttribute(NameOID.COMMON_NAME, u"Important CA")
+                ])
+            )
+        ]
+        dp = x509.DistributionPoint(
+            iter(name),
+            None,
+            frozenset([x509.ReasonFlags.ca_compromise]),
+            iter(issuer),
+        )
+        assert list(dp.full_name) == name
+        assert list(dp.crl_issuer) == issuer
+
     def test_repr(self):
         dp = x509.DistributionPoint(
             None,
@@ -3128,6 +3202,18 @@ class TestCRLDistributionPoints(object):
                 None
             ),
         ]
+
+    def test_iter_input(self):
+        points = [
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://domain")],
+                None,
+                None,
+                None
+            ),
+        ]
+        cdp = x509.CRLDistributionPoints(iter(points))
+        assert list(cdp) == points
 
     def test_repr(self):
         cdp = x509.CRLDistributionPoints([

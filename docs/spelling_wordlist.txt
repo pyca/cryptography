@@ -69,6 +69,7 @@ Schneier
 scrypt
 serializer
 Serializers
+SHA
 Solaris
 Tanja
 testability
