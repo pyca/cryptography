@@ -39,12 +39,12 @@ OpenSSL releases:
 .. warning::
     OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography
     will drop support for it in a future release.
-    
+
 Building cryptography on Windows
 --------------------------------
 
 The wheel package on Windows is a statically linked build (as of 0.5) so all
-dependencies are included. To install ``cryptography``, you will typically 
+dependencies are included. To install ``cryptography``, you will typically
 just run
 
 .. code-block:: console

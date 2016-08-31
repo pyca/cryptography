@@ -6,10 +6,10 @@ Development dependencies
 Working on ``cryptography`` requires the installation of a small number of
 development dependencies in addition to the dependencies for
 :doc:`/installation`. These are listed in ``dev-requirements.txt`` and they can
-be installed in a `virtualenv`_ using `pip`_. Before you install them, follow 
-the **build** instructions in :doc:`/installation` (be sure to stop before 
-actually installing ``cryptography``). Once you've done that, install the 
-development dependencies, and then install ``cryptography`` in ``editable`` 
+be installed in a `virtualenv`_ using `pip`_. Before you install them, follow
+the **build** instructions in :doc:`/installation` (be sure to stop before
+actually installing ``cryptography``). Once you've done that, install the
+development dependencies, and then install ``cryptography`` in ``editable``
 mode. For example:
 
 .. code-block:: console
@@ -23,9 +23,9 @@ You will also need to install ``enchant`` using your system's package manager
 to check spelling in the documentation.
 
 .. note::
-    There is an upstream bug in ``enchant`` that prevents its installation on 
-    Windows with 64-bit Python. See `this Github issue`_ for more information. 
-    The easiest workaround is to use 32-bit Python for ``cryptography`` 
+    There is an upstream bug in ``enchant`` that prevents its installation on
+    Windows with 64-bit Python. See `this Github issue`_ for more information.
+    The easiest workaround is to use 32-bit Python for ``cryptography``
     development, even on 64-bit Windows.
 
 You are now ready to run the tests and build the documentation.
