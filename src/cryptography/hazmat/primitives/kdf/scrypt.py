@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidKey, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography.hazmat.primitives import constant_time
@@ -25,6 +25,7 @@ class Scrypt(object):
         self._length = length
         if not isinstance(salt, bytes):
             raise TypeError("salt must be bytes.")
+        self._used = False
         self._salt = salt
         self._n = n
         self._r = r
@@ -32,6 +33,10 @@ class Scrypt(object):
         self._backend = backend
 
     def derive(self, key_material):
+        if self._used:
+            raise AlreadyFinalized("Scrypt instances can only be used once.")
+        self._used = True
+
         if not isinstance(key_material, bytes):
             raise TypeError("key_material must be bytes.")
         return self._backend.derive_scrypt(

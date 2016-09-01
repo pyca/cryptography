@@ -10,8 +10,9 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidKey, UnsupportedAlgorithm
-
+from cryptography.exceptions import (
+    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm
+)
 from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
@@ -102,3 +103,17 @@ class TestScrypt(object):
 
         with pytest.raises(InvalidKey):
             scrypt.verify(password, binascii.unhexlify(derived_key))
+
+    def test_already_finalized(self, backend):
+        password = b"password"
+        work_factor = 1024
+        block_size = 8
+        parallelization_factor = 16
+        length = 64
+        salt = b"NaCl"
+
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
+        scrypt.derive(password)
+        with pytest.raises(AlreadyFinalized):
+            scrypt.derive(password)

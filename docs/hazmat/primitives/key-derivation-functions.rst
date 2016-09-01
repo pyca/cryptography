@@ -812,6 +812,11 @@ Different KDFs are suitable for different tasks such as:
         :return bytes: the derived key.
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         This generates and returns a new key from the supplied password.
 
@@ -825,6 +830,11 @@ Different KDFs are suitable for different tasks such as:
         :raises cryptography.exceptions.InvalidKey: This is raised when the
                                                     derived key does not match
                                                     the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and
