@@ -890,6 +890,5 @@ Interface
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
 .. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
-.. _`RFC 7914`: https://tools.ietf.org/html/rfc7914
-.. _`here`: http://stackoverflow.com/a/30308723/1170681
+.. _`here`: https://stackoverflow.com/a/30308723/1170681
 .. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
