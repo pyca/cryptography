@@ -24,6 +24,11 @@ greater.
     * :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
 
+    It also implements the following interface for OpenSSL versions ``1.1.0``
+    and above.
+
+    * :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`
+
     It also exposes the following:
 
     .. attribute:: name

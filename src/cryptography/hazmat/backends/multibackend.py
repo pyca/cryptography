@@ -9,7 +9,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 
 
@@ -24,6 +24,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
+@utils.register_interface(ScryptBackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -409,3 +410,8 @@ class MultiBackend(object):
             "This backend does not support X.509.",
             _Reasons.UNSUPPORTED_X509
         )
+
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        for b in self._filtered_backends(ScryptBackend):
+            return b.derive_scrypt(key_material, salt, length, n, r, p)
+        raise UnsupportedAlgorithm("This backend does not support scrypt.")

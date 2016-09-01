@@ -737,6 +737,111 @@ Different KDFs are suitable for different tasks such as:
         The counter iteration variable will be concatenated after
         the fixed input data.
 
+.. currentmodule:: cryptography.hazmat.primitives.kdf.scrypt
+
+.. class:: Scrypt(salt, length, n, r, p, backend)
+
+    .. versionadded:: 1.6
+
+    Scrypt is a KDF designed for password storage by Colin Percival to be
+    resistant against hardware-assisted attackers by having a tunable memory
+    cost. It is described in :rfc:`7914`.
+
+    This class conforms to the
+    :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
+    interface.
+
+    .. code-block:: python
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> salt = os.urandom(16)
+        >>> # derive
+        >>> kdf = Scrypt(
+        ...     salt=salt,
+        ...     length=64,
+        ...     n=1024,
+        ...     r=8,
+        ...     p=16,
+        ...     backend=backend
+        ... )
+        >>> key = kdf.derive(b"my great password")
+        >>> # verify
+        >>> kdf = Scrypt(
+        ...     salt=salt,
+        ...     length=64,
+        ...     n=1024,
+        ...     r=8,
+        ...     p=16,
+        ...     backend=backend
+        ... )
+        >>> kdf.verify(b"my great password", key)
+
+    :param bytes salt: A salt.
+    :param int length: The desired length of the derived key.
+    :param int n: CPU/Memory cost parameter. It must be larger than 1 and be a
+        power of 2.
+    :param int r: Block size parameter.
+    :param int p: Parallelization parameter.
+
+    The computational and memory cost of Scrypt can be adjusted by manipulating
+    the 3 parameters: n, r and p. In general, the memory cost of Scrypt is
+    affected by the values of both n and r while n also determines the number
+    of iterations performed. p increases the computational cost without
+    affecting memory usage. A more in-depth explanation of the 3 parameters can
+    be found `here`_.
+
+    :rfc:`7914` `recommends`_ values of r=8 and p=1 while scaling n to the
+    number appropriate for your system.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`
+
+    :raises TypeError: This exception is raised if ``salt`` is not ``bytes``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: the derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This generates and returns a new key from the supplied password.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match. This can be used for
+        checking whether the password a user provides matches the stored derived
+        key.
+
 Interface
 ~~~~~~~~~
 
@@ -795,3 +900,5 @@ Interface
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
 .. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
+.. _`here`: https://stackoverflow.com/a/30308723/1170681
+.. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2

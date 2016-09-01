@@ -55,6 +55,7 @@ Nonces
 nonces
 online
 paddings
+Parallelization
 pickleable
 plaintext
 pre
@@ -73,6 +74,7 @@ SHA
 Solaris
 Tanja
 testability
+tunable
 Ubuntu
 unencrypted
 unpadded

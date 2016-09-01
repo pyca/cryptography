@@ -20,6 +20,9 @@ Changelog
 * Added
   :attr:`~cryptography.x509.CertificateRevocationList.signature_algorithm_oid`
   support to :class:`~cryptography.x509.CertificateRevocationList`.
+* Added support for :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`
+  when using OpenSSL 1.1.0.
+
 
 1.5 - 2016-08-26
 ~~~~~~~~~~~~~~~~

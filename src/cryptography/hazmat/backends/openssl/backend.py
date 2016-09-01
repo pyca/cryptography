@@ -8,6 +8,7 @@ import base64
 import calendar
 import collections
 import itertools
+import sys
 from contextlib import contextmanager
 
 import six
@@ -17,7 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -114,6 +115,9 @@ def _pem_password_cb(buf, size, writing, userdata_handle):
 @utils.register_interface(RSABackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
+@utils.register_interface_if(
+    binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
+)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -1690,6 +1694,14 @@ class Backend(object):
                 serialization._ssh_write_string(curve_name) +
                 serialization._ssh_write_string(public_numbers.encode_point())
             )
+
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        buf = self._ffi.new("unsigned char[]", length)
+        res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,
+                                       len(salt), n, r, p, sys.maxsize // 2,
+                                       buf, length)
+        self.openssl_assert(res == 1)
+        return self._ffi.buffer(buf)[:]
 
 
 class GetCipherByName(object):
