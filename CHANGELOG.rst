@@ -11,6 +11,15 @@ Changelog
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
   1.1.0.
+* Added
+  :attr:`~cryptography.x509.Certificate.signature_algorithm_oid` support to
+  :class:`~cryptography.x509.Certificate`.
+* Added
+  :attr:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateSigningRequest`.
+* Added
+  :attr:`~cryptography.x509.CertificateRevocationList.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateRevocationList`.
 
 1.5 - 2016-08-26
 ~~~~~~~~~~~~~~~~

@@ -126,6 +126,12 @@ class Certificate(object):
         """
 
     @abc.abstractproperty
+    def signature_algorithm_oid(self):
+        """
+        Returns the ObjectIdentifier of the signature algorithm.
+        """
+
+    @abc.abstractproperty
     def extensions(self):
         """
         Returns an Extensions object.
@@ -187,6 +193,12 @@ class CertificateRevocationList(object):
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm_oid(self):
+        """
+        Returns the ObjectIdentifier of the signature algorithm.
         """
 
     @abc.abstractproperty
@@ -275,6 +287,12 @@ class CertificateSigningRequest(object):
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm_oid(self):
+        """
+        Returns the ObjectIdentifier of the signature algorithm.
         """
 
     @abc.abstractproperty
