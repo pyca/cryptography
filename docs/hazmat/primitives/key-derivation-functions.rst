@@ -805,6 +805,9 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`
 
     :raises TypeError: This exception is raised if ``salt`` is not ``bytes``.
+    :raises ValueError: This exception is raised if ``n`` is less than 2, if
+        ``n`` is not a power of 2, if ``r`` is less than 1 or if ``p`` is less
+        than 1.
 
     .. method:: derive(key_material)
 

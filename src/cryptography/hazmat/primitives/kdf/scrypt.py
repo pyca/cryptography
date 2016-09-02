@@ -25,6 +25,16 @@ class Scrypt(object):
         self._length = length
         if not isinstance(salt, bytes):
             raise TypeError("salt must be bytes.")
+
+        if n < 2 or (n & (n - 1)) != 0:
+            raise ValueError("n must be greater than 1 and be a power of 2.")
+
+        if r < 1:
+            raise ValueError("r must be greater than or equal to 1.")
+
+        if p < 1:
+            raise ValueError("p must be greater than or equal to 1.")
+
         self._used = False
         self._salt = salt
         self._n = n

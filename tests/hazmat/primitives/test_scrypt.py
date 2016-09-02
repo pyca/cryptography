@@ -117,3 +117,20 @@ class TestScrypt(object):
         scrypt.derive(password)
         with pytest.raises(AlreadyFinalized):
             scrypt.derive(password)
+
+    def test_invalid_n(self, backend):
+        # n is less than 2
+        with pytest.raises(ValueError):
+            Scrypt(b"NaCl", 64, 1, 8, 16, backend)
+
+        # n is not a power of 2
+        with pytest.raises(ValueError):
+            Scrypt(b"NaCl", 64, 3, 8, 16, backend)
+
+    def test_invalid_r(self, backend):
+        with pytest.raises(ValueError):
+            Scrypt(b"NaCl", 64, 2, 0, 16, backend)
+
+    def test_invalid_p(self, backend):
+        with pytest.raises(ValueError):
+            Scrypt(b"NaCl", 64, 2, 8, 0, backend)
