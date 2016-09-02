@@ -133,4 +133,4 @@ class TestScrypt(object):
 
     def test_invalid_p(self, backend):
         with pytest.raises(ValueError):
-            scrypt = Scrypt(b"NaCl", 64, 2, 8, 0, backend)
+            Scrypt(b"NaCl", 64, 2, 8, 0, backend)
