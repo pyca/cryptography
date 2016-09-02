@@ -25,7 +25,7 @@ class _CipherContext(object):
         self._tag = None
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
-            self._block_size = self._cipher.block_size
+            self._block_size = self._cipher.block_size // 8
         else:
             self._block_size = 1
 
@@ -145,13 +145,12 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, modes.GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
-                "unsigned char[]", block_byte_size
+                "unsigned char[]", self._block_size
             )
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend._lib.EVP_CTRL_GCM_GET_TAG,
-                block_byte_size, tag_buf
+                self._block_size, tag_buf
             )
             self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
