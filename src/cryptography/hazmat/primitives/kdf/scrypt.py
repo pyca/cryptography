@@ -27,7 +27,7 @@ class Scrypt(object):
             raise TypeError("salt must be bytes.")
 
         if n < 2 or (n & (n - 1)) != 0:
-            raise ValueError("n must be more than 1 and be a power of 2.")
+            raise ValueError("n must be greater than 1 and be a power of 2.")
 
         if r < 1:
             raise ValueError("r must be greater than or equal to 1.")
