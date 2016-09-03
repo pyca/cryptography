@@ -2552,7 +2552,7 @@ Helper Functions
     .. versionadded:: 1.6
 
     Generates a random serial number suitable for use when constructing
-    certificates or CRLs.
+    certificates.
 
 Exceptions
 ~~~~~~~~~~
