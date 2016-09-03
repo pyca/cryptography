@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import datetime
+import os
 from enum import Enum
 
 import six
@@ -723,3 +724,7 @@ class RevokedCertificateBuilder(object):
             )
 
         return backend.create_x509_revoked_certificate(self)
+
+
+def random_serial_number():
+    return utils.int_from_bytes(os.urandom(20), "big") >> 1

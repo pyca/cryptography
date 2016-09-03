@@ -3724,3 +3724,20 @@ class TestName(object):
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
             x509.Name(["not-a-NameAttribute"])
+
+
+def test_random_serial_number(monkeypatch):
+    sample_data = os.urandom(20)
+
+    def notrandom(size):
+        assert size == len(sample_data)
+        return sample_data
+
+    monkeypatch.setattr(os, "urandom", notrandom)
+
+    serial_number = x509.random_serial_number()
+
+    assert (
+        serial_number == utils.int_from_bytes(sample_data, "big") >> 1
+    )
+    assert utils.bit_length(serial_number) < 160

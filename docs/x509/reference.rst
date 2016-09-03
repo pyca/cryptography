@@ -582,7 +582,6 @@ X.509 Certificate Builder
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.x509.oid import NameOID
         >>> import datetime
-        >>> import uuid
         >>> one_day = datetime.timedelta(1, 0, 0)
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
@@ -599,7 +598,7 @@ X.509 Certificate Builder
         ... ]))
         >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
         >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
-        >>> builder = builder.serial_number(int(uuid.uuid4()))
+        >>> builder = builder.serial_number(x509.random_serial_number())
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
@@ -637,15 +636,17 @@ X.509 Certificate Builder
     .. method:: serial_number(serial_number)
 
         Sets the certificate's serial number (an integer).  The CA's policy
-        determines how it attributes serial numbers to certificates.  The only
-        requirement is that this number uniquely identify the certificate given
-        the issuer.
+        determines how it attributes serial numbers to certificates. This
+        number must uniquely identify the certificate given the issuer.
+        `CABForum Guidelines`_ require entropy in the serial number
+        to provide protection against hash collision attacks. For more
+        information on secure random number generation, see
+        :doc:`/random-numbers`.
 
         :param serial_number: Integer number that will be used by the CA to
             identify this certificate (most notably during certificate
-            revocation checking). Users are encouraged to use a method of
-            generating 20 bytes of entropy, e.g., UUID4. For more information
-            on secure random number generation, see :doc:`/random-numbers`.
+            revocation checking). Users should consider using
+            :func:`~cryptography.x509.random_serial_number` when possible.
 
     .. method:: not_valid_before(time)
 
@@ -2542,6 +2543,17 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.29.24"``.
 
+Helper Functions
+~~~~~~~~~~~~~~~~
+.. currentmodule:: cryptography.x509
+
+.. function:: random_serial_number()
+
+    .. versionadded:: 1.6
+
+    Generates a random serial number suitable for use when constructing
+    certificates.
+
 Exceptions
 ~~~~~~~~~~
 .. currentmodule:: cryptography.x509
@@ -2604,3 +2616,4 @@ Exceptions
 
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
+.. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/

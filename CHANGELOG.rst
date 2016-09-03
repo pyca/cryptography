@@ -22,6 +22,8 @@ Changelog
   support to :class:`~cryptography.x509.CertificateRevocationList`.
 * Added support for :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`
   when using OpenSSL 1.1.0.
+* Added support for generating a
+  :meth:`~cryptography.x509.random_serial_number`.
 
 
 1.5 - 2016-08-26

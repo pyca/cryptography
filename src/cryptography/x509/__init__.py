@@ -11,6 +11,7 @@ from cryptography.x509.base import (
     InvalidVersion, RevokedCertificate, RevokedCertificateBuilder,
     Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
     load_pem_x509_certificate, load_pem_x509_crl, load_pem_x509_csr,
+    random_serial_number,
 )
 from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
@@ -113,6 +114,7 @@ __all__ = [
     "load_der_x509_csr",
     "load_pem_x509_crl",
     "load_der_x509_crl",
+    "random_serial_number",
     "InvalidVersion",
     "DuplicateExtension",
     "UnsupportedExtension",
