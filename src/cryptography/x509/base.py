@@ -472,11 +472,6 @@ class CertificateBuilder(object):
             self._not_valid_after, self._extensions
         )
 
-    def random_serial_number(self):
-        return self.serial_number(
-            utils.int_from_bytes(os.urandom(20), "big") >> 1
-        )
-
     def not_valid_before(self, time):
         """
         Sets the certificate activation time.
@@ -729,3 +724,7 @@ class RevokedCertificateBuilder(object):
             )
 
         return backend.create_x509_revoked_certificate(self)
+
+
+def random_serial_number():
+    return utils.int_from_bytes(os.urandom(20), "big") >> 1

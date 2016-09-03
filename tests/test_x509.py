@@ -1420,41 +1420,6 @@ class TestRSACertificateRequest(object):
             x509.DNSName(u"cryptography.io"),
         ]
 
-    def test_build_cert_random_serial(self, monkeypatch, backend):
-        sample_data = os.urandom(20)
-
-        def notrandom(size):
-            assert size == len(sample_data)
-            return sample_data
-
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        builder = x509.CertificateBuilder().issuer_name(x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
-        ])).subject_name(x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
-        ])).public_key(
-            subject_private_key.public_key()
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        )
-        monkeypatch.setattr(os, "urandom", notrandom)
-        builder = builder.random_serial_number()
-        monkeypatch.undo()
-
-        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
-
-        assert (
-            cert.serial_number == utils.int_from_bytes(sample_data, "big") >> 1
-        )
-        assert utils.bit_length(cert.serial_number) < 160
-
     def test_build_cert_printable_string_country_name(self, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -3759,3 +3724,20 @@ class TestName(object):
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
             x509.Name(["not-a-NameAttribute"])
+
+
+def test_random_serial_number(monkeypatch):
+    sample_data = os.urandom(20)
+
+    def notrandom(size):
+        assert size == len(sample_data)
+        return sample_data
+
+    monkeypatch.setattr(os, "urandom", notrandom)
+
+    serial_number = x509.random_serial_number()
+
+    assert (
+        serial_number == utils.int_from_bytes(sample_data, "big") >> 1
+    )
+    assert utils.bit_length(serial_number) < 160
