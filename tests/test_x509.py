@@ -9,7 +9,6 @@ import datetime
 import ipaddress
 import os
 import warnings
-from contextlib import contextmanager
 
 from pyasn1.codec.der import decoder
 
@@ -1421,21 +1420,12 @@ class TestRSACertificateRequest(object):
             x509.DNSName(u"cryptography.io"),
         ]
 
-    def test_build_cert_random_serial(self, backend):
+    def test_build_cert_random_serial(self, monkeypatch, backend):
         sample_data = os.urandom(20)
 
-        @contextmanager
-        def patchrandom():
-            def notrandom(size):
-                assert size == len(sample_data)
-                return sample_data
-
-            osurandom = os.urandom
-            os.urandom = notrandom
-            try:
-                yield
-            finally:
-                os.urandom = osurandom
+        def notrandom(size):
+            assert size == len(sample_data)
+            return sample_data
 
         subject_private_key = RSA_KEY_2048.private_key(backend)
         issuer_private_key = RSA_KEY_2048.private_key(backend)
@@ -1454,8 +1444,9 @@ class TestRSACertificateRequest(object):
         ).not_valid_after(
             not_valid_after
         )
-        with patchrandom():
-            builder = builder.random_serial_number()
+        monkeypatch.setattr(os, "urandom", notrandom)
+        builder = builder.random_serial_number()
+        monkeypatch.undo()
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
