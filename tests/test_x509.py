@@ -9,6 +9,7 @@ import datetime
 import ipaddress
 import os
 import warnings
+from contextlib import contextmanager
 
 from pyasn1.codec.der import decoder
 
@@ -1419,6 +1420,49 @@ class TestRSACertificateRequest(object):
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
         ]
+
+    def test_build_cert_random_serial(self, backend):
+        sample_data = os.urandom(20)
+
+        @contextmanager
+        def patchrandom():
+            def notrandom(size):
+                assert size == len(sample_data)
+                return sample_data
+
+            osurandom = os.urandom
+            os.urandom = notrandom
+            try:
+                yield
+            finally:
+                os.urandom = osurandom
+
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+        with patchrandom():
+            builder = builder.random_serial_number()
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        assert (
+            cert.serial_number == utils.int_from_bytes(sample_data, "big") >> 1
+        )
+        assert utils.bit_length(cert.serial_number) < 160
 
     def test_build_cert_printable_string_country_name(self, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)

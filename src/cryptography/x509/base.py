@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import datetime
+import os
 from enum import Enum
 
 import six
@@ -469,6 +470,11 @@ class CertificateBuilder(object):
             self._issuer_name, self._subject_name,
             self._public_key, number, self._not_valid_before,
             self._not_valid_after, self._extensions
+        )
+
+    def random_serial_number(self):
+        return self.serial_number(
+            utils.int_from_bytes(os.urandom(20), "big") >> 1
         )
 
     def not_valid_before(self, time):

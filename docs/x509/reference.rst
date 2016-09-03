@@ -637,15 +637,25 @@ X.509 Certificate Builder
     .. method:: serial_number(serial_number)
 
         Sets the certificate's serial number (an integer).  The CA's policy
-        determines how it attributes serial numbers to certificates.  The only
-        requirement is that this number uniquely identify the certificate given
-        the issuer.
+        determines how it attributes serial numbers to certificates. This
+        number must uniquely identify the certificate given the issuer.
+        `CABForum Guidelines`_ require entropy in the serial number
+        to provide protection against hash collision attacks.
 
         :param serial_number: Integer number that will be used by the CA to
             identify this certificate (most notably during certificate
-            revocation checking). Users are encouraged to use a method of
-            generating 20 bytes of entropy, e.g., UUID4. For more information
-            on secure random number generation, see :doc:`/random-numbers`.
+            revocation checking). Users should consider using
+            :meth:`CertificateBuilder.random_serial_number` when possible.
+
+    .. method:: random_serial_number()
+
+        .. versionadded:: 1.6
+
+        Sets the certificate's serial number to a random number. This is a
+        convenience method which will use entropy from ``os.urandom`` to
+        generate a serial number.  For more information on secure random number
+        generation, see :doc:`/random-numbers`.
+
 
     .. method:: not_valid_before(time)
 
@@ -2604,3 +2614,4 @@ Exceptions
 
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
+.. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/
