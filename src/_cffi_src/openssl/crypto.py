@@ -34,15 +34,6 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-
-void Cryptography_CRYPTO_get_mem_functions(
-    void *(**)(size_t, const char *, int),
-    void *(**)(void *, size_t, const char *, int),
-    void (**)(void *, const char *, int));
-int Cryptography_CRYPTO_set_mem_functions(
-    void *(*)(size_t, const char *, int),
-    void *(*)(void *, size_t, const char *, int),
-    void (*)(void *, const char *, int));
 """
 
 MACROS = """
