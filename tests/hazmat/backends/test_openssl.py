@@ -43,7 +43,7 @@ def skip_if_libre_ssl(openssl_version):
 
 class TestLibreSkip(object):
     def test_skip_no(self):
-        assert skip_if_libre_ssl(u"OpenSSL 0.9.8zf 19 Mar 2015") is None
+        assert skip_if_libre_ssl(u"OpenSSL 1.0.2h  3 May 2016") is None
 
     def test_skip_yes(self):
         with pytest.raises(pytest.skip.Exception):
@@ -320,7 +320,7 @@ class TestOpenSSLRSA(object):
                                              key_size=256)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
@@ -495,7 +495,7 @@ class TestOpenSSLRSA(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
+    backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101,
     reason="Requires an OpenSSL version >= 1.0.1"
 )
 class TestOpenSSLCMAC(object):
@@ -506,7 +506,7 @@ class TestOpenSSLCMAC(object):
 
 class TestOpenSSLCreateX509CSR(object):
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_dsa_keys(self):
@@ -516,7 +516,7 @@ class TestOpenSSLCreateX509CSR(object):
             backend.create_x509_csr(object(), private_key, hashes.SHA1())
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_ec_keys(self):
@@ -537,7 +537,7 @@ class TestOpenSSLSignX509Certificate(object):
             )
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_dsa_private_key_is_unsupported(self):
@@ -561,7 +561,7 @@ class TestOpenSSLSignX509Certificate(object):
             builder.sign(private_key, hashes.SHA512(), backend)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_ec_private_key_is_unsupported(self):
@@ -594,7 +594,7 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_dsa_private_key_is_unsupported(self):
@@ -612,7 +612,7 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             builder.sign(private_key, hashes.SHA1(), backend)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_ec_private_key_is_unsupported(self):
@@ -728,10 +728,18 @@ class TestGOSTCertificate(object):
             x509.load_der_x509_certificate,
             backend
         )
-        with pytest.raises(ValueError) as exc:
-            cert.subject
+        if (
+            not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
+            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            with pytest.raises(ValueError) as exc:
+                cert.subject
 
-        # We assert on the message in this case because if the certificate
-        # fails to load it will also raise a ValueError and this test could
-        # erroneously pass.
-        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
+            # We assert on the message in this case because if the certificate
+            # fails to load it will also raise a ValueError and this test could
+            # erroneously pass.
+            assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
+        else:
+            assert cert.subject.get_attributes_for_oid(
+                x509.ObjectIdentifier("1.2.643.3.131.1.1")
+            )[0].value == "007710474375"

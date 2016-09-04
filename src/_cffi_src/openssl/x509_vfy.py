@@ -27,21 +27,7 @@ typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 
 typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
-
-typedef struct x509_store_ctx_st X509_STORE_CTX;
-struct x509_store_ctx_st {
-    X509_STORE *ctx;
-    int current_method;
-    X509 *cert;
-    Cryptography_STACK_OF_X509 *untrusted;
-    Cryptography_STACK_OF_X509_CRL *crls;
-    X509_VERIFY_PARAM *param;
-    void *other_ctx;
-    int (*verify)(X509_STORE_CTX *);
-    int (*verify_cb)(int, X509_STORE_CTX *);
-    int (*get_issuer)(X509 **, X509_STORE_CTX *, X509 *);
-    ...;
-};
+typedef ... X509_STORE_CTX;
 
 /* While these are defined in the source as ints, they're tagged here
    as longs, just in case they ever grow to large, such as what we saw
@@ -209,8 +195,9 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
+/* OpenSSL 1.0.2beta2+ verification error codes */
+#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
+    !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
@@ -225,8 +212,9 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
-/* OpenSSL 1.0.2+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
+/* OpenSSL 1.0.2beta2+ verification parameters */
+#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
+    !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;

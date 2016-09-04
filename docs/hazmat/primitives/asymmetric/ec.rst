@@ -12,13 +12,12 @@ Elliptic curve cryptography
 
     Generate a new private key on ``curve`` for use with ``backend``.
 
-    :param curve: A :class:`EllipticCurve` provider.
+    :param curve: An instance of :class:`EllipticCurve`.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-    :returns: A new instance of a :class:`EllipticCurvePrivateKey` provider.
+    :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
 Elliptic Curve Signature Algorithms
@@ -31,9 +30,8 @@ Elliptic Curve Signature Algorithms
     The ECDSA signature algorithm first standardized in NIST publication
     `FIPS 186-3`_, and later in `FIPS 186-4`_.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     .. doctest::
 
@@ -47,6 +45,16 @@ Elliptic Curve Signature Algorithms
         >>> signer.update(b"this is some data I'd like")
         >>> signer.update(b" to sign")
         >>> signature = signer.finalize()
+
+    There is a shortcut to sign sufficiently short messages directly:
+
+    .. doctest::
+
+        >>> data = b"this is some data I'd like to sign"
+        >>> signature = private_key.sign(
+        ...     data,
+        ...     ec.ECDSA(hashes.SHA256())
+        ... )
 
     The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
     described in :rfc:`3279`. This can be decoded using
@@ -78,12 +86,10 @@ Elliptic Curve Signature Algorithms
         Convert a collection of numbers into a private key suitable for doing
         actual cryptographic operations.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-        :returns: A new instance of a :class:`EllipticCurvePrivateKey`
-            provider.
+        :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
 .. class:: EllipticCurvePublicNumbers(x, y, curve)
@@ -115,12 +121,10 @@ Elliptic Curve Signature Algorithms
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-        :returns: A new instance of a :class:`EllipticCurvePublicKey`
-            provider.
+        :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
     .. method:: encode_point()
 
@@ -207,7 +211,7 @@ Currently `cryptography` only supports NIST curves, none of which are
 considered "safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and
 Tanja Lange.
 
-All named curves are providers of :class:`EllipticCurve`.
+All named curves are instances of :class:`EllipticCurve`.
 
 .. class:: SECT571K1
 
@@ -371,8 +375,8 @@ Key Interfaces
         The signature is formatted as DER-encoded bytes, as specified in
         :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -400,6 +404,20 @@ Key Interfaces
         :return: :class:`EllipticCurvePublicKey`
 
         The EllipticCurvePublicKey object for this private key.
+
+    .. method:: sign(data, signature_algorithm)
+
+        .. versionadded:: 1.5
+
+        Sign one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes data: The message string to sign.
+
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`, such as :class:`ECDSA`.
+
+        :return bytes: Signature.
 
 
 .. class:: EllipticCurvePrivateKeyWithSerialization
@@ -455,8 +473,8 @@ Key Interfaces
         :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -489,6 +507,23 @@ Key Interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+    .. method:: verify(signature, data, signature_algorithm)
+
+        .. versionadded:: 1.5
+
+        Verify one block of data was signed by the private key associated
+        with this public key.
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The message string that was signed.
+
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: EllipticCurvePublicKeyWithSerialization

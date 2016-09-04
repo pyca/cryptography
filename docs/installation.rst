@@ -34,16 +34,18 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
+* ``OpenSSL 1.1.0``
 
 .. warning::
     OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography
-    will drop support for it in a future release.
+    will drop support for it in the next release.
 
-On Windows
-----------
+Building cryptography on Windows
+--------------------------------
 
 The wheel package on Windows is a statically linked build (as of 0.5) so all
-dependencies are included. Just run
+dependencies are included. To install ``cryptography``, you will typically
+just run
 
 .. code-block:: console
 
@@ -192,7 +194,7 @@ users with pip 8 or above you only need one step:
 
     $ pip install cryptography
 
-If you want to build cryptography yourself or are on an older OS X version
+If you want to build cryptography yourself or are on an older OS X version,
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
 development tools.  To install the Xcode command line tools (on OS X 10.9+)

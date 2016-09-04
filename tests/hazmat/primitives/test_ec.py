@@ -503,6 +503,28 @@ class TestECDSAVectors(object):
         else:
             verifier.verify()
 
+    def test_sign(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signature = private_key.sign(message, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, algorithm)
+        verifier.update(message)
+        verifier.verify()
+
+    def test_verify(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signer = private_key.signer(algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(signature, message, algorithm)
+
 
 class TestECNumbersEquality(object):
     def test_public_numbers_eq(self):

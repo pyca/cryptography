@@ -40,7 +40,6 @@ static const int BIO_C_FILE_SEEK;
 static const int BIO_C_FILE_TELL;
 static const int BIO_TYPE_NONE;
 static const int BIO_TYPE_NBIO_TEST;
-static const int BIO_TYPE_BER;
 static const int BIO_TYPE_BIO;
 static const int BIO_TYPE_DESCRIPTOR;
 static const int BIO_FLAGS_READ;
@@ -88,7 +87,6 @@ int BIO_method_type(const BIO *);
 MACROS = """
 /* These added const to BIO_METHOD in 1.1.0 */
 BIO *BIO_new(BIO_METHOD *);
-int BIO_set(BIO *, BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
 BIO_METHOD *BIO_s_file(void);
 BIO_METHOD *BIO_s_fd(void);

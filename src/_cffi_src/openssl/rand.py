@@ -13,7 +13,6 @@ static const long Cryptography_HAS_EGD;
 """
 
 FUNCTIONS = """
-void ERR_load_RAND_strings(void);
 void RAND_seed(const void *, int);
 void RAND_add(const void *, int, double);
 int RAND_status(void);
@@ -24,6 +23,12 @@ int RAND_bytes(unsigned char *, int);
 """
 
 MACROS = """
+/* ERR_load_RAND_strings started returning an int in 1.1.0. Unfortunately we
+   can't declare a conditional signature like that. Since it always returns
+   1 we'll just lie about the signature to preserve compatibility for
+   pyOpenSSL (which calls this in its rand.py as of mid-2016) */
+void ERR_load_RAND_strings(void);
+
 /* RAND_cleanup became a macro in 1.1.0 */
 void RAND_cleanup(void);
 
@@ -33,7 +38,7 @@ int RAND_query_egd_bytes(const char *, unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """
-#if defined(LIBRESSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if defined(LIBRESSL_VERSION_NUMBER) || CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 static const long Cryptography_HAS_EGD = 0;
 int (*RAND_egd)(const char *) = NULL;
 int (*RAND_egd_bytes)(const char *, int) = NULL;

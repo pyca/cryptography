@@ -12,7 +12,7 @@ TYPES = """
 typedef ... EVP_CIPHER;
 typedef ... EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct { ...; } EVP_MD_CTX;
+typedef ... EVP_MD_CTX;
 
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
@@ -28,6 +28,7 @@ static const int EVP_CTRL_GCM_SET_TAG;
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
+static const int Cryptography_HAS_SCRYPT;
 """
 
 FUNCTIONS = """
@@ -59,7 +60,6 @@ int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
-int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
 const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
 int EVP_MD_size(const EVP_MD *);
@@ -67,7 +67,6 @@ int EVP_MD_size(const EVP_MD *);
 EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
-int EVP_PKEY_bits(EVP_PKEY *);
 int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
 DSA *EVP_PKEY_get1_DSA(EVP_PKEY *);
@@ -98,13 +97,25 @@ const EVP_MD *EVP_sha512(void);
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
 
+EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
+void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
+int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
+int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                  const unsigned char *, size_t);
+int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
+int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                    const unsigned char *, size_t);
+int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
+int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+
 int EVP_PKEY_set1_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_set1_DSA(EVP_PKEY *, DSA *);
 int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
 
 int EVP_PKEY_get_attr_count(const EVP_PKEY *);
 int EVP_PKEY_get_attr_by_NID(const EVP_PKEY *, int, int);
-int EVP_PKEY_get_attr_by_OBJ(const EVP_PKEY *, ASN1_OBJECT *, int);
 X509_ATTRIBUTE *EVP_PKEY_get_attr(const EVP_PKEY *, int);
 X509_ATTRIBUTE *EVP_PKEY_delete_attr(EVP_PKEY *, int);
 int EVP_PKEY_add1_attr(EVP_PKEY *, X509_ATTRIBUTE *);
@@ -117,8 +128,6 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
-EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
-
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
@@ -130,6 +139,12 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 """
 
 MACROS = """
+/* PKCS8_PRIV_KEY_INFO * became const in 1.1.0 */
+EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
+
+/* EVP_PKEY * became const in 1.1.0 */
+int EVP_PKEY_bits(EVP_PKEY *);
+
 /* became a macro in 1.1.0 */
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
 
@@ -149,20 +164,9 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
-/* These aren't macros, but must be in this section because they're not
-   available in 0.9.8. */
-EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
-void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
-int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
-int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
-                  const unsigned char *, size_t);
-int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
-int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
-                    const unsigned char *, size_t);
-int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
-int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
+                   uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                   size_t);
 """
 
 CUSTOMIZATIONS = """
@@ -189,17 +193,26 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
 }
 
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
     return EVP_MD_CTX_create();
 #else
     return EVP_MD_CTX_new();
 #endif
 }
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
     EVP_MD_CTX_destroy(ctx);
 #else
     EVP_MD_CTX_free(ctx);
 #endif
 }
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER) \
+    || defined(OPENSSL_NO_SCRYPT)
+static const long Cryptography_HAS_SCRYPT = 0;
+int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
+                      uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+                      size_t) = NULL;
+#else
+static const long Cryptography_HAS_SCRYPT = 1;
+#endif
 """

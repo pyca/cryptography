@@ -16,6 +16,8 @@ from pyasn1_modules import rfc2459
 
 import pytest
 
+import pytz
+
 import six
 
 from cryptography import utils, x509
@@ -29,7 +31,8 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature
 )
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
+    NameOID, SignatureAlgorithmOID
 )
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
@@ -73,6 +76,10 @@ class TestCertificateRevocationList(object):
         fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
         assert fingerprint == b"3234b0cb4c0cedf6423724b736729dcfc9e441ef"
         assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        assert (
+            crl.signature_algorithm_oid ==
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
 
     def test_load_der_crl(self, backend):
         crl = _load_cert(
@@ -491,6 +498,9 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"2b619ed04bfc9c3b08eb677d272192286a0947a8"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
+        assert (
+            cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
+        )
 
     def test_cert_serial_number(self, backend):
         cert = _load_cert(
@@ -1051,6 +1061,10 @@ class TestRSACertificateRequest(object):
     def test_load_rsa_certificate_request(self, path, loader_func, backend):
         request = _load_cert(path, loader_func, backend)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert (
+            request.signature_algorithm_oid ==
+            SignatureAlgorithmOID.RSA_WITH_SHA1
+        )
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
@@ -1689,18 +1703,85 @@ class TestCertificateBuilder(object):
 
     def test_serial_number_must_be_non_negative(self):
         with pytest.raises(ValueError):
-            x509.CertificateBuilder().serial_number(-10)
+            x509.CertificateBuilder().serial_number(-1)
+
+    def test_serial_number_must_be_positive(self):
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder().serial_number(0)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_minimal_serial_number(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            1
+        ).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        cert = builder.sign(subject_private_key, hashes.SHA256(), backend)
+        assert cert.serial_number == 1
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_biggest_serial_number(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            (1 << 159) - 1
+        ).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        cert = builder.sign(subject_private_key, hashes.SHA256(), backend)
+        assert cert.serial_number == (1 << 159) - 1
 
     def test_serial_number_must_be_less_than_160_bits_long(self):
         with pytest.raises(ValueError):
-            # 2 raised to the 160th power is actually 161 bits
-            x509.CertificateBuilder().serial_number(2 ** 160)
+            x509.CertificateBuilder().serial_number(1 << 159)
 
     def test_serial_number_may_only_be_set_once(self):
         builder = x509.CertificateBuilder().serial_number(10)
 
         with pytest.raises(ValueError):
             builder.serial_number(20)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_aware_not_valid_after(self, backend):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().not_valid_after(time)
+        cert_builder = cert_builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            utc_time - datetime.timedelta(days=365)
+        )
+
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_after == utc_time
 
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
@@ -1723,6 +1804,30 @@ class TestCertificateBuilder(object):
             builder.not_valid_after(
                 datetime.datetime.now()
             )
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_aware_not_valid_before(self, backend):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().not_valid_before(time)
+        cert_builder = cert_builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_after(
+            utc_time + datetime.timedelta(days=366)
+        )
+
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_before == utc_time
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
@@ -1935,7 +2040,7 @@ class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_dsa_private_key(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
 
         issuer_private_key = DSA_KEY_2048.private_key(backend)
@@ -1983,7 +2088,7 @@ class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_ec_private_key(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
 
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -2537,7 +2642,7 @@ class TestCertificateSigningRequestBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_build_ca_request_with_ec(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
 
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -2567,7 +2672,7 @@ class TestCertificateSigningRequestBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     def test_build_ca_request_with_dsa(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
 
         private_key = DSA_KEY_2048.private_key(backend)
@@ -3587,6 +3692,14 @@ class TestName(object):
         assert hash(name1) == hash(name2)
         assert hash(name1) != hash(name3)
 
+    def test_iter_input(self):
+        attrs = [
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ]
+        name = x509.Name(iter(attrs))
+        assert list(name) == attrs
+        assert list(name) == attrs
+
     def test_repr(self):
         name = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
@@ -3607,3 +3720,24 @@ class TestName(object):
                 "=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, val"
                 "ue=u'PyCA')>])>"
             )
+
+    def test_not_nameattribute(self):
+        with pytest.raises(TypeError):
+            x509.Name(["not-a-NameAttribute"])
+
+
+def test_random_serial_number(monkeypatch):
+    sample_data = os.urandom(20)
+
+    def notrandom(size):
+        assert size == len(sample_data)
+        return sample_data
+
+    monkeypatch.setattr(os, "urandom", notrandom)
+
+    serial_number = x509.random_serial_number()
+
+    assert (
+        serial_number == utils.int_from_bytes(sample_data, "big") >> 1
+    )
+    assert utils.bit_length(serial_number) < 160

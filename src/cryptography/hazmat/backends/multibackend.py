@@ -9,7 +9,8 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend,
     DSABackend, EllipticCurveBackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, ScryptBackend,
+    X509Backend
 )
 
 
@@ -25,6 +26,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
 @utils.register_interface(DHBackend)
+@utils.register_interface(ScryptBackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -474,3 +476,8 @@ class MultiBackend(object):
             "This backend does not support Diffie-Hellman",
             _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
         )
+
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        for b in self._filtered_backends(ScryptBackend):
+            return b.derive_scrypt(key_material, salt, length, n, r, p)
+        raise UnsupportedAlgorithm("This backend does not support scrypt.")

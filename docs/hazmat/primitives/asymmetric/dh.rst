@@ -83,9 +83,8 @@ Group parameters
         Generate a DH private key. This method can be used to generate many
         new private keys from a single set of parameters.
 
-        :return: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            instance.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
 
 .. class:: DHParametersWithSerialization

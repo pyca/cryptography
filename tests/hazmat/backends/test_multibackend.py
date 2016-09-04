@@ -13,7 +13,8 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend,
     DSABackend, EllipticCurveBackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, ScryptBackend,
+    X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -252,6 +253,12 @@ class DummyDHBackend(object):
         pass
 
     def dh_parameters_supported(self, p, g):
+        pass
+
+
+@utils.register_interface(ScryptBackend)
+class DummyScryptBackend(object):
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
         pass
 
 
@@ -609,3 +616,11 @@ class TestMultiBackend(object):
             backend.generate_dh_private_key_and_parameters(2, 512)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
             backend.dh_parameters_supported(2, 3)
+
+    def test_scrypt(self):
+        backend = MultiBackend([DummyScryptBackend()])
+        backend.derive_scrypt(b"key", b"salt", 1, 1, 1, 1)
+
+        backend = MultiBackend([DummyBackend])
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.derive_scrypt(b"key", b"salt", 1, 1, 1, 1)

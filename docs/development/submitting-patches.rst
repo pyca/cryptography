@@ -126,6 +126,11 @@ should begin with the "Hazardous Materials" warning:
 
     .. hazmat::
 
+Always prefer terminology that is most broadly accepted. For example:
+
+* When referring to class instances use "an instance of ``Foo``"
+  instead of "a ``Foo`` provider".
+
 When referring to a hypothetical individual (such as "a person receiving an
 encrypted message") use gender neutral pronouns (they/them/their).
 

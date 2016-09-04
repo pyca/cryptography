@@ -8,6 +8,7 @@ import base64
 import calendar
 import collections
 import itertools
+import sys
 from contextlib import contextmanager
 
 import six
@@ -17,7 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -118,6 +119,9 @@ def _pem_password_cb(buf, size, writing, userdata_handle):
 @utils.register_interface(RSABackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
+@utils.register_interface_if(
+    binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
+)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -189,8 +193,19 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
+    def _build_openssl_digest_name(self, algorithm):
+        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+            alg = "{0}{1}".format(
+                algorithm.name, algorithm.digest_size * 8
+            ).encode("ascii")
+        else:
+            alg = algorithm.name.encode("ascii")
+
+        return alg
+
     def hash_supported(self, algorithm):
-        digest = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        name = self._build_openssl_digest_name(algorithm)
+        digest = self._lib.EVP_get_digestbyname(name)
         return digest != self._ffi.NULL
 
     def hmac_supported(self, algorithm):
@@ -608,29 +623,10 @@ class Backend(object):
 
         return _DSAParameters(self, ctx)
 
-    def _dup_dsa_params(self, dsa_cdata):
-        dsa_cdata_dup = self._lib.DSA_new()
-        self.openssl_assert(dsa_cdata_dup != self._ffi.NULL)
-        dsa_cdata_dup = self._ffi.gc(dsa_cdata_dup, self._lib.DSA_free)
-        p = self._ffi.new("BIGNUM **")
-        q = self._ffi.new("BIGNUM **")
-        g = self._ffi.new("BIGNUM **")
-        self._lib.DSA_get0_pqg(dsa_cdata, p, q, g)
-        self.openssl_assert(p[0] != self._ffi.NULL)
-        self.openssl_assert(q[0] != self._ffi.NULL)
-        self.openssl_assert(g[0] != self._ffi.NULL)
-        p_dup = self._lib.BN_dup(p[0])
-        q_dup = self._lib.BN_dup(q[0])
-        g_dup = self._lib.BN_dup(g[0])
-        self.openssl_assert(p_dup != self._ffi.NULL)
-        self.openssl_assert(q_dup != self._ffi.NULL)
-        self.openssl_assert(g_dup != self._ffi.NULL)
-        res = self._lib.DSA_set0_pqg(dsa_cdata_dup, p_dup, q_dup, g_dup)
-        self.openssl_assert(res == 1)
-        return dsa_cdata_dup
-
     def generate_dsa_private_key(self, parameters):
-        ctx = self._dup_dsa_params(parameters._dsa_cdata)
+        ctx = self._lib.DSAparams_dup(parameters._dsa_cdata)
+        self.openssl_assert(ctx != self._ffi.NULL)
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         self._lib.DSA_generate_key(ctx)
         evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
@@ -723,7 +719,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "Certificate signing requests aren't implemented for DSA"
@@ -801,7 +797,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "Certificate signatures aren't implemented for DSA"
@@ -893,7 +889,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "CRL signatures aren't implemented for DSA"
@@ -1083,10 +1079,10 @@ class Backend(object):
                 self._handle_key_loading_error()
 
     def load_der_private_key(self, data, password):
-        # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
-        # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
-        # 0.9.8 so we can't use it. Instead we sequentially try to load it 2
-        # different ways. First we'll try to load it as a traditional key
+        # OpenSSL has a function called d2i_AutoPrivateKey that in theory
+        # handles this automatically, however it doesn't handle encrypted
+        # private keys. Instead we try to load the key two different ways.
+        # First we'll try to load it as a traditional key.
         bio_data = self._bytes_to_bio(data)
         key = self._evp_pkey_from_der_traditional_key(bio_data, password)
         if key:
@@ -1499,7 +1495,9 @@ class Backend(object):
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("EC point not on curve")
 
             res = get_func(group, point, check_x, check_y, bn_ctx)
             self.openssl_assert(res == 1)
@@ -1821,6 +1819,14 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         return codes[0] == 0
+
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        buf = self._ffi.new("unsigned char[]", length)
+        res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,
+                                       len(salt), n, r, p, sys.maxsize // 2,
+                                       buf, length)
+        self.openssl_assert(res == 1)
+        return self._ffi.buffer(buf)[:]
 
 
 class GetCipherByName(object):

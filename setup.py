@@ -58,10 +58,11 @@ else:
     setup_requirements.append("cffi>=1.4.1")
 
 test_requirements = [
-    "pytest",
+    "pytest>=2.9.0",
     "pretend",
     "iso8601",
     "pyasn1_modules",
+    "pytz",
 ]
 if sys.version_info[:2] > (2, 6):
     test_requirements.append("hypothesis>=1.11.4")

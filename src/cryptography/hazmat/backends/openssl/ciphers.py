@@ -25,9 +25,9 @@ class _CipherContext(object):
         self._tag = None
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
-            self._block_size = self._cipher.block_size
+            self._block_size_bytes = self._cipher.block_size // 8
         else:
-            self._block_size = 1
+            self._block_size_bytes = 1
 
         ctx = self._backend._lib.EVP_CIPHER_CTX_new()
         ctx = self._backend._ffi.gc(
@@ -102,7 +102,7 @@ class _CipherContext(object):
 
     def update(self, data):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     len(data) + self._block_size - 1)
+                                     len(data) + self._block_size_bytes - 1)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                   len(data))
@@ -118,7 +118,7 @@ class _CipherContext(object):
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
 
-        buf = self._backend._ffi.new("unsigned char[]", self._block_size)
+        buf = self._backend._ffi.new("unsigned char[]", self._block_size_bytes)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
@@ -145,13 +145,12 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, modes.GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
-                "unsigned char[]", block_byte_size
+                "unsigned char[]", self._block_size_bytes
             )
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend._lib.EVP_CTRL_GCM_GET_TAG,
-                block_byte_size, tag_buf
+                self._block_size_bytes, tag_buf
             )
             self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]

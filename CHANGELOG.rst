@@ -1,10 +1,53 @@
 Changelog
 =========
 
-1.5 - `master`_
+1.6 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* Deprecated support for OpenSSL 1.0.0. Support will be removed in
+  ``cryptography`` 1.7.
+* Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
+  :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
+  1.1.0.
+* Added
+  :attr:`~cryptography.x509.Certificate.signature_algorithm_oid` support to
+  :class:`~cryptography.x509.Certificate`.
+* Added
+  :attr:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateSigningRequest`.
+* Added
+  :attr:`~cryptography.x509.CertificateRevocationList.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateRevocationList`.
+* Added support for :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`
+  when using OpenSSL 1.1.0.
+* Added support for generating a
+  :meth:`~cryptography.x509.random_serial_number`.
+
+
+1.5 - 2016-08-26
+~~~~~~~~~~~~~~~~
+
+* Added
+  :func:`~cryptography.hazmat.primitives.asymmetric.padding.calculate_max_pss_salt_length`.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.verify`
+  methods to DSA keys.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
+  methods to ECDSA keys.
+* Switched back to the older callback model on Python 3.5 in order to mitigate
+  the locking callback problem with OpenSSL <1.1.0.
+* :class:`~cryptography.x509.CertificateBuilder`,
+  :class:`~cryptography.x509.CertificateRevocationListBuilder`, and
+  :class:`~cryptography.x509.RevokedCertificateBuilder` now accept timezone
+  aware ``datetime`` objects as method arguments
+* ``cryptography`` now supports OpenSSL 1.1.0 as a compilation target.
 
 
 1.4 - 2016-06-04

@@ -21,6 +21,12 @@ class TestOpenSSL(object):
 
     def test_crypto_lock_init(self):
         b = Binding()
+        if (
+            b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
+            not b.lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            pytest.skip("Requires an older OpenSSL. Must be < 1.1.0")
+
         b.init_static_locks()
         lock_cb = b.lib.CRYPTO_get_locking_callback()
         assert lock_cb != b.ffi.NULL
@@ -138,7 +144,7 @@ class TestOpenSSL(object):
     def test_conditional_removal(self):
         b = Binding()
 
-        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+        if b.lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER:
             assert b.lib.CMAC_Init
         else:
             with pytest.raises(AttributeError):

@@ -1081,6 +1081,10 @@ class TestRSAPKCS1Verification(object):
 
 
 class TestPSS(object):
+    def test_calculate_max_pss_salt_length(self):
+        with pytest.raises(TypeError):
+            padding.calculate_max_pss_salt_length(object(), hashes.SHA256())
+
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
             padding.PSS(
@@ -1981,10 +1985,11 @@ class TestRSAPrimeFactorRecovery(object):
             private["private_exponent"]
         )
         # Unfortunately there is no convention on which prime should be p
-        # and which one q. The function we use always makes p < q, but the
+        # and which one q. The function we use always makes p > q, but the
         # NIST vectors are not so consistent. Accordingly, we verify we've
         # recovered the proper (p, q) by sorting them and asserting on that.
         assert sorted([p, q]) == sorted([private["p"], private["q"]])
+        assert p > q
 
     def test_invalid_recover_prime_factors(self):
         with pytest.raises(ValueError):
