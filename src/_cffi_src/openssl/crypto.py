@@ -136,7 +136,7 @@ void Cryptography_CRYPTO_get_mem_functions(
     void *(**r)(void *, size_t, const char *, int),
     void (**f)(void *, const char *, int)
 ) {
-    CRYPTO_get_memfunctions(m, r, f);
+    CRYPTO_get_mem_functions(m, r, f);
 }
 
 int Cryptography_CRYPTO_set_mem_functions(
