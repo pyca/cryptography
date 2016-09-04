@@ -35,12 +35,14 @@ static const int CRYPTO_LOCK_SSL;
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
 
-void CRYPTO_get_mem_functions(void *(**)(size_t, const char *, int),
-                              void *(**)(void *, size_t, const char *, int),
-                              void (**)(void *, const char *, int));
-int CRYPTO_set_mem_functions(void *(*)(size_t, const char *, int),
-                             void *(*)(void *, size_t, const char *, int),
-                             void (*)(void *, const char *, int));
+void Cryptography_CRYPTO_get_mem_functions(
+    void *(**)(size_t, const char *, int),
+    void *(**)(void *, size_t, const char *, int),
+    void (**)(void *, const char *, int));
+int Cryptography_CRYPTO_set_mem_functions(
+    void *(*)(size_t, const char *, int),
+    void *(*)(void *, size_t, const char *, int),
+    void (*)(void *, const char *, int));
 """
 
 MACROS = """
@@ -111,15 +113,36 @@ void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* These functions have a significantly different signature pre-1.1.0. since
+ * they are for testing only, we don't bother to expose them on older OpenSSLs.
+ */
 static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
-void (*CRYPTO_get_mem_functions)(void *(**)(size_t, const char *, int),
-                                 void *(**)(void *, size_t, const char *, int),
-                                 void (**)(void *, const char *, int)) = NULL;
-int (*CRYPTO_set_mem_functions)(void *(*)(size_t, const char *, int),
-                                void *(*)(void *, size_t, const char *, int),
-                                void (*)(void *, const char *, int)) = NULL;
+void (*Cryptography_CRYPTO_get_mem_functions)(
+    void *(**)(size_t, const char *, int),
+    void *(**)(void *, size_t, const char *, int),
+    void (**)(void *, const char *, int)) = NULL;
+int (*Cryptography_CRYPTO_set_mem_functions)(
+    void *(*)(size_t, const char *, int),
+    void *(*)(void *, size_t, const char *, int),
+    void (*)(void *, const char *, int)) = NULL;
 
 #else
 static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
+
+void Cryptography_CRYPTO_get_mem_functions(
+    void *(**m)(size_t, const char *, int),
+    void *(**r)(void *, size_t, const char *, int),
+    void (**f)(void *, const char *, int)
+) {
+    CRYPTO_get_memfunctions(m, r, f);
+}
+
+int Cryptography_CRYPTO_set_mem_functions(
+    void *(*m)(size_t, const char *, int),
+    void *(*r)(void *, size_t, const char *, int),
+    void (*f)(void *, const char *, int)
+) {
+    return CRYPTO_set_mem_functions(m, r, f);
+}
 #endif
 """
