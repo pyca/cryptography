@@ -34,15 +34,6 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-
-void Cryptography_CRYPTO_get_mem_functions(
-    void *(**)(size_t, const char *, int),
-    void *(**)(void *, size_t, const char *, int),
-    void (**)(void *, const char *, int));
-int Cryptography_CRYPTO_set_mem_functions(
-    void *(*)(size_t, const char *, int),
-    void *(*)(void *, size_t, const char *, int),
-    void (*)(void *, const char *, int));
 """
 
 MACROS = """
@@ -68,6 +59,16 @@ void OPENSSL_free(void *);
 
 /* This was removed in 1.1.0 */
 void CRYPTO_lock(int, int, const char *, int);
+
+/* Signature changed significantly in 1.1.0, only expose there for sanity */
+void Cryptography_CRYPTO_get_mem_functions(
+    void *(**)(size_t, const char *, int),
+    void *(**)(void *, size_t, const char *, int),
+    void (**)(void *, const char *, int));
+int Cryptography_CRYPTO_set_mem_functions(
+    void *(*)(size_t, const char *, int),
+    void *(*)(void *, size_t, const char *, int),
+    void (*)(void *, const char *, int));
 """
 
 CUSTOMIZATIONS = """
