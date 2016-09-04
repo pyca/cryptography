@@ -106,7 +106,7 @@ Algorithms
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
     block cipher standardized by NIST. Triple DES has known crypto-analytic
     flaws, however none of them currently enable a practical attack.
-    Nonetheless, Triples DES is not recommended for new applications because it
+    Nonetheless, Triple DES is not recommended for new applications because it
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key. This must be kept secret. Either ``64``,
