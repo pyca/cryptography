@@ -113,7 +113,7 @@ static const long CRYPTO_LOCK_SSL = 0;
 void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
 /* These functions have a significantly different signature pre-1.1.0. since
  * they are for testing only, we don't bother to expose them on older OpenSSLs.
  */
