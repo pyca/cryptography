@@ -315,5 +315,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
-    ]
+    ],
+    "Cryptography_HAS_MEM_FUNCTIONS": [
+        "CRYPTO_get_mem_functions",
+        "CRYPTO_set_mem_functions",
+    ],
 }
