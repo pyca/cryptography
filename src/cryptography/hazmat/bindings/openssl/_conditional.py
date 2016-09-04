@@ -310,4 +310,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_PKEY_DHX": [
         "EVP_PKEY_DHX",
     ],
+    "Cryptography_HAS_MEM_FUNCTIONS": [
+        "CRYPTO_get_mem_functions",
+        "CRYPTO_set_mem_functions",
+    ],
 }

@@ -10,6 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS;
+static const long Cryptography_HAS_MEM_FUNCTIONS;
 
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
@@ -108,5 +109,18 @@ static const long CRYPTO_READ = 0;
 static const long CRYPTO_LOCK_SSL = 0;
 #endif
 void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
+void (*CRYPTO_get_mem_functions)(void *(**)(size_t, const char *, int),
+                                 void *(**)(void *, size_t, const char *, int),
+                                 void (**)(void *, const char *, int)) = NULL;
+int (*CRYPTO_set_mem_functions)(void *(*)(size_t, const char *, int),
+                                void *(*)(void *, size_t, const char *, int),
+                                void (*)(void *, const char *, int)) = NULL;
+
+#else
+static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
 #endif
 """
