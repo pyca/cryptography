@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 import subprocess
 import sys
@@ -15,6 +16,7 @@ import pytest
 MEMORY_LEAK_SCRIPT = """
 def main():
     import gc
+    import json
     import sys
 
     import cffi
@@ -34,12 +36,11 @@ def main():
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = libc_lib.malloc(size)
-        heap[ptr] = (size, libc_ffi.string(path), line)
+        heap[ptr] = (size, path, line)
         return ptr
 
     @ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
-        # TODO: this may need to be `heap.pop(ptr)`
         del heap[ptr]
         new_ptr = libc_lib.realloc(ptr, size)
         heap[new_ptr] = (size, path, line)
@@ -59,14 +60,23 @@ def main():
     Binding()
 
     start_heap = set(heap)
+
     func()
     gc.collect()
     gc.collect()
     gc.collect()
-    after_heap = set(heap)
 
-    if after_heap - start_heap:
-        sys.stderr.write(repr(heap))
+    remaining = set(heap) - start_heap
+
+    if remaining:
+        sys.stderr.write(json.dumps(dict(
+            (int(libc_ffi.cast("size_t", ptr)), {
+                "size": heap[ptr][0],
+                "path": libc_ffi.string(heap[ptr][1]),
+                "line": heap[ptr][2]
+            })
+            for ptr in remaining
+        )))
         sys.exit(1)
 
 main()
@@ -76,10 +86,16 @@ main()
 def assert_no_memory_leaks(s):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
-    subprocess.check_call(
+    proc = subprocess.Popen(
         [sys.executable, "-c", "{}\n\n{}".format(s, MEMORY_LEAK_SCRIPT)],
         env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
+    proc.wait()
+    if proc.returncode != 0:
+        out = json.load(proc.stdout)
+        raise AssertionError(out)
 
 
 class TestAssertNoMemoryLeaks(object):
