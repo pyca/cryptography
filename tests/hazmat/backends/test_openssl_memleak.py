@@ -14,25 +14,24 @@ import pytest
 
 MEMORY_LEAK_SCRIPT = """
 def main():
-    from cryptography.hazmat.bindings.openssl.binding import Binding
+    from cryptography.hazmat.bindings._openssl import ffi, lib
 
-    b = Binding()
     heap = {}
 
-    orig_malloc = b.ffi.new("void *(**)(size_t, const char *, int)")
-    orig_realloc = b.ffi.new("void *(**)(void *, size_t, const char *, int)")
-    orig_free = b.ffi.new("void(**)(void *, const char *, int)")
-    b.lib.Cryptography_CRYPTO_get_mem_functions(
+    orig_malloc = ffi.new("void *(**)(size_t, const char *, int)")
+    orig_realloc = ffi.new("void *(**)(void *, size_t, const char *, int)")
+    orig_free = ffi.new("void(**)(void *, const char *, int)")
+    lib.Cryptography_CRYPTO_get_mem_functions(
         orig_malloc, orig_realloc, orig_free
     )
 
-    @b.ffi.callback("void *(size_t, const char *, int)")
+    @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = orig_malloc[0](size, path, line)
         heap[ptr] = (size, path, line)
         return ptr
 
-    @b.ffi.callback("void *(void *, size_t, const char *, int)")
+    @ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         # TODO: this may need to be `heap.pop(ptr)`
         del heap[ptr]
@@ -40,17 +39,17 @@ def main():
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
-    @b.ffi.callback("void(void *, const char *, int)")
+    @ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
         del heap[ptr]
         orig_free[0](ptr, path, line)
 
-    result = b.lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
+    result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1, "x1"
     try:
         func()
     finally:
-        result = b.lib.Cryptography_CRYPTO_set_mem_functions(
+        result = lib.Cryptography_CRYPTO_set_mem_functions(
             orig_malloc, orig_realloc, orig_free
         )
         assert result == 1, "x2"
