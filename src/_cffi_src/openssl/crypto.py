@@ -61,10 +61,6 @@ void OPENSSL_free(void *);
 void CRYPTO_lock(int, int, const char *, int);
 
 /* Signature changed significantly in 1.1.0, only expose there for sanity */
-void Cryptography_CRYPTO_get_mem_functions(
-    void *(**)(size_t, const char *, int),
-    void *(**)(void *, size_t, const char *, int),
-    void (**)(void *, const char *, int));
 int Cryptography_CRYPTO_set_mem_functions(
     void *(*)(size_t, const char *, int),
     void *(*)(void *, size_t, const char *, int),
@@ -115,14 +111,10 @@ void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
-/* These functions have a significantly different signature pre-1.1.0. since
- * they are for testing only, we don't bother to expose them on older OpenSSLs.
+/* This function has a significantly different signature pre-1.1.0. since it is
+ * for testing only, we don't bother to expose it on older OpenSSLs.
  */
 static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
-void (*Cryptography_CRYPTO_get_mem_functions)(
-    void *(**)(size_t, const char *, int),
-    void *(**)(void *, size_t, const char *, int),
-    void (**)(void *, const char *, int)) = NULL;
 int (*Cryptography_CRYPTO_set_mem_functions)(
     void *(*)(size_t, const char *, int),
     void *(*)(void *, size_t, const char *, int),
@@ -130,14 +122,6 @@ int (*Cryptography_CRYPTO_set_mem_functions)(
 
 #else
 static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
-
-void Cryptography_CRYPTO_get_mem_functions(
-    void *(**m)(size_t, const char *, int),
-    void *(**r)(void *, size_t, const char *, int),
-    void (**f)(void *, const char *, int)
-) {
-    CRYPTO_get_mem_functions(m, r, f);
-}
 
 int Cryptography_CRYPTO_set_mem_functions(
     void *(*m)(size_t, const char *, int),

@@ -18,16 +18,9 @@ def main():
 
     heap = {}
 
-    orig_malloc = ffi.new("void *(**)(size_t, const char *, int)")
-    orig_realloc = ffi.new("void *(**)(void *, size_t, const char *, int)")
-    orig_free = ffi.new("void(**)(void *, const char *, int)")
-    lib.Cryptography_CRYPTO_get_mem_functions(
-        orig_malloc, orig_realloc, orig_free
-    )
-
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
-        ptr = orig_malloc[0](size, path, line)
+        ptr = ffi.malloc(size)
         heap[ptr] = (size, path, line)
         return ptr
 
@@ -35,14 +28,14 @@ def main():
     def realloc(ptr, size, path, line):
         # TODO: this may need to be `heap.pop(ptr)`
         del heap[ptr]
-        new_ptr = orig_realloc[0](ptr, size, path, line)
+        new_ptr = ffi.realloc(ptr, size)
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
     @ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
         del heap[ptr]
-        orig_free[0](ptr, path, line)
+        ffi.free(ptr)
 
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
