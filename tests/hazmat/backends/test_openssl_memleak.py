@@ -25,6 +25,14 @@ def main(argv):
 
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
+    libc_ffi = cffi.FFI()
+    libc_ffi.cdef('''
+    void *malloc(size_t);
+    void *realloc(void *, size_t);
+    void free(void *);
+    ''')
+    libc_lib = libc_ffi.dlopen("libc")
+
     heap = {}
 
     @ffi.callback("void *(size_t, const char *, int)")
