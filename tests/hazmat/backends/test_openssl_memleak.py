@@ -125,7 +125,6 @@ def skip_if_memtesting_not_supported():
     return pytest.mark.skipif(
         not Binding().lib.Cryptography_HAS_MEM_FUNCTIONS,
         reason="Requires OpenSSL memory functions (>=1.1.0)"
-    )
 
 
 @skip_if_memtesting_not_supported()
