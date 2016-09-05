@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric import dh
-from cryptography.utils import bit_length
+from cryptography.utils import bit_length, int_from_bytes
 
 
 def test_dh_parameternumbers():
@@ -192,7 +192,7 @@ class TestDH(object):
         key2 = parameters.generate_private_key()
 
         shared_key_bytes = key2.exchange(key1.public_key())
-        symkey = int.from_bytes(shared_key_bytes, 'big')
+        symkey = int_from_bytes(shared_key_bytes, 'big')
 
         symkey_manual = pow(key1.public_key().public_numbers().y,
                             key2.private_numbers().x,
