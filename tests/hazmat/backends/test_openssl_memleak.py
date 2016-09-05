@@ -29,7 +29,7 @@ def main():
     void *realloc(void *, size_t);
     void free(void *);
     ''')
-    libc_lib = libc_ffi.dlopen("libc")
+    libc_lib = libc_ffi.dlopen("c")
 
     heap = {}
 
