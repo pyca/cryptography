@@ -45,14 +45,9 @@ def main():
         orig_free[0](ptr, path, line)
 
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
-    assert result == 1, "x1"
-    try:
-        func()
-    finally:
-        result = lib.Cryptography_CRYPTO_set_mem_functions(
-            orig_malloc, orig_realloc, orig_free
-        )
-        assert result == 1, "x2"
+    assert result == 1
+
+    func()
 
     assert not heap, "x3"
 
