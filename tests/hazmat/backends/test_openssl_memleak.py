@@ -14,35 +14,60 @@ import pytest
 
 MEMORY_LEAK_SCRIPT = """
 def main():
+    import gc
+    import sys
+
+    import cffi
+
     from cryptography.hazmat.bindings._openssl import ffi, lib
+
+    libc_ffi = cffi.FFI()
+    libc_ffi.cdef('''
+    void *malloc(size_t);
+    void *realloc(void *, size_t);
+    void free(void *);
+    ''')
+    libc_lib = libc_ffi.dlopen("libc")
 
     heap = {}
 
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
-        ptr = ffi.malloc(size)
-        heap[ptr] = (size, path, line)
+        ptr = libc_lib.malloc(size)
+        heap[ptr] = (size, libc_ffi.string(path), line)
         return ptr
 
     @ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         # TODO: this may need to be `heap.pop(ptr)`
         del heap[ptr]
-        new_ptr = ffi.realloc(ptr, size)
+        new_ptr = libc_lib.realloc(ptr, size)
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
     @ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
-        del heap[ptr]
-        ffi.free(ptr)
+        if ptr != libc_ffi.NULL:
+            del heap[ptr]
+            libc_lib.free(ptr)
 
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
 
-    func()
+    # Trigger a bunch of initialization stuff.
+    from cryptography.hazmat.bindings.openssl.binding import Binding
+    Binding()
 
-    assert not heap, "x3"
+    start_heap = set(heap)
+    func()
+    gc.collect()
+    gc.collect()
+    gc.collect()
+    after_heap = set(heap)
+
+    if after_heap - start_heap:
+        sys.stderr.write(repr(heap))
+        sys.exit(1)
 
 main()
 """
