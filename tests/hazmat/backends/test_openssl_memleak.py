@@ -47,6 +47,7 @@ def main():
 main()
 """
 
+
 def assert_no_memory_leaks(s):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
@@ -85,7 +86,9 @@ class TestAssertNoMemoryLeaks(object):
         with pytest.raises(AssertionError):
             assert_no_memory_leaks(textwrap.dedent("""
             def func():
-                from cryptography.hazmat.bindings.openssl.binding import Binding
+                from cryptography.hazmat.bindings.openssl.binding import (
+                    Binding
+                )
                 b = Binding()
                 b.lib.X509_NAME_new()
             """))
