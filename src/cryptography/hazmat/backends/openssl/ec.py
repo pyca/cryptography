@@ -102,7 +102,7 @@ class _ECDSASignatureContext(object):
         max_size = self._backend._lib.ECDSA_size(ec_key)
         self._backend.openssl_assert(max_size > 0)
 
-        sigbuf = self._backend._ffi.new("char[]", max_size)
+        sigbuf = self._backend._ffi.new("unsigned char[]", max_size)
         siglen_ptr = self._backend._ffi.new("unsigned int[]", 1)
         res = self._backend._lib.ECDSA_sign(
             0,

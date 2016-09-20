@@ -133,7 +133,7 @@ class Backend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         alg_enum = self._supported_pbkdf2_hmac_algorithms[algorithm.name]
-        buf = self._ffi.new("char[]", length)
+        buf = self._ffi.new("uint8_t[]", length)
         res = self._lib.CCKeyDerivationPBKDF(
             self._lib.kCCPBKDF2,
             key_material,
