@@ -729,7 +729,7 @@ class TestGOSTCertificate(object):
             backend
         )
         if (
-            not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I or
             backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         ):
             with pytest.raises(ValueError) as exc:

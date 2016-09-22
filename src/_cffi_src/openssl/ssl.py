@@ -664,7 +664,10 @@ static const long Cryptography_HAS_SET_CERT_CB = 1;
 #endif
 
 
-#if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
+/* In OpenSSL 1.0.2i+ the handling of COMP_METHOD when OPENSSL_NO_COMP was
+   changed and we no longer need to typedef void */
+#if (defined(OPENSSL_NO_COMP) && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I) || \
+    defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
 #else
