@@ -8,6 +8,8 @@ Changelog
 * Resolved a ``UserWarning`` when used with cffi 1.8.3.
 * Fixed a memory leak in name creation with X.509.
 * Added a workaround for old versions of setuptools.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  OpenSSL 1.0.2i.
 
 
 1.5 - 2016-08-26
