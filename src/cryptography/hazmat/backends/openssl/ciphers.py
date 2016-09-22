@@ -184,8 +184,8 @@ class _AESCTRCipherContext(object):
             cipher.key, len(cipher.key) * 8, self._key
         )
         self._backend.openssl_assert(res == 0)
-        self._ecount = self._backend._ffi.new("char[]", 16)
-        self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
+        self._ecount = self._backend._ffi.new("unsigned char[]", 16)
+        self._nonce = self._backend._ffi.new("unsigned char[16]", mode.nonce)
         self._num = self._backend._ffi.new("unsigned int *", 0)
 
     def update(self, data):
