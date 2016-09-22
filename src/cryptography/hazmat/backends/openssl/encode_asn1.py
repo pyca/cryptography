@@ -85,6 +85,10 @@ def _encode_name(backend, attributes):
     subject = backend._lib.X509_NAME_new()
     for attribute in attributes:
         name_entry = _encode_name_entry(backend, attribute)
+        # X509_NAME_add_entry dups the object so we need to gc this copy
+        name_entry = backend._ffi.gc(
+            name_entry, backend._lib.X509_NAME_ENTRY_free
+        )
         res = backend._lib.X509_NAME_add_entry(subject, name_entry, -1, 0)
         backend.openssl_assert(res == 1)
     return subject
