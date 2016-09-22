@@ -307,7 +307,7 @@ class Backend(object):
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
-        buf = self._ffi.new("char[]", length)
+        buf = self._ffi.new("unsigned char[]", length)
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode("ascii"))
         self.openssl_assert(evp_md != self._ffi.NULL)
