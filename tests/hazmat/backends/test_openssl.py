@@ -182,7 +182,7 @@ class TestOpenSSL(object):
             assert size == length
             return sample_data
         monkeypatch.setattr(os, "urandom", notrandom)
-        buf = backend._ffi.new("char[]", length)
+        buf = backend._ffi.new("unsigned char[]", length)
         backend._lib.RAND_bytes(buf, length)
         assert backend._ffi.buffer(buf)[0:length] == sample_data
 
@@ -247,7 +247,7 @@ class TestOpenSSLRandomEngine(object):
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
-        buf = backend._ffi.new("char[]", 500)
+        buf = backend._ffi.new("unsigned char[]", 500)
         res = backend._lib.RAND_bytes(buf, 500)
         assert res == 1
         assert backend._ffi.buffer(buf)[:] != "\x00" * 500
