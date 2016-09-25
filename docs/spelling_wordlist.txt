@@ -24,6 +24,7 @@ decrypting
 DER
 deserialize
 deserialized
+Deserialization
 Diffie
 Diffie
 disambiguating
