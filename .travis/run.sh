@@ -26,14 +26,9 @@ else
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
     fi
-    if [[ "${OPENSSL}" == "1.0.0" ]]; then
-        OPENSSL_DIR="ossl-100t"
-    fi
-    if [[ "${OPENSSL}" == "1.1.0" ]]; then
-        OPENSSL_DIR="ossl-110a"
-    fi
+    if [ -n "${OPENSSL}" ]; then
+        OPENSSL_DIR="ossl/${OPENSSL}"
 
-    if [ -n "$OPENSSL_DIR" ]; then
         export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
         export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
         # rpath on linux will cause it to use an absolute path so we don't need to do LD_LIBRARY_PATH

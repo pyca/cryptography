@@ -5,8 +5,7 @@ language: python
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/ossl-100t
-        - $HOME/ossl-110a
+        - $HOME/ossl/
 
 matrix:
     include:
@@ -27,13 +26,13 @@ matrix:
         - python: pypy
           env: TOXENV=pypy PYPY_VERSION=5.4.1
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.0.0
+          env: TOXENV=py27 OPENSSL=1.0.0t
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.0.0
+          env: TOXENV=py35 OPENSSL=1.0.0t
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0
+          env: TOXENV=py27 OPENSSL=1.1.0a
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0
+          env: TOXENV=py35 OPENSSL=1.1.0a
         - python: 2.7
           env: TOXENV=docs
           addons:

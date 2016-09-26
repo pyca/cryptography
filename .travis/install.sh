@@ -60,21 +60,14 @@ else
         pyenv global "pypy-$PYPY_VERSION"
     fi
 
-    if [[ "${OPENSSL}" == "1.0.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.0.0t"
-        OPENSSL_DIR="ossl-100t"
-    fi
-    if [[ "${OPENSSL}" == "1.1.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.1.0a"
-        OPENSSL_DIR="ossl-110a"
-    fi
     # download, compile, and install if it's not already present via travis
     # cache
-    if [ -n "$OPENSSL_DIR" ]; then
+    if [ -n "${OPENSSL}" ]; then
+        OPENSSL_DIR="ossl/${OPENSSL}"
         if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
-            curl -O https://www.openssl.org/source/openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            cd openssl-$OPENSSL_VERSION_NUMBER
+            curl -O https://www.openssl.org/source/openssl-$OPENSSL.tar.gz
+            tar zxf openssl-$OPENSSL.tar.gz
+            cd openssl-$OPENSSL
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             # modify the shlib version to a unique one to make sure the dynamic
             # linker doesn't load the system one. This isn't required for 1.1.0 at the
