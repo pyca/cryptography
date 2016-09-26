@@ -66,7 +66,7 @@ else
         OPENSSL_DIR="ossl/${OPENSSL}"
         if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
             curl -O https://www.openssl.org/source/openssl-$OPENSSL.tar.gz
-            tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
+            tar zxf openssl-$OPENSSL.tar.gz
             cd openssl-$OPENSSL
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             # modify the shlib version to a unique one to make sure the dynamic
