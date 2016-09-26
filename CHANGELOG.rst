@@ -25,6 +25,10 @@ Changelog
 * Added support for generating a
   :meth:`~cryptography.x509.random_serial_number`.
 
+1.5.2 - 2016-09-26
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2j.
 
 1.5.1 - 2016-09-22
 ~~~~~~~~~~~~~~~~~~
