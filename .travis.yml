@@ -25,7 +25,7 @@ matrix:
         - python: pypy
           env: TOXENV=pypy PYPY_VERSION=4.0.1
         - python: pypy
-          env: TOXENV=pypy PYPY_VERSION=5.1
+          env: TOXENV=pypy PYPY_VERSION=5.4.1
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.0.0
         - python: 3.5
@@ -65,7 +65,7 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode8
-          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.1
+          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.4.1
         - language: generic
           os: osx
           osx_image: xcode8
