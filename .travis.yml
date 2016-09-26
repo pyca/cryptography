@@ -6,7 +6,7 @@ cache:
     directories:
         - $HOME/.cache/pip
         - $HOME/ossl-100t
-        - $HOME/ossl-110
+        - $HOME/ossl-110a
 
 matrix:
     include:

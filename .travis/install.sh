@@ -65,8 +65,8 @@ else
         OPENSSL_DIR="ossl-100t"
     fi
     if [[ "${OPENSSL}" == "1.1.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.1.0"
-        OPENSSL_DIR="ossl-110"
+        OPENSSL_VERSION_NUMBER="1.1.0a"
+        OPENSSL_DIR="ossl-110a"
     fi
     # download, compile, and install if it's not already present via travis
     # cache

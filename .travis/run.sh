@@ -30,7 +30,7 @@ else
         OPENSSL_DIR="ossl-100t"
     fi
     if [[ "${OPENSSL}" == "1.1.0" ]]; then
-        OPENSSL_DIR="ossl-110"
+        OPENSSL_DIR="ossl-110a"
     fi
 
     if [ -n "$OPENSSL_DIR" ]; then
