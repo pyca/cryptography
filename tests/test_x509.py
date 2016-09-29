@@ -2849,47 +2849,7 @@ class TestCertificateSigningRequestBuilder(object):
     def test_subject_alt_names(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
-        csr = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([
-                x509.NameAttribute(NameOID.COMMON_NAME, u"SAN"),
-            ])
-        ).add_extension(
-            x509.SubjectAlternativeName([
-                x509.DNSName(u"example.com"),
-                x509.DNSName(u"*.example.com"),
-                x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
-                x509.DirectoryName(x509.Name([
-                    x509.NameAttribute(NameOID.COMMON_NAME, u'PyCA'),
-                    x509.NameAttribute(
-                        NameOID.ORGANIZATION_NAME, u'We heart UTF8!\u2122'
-                    )
-                ])),
-                x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
-                x509.IPAddress(ipaddress.ip_address(u"ff::")),
-                x509.OtherName(
-                    type_id=x509.ObjectIdentifier("1.2.3.3.3.3"),
-                    value=b"0\x03\x02\x01\x05"
-                ),
-                x509.RFC822Name(u"test@example.com"),
-                x509.RFC822Name(u"email"),
-                x509.RFC822Name(u"email@em\xe5\xefl.com"),
-                x509.UniformResourceIdentifier(
-                    u"https://\u043f\u044b\u043a\u0430.cryptography"
-                ),
-                x509.UniformResourceIdentifier(
-                    u"gopher://cryptography:70/some/path"
-                ),
-            ]),
-            critical=False,
-        ).sign(private_key, hashes.SHA256(), backend)
-
-        assert len(csr.extensions) == 1
-        ext = csr.extensions.get_extension_for_oid(
-            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
-        )
-        assert not ext.critical
-        assert ext.oid == ExtensionOID.SUBJECT_ALTERNATIVE_NAME
-        assert list(ext.value) == [
+        san = x509.SubjectAlternativeName([
             x509.DNSName(u"example.com"),
             x509.DNSName(u"*.example.com"),
             x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
@@ -2897,7 +2857,7 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(NameOID.COMMON_NAME, u'PyCA'),
                 x509.NameAttribute(
                     NameOID.ORGANIZATION_NAME, u'We heart UTF8!\u2122'
-                ),
+                )
             ])),
             x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
             x509.IPAddress(ipaddress.ip_address(u"ff::")),
@@ -2914,7 +2874,24 @@ class TestCertificateSigningRequestBuilder(object):
             x509.UniformResourceIdentifier(
                 u"gopher://cryptography:70/some/path"
             ),
-        ]
+        ])
+
+        csr = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"SAN"),
+            ])
+        ).add_extension(
+            san,
+            critical=False,
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        assert len(csr.extensions) == 1
+        ext = csr.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert not ext.critical
+        assert ext.oid == ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        assert ext.value == san
 
     def test_invalid_asn1_othername(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
@@ -2952,26 +2929,23 @@ class TestCertificateSigningRequestBuilder(object):
 
     def test_extended_key_usage(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateSigningRequestBuilder()
-        request = builder.subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).add_extension(
-            x509.ExtendedKeyUsage([
-                ExtendedKeyUsageOID.CLIENT_AUTH,
-                ExtendedKeyUsageOID.SERVER_AUTH,
-                ExtendedKeyUsageOID.CODE_SIGNING,
-            ]), critical=False
-        ).sign(private_key, hashes.SHA256(), backend)
-
-        eku = request.extensions.get_extension_for_oid(
-            ExtensionOID.EXTENDED_KEY_USAGE
-        )
-        assert eku.critical is False
-        assert eku.value == x509.ExtendedKeyUsage([
+        eku = x509.ExtendedKeyUsage([
             ExtendedKeyUsageOID.CLIENT_AUTH,
             ExtendedKeyUsageOID.SERVER_AUTH,
             ExtendedKeyUsageOID.CODE_SIGNING,
         ])
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).add_extension(
+            eku, critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        ext = request.extensions.get_extension_for_oid(
+            ExtensionOID.EXTENDED_KEY_USAGE
+        )
+        assert ext.critical is False
+        assert ext.value == eku
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_rsa_key_too_small(self, backend):
