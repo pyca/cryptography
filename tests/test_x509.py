@@ -2413,8 +2413,14 @@ class TestCertificateBuilder(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
         excluded = [x509.DNSName(u"name.local")]
+        permitted = [
+            x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24")),
+            x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/29")),
+            x509.IPAddress(ipaddress.IPv4Network(u"8.0.0.0/8")),
+            x509.IPAddress(ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/96")),
+        ]
         nc = x509.NameConstraints(
-            permitted_subtrees=None, excluded_subtrees=excluded
+            permitted_subtrees=permitted, excluded_subtrees=excluded
         )
 
         cert = x509.CertificateBuilder().subject_name(

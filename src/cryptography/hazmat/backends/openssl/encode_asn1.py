@@ -5,12 +5,13 @@
 from __future__ import absolute_import, division, print_function
 
 import calendar
+import ipaddress
 
 import idna
 
 import six
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
@@ -402,9 +403,19 @@ def _encode_general_name(backend, name):
     elif isinstance(name, x509.IPAddress):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
-        ipaddr = _encode_asn1_str(
-            backend, name.value.packed, len(name.value.packed)
-        )
+        if isinstance(name.value, ipaddress.IPv4Network):
+            packed = (
+                name.value.network_address.packed +
+                utils.int_to_bytes(((1 << 32) - name.value.num_addresses), 4)
+            )
+        elif isinstance(name.value, ipaddress.IPv6Network):
+            packed = (
+                name.value.network_address.packed +
+                utils.int_to_bytes((1 << 128) - name.value.num_addresses, 16)
+            )
+        else:
+            packed = name.value.packed
+        ipaddr = _encode_asn1_str(backend, packed, len(packed))
         gn.type = backend._lib.GEN_IPADD
         gn.d.iPAddress = ipaddr
     elif isinstance(name, x509.OtherName):
