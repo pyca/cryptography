@@ -2416,8 +2416,11 @@ class TestCertificateBuilder(object):
         permitted = [
             x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24")),
             x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/29")),
+            x509.IPAddress(ipaddress.IPv4Network(u"127.0.0.1/32")),
             x509.IPAddress(ipaddress.IPv4Network(u"8.0.0.0/8")),
+            x509.IPAddress(ipaddress.IPv4Network(u"0.0.0.0/0")),
             x509.IPAddress(ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/96")),
+            x509.IPAddress(ipaddress.IPv6Network(u"FF:FF:0:0:0:0:0:0/128")),
         ]
         nc = x509.NameConstraints(
             permitted_subtrees=permitted, excluded_subtrees=excluded
