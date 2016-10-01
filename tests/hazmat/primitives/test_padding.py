@@ -100,6 +100,20 @@ class TestPKCS7(object):
         with pytest.raises(AlreadyFinalized):
             unpadder.finalize()
 
+    def test_large_padding(self):
+        padder = padding.PKCS7(2040).padder()
+        padded_data = padder.update(b"")
+        padded_data += padder.finalize()
+
+        for i in list(padded_data):
+            assert ord(i) == 255
+
+        unpadder = padding.PKCS7(2040).unpadder()
+        data = unpadder.update(padded_data)
+        data += unpadder.finalize()
+
+        assert data == b""
+
 
 class TestANSIX923(object):
     @pytest.mark.parametrize("size", [127, 4096, -2])
