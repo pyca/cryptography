@@ -2405,17 +2405,43 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_name_constraints(self, backend):
+    @pytest.mark.parametrize(
+        "nc",
+        [
+            x509.NameConstraints(
+                permitted_subtrees=[
+                    x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24")),
+                    x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/29")),
+                    x509.IPAddress(ipaddress.IPv4Network(u"127.0.0.1/32")),
+                    x509.IPAddress(ipaddress.IPv4Network(u"8.0.0.0/8")),
+                    x509.IPAddress(ipaddress.IPv4Network(u"0.0.0.0/0")),
+                    x509.IPAddress(
+                        ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/96")
+                    ),
+                    x509.IPAddress(
+                        ipaddress.IPv6Network(u"FF:FF:0:0:0:0:0:0/128")
+                    ),
+                ],
+                excluded_subtrees=[x509.DNSName(u"name.local")]
+            ),
+            x509.NameConstraints(
+                permitted_subtrees=[
+                    x509.IPAddress(ipaddress.IPv4Network(u"0.0.0.0/0")),
+                ],
+                excluded_subtrees=None
+            ),
+            x509.NameConstraints(
+                permitted_subtrees=None,
+                excluded_subtrees=[x509.DNSName(u"name.local")]
+            ),
+        ]
+    )
+    def test_name_constraints(self, nc, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        excluded = [x509.DNSName(u"name.local")]
-        nc = x509.NameConstraints(
-            permitted_subtrees=None, excluded_subtrees=excluded
-        )
 
         cert = x509.CertificateBuilder().subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])

@@ -24,6 +24,8 @@ Changelog
   when using OpenSSL 1.1.0.
 * Added support for generating a
   :meth:`~cryptography.x509.random_serial_number`.
+* Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
+  certificates for use with :class:`~cryptography.x509.NameConstraints`.
 
 1.5.2 - 2016-09-26
 ~~~~~~~~~~~~~~~~~~
