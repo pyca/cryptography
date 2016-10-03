@@ -56,7 +56,7 @@ uint16_t Cryptography_check_ansix923_padding(const uint8_t *data,
     mismatch |= Cryptography_constant_time_lt(block_len, pad_size);
 
     /* Make sure any bits set are copied to the lowest bit */
-    mismatch != mismatch >> 8;
+    mismatch |= mismatch >> 8;
     mismatch |= mismatch >> 4;
     mismatch |= mismatch >> 2;
     mismatch |= mismatch >> 1;
