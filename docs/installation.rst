@@ -171,7 +171,7 @@ dependencies.
     . env/bin/activate
     pip install -U setuptools
     pip install -U wheel pip
-    curl -O https://openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
+    curl -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
     tar xvf openssl-${OPENSSL_VERSION}.tar.gz
     cd openssl-${OPENSSL_VERSION}
     ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
