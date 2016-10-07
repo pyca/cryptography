@@ -34,7 +34,8 @@ Different KDFs are suitable for different tasks such as:
 
     `PBKDF2`_ (Password Based Key Derivation Function 2) is typically used for
     deriving a cryptographic key from a password. It may also be used for
-    key storage, but an alternate key storage KDF such as `scrypt`_ is generally
+    key storage, but an alternate key storage KDF such as
+    :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt` is generally
     considered a better solution.
 
     This class conforms to the
@@ -899,7 +900,6 @@ Interface
 .. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
-.. _`scrypt`: https://en.wikipedia.org/wiki/Scrypt
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
 .. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
