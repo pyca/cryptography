@@ -51,6 +51,13 @@ class CipherContext(object):
         """
 
     @abc.abstractmethod
+    def update_into(self, data, buf):
+        """
+        Processes the provided bytes and writes the resulting data into the
+        provided buffer. Returns the number of bytes written.
+        """
+
+    @abc.abstractmethod
     def finalize(self):
         """
         Returns the results of processing the final block as bytes.
@@ -136,6 +143,11 @@ class _CipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
+    def update_into(self, data, buf):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+        return self._ctx.update_into(data, buf)
+
     def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
@@ -154,11 +166,11 @@ class _AEADCipherContext(object):
         self._tag = None
         self._updated = False
 
-    def update(self, data):
+    def _check_limit(self, data_size):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         self._updated = True
-        self._bytes_processed += len(data)
+        self._bytes_processed += data_size
         if self._bytes_processed > self._ctx._mode._MAX_ENCRYPTED_BYTES:
             raise ValueError(
                 "{0} has a maximum encrypted byte limit of {1}".format(
@@ -166,7 +178,13 @@ class _AEADCipherContext(object):
                 )
             )
 
+    def update(self, data):
+        self._check_limit(len(data))
         return self._ctx.update(data)
+
+    def update_into(self, data, buf):
+        self._check_limit(len(data))
+        return self._ctx.update_into(data, buf)
 
     def finalize(self):
         if self._ctx is None:

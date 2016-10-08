@@ -456,6 +456,47 @@ Interfaces
         return bytes immediately, however in other modes it will return chunks
         whose size is determined by the cipher's block size.
 
+    .. method:: update_into(data, buf)
+
+        .. versionadded:: 1.6
+
+        .. warning::
+
+            This method allows you to avoid a memory copy by passing a writable
+            buffer and reading the resulting data. You are responsible for
+            correctly sizing the buffer and properly handling the data. Failure
+            to do so correctly can result in crashes. This method should only
+            be used when extremely high performance is a requirement and
+            you will be making many small calls to ``update_into``.
+
+        :param bytes data: The data you wish to pass into the context.
+        :param buf: A writable Python buffer that the data will be written
+            into. This buffer should be ``n - 1`` bytes bigger than the size of
+            ``data`` where ``n`` is the block size (in bytes) of the cipher
+            and mode combination.
+        :return int: Number of bytes written.
+        :raises NotImplementedError: This is raised if the version of ``cffi``
+            used is too old (this can happen on older PyPy releases).
+        :raises ValueError: This is raised if the supplied buffer is too small.
+
+        .. doctest::
+
+            >>> import os
+            >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> backend = default_backend()
+            >>> key = os.urandom(32)
+            >>> iv = os.urandom(16)
+            >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+            >>> encryptor = cipher.encryptor()
+            >>> buf = bytearray(31)
+            >>> len_encrypted = encryptor.update_into(b"a secret message", buf)
+            >>> ct = bytes(buf[:len_encrypted]) + encryptor.finalize()
+            >>> decryptor = cipher.decryptor()
+            >>> len_decrypted = decryptor.update_into(ct, buf)
+            >>> bytes(buf[:len_decrypted]) + decryptor.finalize()
+            'a secret message'
+
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
