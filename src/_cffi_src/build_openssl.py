@@ -19,8 +19,11 @@ def _get_openssl_libraries(platform):
             os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
         )
     elif platform == "win32":
-        return ["libeay32", "ssleay32", "advapi32",
-                "crypt32", "gdi32", "user32", "ws2_32"]
+        if compiler_type() == "msvc":
+            libs = ["libeay32", "ssleay32"]
+        else:
+            libs = ["ssl", "crypto"]
+        return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
