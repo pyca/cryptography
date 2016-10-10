@@ -96,8 +96,11 @@ after_success:
 notifications:
     irc:
         channels:
-            - "irc.freenode.org#cryptography-dev"
+            # This is set to a secure variable to prevent forks from notifying the
+            # IRC channel whenever they fail a build. This can be removed when travis
+            # implements https://github.com/travis-ci/travis-ci/issues/1094.
+            # The value encrypted here was created via
+            # travis encrypt "irc.freenode.org#cryptography-dev"
+            - secure: "A93qvTOlwlMK5WoEvZQ5jQ8Z4Hd0JpeO53WYt8iIJ3s/L6AubkfiN7gwhThRtPnPx7DVMenoKRMlcRg76/ICvXEViVnGgXFjsypF0CzVcIay9pPdjpZjZHP735yLfX512RtxYEdEGwi5r25Z2CEFaydhhxNwfuMxGBtLUjusix4="
         use_notice: true
         skip_join: true
-    webhooks:
-        - https://buildtimetrend.herokuapp.com/travis
