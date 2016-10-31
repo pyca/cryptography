@@ -1867,11 +1867,14 @@ X.509 Extensions
 
     .. attribute:: relative_name
 
-        :type: :class:`Name` or None
+        :type: :class:`RelativeDistinguishedName` or None
 
         This field describes methods to retrieve the CRL relative to the CRL
         issuer. At most one of ``full_name`` or ``relative_name`` will be
         non-None.
+
+        .. versionchanged:: 1.6
+            Changed from :class:`Name` to :class:`RelativeDistinguishedName`.
 
     .. attribute:: crl_issuer
 

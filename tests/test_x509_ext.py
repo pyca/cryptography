@@ -3003,6 +3003,17 @@ class TestDistributionPoint(object):
         with pytest.raises(ValueError):
             x509.DistributionPoint("data", "notname", None, None)
 
+    def test_relative_name_name_value_deprecated(self):
+        with pytest.deprecated_call():
+            x509.DistributionPoint(
+                None,
+                x509.Name([
+                    x509.NameAttribute(NameOID.COMMON_NAME, u"myCN")
+                ]),
+                None,
+                None
+            )
+
     def test_crl_issuer_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(None, None, None, ["notgn"])
@@ -3127,7 +3138,7 @@ class TestDistributionPoint(object):
     def test_repr(self):
         dp = x509.DistributionPoint(
             None,
-            x509.Name([
+            x509.RelativeDistinguishedName([
                 x509.NameAttribute(NameOID.COMMON_NAME, u"myCN")
             ]),
             frozenset([x509.ReasonFlags.ca_compromise]),
@@ -3143,21 +3154,23 @@ class TestDistributionPoint(object):
         )
         if six.PY3:
             assert repr(dp) == (
-                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
-                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
-                ">, value='myCN')>])>, reasons=frozenset({<ReasonFlags.ca_comp"
-                "romise: 'cACompromise'>}), crl_issuer=[<DirectoryName(value=<"
-                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
-                "commonName)>, value='Important CA')>])>)>])>"
+                "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
+                "tinguishedName([<NameAttribute(oid=<ObjectIdentifier(oid=2.5."
+                "4.3, name=commonName)>, value='myCN')>])>, reasons=frozenset("
+                "{<ReasonFlags.ca_compromise: 'cACompromise'>}), crl_issuer=[<"
+                "DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentifi"
+                "er(oid=2.5.4.3, name=commonName)>, value='Important CA')>])>)"
+                ">])>"
             )
         else:
             assert repr(dp) == (
-                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
-                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
-                ">, value=u'myCN')>])>, reasons=frozenset([<ReasonFlags.ca_com"
-                "promise: 'cACompromise'>]), crl_issuer=[<DirectoryName(value="
-                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
-                "=commonName)>, value=u'Important CA')>])>)>])>"
+                "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
+                "tinguishedName([<NameAttribute(oid=<ObjectIdentifier(oid=2.5."
+                "4.3, name=commonName)>, value=u'myCN')>])>, reasons=frozenset"
+                "([<ReasonFlags.ca_compromise: 'cACompromise'>]), crl_issuer=["
+                "<DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.3, name=commonName)>, value=u'Important CA')>])"
+                ">)>])>"
             )
 
 
@@ -3407,7 +3420,7 @@ class TestCRLDistributionPointsExtension(object):
         assert cdps == x509.CRLDistributionPoints([
             x509.DistributionPoint(
                 full_name=None,
-                relative_name=x509.Name([
+                relative_name=x509.RelativeDistinguishedName([
                     x509.NameAttribute(
                         NameOID.COMMON_NAME,
                         u"indirect CRL for indirectCRL CA3"

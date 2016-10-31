@@ -544,7 +544,11 @@ def _decode_crl_distribution_points(backend, cdps):
                 )
             # OpenSSL code doesn't test for a specific type for
             # relativename, everything that isn't fullname is considered
-            # relativename.
+            # relativename.  Per RFC 5280:
+            #
+            # DistributionPointName ::= CHOICE {
+            #      fullName                [0]      GeneralNames,
+            #      nameRelativeToCRLIssuer [1]      RelativeDistinguishedName }
             else:
                 rns = cdp.distpoint.name.relativename
                 rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
@@ -558,7 +562,7 @@ def _decode_crl_distribution_points(backend, cdps):
                         _decode_x509_name_entry(backend, rn)
                     )
 
-                relative_name = x509.Name(attributes)
+                relative_name = x509.RelativeDistinguishedName(attributes)
 
         dist_points.append(
             x509.DistributionPoint(

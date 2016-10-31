@@ -1895,7 +1895,7 @@ class TestCertificateBuilder(object):
             x509.CRLDistributionPoints([
                 x509.DistributionPoint(
                     full_name=None,
-                    relative_name=x509.Name([
+                    relative_name=x509.RelativeDistinguishedName([
                         x509.NameAttribute(
                             NameOID.COMMON_NAME,
                             u"indirect CRL for indirectCRL CA3"
