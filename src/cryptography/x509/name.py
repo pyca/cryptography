@@ -52,6 +52,41 @@ class NameAttribute(object):
         return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
 
+class RelativeDistinguishedName(object):
+    def __init__(self, attributes):
+        attributes = frozenset(attributes)
+        if not attributes:
+            raise ValueError("a relative distinguished name cannot be empty")
+        if not all(isinstance(x, NameAttribute) for x in attributes):
+            raise TypeError("attributes must be an iterable of NameAttribute")
+
+        self._attributes = attributes
+
+    def get_attributes_for_oid(self, oid):
+        return [i for i in self if i.oid == oid]
+
+    def __eq__(self, other):
+        if not isinstance(other, RelativeDistinguishedName):
+            return NotImplemented
+
+        return self._attributes == other._attributes
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self._attributes)
+
+    def __iter__(self):
+        return iter(self._attributes)
+
+    def __len__(self):
+        return len(self._attributes)
+
+    def __repr__(self):
+        return "<RelativeDistinguishedName({0!r})>".format(list(self))
+
+
 class Name(object):
     def __init__(self, attributes):
         attributes = list(attributes)

@@ -3604,6 +3604,77 @@ class TestNameAttribute(object):
             )
 
 
+class TestRelativeDistinguishedName(object):
+    def test_init_empty(self):
+        with pytest.raises(ValueError):
+            x509.RelativeDistinguishedName([])
+
+    def test_init_not_nameattribute(self):
+        with pytest.raises(TypeError):
+            x509.RelativeDistinguishedName(["not-a-NameAttribute"])
+
+    def test_init_duplicate_attribute(self):
+        rdn = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+        ])
+        assert len(rdn) == 1
+
+    def test_hash(self):
+        rdn1 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+        ])
+        rdn2 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+        ])
+        rdn3 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value3'),
+        ])
+        assert hash(rdn1) == hash(rdn2)
+        assert hash(rdn1) != hash(rdn3)
+
+    def test_eq(self):
+        rdn1 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+        ])
+        rdn2 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+        ])
+        assert rdn1 == rdn2
+
+    def test_ne(self):
+        rdn1 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+        ])
+        rdn2 = x509.RelativeDistinguishedName([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value3'),
+        ])
+        assert rdn1 != rdn2
+        assert rdn1 != object()
+
+    def test_iter_input(self):
+        attrs = [
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ]
+        rdn = x509.RelativeDistinguishedName(iter(attrs))
+        assert list(rdn) == attrs
+        assert list(rdn) == attrs
+
+    def test_get_attributes_for_oid(self):
+        oid = x509.ObjectIdentifier('2.999.1')
+        attr = x509.NameAttribute(oid, u'value1')
+        rdn = x509.RelativeDistinguishedName([attr])
+        assert rdn.get_attributes_for_oid(oid) == [attr]
+        assert rdn.get_attributes_for_oid(x509.ObjectIdentifier('1.2.3')) == []
+
+
 class TestObjectIdentifier(object):
     def test_eq(self):
         oid1 = x509.ObjectIdentifier('2.999.1')

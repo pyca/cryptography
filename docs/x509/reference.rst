@@ -1156,6 +1156,22 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The value of the attribute.
 
+
+.. class:: RelativeDistinguishedName(attributes)
+
+    .. versionadded:: 1.6
+
+    A relative distinguished name is a non-empty set of name attributes.  The
+    object is iterable to get every attribute.
+
+    .. method:: get_attributes_for_oid(oid)
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: A list of :class:`NameAttribute` instances that match the OID
+            provided.  The list should contain zero or one values.
+
+
 .. class:: ObjectIdentifier
 
     .. versionadded:: 0.8

@@ -30,7 +30,9 @@ from cryptography.x509.general_name import (
     RegisteredID, UniformResourceIdentifier, UnsupportedGeneralNameType,
     _GENERAL_NAMES
 )
-from cryptography.x509.name import Name, NameAttribute
+from cryptography.x509.name import (
+    Name, NameAttribute, RelativeDistinguishedName
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, CRLEntryExtensionOID,
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
@@ -122,6 +124,7 @@ __all__ = [
     "UnsupportedGeneralNameType",
     "NameAttribute",
     "Name",
+    "RelativeDistinguishedName",
     "ObjectIdentifier",
     "ExtensionType",
     "Extensions",
