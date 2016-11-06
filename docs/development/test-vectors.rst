@@ -427,7 +427,7 @@ header format (substituting the correct information):
     # Verified against the CommonCrypto and Go crypto packages
     # Key Length : 128
 
-.. _`NIST`: http://www.nist.gov/
+.. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
 .. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt

@@ -248,7 +248,7 @@ local `wheel cache`_.
 Building cryptography with conda
 --------------------------------
 
-Because of a `bug in conda`_, attempting to install cryptography out of the box
+Because of a bug in conda, attempting to install cryptography out of the box
 will result in an error. This can be resolved by setting the library path
 environment variable for your platform.
 
@@ -271,7 +271,6 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
-.. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/

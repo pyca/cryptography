@@ -29,4 +29,4 @@ project's Python bindings.
 Download link: :download:`verify_seed.py
 </development/custom-vectors/seed/verify_seed.py>`
 
-.. _`Botan`: http://botan.randombit.net
+.. _`Botan`: https://botan.randombit.net
