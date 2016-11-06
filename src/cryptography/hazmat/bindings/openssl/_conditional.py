@@ -282,7 +282,6 @@ CONDITIONAL_NAMES = {
         "X509_VERIFY_PARAM_set1_ip",
         "X509_VERIFY_PARAM_set1_ip_asc",
         "X509_VERIFY_PARAM_set_hostflags",
-        "X509_VERIFY_PARAM_free",
     ],
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
         "X509_V_FLAG_TRUSTED_FIRST",
