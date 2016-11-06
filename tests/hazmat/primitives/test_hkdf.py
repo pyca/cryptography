@@ -142,6 +142,17 @@ class TestHKDF(object):
 
             hkdf.verify(b"foo", u"bar")
 
+    def test_derive_short_output(self, backend):
+        hkdf = HKDF(
+            hashes.SHA256(),
+            4,
+            salt=None,
+            info=None,
+            backend=backend
+        )
+
+        assert hkdf.derive(b"\x01" * 16) == b"gJ\xfb{"
+
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFExpand(object):
