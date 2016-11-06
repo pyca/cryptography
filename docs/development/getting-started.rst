@@ -120,7 +120,7 @@ The HTML documentation index can now be found at
 
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`OpenSSL`: https://openssl.org
+.. _`OpenSSL`: https://www.openssl.org
 .. _`pytest`: https://pypi.python.org/pypi/pytest
 .. _`tox`: https://pypi.python.org/pypi/tox
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv

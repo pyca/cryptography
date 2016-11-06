@@ -274,5 +274,5 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _openssl.org: https://openssl.org/source/
+.. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
