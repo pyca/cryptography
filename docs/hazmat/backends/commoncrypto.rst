@@ -27,4 +27,4 @@ CommonCrypto backend is only supported on OS X versions 10.8 and above.
 
         The string name of this backend: ``"commoncrypto"``
 
-.. _`CommonCrypto`: https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/Common%20Crypto.3cc.html
+.. _`CommonCrypto`: https://developer.apple.com/library/content/documentation/Security/Conceptual/cryptoservices/GeneralPurposeCrypto/GeneralPurposeCrypto.html#//apple_ref/doc/uid/TP40011172-CH9-SW10
