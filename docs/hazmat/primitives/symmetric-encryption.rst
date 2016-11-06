@@ -613,4 +613,4 @@ Interfaces used by the symmetric cipher modes described in
 .. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
-.. _`OpenPGP`: http://www.openpgp.org
+.. _`OpenPGP`: http://openpgp.org
