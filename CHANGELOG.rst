@@ -27,6 +27,13 @@ Changelog
 * Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
   certificates for use with :class:`~cryptography.x509.NameConstraints`.
 
+1.5.3 - 2016-11-05
+~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where ``HKDF`` would return an empty
+  byte-string if used with a ``length`` less than ``algorithm.digest_size``.
+  Credit to **Markus Döring** for reporting the issue.
+
 1.5.2 - 2016-09-26
 ~~~~~~~~~~~~~~~~~~
 
