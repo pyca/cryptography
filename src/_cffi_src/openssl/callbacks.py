@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+import sysconfig
 
 import cffi
 
@@ -12,6 +13,13 @@ INCLUDES = """
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include <openssl/crypto.h>
+
+"""
+
+if sysconfig.get_config_var("WITH_THREAD"):
+    INCLUDES += """
+#include <pythread.h>
 """
 
 TYPES = """
@@ -34,6 +42,7 @@ extern "Python" int Cryptography_pem_password_cb(char *, int, int, void *);
  */
 extern "Python" int Cryptography_rand_bytes(unsigned char *, int);
 extern "Python" int Cryptography_rand_status(void);
+
 """
 
 FUNCTIONS = """
@@ -50,4 +59,81 @@ if cffi.__version_info__ < (1, 4, 0) or sys.version_info >= (3, 5):
     # backwards compatibility for old cffi version on PyPy
     # and Python >=3.5 (https://github.com/pyca/cryptography/issues/2970)
     TYPES = "static const long Cryptography_STATIC_CALLBACKS;"
-    CUSTOMIZATIONS = "static const long Cryptography_STATIC_CALLBACKS = 0;"
+    CUSTOMIZATIONS = """static const long Cryptography_STATIC_CALLBACKS = 0;
+"""
+
+
+if sysconfig.get_config_var("WITH_THREAD"):
+    FUNCTIONS += """
+int _setup_ssl_threads(void);
+"""
+    CUSTOMIZATIONS += """
+static unsigned int _ssl_locks_count = 0;
+static PyThread_type_lock *_ssl_locks = NULL;
+
+/* use new CRYPTO_THREADID API. */
+static void _ssl_threadid_callback(CRYPTO_THREADID *id)
+{
+    CRYPTO_THREADID_set_numeric(id,
+                                (unsigned long)PyThread_get_thread_ident());
+}
+
+static void _ssl_thread_locking_function
+    (int mode, int n, const char *file, int line) {
+    /* this function is needed to perform locking on shared data
+       structures. (Note that OpenSSL uses a number of global data
+       structures that will be implicitly shared whenever multiple
+       threads use OpenSSL.) Multi-threaded applications will
+       crash at random if it is not set.
+
+       locking_function() must be able to handle up to
+       CRYPTO_num_locks() different mutex locks. It sets the n-th
+       lock if mode & CRYPTO_LOCK, and releases it otherwise.
+
+       file and line are the file number of the function setting the
+       lock. They can be useful for debugging.
+    */
+
+    if ((_ssl_locks == NULL) ||
+        (n < 0) || ((unsigned)n >= _ssl_locks_count))
+        return;
+
+    if (mode & CRYPTO_LOCK) {
+        PyThread_acquire_lock(_ssl_locks[n], 1);
+    } else {
+        PyThread_release_lock(_ssl_locks[n]);
+    }
+}
+
+int _setup_ssl_threads(void) {
+
+    unsigned int i;
+
+    if (_ssl_locks == NULL) {
+        _ssl_locks_count = CRYPTO_num_locks();
+        _ssl_locks = PyMem_New(PyThread_type_lock, _ssl_locks_count);
+        if (_ssl_locks == NULL) {
+            PyErr_NoMemory();
+            return 0;
+        }
+        memset(_ssl_locks, 0,
+               sizeof(PyThread_type_lock) * _ssl_locks_count);
+        for (i = 0;  i < _ssl_locks_count;  i++) {
+            _ssl_locks[i] = PyThread_allocate_lock();
+            if (_ssl_locks[i] == NULL) {
+                unsigned int j;
+                for (j = 0;  j < i;  j++) {
+                    PyThread_free_lock(_ssl_locks[j]);
+                }
+                PyMem_Free(_ssl_locks);
+                return 0;
+            }
+        }
+        CRYPTO_set_locking_callback(_ssl_thread_locking_function);
+        CRYPTO_THREADID_set_callback(_ssl_threadid_callback);
+    }
+    return 1;
+}
+
+"""
+

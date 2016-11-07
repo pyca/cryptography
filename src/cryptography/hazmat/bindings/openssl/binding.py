@@ -9,6 +9,7 @@ import os
 import threading
 import types
 import warnings
+import sysconfig
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -178,43 +179,17 @@ class Binding(object):
     def init_static_locks(cls):
         with cls._lock_init_lock:
             cls._ensure_ffi_initialized()
-
-            if not cls._lock_cb_handle:
-                wrapper = ffi_callback(
-                    "void(int, int, const char *, int)",
-                    name="Cryptography_locking_cb",
-                )
-                cls._lock_cb_handle = wrapper(cls._lock_cb)
-
-            # Use Python's implementation if available, importing _ssl triggers
-            # the setup for this.
-            __import__("_ssl")
-
-            if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
-                return
-
-            # If nothing else has setup a locking callback already, we set up
-            # our own
-            num_locks = cls.lib.CRYPTO_num_locks()
-            cls._locks = [threading.Lock() for n in range(num_locks)]
-
-            cls.lib.CRYPTO_set_locking_callback(cls._lock_cb_handle)
-
-    @classmethod
-    def _lock_cb(cls, mode, n, file, line):
-        lock = cls._locks[n]
-
-        if mode & cls.lib.CRYPTO_LOCK:
-            lock.acquire()
-        elif mode & cls.lib.CRYPTO_UNLOCK:
-            lock.release()
-        else:
-            raise RuntimeError(
-                "Unknown lock mode {0}: lock={1}, file={2}, line={3}.".format(
-                    mode, n, file, line
-                )
-            )
-
+            if sysconfig.get_config_var("WITH_THREAD"):
+                # Use Python's implementation if available, importing _ssl
+                # triggers the setup for this.
+                __import__("ssl")
+                if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
+                    return
+                # If nothing else has setup a locking callback already, we set up
+                # our own
+                if not lib._setup_ssl_threads():
+                    raise InternalError("Threading is enabled and cryptography is"
+                                        "unable to install locking callback!")
 
 def _verify_openssl_version(version):
     if version < 0x10001000:
