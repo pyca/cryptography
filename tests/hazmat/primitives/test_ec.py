@@ -102,7 +102,7 @@ def test_skip_ecdsa_vector(backend):
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_private_key_from_secret_and_curve(backend):
-    curve = ec.SECP256R1()
+    curve = ec.SECP521R1()
     private_key = ec.generate_private_key(curve, backend)
     public_numbers = private_key.public_key().public_numbers()
 
