@@ -104,20 +104,18 @@ def test_skip_ecdsa_vector(backend):
 def test_private_key_from_secret_and_curve(backend):
     curve = ec.SECP256K1()
     private_key = ec.generate_private_key(curve, backend)
-    private_numbers = private_key.private_numbers()
-    public_numbers = private_numbers.public_numbers()
+    public_numbers = private_key.public_key().public_numbers()
 
-    generated_private_value = private_numbers.private_value
+    generated_private_value = private_key.private_numbers().private_value
     generated_x = public_numbers.x
     generated_y = public_numbers.y
 
     private_key = ec.private_key_from_secret_and_curve(
         generated_private_value, curve, backend
     )
-    private_numbers = private_key.private_numbers()
-    public_numbers = private_numbers.public_numbers()
+    public_numbers = private_key.public_key().public_numbers()
 
-    derived_private_value = private_numbers.private_value
+    derived_private_value = private_key.private_numbers().private_value
     derived_x = public_numbers.x
     derived_y = public_numbers.y
 
