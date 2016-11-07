@@ -27,6 +27,12 @@ class DummyBackend(object):
     pass
 
 
+@utils.register_interface(ec.EllipticCurve)
+class DummyCurve(object):
+    name = "dummy-curve"
+    key_size = 1
+
+
 @utils.register_interface(CipherBackend)
 class DummyCipherBackend(object):
     def __init__(self, supported_ciphers):
@@ -504,6 +510,9 @@ class TestMultiBackend(object):
         assert not backend2.elliptic_curve_exchange_algorithm_supported(
             ec.ECDH(), ec.SECT163K1()
         )
+
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.derive_elliptic_curve_public_point(123, DummyCurve())
 
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])

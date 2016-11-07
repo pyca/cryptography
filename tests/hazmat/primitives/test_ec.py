@@ -123,6 +123,12 @@ def test_private_key_from_secret_and_curve(backend):
     assert generated_x == derived_x
     assert generated_y == derived_y
 
+    with pytest.raises(TypeError):
+        ec.private_key_from_secret_and_curve('one', curve, backend)
+
+    with pytest.raises(TypeError):
+        ec.private_key_from_secret_and_curve(10, 'five', backend)
+
 
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
