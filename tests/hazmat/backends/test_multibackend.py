@@ -514,6 +514,9 @@ class TestMultiBackend(object):
         with pytest.raises(UnsupportedAlgorithm):
             backend.derive_elliptic_curve_public_point(123, DummyCurve())
 
+        assert backend.derive_elliptic_curve_public_point(
+            123, ec.SECP256K1()) is None
+
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])
 
