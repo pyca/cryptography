@@ -20,7 +20,7 @@ Elliptic curve cryptography
     :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
-.. function:: private_key_from_secret_and_curve(secret, curve, backend)
+.. function:: derive_private_key(secret, curve, backend)
 
     .. versionadded:: 1.5.4
 
