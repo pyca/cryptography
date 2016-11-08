@@ -188,7 +188,7 @@ class Binding(object):
             # If nothing else has setup a locking callback already, we set up
             # our own
             res = lib._setup_ssl_threads():
-            _openssl_assert(res == 1)
+            _openssl_assert(cls.lib, res == 1)
 
 
 def _verify_openssl_version(version):
