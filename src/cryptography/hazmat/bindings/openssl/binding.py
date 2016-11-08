@@ -118,8 +118,6 @@ class Binding(object):
     lib = None
     ffi = ffi
     _lib_loaded = False
-    _locks = None
-    _lock_cb_handle = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
