@@ -181,8 +181,10 @@ class Binding(object):
             # Use Python's implementation if available, importing _ssl triggers
             # the setup for this.
             __import__("_ssl")
+
             if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
                 return
+
             # If nothing else has setup a locking callback already, we set up
             # our own
             res = lib._setup_ssl_threads():
