@@ -9,7 +9,6 @@ import os
 import threading
 import types
 import warnings
-import sysconfig
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -179,17 +178,16 @@ class Binding(object):
     def init_static_locks(cls):
         with cls._lock_init_lock:
             cls._ensure_ffi_initialized()
-            if sysconfig.get_config_var("WITH_THREAD"):
-                # Use Python's implementation if available, importing _ssl
-                # triggers the setup for this.
-                __import__("ssl")
-                if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
-                    return
-                # If nothing else has setup a locking callback already, we set up
-                # our own
-                if not lib._setup_ssl_threads():
-                    raise InternalError("Threading is enabled and cryptography is"
-                                        "unable to install locking callback!")
+            # Use Python's implementation if available, importing _ssl
+            # triggers the setup for this.
+            __import__("ssl")
+            if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
+                return
+            # If nothing else has setup a locking callback already, we set up
+            # our own
+            res = lib._setup_ssl_threads():
+            _openssl_assert(res == 1)
+
 
 def _verify_openssl_version(version):
     if version < 0x10001000:

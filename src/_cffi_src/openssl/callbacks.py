@@ -15,10 +15,6 @@ INCLUDES = """
 #include <openssl/x509_vfy.h>
 #include <openssl/crypto.h>
 
-"""
-
-if sysconfig.get_config_var("WITH_THREAD"):
-    INCLUDES += """
 #include <pythread.h>
 """
 
@@ -42,10 +38,10 @@ extern "Python" int Cryptography_pem_password_cb(char *, int, int, void *);
  */
 extern "Python" int Cryptography_rand_bytes(unsigned char *, int);
 extern "Python" int Cryptography_rand_status(void);
-
 """
 
 FUNCTIONS = """
+int _setup_ssl_threads(void);
 """
 
 MACROS = """
@@ -62,21 +58,9 @@ if cffi.__version_info__ < (1, 4, 0) or sys.version_info >= (3, 5):
     CUSTOMIZATIONS = """static const long Cryptography_STATIC_CALLBACKS = 0;
 """
 
-
-if sysconfig.get_config_var("WITH_THREAD"):
-    FUNCTIONS += """
-int _setup_ssl_threads(void);
-"""
-    CUSTOMIZATIONS += """
+CUSTOMIZATIONS += """
 static unsigned int _ssl_locks_count = 0;
 static PyThread_type_lock *_ssl_locks = NULL;
-
-/* use new CRYPTO_THREADID API. */
-static void _ssl_threadid_callback(CRYPTO_THREADID *id)
-{
-    CRYPTO_THREADID_set_numeric(id,
-                                (unsigned long)PyThread_get_thread_ident());
-}
 
 static void _ssl_thread_locking_function
     (int mode, int n, const char *file, int line) {
@@ -106,7 +90,6 @@ static void _ssl_thread_locking_function
 }
 
 int _setup_ssl_threads(void) {
-
     unsigned int i;
 
     if (_ssl_locks == NULL) {
@@ -130,10 +113,7 @@ int _setup_ssl_threads(void) {
             }
         }
         CRYPTO_set_locking_callback(_ssl_thread_locking_function);
-        CRYPTO_THREADID_set_callback(_ssl_threadid_callback);
     }
     return 1;
 }
-
 """
-
