@@ -178,9 +178,9 @@ class Binding(object):
     def init_static_locks(cls):
         with cls._lock_init_lock:
             cls._ensure_ffi_initialized()
-            # Use Python's implementation if available, importing _ssl
-            # triggers the setup for this.
-            __import__("ssl")
+            # Use Python's implementation if available, importing _ssl triggers
+            # the setup for this.
+            __import__("_ssl")
             if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
                 return
             # If nothing else has setup a locking callback already, we set up
