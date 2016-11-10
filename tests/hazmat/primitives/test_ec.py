@@ -105,25 +105,13 @@ def test_derive_private_key_success(backend):
     curve = ec.SECP256K1()
     _skip_curve_unsupported(backend, curve)
 
-    private_key = ec.generate_private_key(curve, backend)
-    public_numbers = private_key.public_key().public_numbers()
+    private_numbers = ec.generate_private_key(curve, backend).private_numbers()
 
-    generated_private_value = private_key.private_numbers().private_value
-    generated_x = public_numbers.x
-    generated_y = public_numbers.y
-
-    private_key = ec.derive_private_key(
-        generated_private_value, curve, backend
+    derived_key = ec.derive_private_key(
+        private_numbers.private_value, curve, backend
     )
-    public_numbers = private_key.public_key().public_numbers()
 
-    derived_private_value = private_key.private_numbers().private_value
-    derived_x = public_numbers.x
-    derived_y = public_numbers.y
-
-    assert generated_private_value == derived_private_value
-    assert generated_x == derived_x
-    assert generated_y == derived_y
+    assert private_numbers == derived_key.private_numbers()
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
