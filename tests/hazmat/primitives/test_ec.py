@@ -101,7 +101,7 @@ def test_skip_ecdsa_vector(backend):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-def test_private_key_from_secret_and_curve(backend):
+def test_derive_private_key_success(backend):
     curve = ec.SECP256K1()
     _skip_curve_unsupported(backend, curve)
 
@@ -124,6 +124,12 @@ def test_private_key_from_secret_and_curve(backend):
     assert generated_private_value == derived_private_value
     assert generated_x == derived_x
     assert generated_y == derived_y
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_derive_private_key_errors(backend):
+    curve = ec.SECP256K1()
+    _skip_curve_unsupported(backend, curve)
 
     with pytest.raises(TypeError):
         ec.derive_private_key('one', curve, backend)
