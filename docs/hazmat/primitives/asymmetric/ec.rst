@@ -22,7 +22,7 @@ Elliptic curve cryptography
 
 .. function:: derive_private_key(secret, curve, backend)
 
-    .. versionadded:: 1.5.4
+    .. versionadded:: 1.6
 
     Derive a private key from ``secret`` on ``curve`` for use with ``backend``.
 
