@@ -173,19 +173,6 @@ class TestOpenSSL(object):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
 
-    def test_actual_osrandom_bytes(self, monkeypatch):
-        skip_if_libre_ssl(backend.openssl_version_text())
-        sample_data = (b"\x01\x02\x03\x04" * 4)
-        length = len(sample_data)
-
-        def notrandom(size):
-            assert size == length
-            return sample_data
-        monkeypatch.setattr(os, "urandom", notrandom)
-        buf = backend._ffi.new("unsigned char[]", length)
-        backend._lib.RAND_bytes(buf, length)
-        assert backend._ffi.buffer(buf)[0:length] == sample_data
-
 
 class TestOpenSSLRandomEngine(object):
     def setup(self):
