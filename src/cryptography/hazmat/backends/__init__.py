@@ -4,11 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pkg_resources
 import sys
+import pkg_resources
 
 from cryptography.hazmat.backends.multibackend import MultiBackend
-if hasattr(sys, 'frozen'):
+
+# Check to see if the program is frozen
+# if frozen then manually try to import known packaged backends
+if getattr(sys, 'frozen', False):
     try:
         from cryptography.hazmat.backends.commoncrypto.backend import backend as be_cc
     except ImportError:
@@ -20,7 +23,9 @@ if hasattr(sys, 'frozen'):
         be_ossl = None
     _found_backends = [be for be in (be_cc, be_ossl) if be is not None]
 
+
 _available_backends_list = None
+
 
 def _available_backends():
     global _available_backends_list
@@ -42,6 +47,7 @@ def _available_backends():
     return _available_backends_list
 
 _default_backend = None
+
 
 def default_backend():
     global _default_backend
