@@ -5,20 +5,21 @@
 from __future__ import absolute_import, division, print_function
 
 import pkg_resources
+import sys
 
 from cryptography.hazmat.backends.multibackend import MultiBackend
+if hasattr(sys, 'frozen'):
+    try:
+        from cryptography.hazmat.backends.commoncrypto.backend import backend as be_cc
+    except ImportError:
+        be_cc = None
 
-try:
-    from cryptography.hazmat.backends.commoncrypto.backend import backend as be_cc
-except ImportError:
-    be_cc = None
+    try:
+        from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
+    except ImportError:
+        be_ossl = None
+    _found_backends = [be for be in (be_cc, be_ossl) if be is not None]
 
-try:
-    from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
-except ImportError:
-    be_ossl = None
-
-_found_backends = [be for be in (be_cc, be_ossl) if be is not None]
 _available_backends_list = None
 
 def _available_backends():
