@@ -38,7 +38,7 @@ Changelog
 
 * **SECURITY ISSUE**: Fixed a bug where ``HKDF`` would return an empty
   byte-string if used with a ``length`` less than ``algorithm.digest_size``.
-  Credit to **Markus Döring** for reporting the issue.
+  Credit to **Markus Döring** for reporting the issue. *CVE-2016-9243*
 
 1.5.2 - 2016-09-26
 ~~~~~~~~~~~~~~~~~~
