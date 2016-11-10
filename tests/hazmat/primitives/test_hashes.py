@@ -159,6 +159,54 @@ class TestMD5(object):
     )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2b(digest_size=64)),
+    skip_message="Does not support BLAKE2b",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2b(object):
+    test_BLAKE2b = generate_base_hash_test(
+        hashes.BLAKE2b(digest_size=64),
+        digest_size=64,
+        block_size=128,
+    )
+
+    def test_invalid_digest_size(self, backend):
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=65)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=0)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=-1)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2s(digest_size=32)),
+    skip_message="Does not support BLAKE2s",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2s(object):
+    test_BLAKE2s = generate_base_hash_test(
+        hashes.BLAKE2s(digest_size=32),
+        digest_size=32,
+        block_size=64,
+    )
+
+    def test_invalid_digest_size(self, backend):
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=33)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=0)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=-1)
+
+
 def test_invalid_backend():
     pretend_backend = object()
 

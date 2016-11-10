@@ -17,6 +17,7 @@ import warnings
 # ends.
 DeprecatedIn10 = DeprecationWarning
 DeprecatedIn14 = DeprecationWarning
+DeprecatedIn16 = DeprecationWarning
 
 
 def read_only_property(name):
@@ -27,6 +28,15 @@ def register_interface(iface):
     def register_decorator(klass):
         verify_interface(iface, klass)
         iface.register(klass)
+        return klass
+    return register_decorator
+
+
+def register_interface_if(predicate, iface):
+    def register_decorator(klass):
+        if predicate:
+            verify_interface(iface, klass)
+            iface.register(klass)
         return klass
     return register_decorator
 

@@ -8,6 +8,8 @@ import datetime
 
 import pytest
 
+import pytz
+
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import X509Backend
 
@@ -57,6 +59,22 @@ class TestRevokedCertificateBuilder(object):
         builder = x509.RevokedCertificateBuilder().serial_number(3)
         with pytest.raises(ValueError):
             builder.serial_number(4)
+
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_aware_revocation_date(self, backend):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        serial_number = 333
+        builder = x509.RevokedCertificateBuilder().serial_number(
+            serial_number
+        ).revocation_date(
+            time
+        )
+
+        revoked_certificate = builder.build(backend)
+        assert revoked_certificate.revocation_date == utc_time
 
     def test_revocation_date_invalid(self):
         with pytest.raises(TypeError):

@@ -34,16 +34,18 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
+* ``OpenSSL 1.1.0``
 
 .. warning::
     OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography
-    will drop support for it in a future release.
+    will drop support for it in the next release.
 
-On Windows
-----------
+Building cryptography on Windows
+--------------------------------
 
 The wheel package on Windows is a statically linked build (as of 0.5) so all
-dependencies are included. Just run
+dependencies are included. To install ``cryptography``, you will typically
+just run
 
 .. code-block:: console
 
@@ -169,7 +171,7 @@ dependencies.
     . env/bin/activate
     pip install -U setuptools
     pip install -U wheel pip
-    curl -O https://openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
+    curl -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
     tar xvf openssl-${OPENSSL_VERSION}.tar.gz
     cd openssl-${OPENSSL_VERSION}
     ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
@@ -192,7 +194,7 @@ users with pip 8 or above you only need one step:
 
     $ pip install cryptography
 
-If you want to build cryptography yourself or are on an older OS X version
+If you want to build cryptography yourself or are on an older OS X version,
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
 development tools.  To install the Xcode command line tools (on OS X 10.9+)
@@ -246,7 +248,7 @@ local `wheel cache`_.
 Building cryptography with conda
 --------------------------------
 
-Because of a `bug in conda`_, attempting to install cryptography out of the box
+Because of a bug in conda, attempting to install cryptography out of the box
 will result in an error. This can be resolved by setting the library path
 environment variable for your platform.
 
@@ -269,8 +271,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
-.. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _openssl.org: https://openssl.org/source/
+.. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching

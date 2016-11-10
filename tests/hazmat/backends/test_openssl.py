@@ -182,7 +182,7 @@ class TestOpenSSL(object):
             assert size == length
             return sample_data
         monkeypatch.setattr(os, "urandom", notrandom)
-        buf = backend._ffi.new("char[]", length)
+        buf = backend._ffi.new("unsigned char[]", length)
         backend._lib.RAND_bytes(buf, length)
         assert backend._ffi.buffer(buf)[0:length] == sample_data
 
@@ -247,7 +247,7 @@ class TestOpenSSLRandomEngine(object):
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
-        buf = backend._ffi.new("char[]", 500)
+        buf = backend._ffi.new("unsigned char[]", 500)
         res = backend._lib.RAND_bytes(buf, 500)
         assert res == 1
         assert backend._ffi.buffer(buf)[:] != "\x00" * 500
@@ -728,10 +728,18 @@ class TestGOSTCertificate(object):
             x509.load_der_x509_certificate,
             backend
         )
-        with pytest.raises(ValueError) as exc:
-            cert.subject
+        if (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I or
+            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            with pytest.raises(ValueError) as exc:
+                cert.subject
 
-        # We assert on the message in this case because if the certificate
-        # fails to load it will also raise a ValueError and this test could
-        # erroneously pass.
-        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
+            # We assert on the message in this case because if the certificate
+            # fails to load it will also raise a ValueError and this test could
+            # erroneously pass.
+            assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
+        else:
+            assert cert.subject.get_attributes_for_oid(
+                x509.ObjectIdentifier("1.2.643.3.131.1.1")
+            )[0].value == "007710474375"

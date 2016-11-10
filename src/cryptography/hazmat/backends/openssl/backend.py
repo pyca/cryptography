@@ -8,6 +8,7 @@ import base64
 import calendar
 import collections
 import itertools
+import sys
 from contextlib import contextmanager
 
 import six
@@ -17,7 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -114,6 +115,9 @@ def _pem_password_cb(buf, size, writing, userdata_handle):
 @utils.register_interface(RSABackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
+@utils.register_interface_if(
+    binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
+)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -185,8 +189,19 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
+    def _build_openssl_digest_name(self, algorithm):
+        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+            alg = "{0}{1}".format(
+                algorithm.name, algorithm.digest_size * 8
+            ).encode("ascii")
+        else:
+            alg = algorithm.name.encode("ascii")
+
+        return alg
+
     def hash_supported(self, algorithm):
-        digest = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        name = self._build_openssl_digest_name(algorithm)
+        digest = self._lib.EVP_get_digestbyname(name)
         return digest != self._ffi.NULL
 
     def hmac_supported(self, algorithm):
@@ -292,7 +307,7 @@ class Backend(object):
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
-        buf = self._ffi.new("char[]", length)
+        buf = self._ffi.new("unsigned char[]", length)
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode("ascii"))
         self.openssl_assert(evp_md != self._ffi.NULL)
@@ -1475,7 +1490,9 @@ class Backend(object):
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("EC point not on curve")
 
             res = get_func(group, point, check_x, check_y, bn_ctx)
             self.openssl_assert(res == 1)
@@ -1677,6 +1694,14 @@ class Backend(object):
                 serialization._ssh_write_string(curve_name) +
                 serialization._ssh_write_string(public_numbers.encode_point())
             )
+
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        buf = self._ffi.new("unsigned char[]", length)
+        res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,
+                                       len(salt), n, r, p, sys.maxsize // 2,
+                                       buf, length)
+        self.openssl_assert(res == 1)
+        return self._ffi.buffer(buf)[:]
 
 
 class GetCipherByName(object):

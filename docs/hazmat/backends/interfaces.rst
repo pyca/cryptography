@@ -652,3 +652,33 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: ``True`` if the given values of ``p`` and ``g`` are supported
             by this backend, otherwise ``False``.
+
+
+.. class:: ScryptBackend
+
+    .. versionadded:: 1.6
+
+    A backend with methods for using Scrypt.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+
+    .. method:: derive_scrypt(self, key_material, salt, length, n, r, p)
+
+        :param bytes key_material: The key material to use as a basis for
+            the derived key. This is typically a password.
+
+        :param bytes salt: A salt.
+
+        :param int length: The desired length of the derived key.
+
+        :param int n: CPU/Memory cost parameter. It must be larger than 1 and be a
+            power of 2.
+
+        :param int r: Block size parameter.
+
+        :param int p: Parallelization parameter.
+
+        :return bytes: Derived key.
+

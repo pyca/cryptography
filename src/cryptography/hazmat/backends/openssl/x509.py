@@ -107,18 +107,23 @@ class _Certificate(object):
 
     @property
     def signature_hash_algorithm(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_get0_signature(
-            self._backend._ffi.NULL, alg, self._x509
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        oid = _obj2txt(self._backend, alg[0].algorithm)
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{0} not recognized".format(oid)
             )
+
+    @property
+    def signature_algorithm_oid(self):
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_get0_signature(
+            self._backend._ffi.NULL, alg, self._x509
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
+        return x509.ObjectIdentifier(oid)
 
     @property
     def extensions(self):
@@ -223,18 +228,23 @@ class _CertificateRevocationList(object):
 
     @property
     def signature_hash_algorithm(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_CRL_get0_signature(
-            self._backend._ffi.NULL, alg, self._x509_crl
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        oid = _obj2txt(self._backend, alg[0].algorithm)
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{0} not recognized".format(oid)
             )
+
+    @property
+    def signature_algorithm_oid(self):
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_CRL_get0_signature(
+            self._x509_crl, self._backend._ffi.NULL, alg
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
+        return x509.ObjectIdentifier(oid)
 
     @property
     def issuer(self):
@@ -258,7 +268,7 @@ class _CertificateRevocationList(object):
     def signature(self):
         sig = self._backend._ffi.new("ASN1_BIT_STRING **")
         self._backend._lib.X509_CRL_get0_signature(
-            sig, self._backend._ffi.NULL, self._x509_crl
+            self._x509_crl, sig, self._backend._ffi.NULL
         )
         self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
         return _asn1_string_to_bytes(self._backend, sig[0])
@@ -355,18 +365,23 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature_hash_algorithm(self):
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_REQ_get0_signature(
-            self._backend._ffi.NULL, alg, self._x509_req
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        oid = _obj2txt(self._backend, alg[0].algorithm)
+        oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{0} not recognized".format(oid)
             )
+
+    @property
+    def signature_algorithm_oid(self):
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_REQ_get0_signature(
+            self._x509_req, self._backend._ffi.NULL, alg
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
+        return x509.ObjectIdentifier(oid)
 
     @property
     def extensions(self):
@@ -401,7 +416,7 @@ class _CertificateSigningRequest(object):
     def signature(self):
         sig = self._backend._ffi.new("ASN1_BIT_STRING **")
         self._backend._lib.X509_REQ_get0_signature(
-            sig, self._backend._ffi.NULL, self._x509_req
+            self._x509_req, sig, self._backend._ffi.NULL
         )
         self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
         return _asn1_string_to_bytes(self._backend, sig[0])

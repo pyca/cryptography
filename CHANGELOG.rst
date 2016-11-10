@@ -1,10 +1,63 @@
 Changelog
 =========
 
-1.5 - `master`_
+1.6 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* Deprecated support for OpenSSL 1.0.0. Support will be removed in
+  ``cryptography`` 1.7.
+* Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
+  :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
+  1.1.0.
+* Added
+  :attr:`~cryptography.x509.Certificate.signature_algorithm_oid` support to
+  :class:`~cryptography.x509.Certificate`.
+* Added
+  :attr:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateSigningRequest`.
+* Added
+  :attr:`~cryptography.x509.CertificateRevocationList.signature_algorithm_oid`
+  support to :class:`~cryptography.x509.CertificateRevocationList`.
+* Added support for :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`
+  when using OpenSSL 1.1.0.
+* Added support for generating a
+  :meth:`~cryptography.x509.random_serial_number`.
+* Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
+  certificates for use with :class:`~cryptography.x509.NameConstraints`.
+* Added :class:`~cryptography.x509.RelativeDistinguishedName`
+* :class:`~cryptography.x509.DistributionPoint` now accepts
+  :class:`~cryptography.x509.RelativeDistinguishedName` for
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+  Deprecated use of :class:`~cryptography.x509.Name` as
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+
+1.5.3 - 2016-11-05
+~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where ``HKDF`` would return an empty
+  byte-string if used with a ``length`` less than ``algorithm.digest_size``.
+  Credit to **Markus Döring** for reporting the issue. *CVE-2016-9243*
+
+1.5.2 - 2016-09-26
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2j.
+
+1.5.1 - 2016-09-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2i.
+* Resolved a ``UserWarning`` when used with cffi 1.8.3.
+* Fixed a memory leak in name creation with X.509.
+* Added a workaround for old versions of setuptools.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  OpenSSL 1.0.2i.
+
+
+1.5 - 2016-08-26
+~~~~~~~~~~~~~~~~
 
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.padding.calculate_max_pss_salt_length`.
@@ -20,6 +73,11 @@ Changelog
   methods to ECDSA keys.
 * Switched back to the older callback model on Python 3.5 in order to mitigate
   the locking callback problem with OpenSSL <1.1.0.
+* :class:`~cryptography.x509.CertificateBuilder`,
+  :class:`~cryptography.x509.CertificateRevocationListBuilder`, and
+  :class:`~cryptography.x509.RevokedCertificateBuilder` now accept timezone
+  aware ``datetime`` objects as method arguments
+* ``cryptography`` now supports OpenSSL 1.1.0 as a compilation target.
 
 
 1.4 - 2016-06-04

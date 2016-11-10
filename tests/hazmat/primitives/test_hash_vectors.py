@@ -158,3 +158,37 @@ class TestMD5(object):
         ],
         hashes.MD5(),
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2b(digest_size=64)),
+    skip_message="Does not support BLAKE2b",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2b(object):
+    test_b2b = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "blake2"),
+        [
+            "blake2b.txt",
+        ],
+        hashes.BLAKE2b(digest_size=64),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2s(digest_size=32)),
+    skip_message="Does not support BLAKE2s",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2s256(object):
+    test_b2s = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "blake2"),
+        [
+            "blake2s.txt",
+        ],
+        hashes.BLAKE2s(digest_size=32),
+    )

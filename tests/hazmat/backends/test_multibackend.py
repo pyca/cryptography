@@ -13,7 +13,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -228,6 +228,12 @@ class DummyX509Backend(object):
         pass
 
     def create_x509_revoked_certificate(self, builder):
+        pass
+
+
+@utils.register_interface(ScryptBackend)
+class DummyScryptBackend(object):
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
         pass
 
 
@@ -558,3 +564,11 @@ class TestMultiBackend(object):
             )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.create_x509_revoked_certificate(object())
+
+    def test_scrypt(self):
+        backend = MultiBackend([DummyScryptBackend()])
+        backend.derive_scrypt(b"key", b"salt", 1, 1, 1, 1)
+
+        backend = MultiBackend([DummyBackend])
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.derive_scrypt(b"key", b"salt", 1, 1, 1, 1)

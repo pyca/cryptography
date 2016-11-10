@@ -134,6 +134,8 @@ Then we generate the certificate itself:
     ...     issuer
     ... ).public_key(
     ...     private_key.public_key()
+    ... ).serial_number(
+    ...     x509.random_serial_number()
     ... ).not_valid_before(
     ...     datetime.datetime.utcnow()
     ... ).not_valid_after(

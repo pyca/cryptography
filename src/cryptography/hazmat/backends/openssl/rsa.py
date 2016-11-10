@@ -103,7 +103,7 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
         backend.openssl_assert(res > 0)
 
     outlen = backend._ffi.new("size_t *", buf_size)
-    buf = backend._ffi.new("char[]", buf_size)
+    buf = backend._ffi.new("unsigned char[]", buf_size)
     res = crypt(pkey_ctx, buf, outlen, data, len(data))
     if res <= 0:
         _handle_rsa_enc_dec_error(backend, key)

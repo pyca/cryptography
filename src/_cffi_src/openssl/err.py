@@ -126,7 +126,6 @@ static const int EVP_R_NO_CIPHER_SET;
 static const int EVP_R_NO_DIGEST_SET;
 static const int EVP_R_PUBLIC_KEY_NOT_RSA;
 static const int EVP_R_UNKNOWN_PBE_ALGORITHM;
-static const int EVP_R_UNSUPORTED_NUMBER_OF_ROUNDS;
 static const int EVP_R_UNSUPPORTED_CIPHER;
 static const int EVP_R_UNSUPPORTED_KEY_DERIVATION_FUNCTION;
 static const int EVP_R_UNSUPPORTED_KEYLENGTH;
