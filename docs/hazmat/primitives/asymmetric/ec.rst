@@ -26,7 +26,7 @@ Elliptic curve cryptography
 
     Derive a private key from ``secret`` on ``curve`` for use with ``backend``.
 
-    :param secret: An instance of :class:`int`.
+    :param int secret: The secret scalar value
 
     :param curve: An instance of :class:`EllipticCurve`.
 
