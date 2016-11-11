@@ -117,6 +117,9 @@ X.509
 * ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
   cipher and containing numerous unusual encodings such as NUMERICSTRING in
   the subject DN.
+* ``alternate-rsa-sha1-oid.pem`` - A certificate from an
+  `unknown signature OID`_ Mozilla bug that uses an alternate signature OID for
+  RSA with SHA1.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -459,3 +462,4 @@ header format (substituting the correct information):
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
 .. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
+.. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966

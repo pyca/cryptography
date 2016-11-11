@@ -502,6 +502,18 @@ class TestRSACertificate(object):
             cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
         )
 
+    def test_alternate_rsa_with_sha1_oid(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "alternate-rsa-sha1-oid.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
+        assert (
+            cert.signature_algorithm_oid ==
+            SignatureAlgorithmOID._RSA_WITH_SHA1
+        )
+
     def test_cert_serial_number(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
