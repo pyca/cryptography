@@ -12,6 +12,7 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 
+
 @utils.register_interface(CMACBackend)
 @utils.register_interface(CipherBackend)
 @utils.register_interface(DERSerializationBackend)
