@@ -38,6 +38,7 @@ Changelog
   attribute.  When constructed with an iterable of
   :class:`~cryptography.x509.NameAttribute`, each attribute becomes
   a single-valued RDN.
+* Added `~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
 
 1.5.3 - 2016-11-05
 ~~~~~~~~~~~~~~~~~~
