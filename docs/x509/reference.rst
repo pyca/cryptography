@@ -2232,6 +2232,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.8"``.
 
+    .. attribute:: STREET
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.9"``.
+
     .. attribute:: ORGANIZATION_NAME
 
         Corresponds to the dotted string ``"2.5.4.10"``.
@@ -2261,6 +2267,12 @@ instances. The following common OIDs are available as constants.
     .. attribute:: GENERATION_QUALIFIER
 
         Corresponds to the dotted string ``"2.5.4.44"``.
+
+    .. attribute:: UNIQUE_IDENTIFIER
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.45"``.
 
     .. attribute:: DN_QUALIFIER
 
