@@ -279,6 +279,19 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.derive_elliptic_curve_public_point(private_value,
+                                                            curve)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return any(
             b.elliptic_curve_exchange_algorithm_supported(algorithm, curve)

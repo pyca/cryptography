@@ -422,6 +422,15 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
 
+    .. method:: derive_elliptic_curve_public_point(private_value, curve)
+
+        :param private_value: A secret scalar value.
+
+        :param curve: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
+
+        :returns: A tuple (x, y).
+
 .. class:: PEMSerializationBackend
 
     .. versionadded:: 0.6

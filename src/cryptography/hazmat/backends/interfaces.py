@@ -221,6 +221,12 @@ class EllipticCurveBackend(object):
         Returns whether the exchange algorithm is supported by this backend.
         """
 
+    @abc.abstractmethod
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        """
+        Compute the public key point (x, y) given the private value and curve.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class PEMSerializationBackend(object):

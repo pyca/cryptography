@@ -20,6 +20,22 @@ Elliptic curve cryptography
     :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
+.. function:: derive_private_key(secret, curve, backend)
+
+    .. versionadded:: 1.6
+
+    Derive a private key from ``secret`` on ``curve`` for use with ``backend``.
+
+    :param int secret: The secret scalar value.
+
+    :param curve: An instance of :class:`EllipticCurve`.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+
+    :returns: A new instance of :class:`EllipticCurvePrivateKey`.
+
+
 Elliptic Curve Signature Algorithms
 -----------------------------------
 
