@@ -121,6 +121,8 @@ class NameOID(object):
 class SignatureAlgorithmOID(object):
     RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
     RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
+    # This is an alternate OID for RSA with SHA1 that is occasionally seen
+    _RSA_WITH_SHA1 = ObjectIdentifier("1.3.14.3.2.29")
     RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
     RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
     RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
@@ -137,6 +139,7 @@ class SignatureAlgorithmOID(object):
 _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
     SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
+    SignatureAlgorithmOID._RSA_WITH_SHA1: hashes.SHA1(),
     SignatureAlgorithmOID.RSA_WITH_SHA224: hashes.SHA224(),
     SignatureAlgorithmOID.RSA_WITH_SHA256: hashes.SHA256(),
     SignatureAlgorithmOID.RSA_WITH_SHA384: hashes.SHA384(),

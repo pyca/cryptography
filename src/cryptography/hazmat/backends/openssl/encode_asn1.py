@@ -79,19 +79,23 @@ def _encode_inhibit_any_policy(backend, inhibit_any_policy):
     return _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
 
 
-def _encode_name(backend, attributes):
+def _encode_name(backend, name):
     """
     The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
     """
     subject = backend._lib.X509_NAME_new()
-    for attribute in attributes:
-        name_entry = _encode_name_entry(backend, attribute)
-        # X509_NAME_add_entry dups the object so we need to gc this copy
-        name_entry = backend._ffi.gc(
-            name_entry, backend._lib.X509_NAME_ENTRY_free
-        )
-        res = backend._lib.X509_NAME_add_entry(subject, name_entry, -1, 0)
-        backend.openssl_assert(res == 1)
+    for rdn in name.rdns:
+        set_flag = 0  # indicate whether to add to last RDN or create new RDN
+        for attribute in rdn:
+            name_entry = _encode_name_entry(backend, attribute)
+            # X509_NAME_add_entry dups the object so we need to gc this copy
+            name_entry = backend._ffi.gc(
+                name_entry, backend._lib.X509_NAME_ENTRY_free
+            )
+            res = backend._lib.X509_NAME_add_entry(
+                    subject, name_entry, -1, set_flag)
+            backend.openssl_assert(res == 1)
+            set_flag = -1
     return subject
 
 

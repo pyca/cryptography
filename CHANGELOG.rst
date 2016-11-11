@@ -26,13 +26,25 @@ Changelog
   :meth:`~cryptography.x509.random_serial_number`.
 * Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
   certificates for use with :class:`~cryptography.x509.NameConstraints`.
+* Added :class:`~cryptography.x509.RelativeDistinguishedName`
+* :class:`~cryptography.x509.DistributionPoint` now accepts
+  :class:`~cryptography.x509.RelativeDistinguishedName` for
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+  Deprecated use of :class:`~cryptography.x509.Name` as
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+* :class:`~cryptography.x509.Name` now accepts an iterable of
+  :class:`~cryptography.x509.RelativeDistinguishedName`.  RDNs can
+  be accessed via the :attr:`~cryptography.x509.Name.rdns`
+  attribute.  When constructed with an iterable of
+  :class:`~cryptography.x509.NameAttribute`, each attribute becomes
+  a single-valued RDN.
 
 1.5.3 - 2016-11-05
 ~~~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE**: Fixed a bug where ``HKDF`` would return an empty
   byte-string if used with a ``length`` less than ``algorithm.digest_size``.
-  Credit to **Markus Döring** for reporting the issue.
+  Credit to **Markus Döring** for reporting the issue. *CVE-2016-9243*
 
 1.5.2 - 2016-09-26
 ~~~~~~~~~~~~~~~~~~
