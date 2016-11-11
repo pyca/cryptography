@@ -32,6 +32,12 @@ Changelog
   :attr:`~cryptography.x509.DistributionPoint.relative_name`.
   Deprecated use of :class:`~cryptography.x509.Name` as
   :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+* :class:`~cryptography.x509.Name` now accepts an iterable of
+  :class:`~cryptography.x509.RelativeDistinguishedName`.  RDNs can
+  be accessed via the :attr:`~cryptography.x509.Name.rdns`
+  attribute.  When constructed with an iterable of
+  :class:`~cryptography.x509.NameAttribute`, each attribute becomes
+  a single-valued RDN.
 
 1.5.3 - 2016-11-05
 ~~~~~~~~~~~~~~~~~~

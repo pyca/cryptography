@@ -2641,6 +2641,30 @@ class TestCertificateSigningRequestBuilder(object):
         ]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_ca_request_with_multivalue_rdns(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        subject = x509.Name([
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.TITLE, u'Test'),
+                x509.NameAttribute(NameOID.COMMON_NAME, u'Multivalue'),
+                x509.NameAttribute(NameOID.SURNAME, u'RDNs'),
+            ]),
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA')
+            ]),
+        ])
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            subject
+        ).sign(private_key, hashes.SHA1(), backend)
+
+        loaded_request = x509.load_pem_x509_csr(
+            request.public_bytes(encoding=serialization.Encoding.PEM), backend
+        )
+        assert isinstance(loaded_request.subject, x509.Name)
+        assert loaded_request.subject == subject
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_nonca_request_with_rsa(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -3724,44 +3748,43 @@ class TestObjectIdentifier(object):
 
 class TestName(object):
     def test_eq(self):
-        name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
-        ])
+        ava1 = x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ava2 = x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
+        name1 = x509.Name([ava1, ava2])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.RelativeDistinguishedName([ava1]),
+            x509.RelativeDistinguishedName([ava2]),
         ])
+        name3 = x509.Name([x509.RelativeDistinguishedName([ava1, ava2])])
+        name4 = x509.Name([x509.RelativeDistinguishedName([ava2, ava1])])
         assert name1 == name2
+        assert name3 == name4
 
     def test_ne(self):
-        name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
-        ])
-        name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-        ])
+        ava1 = x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ava2 = x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
+        name1 = x509.Name([ava1, ava2])
+        name2 = x509.Name([ava2, ava1])
+        name3 = x509.Name([x509.RelativeDistinguishedName([ava1, ava2])])
         assert name1 != name2
+        assert name1 != name3
         assert name1 != object()
 
     def test_hash(self):
-        name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
-        ])
+        ava1 = x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ava2 = x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
+        name1 = x509.Name([ava1, ava2])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.RelativeDistinguishedName([ava1]),
+            x509.RelativeDistinguishedName([ava2]),
         ])
-        name3 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-        ])
-
+        name3 = x509.Name([ava2, ava1])
+        name4 = x509.Name([x509.RelativeDistinguishedName([ava1, ava2])])
+        name5 = x509.Name([x509.RelativeDistinguishedName([ava2, ava1])])
         assert hash(name1) == hash(name2)
         assert hash(name1) != hash(name3)
+        assert hash(name1) != hash(name4)
+        assert hash(name4) == hash(name5)
 
     def test_iter_input(self):
         attrs = [
@@ -3770,6 +3793,17 @@ class TestName(object):
         name = x509.Name(iter(attrs))
         assert list(name) == attrs
         assert list(name) == attrs
+
+    def test_rdns(self):
+        rdn1 = x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        rdn2 = x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
+        name1 = x509.Name([rdn1, rdn2])
+        assert name1.rdns == [
+            x509.RelativeDistinguishedName([rdn1]),
+            x509.RelativeDistinguishedName([rdn2]),
+        ]
+        name2 = x509.Name([x509.RelativeDistinguishedName([rdn1, rdn2])])
+        assert name2.rdns == [x509.RelativeDistinguishedName([rdn1, rdn2])]
 
     def test_repr(self):
         name = x509.Name([

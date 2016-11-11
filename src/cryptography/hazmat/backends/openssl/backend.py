@@ -820,7 +820,7 @@ class Backend(object):
 
         # Set the subject's name.
         res = self._lib.X509_set_subject_name(
-            x509_cert, _encode_name_gc(self, list(builder._subject_name))
+            x509_cert, _encode_name_gc(self, builder._subject_name)
         )
         self.openssl_assert(res == 1)
 
@@ -860,7 +860,7 @@ class Backend(object):
 
         # Set the issuer name.
         res = self._lib.X509_set_issuer_name(
-            x509_cert, _encode_name_gc(self, list(builder._issuer_name))
+            x509_cert, _encode_name_gc(self, builder._issuer_name)
         )
         self.openssl_assert(res == 1)
 
@@ -911,7 +911,7 @@ class Backend(object):
 
         # Set the issuer name.
         res = self._lib.X509_CRL_set_issuer_name(
-            x509_crl, _encode_name_gc(self, list(builder._issuer_name))
+            x509_crl, _encode_name_gc(self, builder._issuer_name)
         )
         self.openssl_assert(res == 1)
 

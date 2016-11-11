@@ -1102,6 +1102,18 @@ X.509 CSR (Certificate Signing Request) Builder Object
     slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
     ``CN=mydomain.com, O=My Org, C=US``).
 
+    Technically, a Name is a list of *sets* of attributes, called *Relative
+    Distinguished Names* or *RDNs*, although multi-valued RDNs are rarely
+    encountered.  The iteration order of values within a multi-valued RDN is
+    undefined.  If you need to handle multi-valued RDNs, the ``rdns`` property
+    gives access to an ordered list of :class:`RelativeDistinguishedName`
+    objects.
+
+    A Name can be initialized with an iterable of :class:`NameAttribute` (the
+    common case where each RDN has a single attribute) or an iterable of
+    :class:`RelativeDistinguishedName` objects (in the rare case of
+    multi-valued RDNs).
+
     .. doctest::
 
         >>> len(cert.subject)
@@ -1111,6 +1123,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
+
+    .. attribute:: rdns
+
+        .. versionadded:: 1.6
+
+        :type: list of :class:`RelativeDistinguishedName`
 
     .. method:: get_attributes_for_oid(oid)
 
@@ -1142,7 +1160,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. versionadded:: 0.8
 
-    An X.509 name consists of a list of NameAttribute instances.
+    An X.509 name consists of a list of :class:`RelativeDistinguishedName`
+    instances, which consist of a set of :class:`NameAttribute` instances.
 
     .. attribute:: oid
 

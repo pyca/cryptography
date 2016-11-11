@@ -33,3 +33,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Maximilian Hils <max@maximilianhils.com>
 * Simo Sorce <simo@redhat.com>
 * Thomas Sileo <t@a4.io>
+* Fraser Tweedale <ftweedal@redhat.com>
