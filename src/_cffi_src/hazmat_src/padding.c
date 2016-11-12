@@ -15,7 +15,7 @@ static uint16_t Cryptography_constant_time_lt(uint16_t a, uint16_t b) {
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
-uint16_t Cryptography_check_pkcs7_padding(const uint8_t *data,
+uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
                                          uint16_t block_len) {
     uint16_t i;
     uint16_t pad_size = data[block_len - 1];
@@ -39,7 +39,7 @@ uint16_t Cryptography_check_pkcs7_padding(const uint8_t *data,
     return (mismatch & 1) == 0;
 }
 
-uint16_t Cryptography_check_ansix923_padding(const uint8_t *data,
+uint8_t Cryptography_check_ansix923_padding(const uint8_t *data,
                                             uint16_t block_len) {
     uint16_t i;
     uint16_t pad_size = data[block_len - 1];
