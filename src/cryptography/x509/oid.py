@@ -107,7 +107,7 @@ class NameOID(object):
     GIVEN_NAME = ObjectIdentifier("2.5.4.42")
     TITLE = ObjectIdentifier("2.5.4.12")
     GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
-    UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
+    X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
@@ -189,7 +189,7 @@ _OID_NAMES = {
     NameOID.GIVEN_NAME: "givenName",
     NameOID.TITLE: "title",
     NameOID.GENERATION_QUALIFIER: "generationQualifier",
-    NameOID.UNIQUE_IDENTIFIER: "uniqueIdentifier",
+    NameOID.X500_UNIQUE_IDENTIFIER: "x500UniqueIdentifier",
     NameOID.DN_QUALIFIER: "dnQualifier",
     NameOID.PSEUDONYM: "pseudonym",
     NameOID.DOMAIN_COMPONENT: "domainComponent",
