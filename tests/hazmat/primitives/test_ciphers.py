@@ -241,7 +241,7 @@ class TestCipherUpdateIntoUnsupported(object):
         skip_message="Does not support AES ECB",
     )
     def test_cffi_too_old_ecb(self, backend):
-        self._too_old(modes.ECB())
+        self._too_old(modes.ECB(), backend)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
@@ -250,7 +250,7 @@ class TestCipherUpdateIntoUnsupported(object):
         skip_message="Does not support AES CTR",
     )
     def test_cffi_too_old_ctr(self, backend):
-        self._too_old(modes.CTR(b"0" * 16))
+        self._too_old(modes.CTR(b"0" * 16), backend)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
@@ -259,4 +259,4 @@ class TestCipherUpdateIntoUnsupported(object):
         skip_message="Does not support AES GCM",
     )
     def test_cffi_too_old_gcm(self, mode, backend):
-        self._too_old(modes.GCM(b"0" * 16))
+        self._too_old(modes.GCM(b"0" * 16), backend)
