@@ -424,6 +424,15 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_X509
         )
 
+    def x509_name_bytes(self, name):
+        for b in self._filtered_backends(X509Backend):
+            return b.x509_name_bytes(name)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
+        )
+
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         for b in self._filtered_backends(ScryptBackend):
             return b.derive_scrypt(key_material, salt, length, n, r, p)
