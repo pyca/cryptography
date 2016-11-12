@@ -99,6 +99,7 @@ class NameOID(object):
     COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
     LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
     STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
+    STREET_ADDRESS = ObjectIdentifier("2.5.4.9")
     ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
     ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
     SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
@@ -106,6 +107,7 @@ class NameOID(object):
     GIVEN_NAME = ObjectIdentifier("2.5.4.42")
     TITLE = ObjectIdentifier("2.5.4.12")
     GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
+    UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
@@ -179,6 +181,7 @@ _OID_NAMES = {
     NameOID.COUNTRY_NAME: "countryName",
     NameOID.LOCALITY_NAME: "localityName",
     NameOID.STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
+    NameOID.STREET_ADDRESS: "streetAddress",
     NameOID.ORGANIZATION_NAME: "organizationName",
     NameOID.ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
     NameOID.SERIAL_NUMBER: "serialNumber",
@@ -186,6 +189,7 @@ _OID_NAMES = {
     NameOID.GIVEN_NAME: "givenName",
     NameOID.TITLE: "title",
     NameOID.GENERATION_QUALIFIER: "generationQualifier",
+    NameOID.UNIQUE_IDENTIFIER: "uniqueIdentifier",
     NameOID.DN_QUALIFIER: "dnQualifier",
     NameOID.PSEUDONYM: "pseudonym",
     NameOID.DOMAIN_COMPONENT: "domainComponent",
