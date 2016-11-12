@@ -173,6 +173,12 @@ class TestCipherUpdateInto(object):
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
     def test_update_into_gcm(self, backend):
         key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
         iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
