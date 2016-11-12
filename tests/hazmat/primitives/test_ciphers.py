@@ -224,22 +224,39 @@ class TestCipherUpdateInto(object):
     parse_version(cffi.__version__) >= parse_version('1.7'),
     reason="cffi version too new"
 )
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        AES(b"\x00" * 16), modes.ECB()
-    ),
-    skip_message="Does not support AES ECB",
-)
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipherUpdateIntoUnsupported(object):
-    @pytest.mark.parametrize(
-        "mode",
-        [modes.ECB(), modes.CTR(b"0" * 16), modes.GCM(b"0" * 12)]
-    )
-    def test_cffi_too_old(self, mode, backend):
+    def _too_old(self, mode, backend):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), mode, backend)
         encryptor = c.encryptor()
         buf = bytearray(32)
         with pytest.raises(NotImplementedError):
             encryptor.update_into(b"\x00" * 16, buf)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.ECB()
+        ),
+        skip_message="Does not support AES ECB",
+    )
+    def test_cffi_too_old_ecb(self, backend):
+        self._too_old(modes.ECB())
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.CTR(b"0" * 16)
+        ),
+        skip_message="Does not support AES CTR",
+    )
+    def test_cffi_too_old_ctr(self, backend):
+        self._too_old(modes.CTR(b"0" * 16))
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"0" * 16)
+        ),
+        skip_message="Does not support AES GCM",
+    )
+    def test_cffi_too_old_gcm(self, mode, backend):
+        self._too_old(GCM(b"0" * 16))
