@@ -4,9 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.backends import _build_frozen_backend_list
+from cryptography.hazmat.backends import _backend_import_fallback
 
 
-def test_build_frozen_backend_list():
-    backends = _build_frozen_backend_list()
+def test_backend_import_fallback_empty_backends():
+    backends = _backend_import_fallback([])
     assert len(backends) >= 1
+
+
+def test_backend_import_fallback_existing_backends():
+    backend_list = [1, 2, 3, 4]
+    assert backend_list == _backend_import_fallback(backend_list)
