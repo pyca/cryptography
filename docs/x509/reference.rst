@@ -2232,7 +2232,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.8"``.
 
-    .. attribute:: STREET
+    .. attribute:: STREET_ADDRESS
 
         .. versionadded:: 1.6
 

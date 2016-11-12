@@ -99,7 +99,7 @@ class NameOID(object):
     COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
     LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
     STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
-    STREET = ObjectIdentifier("2.5.4.9")
+    STREET_ADDRESS = ObjectIdentifier("2.5.4.9")
     ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
     ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
     SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
@@ -178,7 +178,7 @@ _OID_NAMES = {
     NameOID.COUNTRY_NAME: "countryName",
     NameOID.LOCALITY_NAME: "localityName",
     NameOID.STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
-    NameOID.STREET: "street",
+    NameOID.STREET_ADDRESS: "streetAddress",
     NameOID.ORGANIZATION_NAME: "organizationName",
     NameOID.ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
     NameOID.SERIAL_NUMBER: "serialNumber",
