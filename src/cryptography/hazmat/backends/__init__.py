@@ -5,26 +5,11 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+
 import pkg_resources
 
 from cryptography.hazmat.backends.multibackend import MultiBackend
 
-
-def _build_frozen_backend_list():
-    # if found frozen then manually try to import known packaged backends
-    try:
-        from cryptography.hazmat.backends.commoncrypto.backend import backend as be_cc
-    except ImportError:
-        be_cc = None
-
-    try:
-        from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
-    except ImportError:
-        be_ossl = None
-
-    _found_backends = [be for be in (be_cc, be_ossl) if be is not None]
-
-    return _found_backends
 
 _available_backends_list = None
 
@@ -46,7 +31,35 @@ def _available_backends():
             )
         ]
 
+        if not _available_backends_list and getattr(sys, 'frozen', False):
+            # if iter_entry_points fails to find any backends and sys is frozen
+            # then manually try to import our bundled backends
+            # as a workaround for issues with application bundlers like
+            # pyinstaller, cx_freeze, etc
+            _available_backends_list = _build_frozen_backend_list()
+
     return _available_backends_list
+
+
+def _build_frozen_backend_list():
+    try:
+        from cryptography.hazmat.backends.commoncrypto.backend import (
+            backend as be_cc
+        )
+    except ImportError:
+        be_cc = None
+
+    try:
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as be_ossl
+        )
+    except ImportError:
+        be_ossl = None
+
+    _found_backends = [be for be in (be_cc, be_ossl) if be is not None]
+
+    return _found_backends
+
 
 _default_backend = None
 
@@ -55,9 +68,6 @@ def default_backend():
     global _default_backend
 
     if _default_backend is None:
-        if _available_backends():
-            _default_backend = MultiBackend(_available_backends())
-        elif getattr(sys, 'frozen', False):
-            _default_backend = MultiBackend(_build_frozen_backend_list())
+        _default_backend = MultiBackend(_available_backends())
 
     return _default_backend
