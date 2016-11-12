@@ -2306,7 +2306,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.44"``.
 
-    .. attribute:: UNIQUE_IDENTIFIER
+    .. attribute:: X500_UNIQUE_IDENTIFIER
 
         .. versionadded:: 1.6
 
