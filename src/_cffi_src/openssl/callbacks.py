@@ -61,8 +61,8 @@ CUSTOMIZATIONS += """
 static unsigned int _ssl_locks_count = 0;
 static PyThread_type_lock *_ssl_locks = NULL;
 
-static void _ssl_thread_locking_function
-    (int mode, int n, const char *file, int line) {
+static void _ssl_thread_locking_function(int mode, int n, const char *file,
+                                         int line) {
     /* this function is needed to perform locking on shared data
        structures. (Note that OpenSSL uses a number of global data
        structures that will be implicitly shared whenever multiple
@@ -78,8 +78,9 @@ static void _ssl_thread_locking_function
     */
 
     if ((_ssl_locks == NULL) ||
-        (n < 0) || ((unsigned)n >= _ssl_locks_count))
+        (n < 0) || ((unsigned)n >= _ssl_locks_count)) {
         return;
+    }
 
     if (mode & CRYPTO_LOCK) {
         PyThread_acquire_lock(_ssl_locks[n], 1);
@@ -98,8 +99,7 @@ int _setup_ssl_threads(void) {
             PyErr_NoMemory();
             return 0;
         }
-        memset(_ssl_locks, 0,
-               sizeof(PyThread_type_lock) * _ssl_locks_count);
+        memset(_ssl_locks, 0, sizeof(PyThread_type_lock) * _ssl_locks_count);
         for (i = 0;  i < _ssl_locks_count;  i++) {
             _ssl_locks[i] = PyThread_allocate_lock();
             if (_ssl_locks[i] == NULL) {
