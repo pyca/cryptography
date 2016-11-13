@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 # This file is dual licensed under the terms of the Apache License, Version
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
@@ -63,7 +61,7 @@ CUSTOMIZATIONS += """
 /* This code is derived from the locking code found in the Python _ssl module's
    locking callback for OpenSSL.
 
-   Copyright © 2001-2016 Python Software Foundation; All Rights Reserved.
+   Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
 */
 
 static unsigned int _ssl_locks_count = 0;
