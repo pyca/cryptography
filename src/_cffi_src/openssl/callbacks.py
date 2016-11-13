@@ -58,6 +58,12 @@ if cffi.__version_info__ < (1, 4, 0) or sys.version_info >= (3, 5):
 """
 
 CUSTOMIZATIONS += """
+/* This code is derived from the locking code found in the Python _ssl module's
+   locking callback for OpenSSL.
+
+   Copyright © 2001-2016 Python Software Foundation; All Rights Reserved.
+*/
+
 static unsigned int _ssl_locks_count = 0;
 static PyThread_type_lock *_ssl_locks = NULL;
 
