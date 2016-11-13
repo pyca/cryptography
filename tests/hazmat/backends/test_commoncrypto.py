@@ -8,6 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import _available_backends
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, GCM
@@ -52,3 +53,12 @@ class TestCommonCrypto(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
+
+    @pytest.mark.requires_backend_interface(interface=CipherBackend)
+    def test_update_into_gcm_buffer_too_small(self, backend):
+        key = b"\x00" * 16
+        c = Cipher(AES(key), GCM(b"0" * 12), backend)
+        encryptor = c.encryptor()
+        buf = bytearray(5)
+        with pytest.raises(ValueError):
+            encryptor.update_into(b"testing", buf)

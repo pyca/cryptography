@@ -61,6 +61,9 @@ class TestCipherContext(object):
         with pytest.raises(AlreadyFinalized):
             encryptor.update(b"b" * 16)
         with pytest.raises(AlreadyFinalized):
+            buf = bytearray(31)
+            encryptor.update_into(b"b" * 16, buf)
+        with pytest.raises(AlreadyFinalized):
             encryptor.finalize()
         decryptor = cipher.decryptor()
         decryptor.update(b"a" * 16)

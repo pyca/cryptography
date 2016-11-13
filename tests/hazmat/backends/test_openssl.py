@@ -16,7 +16,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import RSABackend
+from cryptography.hazmat.backends.interfaces import CipherBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
@@ -611,3 +611,17 @@ class TestGOSTCertificate(object):
             assert cert.subject.get_attributes_for_oid(
                 x509.ObjectIdentifier("1.2.643.3.131.1.1")
             )[0].value == "007710474375"
+
+
+@pytest.mark.skipif(
+    backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
+    reason="Requires an OpenSSL version < 1.0.1"
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+def test_update_into_not_implemented_aes_ctr_ossl_100(backend):
+        key = b"\x00" * 16
+        c = Cipher(AES(key), CTR(b"0" * 16), backend)
+        encryptor = c.encryptor()
+        buf = bytearray(16)
+        with pytest.raises(NotImplementedError):
+            encryptor.update_into(b"testing", buf)
