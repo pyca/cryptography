@@ -109,7 +109,7 @@ class Name(object):
     def rdns(self):
         return self._attributes
 
-    def bytes(self, backend):
+    def public_bytes(self, backend):
         return backend.x509_name_bytes(self)
 
     def __eq__(self, other):

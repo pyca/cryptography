@@ -3848,7 +3848,7 @@ class TestName(object):
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
-        assert name.bytes(backend) == binascii.unhexlify(
+        assert name.public_bytes(backend) == binascii.unhexlify(
             b"30293118301606035504030c0f63727970746f6772617068792e696f310d300"
             b"b060355040a0c0450794341"
         )

@@ -1142,7 +1142,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
 
-    .. method:: bytes(backend)
+    .. method:: public_bytes(backend)
 
         .. versionadded:: 1.6
 
