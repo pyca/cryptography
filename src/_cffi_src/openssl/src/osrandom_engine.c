@@ -61,6 +61,11 @@ static int osrandom_rand_status(void) {
         return 1;
     }
 }
+
+static const char* osurandom_get_implementation(void) {
+    return "CryptGenRandom";
+}
+
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM */
 
 /****************************************************************************
@@ -89,12 +94,16 @@ static int osrandom_finish(ENGINE *e) {
 static int osrandom_rand_status(void) {
     return 1;
 }
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM */
+
+static const char* osurandom_get_implementation(void) {
+    return "CCRandomGenerateBytes";
+}
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM */
 
 /****************************************************************************
  * BSD getentropy
  */
-#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
+#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
 
 static int osrandom_init(ENGINE *e) {
@@ -109,7 +118,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         len = size > 256 : 256: size;
         res = getentropy(buffer, len);
         if (res < 0) {
-            CRYPTOGRAPHY_OSRANDOM_put_error(
+            CRYPTOGRAPHY_OSRANDOM_put_error(as
                 "osrandom_engine.py:getentropy()");
             return 0;
         }
@@ -126,7 +135,11 @@ static int osrandom_finish(ENGINE *e) {
 static int osrandom_rand_status(void) {
     return 1;
 }
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM */
+
+static const char* osurandom_get_implementation(void) {
+    return "getentropy";
+}
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
 
 /****************************************************************************
  * /dev/urandom helpers for all non-BSD Unix platforms
@@ -233,13 +246,13 @@ static void dev_urandom_close(void) {
         }
     }
 }
-#endif
+#endif /* CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM */
 
 /****************************************************************************
  * Linux getrandom engine with fallback to dev_urandom
  */
 
-#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
+#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine getrandom()";
 
 static int getrandom_works = -1;
@@ -305,7 +318,14 @@ static int osrandom_rand_status(void) {
     }
     return 1;
 }
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
+
+static const char* osurandom_get_implementation(void) {
+    if (getrandom_works == 1) {
+        return "getrandom";
+    }
+    return "/dev/urandom";
+}
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM */
 
 /****************************************************************************
  * dev_urandom engine for all remaining platforms
@@ -338,7 +358,14 @@ static int osrandom_rand_status(void) {
     return 1;
 }
 
+static const char* osurandom_get_implementation(void) {
+    return "/dev/urandom";
+}
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM */
+
+/****************************************************************************
+ * ENGINE boiler plate
+ */
 
 /* This replicates the behavior of the OpenSSL FIPS RNG, which returns a
    -1 in the event that there is an error when calling RAND_pseudo_bytes. */
@@ -360,6 +387,39 @@ static RAND_METHOD osrandom_rand = {
     osrandom_rand_status,
 };
 
+static const ENGINE_CMD_DEFN osrandom_cmd_defns[] = {
+    {CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION,
+     "get_implementation",
+     "Get CPRNG implementation.",
+     ENGINE_CMD_FLAG_NO_INPUT},
+     {0, NULL, NULL, 0}
+};
+
+static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) {
+    const char* name;
+    size_t len;
+
+    switch (cmd) {
+    case CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION:
+        name = osurandom_get_implementation();
+        len = strlen(name);
+        if ((p == NULL) && (i == 0)) {
+            /* return required buffer len */
+            return len;
+        }
+        if ((p == NULL) || ((size_t)i <= len)) {
+            /* no buffer or buffer too small */
+            ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_INVALID_ARGUMENT);
+            return 0;
+        }
+        strncpy((char *)p, name, len);
+        return len;
+    default:
+        ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED);
+        return 0;
+    }
+}
+
 /* Returns 1 if successfully added, 2 if engine has previously been added,
    and 0 for error. */
 int Cryptography_add_osrandom_engine(void) {
@@ -380,7 +440,9 @@ int Cryptography_add_osrandom_engine(void) {
             !ENGINE_set_name(e, Cryptography_osrandom_engine_name) ||
             !ENGINE_set_RAND(e, &osrandom_rand) ||
             !ENGINE_set_init_function(e, osrandom_init) ||
-            !ENGINE_set_finish_function(e, osrandom_finish)) {
+            !ENGINE_set_finish_function(e, osrandom_finish) ||
+            !ENGINE_set_cmd_defns(e, osrandom_cmd_defns) ||
+            !ENGINE_set_ctrl_function(e, osrandom_ctrl)) {
         ENGINE_free(e);
         return 0;
     }

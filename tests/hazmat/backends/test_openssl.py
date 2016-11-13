@@ -269,6 +269,14 @@ class TestOpenSSLRandomEngine(object):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
 
+    def test_osrandom_engine_implementation(self):
+        name = backend.osrandom_engine_implementation()
+        assert name
+        if sys.platform.startswith('linux'):
+            assert name in ['getrandom', '/dev/urandom']
+        elif sys.platform == 'win32':
+            assert name == 'CryptGenRandom'
+
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
