@@ -312,6 +312,12 @@ class X509Backend(object):
         object.
         """
 
+    @abc.abstractmethod
+    def x509_name_bytes(self, name):
+        """
+        Compute the DER encoded bytes of an X509 Name object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):

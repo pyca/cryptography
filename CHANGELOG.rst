@@ -26,6 +26,7 @@ Changelog
   :meth:`~cryptography.x509.random_serial_number`.
 * Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
   certificates for use with :class:`~cryptography.x509.NameConstraints`.
+* Added :meth:`~cryptography.x509.Name.public_bytes`.
 * Added :class:`~cryptography.x509.RelativeDistinguishedName`
 * :class:`~cryptography.x509.DistributionPoint` now accepts
   :class:`~cryptography.x509.RelativeDistinguishedName` for

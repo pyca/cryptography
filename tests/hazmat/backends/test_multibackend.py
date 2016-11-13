@@ -240,6 +240,9 @@ class DummyX509Backend(object):
     def create_x509_revoked_certificate(self, builder):
         pass
 
+    def x509_name_bytes(self, name):
+        pass
+
 
 @utils.register_interface(ScryptBackend)
 class DummyScryptBackend(object):
@@ -554,6 +557,7 @@ class TestMultiBackend(object):
         backend.create_x509_certificate(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_crl(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_revoked_certificate(object())
+        backend.x509_name_bytes(object())
 
         backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
@@ -580,6 +584,8 @@ class TestMultiBackend(object):
             )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.create_x509_revoked_certificate(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.x509_name_bytes(object())
 
     def test_scrypt(self):
         backend = MultiBackend([DummyScryptBackend()])

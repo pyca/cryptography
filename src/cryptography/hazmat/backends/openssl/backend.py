@@ -1729,6 +1729,17 @@ class Backend(object):
                 serialization._ssh_write_string(public_numbers.encode_point())
             )
 
+    def x509_name_bytes(self, name):
+        x509_name = _encode_name_gc(self, name)
+        pp = self._ffi.new("unsigned char **")
+        res = self._lib.i2d_X509_NAME(x509_name, pp)
+        self.openssl_assert(pp[0] != self._ffi.NULL)
+        pp = self._ffi.gc(
+            pp, lambda pointer: self._lib.OPENSSL_free(pointer[0])
+        )
+        self.openssl_assert(res > 0)
+        return self._ffi.buffer(pp[0], res)[:]
+
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
         res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,

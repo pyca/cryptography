@@ -3842,6 +3842,17 @@ class TestName(object):
         with pytest.raises(TypeError):
             x509.Name(["not-a-NameAttribute"])
 
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_bytes(self, backend):
+        name = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+        ])
+        assert name.public_bytes(backend) == binascii.unhexlify(
+            b"30293118301606035504030c0f63727970746f6772617068792e696f310d300"
+            b"b060355040a0c0450794341"
+        )
+
 
 def test_random_serial_number(monkeypatch):
     sample_data = os.urandom(20)
