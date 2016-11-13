@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
 import threading
 import types
 import warnings
@@ -80,21 +79,6 @@ def ffi_callback(signature, name, **kwargs):
             callback = ffi.callback(signature, **kwargs)(func)
         return callback
     return wrapper
-
-
-@ffi_callback("int (*)(unsigned char *, int)",
-              name="Cryptography_rand_bytes",
-              error=-1)
-def _osrandom_rand_bytes(buf, size):
-    signed = ffi.cast("char *", buf)
-    result = os.urandom(size)
-    signed[0:size] = result
-    return 1
-
-
-@ffi_callback("int (*)(void)", name="Cryptography_rand_status")
-def _osrandom_rand_status():
-    return 1
 
 
 def build_conditional_library(lib, conditional_names):

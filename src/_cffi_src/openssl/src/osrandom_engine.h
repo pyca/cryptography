@@ -38,34 +38,33 @@
 #define CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM 4
 #define CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM 5
 
-/* getentropy is not available in FreeBSD-10.1-RELEASE-p5 and older
- * TODO: check NetBSD and Darwin */
-#if defined(_WIN32)
-  /* Windows */
-  #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM
-#elif defined(__APPLE__) && defined(CRYPTOGRAPHY_HAVE_COMMON_RANDOM_H)
-  /* OSX 10.10+ */
-  #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM
-#elif defined(BSD) && defined(SYS_getentropy)
-  /* OpenBSD 5.6+ */
-  #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
-#elif defined(__linux__) && defined(SYS_getrandom)
-  /* Linux 3.4.17+ */
-  #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
-  #define CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM 1
-#endif
-
-/* Fall back to /dev/urandom */
 #ifndef CRYPTOGRAPHY_OSRANDOM_ENGINE
-  #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM
+  #if defined(_WIN32)
+    /* Windows */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM
+  #elif defined(__APPLE__) && defined(CRYPTOGRAPHY_HAVE_COMMON_RANDOM_H)
+    /* OSX 10.10+ */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM
+  #elif defined(BSD) && defined(SYS_getentropy)
+    /* OpenBSD 5.6+ */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
+  #elif defined(__linux__) && defined(SYS_getrandom)
+    /* Linux 3.4.17+ */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
+  #else
+    /* Keep this as last entry, fall back to /dev/urandom */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM
+  #endif
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE */
+
+/* Fallbacks need /dev/urandom helper functions. */
+#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM || \
+     CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM
   #define CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM 1
 #endif
 
-/* Open SSL 1.1.0+ has no ERR_R_RAND_LIB */
-#ifdef ERR_R_RAND_LIB
-  #define CRYPTOGRAPHY_OSRANDOM_put_error(funcname) \
-      ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, funcname, 0)
-#else
-  #define CRYPTOGRAPHY_OSRANDOM_put_error(funcname) \
+#define CRYPTOGRAPHY_OSRANDOM_put_error(funcname) \
       ERR_put_error(ERR_LIB_RAND, 0, 0, funcname, 0)
-#endif
+
+/* engine ctrl */
+#define CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION ENGINE_CMD_BASE

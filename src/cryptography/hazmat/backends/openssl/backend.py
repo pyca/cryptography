@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import base64
 import calendar
 import collections
+import contextlib
 import itertools
 import sys
 from contextlib import contextmanager
@@ -157,9 +158,8 @@ class Backend(object):
             res = self._lib.ENGINE_finish(e)
             self.openssl_assert(res == 1)
 
-    def activate_osrandom_engine(self):
-        # Unregister and free the current engine.
-        self.activate_builtin_random()
+    @contextlib.contextmanager
+    def _get_osurandom_engine(self):
         # Fetches an engine by id and returns it. This creates a structural
         # reference.
         e = self._lib.ENGINE_by_id(self._binding._osrandom_engine_id)
@@ -167,17 +167,35 @@ class Backend(object):
         # Initialize the engine for use. This adds a functional reference.
         res = self._lib.ENGINE_init(e)
         self.openssl_assert(res == 1)
-        # Set the engine as the default RAND provider.
-        res = self._lib.ENGINE_set_default_RAND(e)
-        self.openssl_assert(res == 1)
-        # Decrement the structural ref incremented by ENGINE_by_id.
-        res = self._lib.ENGINE_free(e)
-        self.openssl_assert(res == 1)
-        # Decrement the functional ref incremented by ENGINE_init.
-        res = self._lib.ENGINE_finish(e)
-        self.openssl_assert(res == 1)
+
+        try:
+            yield e
+        finally:
+            # Decrement the structural ref incremented by ENGINE_by_id.
+            res = self._lib.ENGINE_free(e)
+            self.openssl_assert(res == 1)
+            # Decrement the functional ref incremented by ENGINE_init.
+            res = self._lib.ENGINE_finish(e)
+            self.openssl_assert(res == 1)
+
+    def activate_osrandom_engine(self):
+        # Unregister and free the current engine.
+        self.activate_builtin_random()
+        with self._get_osurandom_engine() as e:
+            # Set the engine as the default RAND provider.
+            res = self._lib.ENGINE_set_default_RAND(e)
+            self.openssl_assert(res == 1)
         # Reset the RNG to use the new engine.
         self._lib.RAND_cleanup()
+
+    def osrandom_engine_implementation(self):
+        buf = self._ffi.new("char[]", 64)
+        with self._get_osurandom_engine() as e:
+            res = self._lib.ENGINE_ctrl_cmd(e, b"get_implementation",
+                                            len(buf), buf,
+                                            self._ffi.NULL, 0)
+            self.openssl_assert(res > 0)
+        return self._ffi.string(buf).decode('ascii')
 
     def openssl_version_text(self):
         """
