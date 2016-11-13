@@ -40,6 +40,10 @@ greater.
         Activates the OS random engine. This will effectively disable OpenSSL's
         default CSPRNG.
 
+    .. method:: osrandom_engine_implementation()
+
+        Returns the implementation of OS random engine.
+
     .. method:: activate_builtin_random()
 
         This will activate the default OpenSSL CSPRNG.
@@ -80,6 +84,23 @@ details.
 
 Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source
 seeded from the same pool as ``/dev/random``.
+
++------------------------------------------+------------------------------+
+| Windows                                  | ``CryptGenRandom()``         |
++------------------------------------------+------------------------------+
+| Linux >= 3.4.17 with working             | ``getrandom(GRND_NONBLOCK)`` |
+| ``SYS_getrandom`` syscall                |                              |
++------------------------------------------+------------------------------+
+| OSX >= 10.10                             | ``CCRandomGenerateBytes()``  |
++------------------------------------------+------------------------------+
+| OpenBSD >= 5.6                           | ``getentropy()``             |
++------------------------------------------+------------------------------+
+| BSD family with                          | ``getentropy()``             |
+| ``SYS_getentropy`` in ``sys/syscall.h``  |                              |
++------------------------------------------+------------------------------+
+| fallback                                 | ``/dev/urandom`` with        |
+|                                          | cached file descriptor       |
++------------------------------------------+------------------------------+
 
 
 .. _`OpenSSL`: https://www.openssl.org/

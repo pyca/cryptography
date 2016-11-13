@@ -271,11 +271,17 @@ class TestOpenSSLRandomEngine(object):
 
     def test_osrandom_engine_implementation(self):
         name = backend.osrandom_engine_implementation()
-        assert name
+        assert name in ['/dev/urandom', 'CCRandomGenerateBytes',
+                        'CryptGenRandom', 'getentropy', 'getrandom']
         if sys.platform.startswith('linux'):
             assert name in ['getrandom', '/dev/urandom']
-        elif sys.platform == 'win32':
-            assert name == 'CryptGenRandom'
+        elif sys.platform == 'darwin':
+            assert name in ['CCRandomGenerateBytes', '/dev/urandom']
+        # TODO: enable when CI can handle coverage.py for these platforms
+        # elif 'bsd' in sys.platform:
+        #     assert name in ['getentropy', '/dev/urandom']
+        # elif sys.platform == 'win32':
+        #     assert name == 'CryptGenRandom'
 
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
