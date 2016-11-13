@@ -258,5 +258,5 @@ class TestCipherUpdateIntoUnsupported(object):
         ),
         skip_message="Does not support AES GCM",
     )
-    def test_cffi_too_old_gcm(self, mode, backend):
+    def test_cffi_too_old_gcm(self, backend):
         self._too_old(modes.GCM(b"0" * 16), backend)
