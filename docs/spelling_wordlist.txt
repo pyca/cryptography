@@ -32,6 +32,7 @@ Django
 Docstrings
 El
 Encodings
+fallback
 Fernet
 fernet
 FIPS
@@ -58,6 +59,7 @@ nonces
 online
 paddings
 Parallelization
+personalization
 pickleable
 plaintext
 pre
@@ -74,6 +76,7 @@ serializer
 Serializers
 SHA
 Solaris
+syscall
 Tanja
 testability
 tunable

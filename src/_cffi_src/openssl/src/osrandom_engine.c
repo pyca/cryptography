@@ -7,8 +7,10 @@
  * Linux 3.4.17+   getrandom() with fallback to /dev/urandom
  * other           /dev/urandom with cached fd
  *
- * The code is largely inspired by Python/random.c, written by Antoine Pitrou
- * and Victor Stinner.
+ * The /dev/urandom, getrandom and getentropy code is derived from Python's
+ * Python/random.c, written by Antoine Pitrou and Victor Stinner.
+ *
+ * Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
  */
 
 static const char *Cryptography_osrandom_engine_id = "osrandom";
@@ -401,13 +403,14 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
 
     switch (cmd) {
     case CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION:
+        /* i: buffer size, p: char* buffer */
         name = osurandom_get_implementation();
         len = strlen(name);
         if ((p == NULL) && (i == 0)) {
             /* return required buffer len */
             return len;
         }
-        if ((p == NULL) || ((size_t)i <= len)) {
+        if ((p == NULL) || i < 0 || ((size_t)i <= len)) {
             /* no buffer or buffer too small */
             ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_INVALID_ARGUMENT);
             return 0;
