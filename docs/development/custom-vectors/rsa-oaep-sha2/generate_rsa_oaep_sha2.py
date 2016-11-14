@@ -104,6 +104,7 @@ def write_file(data, filename):
     with open(filename, "w") as f:
         f.write(data)
 
+
 oaep_path = os.path.join(
     "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "oaep-vect.txt"
 )
