@@ -35,7 +35,7 @@ key derivation functions. For example, to encrypt something with
     >>> token
     '...'
     >>> f.decrypt(token)
-    'A really secret message. Not for prying eyes.'
+    b'A really secret message. Not for prying eyes.'
 
 You can find more information in the `documentation`_.
 
