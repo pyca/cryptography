@@ -1142,6 +1142,16 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
 
+    .. method:: public_bytes(backend)
+
+        .. versionadded:: 1.6
+
+        :param backend: A backend supporting the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :return bytes: The DER encoded name.
+
 .. class:: Version
 
     .. versionadded:: 0.7
