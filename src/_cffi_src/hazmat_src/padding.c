@@ -8,7 +8,7 @@ static uint16_t Cryptography_DUPLICATE_MSB_TO_ALL(uint16_t a) {
     return (1 - (a >> (sizeof(uint16_t) * 8 - 1))) - 1;
 }
 
-/* This returns 0xFF if a < b else 0x00, but does so in a constant time
+/* This returns 0xFFFF if a < b else 0x0000, but does so in a constant time
    fashion */
 static uint16_t Cryptography_constant_time_lt(uint16_t a, uint16_t b) {
     a -= b;
