@@ -16,7 +16,7 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
-        _available_backends_list = [
+        entry_point_backends = [
             # DeprecatedIn16
             # setuptools 11.3 deprecated support for the require parameter to
             # load(), and introduced the new resolve() method instead.
@@ -29,7 +29,37 @@ def _available_backends():
             )
         ]
 
+        _available_backends_list = _backend_import_fallback(
+            entry_point_backends
+        )
+
     return _available_backends_list
+
+
+def _backend_import_fallback(backends):
+    # If backends already exist just return them. This branch is here
+    # to get full line coverage from our tests.
+    if backends:
+        return backends
+
+    # if iter_entry_points fails to find any backends then manually try to
+    # import our current backends as a workaround for issues with application
+    # bundlers like pyinstaller, cx_freeze, etc
+
+    # OpenSSL is guaranteed to be present until we unbundle the backends.
+    from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
+    backends = [be_ossl]
+    try:
+        from cryptography.hazmat.backends.commoncrypto.backend import (
+            backend as be_cc
+        )
+    except ImportError:
+        pass
+    else:
+        backends.append(be_cc)
+
+    return backends
+
 
 _default_backend = None
 
