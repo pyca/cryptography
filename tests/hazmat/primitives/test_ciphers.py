@@ -190,6 +190,13 @@ class TestCipherUpdateInto(object):
         res = encryptor.update_into(pt, buf)
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
+        encryptor.finalize()
+        c = ciphers.Cipher(AES(key), modes.GCM(iv, encryptor.tag), backend)
+        decryptor = c.decryptor()
+        res = decryptor.update_into(ct, buf)
+        decryptor.finalize()
+        assert res == len(pt)
+        assert bytes(buf)[:res] == pt
 
     @pytest.mark.parametrize(
         "params",
