@@ -1386,7 +1386,7 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def derive_elliptic_curve_public_point(self, private_value, curve):
+    def derive_elliptic_curve_public_key(self, private_value, curve):
         curve_nid = self._elliptic_curve_to_nid(curve)
 
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
