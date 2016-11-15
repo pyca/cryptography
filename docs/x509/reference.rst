@@ -1214,6 +1214,18 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+    .. attribute:: short_name
+
+        :type: :class:`str` or None
+
+        The short name of the OID (e.g. ``"CN"``) or None.
+
+    .. attribute:: long_name
+
+        :type: :class:`str` or None
+
+        The long name of the OID (e.g. ``"commonName"``)  or None.
+
 .. _general_name_classes:
 
 General Name Classes
@@ -2332,6 +2344,10 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.65"``.
 
+    .. attribute:: USER_ID
+
+        Corresponds to the dotted string ``"0.9.2342.19200300.100.1.1"``.
+
     .. attribute:: DOMAIN_COMPONENT
 
         Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``. A string
@@ -2356,6 +2372,14 @@ instances. The following common OIDs are available as constants.
     .. attribute:: BUSINESS_CATEGORY
 
         Corresponds to the dotted string ``"2.5.4.15"``.
+
+    .. attribute:: POSTAL_ADDRESS
+
+        Corresponds to the dotted string ``"2.5.4.16"``.
+
+    .. attribute:: POSTAL_CODE
+
+        Corresponds to the dotted string ``"2.5.4.17"``.
 
 
 .. class:: SignatureAlgorithmOID

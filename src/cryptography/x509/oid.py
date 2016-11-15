@@ -61,7 +61,15 @@ class ObjectIdentifier(object):
 
     @property
     def _name(self):
-        return _OID_NAMES.get(self, "Unknown OID")
+        return _OID_NAMES.get(self, ("Unknown OID", None))[0]
+
+    @property
+    def longname(self):
+        return _OID_NAMES.get(self, (None, None))[0]
+
+    @property
+    def shortname(self):
+        return _OID_NAMES.get(self, (None, None))[1]
 
     dotted_string = utils.read_only_property("_dotted_string")
 
@@ -110,6 +118,7 @@ class NameOID(object):
     X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
+    USER_ID = ObjectIdentifier("0.9.2342.19200300.100.1.1")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
     EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
     JURISDICTION_COUNTRY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.3")
@@ -118,6 +127,8 @@ class NameOID(object):
         "1.3.6.1.4.1.311.60.2.1.2"
     )
     BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
+    POSTAL_ADDRESS = ObjectIdentifier("2.5.4.16")
+    POSTAL_CODE = ObjectIdentifier("2.5.4.17")
 
 
 class SignatureAlgorithmOID(object):
@@ -178,75 +189,101 @@ class CertificatePoliciesOID(object):
     ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 
+# ObjectIdentifier -> long name, short name
 _OID_NAMES = {
-    NameOID.COMMON_NAME: "commonName",
-    NameOID.COUNTRY_NAME: "countryName",
-    NameOID.LOCALITY_NAME: "localityName",
-    NameOID.STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
-    NameOID.STREET_ADDRESS: "streetAddress",
-    NameOID.ORGANIZATION_NAME: "organizationName",
-    NameOID.ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
-    NameOID.SERIAL_NUMBER: "serialNumber",
-    NameOID.SURNAME: "surname",
-    NameOID.GIVEN_NAME: "givenName",
-    NameOID.TITLE: "title",
-    NameOID.GENERATION_QUALIFIER: "generationQualifier",
-    NameOID.X500_UNIQUE_IDENTIFIER: "x500UniqueIdentifier",
-    NameOID.DN_QUALIFIER: "dnQualifier",
-    NameOID.PSEUDONYM: "pseudonym",
-    NameOID.DOMAIN_COMPONENT: "domainComponent",
-    NameOID.EMAIL_ADDRESS: "emailAddress",
-    NameOID.JURISDICTION_COUNTRY_NAME: "jurisdictionCountryName",
-    NameOID.JURISDICTION_LOCALITY_NAME: "jurisdictionLocalityName",
-    NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME: (
-        "jurisdictionStateOrProvinceName"
+    NameOID.COMMON_NAME: ("commonName", "CN"),
+    NameOID.COUNTRY_NAME: ("countryName", "C"),
+    NameOID.LOCALITY_NAME: ("localityName", "L"),
+    NameOID.STATE_OR_PROVINCE_NAME: ("stateOrProvinceName", "ST"),
+    NameOID.STREET_ADDRESS: ("streetAddress", "street"),
+    NameOID.ORGANIZATION_NAME: ("organizationName", "O"),
+    NameOID.ORGANIZATIONAL_UNIT_NAME: ("organizationalUnitName", "OU"),
+    NameOID.SERIAL_NUMBER: ("serialNumber", "serialNumber"),
+    NameOID.SURNAME: ("surname", "SN"),
+    NameOID.GIVEN_NAME: ("givenName", "GN"),
+    NameOID.TITLE: ("title", "title"),
+    NameOID.GENERATION_QUALIFIER: (
+        "generationQualifier", "generationQualifier"
     ),
-    NameOID.BUSINESS_CATEGORY: "businessCategory",
+    NameOID.X500_UNIQUE_IDENTIFIER: (
+        "x500UniqueIdentifier", "x500UniqueIdentifier"
+    ),
+    NameOID.DN_QUALIFIER: ("dnQualifier", "dnQualifier"),
+    NameOID.PSEUDONYM: ("pseudonym", "pseudonym"),
+    NameOID.USER_ID: ("userID", "UID"),
+    NameOID.DOMAIN_COMPONENT: ("domainComponent", "DN"),
+    NameOID.EMAIL_ADDRESS: ("emailAddress", "emailAddress"),
+    NameOID.JURISDICTION_COUNTRY_NAME: (
+        "jurisdictionCountryName", "jurisdictionC"
+    ),
+    NameOID.JURISDICTION_LOCALITY_NAME: (
+        "jurisdictionLocalityName", "jurisdictionL"
+    ),
+    NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME: (
+        "jurisdictionStateOrProvinceName", "jurisdictionST"
+    ),
+    NameOID.BUSINESS_CATEGORY: ("businessCategory", "businessCategory"),
+    NameOID.POSTAL_ADDRESS: ("postalAddress", "postalAddress"),
+    NameOID.POSTAL_CODE: ("postalCode", "postalCode"),
 
-    SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
-    SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
-    SignatureAlgorithmOID.RSA_WITH_SHA224: "sha224WithRSAEncryption",
-    SignatureAlgorithmOID.RSA_WITH_SHA256: "sha256WithRSAEncryption",
-    SignatureAlgorithmOID.RSA_WITH_SHA384: "sha384WithRSAEncryption",
-    SignatureAlgorithmOID.RSA_WITH_SHA512: "sha512WithRSAEncryption",
-    SignatureAlgorithmOID.ECDSA_WITH_SHA1: "ecdsa-with-SHA1",
-    SignatureAlgorithmOID.ECDSA_WITH_SHA224: "ecdsa-with-SHA224",
-    SignatureAlgorithmOID.ECDSA_WITH_SHA256: "ecdsa-with-SHA256",
-    SignatureAlgorithmOID.ECDSA_WITH_SHA384: "ecdsa-with-SHA384",
-    SignatureAlgorithmOID.ECDSA_WITH_SHA512: "ecdsa-with-SHA512",
-    SignatureAlgorithmOID.DSA_WITH_SHA1: "dsa-with-sha1",
-    SignatureAlgorithmOID.DSA_WITH_SHA224: "dsa-with-sha224",
-    SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
-    ExtendedKeyUsageOID.SERVER_AUTH: "serverAuth",
-    ExtendedKeyUsageOID.CLIENT_AUTH: "clientAuth",
-    ExtendedKeyUsageOID.CODE_SIGNING: "codeSigning",
-    ExtendedKeyUsageOID.EMAIL_PROTECTION: "emailProtection",
-    ExtendedKeyUsageOID.TIME_STAMPING: "timeStamping",
-    ExtendedKeyUsageOID.OCSP_SIGNING: "OCSPSigning",
-    ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
-    ExtensionOID.SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
-    ExtensionOID.KEY_USAGE: "keyUsage",
-    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
-    ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
-    CRLEntryExtensionOID.CRL_REASON: "cRLReason",
-    CRLEntryExtensionOID.INVALIDITY_DATE: "invalidityDate",
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
-    ExtensionOID.NAME_CONSTRAINTS: "nameConstraints",
-    ExtensionOID.CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
-    ExtensionOID.CERTIFICATE_POLICIES: "certificatePolicies",
-    ExtensionOID.POLICY_MAPPINGS: "policyMappings",
-    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: "authorityKeyIdentifier",
-    ExtensionOID.POLICY_CONSTRAINTS: "policyConstraints",
-    ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
-    ExtensionOID.FRESHEST_CRL: "freshestCRL",
-    ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
-    ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
-    ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
-    ExtensionOID.CRL_NUMBER: "cRLNumber",
-    AuthorityInformationAccessOID.OCSP: "OCSP",
-    AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
-    CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
-    CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
+    SignatureAlgorithmOID.RSA_WITH_MD5: (
+        "md5WithRSAEncryption", "RSA-MD5"
+    ),
+    SignatureAlgorithmOID.RSA_WITH_SHA1: (
+        "sha1WithRSAEncryption", "RSA-SHA1"
+    ),
+    SignatureAlgorithmOID.RSA_WITH_SHA224: (
+        "sha224WithRSAEncryption", "RSA-SHA224"
+    ),
+    SignatureAlgorithmOID.RSA_WITH_SHA256: (
+        "sha256WithRSAEncryption", "RSA-SHA256"
+    ),
+    SignatureAlgorithmOID.RSA_WITH_SHA384: (
+        "sha384WithRSAEncryption", "RSA-SHA384"
+    ),
+    SignatureAlgorithmOID.RSA_WITH_SHA512: (
+        "sha512WithRSAEncryption", "RSA-SHA512"
+    ),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA1: ("ecdsa-with-SHA1", None),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA224: ("ecdsa-with-SHA224", None),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA256: ("ecdsa-with-SHA256", None),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA384: ("ecdsa-with-SHA384", None),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA512: ("ecdsa-with-SHA512", None),
+    SignatureAlgorithmOID.DSA_WITH_SHA1: ("dsa-with-sha1", "DSA-SHA1"),
+    SignatureAlgorithmOID.DSA_WITH_SHA224: ("dsa-with-sha224", None),
+    SignatureAlgorithmOID.DSA_WITH_SHA256: ("dsa-with-sha256", None),
+    ExtendedKeyUsageOID.SERVER_AUTH: ("serverAuth", None),
+    ExtendedKeyUsageOID.CLIENT_AUTH: ("clientAuth", None),
+    ExtendedKeyUsageOID.CODE_SIGNING: ("codeSigning", None),
+    ExtendedKeyUsageOID.EMAIL_PROTECTION: ("emailProtection", None),
+    ExtendedKeyUsageOID.TIME_STAMPING: ("timeStamping", None),
+    ExtendedKeyUsageOID.OCSP_SIGNING: ("OCSPSigning", None),
+    ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: (
+        "subjectDirectoryAttributes", None
+    ),
+    ExtensionOID.SUBJECT_KEY_IDENTIFIER: ("subjectKeyIdentifier", None),
+    ExtensionOID.KEY_USAGE: ("keyUsage", None),
+    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: ("subjectAltName", None),
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: ("issuerAltName", None),
+    ExtensionOID.BASIC_CONSTRAINTS: ("basicConstraints", None),
+    CRLEntryExtensionOID.CRL_REASON: ("cRLReason", None),
+    CRLEntryExtensionOID.INVALIDITY_DATE: ("invalidityDate", None),
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: ("certificateIssuer", None),
+    ExtensionOID.NAME_CONSTRAINTS: ("nameConstraints", None),
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: ("cRLDistributionPoints", None),
+    ExtensionOID.CERTIFICATE_POLICIES: ("certificatePolicies", None),
+    ExtensionOID.POLICY_MAPPINGS: ("policyMappings", None),
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: ("authorityKeyIdentifier", None),
+    ExtensionOID.POLICY_CONSTRAINTS: ("policyConstraints", None),
+    ExtensionOID.EXTENDED_KEY_USAGE: ("extendedKeyUsage", None),
+    ExtensionOID.FRESHEST_CRL: ("freshestCRL", None),
+    ExtensionOID.INHIBIT_ANY_POLICY: ("inhibitAnyPolicy", None),
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: ("authorityInfoAccess", None),
+    ExtensionOID.SUBJECT_INFORMATION_ACCESS: ("subjectInfoAccess", None),
+    ExtensionOID.OCSP_NO_CHECK: ("OCSPNoCheck", None),
+    ExtensionOID.CRL_NUMBER: ("cRLNumber", None),
+    AuthorityInformationAccessOID.OCSP: ("OCSP", None),
+    AuthorityInformationAccessOID.CA_ISSUERS: ("caIssuers", None),
+    CertificatePoliciesOID.CPS_QUALIFIER: ("id-qt-cps", None),
+    CertificatePoliciesOID.CPS_USER_NOTICE: ("id-qt-unotice", None),
 }
