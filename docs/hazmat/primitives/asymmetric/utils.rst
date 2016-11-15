@@ -28,3 +28,14 @@ Asymmetric Utilities
     :param int s: The raw signature value ``s``.
 
     :return bytes: The encoded signature.
+
+.. class:: Prehashed(algorithm)
+
+    .. versionadded:: 1.6
+
+    ``Prehashed`` can be passed as the ``algorithm`` in
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
+    if the data to be signed has been hashed beforehand.
+
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.

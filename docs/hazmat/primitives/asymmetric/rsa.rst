@@ -167,6 +167,25 @@ There is a shortcut to sign sufficiently short messages directly:
     ...     hashes.SHA256()
     ... )
 
+
+If you have pre-hashed your data you can sign using that as well:
+
+.. versionadded:: 1.6
+
+.. doctest::
+
+    >>> import hashlib
+    >>> from cryptography.hazmat.primitives.asymmetric import utils
+    >>> prehashed_msg = hashlib.sha256(b"A message I want to sign").digest()
+    >>> signature = private_key.sign(
+    ...     prehashed_msg,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     utils.Prehashed(hashes.SHA256())
+    ... )
+
 Valid paddings for signatures are
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
@@ -564,6 +583,9 @@ Key interfaces
     .. method:: sign(data, padding, algorithm)
 
         .. versionadded:: 1.4
+        .. versionchanged:: 1.6
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            can now be used as an ``algorithm``.
 
         Sign one block of data which can be verified later by others using the
         public key.
@@ -574,7 +596,9 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            if the ``data`` you want to sign has already been hashed.
 
         :return bytes: Signature.
 

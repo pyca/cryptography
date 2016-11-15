@@ -13,6 +13,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, rsa,
+    utils as asym_utils
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS, calculate_max_pss_salt_length
@@ -477,9 +478,12 @@ class _RSAPrivateKey(object):
         padding_enum = _rsa_sig_determine_padding(
             self._backend, self, padding, algorithm
         )
-        hash_ctx = hashes.Hash(algorithm, self._backend)
-        hash_ctx.update(data)
-        data = hash_ctx.finalize()
+        if not isinstance(algorithm, asym_utils.Prehashed):
+            hash_ctx = hashes.Hash(algorithm, self._backend)
+            hash_ctx.update(data)
+            data = hash_ctx.finalize()
+        else:
+            algorithm = algorithm._algorithm
 
         return _rsa_sig_sign(
             self._backend, padding, padding_enum,
