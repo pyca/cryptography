@@ -1418,7 +1418,13 @@ class Backend(object):
             point_x = self._bn_to_int(bn_x)
             point_y = self._bn_to_int(bn_y)
 
-        return point_x, point_y
+        return self.load_elliptic_curve_public_numbers(
+            ec.EllipticCurvePublicNumbers(
+                point_x,
+                point_y,
+                curve
+            )
+        )
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

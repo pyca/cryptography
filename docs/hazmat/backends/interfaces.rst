@@ -429,7 +429,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param curve: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
-        :returns: A tuple (x, y).
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
 
 .. class:: PEMSerializationBackend
 

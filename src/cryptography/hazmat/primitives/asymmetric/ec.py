@@ -260,9 +260,10 @@ def derive_private_key(secret, curve, backend):
     if not isinstance(curve, EllipticCurve):
         raise TypeError("curve must provide the EllipticCurve interface.")
 
-    x, y = backend.derive_elliptic_curve_public_point(secret, curve)
-    public_numbers = EllipticCurvePublicNumbers(x, y, curve)
-    private_numbers = EllipticCurvePrivateNumbers(secret, public_numbers)
+    public_key = backend.derive_elliptic_curve_public_point(secret, curve)
+    private_numbers = EllipticCurvePrivateNumbers(
+        secret, public_key.public_numbers()
+    )
     return private_numbers.private_key(backend)
 
 

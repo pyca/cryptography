@@ -224,7 +224,7 @@ class EllipticCurveBackend(object):
     @abc.abstractmethod
     def derive_elliptic_curve_public_point(self, private_value, curve):
         """
-        Compute the public key point (x, y) given the private value and curve.
+        Compute the public key given the private value and curve.
         """
 
 
