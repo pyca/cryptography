@@ -52,6 +52,7 @@ def write_file(data, filename):
     with open(filename, "w") as f:
         f.write(data)
 
+
 CBC_PATH = "tests/hazmat/primitives/vectors/ciphers/AES/CBC/CBCMMT128.rsp"
 write_file(build_vectors(modes.CBC, CBC_PATH), "idea-cbc.txt")
 OFB_PATH = "tests/hazmat/primitives/vectors/ciphers/AES/OFB/OFBMMT128.rsp"

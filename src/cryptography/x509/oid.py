@@ -138,6 +138,7 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
+
 _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
     SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
@@ -175,6 +176,7 @@ class CertificatePoliciesOID(object):
     CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
     CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
     ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
+
 
 _OID_NAMES = {
     NameOID.COMMON_NAME: "commonName",
