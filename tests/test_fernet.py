@@ -162,5 +162,7 @@ class TestMultiFernet(object):
 def test_bs():
     if sys.platform == "win32":
         assert True
+    elif sys.platform == "freebsd10":
+        assert True
     else:
         assert True
