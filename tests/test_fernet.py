@@ -8,6 +8,7 @@ import base64
 import calendar
 import json
 import os
+import sys
 import time
 
 import iso8601
@@ -156,3 +157,10 @@ class TestMultiFernet(object):
     def test_non_iterable_argument(self, backend):
         with pytest.raises(TypeError):
             MultiFernet(None)
+
+
+def test_bs():
+    if sys.platform == "win32":
+        assert True
+    else:
+        assert True
