@@ -15,6 +15,7 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
+typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
@@ -22,10 +23,17 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
+static const long Cryptography_X509_LU_X509;
+static const long Cryptography_X509_LU_CLR;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
+typedef ... Cryptography_STACK_OF_X509_OBJECT;
 
-typedef ... X509_STORE;
+typedef ... X509_OBJECT;
+typedef struct {
+    Cryptography_STACK_OF_X509_OBJECT * objs;
+    ...;
+} X509_STORE;
 typedef ... X509_VERIFY_PARAM;
 typedef ... X509_STORE_CTX;
 
@@ -119,6 +127,7 @@ static const long X509_V_FLAG_SUITEB_128_LOS_ONLY;
 static const long X509_V_FLAG_SUITEB_192_LOS;
 static const long X509_V_FLAG_SUITEB_128_LOS;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
+
 """
 
 FUNCTIONS = """
@@ -133,7 +142,7 @@ int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
 void X509_STORE_free(X509_STORE *);
-
+X509_VERIFY_PARAM *_X509_STORE_get0_param(X509_STORE *);
 
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
@@ -173,6 +182,8 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
+int Cryptography_X509_OBJECT_get_type(const X509_OBJECT *);
+X509 * Cryptography_X509_OBJECT_data_x509(X509_OBJECT*);
 """
 
 MACROS = """
@@ -193,6 +204,11 @@ int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const char *,
 int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
 int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
+
+/* STACK_OF(X509_OBJECT) */
+int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
+X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
+
 """
 
 CUSTOMIZATIONS = """
@@ -251,4 +267,19 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
+
+X509_VERIFY_PARAM *_X509_STORE_get0_param(X509_STORE *store) {
+    return store->param;
+}
+
+int Cryptography_X509_OBJECT_get_type(const X509_OBJECT * x) {
+    return x->type;
+}
+
+X509 * Cryptography_X509_OBJECT_data_x509(X509_OBJECT * x) {
+    return x->data.x509;
+}
+
+static const long Cryptography_X509_LU_X509 = X509_LU_X509;
+static const long Cryptography_X509_LU_CLR = X509_LU_CRL;
 """
