@@ -35,7 +35,7 @@ int (*ECDH_compute_key)(void *, size_t, const EC_POINT *, EC_KEY *,
 #else
 static const long Cryptography_HAS_ECDH = 1;
 #endif
-#ifdef SSL_CTX_set_ecdh_auto
+#ifndef SSL_CTX_set_ecdh_auto
 static const long Cryptography_HAS_ECDH_SET_CURVE = 0;
 int SSL_CTX_set_ecdh_auto(SSL_CTX *ctx, int onoff) {
     return -1;
