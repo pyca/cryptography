@@ -618,7 +618,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :return: A new instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
-    .. method:: generate_dh_private_key_and_parameters(self, generator, key_size)
+    .. method:: generate_dh_private_key_and_parameters(generator, key_size)
 
         :param int generator: The generator to use. Often 2 or 5.
 

@@ -157,7 +157,7 @@ Key interfaces
 
     .. method:: exchange(peer_public_key)
 
-        .. versionadded:: 1.4
+        .. versionadded:: 1.6
 
         :param DHPublicKeyWithSerialization peer_public_key: The public key for the
             peer.
