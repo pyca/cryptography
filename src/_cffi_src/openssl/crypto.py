@@ -57,8 +57,6 @@ void OPENSSL_free(void *);
 
 /* This was removed in 1.1.0 */
 void CRYPTO_lock(int, int, const char *, int);
-
-void CRYPTO_add(void*,int,int);
 """
 
 CUSTOMIZATIONS = """

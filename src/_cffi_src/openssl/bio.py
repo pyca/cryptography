@@ -83,7 +83,10 @@ int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 int BIO_method_type(const BIO *);
 
-int * Cryptography_bio_references(BIO *);
+/**
+ * OpenSSL 1.1.x+ fully removes CRYPTO_LOCK_BIO and CRYPTO_add.
+ */
+int Cryptography_bio_ref_up(BIO *);
 """
 
 MACROS = """
@@ -134,12 +137,15 @@ long BIO_set_buffer_read_data(BIO *, void *, long);
 long BIO_set_nbio(BIO *, long);
 void BIO_set_retry_read(BIO *);
 void BIO_clear_retry_flags(BIO *);
-
-#define CRYPTO_LOCK_BIO ...
 """
 
 CUSTOMIZATIONS = """
-int * Cryptography_bio_references(BIO * b) {
-    return &b->references;
+int Cryptography_bio_ref_up(BIO * b) {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+    CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
+    return 1;
+#else
+    return CRYPTO_atomic_add(&b->references, 1, &i, b->lock) == 1
+#endif
 }
 """
