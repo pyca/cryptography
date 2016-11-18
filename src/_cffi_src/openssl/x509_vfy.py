@@ -15,7 +15,6 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
-typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
