@@ -325,6 +325,7 @@ class DHBackend(object):
     def generate_dh_parameters(self, generator, key_size):
         """
         Generate a DHParameters instance with a modulus of key_size bits.
+        Using the given generator. Often 2 or 5.
         """
 
     @abc.abstractmethod
@@ -338,6 +339,7 @@ class DHBackend(object):
     def generate_dh_private_key_and_parameters(self, generator, key_size):
         """
         Generate a DHPrivateKey instance using key size only.
+        Using the given generator. Often 2 or 5.
         """
 
     @abc.abstractmethod
