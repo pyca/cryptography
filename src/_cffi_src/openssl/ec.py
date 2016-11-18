@@ -14,7 +14,6 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_EC;
-static const int Cryptography_HAS_EC_1_0_1;
 static const int Cryptography_HAS_EC2M;
 static const int Cryptography_HAS_EC_1_0_2;
 
@@ -327,13 +326,6 @@ const EC_METHOD *(*EC_GFp_nist_method)() = NULL;
 
 int (*EC_METHOD_get_field_type)(const EC_METHOD *) = NULL;
 
-#else
-static const long Cryptography_HAS_EC = 1;
-#endif
-
-#if defined(OPENSSL_NO_EC) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
-static const long Cryptography_HAS_EC_1_0_1 = 0;
-
 int (*EC_KEY_get_flags)(const EC_KEY *) = NULL;
 void (*EC_KEY_set_flags)(EC_KEY *, int) = NULL;
 void (*EC_KEY_clear_flags)(EC_KEY *, int) = NULL;
@@ -341,9 +333,8 @@ void (*EC_KEY_clear_flags)(EC_KEY *, int) = NULL;
 int (*EC_KEY_set_public_key_affine_coordinates)(
     EC_KEY *, BIGNUM *, BIGNUM *) = NULL;
 #else
-static const long Cryptography_HAS_EC_1_0_1 = 1;
+static const long Cryptography_HAS_EC = 1;
 #endif
-
 
 #if defined(OPENSSL_NO_EC) || defined(OPENSSL_NO_EC2M)
 static const long Cryptography_HAS_EC2M = 0;

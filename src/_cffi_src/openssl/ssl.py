@@ -438,28 +438,6 @@ long SSL_CTX_sess_cache_full(SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
-/* Added in 1.0.1 but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
-/* from ssl.h */
-#define SSL_F_SSL_SESSION_SET1_ID_CONTEXT 312
-#define SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG 273
-/* from ssl/ssl_sess.c */
-int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
-                                unsigned int sid_ctx_len)
-{
-    if (sid_ctx_len > SSL_MAX_SID_CTX_LENGTH) {
-        SSLerr(SSL_F_SSL_SESSION_SET1_ID_CONTEXT,
-               SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG);
-        return 0;
-    }
-    s->sid_ctx_length = sid_ctx_len;
-    memcpy(s->sid_ctx, sid_ctx, sid_ctx_len);
-
-    return 1;
-}
-#endif
-
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
@@ -610,7 +588,7 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
  * addition to a definition check. NPN was added in 1.0.1: for any version
  * before that, there is no compatibility.
  */
-#if defined(OPENSSL_NO_NEXTPROTONEG) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
+#if defined(OPENSSL_NO_NEXTPROTONEG)
 static const long Cryptography_HAS_NEXTPROTONEG = 0;
 void (*SSL_CTX_set_next_protos_advertised_cb)(SSL_CTX *,
                                               int (*)(SSL *,

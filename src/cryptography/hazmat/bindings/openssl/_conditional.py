@@ -133,9 +133,6 @@ CONDITIONAL_NAMES = {
         "POINT_CONVERSION_COMPRESSED",
         "POINT_CONVERSION_UNCOMPRESSED",
         "POINT_CONVERSION_HYBRID",
-    ],
-
-    "Cryptography_HAS_EC_1_0_1": [
         "EC_KEY_get_flags",
         "EC_KEY_set_flags",
         "EC_KEY_clear_flags",
@@ -194,9 +191,6 @@ CONDITIONAL_NAMES = {
         "RAND_egd",
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
-    ],
-    "Cryptography_HAS_MGF1_MD": [
-        "EVP_PKEY_CTX_set_rsa_mgf1_md",
     ],
     "Cryptography_HAS_RSA_OAEP_MD": [
         "EVP_PKEY_CTX_set_rsa_oaep_md",

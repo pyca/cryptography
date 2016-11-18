@@ -79,11 +79,11 @@ class TestOpenSSL(object):
     def test_conditional_removal(self):
         b = Binding()
 
-        if b.lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER:
-            assert b.lib.CMAC_Init
+        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+            assert b.lib.TLS_ST_OK
         else:
             with pytest.raises(AttributeError):
-                b.lib.CMAC_Init
+                b.lib.TLS_ST_OK
 
     def test_openssl_assert_error_on_stack(self):
         b = Binding()

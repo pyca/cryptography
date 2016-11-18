@@ -606,10 +606,7 @@ class Backend(object):
             return isinstance(algorithm, hashes.SHA1)
 
     def _pss_mgf1_hash_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_MGF1_MD:
-            return self.hash_supported(algorithm)
-        else:
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hash_supported(algorithm)
 
     def rsa_padding_supported(self, padding):
         if isinstance(padding, PKCS1v15):
@@ -737,18 +734,6 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -814,18 +799,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -919,18 +892,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
