@@ -28,6 +28,12 @@ class DummyBackend(object):
     pass
 
 
+@utils.register_interface(ec.EllipticCurve)
+class DummyCurve(object):
+    name = "dummy-curve"
+    key_size = 1
+
+
 @utils.register_interface(CipherBackend)
 class DummyCipherBackend(object):
     def __init__(self, supported_ciphers):
@@ -180,6 +186,10 @@ class DummyEllipticCurveBackend(object):
             self.elliptic_curve_supported(curve)
         )
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        if not self.elliptic_curve_supported(curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
 
 @utils.register_interface(PEMSerializationBackend)
 class DummyPEMSerializationBackend(object):
@@ -229,6 +239,9 @@ class DummyX509Backend(object):
         pass
 
     def create_x509_revoked_certificate(self, builder):
+        pass
+
+    def x509_name_bytes(self, name):
         pass
 
 
@@ -526,6 +539,12 @@ class TestMultiBackend(object):
             ec.ECDH(), ec.SECT163K1()
         )
 
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.derive_elliptic_curve_public_point(123, DummyCurve())
+
+        assert backend.derive_elliptic_curve_public_point(
+            123, ec.SECT283K1()) is None
+
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])
 
@@ -563,6 +582,7 @@ class TestMultiBackend(object):
         backend.create_x509_certificate(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_crl(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_revoked_certificate(object())
+        backend.x509_name_bytes(object())
 
         backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
@@ -589,6 +609,8 @@ class TestMultiBackend(object):
             )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.create_x509_revoked_certificate(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.x509_name_bytes(object())
 
     def test_dh_backend(self):
         backend = MultiBackend([DummyDHBackend()])

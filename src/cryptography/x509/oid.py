@@ -99,6 +99,7 @@ class NameOID(object):
     COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
     LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
     STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
+    STREET_ADDRESS = ObjectIdentifier("2.5.4.9")
     ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
     ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
     SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
@@ -106,6 +107,7 @@ class NameOID(object):
     GIVEN_NAME = ObjectIdentifier("2.5.4.42")
     TITLE = ObjectIdentifier("2.5.4.12")
     GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
+    X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
@@ -121,6 +123,8 @@ class NameOID(object):
 class SignatureAlgorithmOID(object):
     RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
     RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
+    # This is an alternate OID for RSA with SHA1 that is occasionally seen
+    _RSA_WITH_SHA1 = ObjectIdentifier("1.3.14.3.2.29")
     RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
     RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
     RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
@@ -134,9 +138,11 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
+
 _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
     SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
+    SignatureAlgorithmOID._RSA_WITH_SHA1: hashes.SHA1(),
     SignatureAlgorithmOID.RSA_WITH_SHA224: hashes.SHA224(),
     SignatureAlgorithmOID.RSA_WITH_SHA256: hashes.SHA256(),
     SignatureAlgorithmOID.RSA_WITH_SHA384: hashes.SHA384(),
@@ -171,11 +177,13 @@ class CertificatePoliciesOID(object):
     CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
     ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
+
 _OID_NAMES = {
     NameOID.COMMON_NAME: "commonName",
     NameOID.COUNTRY_NAME: "countryName",
     NameOID.LOCALITY_NAME: "localityName",
     NameOID.STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
+    NameOID.STREET_ADDRESS: "streetAddress",
     NameOID.ORGANIZATION_NAME: "organizationName",
     NameOID.ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
     NameOID.SERIAL_NUMBER: "serialNumber",
@@ -183,6 +191,7 @@ _OID_NAMES = {
     NameOID.GIVEN_NAME: "givenName",
     NameOID.TITLE: "title",
     NameOID.GENERATION_QUALIFIER: "generationQualifier",
+    NameOID.X500_UNIQUE_IDENTIFIER: "x500UniqueIdentifier",
     NameOID.DN_QUALIFIER: "dnQualifier",
     NameOID.PSEUDONYM: "pseudonym",
     NameOID.DOMAIN_COMPONENT: "domainComponent",

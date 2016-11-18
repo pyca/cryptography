@@ -1102,6 +1102,18 @@ X.509 CSR (Certificate Signing Request) Builder Object
     slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
     ``CN=mydomain.com, O=My Org, C=US``).
 
+    Technically, a Name is a list of *sets* of attributes, called *Relative
+    Distinguished Names* or *RDNs*, although multi-valued RDNs are rarely
+    encountered.  The iteration order of values within a multi-valued RDN is
+    undefined.  If you need to handle multi-valued RDNs, the ``rdns`` property
+    gives access to an ordered list of :class:`RelativeDistinguishedName`
+    objects.
+
+    A Name can be initialized with an iterable of :class:`NameAttribute` (the
+    common case where each RDN has a single attribute) or an iterable of
+    :class:`RelativeDistinguishedName` objects (in the rare case of
+    multi-valued RDNs).
+
     .. doctest::
 
         >>> len(cert.subject)
@@ -1111,6 +1123,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
+
+    .. attribute:: rdns
+
+        .. versionadded:: 1.6
+
+        :type: list of :class:`RelativeDistinguishedName`
 
     .. method:: get_attributes_for_oid(oid)
 
@@ -1123,6 +1141,16 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
+
+    .. method:: public_bytes(backend)
+
+        .. versionadded:: 1.6
+
+        :param backend: A backend supporting the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :return bytes: The DER encoded name.
 
 .. class:: Version
 
@@ -1142,7 +1170,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. versionadded:: 0.8
 
-    An X.509 name consists of a list of NameAttribute instances.
+    An X.509 name consists of a list of :class:`RelativeDistinguishedName`
+    instances, which consist of a set of :class:`NameAttribute` instances.
 
     .. attribute:: oid
 
@@ -1155,6 +1184,22 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :type: :term:`text`
 
         The value of the attribute.
+
+
+.. class:: RelativeDistinguishedName(attributes)
+
+    .. versionadded:: 1.6
+
+    A relative distinguished name is a non-empty set of name attributes.  The
+    object is iterable to get every attribute.
+
+    .. method:: get_attributes_for_oid(oid)
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: A list of :class:`NameAttribute` instances that match the OID
+            provided.  The list should contain zero or one values.
+
 
 .. class:: ObjectIdentifier
 
@@ -1851,11 +1896,14 @@ X.509 Extensions
 
     .. attribute:: relative_name
 
-        :type: :class:`Name` or None
+        :type: :class:`RelativeDistinguishedName` or None
 
         This field describes methods to retrieve the CRL relative to the CRL
         issuer. At most one of ``full_name`` or ``relative_name`` will be
         non-None.
+
+        .. versionchanged:: 1.6
+            Changed from :class:`Name` to :class:`RelativeDistinguishedName`.
 
     .. attribute:: crl_issuer
 
@@ -2232,6 +2280,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.8"``.
 
+    .. attribute:: STREET_ADDRESS
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.9"``.
+
     .. attribute:: ORGANIZATION_NAME
 
         Corresponds to the dotted string ``"2.5.4.10"``.
@@ -2261,6 +2315,12 @@ instances. The following common OIDs are available as constants.
     .. attribute:: GENERATION_QUALIFIER
 
         Corresponds to the dotted string ``"2.5.4.44"``.
+
+    .. attribute:: X500_UNIQUE_IDENTIFIER
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.45"``.
 
     .. attribute:: DN_QUALIFIER
 

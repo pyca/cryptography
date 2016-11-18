@@ -24,6 +24,7 @@ decrypting
 DER
 deserialize
 deserialized
+Deserialization
 Diffie
 Diffie
 disambiguating
@@ -48,6 +49,7 @@ iterable
 Koblitz
 Lange
 metadata
+Mozilla
 multi
 namespace
 namespaces

@@ -8,7 +8,7 @@ from hypothesis.strategies import binary, integers
 from cryptography.hazmat.primitives.padding import ANSIX923, PKCS7
 
 
-@given(integers(min_value=1, max_value=31), binary())
+@given(integers(min_value=1, max_value=255), binary())
 def test_pkcs7(block_size, data):
     # Generate in [1, 31] so we can easily get block_size in bits by
     # multiplying by 8.
@@ -21,7 +21,7 @@ def test_pkcs7(block_size, data):
     assert unpadder.update(padded) + unpadder.finalize() == data
 
 
-@given(integers(min_value=1, max_value=31), binary())
+@given(integers(min_value=1, max_value=255), binary())
 def test_ansix923(block_size, data):
     a = ANSIX923(block_size=block_size * 8)
     padder = a.padder()

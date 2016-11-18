@@ -4,12 +4,13 @@ set -e
 set -x
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
+    sw_vers
     brew update || brew update
 
     brew outdated openssl || brew upgrade openssl
 
     # install pyenv
-    git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+    git clone --depth 1 https://github.com/yyuu/pyenv.git ~/.pyenv
     PYENV_ROOT="$HOME/.pyenv"
     PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
@@ -24,12 +25,12 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.3.6
             ;;
         py34)
-            pyenv install 3.4.4
-            pyenv global 3.4.4
+            pyenv install 3.4.5
+            pyenv global 3.4.5
             ;;
         py35)
-            pyenv install 3.5.1
-            pyenv global 3.5.1
+            pyenv install 3.5.2
+            pyenv global 3.5.2
             ;;
         pypy*)
             pyenv install "pypy-$PYPY_VERSION"
@@ -59,21 +60,14 @@ else
         pyenv global "pypy-$PYPY_VERSION"
     fi
 
-    if [[ "${OPENSSL}" == "1.0.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.0.0t"
-        OPENSSL_DIR="ossl-100t"
-    fi
-    if [[ "${OPENSSL}" == "1.1.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.1.0"
-        OPENSSL_DIR="ossl-110"
-    fi
     # download, compile, and install if it's not already present via travis
     # cache
-    if [ -n "$OPENSSL_DIR" ]; then
+    if [ -n "${OPENSSL}" ]; then
+        OPENSSL_DIR="ossl/${OPENSSL}"
         if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
-            curl -O https://www.openssl.org/source/openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            cd openssl-$OPENSSL_VERSION_NUMBER
+            curl -O https://www.openssl.org/source/openssl-$OPENSSL.tar.gz
+            tar zxf openssl-$OPENSSL.tar.gz
+            cd openssl-$OPENSSL
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             # modify the shlib version to a unique one to make sure the dynamic
             # linker doesn't load the system one. This isn't required for 1.1.0 at the

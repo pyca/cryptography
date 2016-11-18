@@ -281,6 +281,19 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.derive_elliptic_curve_public_point(private_value,
+                                                            curve)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return any(
             b.elliptic_curve_exchange_algorithm_supported(algorithm, curve)
@@ -475,6 +488,15 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm(
             "This backend does not support Diffie-Hellman",
             _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def x509_name_bytes(self, name):
+        for b in self._filtered_backends(X509Backend):
+            return b.x509_name_bytes(name)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
         )
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):

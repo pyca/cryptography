@@ -311,7 +311,7 @@ class Backend(object):
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
-        buf = self._ffi.new("char[]", length)
+        buf = self._ffi.new("unsigned char[]", length)
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode("ascii"))
         self.openssl_assert(evp_md != self._ffi.NULL)
@@ -825,7 +825,7 @@ class Backend(object):
 
         # Set the subject's name.
         res = self._lib.X509_set_subject_name(
-            x509_cert, _encode_name_gc(self, list(builder._subject_name))
+            x509_cert, _encode_name_gc(self, builder._subject_name)
         )
         self.openssl_assert(res == 1)
 
@@ -865,7 +865,7 @@ class Backend(object):
 
         # Set the issuer name.
         res = self._lib.X509_set_issuer_name(
-            x509_cert, _encode_name_gc(self, list(builder._issuer_name))
+            x509_cert, _encode_name_gc(self, builder._issuer_name)
         )
         self.openssl_assert(res == 1)
 
@@ -916,7 +916,7 @@ class Backend(object):
 
         # Set the issuer name.
         res = self._lib.X509_CRL_set_issuer_name(
-            x509_crl, _encode_name_gc(self, list(builder._issuer_name))
+            x509_crl, _encode_name_gc(self, builder._issuer_name)
         )
         self.openssl_assert(res == 1)
 
@@ -1391,6 +1391,40 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        curve_nid = self._elliptic_curve_to_nid(curve)
+
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        self.openssl_assert(ec_cdata != self._ffi.NULL)
+        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+
+        set_func, get_func, group = (
+            self._ec_key_determine_group_get_set_funcs(ec_cdata)
+        )
+
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+
+        value = self._int_to_bn(private_value)
+        value = self._ffi.gc(value, self._lib.BN_free)
+
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_mul(group, point, value, self._ffi.NULL,
+                                         self._ffi.NULL, bn_ctx)
+            self.openssl_assert(res == 1)
+
+            bn_x = self._lib.BN_CTX_get(bn_ctx)
+            bn_y = self._lib.BN_CTX_get(bn_ctx)
+
+            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            self.openssl_assert(res == 1)
+
+            point_x = self._bn_to_int(bn_x)
+            point_y = self._bn_to_int(bn_y)
+
+        return point_x, point_y
+
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (
             self.elliptic_curve_supported(curve) and
@@ -1819,6 +1853,17 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         return codes[0] == 0
+
+    def x509_name_bytes(self, name):
+        x509_name = _encode_name_gc(self, name)
+        pp = self._ffi.new("unsigned char **")
+        res = self._lib.i2d_X509_NAME(x509_name, pp)
+        self.openssl_assert(pp[0] != self._ffi.NULL)
+        pp = self._ffi.gc(
+            pp, lambda pointer: self._lib.OPENSSL_free(pointer[0])
+        )
+        self.openssl_assert(res > 0)
+        return self._ffi.buffer(pp[0], res)[:]
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)

@@ -32,3 +32,6 @@ PGP key fingerprints are enclosed in parentheses.
 * Dirkjan Ochtman <dirkjan@ochtman.nl> (25BB BAC1 13C1 BFD5 AA59  4A4C 9F96 B929 3038 0381)
 * Maximilian Hils <max@maximilianhils.com>
 * Simo Sorce <simo@redhat.com>
+* Thomas Sileo <t@a4.io>
+* Fraser Tweedale <ftweedal@redhat.com>
+* Ofek Lev <ofekmeister@gmail.com> (FFB6 B92B 30B1 7848 546E 9912 972F E913 DAD5 A46E)

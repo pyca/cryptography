@@ -22,8 +22,49 @@ Changelog
   support to :class:`~cryptography.x509.CertificateRevocationList`.
 * Added support for :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`
   when using OpenSSL 1.1.0.
+* Added a workaround to improve compatibility with Python application bundling
+  tools like ``PyInstaller`` and ``cx_freeze``.
 * Added support for generating a
   :meth:`~cryptography.x509.random_serial_number`.
+* Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
+  certificates for use with :class:`~cryptography.x509.NameConstraints`.
+* Added :meth:`~cryptography.x509.Name.public_bytes`.
+* Added :class:`~cryptography.x509.RelativeDistinguishedName`
+* :class:`~cryptography.x509.DistributionPoint` now accepts
+  :class:`~cryptography.x509.RelativeDistinguishedName` for
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+  Deprecated use of :class:`~cryptography.x509.Name` as
+  :attr:`~cryptography.x509.DistributionPoint.relative_name`.
+* :class:`~cryptography.x509.Name` now accepts an iterable of
+  :class:`~cryptography.x509.RelativeDistinguishedName`.  RDNs can
+  be accessed via the :attr:`~cryptography.x509.Name.rdns`
+  attribute.  When constructed with an iterable of
+  :class:`~cryptography.x509.NameAttribute`, each attribute becomes
+  a single-valued RDN.
+* Added
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
+
+1.5.3 - 2016-11-05
+~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where ``HKDF`` would return an empty
+  byte-string if used with a ``length`` less than ``algorithm.digest_size``.
+  Credit to **Markus Döring** for reporting the issue. *CVE-2016-9243*
+
+1.5.2 - 2016-09-26
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2j.
+
+1.5.1 - 2016-09-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2i.
+* Resolved a ``UserWarning`` when used with cffi 1.8.3.
+* Fixed a memory leak in name creation with X.509.
+* Added a workaround for old versions of setuptools.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  OpenSSL 1.0.2i.
 
 
 1.5 - 2016-08-26

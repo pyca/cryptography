@@ -172,6 +172,7 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
                                     Cryptography_STACK_OF_ASN1_OBJECT *);
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
+void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
 """
 
 MACROS = """

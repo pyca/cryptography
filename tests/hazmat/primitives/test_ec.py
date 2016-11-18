@@ -100,6 +100,32 @@ def test_skip_ecdsa_vector(backend):
         _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
 
 
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_derive_private_key_success(backend):
+    curve = ec.SECP256K1()
+    _skip_curve_unsupported(backend, curve)
+
+    private_numbers = ec.generate_private_key(curve, backend).private_numbers()
+
+    derived_key = ec.derive_private_key(
+        private_numbers.private_value, curve, backend
+    )
+
+    assert private_numbers == derived_key.private_numbers()
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_derive_private_key_errors(backend):
+    curve = ec.SECP256K1()
+    _skip_curve_unsupported(backend, curve)
+
+    with pytest.raises(TypeError):
+        ec.derive_private_key('one', curve, backend)
+
+    with pytest.raises(TypeError):
+        ec.derive_private_key(10, 'five', backend)
+
+
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
         1,
