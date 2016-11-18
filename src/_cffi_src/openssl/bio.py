@@ -6,6 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/bio.h>
+#if !(CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER))
+    #include <openssl/crypto.h>
+#endif
 """
 
 TYPES = """
@@ -142,12 +145,12 @@ void BIO_clear_retry_flags(BIO *);
 CUSTOMIZATIONS = """
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
 void Cryptography_bio_ref_up(BIO * b) {
-    CRYPTO_add(&(b->references), 1, CRYPTO_LOCK_BIO);
+    CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
 }
 #else
 void Cryptography_bio_ref_up(BIO * b) {
     int ret;
-    CRYPTO_atomic_add(&(b->references), 1, &ret, b->lock);
+    CRYPTO_atomic_add(&b->references, 1, &ret, b->lock);
 }
 #endif
 """
