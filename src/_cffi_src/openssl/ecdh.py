@@ -37,6 +37,9 @@ static const long Cryptography_HAS_ECDH = 1;
 #endif
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_ECDH_SET_CURVE = 0;
+int SSL_CTX_set_ecdh_auto(SSL_CTX *ctx, int onoff) {
+    return -1;
+}
 #else
 static const long Cryptography_HAS_ECDH_SET_CURVE = 1;
 #endif
