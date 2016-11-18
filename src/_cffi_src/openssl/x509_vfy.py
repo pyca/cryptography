@@ -30,10 +30,7 @@ typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 typedef ... Cryptography_STACK_OF_X509_OBJECT;
 
 typedef ... X509_OBJECT;
-typedef struct {
-    Cryptography_STACK_OF_X509_OBJECT * objs;
-    ...;
-} X509_STORE;
+typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
 typedef ... X509_STORE_CTX;
 
@@ -142,7 +139,6 @@ int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
 void X509_STORE_free(X509_STORE *);
-X509_VERIFY_PARAM *_X509_STORE_get0_param(X509_STORE *);
 
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
@@ -182,14 +178,16 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
-int Cryptography_X509_OBJECT_get_type(const X509_OBJECT *);
-X509 * Cryptography_X509_OBJECT_data_x509(X509_OBJECT*);
+Cryptography_STACK_OF_X509_OBJECT * X509_STORE_get0_objects(X509_STORE *);
 """
 
 MACROS = """
 /* this CRYPTO_EX_DATA function became a macro in 1.1.0 */
 int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
                                     CRYPTO_EX_dup *, CRYPTO_EX_free *);
+
+X509 * X509_OBJECT_get0_X509(X509_OBJECT*);
+int X509_OBJECT_get_type(const X509_OBJECT *);
 
 /* X509_STORE_CTX */
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
@@ -209,6 +207,7 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 
+X509_VERIFY_PARAM * X509_STORE_get0_param(X509_STORE *);
 """
 
 CUSTOMIZATIONS = """
@@ -268,18 +267,22 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
-X509_VERIFY_PARAM *_X509_STORE_get0_param(X509_STORE *store) {
-    return store->param;
-}
-
-int Cryptography_X509_OBJECT_get_type(const X509_OBJECT * x) {
-    return x->type;
-}
-
-X509 * Cryptography_X509_OBJECT_data_x509(X509_OBJECT * x) {
-    return x->data.x509;
-}
-
 static const long Cryptography_X509_LU_X509 = X509_LU_X509;
 static const long Cryptography_X509_LU_CLR = X509_LU_CRL;
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+Cryptography_STACK_OF_X509_OBJECT * X509_STORE_get0_objects(X509_STORE * ctx) {
+    return ctx->objs;
+}
+
+X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *store) {
+    return store->param;
+}
+X509 * X509_OBJECT_get0_X509(X509_OBJECT * x) {
+    return x->data.x509;
+}
+int X509_OBJECT_get_type(const X509_OBJECT * x) {
+    return x->type;
+}
+#endif
 """

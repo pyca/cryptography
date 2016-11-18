@@ -196,7 +196,6 @@ int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
-Cryptography_STACK_OF_SSL_CIPHER * Cryptography_get_ssl_session_ciphers(const SSL_SESSION *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -722,8 +721,4 @@ static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
-
-Cryptography_STACK_OF_SSL_CIPHER * Cryptography_get_ssl_session_ciphers(const SSL_SESSION *s) {
-    return s->ciphers;
-}
 """

@@ -83,7 +83,7 @@ int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 int BIO_method_type(const BIO *);
 
-int * Cryptography_bio_references(const BIO *);
+int * Cryptography_bio_references(BIO *);
 """
 
 MACROS = """
@@ -139,7 +139,7 @@ void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
-int * Cryptography_bio_references(const BIO * b) {
+int * Cryptography_bio_references(BIO * b) {
     return &b->references;
 }
 """

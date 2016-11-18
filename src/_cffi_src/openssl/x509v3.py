@@ -185,7 +185,6 @@ void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 /* X509 is private, there is no way to access the field crldp other than
    adding it to the typedef or expose a function like this: */
-Cryptography_STACK_OF_DIST_POINT * Cryptography_X509_get_crldp(const X509 *);
 int X509_check_ca(X509 *);
 """
 
@@ -299,17 +298,8 @@ void DIST_POINT_free(DIST_POINT *);
 DIST_POINT_NAME *DIST_POINT_NAME_new(void);
 void DIST_POINT_NAME_free(DIST_POINT_NAME *);
 
-void * X509_get_ext_d2i(const X509 *, int, int *, int *);
+void * X509_get_ext_d2i(X509 *, int, int *, int *);
 """
 
 CUSTOMIZATIONS = """
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-Cryptography_STACK_OF_DIST_POINT * Cryptography_X509_get_crldp(const X509 * x) {
-    return x->crldp;
-}
-#else
-Cryptography_STACK_OF_DIST_POINT * Cryptography_X509_get_crldp(const X509 * x) {
-    return NULL;
-}
-#endif
 """
