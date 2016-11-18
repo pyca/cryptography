@@ -145,7 +145,8 @@ int Cryptography_bio_ref_up(BIO * b) {
     CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
     return 1;
 #else
-    return CRYPTO_atomic_add(&b->references, 1, &i, b->lock) == 1
+    int i;
+    return CRYPTO_atomic_add(&b->references, 1, &i, b->lock) == 1;
 #endif
 }
 """
