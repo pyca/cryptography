@@ -219,7 +219,8 @@ int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
 
-void sk_GENERAL_NAME_pop_free(struct stack_st_GENERAL_NAME*, sk_GENERAL_NAME_freefunc);
+void sk_GENERAL_NAME_pop_free(struct stack_st_GENERAL_NAME*,
+                              sk_GENERAL_NAME_freefunc);
 void GENERAL_NAME_free(struct GENERAL_NAME_st*);
 
 Cryptography_STACK_OF_ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_new_null(void);
