@@ -1758,21 +1758,9 @@ class Backend(object):
         return _DHParameters(self, dh_param_cdata)
 
     def generate_dh_private_key(self, parameters):
-        dh_key_cdata = self._lib.DH_new()
+        dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
         self.openssl_assert(dh_key_cdata != self._ffi.NULL)
         dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
-
-        p = self._ffi.new("BIGNUM **")
-        g = self._ffi.new("BIGNUM **")
-        self._lib.DH_get0_pqg(parameters._dh_cdata, p, self._ffi.NULL, g)
-        self.openssl_assert(p[0] != self._ffi.NULL)
-        self.openssl_assert(g[0] != self._ffi.NULL)
-        p_dup = self._lib.BN_dup(p[0])
-        g_dup = self._lib.BN_dup(g[0])
-        self.openssl_assert(p_dup != self._ffi.NULL)
-        self.openssl_assert(g_dup != self._ffi.NULL)
-        res = self._lib.DH_set0_pqg(dh_key_cdata, p_dup, self._ffi.NULL, g_dup)
-        self.openssl_assert(res == 1)
 
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)

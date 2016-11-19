@@ -21,21 +21,9 @@ def _dh_cdata_to_parameters(dh_cdata, backend):
     lib = backend._lib
     ffi = backend._ffi
 
-    param_cdata = lib.DH_new()
+    param_cdata = lib.DHparams_dup(dh_cdata)
     backend.openssl_assert(param_cdata != ffi.NULL)
     param_cdata = ffi.gc(param_cdata, lib.DH_free)
-
-    p = ffi.new("BIGNUM **")
-    g = ffi.new("BIGNUM **")
-    lib.DH_get0_pqg(dh_cdata, p, ffi.NULL, g)
-    backend.openssl_assert(p[0] != ffi.NULL)
-    backend.openssl_assert(g[0] != ffi.NULL)
-    p_dup = lib.BN_dup(p[0])
-    g_dup = lib.BN_dup(g[0])
-    backend.openssl_assert(p_dup != ffi.NULL)
-    backend.openssl_assert(g_dup != ffi.NULL)
-    res = lib.DH_set0_pqg(param_cdata, p_dup, ffi.NULL, g_dup)
-    backend.openssl_assert(res == 1)
 
     return _DHParameters(backend, param_cdata)
 
