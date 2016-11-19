@@ -218,7 +218,6 @@ static const int SSL_AD_INSUFFICIENT_SECURITY;
 static const int SSL_AD_INTERNAL_ERROR;
 static const int SSL_AD_USER_CANCELLED;
 static const int SSL_AD_NO_RENEGOTIATION;
-
 static const int SSL_AD_UNSUPPORTED_EXTENSION;
 static const int SSL_AD_CERTIFICATE_UNOBTAINABLE;
 static const int SSL_AD_UNRECOGNIZED_NAME;
@@ -282,25 +281,6 @@ static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
 static const long RSA_R_PKCS_DECODING_ERROR = 0;
-#endif
-
-#ifndef SSL_AD_UNSUPPORTED_EXTENSION
-    static const int SSL_AD_UNSUPPORTED_EXTENSION = -1;
-#endif
-#ifndef SSL_AD_CERTIFICATE_UNOBTAINABLE
-    static const int SSL_AD_CERTIFICATE_UNOBTAINABLE = -1;
-#endif
-#ifndef SSL_AD_UNRECOGNIZED_NAME
-    static const int SSL_AD_UNRECOGNIZED_NAME = -1;
-#endif
-#ifndef SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE
-    static const int SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE = -1;
-#endif
-#ifndef SSL_AD_BAD_CERTIFICATE_HASH_VALUE
-    static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE = -1;
-#endif
-#ifndef SSL_AD_UNKNOWN_PSK_IDENTITY
-    static const int SSL_AD_UNKNOWN_PSK_IDENTITY = -1;
 #endif
 
 """

@@ -224,8 +224,6 @@ FUNCTIONS = """
 """
 
 MACROS = """
-static const int NID_ad_OCSP;
-static const int NID_ad_ca_issuers;
 """
 
 CUSTOMIZATIONS = """
