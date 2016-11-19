@@ -3853,6 +3853,13 @@ class TestName(object):
             b"b060355040a0c0450794341"
         )
 
+    def test_long_short_name(self):
+        o = x509.ObjectIdentifier('2.999.1')
+        assert o.shortname is None
+        assert o.longname is None
+        assert NameOID.COMMON_NAME.shortname == 'CN'
+        assert NameOID.COMMON_NAME.longname == "commonName"
+
 
 def test_random_serial_number(monkeypatch):
     sample_data = os.urandom(20)
