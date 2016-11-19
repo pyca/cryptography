@@ -20,7 +20,6 @@ const char *RAND_file_name(char *, size_t);
 int RAND_load_file(const char *, long);
 int RAND_write_file(const char *);
 int RAND_bytes(unsigned char *, int);
-int RAND_pseudo_bytes(unsigned char *buf, int num);
 """
 
 MACROS = """
