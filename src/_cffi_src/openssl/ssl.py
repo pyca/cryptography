@@ -25,6 +25,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
+static const long Cryptography_HAS_NPN_NEGOTIATED;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -129,6 +130,8 @@ static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
 static const long TLS_ST_BEFORE;
 static const long TLS_ST_OK;
+
+static const long OPENSSL_NPN_NEGOTIATED;
 
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
@@ -702,5 +705,14 @@ static const long Cryptography_HAS_TLS_ST = 1;
 static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
+#endif
+
+/* This define is available in 1.0.1+ so we can remove this when we drop
+   support for 1.0.0 */
+#ifdef OPENSSL_NPN_NEGOTIATED
+static const long Cryptography_HAS_NPN_NEGOTIATED = 1;
+#else
+static const long OPENSSL_NPN_NEGOTIATED = -1;
+static const long Cryptography_HAS_NPN_NEGOTIATED = 0;
 #endif
 """

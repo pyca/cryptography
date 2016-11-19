@@ -85,6 +85,9 @@ int BIO_method_type(const BIO *);
 """
 
 MACROS = """
+/* Added in 1.1.0 */
+int BIO_up_ref(BIO *);
+
 /* These added const to BIO_METHOD in 1.1.0 */
 BIO *BIO_new(BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
@@ -130,7 +133,15 @@ long BIO_set_write_buffer_size(BIO *, long);
 long BIO_set_buffer_size(BIO *, long);
 long BIO_set_buffer_read_data(BIO *, void *, long);
 long BIO_set_nbio(BIO *, long);
+void BIO_set_retry_read(BIO *);
+void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4 || defined(LIBRESSL_VERSION_NUMBER)
+int BIO_up_ref(BIO *b) {
+    CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
+    return 1;
+}
+#endif
 """

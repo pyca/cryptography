@@ -20,13 +20,14 @@ Elliptic curve cryptography
     :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
-.. function:: derive_private_key(secret, curve, backend)
+.. function:: derive_private_key(private_value, curve, backend)
 
     .. versionadded:: 1.6
 
-    Derive a private key from ``secret`` on ``curve`` for use with ``backend``.
+    Derive a private key from ``private_value`` on ``curve`` for use with
+    ``backend``.
 
-    :param int secret: The secret scalar value.
+    :param int private_value: The secret scalar value.
 
     :param curve: An instance of :class:`EllipticCurve`.
 
