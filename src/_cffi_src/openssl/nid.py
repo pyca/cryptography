@@ -215,6 +215,9 @@ static const int NID_dnQualifier;
 static const int NID_pseudonym;
 static const int NID_domainComponent;
 static const int NID_pkcs9_emailAddress;
+
+static const int NID_ad_OCSP;
+static const int NID_ad_ca_issuers;
 """
 
 FUNCTIONS = """
