@@ -81,6 +81,7 @@ static const int ASN1_R_WRONG_TAG;
 static const int ASN1_R_NO_CONTENT_TYPE;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY;
+static const int ASN1_R_HEADER_TOO_LONG;
 
 static const int DH_F_COMPUTE_KEY;
 
@@ -224,6 +225,8 @@ static const int SSL_AD_UNRECOGNIZED_NAME;
 static const int SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE;
 static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE;
 static const int SSL_AD_UNKNOWN_PSK_IDENTITY;
+
+static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
 
 FUNCTIONS = """

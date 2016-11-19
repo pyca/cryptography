@@ -158,6 +158,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ECDH": [
         "ECDH_compute_key",
     ],
+    "Cryptography_HAS_SET_ECDH_AUTO": [
+        "SSL_CTX_set_ecdh_auto",
+    ],
     "Cryptography_HAS_ECDSA": [
         "ECDSA_SIG_new",
         "ECDSA_SIG_free",
@@ -315,5 +318,8 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
-    ]
+    ],
+    "Cryptography_HAS_NPN_NEGOTIATED": [
+        "OPENSSL_NPN_NEGOTIATED",
+    ],
 }

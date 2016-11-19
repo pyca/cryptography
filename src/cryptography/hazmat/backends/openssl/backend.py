@@ -1386,7 +1386,7 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def derive_elliptic_curve_public_point(self, private_value, curve):
+    def derive_elliptic_curve_private_key(self, private_value, curve):
         curve_nid = self._elliptic_curve_to_nid(curve)
 
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
@@ -1415,10 +1415,15 @@ class Backend(object):
             res = get_func(group, point, bn_x, bn_y, bn_ctx)
             self.openssl_assert(res == 1)
 
-            point_x = self._bn_to_int(bn_x)
-            point_y = self._bn_to_int(bn_y)
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
+        res = self._lib.EC_KEY_set_private_key(
+            ec_cdata, self._int_to_bn(private_value))
+        self.openssl_assert(res == 1)
 
-        return point_x, point_y
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+
+        return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

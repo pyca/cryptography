@@ -6,7 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/bio.h>
-#if !(CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER))
+#if !CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4 && \
+    !defined(LIBRESSL_VERSION_NUMBER)
     #include <openssl/crypto.h>
 #endif
 """
@@ -93,6 +94,9 @@ void Cryptography_bio_ref_up(BIO *);
 """
 
 MACROS = """
+/* Added in 1.1.0 */
+int BIO_up_ref(BIO *);
+
 /* These added const to BIO_METHOD in 1.1.0 */
 BIO *BIO_new(BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
@@ -143,14 +147,10 @@ void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
-void Cryptography_bio_ref_up(BIO * b) {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4 || defined(LIBRESSL_VERSION_NUMBER)
+int BIO_up_ref(BIO *b) {
     CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
-}
-#else
-void Cryptography_bio_ref_up(BIO * b) {
-    int ret;
-    CRYPTO_atomic_add(&b->references, 1, &ret, b->lock);
+    return 1;
 }
 #endif
 """

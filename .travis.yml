@@ -45,29 +45,29 @@ matrix:
           env: TOXENV=py3pep8
         - language: generic
           os: osx
-          # 8 is planned to be macOS 10.12.x
-          # see: https://blog.travis-ci.com/2016-09-15-new-default-osx-image-coming/
-          osx_image: xcode8
+          # 8.1 is macOS 10.12.x
+          # see: https://docs.travis-ci.com/user/osx-ci-environment/
+          osx_image: xcode8.1
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=py33 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=py34 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=py35 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.4.1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=0
         - language: generic
           os: osx
@@ -81,7 +81,7 @@ matrix:
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=docs CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
 
 install:

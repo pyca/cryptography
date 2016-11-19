@@ -15,6 +15,7 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
+typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
@@ -124,6 +125,8 @@ static const long X509_V_FLAG_SUITEB_192_LOS;
 static const long X509_V_FLAG_SUITEB_128_LOS;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
 
+static const long X509_LU_X509;
+static const long X509_LU_CRL;
 """
 
 FUNCTIONS = """
@@ -202,11 +205,17 @@ int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
 int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
+<<<<<<< HEAD
 /* STACK_OF(X509_OBJECT) */
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 
 X509_VERIFY_PARAM * X509_STORE_get0_param(X509_STORE *);
+=======
+Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
+X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
+int X509_OBJECT_get_type(const X509_OBJECT *);
+>>>>>>> e3352d2fa559d0c672481a7b7993b1a3a34b5bb5
 """
 
 CUSTOMIZATIONS = """
@@ -269,19 +278,21 @@ static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long Cryptography_X509_LU_X509 = X509_LU_X509;
 static const long Cryptography_X509_LU_CLR = X509_LU_CRL;
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
-Cryptography_STACK_OF_X509_OBJECT * X509_STORE_get0_objects(X509_STORE * ctx) {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6 || defined(LIBRESSL_VERSION_NUMBER)
+Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
     return ctx->objs;
 }
-
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *store) {
     return store->param;
 }
-X509 * X509_OBJECT_get0_X509(X509_OBJECT * x) {
-    return x->data.x509;
-}
-int X509_OBJECT_get_type(const X509_OBJECT * x) {
+int X509_OBJECT_get_type(const X509_OBJECT *x) {
     return x->type;
+}
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
+    return x->data.x509;
 }
 #endif
 """

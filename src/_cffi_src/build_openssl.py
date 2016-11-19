@@ -73,7 +73,6 @@ ffi = build_ffi_for_binding(
         "rand",
         "rsa",
         "ssl",
-        "tls1",
         "x509",
         "x509name",
         "x509v3",
