@@ -81,7 +81,7 @@ matrix:
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode8
+          osx_image: xcode8.1
           env: TOXENV=docs CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
 
 install:
