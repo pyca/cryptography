@@ -86,11 +86,6 @@ int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 int BIO_method_type(const BIO *);
-
-/**
- * OpenSSL 1.1.x+ fully removes CRYPTO_LOCK_BIO and CRYPTO_add.
- */
-void Cryptography_bio_ref_up(BIO *);
 """
 
 MACROS = """

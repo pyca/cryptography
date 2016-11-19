@@ -27,7 +27,6 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_NPN_NEGOTIATED;
 static const long Cryptography_NO_TLSEXT;
-static const long Cryptography_OPENSSL_NPN_NEGOTIATED;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -694,14 +693,6 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 static const long Cryptography_NO_TLSEXT = 1;
 #else
 static const long Cryptography_NO_TLSEXT = 0;
-#endif
-
-#ifdef OPENSSL_NPN_NEGOTIATED
-static const long Cryptography_OPENSSL_NPN_NEGOTIATED = OPENSSL_NPN_NEGOTIATED;
-static const long Cryptography_HAS_NPN_NEGOTIATED = 1;
-#else
-static const long Cryptography_OPENSSL_NPN_NEGOTIATED = 0;
-static const long Cryptography_HAS_NPN_NEGOTIATED = 0;
 #endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
