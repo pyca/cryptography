@@ -2332,6 +2332,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.65"``.
 
+    .. attribute:: USER_ID
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"0.9.2342.19200300.100.1.1"``.
+
     .. attribute:: DOMAIN_COMPONENT
 
         Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``. A string
@@ -2356,6 +2362,18 @@ instances. The following common OIDs are available as constants.
     .. attribute:: BUSINESS_CATEGORY
 
         Corresponds to the dotted string ``"2.5.4.15"``.
+
+    .. attribute:: POSTAL_ADDRESS
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.16"``.
+
+    .. attribute:: POSTAL_CODE
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.17"``.
 
 
 .. class:: SignatureAlgorithmOID

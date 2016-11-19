@@ -110,6 +110,7 @@ class NameOID(object):
     X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
+    USER_ID = ObjectIdentifier("0.9.2342.19200300.100.1.1")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
     EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
     JURISDICTION_COUNTRY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.3")
@@ -118,6 +119,8 @@ class NameOID(object):
         "1.3.6.1.4.1.311.60.2.1.2"
     )
     BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
+    POSTAL_ADDRESS = ObjectIdentifier("2.5.4.16")
+    POSTAL_CODE = ObjectIdentifier("2.5.4.17")
 
 
 class SignatureAlgorithmOID(object):
@@ -194,6 +197,7 @@ _OID_NAMES = {
     NameOID.X500_UNIQUE_IDENTIFIER: "x500UniqueIdentifier",
     NameOID.DN_QUALIFIER: "dnQualifier",
     NameOID.PSEUDONYM: "pseudonym",
+    NameOID.USER_ID: "userID",
     NameOID.DOMAIN_COMPONENT: "domainComponent",
     NameOID.EMAIL_ADDRESS: "emailAddress",
     NameOID.JURISDICTION_COUNTRY_NAME: "jurisdictionCountryName",
@@ -202,6 +206,8 @@ _OID_NAMES = {
         "jurisdictionStateOrProvinceName"
     ),
     NameOID.BUSINESS_CATEGORY: "businessCategory",
+    NameOID.POSTAL_ADDRESS: "postalAddress",
+    NameOID.POSTAL_CODE: "postalCode",
 
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
