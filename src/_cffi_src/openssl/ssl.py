@@ -26,6 +26,7 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_NPN_NEGOTIATED;
+static const long Cryptography_NO_TLSEXT;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -137,7 +138,6 @@ typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
 typedef ... SSL_SESSION;
-
 typedef ... SSL;
 
 static const long TLSEXT_NAMETYPE_host_name;
@@ -434,6 +434,7 @@ long SSL_CTX_sess_cb_hits(SSL_CTX *);
 long SSL_CTX_sess_misses(SSL_CTX *);
 long SSL_CTX_sess_timeouts(SSL_CTX *);
 long SSL_CTX_sess_cache_full(SSL_CTX *);
+
 """
 
 CUSTOMIZATIONS = """
@@ -687,6 +688,12 @@ long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
 
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
+
+#ifdef OPENSSL_NO_TLSEXT
+static const long Cryptography_NO_TLSEXT = 1;
+#else
+static const long Cryptography_NO_TLSEXT = 0;
+#endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */

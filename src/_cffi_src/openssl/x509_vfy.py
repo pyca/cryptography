@@ -15,7 +15,6 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
-typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
@@ -140,7 +139,6 @@ int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
 void X509_STORE_free(X509_STORE *);
 
-
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
 void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
@@ -200,6 +198,10 @@ int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
 int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
+/* STACK_OF(X509_OBJECT) */
+int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
+X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
+X509_VERIFY_PARAM * X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
 int X509_OBJECT_get_type(const X509_OBJECT *);

@@ -6,6 +6,10 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/bio.h>
+#if !CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4 && \
+    !defined(LIBRESSL_VERSION_NUMBER)
+    #include <openssl/crypto.h>
+#endif
 """
 
 TYPES = """
