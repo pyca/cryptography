@@ -80,6 +80,7 @@ static const int ASN1_R_WRONG_TAG;
 static const int ASN1_R_NO_CONTENT_TYPE;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY;
+static const int ASN1_R_HEADER_TOO_LONG;
 
 static const int DH_F_COMPUTE_KEY;
 
@@ -198,6 +199,8 @@ static const int SSL_TLSEXT_ERR_NOACK;
 static const int SSL_AD_INTERNAL_ERROR;
 static const int SSL_AD_ACCESS_DENIED;
 static const int SSL_AD_HANDSHAKE_FAILURE;
+
+static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
 
 FUNCTIONS = """
