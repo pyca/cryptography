@@ -176,7 +176,6 @@ typedef struct {
 FUNCTIONS = """
 int X509V3_EXT_add_alias(int, int);
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
-GENERAL_NAME *GENERAL_NAME_new(void);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
 GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
@@ -290,6 +289,8 @@ void DIST_POINT_free(DIST_POINT *);
 DIST_POINT_NAME *DIST_POINT_NAME_new(void);
 void DIST_POINT_NAME_free(DIST_POINT_NAME *);
 
+GENERAL_NAME *GENERAL_NAME_new(void);
+void GENERAL_NAME_free(GENERAL_NAME *);
 """
 
 CUSTOMIZATIONS = """
