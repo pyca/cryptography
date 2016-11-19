@@ -121,21 +121,25 @@ class TestDH(object):
 
         private = parameters.private_numbers()
 
-        p = private._public_numbers._parameter_numbers.p
-        g = private._public_numbers._parameter_numbers.g
+        p = private.public_numbers.parameter_numbers.p
+        g = private.public_numbers.parameter_numbers.g
 
         params = dh.DHParameterNumbers(p, g)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 
-        serialized_params = params.parameters(backend)
-        serialized_public = public.public_key(backend)
-        serialized_private = private.private_key(backend)
+        deserialized_params = params.parameters(backend)
+        deserialized_public = public.public_key(backend)
+        deserialized_private = private.private_key(backend)
 
-        assert isinstance(serialized_params, dh.DHParametersWithSerialization)
-        assert isinstance(serialized_public, dh.DHPublicKeyWithSerialization)
-        assert isinstance(serialized_private, dh.DHPrivateKeyWithSerialization)
+        assert isinstance(deserialized_params,
+                          dh.DHParametersWithSerialization)
+        assert isinstance(deserialized_public,
+                          dh.DHPublicKeyWithSerialization)
+        assert isinstance(deserialized_private,
+                          dh.DHPrivateKeyWithSerialization)
 
+    def test_serialize_unsupported_parameters(self, backend):
         params = dh.DHParameterNumbers(23, 18)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
@@ -171,7 +175,7 @@ class TestDH(object):
         assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
         assert isinstance(key.parameters(), dh.DHParameters)
 
-    def test_tls_exchange(self, backend):
+    def test_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         assert isinstance(parameters, dh.DHParameters)
 
@@ -185,7 +189,7 @@ class TestDH(object):
         symkey2 = key2.exchange(key1.public_key())
         assert symkey1 == symkey2
 
-    def test_tls_exchange_algorithm(self, backend):
+    def test_exchange_algorithm(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
 
         key1 = parameters.generate_private_key()
