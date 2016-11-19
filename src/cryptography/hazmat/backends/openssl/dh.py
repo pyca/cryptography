@@ -98,7 +98,7 @@ class _DHPrivateKey(object):
 
     def exchange(self, peer_public_key):
 
-        buf = self._backend._ffi.new("char[]", self._key_size)
+        buf = self._backend._ffi.new("unsigned char[]", self._key_size)
         res = self._backend._lib.DH_compute_key(
             buf,
             self._backend._int_to_bn(peer_public_key.public_numbers().y),
