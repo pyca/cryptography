@@ -514,6 +514,23 @@ class TestRSASignature(object):
         verifier.update(message)
         verifier.verify()
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
+    def test_prehashed_digest_mismatch(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA512(), backend)
+        h.update(message)
+        digest = h.finalize()
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
+        with pytest.raises(ValueError):
+            private_key.sign(digest, pss, prehashed_alg)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):

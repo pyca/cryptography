@@ -485,6 +485,12 @@ class _RSAPrivateKey(object):
         else:
             algorithm = algorithm._algorithm
 
+        if len(data) != algorithm.digest_size:
+            raise ValueError(
+                "The provided data must be the same length as the hash "
+                "algorithm's digest size."
+            )
+
         return _rsa_sig_sign(
             self._backend, padding, padding_enum,
             algorithm, self, data
