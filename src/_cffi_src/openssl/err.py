@@ -17,6 +17,7 @@ struct ERR_string_data_st {
     const char *string;
 };
 typedef struct ERR_string_data_st ERR_STRING_DATA;
+typedef ... ERR_STATE;
 
 static const int ERR_LIB_DH;
 static const int ERR_LIB_EVP;
@@ -196,9 +197,34 @@ static const int SSL_TLSEXT_ERR_ALERT_WARNING;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
 static const int SSL_TLSEXT_ERR_NOACK;
 
-static const int SSL_AD_INTERNAL_ERROR;
-static const int SSL_AD_ACCESS_DENIED;
+static const int SSL_AD_CLOSE_NOTIFY;
+static const int SSL_AD_UNEXPECTED_MESSAGE;
+static const int SSL_AD_BAD_RECORD_MAC;
+static const int SSL_AD_RECORD_OVERFLOW;
+static const int SSL_AD_DECOMPRESSION_FAILURE;
 static const int SSL_AD_HANDSHAKE_FAILURE;
+static const int SSL_AD_BAD_CERTIFICATE;
+static const int SSL_AD_UNSUPPORTED_CERTIFICATE;
+static const int SSL_AD_CERTIFICATE_REVOKED;
+static const int SSL_AD_CERTIFICATE_EXPIRED;
+static const int SSL_AD_CERTIFICATE_UNKNOWN;
+static const int SSL_AD_ILLEGAL_PARAMETER;
+static const int SSL_AD_UNKNOWN_CA;
+static const int SSL_AD_ACCESS_DENIED;
+static const int SSL_AD_DECODE_ERROR;
+static const int SSL_AD_DECRYPT_ERROR;
+static const int SSL_AD_PROTOCOL_VERSION;
+static const int SSL_AD_INSUFFICIENT_SECURITY;
+static const int SSL_AD_INTERNAL_ERROR;
+static const int SSL_AD_USER_CANCELLED;
+static const int SSL_AD_NO_RENEGOTIATION;
+
+static const int SSL_AD_UNSUPPORTED_EXTENSION;
+static const int SSL_AD_CERTIFICATE_UNOBTAINABLE;
+static const int SSL_AD_UNRECOGNIZED_NAME;
+static const int SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE;
+static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE;
+static const int SSL_AD_UNKNOWN_PSK_IDENTITY;
 
 static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
@@ -227,6 +253,7 @@ unsigned long ERR_peek_last_error_line_data(const char **,
 void ERR_put_error(int, int, int, const char *, int);
 void ERR_add_error_data(int, ...);
 int ERR_get_next_error_library(void);
+ERR_STATE *ERR_get_state(void);
 """
 
 MACROS = """
