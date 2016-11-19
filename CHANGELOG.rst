@@ -8,7 +8,9 @@ Changelog
 
 * Deprecated support for OpenSSL 1.0.0. Support will be removed in
   ``cryptography`` 1.7.
-* Replaced the Python-based OpenSSL locking callbacks with a C version.
+* Replaced the Python-based OpenSSL locking callbacks with a C version to fix
+  a potential deadlock that could occur if a garbage collection cycle occurred
+  while inside the lock.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
   1.1.0.
