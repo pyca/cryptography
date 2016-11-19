@@ -26,6 +26,7 @@ DH *d2i_DHparams(DH **, const unsigned char **, long);
 int i2d_DHparams(const DH *, unsigned char **);
 int DHparams_print_fp(FILE *, const DH *);
 int DHparams_print(BIO *, const DH *);
+DH *DHparams_dup(DH *);
 
 /* added in 1.1.0 when the DH struct was opaqued */
 void DH_get0_pqg(const DH *, const BIGNUM **, const BIGNUM **,
