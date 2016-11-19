@@ -82,6 +82,29 @@ def _sn_to_elliptic_curve(backend, sn):
         )
 
 
+def _ecdsa_sig_sign(backend, private_key, data):
+    max_size = backend._lib.ECDSA_size(private_key._ec_key)
+    backend.openssl_assert(max_size > 0)
+
+    sigbuf = backend._ffi.new("unsigned char[]", max_size)
+    siglen_ptr = backend._ffi.new("unsigned int[]", 1)
+    res = backend._lib.ECDSA_sign(
+        0, data, len(data), sigbuf, siglen_ptr, private_key._ec_key
+    )
+    backend.openssl_assert(res == 1)
+    return backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
+
+
+def _ecdsa_sig_verify(backend, public_key, signature, data):
+    res = backend._lib.ECDSA_verify(
+        0, data, len(data), signature, len(signature), public_key._ec_key
+    )
+    if res != 1:
+        backend._consume_errors()
+        raise InvalidSignature
+    return True
+
+
 @utils.register_interface(AsymmetricSignatureContext)
 class _ECDSASignatureContext(object):
     def __init__(self, backend, private_key, algorithm):
@@ -93,27 +116,12 @@ class _ECDSASignatureContext(object):
         self._digest.update(data)
 
     def finalize(self):
-        ec_key = self._private_key._ec_key
-
         digest = self._digest.finalize()
 
-        digest = _truncate_digest_for_ecdsa(ec_key, digest, self._backend)
-
-        max_size = self._backend._lib.ECDSA_size(ec_key)
-        self._backend.openssl_assert(max_size > 0)
-
-        sigbuf = self._backend._ffi.new("unsigned char[]", max_size)
-        siglen_ptr = self._backend._ffi.new("unsigned int[]", 1)
-        res = self._backend._lib.ECDSA_sign(
-            0,
-            digest,
-            len(digest),
-            sigbuf,
-            siglen_ptr,
-            ec_key
+        digest = _truncate_digest_for_ecdsa(
+            self._private_key._ec_key, digest, self._backend
         )
-        self._backend.openssl_assert(res == 1)
-        return self._backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
+        return _ecdsa_sig_sign(self._backend, self._private_key, digest)
 
 
 @utils.register_interface(AsymmetricVerificationContext)
@@ -128,24 +136,13 @@ class _ECDSAVerificationContext(object):
         self._digest.update(data)
 
     def verify(self):
-        ec_key = self._public_key._ec_key
-
         digest = self._digest.finalize()
-
-        digest = _truncate_digest_for_ecdsa(ec_key, digest, self._backend)
-
-        res = self._backend._lib.ECDSA_verify(
-            0,
-            digest,
-            len(digest),
-            self._signature,
-            len(self._signature),
-            ec_key
+        digest = _truncate_digest_for_ecdsa(
+            self._public_key._ec_key, digest, self._backend
         )
-        if res != 1:
-            self._backend._consume_errors()
-            raise InvalidSignature
-        return True
+        return _ecdsa_sig_verify(
+            self._backend, self._public_key, self._signature, digest
+        )
 
 
 @utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
