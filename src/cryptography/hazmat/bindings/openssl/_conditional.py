@@ -318,5 +318,8 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
-    ]
+    ],
+    "Cryptography_HAS_NPN_NEGOTIATED": [
+        "OPENSSL_NPN_NEGOTIATED",
+    ],
 }
