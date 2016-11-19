@@ -185,7 +185,7 @@ class DummyEllipticCurveBackend(object):
             self.elliptic_curve_supported(curve)
         )
 
-    def derive_elliptic_curve_public_point(self, private_value, curve):
+    def derive_elliptic_curve_private_key(self, private_value, curve):
         if not self.elliptic_curve_supported(curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
@@ -515,9 +515,9 @@ class TestMultiBackend(object):
         )
 
         with pytest.raises(UnsupportedAlgorithm):
-            backend.derive_elliptic_curve_public_point(123, DummyCurve())
+            backend.derive_elliptic_curve_private_key(123, DummyCurve())
 
-        assert backend.derive_elliptic_curve_public_point(
+        assert backend.derive_elliptic_curve_private_key(
             123, ec.SECT283K1()) is None
 
     def test_pem_serialization_backend(self):
