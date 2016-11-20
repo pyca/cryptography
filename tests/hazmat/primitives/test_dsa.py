@@ -16,7 +16,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_dss_signature
+    Prehashed, encode_dss_signature
 )
 from cryptography.utils import bit_length
 
@@ -616,6 +616,28 @@ class TestDSAVerification(object):
         public_key = private_key.public_key()
         public_key.verify(signature, message, algorithm)
 
+    def test_prehashed_verify(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        prehashed_alg = Prehashed(hashes.SHA1())
+        signature = private_key.sign(message, hashes.SHA1())
+        public_key = private_key.public_key()
+        public_key.verify(signature, digest, prehashed_alg)
+
+    def test_prehashed_digest_mismatch(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        public_key = private_key.public_key()
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        prehashed_alg = Prehashed(hashes.SHA224())
+        with pytest.raises(ValueError):
+            public_key.verify(b"\x00" * 128, digest, prehashed_alg)
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSASignature(object):
@@ -680,6 +702,29 @@ class TestDSASignature(object):
         verifier = public_key.verifier(signature, algorithm)
         verifier.update(message)
         verifier.verify()
+
+    def test_prehashed_sign(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        prehashed_alg = Prehashed(hashes.SHA1())
+        signature = private_key.sign(digest, prehashed_alg)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, hashes.SHA1())
+        verifier.update(message)
+        verifier.verify()
+
+    def test_prehashed_digest_mismatch(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        prehashed_alg = Prehashed(hashes.SHA224())
+        with pytest.raises(ValueError):
+            private_key.sign(digest, prehashed_alg)
 
 
 class TestDSANumbers(object):
