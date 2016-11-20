@@ -33,11 +33,23 @@ Asymmetric Utilities
 
     .. versionadded:: 1.6
 
-    ``Prehashed`` can be passed as the ``algorithm`` in
+    ``Prehashed`` can be passed as the ``algorithm`` in the RSA
     :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
-    or
+    and
     :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
-    if the data to be signed or verified has been hashed beforehand.
+    as well as DSA
+    :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey.sign`
+    and
+    :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.verify`
+    methods.
+
+    For elliptic curves it can be passed as the ``algorithm`` in
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSA` and then used
+    with
+    :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.sign`
+    and
+    :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
+    .
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
