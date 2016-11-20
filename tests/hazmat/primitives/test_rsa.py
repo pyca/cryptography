@@ -18,7 +18,9 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    padding, rsa, utils as asym_utils
+)
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
 )
@@ -491,6 +493,43 @@ class TestRSASignature(object):
         verifier = public_key.verifier(signature, pkcs, algorithm)
         verifier.update(message)
         verifier.verify()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
+    def test_prehashed_sign(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
+        signature = private_key.sign(digest, pss, prehashed_alg)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, pss, hashes.SHA1())
+        verifier.update(message)
+        verifier.verify()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
+    def test_prehashed_digest_mismatch(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA512(), backend)
+        h.update(message)
+        digest = h.finalize()
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
+        with pytest.raises(ValueError):
+            private_key.sign(digest, pss, prehashed_alg)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
