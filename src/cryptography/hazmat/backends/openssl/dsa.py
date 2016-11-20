@@ -31,6 +31,34 @@ def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
     return _truncate_digest(digest, order_bits)
 
 
+def _dsa_sig_sign(backend, private_key, data):
+    sig_buf_len = backend._lib.DSA_size(private_key._dsa_cdata)
+    sig_buf = backend._ffi.new("unsigned char[]", sig_buf_len)
+    buflen = backend._ffi.new("unsigned int *")
+
+    # The first parameter passed to DSA_sign is unused by OpenSSL but
+    # must be an integer.
+    res = backend._lib.DSA_sign(
+        0, data, len(data), sig_buf, buflen, private_key._dsa_cdata
+    )
+    backend.openssl_assert(res == 1)
+    backend.openssl_assert(buflen[0])
+
+    return backend._ffi.buffer(sig_buf)[:buflen[0]]
+
+
+def _dsa_sig_verify(backend, public_key, signature, data):
+    # The first parameter passed to DSA_verify is unused by OpenSSL but
+    # must be an integer.
+    res = backend._lib.DSA_verify(
+        0, data, len(data), signature, len(signature), public_key._dsa_cdata
+    )
+
+    if res != 1:
+        backend._consume_errors()
+        raise InvalidSignature
+
+
 @utils.register_interface(AsymmetricVerificationContext)
 class _DSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, algorithm):
@@ -50,16 +78,9 @@ class _DSAVerificationContext(object):
         data_to_verify = _truncate_digest_for_dsa(
             self._public_key._dsa_cdata, data_to_verify, self._backend
         )
-
-        # The first parameter passed to DSA_verify is unused by OpenSSL but
-        # must be an integer.
-        res = self._backend._lib.DSA_verify(
-            0, data_to_verify, len(data_to_verify), self._signature,
-            len(self._signature), self._public_key._dsa_cdata)
-
-        if res != 1:
-            self._backend._consume_errors()
-            raise InvalidSignature
+        _dsa_sig_verify(
+            self._backend, self._public_key, self._signature, data_to_verify
+        )
 
 
 @utils.register_interface(AsymmetricSignatureContext)
@@ -78,19 +99,7 @@ class _DSASignatureContext(object):
         data_to_sign = _truncate_digest_for_dsa(
             self._private_key._dsa_cdata, data_to_sign, self._backend
         )
-        sig_buf_len = self._backend._lib.DSA_size(self._private_key._dsa_cdata)
-        sig_buf = self._backend._ffi.new("unsigned char[]", sig_buf_len)
-        buflen = self._backend._ffi.new("unsigned int *")
-
-        # The first parameter passed to DSA_sign is unused by OpenSSL but
-        # must be an integer.
-        res = self._backend._lib.DSA_sign(
-            0, data_to_sign, len(data_to_sign), sig_buf,
-            buflen, self._private_key._dsa_cdata)
-        self._backend.openssl_assert(res == 1)
-        self._backend.openssl_assert(buflen[0])
-
-        return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
+        return _dsa_sig_sign(self._backend, self._private_key, data_to_sign)
 
 
 @utils.register_interface(dsa.DSAParametersWithNumbers)
