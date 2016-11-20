@@ -40,6 +40,17 @@ def _check_hashed_data_length(data, algorithm):
         )
 
 
+def _calculate_digest_and_algorithm(backend, data, algorithm):
+    if not isinstance(algorithm, asym_utils.Prehashed):
+        hash_ctx = hashes.Hash(algorithm, backend)
+        hash_ctx.update(data)
+        data = hash_ctx.finalize()
+    else:
+        algorithm = algorithm._algorithm
+
+    return (data, algorithm)
+
+
 def _enc_dec_rsa(backend, key, data, padding):
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Padding must be an instance of AsymmetricPadding.")
@@ -461,12 +472,9 @@ class _RSAPrivateKey(object):
         padding_enum = _rsa_sig_determine_padding(
             self._backend, self, padding, algorithm
         )
-        if not isinstance(algorithm, asym_utils.Prehashed):
-            hash_ctx = hashes.Hash(algorithm, self._backend)
-            hash_ctx.update(data)
-            data = hash_ctx.finalize()
-        else:
-            algorithm = algorithm._algorithm
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, algorithm
+        )
 
         _check_hashed_data_length(data, algorithm)
         return _rsa_sig_sign(
@@ -529,12 +537,9 @@ class _RSAPublicKey(object):
         padding_enum = _rsa_sig_determine_padding(
             self._backend, self, padding, algorithm
         )
-        if not isinstance(algorithm, asym_utils.Prehashed):
-            hash_ctx = hashes.Hash(algorithm, self._backend)
-            hash_ctx.update(data)
-            data = hash_ctx.finalize()
-        else:
-            algorithm = algorithm._algorithm
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, algorithm
+        )
 
         _check_hashed_data_length(data, algorithm)
         return _rsa_sig_verify(
