@@ -1743,6 +1743,9 @@ class Backend(object):
         if key_size < 512:
             raise ValueError("DH key_size must be at least 512 bits")
 
+        if generator not in (2, 5):
+            raise ValueError("DH generator must be 2 or 5")
+
         dh_param_cdata = self._lib.DH_new()
         self.openssl_assert(dh_param_cdata != self._ffi.NULL)
         dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)

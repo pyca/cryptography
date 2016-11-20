@@ -13,15 +13,15 @@ from cryptography.utils import bit_length, int_from_bytes
 
 def test_dh_parameternumbers():
     params = dh.DHParameterNumbers(
-        65537, 3
+        65537, 2
     )
 
     assert params.p == 65537
-    assert params.g == 3
+    assert params.g == 2
 
     with pytest.raises(TypeError):
         dh.DHParameterNumbers(
-            None, 3
+            None, 2
         )
 
     with pytest.raises(TypeError):
@@ -34,10 +34,15 @@ def test_dh_parameternumbers():
             None, None
         )
 
+    with pytest.raises(ValueError):
+        dh.DHParameterNumbers(
+            65537, 7
+        )
+
 
 def test_dh_numbers():
     params = dh.DHParameterNumbers(
-        65537, 3
+        65537, 2
     )
 
     public = dh.DHPublicNumbers(
@@ -76,14 +81,14 @@ def test_dh_numbers():
 
 
 def test_dh_parameter_numbers_equality():
-    assert dh.DHParameterNumbers(65537, 3) == dh.DHParameterNumbers(65537, 3)
-    assert dh.DHParameterNumbers(6, 3) != dh.DHParameterNumbers(65537, 3)
-    assert dh.DHParameterNumbers(65537, 0) != dh.DHParameterNumbers(65537, 3)
-    assert dh.DHParameterNumbers(65537, 0) != object()
+    assert dh.DHParameterNumbers(65537, 2) == dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(6, 2) != dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 5) != dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 2) != object()
 
 
 def test_dh_private_numbers_equality():
-    params = dh.DHParameterNumbers(65537, 3)
+    params = dh.DHParameterNumbers(65537, 2)
     public = dh.DHPublicNumbers(1, params)
     private = dh.DHPrivateNumbers(2, public)
 
@@ -91,18 +96,18 @@ def test_dh_private_numbers_equality():
     assert private != dh.DHPrivateNumbers(0, public)
     assert private != dh.DHPrivateNumbers(2, dh.DHPublicNumbers(0, params))
     assert private != dh.DHPrivateNumbers(
-        2, dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 0))
+        2, dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 5))
     )
     assert private != object()
 
 
 def test_dh_public_numbers_equality():
-    params = dh.DHParameterNumbers(65537, 3)
+    params = dh.DHParameterNumbers(65537, 2)
     public = dh.DHPublicNumbers(1, params)
 
     assert public == dh.DHPublicNumbers(1, params)
     assert public != dh.DHPublicNumbers(0, params)
-    assert public != dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 0))
+    assert public != dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 5))
     assert public != object()
 
 
@@ -111,6 +116,10 @@ class TestDH(object):
     def test_small_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 511, backend)
+
+    def test_unsupported_generator_generate_dh(self, backend):
+        with pytest.raises(ValueError):
+            dh.generate_parameters(7, 512, backend)
 
     def test_dh_parameters_supported(self, backend):
         assert backend.dh_parameters_supported(23, 5)
@@ -140,7 +149,7 @@ class TestDH(object):
                           dh.DHPrivateKeyWithSerialization)
 
     def test_serialize_unsupported_parameters(self, backend):
-        params = dh.DHParameterNumbers(23, 18)
+        params = dh.DHParameterNumbers(23, 2)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 

@@ -56,7 +56,7 @@ Group parameters
 
     Generate a new DH parameter group for use with ``backend``.
 
-    :param generator: The :class:`int` to use as a generator. Often
+    :param generator: The :class:`int` to use as a generator. Must be
         2 or 5.
 
     :param key_size: The bit length of the prime modulus to generate.
@@ -116,7 +116,7 @@ Group parameters
 
         :type: int
 
-        The generator value.
+        The generator value. Must be 2 or 5.
 
 
 Key interfaces

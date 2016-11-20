@@ -85,6 +85,9 @@ class DHParameterNumbers(object):
         ):
             raise TypeError("p and g must be integers")
 
+        if g not in (2, 5):
+            raise ValueError("DH generator must be 2 or 5")
+
         self._p = p
         self._g = g
 
