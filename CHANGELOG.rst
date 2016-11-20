@@ -47,7 +47,7 @@ Changelog
   a single-valued RDN.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
-* Added support for signing and verifying RSA signatures with
+* Added support for signing and verifying RSA, DSA, and ECDSA signatures with
   :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
   digests.
 
