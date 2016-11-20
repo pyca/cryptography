@@ -4,11 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length, int_from_bytes
+from ...utils import load_nist_vectors, load_vectors_from_file
 
 
 def test_dh_parameternumbers():
@@ -331,3 +334,18 @@ class TestDH(object):
             symkey2 = key2.exchange(pub_key1)
 
             assert symkey1 != symkey2
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "vec.txt"),
+            load_nist_vectors))
+    def test_dh_vectors(self, backend, vector):
+        parameters = dh.DHParameterNumbers(int(vector["p"]),
+                                           int(vector["g"]))
+        public = dh.DHPublicNumbers(int(vector["y"]), parameters)
+        private = dh.DHPrivateNumbers(int(vector["x"]), public)
+        key = private.private_key(backend)
+        symkey = key.exchange(public.public_key(backend))
+
+        assert int_from_bytes(symkey, 'big') == int(vector["k"], 16)
