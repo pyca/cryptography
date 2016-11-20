@@ -897,6 +897,29 @@ class TestRSAVerification(object):
         public_key = private_key.public_key()
         public_key.verify(signature, message, pkcs, algorithm)
 
+    def test_prehashed_verify(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        digest = h.finalize()
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
+        pkcs = padding.PKCS1v15()
+        signature = private_key.sign(message, pkcs, hashes.SHA1())
+        public_key = private_key.public_key()
+        public_key.verify(signature, digest, pkcs, prehashed_alg)
+
+    def test_prehashed_digest_mismatch(self, backend):
+        public_key = RSA_KEY_512.private_key(backend).public_key()
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA512())
+        pkcs = padding.PKCS1v15()
+        with pytest.raises(ValueError):
+            public_key.verify(b"\x00" * 64, data, pkcs, prehashed_alg)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPSSMGF1Verification(object):
