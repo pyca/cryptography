@@ -10,10 +10,12 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
+from cryptography.hazmat.backends.openssl.utils import (
+    _calculate_digest_and_algorithm
+)
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, rsa,
-    utils as asym_utils
+    AsymmetricSignatureContext, AsymmetricVerificationContext, rsa
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS, calculate_max_pss_salt_length
@@ -30,25 +32,6 @@ def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
         return calculate_max_pss_salt_length(key, hash_algorithm)
     else:
         return salt
-
-
-def _check_hashed_data_length(data, algorithm):
-    if len(data) != algorithm.digest_size:
-        raise ValueError(
-            "The provided data must be the same length as the hash "
-            "algorithm's digest size."
-        )
-
-
-def _calculate_digest_and_algorithm(backend, data, algorithm):
-    if not isinstance(algorithm, asym_utils.Prehashed):
-        hash_ctx = hashes.Hash(algorithm, backend)
-        hash_ctx.update(data)
-        data = hash_ctx.finalize()
-    else:
-        algorithm = algorithm._algorithm
-
-    return (data, algorithm)
 
 
 def _enc_dec_rsa(backend, key, data, padding):
@@ -475,8 +458,6 @@ class _RSAPrivateKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
-
-        _check_hashed_data_length(data, algorithm)
         return _rsa_sig_sign(
             self._backend, padding, padding_enum,
             algorithm, self, data
@@ -540,8 +521,6 @@ class _RSAPublicKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
-
-        _check_hashed_data_length(data, algorithm)
         return _rsa_sig_verify(
             self._backend, padding, padding_enum, algorithm, self,
             signature, data
