@@ -280,8 +280,8 @@ class TestOpenSSLRandomEngine(object):
         # TODO: enable when CI can handle coverage.py for these platforms
         # if 'bsd' in sys.platform:
         #     assert name in ['getentropy', '/dev/urandom']
-        # if sys.platform == 'win32':
-        #     assert name == 'CryptGenRandom'
+        if sys.platform == 'win32':
+            assert name == 'CryptGenRandom'
 
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()

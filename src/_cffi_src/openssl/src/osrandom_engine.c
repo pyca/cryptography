@@ -209,7 +209,8 @@ static int dev_urandom_fd(void) {
 }
 
 static int dev_urandom_read(unsigned char *buffer, int size) {
-    int fd, n;
+    int fd;
+    ssize_t n;
 
     fd = dev_urandom_fd();
     if (fd < 0) {
