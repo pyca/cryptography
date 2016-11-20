@@ -32,6 +32,14 @@ def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
         return salt
 
 
+def _check_hashed_data_length(data, algorithm):
+    if len(data) != algorithm.digest_size:
+        raise ValueError(
+            "The provided data must be the same length as the hash "
+            "algorithm's digest size."
+        )
+
+
 def _enc_dec_rsa(backend, key, data, padding):
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Padding must be an instance of AsymmetricPadding.")
@@ -460,12 +468,7 @@ class _RSAPrivateKey(object):
         else:
             algorithm = algorithm._algorithm
 
-        if len(data) != algorithm.digest_size:
-            raise ValueError(
-                "The provided data must be the same length as the hash "
-                "algorithm's digest size."
-            )
-
+        _check_hashed_data_length(data, algorithm)
         return _rsa_sig_sign(
             self._backend, padding, padding_enum,
             algorithm, self, data
@@ -533,12 +536,7 @@ class _RSAPublicKey(object):
         else:
             algorithm = algorithm._algorithm
 
-        if len(data) != algorithm.digest_size:
-            raise ValueError(
-                "The provided data must be the same length as the hash "
-                "algorithm's digest size."
-            )
-
+        _check_hashed_data_length(data, algorithm)
         return _rsa_sig_verify(
             self._backend, padding, padding_enum, algorithm, self,
             signature, data

@@ -47,13 +47,9 @@ Changelog
   a single-valued RDN.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
-* Added support to
-  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
-  and
-  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
-  RSA signatures with a
+* Added support for signing and verifying RSA signatures with
   :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
-  digest.
+  digests.
 
 1.5.3 - 2016-11-05
 ~~~~~~~~~~~~~~~~~~
