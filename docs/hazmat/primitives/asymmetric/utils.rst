@@ -39,3 +39,26 @@ Asymmetric Utilities
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+
+    .. doctest::
+
+        >>> import hashlib
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import (
+        ...    padding, rsa, utils
+        ... )
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+        >>> prehashed_msg = hashlib.sha256(b"A message I want to sign").digest()
+        >>> signature = private_key.sign(
+        ...     prehashed_msg,
+        ...     padding.PSS(
+        ...         mgf=padding.MGF1(hashes.SHA256()),
+        ...         salt_length=padding.PSS.MAX_LENGTH
+        ...     ),
+        ...     utils.Prehashed(hashes.SHA256())
+        ... )
