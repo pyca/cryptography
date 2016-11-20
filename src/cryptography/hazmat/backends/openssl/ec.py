@@ -8,7 +8,9 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.backends.openssl.utils import _truncate_digest
+from cryptography.hazmat.backends.openssl.utils import (
+    _calculate_digest_and_algorithm, _truncate_digest
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, ec
@@ -38,6 +40,13 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
         order_bits = _lib.BN_num_bits(order)
 
     return _truncate_digest(digest, order_bits)
+
+
+def _check_signature_algorithm(signature_algorithm):
+    if not isinstance(signature_algorithm, ec.ECDSA):
+        raise UnsupportedAlgorithm(
+            "Unsupported elliptic curve signature algorithm.",
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
 
 def _ec_key_curve_sn(backend, ec_key):
@@ -159,14 +168,10 @@ class _EllipticCurvePrivateKey(object):
     curve = utils.read_only_property("_curve")
 
     def signer(self, signature_algorithm):
-        if isinstance(signature_algorithm, ec.ECDSA):
-            return _ECDSASignatureContext(
-                self._backend, self, signature_algorithm.algorithm
-            )
-        else:
-            raise UnsupportedAlgorithm(
-                "Unsupported elliptic curve signature algorithm.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+        _check_signature_algorithm(signature_algorithm)
+        return _ECDSASignatureContext(
+            self._backend, self, signature_algorithm.algorithm
+        )
 
     def exchange(self, algorithm, peer_public_key):
         if not (
@@ -238,9 +243,14 @@ class _EllipticCurvePrivateKey(object):
         )
 
     def sign(self, data, signature_algorithm):
-        signer = self.signer(signature_algorithm)
-        signer.update(data)
-        return signer.finalize()
+        _check_signature_algorithm(signature_algorithm)
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, signature_algorithm._algorithm
+        )
+        data = _truncate_digest_for_ecdsa(
+            self._ec_key, data, self._backend
+        )
+        return _ecdsa_sig_sign(self._backend, self, data)
 
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
@@ -260,14 +270,10 @@ class _EllipticCurvePublicKey(object):
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
 
-        if isinstance(signature_algorithm, ec.ECDSA):
-            return _ECDSAVerificationContext(
-                self._backend, self, signature, signature_algorithm.algorithm
-            )
-        else:
-            raise UnsupportedAlgorithm(
-                "Unsupported elliptic curve signature algorithm.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+        _check_signature_algorithm(signature_algorithm)
+        return _ECDSAVerificationContext(
+            self._backend, self, signature, signature_algorithm.algorithm
+        )
 
     def public_numbers(self):
         set_func, get_func, group = (
@@ -307,6 +313,11 @@ class _EllipticCurvePublicKey(object):
         )
 
     def verify(self, signature, data, signature_algorithm):
-        verifier = self.verifier(signature, signature_algorithm)
-        verifier.update(data)
-        verifier.verify()
+        _check_signature_algorithm(signature_algorithm)
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, signature_algorithm._algorithm
+        )
+        data = _truncate_digest_for_ecdsa(
+            self._ec_key, data, self._backend
+        )
+        return _ecdsa_sig_verify(self._backend, self, signature, data)

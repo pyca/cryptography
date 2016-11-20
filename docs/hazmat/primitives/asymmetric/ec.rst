@@ -384,12 +384,16 @@ Key Interfaces
 .. class:: EllipticCurveSignatureAlgorithm
 
     .. versionadded:: 0.5
+    .. versionchanged:: 1.6
+        :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+        can now be used as an ``algorithm``.
 
     A signature algorithm for use with elliptic curve keys.
 
     .. attribute:: algorithm
 
-        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
 
         The digest algorithm to be used with the signature scheme.
 

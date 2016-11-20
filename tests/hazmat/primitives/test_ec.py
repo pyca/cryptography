@@ -19,7 +19,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_dss_signature
+    Prehashed, encode_dss_signature
 )
 
 from .fixtures_ec import EC_KEY_SECP384R1
@@ -387,7 +387,19 @@ class TestECDSAVectors(object):
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
+            key.sign(b"somedata", DummySignatureAlgorithm())
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             key.public_key().verifier(b"", DummySignatureAlgorithm())
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            key.public_key().verify(
+                b"signature", b"data", DummySignatureAlgorithm()
+            )
 
         assert backend.elliptic_curve_signature_algorithm_supported(
             DummySignatureAlgorithm(),
@@ -540,6 +552,31 @@ class TestECDSAVectors(object):
         verifier.update(message)
         verifier.verify()
 
+    def test_sign_prehashed(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        algorithm = ec.ECDSA(Prehashed(hashes.SHA1()))
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signature = private_key.sign(data, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA1()))
+        verifier.update(message)
+        verifier.verify()
+
+    def test_sign_prehashed_digest_mismatch(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        algorithm = ec.ECDSA(Prehashed(hashes.SHA256()))
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        with pytest.raises(ValueError):
+            private_key.sign(data, algorithm)
+
     def test_verify(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         message = b"one little message"
@@ -550,6 +587,35 @@ class TestECDSAVectors(object):
         signature = signer.finalize()
         public_key = private_key.public_key()
         public_key.verify(signature, message, algorithm)
+
+    def test_verify_prehashed(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signer = private_key.signer(algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(
+            signature, data, ec.ECDSA(Prehashed(hashes.SHA1()))
+        )
+
+    def test_verify_prehashed_digest_mismatch(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        public_key = private_key.public_key()
+        with pytest.raises(ValueError):
+            public_key.verify(
+                b"\x00" * 32, data, ec.ECDSA(Prehashed(hashes.SHA256()))
+            )
 
 
 class TestECNumbersEquality(object):
