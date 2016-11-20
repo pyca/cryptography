@@ -6,7 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends.openssl.utils import _truncate_digest
+from cryptography.hazmat.backends.openssl.utils import (
+    _calculate_digest_and_algorithm, _truncate_digest
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
@@ -207,9 +209,11 @@ class _DSAPrivateKey(object):
         )
 
     def sign(self, data, algorithm):
-        signer = self.signer(algorithm)
-        signer.update(data)
-        return signer.finalize()
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, algorithm
+        )
+        data = _truncate_digest_for_dsa(self._dsa_cdata, data, self._backend)
+        return _dsa_sig_sign(self._backend, self, data)
 
 
 @utils.register_interface(dsa.DSAPublicKeyWithSerialization)
@@ -279,6 +283,8 @@ class _DSAPublicKey(object):
         )
 
     def verify(self, signature, data, algorithm):
-        verifier = self.verifier(signature, algorithm)
-        verifier.update(data)
-        verifier.verify()
+        data, algorithm = _calculate_digest_and_algorithm(
+            self._backend, data, algorithm
+        )
+        data = _truncate_digest_for_dsa(self._dsa_cdata, data, self._backend)
+        return _dsa_sig_verify(self._backend, self, signature, data)

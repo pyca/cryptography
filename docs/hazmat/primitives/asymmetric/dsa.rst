@@ -301,6 +301,9 @@ Key interfaces
     .. method:: sign(data, algorithm)
 
         .. versionadded:: 1.5
+        .. versionchanged:: 1.6
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            can now be used as an ``algorithm``.
 
         Sign one block of data which can be verified later by others using the
         public key.
@@ -308,7 +311,9 @@ Key interfaces
         :param bytes data: The message string to sign.
 
         :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            if the ``data`` you want to sign has already been hashed.
 
         :return bytes: Signature.
 
@@ -424,6 +429,9 @@ Key interfaces
     .. method:: verify(signature, data, algorithm)
 
         .. versionadded:: 1.5
+        .. versionchanged:: 1.6
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            can now be used as an ``algorithm``.
 
         Verify one block of data was signed by the private key
         associated with this public key.
@@ -433,7 +441,9 @@ Key interfaces
         :param bytes data: The message string that was signed.
 
         :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            if the ``data`` you want to sign has already been hashed.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
