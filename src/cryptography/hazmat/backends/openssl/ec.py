@@ -8,7 +8,9 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.backends.openssl.utils import _truncate_digest
+from cryptography.hazmat.backends.openssl.utils import (
+    _calculate_digest_and_algorithm, _truncate_digest
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, ec
@@ -238,9 +240,18 @@ class _EllipticCurvePrivateKey(object):
         )
 
     def sign(self, data, signature_algorithm):
-        signer = self.signer(signature_algorithm)
-        signer.update(data)
-        return signer.finalize()
+        if isinstance(signature_algorithm, ec.ECDSA):
+            data, algorithm = _calculate_digest_and_algorithm(
+                self._backend, data, signature_algorithm._algorithm
+            )
+            data = _truncate_digest_for_ecdsa(
+                self._ec_key, data, self._backend
+            )
+            return _ecdsa_sig_sign(self._backend, self, data)
+        else:
+            raise UnsupportedAlgorithm(
+                "Unsupported elliptic curve signature algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
@@ -307,6 +318,15 @@ class _EllipticCurvePublicKey(object):
         )
 
     def verify(self, signature, data, signature_algorithm):
-        verifier = self.verifier(signature, signature_algorithm)
-        verifier.update(data)
-        verifier.verify()
+        if isinstance(signature_algorithm, ec.ECDSA):
+            data, algorithm = _calculate_digest_and_algorithm(
+                self._backend, data, signature_algorithm._algorithm
+            )
+            data = _truncate_digest_for_ecdsa(
+                self._ec_key, data, self._backend
+            )
+            return _ecdsa_sig_verify(self._backend, self, signature, data)
+        else:
+            raise UnsupportedAlgorithm(
+                "Unsupported elliptic curve signature algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
