@@ -35,7 +35,9 @@ Asymmetric Utilities
 
     ``Prehashed`` can be passed as the ``algorithm`` in
     :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
-    if the data to be signed has been hashed beforehand.
+    or
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+    if the data to be signed or verified has been hashed beforehand.
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
@@ -55,6 +57,16 @@ Asymmetric Utilities
         ... )
         >>> prehashed_msg = hashlib.sha256(b"A message I want to sign").digest()
         >>> signature = private_key.sign(
+        ...     prehashed_msg,
+        ...     padding.PSS(
+        ...         mgf=padding.MGF1(hashes.SHA256()),
+        ...         salt_length=padding.PSS.MAX_LENGTH
+        ...     ),
+        ...     utils.Prehashed(hashes.SHA256())
+        ... )
+        >>> public_key = private_key.public_key()
+        >>> public_key.verify(
+        ...     signature,
         ...     prehashed_msg,
         ...     padding.PSS(
         ...         mgf=padding.MGF1(hashes.SHA256()),

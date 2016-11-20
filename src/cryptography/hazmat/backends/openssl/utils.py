@@ -6,6 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
+
 
 def _truncate_digest(digest, order_bits):
     digest_len = len(digest)
@@ -24,3 +27,20 @@ def _truncate_digest(digest, order_bits):
         digest = digest[:-1] + six.int2byte(six.indexbytes(digest, -1) & mask)
 
     return digest
+
+
+def _calculate_digest_and_algorithm(backend, data, algorithm):
+    if not isinstance(algorithm, Prehashed):
+        hash_ctx = hashes.Hash(algorithm, backend)
+        hash_ctx.update(data)
+        data = hash_ctx.finalize()
+    else:
+        algorithm = algorithm._algorithm
+
+    if len(data) != algorithm.digest_size:
+        raise ValueError(
+            "The provided data must be the same length as the hash "
+            "algorithm's digest size."
+        )
+
+    return (data, algorithm)
