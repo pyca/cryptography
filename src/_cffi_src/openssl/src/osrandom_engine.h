@@ -11,6 +11,10 @@
     #include <sys/syscall.h>
   #endif
 
+  #ifdef __APPLE__
+    #include <sys/random.h>
+  #endif
+
   #ifdef __linux__
     /* for SYS_getrandom */
     #include <sys/syscall.h>
@@ -18,25 +22,12 @@
       #define GRND_NONBLOCK 0x0001
     #endif /* GRND_NONBLOCK */
   #endif /* _linux__ */
-
-  #ifdef __APPLE__
-    #include <AvailabilityMacros.h>
-    /* #if defined(MAC_OS_X_VERSION_10_10) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10 */
-    #ifdef __MAC_10_10
-      #include <CommonCrypto/CommonCryptor.h>
-      #include <CommonCrypto/CommonRandom.h>
-      #ifndef CRYPTOGRAPHY_HAVE_COMMON_RANDOM_H
-        #define CRYPTOGRAPHY_HAVE_COMMON_RANDOM_H 1
-      #endif
-    #endif /* >= 10.10 */
-  #endif /* __APPLE__ */
 #endif /* _WIN32 */
 
 #define CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM 1
-#define CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM 2
-#define CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY 3
-#define CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM 4
-#define CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM 5
+#define CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY 2
+#define CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM 3
+#define CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM 4
 
 #ifndef CRYPTOGRAPHY_OSRANDOM_ENGINE
   #if defined(_WIN32)
@@ -46,7 +37,7 @@
     /* OSX 10.10+ */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM
   #elif defined(BSD) && defined(SYS_getentropy)
-    /* OpenBSD 5.6+ */
+    /* OpenBSD 5.6+ or macOS 10.12+ */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
   #elif defined(__linux__) && defined(SYS_getrandom)
     /* Linux 3.4.17+ */

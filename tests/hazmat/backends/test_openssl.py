@@ -11,6 +11,8 @@ import subprocess
 import sys
 import textwrap
 
+from pkg_resources import parse_version
+
 import pytest
 
 from cryptography import utils, x509
@@ -276,10 +278,13 @@ class TestOpenSSLRandomEngine(object):
         if sys.platform.startswith('linux'):
             assert name in ['getrandom', '/dev/urandom']
         if sys.platform == 'darwin':
-            assert name in ['CCRandomGenerateBytes', '/dev/urandom']
-        # TODO: enable when CI can handle coverage.py for these platforms
-        # if 'bsd' in sys.platform:
-        #     assert name in ['getentropy', '/dev/urandom']
+            # macOS 10.12+ supports getentropy
+            if parse_version(os.uname()[2]) >= parse_version("16.0"):
+                assert name == 'getentropy'
+            else:
+                assert name == '/dev/urandom'
+        if 'bsd' in sys.platform:
+            assert name in ['getentropy', '/dev/urandom']
         if sys.platform == 'win32':
             assert name == 'CryptGenRandom'
 
