@@ -100,25 +100,6 @@ Group parameters
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
 
 
-.. class:: DHParameterNumbers(p, g)
-
-    .. versionadded:: 0.8
-
-    The collection of integers that define a Diffie-Hellman group.
-
-    .. attribute:: p
-
-        :type: int
-
-        The prime modulus value.
-
-    .. attribute:: g
-
-        :type: int
-
-        The generator value. Must be 2 or 5.
-
-
 Key interfaces
 ~~~~~~~~~~~~~~
 
@@ -165,26 +146,6 @@ Key interfaces
         :return bytes: The agreed key. The bytes are ordered in 'big' endian.
 
 
-.. class:: DHPrivateNumbers(x, public_numbers)
-
-    .. versionadded:: 0.8
-
-    The collection of integers that make up a Diffie-Hellman private key.
-
-    .. attribute:: public_numbers
-
-        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
-
-        The :class:`DHPublicNumbers` which makes up the DH public
-        key associated with this DH private key.
-
-    .. attribute:: x
-
-        :type: int
-
-        The private value.
-
-
 .. class:: DHPublicKey
 
     .. versionadded:: 0.9
@@ -211,6 +172,47 @@ Key interfaces
         Return the numbers that make up this public key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+
+Numbers
+~~~~~~~
+
+.. class:: DHParameterNumbers(p, g)
+
+    .. versionadded:: 0.8
+
+    The collection of integers that define a Diffie-Hellman group.
+
+    .. attribute:: p
+
+        :type: int
+
+        The prime modulus value.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator value. Must be 2 or 5.
+
+.. class:: DHPrivateNumbers(x, public_numbers)
+
+    .. versionadded:: 0.8
+
+    The collection of integers that make up a Diffie-Hellman private key.
+
+    .. attribute:: public_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
+
+        The :class:`DHPublicNumbers` which makes up the DH public
+        key associated with this DH private key.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private value.
 
 
 .. class:: DHPublicNumbers(y, parameter_numbers)
