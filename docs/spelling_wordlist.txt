@@ -54,6 +54,7 @@ Mozilla
 multi
 namespace
 namespaces
+macOS
 naïve
 Nonces
 nonces
