@@ -1,7 +1,7 @@
 /* osurandom engine
  *
  * Windows         CryptGenRandom()
- * OSX >= 10.10    CCRandomGenerateBytes()
+ * macOS >= 10.12  getentropy()
  * OpenBSD 5.6+    getentropy()
  * other BSD       getentropy() if SYS_getentropy is defined
  * Linux 3.4.17+   getrandom() with fallback to /dev/urandom
@@ -71,38 +71,6 @@ static const char* osurandom_get_implementation(void) {
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM */
 
 /****************************************************************************
- * OSX >= 10.10 CCRandomGenerateBytes
- */
-#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM
-static const char *Cryptography_osrandom_engine_name = "osrandom_engine CCRandomGenerateBytes()";
-
-static int osrandom_init(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    if (CCRandomGenerateBytes((void *)buffer, size) != kCCSuccess) {
-        CRYPTOGRAPHY_OSRANDOM_put_error(
-            "osrandom_engine.py:CCRandomGenerateBytes()");
-        return 0;
-    }
-    return 1;
-}
-
-static int osrandom_finish(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_status(void) {
-    return 1;
-}
-
-static const char* osurandom_get_implementation(void) {
-    return "CCRandomGenerateBytes";
-}
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CC_RANDOM */
-
-/****************************************************************************
  * BSD getentropy
  */
 #if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
@@ -117,10 +85,10 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     int res;
     while (size > 0) {
         /* OpenBSD restricts maximum buffer size to 256. */
-        len = size > 256 : 256: size;
+        len = size > 256 ? 256: size;
         res = getentropy(buffer, len);
         if (res < 0) {
-            CRYPTOGRAPHY_OSRANDOM_put_error(as
+            CRYPTOGRAPHY_OSRANDOM_put_error(
                 "osrandom_engine.py:getentropy()");
             return 0;
         }
