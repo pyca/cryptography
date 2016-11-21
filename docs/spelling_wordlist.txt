@@ -48,6 +48,7 @@ iOS
 iterable
 Koblitz
 Lange
+macOS
 metadata
 Mozilla
 multi
