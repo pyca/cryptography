@@ -99,9 +99,13 @@ class _DHPrivateKey(object):
     def exchange(self, peer_public_key):
 
         buf = self._backend._ffi.new("unsigned char[]", self._key_size)
+        pub_key = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.DH_get0_key(peer_public_key._dh_cdata, pub_key,
+                                       self._backend._ffi.NULL)
+        self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
         res = self._backend._lib.DH_compute_key(
             buf,
-            self._backend._int_to_bn(peer_public_key.public_numbers().y),
+            pub_key[0],
             self._dh_cdata
         )
 
@@ -120,33 +124,18 @@ class _DHPrivateKey(object):
             return key
 
     def public_key(self):
-        dh_cdata = self._backend._lib.DH_new()
+        dh_cdata = self._backend._lib.DHparams_dup(self._dh_cdata)
         self._backend.openssl_assert(dh_cdata != self._backend._ffi.NULL)
         dh_cdata = self._backend._ffi.gc(
             dh_cdata, self._backend._lib.DH_free
         )
 
-        p = self._backend._ffi.new("BIGNUM **")
-        g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata,
-                                       p, self._backend._ffi.NULL, g)
-        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
-        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
-        p_dup = self._backend._lib.BN_dup(p[0])
-        g_dup = self._backend._lib.BN_dup(g[0])
-        self._backend.openssl_assert(p_dup != self._backend._ffi.NULL)
-        self._backend.openssl_assert(g_dup != self._backend._ffi.NULL)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata,
                                        pub_key, self._backend._ffi.NULL)
         self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
         pub_key_dup = self._backend._lib.BN_dup(pub_key[0])
         self._backend.openssl_assert(pub_key_dup != self._backend._ffi.NULL)
-
-        res = self._backend._lib.DH_set0_pqg(dh_cdata,
-                                             p_dup,
-                                             self._backend._ffi.NULL, g_dup)
-        self._backend.openssl_assert(res == 1)
 
         res = self._backend._lib.DH_set0_key(dh_cdata,
                                              pub_key_dup,
