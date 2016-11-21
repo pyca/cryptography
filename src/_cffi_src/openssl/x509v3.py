@@ -171,7 +171,7 @@ typedef struct {
     Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
 } POLICYINFO;
 
-typedef void (*sk_GENERAL_NAME_freefunc)(struct GENERAL_NAME_st *);
+typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
 """
 
 
