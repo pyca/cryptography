@@ -125,6 +125,9 @@ def test_derive_private_key_errors(backend):
     with pytest.raises(TypeError):
         ec.derive_private_key(10, 'five', backend)
 
+    with pytest.raises(ValueError):
+        ec.derive_private_key(-7, curve, backend)
+
 
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
