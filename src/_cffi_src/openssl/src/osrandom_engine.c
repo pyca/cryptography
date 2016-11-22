@@ -81,10 +81,9 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    Py_ssize_t len;
-    int res;
+    int len, res;
     while (size > 0) {
-        /* OpenBSD restricts maximum buffer size to 256. */
+        /* OpenBSD and macOS restrict maximum buffer size to 256. */
         len = size > 256 ? 256: size;
         res = getentropy(buffer, len);
         if (res < 0) {
