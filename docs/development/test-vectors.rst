@@ -94,6 +94,10 @@ Key exchange
 * ``vectors/cryptography_vectors/asymmetric/DH/vec.txt`` contains
   Diffie-Hellman examples from `botan`_.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/bad_exchange.txt`` contains
+  Diffie-Hellman vector pairs that were generated using OpenSSL
+  DH_generate_parameters_ex and DH_generate_key.
+
 X.509
 ~~~~~
 
