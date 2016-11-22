@@ -37,8 +37,8 @@ OpenSSL releases:
 * ``OpenSSL 1.1.0``
 
 .. warning::
-    OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography
-    will drop support for it in the next release.
+    Cryptography 1.7 has dropped support for OpenSSL 1.0.0, see the
+    :doc:`FAQ </faq>` for more details
 
 Building cryptography on Windows
 --------------------------------
