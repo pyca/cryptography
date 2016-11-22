@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.6 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.6 - 2016-11-22
+~~~~~~~~~~~~~~~~
 
 * Deprecated support for OpenSSL 1.0.0. Support will be removed in
   ``cryptography`` 1.7.
