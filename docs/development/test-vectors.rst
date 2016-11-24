@@ -470,4 +470,4 @@ header format (substituting the correct information):
 .. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
 .. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966
-.. _`botan`: https://raw.githubusercontent.com/randombit/botan/master/src/tests/data/pubkey/dh.vec
+.. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec
