@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -62,16 +53,25 @@ def _handle_dh_compute_key_error(errors, backend):
     raise ValueError("Public key value is invalid for this exchange.")
 
 
+def _get_dh_num_bits(backend, dh_cdata):
+    p = backend._ffi.new("BIGNUM **")
+    backend._lib.DH_get0_pqg(dh_cdata, p,
+                             backend._ffi.NULL,
+                             backend._ffi.NULL)
+    backend.openssl_assert(p[0] != backend._ffi.NULL)
+    return backend._lib.BN_num_bits(p[0])
+
+
 @utils.register_interface(dh.DHPrivateKeyWithSerialization)
 class _DHPrivateKey(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
-        self._key_size = self._backend._lib.DH_size(dh_cdata)
+        self._key_size_bytes = self._backend._lib.DH_size(dh_cdata)
 
     @property
     def key_size(self):
-        return self._key_size * 8
+        return _get_dh_num_bits(self._backend, self._dh_cdata)
 
     def private_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
@@ -98,7 +98,7 @@ class _DHPrivateKey(object):
 
     def exchange(self, peer_public_key):
 
-        buf = self._backend._ffi.new("unsigned char[]", self._key_size)
+        buf = self._backend._ffi.new("unsigned char[]", self._key_size_bytes)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(peer_public_key._dh_cdata, pub_key,
                                        self._backend._ffi.NULL)
@@ -116,7 +116,7 @@ class _DHPrivateKey(object):
             self._backend.openssl_assert(res >= 1)
 
             key = self._backend._ffi.buffer(buf)[:res]
-            pad = self._key_size - len(key)
+            pad = self._key_size_bytes - len(key)
 
             if pad > 0:
                 key = (b"\x00" * pad) + key
@@ -153,11 +153,11 @@ class _DHPublicKey(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
-        self._key_size = self._backend._lib.DH_size(dh_cdata) * 8
+        self._key_size_bits = _get_dh_num_bits(self._backend, self._dh_cdata)
 
     @property
     def key_size(self):
-        return self._key_size
+        return self._key_size_bits
 
     def public_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
