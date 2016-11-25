@@ -11,9 +11,10 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
+    CMACBackend, CipherBackend, DERSerializationBackend, DHBackend,
+    DSABackend, EllipticCurveBackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, ScryptBackend,
+    X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -241,6 +242,30 @@ class DummyX509Backend(object):
         pass
 
     def x509_name_bytes(self, name):
+        pass
+
+
+@utils.register_interface(DHBackend)
+class DummyDHBackend(object):
+    def generate_dh_parameters(self, generator, key_size):
+        pass
+
+    def load_dh_parameter_numbers(self, numbers):
+        pass
+
+    def generate_dh_private_key(self, parameters):
+        pass
+
+    def load_dh_private_numbers(self, numbers):
+        pass
+
+    def load_dh_public_numbers(self, numbers):
+        pass
+
+    def generate_dh_private_key_and_parameters(self, generator, key_size):
+        pass
+
+    def dh_parameters_supported(self, p, g):
         pass
 
 
@@ -586,6 +611,33 @@ class TestMultiBackend(object):
             backend.create_x509_revoked_certificate(object())
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.x509_name_bytes(object())
+
+    def test_dh_backend(self):
+        backend = MultiBackend([DummyDHBackend()])
+
+        backend.generate_dh_parameters(2, 512)
+        backend.load_dh_parameter_numbers(object())
+        backend.generate_dh_private_key(object())
+        backend.load_dh_private_numbers(object())
+        backend.load_dh_public_numbers(object())
+        backend.generate_dh_private_key_and_parameters(2, 512)
+        backend.dh_parameters_supported(2, 3)
+
+        backend = MultiBackend([DummyBackend()])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.generate_dh_parameters(2, 512)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.load_dh_parameter_numbers(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.generate_dh_private_key(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.load_dh_private_numbers(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.load_dh_public_numbers(object())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.generate_dh_private_key_and_parameters(2, 512)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.dh_parameters_supported(2, 3)
 
     def test_scrypt(self):
         backend = MultiBackend([DummyScryptBackend()])

@@ -32,6 +32,7 @@ Django
 Docstrings
 El
 Encodings
+endian
 Fernet
 fernet
 FIPS

@@ -16,7 +16,7 @@ import six
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
+    CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
@@ -24,6 +24,9 @@ from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+from cryptography.hazmat.backends.openssl.dh import (
+    _DHParameters, _DHPrivateKey, _DHPublicKey
+)
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey
 )
@@ -107,6 +110,7 @@ def _pem_password_cb(buf, size, writing, userdata_handle):
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
+@utils.register_interface(DHBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(HashBackend)
@@ -329,6 +333,7 @@ class Backend(object):
 
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL
+
         if six.PY3:
             # Python 3 has constant time from_bytes, so use that.
             bn_num_bytes = self._lib.BN_num_bytes(bn)
@@ -1733,6 +1738,117 @@ class Backend(object):
                 serialization._ssh_write_string(curve_name) +
                 serialization._ssh_write_string(public_numbers.encode_point())
             )
+
+    def generate_dh_parameters(self, generator, key_size):
+        if key_size < 512:
+            raise ValueError("DH key_size must be at least 512 bits")
+
+        if generator not in (2, 5):
+            raise ValueError("DH generator must be 2 or 5")
+
+        dh_param_cdata = self._lib.DH_new()
+        self.openssl_assert(dh_param_cdata != self._ffi.NULL)
+        dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
+
+        res = self._lib.DH_generate_parameters_ex(
+            dh_param_cdata,
+            key_size,
+            generator,
+            self._ffi.NULL
+        )
+        self.openssl_assert(res == 1)
+
+        return _DHParameters(self, dh_param_cdata)
+
+    def generate_dh_private_key(self, parameters):
+        dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
+        self.openssl_assert(dh_key_cdata != self._ffi.NULL)
+        dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
+
+        res = self._lib.DH_generate_key(dh_key_cdata)
+        self.openssl_assert(res == 1)
+
+        return _DHPrivateKey(self, dh_key_cdata)
+
+    def generate_dh_private_key_and_parameters(self, generator, key_size):
+        return self.generate_dh_private_key(
+            self.generate_dh_parameters(generator, key_size))
+
+    def load_dh_private_numbers(self, numbers):
+        parameter_numbers = numbers.public_numbers.parameter_numbers
+
+        dh_cdata = self._lib.DH_new()
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        p = self._int_to_bn(parameter_numbers.p)
+        g = self._int_to_bn(parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.public_numbers.y)
+        priv_key = self._int_to_bn(numbers.x)
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        self.openssl_assert(res == 1)
+
+        res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
+        self.openssl_assert(res == 1)
+
+        codes = self._ffi.new("int[]", 1)
+        res = self._lib.DH_check(dh_cdata, codes)
+        self.openssl_assert(res == 1)
+
+        if codes[0] != 0:
+            raise ValueError("DH private numbers did not pass safety checks.")
+
+        return _DHPrivateKey(self, dh_cdata)
+
+    def load_dh_public_numbers(self, numbers):
+        dh_cdata = self._lib.DH_new()
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        parameter_numbers = numbers.parameter_numbers
+
+        p = self._int_to_bn(parameter_numbers.p)
+        g = self._int_to_bn(parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.y)
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        self.openssl_assert(res == 1)
+
+        res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
+        self.openssl_assert(res == 1)
+
+        return _DHPublicKey(self, dh_cdata)
+
+    def load_dh_parameter_numbers(self, numbers):
+        dh_cdata = self._lib.DH_new()
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        p = self._int_to_bn(numbers.p)
+        g = self._int_to_bn(numbers.g)
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        self.openssl_assert(res == 1)
+
+        return _DHParameters(self, dh_cdata)
+
+    def dh_parameters_supported(self, p, g):
+        dh_cdata = self._lib.DH_new()
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        p = self._int_to_bn(p)
+        g = self._int_to_bn(g)
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        self.openssl_assert(res == 1)
+
+        codes = self._ffi.new("int[]", 1)
+        res = self._lib.DH_check(dh_cdata, codes)
+        self.openssl_assert(res == 1)
+
+        return codes[0] == 0
 
     def x509_name_bytes(self, name):
         x509_name = _encode_name_gc(self, name)

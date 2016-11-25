@@ -600,7 +600,9 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for doing Diffie-Hellman key exchange.
 
-    .. method:: generate_dh_parameters(key_size)
+    .. method:: generate_dh_parameters(generator, key_size)
+
+        :param int generator: The generator to use. Often 2 or 5.
 
         :param int key_size: The bit length of the prime modulus to generate.
 
@@ -617,7 +619,9 @@ A specific ``backend`` may provide one or more of these interfaces.
         :return: A new instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
-    .. method:: generate_dh_private_key_and_parameters(self, key_size)
+    .. method:: generate_dh_private_key_and_parameters(generator, key_size)
+
+        :param int generator: The generator to use. Often 2 or 5.
 
         :param int key_size: The bit length of the prime modulus to generate.
 
