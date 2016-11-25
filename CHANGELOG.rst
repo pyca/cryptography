@@ -8,6 +8,8 @@ Changelog
 
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* Added support for Diffie-Hellman key exchange using
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.exchange`
 
 1.6 - 2016-11-22
 ~~~~~~~~~~~~~~~~
