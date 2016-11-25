@@ -435,6 +435,10 @@ long SSL_CTX_sess_cb_hits(SSL_CTX *);
 long SSL_CTX_sess_misses(SSL_CTX *);
 long SSL_CTX_sess_timeouts(SSL_CTX *);
 long SSL_CTX_sess_cache_full(SSL_CTX *);
+
+/* DTLS support */
+long DTLSv1_get_timeout_wrapped(SSL *, time_t *, long int *);
+long DTLSv1_handle_timeout(SSL *);
 """
 
 CUSTOMIZATIONS = """
@@ -656,4 +660,17 @@ static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
+
+/* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
+long DTLSv1_get_timeout_wrapped(SSL *ssl, time_t *ptv_sec, long int *ptv_usec) {
+    struct timeval tv = { 0 };
+    int r = DTLSv1_get_timeout(ssl, &tv);
+
+    if (r == 1) {
+        if (ptv_sec) *ptv_sec = tv.tv_sec;
+        if (ptv_usec) *ptv_usec = tv.tv_usec;
+    }
+
+    return r;
+}
 """
