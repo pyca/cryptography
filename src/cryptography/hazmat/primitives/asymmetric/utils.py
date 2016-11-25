@@ -13,6 +13,7 @@ from pyasn1.type import namedtype, univ
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives import hashes
 
 
 class _DSSSigValue(univ.Sequence):
@@ -69,3 +70,14 @@ def encode_dss_signature(r, s):
     sig.setComponentByName('r', r)
     sig.setComponentByName('s', s)
     return encoder.encode(sig)
+
+
+class Prehashed(object):
+    def __init__(self, algorithm):
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of HashAlgorithm.")
+
+        self._algorithm = algorithm
+        self._digest_size = algorithm.digest_size
+
+    digest_size = utils.read_only_property("_digest_size")

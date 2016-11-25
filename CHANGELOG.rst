@@ -1,13 +1,22 @@
 Changelog
 =========
 
-1.6 - `master`_
+1.7 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
+
+1.6 - 2016-11-22
+~~~~~~~~~~~~~~~~
+
 * Deprecated support for OpenSSL 1.0.0. Support will be removed in
   ``cryptography`` 1.7.
+* Replaced the Python-based OpenSSL locking callbacks with a C version to fix
+  a potential deadlock that could occur if a garbage collection cycle occurred
+  while inside the lock.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` when using OpenSSL
   1.1.0.
@@ -28,7 +37,8 @@ Changelog
   :meth:`~cryptography.x509.random_serial_number`.
 * Added support for encoding ``IPv4Network`` and ``IPv6Network`` in X.509
   certificates for use with :class:`~cryptography.x509.NameConstraints`.
-* Added :meth:`~cryptography.x509.Name.public_bytes`.
+* Added :meth:`~cryptography.x509.Name.public_bytes` to
+  :class:`~cryptography.x509.Name`.
 * Added :class:`~cryptography.x509.RelativeDistinguishedName`
 * :class:`~cryptography.x509.DistributionPoint` now accepts
   :class:`~cryptography.x509.RelativeDistinguishedName` for
@@ -43,6 +53,9 @@ Changelog
   a single-valued RDN.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
+* Added support for signing and verifying RSA, DSA, and ECDSA signatures with
+  :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+  digests.
 
 1.5.3 - 2016-11-05
 ~~~~~~~~~~~~~~~~~~
