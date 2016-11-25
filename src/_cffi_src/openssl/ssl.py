@@ -662,7 +662,11 @@ static const long TLS_ST_OK = 0;
 #endif
 
 /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
-long DTLSv1_get_timeout_wrapped(SSL *ssl, time_t *ptv_sec, long int *ptv_usec) {
+long DTLSv1_get_timeout_wrapped(
+                                SSL *ssl,
+                                time_t *ptv_sec,
+                                long int *ptv_usec)
+{
     struct timeval tv = { 0 };
     int r = DTLSv1_get_timeout(ssl, &tv);
 
