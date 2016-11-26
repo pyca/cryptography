@@ -158,13 +158,13 @@ Elliptic Curve Signature Algorithms
 
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
-    .. method:: encode_point()
+    .. method:: encode_point(compress=False)
 
         .. versionadded:: 1.1
 
         Encodes an elliptic curve point to a byte string as described in
-        `SEC 1 v2.0`_ section 2.3.3. This method only supports uncompressed
-        points.
+        `SEC 1 v2.0`_ section 2.3.3. If `compress` is `True`, the point will
+        be encoded as a compressed public key.
 
         :return bytes: The encoded point.
 

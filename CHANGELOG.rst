@@ -10,6 +10,8 @@ Changelog
   will need to upgrade.
 * Added support for Diffie-Hellman key exchange using
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.exchange`
+* Added support for encoding compressed public keys using
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.encode_point`
 
 1.6 - 2016-11-22
 ~~~~~~~~~~~~~~~~
