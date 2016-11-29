@@ -141,6 +141,7 @@ typedef ... SSL_SESSION;
 typedef ... SSL;
 
 static const long TLSEXT_NAMETYPE_host_name;
+static const long TLSEXT_STATUSTYPE_ocsp;
 
 typedef ... SSL_CIPHER;
 typedef ... Cryptography_STACK_OF_SSL_CIPHER;
