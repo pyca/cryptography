@@ -15,6 +15,8 @@ typedef struct {
     const char *name;
     const char *data;
 } OBJ_NAME;
+
+static const long OBJ_NAME_TYPE_MD_METH;
 """
 
 FUNCTIONS = """
@@ -36,8 +38,6 @@ void OBJ_NAME_do_all(int, void (*) (const OBJ_NAME *, void *), void *);
 MACROS = """
 /* OBJ_cleanup became a macro in 1.1.0 */
 void OBJ_cleanup(void);
-
-#define OBJ_NAME_TYPE_MD_METH ...
 """
 
 CUSTOMIZATIONS = """
