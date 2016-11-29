@@ -42,6 +42,8 @@ greater.
 
     .. method:: osrandom_engine_implementation()
 
+        .. versionadded:: 1.7
+
         Returns the implementation of OS random engine.
 
     .. method:: activate_builtin_random()
