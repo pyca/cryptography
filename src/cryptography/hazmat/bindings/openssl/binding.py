@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import os
 import threading
 import types
 import warnings
