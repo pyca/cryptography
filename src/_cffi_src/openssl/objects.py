@@ -9,6 +9,14 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef struct {
+    int type;
+    int alias;
+    const char *name;
+    const char *data;
+} OBJ_NAME;
+
+static const long OBJ_NAME_TYPE_MD_METH;
 """
 
 FUNCTIONS = """
@@ -24,6 +32,7 @@ int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
 int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
 ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
 int OBJ_create(const char *, const char *, const char *);
+void OBJ_NAME_do_all(int, void (*) (const OBJ_NAME *, void *), void *);
 """
 
 MACROS = """
