@@ -667,8 +667,13 @@ long DTLSv1_get_timeout_wrapped(
     int r = DTLSv1_get_timeout(ssl, &tv);
 
     if (r == 1) {
-        if (ptv_sec) *ptv_sec = tv.tv_sec;
-        if (ptv_usec) *ptv_usec = tv.tv_usec;
+        if (ptv_sec) {
+            *ptv_sec = tv.tv_sec;
+        }
+
+        if (ptv_usec) {
+            *ptv_usec = tv.tv_usec;
+        }
     }
 
     return r;
