@@ -433,7 +433,7 @@ long SSL_CTX_sess_timeouts(SSL_CTX *);
 long SSL_CTX_sess_cache_full(SSL_CTX *);
 
 /* DTLS support */
-long DTLSv1_get_timeout_wrapped(SSL *, time_t *, long int *);
+long DTLSv1_get_timeout_wrapped(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
 """
 
