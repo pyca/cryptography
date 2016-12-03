@@ -8,7 +8,6 @@ import abc
 import binascii
 import codecs
 import inspect
-import struct
 import sys
 import warnings
 
