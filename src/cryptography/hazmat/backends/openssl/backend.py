@@ -21,9 +21,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
-from cryptography.hazmat.backends.openssl.ciphers import (
-    _AESCTRCipherContext, _CipherContext
-)
+from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey
@@ -307,22 +305,10 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 1.0.0. It can be removed when we drop 1.0.0 support (RHEL 6.4).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 1.0.0. It can be removed when we drop 1.0.0 support (RHEL 6.4).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
         return self.hmac_supported(algorithm)
