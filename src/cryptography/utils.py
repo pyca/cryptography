@@ -7,7 +7,6 @@ from __future__ import absolute_import, division, print_function
 import abc
 import binascii
 import inspect
-import struct
 import sys
 import warnings
 
@@ -48,18 +47,7 @@ else:
         assert byteorder == 'big'
         assert not signed
 
-        if len(data) % 4 != 0:
-            data = (b'\x00' * (4 - (len(data) % 4))) + data
-
-        result = 0
-
-        while len(data) > 0:
-            digit, = struct.unpack('>I', data[:4])
-            result = (result << 32) + digit
-            # TODO: this is quadratic in the length of data
-            data = data[4:]
-
-        return result
+        return int(data.encode('hex'), 16)
 
 
 def int_to_bytes(integer, length=None):
