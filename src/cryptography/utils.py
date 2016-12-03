@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import binascii
-import codecs
 import inspect
 import sys
 import warnings
@@ -48,7 +47,7 @@ else:
         assert byteorder == 'big'
         assert not signed
 
-        return int(codecs.encode(data, 'hex'), 16)
+        return int(data.encode('hex'), 16)
 
 
 def int_to_bytes(integer, length=None):
