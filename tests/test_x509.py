@@ -8,6 +8,7 @@ import binascii
 import datetime
 import ipaddress
 import os
+import sys
 import warnings
 
 from pyasn1.codec.der import decoder
@@ -1523,6 +1524,35 @@ class TestCertificateBuilder(object):
         )
 
         builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Requires windows")
+    @pytest.mark.parametrize(
+        ("not_valid_before", "not_valid_after"),
+        [
+            [datetime.datetime(1999, 1, 1), datetime.datetime(9999, 1, 1)],
+            [datetime.datetime(9999, 1, 1), datetime.datetime(9999, 12, 31)],
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_invalid_time_windows(self, not_valid_before, not_valid_after,
+                                  backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

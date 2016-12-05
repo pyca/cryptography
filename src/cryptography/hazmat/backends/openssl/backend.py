@@ -845,14 +845,16 @@ class Backend(object):
             self._lib.X509_get_notBefore(x509_cert),
             calendar.timegm(builder._not_valid_before.timetuple())
         )
-        self.openssl_assert(res != self._ffi.NULL)
+        if res == self._ffi.NULL:
+            self._raise_time_set_error()
 
         # Set the "not after" time.
         res = self._lib.ASN1_TIME_set(
             self._lib.X509_get_notAfter(x509_cert),
             calendar.timegm(builder._not_valid_after.timetuple())
         )
-        self.openssl_assert(res != self._ffi.NULL)
+        if res == self._ffi.NULL:
+            self._raise_time_set_error()
 
         # Add extensions.
         self._create_x509_extensions(
@@ -882,6 +884,17 @@ class Backend(object):
             raise ValueError("Digest too big for RSA key")
 
         return _Certificate(self, x509_cert)
+
+    def _raise_time_set_error(self):
+        errors = self._consume_errors()
+        self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_ASN1)
+        self.openssl_assert(
+            errors[0][3] == self._lib.ASN1_R_ERROR_GETTING_TIME
+        )
+        raise ValueError(
+            "Invalid time. This error can occur if you set a time too far in "
+            "the future on Windows."
+        )
 
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
