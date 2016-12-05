@@ -25,6 +25,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
+static const long Cryptography_HAS_DTLS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -657,6 +658,17 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
+/* This define is available in 1.0.1+ so we can remove this when we drop
+   support for 1.0.0 */
+#ifdef OPENSSL_NPN_NEGOTIATED
+static const long Cryptography_HAS_NPN_NEGOTIATED = 1;
+#else
+static const long OPENSSL_NPN_NEGOTIATED = -1;
+static const long Cryptography_HAS_NPN_NEGOTIATED = 0;
+#endif
+
+#ifndef OPENSSL_NO_DTLS
+static const long Cryptography_HAS_DTLS = 1;
 /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
 long DTLSv1_get_timeout_wrapped(
                                 SSL *ssl,
@@ -678,4 +690,9 @@ long DTLSv1_get_timeout_wrapped(
 
     return r;
 }
+#else
+static const long Cryptography_HAS_DTLS = 0;
+long (*DTLSv1_get_timeout_wrapped)(SSL *, time_t *, long int *) = NULL;
+long (*DTLSv1_handle_timeout)(SSL *) = NULL;
+#endif
 """

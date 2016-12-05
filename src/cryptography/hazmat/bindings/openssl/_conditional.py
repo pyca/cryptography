@@ -303,4 +303,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
     ],
+    "Cryptography_HAS_DTLS": [
+        "DTLSv1_get_timeout_wrapped",
+        "DTLSv1_handle_timeout",
+    ],
 }
