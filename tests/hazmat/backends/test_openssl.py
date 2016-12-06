@@ -273,8 +273,8 @@ class TestOpenSSLRandomEngine(object):
 
     def test_osrandom_engine_implementation(self):
         name = backend.osrandom_engine_implementation()
-        assert name in ['/dev/urandom', 'CCRandomGenerateBytes',
-                        'CryptGenRandom', 'getentropy', 'getrandom']
+        assert name in ['/dev/urandom', 'CryptGenRandom', 'getentropy',
+                        'getrandom']
         if sys.platform.startswith('linux'):
             assert name in ['getrandom', '/dev/urandom']
         if sys.platform == 'darwin':

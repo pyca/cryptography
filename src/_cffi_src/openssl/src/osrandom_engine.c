@@ -57,14 +57,10 @@ static int osrandom_finish(ENGINE *e) {
 }
 
 static int osrandom_rand_status(void) {
-    if (hCryptProv == 0) {
-        return 0;
-    } else {
-        return 1;
-    }
+    return hCryptProv != 0;
 }
 
-static const char* osurandom_get_implementation(void) {
+static const char *osurandom_get_implementation(void) {
     return "CryptGenRandom";
 }
 
@@ -84,7 +80,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     int len, res;
     while (size > 0) {
         /* OpenBSD and macOS restrict maximum buffer size to 256. */
-        len = size > 256 ? 256: size;
+        len = size > 256 ? 256 : size;
         res = getentropy(buffer, len);
         if (res < 0) {
             CRYPTOGRAPHY_OSRANDOM_put_error(
@@ -105,7 +101,7 @@ static int osrandom_rand_status(void) {
     return 1;
 }
 
-static const char* osurandom_get_implementation(void) {
+static const char *osurandom_get_implementation(void) {
     return "getentropy";
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
@@ -289,7 +285,7 @@ static int osrandom_rand_status(void) {
     return 1;
 }
 
-static const char* osurandom_get_implementation(void) {
+static const char *osurandom_get_implementation(void) {
     if (getrandom_works == 1) {
         return "getrandom";
     }
@@ -322,13 +318,10 @@ static int osrandom_finish(ENGINE *e) {
 }
 
 static int osrandom_rand_status(void) {
-    if (urandom_cache.fd < 0) {
-        return 0;
-    }
-    return 1;
+    return urandom_cache.fd >= 0;
 }
 
-static const char* osurandom_get_implementation(void) {
+static const char *osurandom_get_implementation(void) {
     return "/dev/urandom";
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM */
@@ -366,7 +359,7 @@ static const ENGINE_CMD_DEFN osrandom_cmd_defns[] = {
 };
 
 static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) {
-    const char* name;
+    const char *name;
     size_t len;
 
     switch (cmd) {

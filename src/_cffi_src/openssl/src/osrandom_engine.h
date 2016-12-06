@@ -21,7 +21,7 @@
     #ifndef GRND_NONBLOCK
       #define GRND_NONBLOCK 0x0001
     #endif /* GRND_NONBLOCK */
-  #endif /* _linux__ */
+  #endif /* __linux__ */
 #endif /* _WIN32 */
 
 #define CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM 1
