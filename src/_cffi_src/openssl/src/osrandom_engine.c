@@ -30,6 +30,11 @@ static int osrandom_init(ENGINE *e) {
                             PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
         return 1;
     } else {
+        ERR_Cryptography_OSRandom_error(
+            CRYPTOGRAPHY_OSRANDOM_F_INIT,
+            CRYPTOGRAPHY_OSRANDOM_R_CRYPTACQUIRECONTEXT,
+            __FILE__, __LINE__
+        );
         return 0;
     }
 }
@@ -40,8 +45,11 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     }
 
     if (!CryptGenRandom(hCryptProv, (DWORD)size, buffer)) {
-        CRYPTOGRAPHY_OSRANDOM_put_error(
-            "osrandom_engine.py:CryptGenRandom()");
+        ERR_Cryptography_OSRandom_error(
+            CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+            CRYPTOGRAPHY_OSRANDOM_R_CRYPTGENRANDOM,
+            __FILE__, __LINE__
+        );
         return 0;
     }
     return 1;
@@ -52,6 +60,11 @@ static int osrandom_finish(ENGINE *e) {
         hCryptProv = 0;
         return 1;
     } else {
+        ERR_Cryptography_OSRandom_error(
+            CRYPTOGRAPHY_OSRANDOM_F_FINISH,
+            CRYPTOGRAPHY_OSRANDOM_R_CRYPTRELEASECONTEXT,
+            __FILE__, __LINE__
+        );
         return 0;
     }
 }
@@ -83,8 +96,11 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         len = size > 256 ? 256 : size;
         res = getentropy(buffer, len);
         if (res < 0) {
-            CRYPTOGRAPHY_OSRANDOM_put_error(
-                "osrandom_engine.py:getentropy()");
+            ERR_Cryptography_OSRandom_error(
+                CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+                CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
+                __FILE__, __LINE__
+            );
             return 0;
         }
         buffer += len;
@@ -166,8 +182,11 @@ static int dev_urandom_fd(void) {
             n = close(fd);
         } while (n < 0 && errno == EINTR);
     }
-    CRYPTOGRAPHY_OSRANDOM_put_error(
-        "osrandom_engine.py:dev_urandom_fd()");
+    ERR_Cryptography_OSRandom_error(
+        CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_FD,
+        CRYPTOGRAPHY_OSRANDOM_R_DEV_URANDOM_OPEN_FAILED,
+        __FILE__, __LINE__
+    );
     return -1;
 }
 
@@ -186,8 +205,11 @@ static int dev_urandom_read(unsigned char *buffer, int size) {
         } while (n < 0 && errno == EINTR);
 
         if (n <= 0) {
-            CRYPTOGRAPHY_OSRANDOM_put_error(
-                "osrandom_engine.py:dev_urandom_read()");
+            ERR_Cryptography_OSRandom_error(
+                CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_READ,
+                CRYPTOGRAPHY_OSRANDOM_R_DEV_URANDOM_READ_FAILED,
+                __FILE__, __LINE__
+            );
             return 0;
         }
         buffer += n;
@@ -221,28 +243,51 @@ static void dev_urandom_close(void) {
 #if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine getrandom()";
 
-static int getrandom_works = -1;
+static int getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_NOT_INIT;
 
 static int osrandom_init(ENGINE *e) {
     /* We try to detect working getrandom until we succeed. */
-    if (getrandom_works != 1) {
+    if (getrandom_works != CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS) {
         long n;
         char dest[1];
         n = syscall(SYS_getrandom, dest, sizeof(dest), GRND_NONBLOCK);
-        if (n < 0) {
-            /* Can fail with:
-             * - ENOSYS: Kernel does not support the syscall.
-             * - ENOPERM: seccomp prevents syscall.
-             * - EAGAIN: Kernel CRPNG has not been seeded yet.
-             * EINTR cannot occur for buflen < 256.
-             */
-            getrandom_works = 0;
+        if (n == sizeof(dest)) {
+            getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS;
         } else {
-            getrandom_works = 1;
+            int e = errno;
+            switch(e) {
+            case ENOSYS:
+                /* Fallback: Kernel does not support the syscall. */
+                getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK;
+                break;
+            case EPERM:
+                /* Fallback: seccomp prevents syscall */
+                getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK;
+                break;
+            case EAGAIN:
+               /* Failure: Kernel CRPNG has not been seeded yet */
+                ERR_Cryptography_OSRandom_error(
+                    CRYPTOGRAPHY_OSRANDOM_F_INIT,
+                    CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_EAGAIN,
+                    __FILE__, __LINE__
+                );
+                getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED;
+                break;
+            default:
+                /* EINTR cannot occur for buflen < 256. */
+                ERR_Cryptography_OSRandom_error(
+                    CRYPTOGRAPHY_OSRANDOM_F_INIT,
+                    CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_UNEXPECTED,
+                    "errno", e
+                );
+                getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED;
+                break;
+            }
         }
     }
+
     /* fallback to dev urandom */
-    if (getrandom_works == 0) {
+    if (getrandom_works == CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK) {
         int fd = dev_urandom_fd();
         if (fd < 0) {
             return 0;
@@ -252,25 +297,45 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    if (getrandom_works == 1) {
-        long n;
+    long n;
+
+    switch(getrandom_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED:
+        ERR_Cryptography_OSRandom_error(
+            CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+            CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED,
+            __FILE__, __LINE__
+        );
+        return 0;
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_NOT_INIT:
+        ERR_Cryptography_OSRandom_error(
+            CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+            CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_NOT_INIT,
+            __FILE__, __LINE__
+        );
+        return 0;
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK:
+        return dev_urandom_read(buffer, size);
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         while (size > 0) {
             do {
                 n = syscall(SYS_getrandom, buffer, size, GRND_NONBLOCK);
             } while (n < 0 && errno == EINTR);
 
             if (n <= 0) {
-                CRYPTOGRAPHY_OSRANDOM_put_error(
-                    "osrandom_engine.py:SYS_getrandom");
+                ERR_Cryptography_OSRandom_error(
+                    CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+                    CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_FAILED,
+                    __FILE__, __LINE__
+                );
                 return 0;
             }
             buffer += n;
             size -= n;
         }
         return 1;
-    } else {
-        return dev_urandom_read(buffer, size);
     }
+    return 0; /* unreachable */
 }
 
 static int osrandom_finish(ENGINE *e) {
@@ -279,17 +344,31 @@ static int osrandom_finish(ENGINE *e) {
 }
 
 static int osrandom_rand_status(void) {
-    if ((getrandom_works != 1) && (urandom_cache.fd < 0)) {
+    switch(getrandom_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED:
         return 0;
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_NOT_INIT:
+        return 0;
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK:
+        return urandom_cache.fd >= 0;
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
+        return 1;
     }
-    return 1;
+    return 0; /* unreachable */
 }
 
 static const char *osurandom_get_implementation(void) {
-    if (getrandom_works == 1) {
+    switch(getrandom_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED:
+        return "<failed>";
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_NOT_INIT:
+        return "<not initialized>";
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK:
+        return "/dev/urandom";
+    case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         return "getrandom";
     }
-    return "/dev/urandom";
+    return "<invalid>"; /* unreachable */
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM */
 
@@ -384,10 +463,85 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
     }
 }
 
+/* error reporting */
+#define ERR_FUNC(func) ERR_PACK(0, func, 0)
+#define ERR_REASON(reason) ERR_PACK(0, 0, reason)
+
+static ERR_STRING_DATA CRYPTOGRAPHY_OSRANDOM_lib_name[] = {
+    {0, "osrandom_engine"},
+    {0, NULL}
+};
+
+static ERR_STRING_DATA CRYPTOGRAPHY_OSRANDOM_str_funcs[] = {
+    {ERR_FUNC(CRYPTOGRAPHY_OSRANDOM_F_INIT),
+     "osrandom_init"},
+    {ERR_FUNC(CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES),
+     "osrandom_rand_bytes"},
+    {ERR_FUNC(CRYPTOGRAPHY_OSRANDOM_F_FINISH),
+     "osrandom_finish"},
+    {ERR_FUNC(CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_FD),
+     "dev_urandom_fd"},
+    {ERR_FUNC(CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_READ),
+     "dev_urandom_read"},
+    {0, NULL}
+};
+
+static ERR_STRING_DATA CRYPTOGRAPHY_OSRANDOM_str_reasons[] = {
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_CRYPTACQUIRECONTEXT),
+     "CryptAcquireContext() failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_CRYPTGENRANDOM),
+     "CryptGenRandom() failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_CRYPTRELEASECONTEXT),
+     "CryptReleaseContext() failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED),
+     "getentropy() failed"},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_DEV_URANDOM_OPEN_FAILED),
+     "open('/dev/urandom') failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_DEV_URANDOM_READ_FAILED),
+     "Reading from /dev/urandom fd failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED),
+     "getrandom() initialization failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_EAGAIN),
+     "getrandom() initialization failed with EAGAIN. Most likely Kernel "
+     "CPRNG is not seeded yet."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_UNEXPECTED),
+     "getrandom() initialization failed with unexpected errno."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_FAILED),
+     "getrandom() syscall failed."},
+    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_NOT_INIT),
+     "getrandom() engine was not properly initialized."},
+    {0, NULL}
+};
+
+static int Cryptography_OSRandom_lib_error_code = 0;
+
+static void ERR_load_Cryptography_OSRandom_strings(void)
+{
+    if (Cryptography_OSRandom_lib_error_code == 0) {
+        Cryptography_OSRandom_lib_error_code = ERR_get_next_error_library();
+        ERR_load_strings(Cryptography_OSRandom_lib_error_code,
+                         CRYPTOGRAPHY_OSRANDOM_lib_name);
+        ERR_load_strings(Cryptography_OSRandom_lib_error_code,
+                         CRYPTOGRAPHY_OSRANDOM_str_funcs);
+        ERR_load_strings(Cryptography_OSRandom_lib_error_code,
+                         CRYPTOGRAPHY_OSRANDOM_str_reasons);
+    }
+}
+
+static void ERR_Cryptography_OSRandom_error(int function, int reason,
+                                            char *file, int line)
+{
+    ERR_PUT_error(Cryptography_OSRandom_lib_error_code, function, reason,
+                  file, line);
+}
+
 /* Returns 1 if successfully added, 2 if engine has previously been added,
    and 0 for error. */
 int Cryptography_add_osrandom_engine(void) {
     ENGINE *e;
+
+    ERR_load_Cryptography_OSRandom_strings();
+
     e = ENGINE_by_id(Cryptography_osrandom_engine_id);
     if (e != NULL) {
         ENGINE_free(e);
