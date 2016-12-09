@@ -313,7 +313,7 @@ setup(
         "docstest": [
             "doc8",
             "pyenchant",
-            "readme_renderer",
+            "readme_renderer >= 16.0",
             "sphinx",
             "sphinx_rtd_theme",
             "sphinxcontrib-spelling",
