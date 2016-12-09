@@ -82,21 +82,6 @@ def ffi_callback(signature, name, **kwargs):
     return wrapper
 
 
-@ffi_callback("int (*)(unsigned char *, int)",
-              name="Cryptography_rand_bytes",
-              error=-1)
-def _osrandom_rand_bytes(buf, size):
-    signed = ffi.cast("char *", buf)
-    result = os.urandom(size)
-    signed[0:size] = result
-    return 1
-
-
-@ffi_callback("int (*)(void)", name="Cryptography_rand_status")
-def _osrandom_rand_status():
-    return 1
-
-
 def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
     excluded_names = set()
@@ -121,42 +106,16 @@ class Binding(object):
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
-    _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
-    _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
-    _osrandom_method = ffi.new(
-        "RAND_METHOD *",
-        dict(bytes=_osrandom_rand_bytes,
-             pseudorand=_osrandom_rand_bytes,
-             status=_osrandom_rand_status)
-    )
-
     def __init__(self):
         self._ensure_ffi_initialized()
 
     @classmethod
     def _register_osrandom_engine(cls):
         _openssl_assert(cls.lib, cls.lib.ERR_peek_error() == 0)
-
-        engine = cls.lib.ENGINE_new()
-        _openssl_assert(cls.lib, engine != cls.ffi.NULL)
-        try:
-            result = cls.lib.ENGINE_set_id(engine, cls._osrandom_engine_id)
-            _openssl_assert(cls.lib, result == 1)
-            result = cls.lib.ENGINE_set_name(engine, cls._osrandom_engine_name)
-            _openssl_assert(cls.lib, result == 1)
-            result = cls.lib.ENGINE_set_RAND(engine, cls._osrandom_method)
-            _openssl_assert(cls.lib, result == 1)
-            result = cls.lib.ENGINE_add(engine)
-            if result != 1:
-                errors = _consume_errors(cls.lib)
-                _openssl_assert(
-                    cls.lib,
-                    errors[0].reason == cls.lib.ENGINE_R_CONFLICTING_ENGINE_ID
-                )
-
-        finally:
-            result = cls.lib.ENGINE_free(engine)
-            _openssl_assert(cls.lib, result == 1)
+        cls._osrandom_engine_id = cls.lib.Cryptography_osrandom_engine_id
+        cls._osrandom_engine_name = cls.lib.Cryptography_osrandom_engine_name
+        result = cls.lib.Cryptography_add_osrandom_engine()
+        _openssl_assert(cls.lib, result in (1, 2))
 
     @classmethod
     def _ensure_ffi_initialized(cls):

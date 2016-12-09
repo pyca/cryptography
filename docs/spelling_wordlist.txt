@@ -33,6 +33,7 @@ Docstrings
 El
 Encodings
 endian
+fallback
 Fernet
 fernet
 FIPS
@@ -53,12 +54,14 @@ Mozilla
 multi
 namespace
 namespaces
+macOS
 naïve
 Nonces
 nonces
 online
 paddings
 Parallelization
+personalization
 pickleable
 plaintext
 pre
@@ -75,6 +78,7 @@ serializer
 Serializers
 SHA
 Solaris
+syscall
 Tanja
 testability
 tunable

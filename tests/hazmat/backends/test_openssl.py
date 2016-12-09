@@ -11,6 +11,8 @@ import subprocess
 import sys
 import textwrap
 
+from pkg_resources import parse_version
+
 import pytest
 
 from cryptography import utils, x509
@@ -173,19 +175,6 @@ class TestOpenSSL(object):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
 
-    def test_actual_osrandom_bytes(self, monkeypatch):
-        skip_if_libre_ssl(backend.openssl_version_text())
-        sample_data = (b"\x01\x02\x03\x04" * 4)
-        length = len(sample_data)
-
-        def notrandom(size):
-            assert size == length
-            return sample_data
-        monkeypatch.setattr(os, "urandom", notrandom)
-        buf = backend._ffi.new("unsigned char[]", length)
-        backend._lib.RAND_bytes(buf, length)
-        assert backend._ffi.buffer(buf)[0:length] == sample_data
-
 
 class TestOpenSSLRandomEngine(object):
     def setup(self):
@@ -281,6 +270,23 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
+
+    def test_osrandom_engine_implementation(self):
+        name = backend.osrandom_engine_implementation()
+        assert name in ['/dev/urandom', 'CryptGenRandom', 'getentropy',
+                        'getrandom']
+        if sys.platform.startswith('linux'):
+            assert name in ['getrandom', '/dev/urandom']
+        if sys.platform == 'darwin':
+            # macOS 10.12+ supports getentropy
+            if parse_version(os.uname()[2]) >= parse_version("16.0"):
+                assert name == 'getentropy'
+            else:
+                assert name == '/dev/urandom'
+        if 'bsd' in sys.platform:
+            assert name in ['getentropy', '/dev/urandom']
+        if sys.platform == 'win32':
+            assert name == 'CryptGenRandom'
 
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
