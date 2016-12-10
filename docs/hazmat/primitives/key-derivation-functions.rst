@@ -755,7 +755,6 @@ Different KDFs are suitable for different tasks such as:
     .. code-block:: python
 
         >>> import os
-        >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
@@ -766,7 +765,7 @@ Different KDFs are suitable for different tasks such as:
         ...     length=64,
         ...     n=1024,
         ...     r=8,
-        ...     p=16,
+        ...     p=1,
         ...     backend=backend
         ... )
         >>> key = kdf.derive(b"my great password")
@@ -776,7 +775,7 @@ Different KDFs are suitable for different tasks such as:
         ...     length=64,
         ...     n=1024,
         ...     r=8,
-        ...     p=16,
+        ...     p=1,
         ...     backend=backend
         ... )
         >>> kdf.verify(b"my great password", key)
