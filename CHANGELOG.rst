@@ -10,6 +10,10 @@ Changelog
   will need to upgrade.
 * Added support for Diffie-Hellman key exchange using
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.exchange`
+* The OS random engine for OpenSSL has been rewritten to improve compatibility
+  with embedded Python and other edge cases. More information about this change
+  can be found in the
+  `pull request <https://github.com/pyca/cryptography/pull/3229>`_.
 
 1.6 - 2016-11-22
 ~~~~~~~~~~~~~~~~
