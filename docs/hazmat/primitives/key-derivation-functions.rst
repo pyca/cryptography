@@ -795,7 +795,7 @@ Different KDFs are suitable for different tasks such as:
     explanation of the 3 parameters can be found `here`_.
 
     :rfc:`7914` `recommends`_ values of ``r=8`` and ``p=1`` while scaling ``n``
-    to a number appropriate for your system. `Scrypt literature`_ suggests a
+    to a number appropriate for your system. `The scrypt paper`_ suggests a
     minimum value of ``n=2**14`` for interactive logins (t < 100ms), or
     ``n=2**20`` for more sensitive files (t < 5s).
 
