@@ -906,4 +906,4 @@ Interface
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
 .. _`here`: https://stackoverflow.com/a/30308723/1170681
 .. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
-.. _`Scrypt literature`: https://www.tarsnap.com/scrypt/scrypt.pdf
+.. _`The scrypt paper`: https://www.tarsnap.com/scrypt/scrypt.pdf
