@@ -763,7 +763,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = Scrypt(
         ...     salt=salt,
         ...     length=64,
-        ...     n=1024,
+        ...     n=2**14,
         ...     r=8,
         ...     p=1,
         ...     backend=backend
@@ -773,7 +773,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = Scrypt(
         ...     salt=salt,
         ...     length=64,
-        ...     n=1024,
+        ...     n=2**14,
         ...     r=8,
         ...     p=1,
         ...     backend=backend
@@ -788,14 +788,16 @@ Different KDFs are suitable for different tasks such as:
     :param int p: Parallelization parameter.
 
     The computational and memory cost of Scrypt can be adjusted by manipulating
-    the 3 parameters: n, r and p. In general, the memory cost of Scrypt is
-    affected by the values of both n and r while n also determines the number
-    of iterations performed. p increases the computational cost without
-    affecting memory usage. A more in-depth explanation of the 3 parameters can
-    be found `here`_.
+    the 3 parameters: ``n``, ``r``, and ``p``. In general, the memory cost of
+    Scrypt is affected by the values of both ``n`` and ``r``, while ``n`` also
+    determines the number of iterations performed. ``p`` increases the
+    computational cost without affecting memory usage. A more in-depth
+    explanation of the 3 parameters can be found `here`_.
 
-    :rfc:`7914` `recommends`_ values of r=8 and p=1 while scaling n to the
-    number appropriate for your system.
+    :rfc:`7914` `recommends`_ values of ``r=8`` and ``p=1`` while scaling ``n``
+    to a number appropriate for your system. `Scrypt literature`_ suggests a
+    minimum value of ``n=2**14`` for interactive logins (t < 100ms), or
+    ``n=2**20`` for more sensitive files (t < 5s).
 
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
@@ -904,3 +906,4 @@ Interface
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
 .. _`here`: https://stackoverflow.com/a/30308723/1170681
 .. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
+.. _`Scrypt literature`: https://www.tarsnap.com/scrypt/scrypt.pdf
