@@ -235,13 +235,6 @@ CONDITIONAL_NAMES = {
         "DTLSv1_method",
     ],
 
-    "Cryptography_HAS_NEXTPROTONEG": [
-        "SSL_CTX_set_next_protos_advertised_cb",
-        "SSL_CTX_set_next_proto_select_cb",
-        "SSL_select_next_proto",
-        "SSL_get0_next_proto_negotiated",
-    ],
-
     "Cryptography_HAS_ALPN": [
         "SSL_CTX_set_alpn_protos",
         "SSL_set_alpn_protos",
@@ -309,8 +302,5 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
-    ],
-    "Cryptography_HAS_NPN_NEGOTIATED": [
-        "OPENSSL_NPN_NEGOTIATED",
     ],
 }

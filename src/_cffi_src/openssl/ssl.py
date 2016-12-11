@@ -25,7 +25,6 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
-static const long Cryptography_HAS_NPN_NEGOTIATED;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -44,7 +43,6 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
-static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_SET_CERT_CB;
 
@@ -363,9 +361,6 @@ long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 long SSL_session_reused(SSL *);
 
-/* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
- * versions some special handling of these is necessary.
- */
 void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
                                            int (*)(SSL *,
                                                    const unsigned char **,
@@ -414,7 +409,7 @@ void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
 /* Added in 1.0.2 */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
-/* Added in 1.0.1 */
+
 int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
                                 unsigned int);
 /* Added in 1.1.0 for the great opaquing of structs */
@@ -583,37 +578,6 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
-/* Because OPENSSL defines macros that claim lack of support for things, rather
- * than macros that claim support for things, we need to do a version check in
- * addition to a definition check. NPN was added in 1.0.1: for any version
- * before that, there is no compatibility.
- */
-#if defined(OPENSSL_NO_NEXTPROTONEG)
-static const long Cryptography_HAS_NEXTPROTONEG = 0;
-void (*SSL_CTX_set_next_protos_advertised_cb)(SSL_CTX *,
-                                              int (*)(SSL *,
-                                                      const unsigned char **,
-                                                      unsigned int *,
-                                                      void *),
-                                              void *) = NULL;
-void (*SSL_CTX_set_next_proto_select_cb)(SSL_CTX *,
-                                         int (*)(SSL *,
-                                                 unsigned char **,
-                                                 unsigned char *,
-                                                 const unsigned char *,
-                                                 unsigned int,
-                                                 void *),
-                                         void *) = NULL;
-int (*SSL_select_next_proto)(unsigned char **, unsigned char *,
-                             const unsigned char *, unsigned int,
-                             const unsigned char *, unsigned int) = NULL;
-void (*SSL_get0_next_proto_negotiated)(const SSL *,
-                                       const unsigned char **,
-                                       unsigned *) = NULL;
-#else
-static const long Cryptography_HAS_NEXTPROTONEG = 1;
-#endif
-
 /* ALPN was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !defined(LIBRESSL_VERSION_NUMBER)
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
@@ -684,14 +648,5 @@ static const long Cryptography_HAS_TLS_ST = 1;
 static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
-#endif
-
-/* This define is available in 1.0.1+ so we can remove this when we drop
-   support for 1.0.0 */
-#ifdef OPENSSL_NPN_NEGOTIATED
-static const long Cryptography_HAS_NPN_NEGOTIATED = 1;
-#else
-static const long OPENSSL_NPN_NEGOTIATED = -1;
-static const long Cryptography_HAS_NPN_NEGOTIATED = 0;
 #endif
 """
