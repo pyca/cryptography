@@ -49,6 +49,7 @@ iOS
 iterable
 Koblitz
 Lange
+logins
 metadata
 Mozilla
 multi
