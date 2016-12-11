@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import datetime
 import itertools
 import os
 import subprocess
@@ -28,9 +27,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 
-from ..primitives.fixtures_dsa import DSA_KEY_2048
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
-from ..primitives.test_ec import _skip_curve_unsupported
 from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )

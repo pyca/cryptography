@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm, _truncate_digest
+    _calculate_digest_and_algorithm
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
