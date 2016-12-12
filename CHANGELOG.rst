@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.7 - 2016-12-11
+1.7 - 2016-12-12
 ~~~~~~~~~~~~~~~~
 
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
