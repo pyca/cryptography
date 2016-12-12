@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.7 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.7 - 2016-12-12
+~~~~~~~~~~~~~~~~
 
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
   will need to upgrade.
