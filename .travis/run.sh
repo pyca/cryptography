@@ -27,7 +27,7 @@ else
         eval "$(pyenv init -)"
     fi
     if [ -n "${OPENSSL}" ]; then
-        OPENSSL_DIR="ossl/${OPENSSL}"
+        OPENSSL_DIR="ossl-1/${OPENSSL}"
 
         export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
         export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
