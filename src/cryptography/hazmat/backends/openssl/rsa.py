@@ -164,13 +164,6 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
             raise ValueError("Digest too large for key size. Use a larger "
                              "key or different digest.")
 
-        if not backend._pss_mgf1_hash_supported(padding._mgf._algorithm):
-            raise UnsupportedAlgorithm(
-                "When OpenSSL is older than 1.0.1 then only SHA1 is "
-                "supported with MGF1.",
-                _Reasons.UNSUPPORTED_HASH
-            )
-
         padding_enum = backend._lib.RSA_PKCS1_PSS_PADDING
     else:
         raise UnsupportedAlgorithm(
