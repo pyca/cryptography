@@ -47,7 +47,8 @@ else:
         assert byteorder == 'big'
         assert not signed
 
-        return int(data.encode('hex'), 16)
+        # call bytes() on data to allow the use of bytearrays
+        return int(bytes(data).encode('hex'), 16)
 
 
 def int_to_bytes(integer, length=None):
