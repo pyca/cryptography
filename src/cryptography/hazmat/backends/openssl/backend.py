@@ -231,7 +231,7 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        return self._evp_cipher_supported(cipher, mode):
+        return self._evp_cipher_supported(cipher, mode)
 
     def _evp_cipher_supported(self, cipher, mode):
         try:
