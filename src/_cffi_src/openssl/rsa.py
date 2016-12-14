@@ -20,7 +20,6 @@ static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
 
 static const int Cryptography_HAS_PSS_PADDING;
-static const int Cryptography_HAS_MGF1_MD;
 static const int Cryptography_HAS_RSA_OAEP_MD;
 """
 
@@ -73,12 +72,6 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_PSS_PADDING = 1;
 
-#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
-static const long Cryptography_HAS_MGF1_MD = 1;
-#else
-static const long Cryptography_HAS_MGF1_MD = 0;
-int (*EVP_PKEY_CTX_set_rsa_mgf1_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
-#endif
 #if defined(EVP_PKEY_CTX_set_rsa_oaep_md)
 static const long Cryptography_HAS_RSA_OAEP_MD = 1;
 #else

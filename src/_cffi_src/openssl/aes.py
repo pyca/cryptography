@@ -10,7 +10,6 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_AES_WRAP;
-static const int Cryptography_HAS_AES_CTR128_ENCRYPT;
 
 struct aes_key_st {
     ...;
@@ -29,22 +28,8 @@ int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
 """
 
 MACROS = """
-/* The ctr128_encrypt function is only useful in 1.0.0. We can use EVP for
-   this in 1.0.1+. */
-void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
-                        size_t, const AES_KEY *, unsigned char[],
-                        unsigned char[], unsigned int *);
 """
 
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_AES_WRAP = 1;
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
-static const int Cryptography_HAS_AES_CTR128_ENCRYPT = 0;
-void (*AES_ctr128_encrypt)(const unsigned char *, unsigned char *,
-                           size_t, const AES_KEY *,
-                           unsigned char[], unsigned char[],
-                           unsigned int *) = NULL;
-#else
-static const int Cryptography_HAS_AES_CTR128_ENCRYPT = 1;
-#endif
 """

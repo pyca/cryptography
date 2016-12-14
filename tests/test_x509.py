@@ -2082,9 +2082,6 @@ class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_dsa_private_key(self, backend):
-        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
-
         issuer_private_key = DSA_KEY_2048.private_key(backend)
         subject_private_key = DSA_KEY_2048.private_key(backend)
 
@@ -2130,9 +2127,6 @@ class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_ec_private_key(self, backend):
-        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
-
         _skip_curve_unsupported(backend, ec.SECP256R1())
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -2734,9 +2728,6 @@ class TestCertificateSigningRequestBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_build_ca_request_with_ec(self, backend):
-        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
-
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
 
@@ -2764,9 +2755,6 @@ class TestCertificateSigningRequestBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     def test_build_ca_request_with_dsa(self, backend):
-        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
-
         private_key = DSA_KEY_2048.private_key(backend)
 
         request = x509.CertificateSigningRequestBuilder().subject_name(

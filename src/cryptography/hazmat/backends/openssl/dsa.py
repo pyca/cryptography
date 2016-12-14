@@ -7,30 +7,12 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm, _truncate_digest
+    _calculate_digest_and_algorithm
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
 )
-
-
-def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
-    """
-    This function truncates digests that are longer than a given DS
-    key's length so they can be signed. OpenSSL does this for us in
-    1.0.0c+, leaving us with three releases (1.0.0, 1.0.0a, and 1.0.0b) where
-    this is a problem.
-    """
-
-    q = backend._ffi.new("BIGNUM **")
-    backend._lib.DSA_get0_pqg(
-        dsa_cdata, backend._ffi.NULL, q, backend._ffi.NULL
-    )
-    backend.openssl_assert(q[0] != backend._ffi.NULL)
-
-    order_bits = backend._lib.BN_num_bits(q[0])
-    return _truncate_digest(digest, order_bits)
 
 
 def _dsa_sig_sign(backend, private_key, data):
@@ -77,9 +59,6 @@ class _DSAVerificationContext(object):
     def verify(self):
         data_to_verify = self._hash_ctx.finalize()
 
-        data_to_verify = _truncate_digest_for_dsa(
-            self._public_key._dsa_cdata, data_to_verify, self._backend
-        )
         _dsa_sig_verify(
             self._backend, self._public_key, self._signature, data_to_verify
         )
@@ -98,9 +77,6 @@ class _DSASignatureContext(object):
 
     def finalize(self):
         data_to_sign = self._hash_ctx.finalize()
-        data_to_sign = _truncate_digest_for_dsa(
-            self._private_key._dsa_cdata, data_to_sign, self._backend
-        )
         return _dsa_sig_sign(self._backend, self._private_key, data_to_sign)
 
 
@@ -212,7 +188,6 @@ class _DSAPrivateKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
-        data = _truncate_digest_for_dsa(self._dsa_cdata, data, self._backend)
         return _dsa_sig_sign(self._backend, self, data)
 
 
@@ -286,5 +261,4 @@ class _DSAPublicKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
-        data = _truncate_digest_for_dsa(self._dsa_cdata, data, self._backend)
         return _dsa_sig_verify(self._backend, self, signature, data)

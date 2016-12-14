@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorWithText, _openssl_assert, _verify_openssl_version
+    Binding, _OpenSSLErrorWithText, _openssl_assert
 )
 
 
@@ -79,11 +79,14 @@ class TestOpenSSL(object):
     def test_conditional_removal(self):
         b = Binding()
 
-        if b.lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER:
-            assert b.lib.CMAC_Init
+        if (
+            b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
+            not b.lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            assert b.lib.TLS_ST_OK
         else:
             with pytest.raises(AttributeError):
-                b.lib.CMAC_Init
+                b.lib.TLS_ST_OK
 
     def test_openssl_assert_error_on_stack(self):
         b = Binding()
@@ -107,9 +110,3 @@ class TestOpenSSL(object):
                 b'ex:data not multiple of block length'
             )
         )]
-
-    def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_100", raising=False)
-        with pytest.raises(RuntimeError):
-            # OpenSSL 1.0.0
-            _verify_openssl_version(0x100000F)

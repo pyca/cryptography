@@ -164,13 +164,6 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
             raise ValueError("Digest too large for key size. Use a larger "
                              "key or different digest.")
 
-        if not backend._pss_mgf1_hash_supported(padding._mgf._algorithm):
-            raise UnsupportedAlgorithm(
-                "When OpenSSL is older than 1.0.1 then only SHA1 is "
-                "supported with MGF1.",
-                _Reasons.UNSUPPORTED_HASH
-            )
-
         padding_enum = backend._lib.RSA_PKCS1_PSS_PADDING
     else:
         raise UnsupportedAlgorithm(
@@ -212,17 +205,15 @@ def _rsa_sig_sign(backend, padding, padding_enum, algorithm, private_key,
         )
         backend.openssl_assert(res > 0)
 
-        if backend._lib.Cryptography_HAS_MGF1_MD:
-            # MGF1 MD is configurable in OpenSSL 1.0.1+
-            mgf1_md = backend._lib.EVP_get_digestbyname(
-                padding._mgf._algorithm.name.encode("ascii"))
-            backend.openssl_assert(
-                mgf1_md != backend._ffi.NULL
-            )
-            res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
-                pkey_ctx, mgf1_md
-            )
-            backend.openssl_assert(res > 0)
+        mgf1_md = backend._lib.EVP_get_digestbyname(
+            padding._mgf._algorithm.name.encode("ascii"))
+        backend.openssl_assert(
+            mgf1_md != backend._ffi.NULL
+        )
+        res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+            pkey_ctx, mgf1_md
+        )
+        backend.openssl_assert(res > 0)
 
     buflen = backend._ffi.new("size_t *")
     res = backend._lib.EVP_PKEY_sign(
@@ -284,17 +275,15 @@ def _rsa_sig_verify(backend, padding, padding_enum, algorithm, public_key,
             )
         )
         backend.openssl_assert(res > 0)
-        if backend._lib.Cryptography_HAS_MGF1_MD:
-            # MGF1 MD is configurable in OpenSSL 1.0.1+
-            mgf1_md = backend._lib.EVP_get_digestbyname(
-                padding._mgf._algorithm.name.encode("ascii"))
-            backend.openssl_assert(
-                mgf1_md != backend._ffi.NULL
-            )
-            res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
-                pkey_ctx, mgf1_md
-            )
-            backend.openssl_assert(res > 0)
+        mgf1_md = backend._lib.EVP_get_digestbyname(
+            padding._mgf._algorithm.name.encode("ascii"))
+        backend.openssl_assert(
+            mgf1_md != backend._ffi.NULL
+        )
+        res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+            pkey_ctx, mgf1_md
+        )
+        backend.openssl_assert(res > 0)
 
     res = backend._lib.EVP_PKEY_verify(
         pkey_ctx,

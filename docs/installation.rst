@@ -28,17 +28,12 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0``
-
-.. warning::
-    Cryptography 1.7 has dropped support for OpenSSL 1.0.0, see the
-    :doc:`FAQ </faq>` for more details
 
 Building cryptography on Windows
 --------------------------------

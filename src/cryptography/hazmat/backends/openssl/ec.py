@@ -9,37 +9,12 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm, _truncate_digest
+    _calculate_digest_and_algorithm
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, ec
 )
-
-
-def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
-    """
-    This function truncates digests that are longer than a given elliptic
-    curve key's length so they can be signed. Since elliptic curve keys are
-    much shorter than RSA keys many digests (e.g. SHA-512) may require
-    truncation.
-    """
-
-    _lib = backend._lib
-    _ffi = backend._ffi
-
-    group = _lib.EC_KEY_get0_group(ec_key_cdata)
-
-    with backend._tmp_bn_ctx() as bn_ctx:
-        order = _lib.BN_CTX_get(bn_ctx)
-        backend.openssl_assert(order != _ffi.NULL)
-
-        res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
-        backend.openssl_assert(res == 1)
-
-        order_bits = _lib.BN_num_bits(order)
-
-    return _truncate_digest(digest, order_bits)
 
 
 def _check_signature_algorithm(signature_algorithm):
@@ -127,9 +102,6 @@ class _ECDSASignatureContext(object):
     def finalize(self):
         digest = self._digest.finalize()
 
-        digest = _truncate_digest_for_ecdsa(
-            self._private_key._ec_key, digest, self._backend
-        )
         return _ecdsa_sig_sign(self._backend, self._private_key, digest)
 
 
@@ -146,9 +118,6 @@ class _ECDSAVerificationContext(object):
 
     def verify(self):
         digest = self._digest.finalize()
-        digest = _truncate_digest_for_ecdsa(
-            self._public_key._ec_key, digest, self._backend
-        )
         return _ecdsa_sig_verify(
             self._backend, self._public_key, self._signature, digest
         )
@@ -247,9 +216,6 @@ class _EllipticCurvePrivateKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, signature_algorithm._algorithm
         )
-        data = _truncate_digest_for_ecdsa(
-            self._ec_key, data, self._backend
-        )
         return _ecdsa_sig_sign(self._backend, self, data)
 
 
@@ -316,8 +282,5 @@ class _EllipticCurvePublicKey(object):
         _check_signature_algorithm(signature_algorithm)
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, signature_algorithm._algorithm
-        )
-        data = _truncate_digest_for_ecdsa(
-            self._ec_key, data, self._backend
         )
         return _ecdsa_sig_verify(self._backend, self, signature, data)

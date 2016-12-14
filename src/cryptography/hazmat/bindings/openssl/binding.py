@@ -5,10 +5,8 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
 import threading
 import types
-import warnings
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -148,28 +146,9 @@ class Binding(object):
             _openssl_assert(cls.lib, res == 1)
 
 
-def _verify_openssl_version(version):
-    if version < 0x10001000:
-        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_100"):
-            warnings.warn(
-                "OpenSSL version 1.0.0 is no longer supported by the OpenSSL "
-                "project, please upgrade. The next version of cryptography "
-                "will completely remove support for it.",
-                DeprecationWarning
-            )
-        else:
-            raise RuntimeError(
-                "You are linking against OpenSSL 1.0.0, which is no longer "
-                "support by the OpenSSL project. You need to upgrade to a "
-                "newer version of OpenSSL."
-            )
-
-
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
-
-_verify_openssl_version(Binding.lib.SSLeay())

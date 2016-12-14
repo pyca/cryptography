@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if !defined(OPENSSL_NO_CMAC) && CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
+#if !defined(OPENSSL_NO_CMAC)
 #include <openssl/cmac.h>
 #endif
 """
@@ -28,7 +28,7 @@ void CMAC_CTX_free(CMAC_CTX *);
 """
 
 CUSTOMIZATIONS = """
-#if !defined(OPENSSL_NO_CMAC) && CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
+#if !defined(OPENSSL_NO_CMAC)
 static const long Cryptography_HAS_CMAC = 1;
 #else
 static const long Cryptography_HAS_CMAC = 0;

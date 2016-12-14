@@ -21,9 +21,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
-from cryptography.hazmat.backends.openssl.ciphers import (
-    _AESCTRCipherContext, _CipherContext
-)
+from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey
@@ -233,12 +231,7 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        if self._evp_cipher_supported(cipher, mode):
-            return True
-        elif isinstance(mode, CTR) and isinstance(cipher, AES):
-            return True
-        else:
-            return False
+        return self._evp_cipher_supported(cipher, mode)
 
     def _evp_cipher_supported(self, cipher, mode):
         try:
@@ -307,22 +300,10 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 1.0.0. It can be removed when we drop 1.0.0 support (RHEL 6.4).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 1.0.0. It can be removed when we drop 1.0.0 support (RHEL 6.4).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
         return self.hmac_supported(algorithm)
@@ -606,10 +587,7 @@ class Backend(object):
             return isinstance(algorithm, hashes.SHA1)
 
     def _pss_mgf1_hash_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_MGF1_MD:
-            return self.hash_supported(algorithm)
-        else:
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hash_supported(algorithm)
 
     def rsa_padding_supported(self, padding):
         if isinstance(padding, PKCS1v15):
@@ -737,18 +715,6 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -814,18 +780,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -919,18 +873,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')

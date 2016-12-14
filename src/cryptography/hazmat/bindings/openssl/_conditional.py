@@ -133,9 +133,6 @@ CONDITIONAL_NAMES = {
         "POINT_CONVERSION_COMPRESSED",
         "POINT_CONVERSION_UNCOMPRESSED",
         "POINT_CONVERSION_HYBRID",
-    ],
-
-    "Cryptography_HAS_EC_1_0_1": [
         "EC_KEY_get_flags",
         "EC_KEY_set_flags",
         "EC_KEY_clear_flags",
@@ -195,9 +192,6 @@ CONDITIONAL_NAMES = {
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
     ],
-    "Cryptography_HAS_MGF1_MD": [
-        "EVP_PKEY_CTX_set_rsa_mgf1_md",
-    ],
     "Cryptography_HAS_RSA_OAEP_MD": [
         "EVP_PKEY_CTX_set_rsa_oaep_md",
     ],
@@ -239,13 +233,6 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
-    ],
-
-    "Cryptography_HAS_NEXTPROTONEG": [
-        "SSL_CTX_set_next_protos_advertised_cb",
-        "SSL_CTX_set_next_proto_select_cb",
-        "SSL_select_next_proto",
-        "SSL_get0_next_proto_negotiated",
     ],
 
     "Cryptography_HAS_ALPN": [
@@ -296,9 +283,6 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ],
-    "Cryptography_HAS_AES_CTR128_ENCRYPT": [
-        "AES_ctr128_encrypt",
-    ],
     "Cryptography_HAS_SSL_ST": [
         "SSL_ST_BEFORE",
         "SSL_ST_OK",
@@ -318,8 +302,5 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_SCRYPT": [
         "EVP_PBE_scrypt",
-    ],
-    "Cryptography_HAS_NPN_NEGOTIATED": [
-        "OPENSSL_NPN_NEGOTIATED",
     ],
 }
