@@ -104,7 +104,12 @@ Key exchange
   Diffie-Hellman parameters and key respectively. The keys were
   generated using OpenSSL following `DHKE`_ guide.
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey.txt`` contains
-  the all parameter in text.
+  all parameter in text.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhp.der``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey.der`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub.der`` contains
+  are the above parameters and keys in DER format.
+
 
 X.509
 ~~~~~
