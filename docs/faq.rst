@@ -43,8 +43,8 @@ Please file an `issue`_ with instructions on how to reproduce it.
 Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
 ---------------------------------------------------------
 
-The OpenSSL project has dropped support for the 0.9.8 and 1.0.0 release
-serieses. Since they are no longer receiving security patches from upstream,
+The OpenSSL project has dropped support for the 0.9.8 and 1.0.0 release series.
+Since they are no longer receiving security patches from upstream,
 ``cryptography`` is also dropping support for them. To fix this issue you
 should upgrade to a newer version of OpenSSL (1.0.1 or later). This may require
 you to upgrade to a newer operating system.

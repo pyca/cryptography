@@ -77,7 +77,6 @@ Schneier
 scrypt
 serializer
 Serializers
-serieses
 SHA
 Solaris
 syscall
