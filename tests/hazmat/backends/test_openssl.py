@@ -74,11 +74,6 @@ class TestOpenSSL(object):
     def test_supports_cipher(self):
         assert backend.cipher_supported(None, None) is False
 
-    def test_aes_ctr_always_available(self):
-        # AES CTR should always be available
-        assert backend.cipher_supported(AES(b"\x00" * 16),
-                                        CTR(b"\x00" * 16)) is True
-
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
             backend.register_cipher_adapter(AES, CBC, None)
