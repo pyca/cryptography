@@ -458,7 +458,7 @@ Interfaces
 
     .. method:: update_into(data, buf)
 
-        .. versionadded:: 1.6
+        .. versionadded:: 1.8
 
         .. warning::
 
