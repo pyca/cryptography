@@ -25,7 +25,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
+from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...doubles import (
