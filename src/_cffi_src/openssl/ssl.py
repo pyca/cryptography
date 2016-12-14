@@ -44,6 +44,7 @@ static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
 static const long Cryptography_HAS_ALPN;
+static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
 
 static const long SSL_FILETYPE_PEM;
@@ -577,6 +578,8 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #else
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
+
+static const long Cryptography_HAS_NEXTPROTONEG = 1;
 
 /* ALPN was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !defined(LIBRESSL_VERSION_NUMBER)
