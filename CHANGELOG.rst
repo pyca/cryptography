@@ -10,7 +10,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~
 
 * Fixed a regression in ``int_from_bytes`` where it failed to accept
-    ``bytearray``.
+  ``bytearray``.
 
 1.7 - 2016-12-12
 ~~~~~~~~~~~~~~~~
