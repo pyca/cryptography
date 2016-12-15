@@ -6,6 +6,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+1.7.1 - 2016-12-13
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a regression in ``int_from_bytes`` where it failed to accept
+  ``bytearray``.
 
 1.7 - 2016-12-12
 ~~~~~~~~~~~~~~~~
