@@ -38,6 +38,8 @@ int DH_set0_key(DH *, BIGNUM *, BIGNUM *);
 
 MACROS = """
 int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
+DH *d2i_DHparams_bio(BIO *, DH **);
+int i2d_DHparams_bio(BIO *, DH *);
 """
 
 CUSTOMIZATIONS = """
