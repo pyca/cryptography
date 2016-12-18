@@ -434,7 +434,7 @@ long SSL_CTX_sess_timeouts(SSL_CTX *);
 long SSL_CTX_sess_cache_full(SSL_CTX *);
 
 /* DTLS support */
-long DTLSv1_get_timeout_wrapped(SSL *, time_t *, long *);
+long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
 """
 
@@ -661,11 +661,8 @@ static const long TLS_ST_OK = 0;
 #ifndef OPENSSL_NO_DTLS
 static const long Cryptography_HAS_DTLS = 1;
 /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
-long DTLSv1_get_timeout_wrapped(
-                                SSL *ssl,
-                                time_t *ptv_sec,
-                                long int *ptv_usec)
-{
+long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
+                                     long *ptv_usec) {
     struct timeval tv = { 0 };
     int r = DTLSv1_get_timeout(ssl, &tv);
 
