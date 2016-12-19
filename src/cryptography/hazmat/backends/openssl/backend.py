@@ -141,6 +141,7 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
+        self._scrypt_mem_limit = sys.maxsize // 2
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
@@ -1833,9 +1834,10 @@ class Backend(object):
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
-        res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,
-                                       len(salt), n, r, p, sys.maxsize // 2,
-                                       buf, length)
+        res = self._lib.EVP_PBE_scrypt(
+            key_material, len(key_material), salt, len(salt), n, r, p,
+            self._scrypt_mem_limit, buf, length
+        )
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
