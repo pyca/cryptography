@@ -38,6 +38,8 @@ def test_memory_limit_skip():
     with pytest.raises(pytest.skip.Exception):
         _skip_if_memory_limited(1000, {"p": 16, "r": 64, "n": 1024})
 
+    _skip_if_memory_limited(2 ** 31, {"p": 16, "r": 64, "n": 1024})
+
 
 @pytest.mark.requires_backend_interface(interface=ScryptBackend)
 class TestScrypt(object):
