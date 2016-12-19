@@ -25,6 +25,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
+static const long Cryptography_HAS_DTLS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -431,6 +432,10 @@ long SSL_CTX_sess_cb_hits(SSL_CTX *);
 long SSL_CTX_sess_misses(SSL_CTX *);
 long SSL_CTX_sess_timeouts(SSL_CTX *);
 long SSL_CTX_sess_cache_full(SSL_CTX *);
+
+/* DTLS support */
+long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
+long DTLSv1_handle_timeout(SSL *);
 """
 
 CUSTOMIZATIONS = """
@@ -651,5 +656,31 @@ static const long Cryptography_HAS_TLS_ST = 1;
 static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
+#endif
+
+#ifndef OPENSSL_NO_DTLS
+static const long Cryptography_HAS_DTLS = 1;
+/* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
+long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
+                                     long *ptv_usec) {
+    struct timeval tv = { 0 };
+    int r = DTLSv1_get_timeout(ssl, &tv);
+
+    if (r == 1) {
+        if (ptv_sec) {
+            *ptv_sec = tv.tv_sec;
+        }
+
+        if (ptv_usec) {
+            *ptv_usec = tv.tv_usec;
+        }
+    }
+
+    return r;
+}
+#else
+static const long Cryptography_HAS_DTLS = 0;
+long (*DTLSv1_get_timeout_wrapped)(SSL *, time_t *, long int *) = NULL;
+long (*DTLSv1_handle_timeout)(SSL *) = NULL;
 #endif
 """
