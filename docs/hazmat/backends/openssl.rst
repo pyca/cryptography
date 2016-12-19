@@ -36,6 +36,19 @@ greater.
 
         The string name of this backend: ``"openssl"``
 
+    .. method:: openssl_version_text()
+
+        :return str: The friendly string name of the loaded OpenSSL library.
+            This is not necessarily the same version as it was compiled against.
+
+    .. method:: openssl_version_number()
+
+        .. versionadded:: 1.8
+
+        :return int: The integer version of the OpenSSL library. This is
+            defined in ``opensslv.h`` as ``OPENSSL_VERSION_NUMBER`` and is
+            typically shown in hexadecimal (e.g. ``0x1010003f``).
+
     .. method:: activate_osrandom_engine()
 
         Activates the OS random engine. This will effectively disable OpenSSL's

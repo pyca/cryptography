@@ -206,6 +206,9 @@ class Backend(object):
             self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
         ).decode("ascii")
 
+    def openssl_version_number(self):
+        return self._lib.OpenSSL_version_num()
+
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
