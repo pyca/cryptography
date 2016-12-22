@@ -38,7 +38,7 @@ greater.
 
     .. method:: openssl_version_text()
 
-        :return str: The friendly string name of the loaded OpenSSL library.
+        :return text: The friendly string name of the loaded OpenSSL library.
             This is not necessarily the same version as it was compiled against.
 
     .. method:: openssl_version_number()
