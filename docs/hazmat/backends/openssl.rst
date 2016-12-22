@@ -45,9 +45,10 @@ greater.
 
         .. versionadded:: 1.8
 
-        :return int: The integer version of the OpenSSL library. This is
+        :return int: The integer version of the loaded OpenSSL library. This is
             defined in ``opensslv.h`` as ``OPENSSL_VERSION_NUMBER`` and is
-            typically shown in hexadecimal (e.g. ``0x1010003f``).
+            typically shown in hexadecimal (e.g. ``0x1010003f``). This is
+            not necessarily the same version as it was compiled against.
 
     .. method:: activate_osrandom_engine()
 

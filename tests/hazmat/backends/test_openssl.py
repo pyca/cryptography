@@ -72,7 +72,7 @@ class TestOpenSSL(object):
         )
 
     def test_openssl_version_number(self):
-        backend.openssl_version_number() > 0
+        assert backend.openssl_version_number() > 0
 
     def test_supports_cipher(self):
         assert backend.cipher_supported(None, None) is False
