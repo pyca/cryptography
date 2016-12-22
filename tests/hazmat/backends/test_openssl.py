@@ -71,6 +71,9 @@ class TestOpenSSL(object):
             backend.openssl_version_text().startswith("LibreSSL")
         )
 
+    def test_openssl_version_number(self):
+        assert backend.openssl_version_number() > 0
+
     def test_supports_cipher(self):
         assert backend.cipher_supported(None, None) is False
 
