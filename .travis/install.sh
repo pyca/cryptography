@@ -34,7 +34,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             ;;
         py36)
             pyenv install 3.6.0
-            pyenv global 3.5.2
+            pyenv global 3.6.0
             ;;
         pypy*)
             pyenv install "pypy-$PYPY_VERSION"
