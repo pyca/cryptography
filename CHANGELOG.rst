@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for Python 3.6.
+
 1.7.1 - 2016-12-13
 ~~~~~~~~~~~~~~~~~~
 

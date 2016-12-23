@@ -19,6 +19,8 @@ matrix:
           env: TOXENV=py34
         - python: 3.5
           env: TOXENV=py35
+        - python: 3.6
+          env: TOXENV=py36
         - python: pypy
           env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
         - python: pypy
@@ -57,6 +59,10 @@ matrix:
           os: osx
           osx_image: xcode8.1
           env: TOXENV=py35 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode8.1
+          env: TOXENV=py36 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
           osx_image: xcode8.1
