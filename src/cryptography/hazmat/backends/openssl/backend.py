@@ -234,9 +234,6 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        return self._evp_cipher_supported(cipher, mode)
-
-    def _evp_cipher_supported(self, cipher, mode):
         try:
             adapter = self._cipher_registry[type(cipher), type(mode)]
         except KeyError:
@@ -589,14 +586,11 @@ class Backend(object):
         else:
             return isinstance(algorithm, hashes.SHA1)
 
-    def _pss_mgf1_hash_supported(self, algorithm):
-        return self.hash_supported(algorithm)
-
     def rsa_padding_supported(self, padding):
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            return self._pss_mgf1_hash_supported(padding._mgf._algorithm)
+            return self.hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
             return (
                 self._oaep_hash_supported(padding._mgf._algorithm) and
