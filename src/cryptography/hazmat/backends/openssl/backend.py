@@ -1208,7 +1208,7 @@ class Backend(object):
         errors = self._consume_errors()
 
         if not errors:
-            raise ValueError("Could not unserialize key data.")
+            raise ValueError("Could not deserialize key data.")
 
         elif errors[0][1:] in (
             (
@@ -1261,7 +1261,7 @@ class Backend(object):
                 self._lib.ERR_LIB_PEM,
                 self._lib.ERR_LIB_ASN1,
             )
-            raise ValueError("Could not unserialize key data.")
+            raise ValueError("Could not deserialize key data.")
 
     def elliptic_curve_supported(self, curve):
         if self._lib.Cryptography_HAS_EC != 1:
