@@ -14,7 +14,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, UnsupportedAlgorithm
 )
 from cryptography.hazmat.backends.interfaces import ScryptBackend
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt, _MEM_LIMIT
 
 from tests.utils import load_nist_vectors, load_vectors_from_file
 
@@ -22,10 +22,30 @@ vectors = load_vectors_from_file(
     os.path.join("KDF", "scrypt.txt"), load_nist_vectors)
 
 
+def _skip_if_memory_limited(memory_limit, params):
+    # Memory calc adapted from OpenSSL (URL split over 2 lines, thanks PEP8)
+    # https://github.com/openssl/openssl/blob/6286757141a8c6e14d647ec733634a
+    # e0c83d9887/crypto/evp/scrypt.c#L189-L221
+    blen = int(params["p"]) * 128 * int(params["r"])
+    vlen = 32 * int(params["r"]) * (int(params["n"]) + 2) * 4
+    memory_required = blen + vlen
+    if memory_limit < memory_required:
+        pytest.skip("Test exceeds Scrypt memory limit. "
+                    "This is likely a 32-bit platform.")
+
+
+def test_memory_limit_skip():
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_memory_limited(1000, {"p": 16, "r": 64, "n": 1024})
+
+    _skip_if_memory_limited(2 ** 31, {"p": 16, "r": 64, "n": 1024})
+
+
 @pytest.mark.requires_backend_interface(interface=ScryptBackend)
 class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
+        _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
         block_size = int(params["r"])
@@ -77,6 +97,7 @@ class TestScrypt(object):
 
     @pytest.mark.parametrize("params", vectors)
     def test_verify(self, backend, params):
+        _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
         block_size = int(params["r"])

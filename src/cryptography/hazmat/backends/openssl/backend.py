@@ -9,7 +9,6 @@ import calendar
 import collections
 import contextlib
 import itertools
-import sys
 from contextlib import contextmanager
 
 import six
@@ -59,6 +58,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
+from cryptography.hazmat.primitives.kdf import scrypt
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -1833,9 +1833,10 @@ class Backend(object):
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
-        res = self._lib.EVP_PBE_scrypt(key_material, len(key_material), salt,
-                                       len(salt), n, r, p, sys.maxsize // 2,
-                                       buf, length)
+        res = self._lib.EVP_PBE_scrypt(
+            key_material, len(key_material), salt, len(salt), n, r, p,
+            scrypt._MEM_LIMIT, buf, length
+        )
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
