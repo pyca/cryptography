@@ -14,7 +14,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, UnsupportedAlgorithm
 )
 from cryptography.hazmat.backends.interfaces import ScryptBackend
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt, _MEM_LIMIT
 
 from tests.utils import load_nist_vectors, load_vectors_from_file
 
@@ -45,7 +45,7 @@ def test_memory_limit_skip():
 class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
-        _skip_if_memory_limited(backend._scrypt_mem_limit, params)
+        _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
         block_size = int(params["r"])
@@ -97,7 +97,7 @@ class TestScrypt(object):
 
     @pytest.mark.parametrize("params", vectors)
     def test_verify(self, backend, params):
-        _skip_if_memory_limited(backend._scrypt_mem_limit, params)
+        _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
         block_size = int(params["r"])

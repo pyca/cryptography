@@ -9,7 +9,6 @@ import calendar
 import collections
 import contextlib
 import itertools
-import sys
 from contextlib import contextmanager
 
 import six
@@ -59,6 +58,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
+from cryptography.hazmat.primitives.kdf import scrypt
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -141,7 +141,6 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
-        self._scrypt_mem_limit = sys.maxsize // 2
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
@@ -1836,7 +1835,7 @@ class Backend(object):
         buf = self._ffi.new("unsigned char[]", length)
         res = self._lib.EVP_PBE_scrypt(
             key_material, len(key_material), salt, len(salt), n, r, p,
-            self._scrypt_mem_limit, buf, length
+            scrypt._MEM_LIMIT, buf, length
         )
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
