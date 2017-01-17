@@ -14,8 +14,9 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
-        # Import here to reduce import time.
-        # pkg_resources takes about 100ms to load.
+        # Lazy import pkg_resources here to avoid the performance issue
+        # on systems with many packages detailed in
+        # https://github.com/pypa/setuptools/issues/926
         import pkg_resources
 
         entry_point_backends = [
