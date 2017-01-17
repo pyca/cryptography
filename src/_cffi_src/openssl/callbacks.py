@@ -50,9 +50,8 @@ CUSTOMIZATIONS = """
 static const long Cryptography_STATIC_CALLBACKS = 1;
 """
 
-if cffi.__version_info__ < (1, 4, 0) or sys.version_info >= (3, 5):
+if cffi.__version_info__ < (1, 4, 0):
     # backwards compatibility for old cffi version on PyPy
-    # and Python >=3.5 (https://github.com/pyca/cryptography/issues/2970)
     TYPES = "static const long Cryptography_STATIC_CALLBACKS;"
     CUSTOMIZATIONS = """static const long Cryptography_STATIC_CALLBACKS = 0;
 """
