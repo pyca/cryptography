@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pkg_resources
-
 from cryptography.hazmat.backends.multibackend import MultiBackend
 
 
@@ -16,6 +14,10 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
+        # Import here to reduce import time.
+        # pkg_resources takes about 100ms to load.
+        import pkg_resources
+
         entry_point_backends = [
             # DeprecatedIn16
             # setuptools 11.3 deprecated support for the require parameter to
