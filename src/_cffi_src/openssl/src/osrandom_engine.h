@@ -13,6 +13,7 @@
 
   #ifdef __APPLE__
     #include <sys/random.h>
+    #include <AvailabilityMacros.h>
   #endif
 
   #ifdef __linux__
@@ -33,8 +34,11 @@
   #if defined(_WIN32)
     /* Windows */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM
-  #elif defined(BSD) && defined(SYS_getentropy)
-    /* OpenBSD 5.6+ or macOS 10.12+ */
+  #elif defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
+    /* macOS 10.12+ */
+    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
+  #elif defined(BSD) && defined(SYS_getentropy) && !defined(__APPLE__)
+    /* OpenBSD 5.6+ */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
   #elif defined(__linux__) && defined(SYS_getrandom)
     /* Linux 3.4.17+ */
