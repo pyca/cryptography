@@ -26,9 +26,7 @@ try install ``cryptography`` again.
 Starting ``cryptography`` using ``mod_wsgi`` produces an ``InternalError`` during a call in ``_register_osrandom_engine``
 -------------------------------------------------------------------------------------------------------------------------
 
-This happens because ``mod_wsgi`` uses sub-interpreters, which can cause a
-problem during initialization of the OpenSSL backend. To resolve this set the
-`WSGIApplicationGroup`_ to ``%{GLOBAL}`` in the ``mod_wsgi`` configuration.
+Upgrade to the latest ``cryptography`` and this issue should be resolved.
 
 ``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
 -------------------------------------------------------------------------
