@@ -601,6 +601,12 @@ X.509 Certificate Builder
         >>> builder = builder.serial_number(x509.random_serial_number())
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
+        ...     x509.SubjectAlternativeName(
+        ...         [x509.DNSName(u'cryptography.io')]
+        ...     ),
+        ...     critical=False
+        ... )
+        >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ... )
         >>> certificate = builder.sign(
