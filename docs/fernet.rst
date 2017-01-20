@@ -113,7 +113,7 @@ Using passwords with Fernet
 It is possible to use passwords with Fernet. To do this, you need to run the
 password through a key derivation function such as
 :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`, bcrypt or
-scrypt.
+:class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`.
 
 .. doctest::
 
@@ -145,7 +145,7 @@ to derive the same key from the password in the future.
 
 The iteration count used should be adjusted to be as high as your server can
 tolerate. A good default is at least 100,000 iterations which is what Django
-`recommends`_ in 2014.
+recommended in 2014.
 
 Implementation
 --------------
@@ -166,4 +166,3 @@ For complete details consult the `specification`_.
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
-.. _`recommends`: https://github.com/django/django/blob/master/django/utils/crypto.py#L148
