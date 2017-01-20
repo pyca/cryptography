@@ -74,7 +74,8 @@ compiler, headers for Python (if you're not using ``pypy``), and headers for
 the OpenSSL and ``libffi`` libraries available on your system.
 
 For Debian and Ubuntu, the following command will ensure that the required
-dependencies are installed:
+dependencies are installed (replace `python-dev` with `python3-dev` if you're
+using Python 3):
 
 .. code-block:: console
 
