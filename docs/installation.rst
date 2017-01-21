@@ -82,7 +82,8 @@ you're using Python 3):
     $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
 For Fedora and RHEL-derivatives, the following command will ensure that the
-required dependencies are installed:
+required dependencies are installed (replace ``python-devel`` with
+``python3-devel`` if you're using Python 3):
 
 .. code-block:: console
 
