@@ -74,14 +74,16 @@ compiler, headers for Python (if you're not using ``pypy``), and headers for
 the OpenSSL and ``libffi`` libraries available on your system.
 
 For Debian and Ubuntu, the following command will ensure that the required
-dependencies are installed:
+dependencies are installed (replace ``python-dev`` with ``python3-dev`` if
+you're using Python 3):
 
 .. code-block:: console
 
     $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
 For Fedora and RHEL-derivatives, the following command will ensure that the
-required dependencies are installed:
+required dependencies are installed (replace ``python-devel`` with
+``python3-devel`` if you're using Python 3):
 
 .. code-block:: console
 
