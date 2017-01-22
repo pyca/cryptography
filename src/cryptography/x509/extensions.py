@@ -11,8 +11,7 @@ import ipaddress
 import warnings
 from enum import Enum
 
-from pyasn1.codec.der import decoder
-from pyasn1.type import namedtype, univ
+from asn1crypto.core import BitString, OctetBitString, Sequence
 
 import six
 
@@ -27,11 +26,11 @@ from cryptography.x509.oid import (
 )
 
 
-class _SubjectPublicKeyInfo(univ.Sequence):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('algorithm', univ.Sequence()),
-        namedtype.NamedType('subjectPublicKey', univ.BitString())
-    )
+class _SubjectPublicKeyInfo(Sequence):
+    _fields = [
+        ('algorithm', Sequence),
+        ('subjectPublicKey', BitString)
+    ]
 
 
 def _key_identifier_from_public_key(public_key):
@@ -48,18 +47,9 @@ def _key_identifier_from_public_key(public_key):
             serialization.Encoding.DER,
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
-        spki, remaining = decoder.decode(
-            serialized, asn1Spec=_SubjectPublicKeyInfo()
-        )
-        assert not remaining
-        # the univ.BitString object is a tuple of bits. We need bytes and
-        # pyasn1 really doesn't want to give them to us. To get it we'll
-        # build an integer and convert that to bytes.
-        bits = 0
-        for bit in spki.getComponentByName("subjectPublicKey"):
-            bits = bits << 1 | bit
 
-        data = utils.int_to_bytes(bits)
+        spki = _SubjectPublicKeyInfo.load(serialized)
+        data = spki["subjectPublicKey"].cast(OctetBitString).native
 
     return hashlib.sha1(data).digest()
 

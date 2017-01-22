@@ -6,9 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 
-from pyasn1.codec.der import decoder, encoder
-from pyasn1.error import PyAsn1Error
-from pyasn1.type import namedtype, univ
+from asn1crypto.core import Integer, Sequence
 
 import six
 
@@ -16,11 +14,11 @@ from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 
 
-class _DSSSigValue(univ.Sequence):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('r', univ.Integer()),
-        namedtype.NamedType('s', univ.Integer())
-    )
+class _DSSSigValue(Sequence):
+    _fields = [
+        ('r', Integer),
+        ('s', Integer)
+    ]
 
 
 def decode_rfc6979_signature(signature):
@@ -35,18 +33,15 @@ def decode_rfc6979_signature(signature):
 
 def decode_dss_signature(signature):
     try:
-        data, remaining = decoder.decode(signature, asn1Spec=_DSSSigValue())
-    except PyAsn1Error:
+        data = _DSSSigValue.load(signature).native
+    except ValueError:
+        # We raise another ValueError to provide a generic message
+        # after the already informative asn1crypto ValueError.
         raise ValueError("Invalid signature data. Unable to decode ASN.1")
 
-    if remaining:
-        raise ValueError(
-            "The signature contains bytes after the end of the ASN.1 sequence."
-        )
-
-    r = int(data.getComponentByName('r'))
-    s = int(data.getComponentByName('s'))
-    return (r, s)
+    r = data['r']
+    s = data['s']
+    return r, s
 
 
 def encode_rfc6979_signature(r, s):
@@ -67,9 +62,9 @@ def encode_dss_signature(r, s):
         raise ValueError("Both r and s must be integers")
 
     sig = _DSSSigValue()
-    sig.setComponentByName('r', r)
-    sig.setComponentByName('s', s)
-    return encoder.encode(sig)
+    sig['r'] = r
+    sig['s'] = s
+    return sig.dump()
 
 
 class Prehashed(object):
