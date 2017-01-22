@@ -7,6 +7,9 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * Added support for Python 3.6.
+* General performance increase when encoding/decoding ASN.1 structures.
+* Trailing bytes on DER-encoded signatures are now allowed in
+  :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
 1.7.1 - 2016-12-13
 ~~~~~~~~~~~~~~~~~~
