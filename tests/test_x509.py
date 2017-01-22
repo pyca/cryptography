@@ -1438,14 +1438,19 @@ class TestRSACertificateRequest(object):
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
+        country_name = u'US'
+        state_or_province_name = u'Texas'
+
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
-            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, country_name),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
+                               state_or_province_name),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
-            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, country_name),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
+                               state_or_province_name),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -1461,10 +1466,11 @@ class TestRSACertificateRequest(object):
         tbs_cert = parsed['tbs_certificate']
         subject = tbs_cert['subject'].native
         issuer = tbs_cert['issuer'].native
-        # \x13 is printable string. The first byte of the value of the
-        # node corresponds to the ASN.1 string type.
-        assert subject == b"\x13"[0]
-        assert issuer == b"\x13"[0]
+
+        assert subject['country_name'] == country_name
+        assert subject['state_or_province_name'] == state_or_province_name
+        assert issuer['country_name'] == country_name
+        assert issuer['state_or_province_name'] == state_or_province_name
 
 
 class TestCertificateBuilder(object):
