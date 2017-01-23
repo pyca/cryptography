@@ -51,11 +51,6 @@ def test_dh_parameternumbers():
             None, None
         )
 
-    with pytest.raises(ValueError):
-        dh.DHParameterNumbers(
-            65537, 7
-        )
-
     params = dh.DHParameterNumbers(
         65537, 7, 1245
     )
