@@ -1459,8 +1459,8 @@ class TestRSACertificateRequest(object):
         parsed = Certificate.load(
             cert.public_bytes(serialization.Encoding.DER))
 
-        assert parsed.subject.chosen[0][0]['value'].tag == 19
-        assert parsed.issuer.chosen[0][0]['value'].tag == 19
+        assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
+        assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
 
 
 class TestCertificateBuilder(object):
