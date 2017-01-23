@@ -11,7 +11,7 @@ import ipaddress
 import warnings
 from enum import Enum
 
-from asn1crypto.core import BitString, OctetBitString, Sequence
+from asn1crypto.keys import PublicKeyInfo
 
 import six
 
@@ -24,13 +24,6 @@ from cryptography.x509.name import Name, RelativeDistinguishedName
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
 )
-
-
-class _SubjectPublicKeyInfo(Sequence):
-    _fields = [
-        ('algorithm', Sequence),
-        ('subjectPublicKey', BitString)
-    ]
 
 
 def _key_identifier_from_public_key(public_key):
@@ -48,8 +41,7 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        spki = _SubjectPublicKeyInfo.load(serialized)
-        data = spki["subjectPublicKey"].cast(OctetBitString).native
+        data = six.binary_type(PublicKeyInfo.load(serialized)['public_key'])
 
     return hashlib.sha1(data).digest()
 

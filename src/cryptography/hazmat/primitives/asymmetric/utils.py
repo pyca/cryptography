@@ -61,10 +61,7 @@ def encode_dss_signature(r, s):
     ):
         raise ValueError("Both r and s must be integers")
 
-    sig = _DSSSigValue()
-    sig['r'] = r
-    sig['s'] = s
-    return sig.dump()
+    return _DSSSigValue({'r': r, 's': s}).dump()
 
 
 class Prehashed(object):

@@ -1458,12 +1458,9 @@ class TestRSACertificateRequest(object):
 
         parsed = Certificate.load(
             cert.public_bytes(serialization.Encoding.DER))
-        tbs_cert = parsed['tbs_certificate']
-        subject = tbs_cert['subject']
-        issuer = tbs_cert['issuer']
 
-        assert subject.dump()[11] == b'\x13'[0]
-        assert issuer.dump()[11] == b'\x13'[0]
+        assert parsed.subject.chosen[0][0]['value'].tag == 19
+        assert parsed.issuer.chosen[0][0]['value'].tag == 19
 
 
 class TestCertificateBuilder(object):
