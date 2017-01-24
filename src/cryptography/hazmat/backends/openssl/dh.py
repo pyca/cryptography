@@ -200,7 +200,8 @@ class _DHPublicKey(object):
     def public_bytes(self, encoding, format):
         if format is not serialization.PublicFormat.SubjectPublicKeyInfo:
             raise ValueError(
-                "DH public keys support only SubjectPublicKeyInfo serialization"
+                "DH public keys support only "
+                "SubjectPublicKeyInfo serialization"
             )
 
         return self._backend._public_key_bytes(
