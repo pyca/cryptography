@@ -194,9 +194,9 @@ class _DHPublicKey(object):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
     def public_bytes(self, encoding, format):
-        if format is serialization.PublicFormat.PKCS1:
+        if format is not serialization.PublicFormat.SubjectPublicKeyInfo:
             raise ValueError(
-                "DH public keys do not support PKCS1 serialization"
+                "DH public keys support only SubjectPublicKeyInfo serialization"
             )
 
         return self._backend._public_key_bytes(

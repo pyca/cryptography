@@ -427,7 +427,7 @@ class TestDHPEMPublicKeySerialization(object):
         with pytest.raises(TypeError):
             key.public_bytes(
                 "notencoding",
-                serialization.PrivateFormat.PKCS8
+                serialization.PublicFormat.SubjectPublicKeyInfo
             )
 
     def test_public_bytes_pkcs1_unsupported(self, backend):
