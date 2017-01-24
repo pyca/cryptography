@@ -39,9 +39,7 @@ def decode_dss_signature(signature):
         # after the already informative asn1crypto ValueError.
         raise ValueError("Invalid signature data. Unable to decode ASN.1")
 
-    r = data['r']
-    s = data['s']
-    return r, s
+    return data['r'], data['s']
 
 
 def encode_rfc6979_signature(r, s):

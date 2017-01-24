@@ -1459,6 +1459,7 @@ class TestRSACertificateRequest(object):
         parsed = Certificate.load(
             cert.public_bytes(serialization.Encoding.DER))
 
+        # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
         assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
 
