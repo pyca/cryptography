@@ -293,7 +293,7 @@ class TestDH(object):
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestDHSerialization(object):
+class TestDHPrivateKeySerialization(object):
 
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
@@ -332,14 +332,14 @@ class TestDHSerialization(object):
         )
         assert serialized == key_bytes
 
-    def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
+    def test_private_bytes_traditional_openssl_invalid(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
             key.private_bytes(
-                serialization.Encoding.DER,
+                serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                serialization.BestAvailableEncryption(b"password")
+                serialization.NoEncryption()
             )
 
     def test_private_bytes_invalid_encoding(self, backend):
@@ -355,7 +355,7 @@ class TestDHSerialization(object):
     def test_private_bytes_invalid_format(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 "invalidformat",
@@ -385,7 +385,7 @@ class TestDHSerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestDHPEMPublicKeySerialization(object):
+class TestDHPublicKeySerialization(object):
 
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),

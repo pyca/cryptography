@@ -150,6 +150,10 @@ class _DHPrivateKey(object):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
     def private_bytes(self, encoding, format, encryption_algorithm):
+        if format is not serialization.PrivateFormat.PKCS8:
+            raise ValueError(
+                "DH private keys support only PKCS8 serialization"
+            )
         return self._backend._private_key_bytes(
             encoding,
             format,
