@@ -147,7 +147,7 @@ Key interfaces
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
-        .. versionadded:: 1.7
+        .. versionadded:: 1.8
 
         Allows serialization of the key to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
@@ -204,7 +204,7 @@ Key interfaces
 
     .. method:: public_bytes(encoding, format)
 
-        .. versionadded:: 1.7
+        .. versionadded:: 1.8
 
         Allows serialization of the key to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
