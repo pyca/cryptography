@@ -361,7 +361,7 @@ class DHBackend(object):
         """
 
     @abc.abstractmethod
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         """
         Returns whether the backend supports DH with these parameter values.
         """

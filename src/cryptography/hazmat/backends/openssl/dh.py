@@ -28,13 +28,18 @@ class _DHParameters(object):
     def parameter_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata,
-                                       p, self._backend._ffi.NULL, g)
+        q = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, q, g)
         self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
+        if q[0] == self._backend._ffi.NULL:
+            q_val = None
+        else:
+            q_val = self._backend._bn_to_int(q[0])
         return dh.DHParameterNumbers(
             p=self._backend._bn_to_int(p[0]),
-            g=self._backend._bn_to_int(g[0])
+            g=self._backend._bn_to_int(g[0]),
+            q=q_val
         )
 
     def generate_private_key(self):
@@ -76,10 +81,14 @@ class _DHPrivateKey(object):
     def private_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata,
-                                       p, self._backend._ffi.NULL, g)
+        q = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, q, g)
         self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
+        if q[0] == self._backend._ffi.NULL:
+            q_val = None
+        else:
+            q_val = self._backend._bn_to_int(q[0])
         pub_key = self._backend._ffi.new("BIGNUM **")
         priv_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata, pub_key, priv_key)
@@ -89,7 +98,8 @@ class _DHPrivateKey(object):
             public_numbers=dh.DHPublicNumbers(
                 parameter_numbers=dh.DHParameterNumbers(
                     p=self._backend._bn_to_int(p[0]),
-                    g=self._backend._bn_to_int(g[0])
+                    g=self._backend._bn_to_int(g[0]),
+                    q=q_val
                 ),
                 y=self._backend._bn_to_int(pub_key[0])
             ),
@@ -162,10 +172,14 @@ class _DHPublicKey(object):
     def public_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata,
-                                       p, self._backend._ffi.NULL, g)
+        q = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, q, g)
         self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
+        if q[0] == self._backend._ffi.NULL:
+            q_val = None
+        else:
+            q_val = self._backend._bn_to_int(q[0])
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata,
                                        pub_key, self._backend._ffi.NULL)
@@ -173,7 +187,8 @@ class _DHPublicKey(object):
         return dh.DHPublicNumbers(
             parameter_numbers=dh.DHParameterNumbers(
                 p=self._backend._bn_to_int(p[0]),
-                g=self._backend._bn_to_int(g[0])
+                g=self._backend._bn_to_int(g[0]),
+                q=q_val
             ),
             y=self._backend._bn_to_int(pub_key[0])
         )

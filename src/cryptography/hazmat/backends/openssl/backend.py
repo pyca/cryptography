@@ -1753,10 +1753,16 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.public_numbers.y)
         priv_key = self._int_to_bn(numbers.x)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
@@ -1780,9 +1786,15 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.y)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
@@ -1798,12 +1810,17 @@ class Backend(object):
         p = self._int_to_bn(numbers.p)
         g = self._int_to_bn(numbers.g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if numbers.q is not None:
+            q = self._int_to_bn(numbers.q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         return _DHParameters(self, dh_cdata)
 
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1811,7 +1828,12 @@ class Backend(object):
         p = self._int_to_bn(p)
         g = self._int_to_bn(g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if q is not None:
+            q = self._int_to_bn(q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)

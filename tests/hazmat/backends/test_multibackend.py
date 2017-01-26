@@ -265,7 +265,7 @@ class DummyDHBackend(object):
     def generate_dh_private_key_and_parameters(self, generator, key_size):
         pass
 
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         pass
 
 
