@@ -42,6 +42,19 @@ def test_dh_parameternumbers():
             65537, 7
         )
 
+    params = dh.DHParameterNumbers(
+        65537, 7, 1245
+    )
+
+    assert params.p == 65537
+    assert params.g == 7
+    assert params.q == 1245
+
+    with pytest.raises(TypeError):
+        dh.DHParameterNumbers(
+            65537, 2, "hello"
+        )
+
 
 def test_dh_numbers():
     params = dh.DHParameterNumbers(
@@ -85,7 +98,9 @@ def test_dh_numbers():
 
 def test_dh_parameter_numbers_equality():
     assert dh.DHParameterNumbers(65537, 2) == dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 7, 12345) == dh.DHParameterNumbers(65537, 7, 12345)
     assert dh.DHParameterNumbers(6, 2) != dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 2, 123) != dh.DHParameterNumbers(65537, 2, 456)
     assert dh.DHParameterNumbers(65537, 5) != dh.DHParameterNumbers(65537, 2)
     assert dh.DHParameterNumbers(65537, 2) != object()
 
@@ -127,6 +142,16 @@ class TestDH(object):
     def test_dh_parameters_supported(self, backend):
         assert backend.dh_parameters_supported(23, 5)
         assert not backend.dh_parameters_supported(23, 18)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "RFC5114.txt"),
+            load_nist_vectors))
+    def test_dh_parameters_supported_with_q(self, backend, vector):
+        assert backend.dh_parameters_supported(int(vector["p"], 16),
+                                               int(vector["g"], 16),
+                                               int(vector["q"], 16))
 
     def test_convert_to_numbers(self, backend):
         parameters = backend.generate_dh_private_key_and_parameters(2, 512)
@@ -285,3 +310,24 @@ class TestDH(object):
         symkey = key.exchange(public.public_key(backend))
 
         assert int_from_bytes(symkey, 'big') == int(vector["k"], 16)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "RFC5114.txt"),
+            load_nist_vectors))
+    def test_dh_vectors_with_q(self, backend, vector):
+        parameters = dh.DHParameterNumbers(int(vector["p"], 16),
+                                           int(vector["g"], 16),
+                                           int(vector["q"], 16))
+        public1 = dh.DHPublicNumbers(int(vector["ystatcavs"], 16), parameters)
+        private1 = dh.DHPrivateNumbers(int(vector["xstatcavs"], 16), public1)
+        public2 = dh.DHPublicNumbers(int(vector["ystatiut"], 16), parameters)
+        private2 = dh.DHPrivateNumbers(int(vector["xstatiut"], 16), public2)
+        key1 = private1.private_key(backend)
+        key2 = private2.private_key(backend)
+        symkey1 = key1.exchange(public2.public_key(backend))
+        symkey2 = key2.exchange(public1.public_key(backend))
+
+        assert int_from_bytes(symkey1, 'big') == int(vector["z"], 16)
+        assert int_from_bytes(symkey2, 'big') == int(vector["z"], 16)
