@@ -98,9 +98,11 @@ def test_dh_numbers():
 
 def test_dh_parameter_numbers_equality():
     assert dh.DHParameterNumbers(65537, 2) == dh.DHParameterNumbers(65537, 2)
-    assert dh.DHParameterNumbers(65537, 7, 12345) == dh.DHParameterNumbers(65537, 7, 12345)
+    assert dh.DHParameterNumbers(65537, 7, 12345) == dh.DHParameterNumbers(
+        65537, 7, 12345)
     assert dh.DHParameterNumbers(6, 2) != dh.DHParameterNumbers(65537, 2)
-    assert dh.DHParameterNumbers(65537, 2, 123) != dh.DHParameterNumbers(65537, 2, 456)
+    assert dh.DHParameterNumbers(65537, 2, 123) != dh.DHParameterNumbers(
+        65537, 2, 456)
     assert dh.DHParameterNumbers(65537, 5) != dh.DHParameterNumbers(65537, 2)
     assert dh.DHParameterNumbers(65537, 2) != object()
 
