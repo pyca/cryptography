@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.7.2 - 2017-01-27
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and macOS wheels to be compiled against OpenSSL 1.0.2k.
+
 1.7.1 - 2016-12-13
 ~~~~~~~~~~~~~~~~~~
 
