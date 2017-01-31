@@ -129,6 +129,8 @@ int DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key)
 #define DH_CHECK_INVALID_J_VALUE        0x40
 #endif
 
+/* DH_check implementation taken from OpenSSL 1.1.0pre6 */
+
 /*-
  * Check that p is a safe prime and
  * if g is 2, 3 or 5, check that it is a suitable generator
