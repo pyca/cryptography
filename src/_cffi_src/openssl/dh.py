@@ -117,6 +117,10 @@ int DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key)
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+# define DH_CHECK_Q_NOT_PRIME            0x10
+# define DH_CHECK_INVALID_Q_VALUE        0x20
+# define DH_CHECK_INVALID_J_VALUE        0x40
+
 /*-
  * Check that p is a safe prime and
  * if g is 2, 3 or 5, check that it is a suitable generator
