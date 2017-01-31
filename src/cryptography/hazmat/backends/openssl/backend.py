@@ -1763,7 +1763,7 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
-        res = self._lib.DH_check(dh_cdata, codes)
+        res = self._lib.Cryptography_DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
         if codes[0] != 0:
@@ -1815,7 +1815,7 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
-        res = self._lib.DH_check(dh_cdata, codes)
+        res = self._lib.Cryptography_DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
         return codes[0] == 0
