@@ -33,13 +33,14 @@ void DH_get0_pqg(const DH *, const BIGNUM **, const BIGNUM **,
 int DH_set0_pqg(DH *, BIGNUM *, BIGNUM *, BIGNUM *);
 void DH_get0_key(const DH *, const BIGNUM **, const BIGNUM **);
 int DH_set0_key(DH *, BIGNUM *, BIGNUM *);
+
+int Cryptography_DH_check(const DH *, int *);
 """
 
 MACROS = """
 int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 DH *d2i_DHparams_bio(BIO *, DH **);
 int i2d_DHparams_bio(BIO *, DH *);
-int Cryptography_DH_check(const DH *, int *);
 """
 
 CUSTOMIZATIONS = """
@@ -208,6 +209,8 @@ int Cryptography_DH_check(const DH *dh, int *ret)
     return (ok);
 }
 #else
-int (*Cryptography_DH_check)(const DH *dh, int *ret) = DH_check;
+int Cryptography_DH_check(const DH *dh, int *ret) {
+    return DH_check(dh, ret);
+}
 #endif
 """
