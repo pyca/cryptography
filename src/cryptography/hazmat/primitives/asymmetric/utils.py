@@ -6,19 +6,12 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 
-from asn1crypto.core import Integer, Sequence
+from asn1crypto.algos import DSASignature
 
 import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes
-
-
-class _DSSSigValue(Sequence):
-    _fields = [
-        ('r', Integer),
-        ('s', Integer)
-    ]
 
 
 def decode_rfc6979_signature(signature):
@@ -32,13 +25,7 @@ def decode_rfc6979_signature(signature):
 
 
 def decode_dss_signature(signature):
-    try:
-        data = _DSSSigValue.load(signature).native
-    except ValueError:
-        # We raise another ValueError to provide a generic message
-        # after the already informative asn1crypto ValueError.
-        raise ValueError("Invalid signature data. Unable to decode ASN.1")
-
+    data = DSASignature.load(signature, strict=True).native
     return data['r'], data['s']
 
 
@@ -59,7 +46,7 @@ def encode_dss_signature(r, s):
     ):
         raise ValueError("Both r and s must be integers")
 
-    return _DSSSigValue({'r': r, 's': s}).dump()
+    return DSASignature({'r': r, 's': s}).dump()
 
 
 class Prehashed(object):

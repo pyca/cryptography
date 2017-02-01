@@ -61,6 +61,11 @@ def test_encode_dss_non_integer():
         encode_dss_signature("hello", "world")
 
 
+def test_decode_dss_trailing_bytes():
+    with pytest.raises(ValueError):
+        decode_dss_signature(b"0\x06\x02\x01\x01\x02\x01\x01\x00\x00\x00")
+
+
 def test_decode_dss_invalid_asn1():
     with pytest.raises(ValueError):
         # This byte sequence has an invalid ASN.1 sequence length as well as
