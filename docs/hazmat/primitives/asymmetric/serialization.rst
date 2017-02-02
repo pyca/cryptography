@@ -85,6 +85,16 @@ methods.
         ... else:
         ...     raise TypeError
 
+Key dumping
+~~~~~~~~~~~
+
+The ``serialization`` module contains functions for loading keys from
+``bytes``. To dump a ``key`` object to ``bytes``, you must call the appropriate
+bytes on the key object. Documentation for these methods in found in the
+:mod:`~cryptography.hazmat.primitives.asymmetric.rsa`,
+:mod:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
+:mod:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
+
 PEM
 ~~~
 
@@ -114,9 +124,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -153,9 +162,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :param bytes data: The PEM encoded key data.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
 
     :returns: One of
@@ -191,9 +199,8 @@ the rest.
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -232,9 +239,8 @@ the rest.
 
     :param bytes data: The DER encoded key data.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
@@ -292,7 +298,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     :param bytes data: The OpenSSH encoded key data.
 
-    :param backend: A backend providing
+    :param backend: A backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
@@ -360,6 +366,13 @@ Serialization Formats
         Just the public key elements (without the algorithm identifier). This
         format is RSA only, but is used by some older systems.
 
+    .. attribute:: OpenSSH
+
+        .. versionadded:: 1.4
+
+        The public key format used by OpenSSH (e.g. as found in
+        ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
+
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -388,6 +401,12 @@ Serialization Encodings
         .. versionadded:: 0.9
 
         For DER format. This is a binary format.
+
+    .. attribute:: OpenSSH
+
+        .. versionadded:: 1.4
+
+        The format used by OpenSSH public keys. This is a text format.
 
 
 Serialization Encryption Types

@@ -40,11 +40,11 @@ Message digests
 
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider such as those described in
+        instance such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -90,7 +90,9 @@ SHA-1
 .. class:: SHA1()
 
     SHA-1 is a cryptographic hash function standardized by NIST. It produces an
-    160-bit message digest.
+    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
+    vulnerable to practical collision attacks, though no actual collisions are
+    publicly known.
 
 SHA-2 family
 ~~~~~~~~~~~~
@@ -114,6 +116,38 @@ SHA-2 family
 
     SHA-512 is a cryptographic hash function from the SHA-2 family and is
     standardized by NIST. It produces a 512-bit message digest.
+
+BLAKE2
+~~~~~~
+
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. BLAKE2's
+design makes it immune to `length-extension attacks`_, an advantage over the
+SHA-family of hashes.
+
+.. note::
+
+    While the RFC specifies keying, personalization, and salting features,
+    these are not supported at this time due to limitations in OpenSSL 1.1.0.
+
+.. class:: BLAKE2b(digest_size)
+
+    BLAKE2b is optimized for 64-bit platforms and produces an 1 to 64-byte
+    message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``64`` is supported at this time.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
+
+.. class:: BLAKE2s(digest_size)
+
+    BLAKE2s is optimized for 8 to 32-bit platforms and produces a
+    1 to 32-byte message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``32`` is supported at this time.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
 
 RIPEMD160
 ~~~~~~~~~
@@ -191,3 +225,5 @@ Interfaces
 
 
 .. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`BLAKE2`: https://blake2.net
+.. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack

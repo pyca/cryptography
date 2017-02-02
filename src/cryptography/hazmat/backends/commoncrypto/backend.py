@@ -104,7 +104,12 @@ class Backend(object):
         return _HMACContext(self, key, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        return (type(cipher), type(mode)) in self._cipher_registry
+        # In OS X 10.11.2-5 (as of this writing) CommonCrypto has a bug with
+        # Blowfish key lengths less than 64-bit. Filed as radar://26636600
+        if isinstance(cipher, Blowfish) and len(cipher.key) < 8:
+            return False
+        else:
+            return (type(cipher), type(mode)) in self._cipher_registry
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
@@ -128,7 +133,7 @@ class Backend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         alg_enum = self._supported_pbkdf2_hmac_algorithms[algorithm.name]
-        buf = self._ffi.new("char[]", length)
+        buf = self._ffi.new("uint8_t[]", length)
         res = self._lib.CCKeyDerivationPBKDF(
             self._lib.kCCPBKDF2,
             key_material,

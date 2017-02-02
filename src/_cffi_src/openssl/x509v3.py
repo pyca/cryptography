@@ -14,11 +14,8 @@ INCLUDES = """
  * together with another opaque typedef for the same name in the TYPES section.
  * Note that the result is an opaque type.
  */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000
 typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
-#else
-typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
-#endif
+
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
 typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
@@ -173,35 +170,37 @@ typedef struct {
     ASN1_OBJECT *policyid;
     Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
 } POLICYINFO;
+
+typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
 """
 
 
 FUNCTIONS = """
 int X509V3_EXT_add_alias(int, int);
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
-X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
-GENERAL_NAME *GENERAL_NAME_new(void);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
 GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
+int X509_check_ca(X509 *);
 """
 
 MACROS = """
+/* X509 became a const arg in 1.1.0 */
+void *X509_get_ext_d2i(X509 *, int, int *, int *);
+/* The last two char * args became const char * in 1.1.0 */
+X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
-int i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *, unsigned char **);
 BASIC_CONSTRAINTS *BASIC_CONSTRAINTS_new(void);
 void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
 AUTHORITY_KEYID *AUTHORITY_KEYID_new(void);
 void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
-int i2d_AUTHORITY_KEYID(AUTHORITY_KEYID *, unsigned char **);
 
 NAME_CONSTRAINTS *NAME_CONSTRAINTS_new(void);
 void NAME_CONSTRAINTS_free(NAME_CONSTRAINTS *);
-int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *, unsigned char **);
 
 OTHERNAME *OTHERNAME_new(void);
 void OTHERNAME_free(OTHERNAME *);
@@ -215,14 +214,11 @@ int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
 GENERAL_NAMES *d2i_GENERAL_NAMES(GENERAL_NAMES **, const unsigned char **,
                                  long);
 
-int i2d_EXTENDED_KEY_USAGE(EXTENDED_KEY_USAGE *, unsigned char **);
-
-int i2d_AUTHORITY_INFO_ACCESS(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
-                              unsigned char **);
-
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
+void sk_GENERAL_NAME_pop_free(struct stack_st_GENERAL_NAME *,
+                              sk_GENERAL_NAME_freefunc);
 
 Cryptography_STACK_OF_ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_new_null(void);
 int sk_ACCESS_DESCRIPTION_num(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
@@ -267,9 +263,6 @@ void NOTICEREF_free(NOTICEREF *);
 USERNOTICE *USERNOTICE_new(void);
 void USERNOTICE_free(USERNOTICE *);
 
-int i2d_CERTIFICATEPOLICIES(Cryptography_STACK_OF_POLICYINFO *,
-                            unsigned char **);
-
 void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
 int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
@@ -303,17 +296,9 @@ void DIST_POINT_free(DIST_POINT *);
 DIST_POINT_NAME *DIST_POINT_NAME_new(void);
 void DIST_POINT_NAME_free(DIST_POINT_NAME *);
 
-int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
+GENERAL_NAME *GENERAL_NAME_new(void);
+void GENERAL_NAME_free(GENERAL_NAME *);
 """
 
 CUSTOMIZATIONS = """
-/* i2d_NAME_CONSTRAINTS doesn't exist, but this is the way the macros in
-   asn1t.h would implement it. We're not using those macros in case
-   OpenSSL exposes this function in the future. */
-int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *nc,
-                                      unsigned char **out) {
-    return ASN1_item_i2d((ASN1_VALUE *)nc, out,
-                         ASN1_ITEM_rptr(NAME_CONSTRAINTS));
-}
-
 """

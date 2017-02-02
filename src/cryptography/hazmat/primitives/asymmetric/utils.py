@@ -13,6 +13,7 @@ from pyasn1.type import namedtype, univ
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives import hashes
 
 
 class _DSSSigValue(univ.Sequence):
@@ -25,8 +26,7 @@ class _DSSSigValue(univ.Sequence):
 def decode_rfc6979_signature(signature):
     warnings.warn(
         "decode_rfc6979_signature is deprecated and will "
-        "be removed in a future version, use decode_dss_signature instead "
-        "instead.",
+        "be removed in a future version, use decode_dss_signature instead.",
         utils.DeprecatedIn10,
         stacklevel=2
     )
@@ -52,8 +52,7 @@ def decode_dss_signature(signature):
 def encode_rfc6979_signature(r, s):
     warnings.warn(
         "encode_rfc6979_signature is deprecated and will "
-        "be removed in a future version, use encode_dss_signature instead "
-        "instead.",
+        "be removed in a future version, use encode_dss_signature instead.",
         utils.DeprecatedIn10,
         stacklevel=2
     )
@@ -71,3 +70,14 @@ def encode_dss_signature(r, s):
     sig.setComponentByName('r', r)
     sig.setComponentByName('s', s)
     return encoder.encode(sig)
+
+
+class Prehashed(object):
+    def __init__(self, algorithm):
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of HashAlgorithm.")
+
+        self._algorithm = algorithm
+        self._digest_size = algorithm.digest_size
+
+    digest_size = utils.read_only_property("_digest_size")

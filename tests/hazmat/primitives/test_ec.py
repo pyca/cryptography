@@ -19,7 +19,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_dss_signature
+    Prehashed, encode_dss_signature
 )
 
 from .fixtures_ec import EC_KEY_SECP384R1
@@ -98,6 +98,35 @@ def test_skip_exchange_algorithm_unsupported(backend):
 def test_skip_ecdsa_vector(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_derive_private_key_success(backend):
+    curve = ec.SECP256K1()
+    _skip_curve_unsupported(backend, curve)
+
+    private_numbers = ec.generate_private_key(curve, backend).private_numbers()
+
+    derived_key = ec.derive_private_key(
+        private_numbers.private_value, curve, backend
+    )
+
+    assert private_numbers == derived_key.private_numbers()
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_derive_private_key_errors(backend):
+    curve = ec.SECP256K1()
+    _skip_curve_unsupported(backend, curve)
+
+    with pytest.raises(TypeError):
+        ec.derive_private_key('one', curve, backend)
+
+    with pytest.raises(TypeError):
+        ec.derive_private_key(10, 'five', backend)
+
+    with pytest.raises(ValueError):
+        ec.derive_private_key(-7, curve, backend)
 
 
 def test_ec_numbers():
@@ -223,6 +252,30 @@ def test_ec_public_numbers_repr():
     assert repr(pn) == "<EllipticCurvePublicNumbers(curve=secp256r1, x=2, y=3>"
 
 
+def test_ec_public_numbers_hash():
+    pn1 = ec.EllipticCurvePublicNumbers(2, 3, ec.SECP256R1())
+    pn2 = ec.EllipticCurvePublicNumbers(2, 3, ec.SECP256R1())
+    pn3 = ec.EllipticCurvePublicNumbers(1, 3, ec.SECP256R1())
+
+    assert hash(pn1) == hash(pn2)
+    assert hash(pn1) != hash(pn3)
+
+
+def test_ec_private_numbers_hash():
+    numbers1 = ec.EllipticCurvePrivateNumbers(
+        1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+    numbers2 = ec.EllipticCurvePrivateNumbers(
+        1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+    numbers3 = ec.EllipticCurvePrivateNumbers(
+        2, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+
+    assert hash(numbers1) == hash(numbers2)
+    assert hash(numbers1) != hash(numbers3)
+
+
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     @pytest.mark.parametrize(
@@ -337,7 +390,19 @@ class TestECDSAVectors(object):
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
+            key.sign(b"somedata", DummySignatureAlgorithm())
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             key.public_key().verifier(b"", DummySignatureAlgorithm())
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            key.public_key().verify(
+                b"signature", b"data", DummySignatureAlgorithm()
+            )
 
         assert backend.elliptic_curve_signature_algorithm_supported(
             DummySignatureAlgorithm(),
@@ -478,6 +543,82 @@ class TestECDSAVectors(object):
                 verifier.verify()
         else:
             verifier.verify()
+
+    def test_sign(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signature = private_key.sign(message, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, algorithm)
+        verifier.update(message)
+        verifier.verify()
+
+    def test_sign_prehashed(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        algorithm = ec.ECDSA(Prehashed(hashes.SHA1()))
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signature = private_key.sign(data, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA1()))
+        verifier.update(message)
+        verifier.verify()
+
+    def test_sign_prehashed_digest_mismatch(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        algorithm = ec.ECDSA(Prehashed(hashes.SHA256()))
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        with pytest.raises(ValueError):
+            private_key.sign(data, algorithm)
+
+    def test_verify(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signer = private_key.signer(algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(signature, message, algorithm)
+
+    def test_verify_prehashed(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signer = private_key.signer(algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(
+            signature, data, ec.ECDSA(Prehashed(hashes.SHA1()))
+        )
+
+    def test_verify_prehashed_digest_mismatch(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = b"one little message"
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        h = hashes.Hash(hashes.SHA1(), backend)
+        h.update(message)
+        data = h.finalize()
+        public_key = private_key.public_key()
+        with pytest.raises(ValueError):
+            public_key.verify(
+                b"\x00" * 32, data, ec.ECDSA(Prehashed(hashes.SHA256()))
+            )
 
 
 class TestECNumbersEquality(object):
@@ -790,6 +931,34 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         assert serialized == key_bytes
+
+    def test_public_bytes_openssh(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP192R1())
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        key_bytes = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "ec_public_key.pem"
+            ),
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
+
+        ssh_bytes = key.public_bytes(
+            serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
+        )
+        assert ssh_bytes == (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBCS8827s9rUZyxZTi/um01+oIlWrwLHOjQxRU9CDAndom00zVAw5BRrI"
+            b"KtHB+SWD4P+sVJTARSq1mHt8kOIWrPc="
+        )
+
+        key = ec.generate_private_key(ec.SECP192R1(), backend).public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.OpenSSH
+            )
 
     def test_public_bytes_invalid_encoding(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())

@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    decode_dss_signature, decode_rfc6979_signature,
-    encode_dss_signature, encode_rfc6979_signature
+    Prehashed, decode_dss_signature, decode_rfc6979_signature,
+    encode_dss_signature, encode_rfc6979_signature,
 )
 
 
@@ -76,3 +76,8 @@ def test_decode_dss_invalid_asn1():
         # This is the BER "end-of-contents octets," which older versions of
         # pyasn1 are wrongly willing to return from top-level DER decoding.
         decode_dss_signature(b"\x00\x00")
+
+
+def test_pass_invalid_prehashed_arg():
+    with pytest.raises(TypeError):
+        Prehashed(object())

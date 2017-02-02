@@ -62,6 +62,12 @@ class EllipticCurvePrivateKey(object):
         The EllipticCurve that this key is on.
         """
 
+    @abc.abstractproperty
+    def sign(self, data, signature_algorithm):
+        """
+        Signs the data
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
@@ -102,6 +108,12 @@ class EllipticCurvePublicKey(object):
     def public_bytes(self, encoding, format):
         """
         Returns the key serialized as bytes.
+        """
+
+    @abc.abstractmethod
+    def verify(self, signature, data, signature_algorithm):
+        """
+        Verifies the signature of the data.
         """
 
 
@@ -241,6 +253,19 @@ def generate_private_key(curve, backend):
     return backend.generate_elliptic_curve_private_key(curve)
 
 
+def derive_private_key(private_value, curve, backend):
+    if not isinstance(private_value, six.integer_types):
+        raise TypeError("private_value must be an integer type.")
+
+    if private_value <= 0:
+        raise ValueError("private_value must be a positive integer.")
+
+    if not isinstance(curve, EllipticCurve):
+        raise TypeError("curve must provide the EllipticCurve interface.")
+
+    return backend.derive_elliptic_curve_private_key(private_value, curve)
+
+
 class EllipticCurvePublicNumbers(object):
     def __init__(self, x, y, curve):
         if (
@@ -302,6 +327,9 @@ class EllipticCurvePublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.x, self.y, self.curve.name, self.curve.key_size))
+
     def __repr__(self):
         return (
             "<EllipticCurvePublicNumbers(curve={0.curve.name}, x={0.x}, "
@@ -340,6 +368,9 @@ class EllipticCurvePrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.private_value, self.public_numbers))
 
 
 class ECDH(object):

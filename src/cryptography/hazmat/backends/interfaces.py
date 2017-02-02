@@ -221,6 +221,12 @@ class EllipticCurveBackend(object):
         Returns whether the exchange algorithm is supported by this backend.
         """
 
+    @abc.abstractmethod
+    def derive_elliptic_curve_private_key(self, private_value, curve):
+        """
+        Compute the private key given the private value and curve.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class PEMSerializationBackend(object):
@@ -306,13 +312,20 @@ class X509Backend(object):
         object.
         """
 
+    @abc.abstractmethod
+    def x509_name_bytes(self, name):
+        """
+        Compute the DER encoded bytes of an X509 Name object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):
     @abc.abstractmethod
-    def generate_dh_parameters(self, key_size):
+    def generate_dh_parameters(self, generator, key_size):
         """
         Generate a DHParameters instance with a modulus of key_size bits.
+        Using the given generator. Often 2 or 5.
         """
 
     @abc.abstractmethod
@@ -323,37 +336,41 @@ class DHBackend(object):
         """
 
     @abc.abstractmethod
-    def generate_dh_private_key_and_parameters(self, key_size):
+    def generate_dh_private_key_and_parameters(self, generator, key_size):
         """
         Generate a DHPrivateKey instance using key size only.
+        Using the given generator. Often 2 or 5.
         """
 
     @abc.abstractmethod
     def load_dh_private_numbers(self, numbers):
         """
-        Returns a DHPrivateKey provider.
+        Load a DHPrivateKey from DHPrivateNumbers
         """
 
     @abc.abstractmethod
     def load_dh_public_numbers(self, numbers):
         """
-        Returns a DHPublicKey provider.
+        Load a DHPublicKey from DHPublicNumbers.
         """
 
     @abc.abstractmethod
     def load_dh_parameter_numbers(self, numbers):
         """
-        Returns a DHParameters provider.
-        """
-
-    @abc.abstractmethod
-    def dh_exchange_algorithm_supported(self, exchange_algorithm):
-        """
-        Returns whether the exchange algorithm is supported by this backend.
+        Load DHParameters from DHParameterNumbers.
         """
 
     @abc.abstractmethod
     def dh_parameters_supported(self, p, g):
         """
         Returns whether the backend supports DH with these parameter values.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
+    @abc.abstractmethod
+    def derive_scrypt(self, key_material, salt, length, n, r, p):
+        """
+        Return bytes derived from provided Scrypt parameters.
         """

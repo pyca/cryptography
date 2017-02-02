@@ -25,9 +25,9 @@ class _CipherContext(object):
         self._tag = None
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
-            self._block_size = self._cipher.block_size
+            self._block_size_bytes = self._cipher.block_size // 8
         else:
-            self._block_size = 1
+            self._block_size_bytes = 1
 
         ctx = self._backend._lib.EVP_CIPHER_CTX_new()
         ctx = self._backend._ffi.gc(
@@ -101,17 +101,8 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
-        # OpenSSL 0.9.8e has an assertion in its EVP code that causes it
-        # to SIGABRT if you call update with an empty byte string. This can be
-        # removed when we drop support for 0.9.8e (CentOS/RHEL 5). This branch
-        # should be taken only when length is zero and mode is not GCM because
-        # AES GCM can return improper tag values if you don't call update
-        # with empty plaintext when authenticating AAD for ...reasons.
-        if len(data) == 0 and not isinstance(self._mode, modes.GCM):
-            return b""
-
         buf = self._backend._ffi.new("unsigned char[]",
-                                     len(data) + self._block_size - 1)
+                                     len(data) + self._block_size_bytes - 1)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                   len(data))
@@ -127,7 +118,7 @@ class _CipherContext(object):
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
 
-        buf = self._backend._ffi.new("unsigned char[]", self._block_size)
+        buf = self._backend._ffi.new("unsigned char[]", self._block_size_bytes)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
@@ -154,13 +145,12 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, modes.GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
-                "unsigned char[]", block_byte_size
+                "unsigned char[]", self._block_size_bytes
             )
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend._lib.EVP_CTRL_GCM_GET_TAG,
-                block_byte_size, tag_buf
+                self._block_size_bytes, tag_buf
             )
             self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
@@ -182,8 +172,9 @@ class _CipherContext(object):
 @utils.register_interface(ciphers.CipherContext)
 class _AESCTRCipherContext(object):
     """
-    This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
-    be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
+    This is needed to provide support for AES CTR mode in OpenSSL 1.0.0. It can
+    be removed when we drop 1.0.0 support (RHEL 6.4 is the only thing that
+    ships it).
     """
     def __init__(self, backend, cipher, mode):
         self._backend = backend
@@ -193,8 +184,8 @@ class _AESCTRCipherContext(object):
             cipher.key, len(cipher.key) * 8, self._key
         )
         self._backend.openssl_assert(res == 0)
-        self._ecount = self._backend._ffi.new("char[]", 16)
-        self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
+        self._ecount = self._backend._ffi.new("unsigned char[]", 16)
+        self._nonce = self._backend._ffi.new("unsigned char[16]", mode.nonce)
         self._num = self._backend._ffi.new("unsigned int *", 0)
 
     def update(self, data):

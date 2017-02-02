@@ -43,14 +43,14 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     :param algorithms: A
         :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
-        provider such as those described
+        instance such as those described
         :ref:`below <symmetric-encryption-algorithms>`.
     :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
-        provider such as those described
+        instance such as those described
         :ref:`below <symmetric-encryption-modes>`.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -60,7 +60,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
         :return: An encrypting
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
-            provider.
+            instance.
 
         If the backend doesn't support the requested combination of ``cipher``
         and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
@@ -70,7 +70,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
         :return: A decrypting
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
-            provider.
+            instance.
 
         If the backend doesn't support the requested combination of ``cipher``
         and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
@@ -106,7 +106,7 @@ Algorithms
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
     block cipher standardized by NIST. Triple DES has known crypto-analytic
     flaws, however none of them currently enable a practical attack.
-    Nonetheless, Triples DES is not recommended for new applications because it
+    Nonetheless, Triple DES is not recommended for new applications because it
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key. This must be kept secret. Either ``64``,
@@ -473,7 +473,7 @@ Interfaces
     :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) the result will
     conform to the ``AEADCipherContext`` and ``CipherContext`` interfaces. If
     it is an encryption context it will additionally be an
-    ``AEADEncryptionContext`` provider. ``AEADCipherContext`` contains an
+    ``AEADEncryptionContext`` instance. ``AEADCipherContext`` contains an
     additional method :meth:`authenticate_additional_data` for adding
     additional authenticated but unencrypted data (see note below). You should
     call this before calls to ``update``. When you are done call ``finalize``
@@ -613,4 +613,4 @@ Interfaces used by the symmetric cipher modes described in
 .. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
-.. _`OpenPGP`: http://www.openpgp.org
+.. _`OpenPGP`: http://openpgp.org

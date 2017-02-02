@@ -21,74 +21,15 @@ class TestOpenSSL(object):
 
     def test_crypto_lock_init(self):
         b = Binding()
+        if (
+            b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
+            not b.lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            pytest.skip("Requires an older OpenSSL. Must be < 1.1.0")
+
         b.init_static_locks()
         lock_cb = b.lib.CRYPTO_get_locking_callback()
         assert lock_cb != b.ffi.NULL
-
-    def _skip_if_not_fallback_lock(self, b):
-        # only run this test if we are using our locking cb
-        original_cb = b.lib.CRYPTO_get_locking_callback()
-        if original_cb != b._lock_cb_handle:
-            pytest.skip(
-                "Not using the fallback Python locking callback "
-                "implementation. Probably because import _ssl set one"
-            )
-
-    def test_fallback_crypto_lock_via_openssl_api(self):
-        b = Binding()
-        b.init_static_locks()
-
-        self._skip_if_not_fallback_lock(b)
-
-        # check that the lock state changes appropriately
-        lock = b._locks[b.lib.CRYPTO_LOCK_SSL]
-
-        # starts out unlocked
-        assert lock.acquire(False)
-        lock.release()
-
-        b.lib.CRYPTO_lock(
-            b.lib.CRYPTO_LOCK | b.lib.CRYPTO_READ,
-            b.lib.CRYPTO_LOCK_SSL, b.ffi.NULL, 0
-        )
-
-        # becomes locked
-        assert not lock.acquire(False)
-
-        b.lib.CRYPTO_lock(
-            b.lib.CRYPTO_UNLOCK | b.lib.CRYPTO_READ,
-            b.lib.CRYPTO_LOCK_SSL, b.ffi.NULL, 0
-        )
-
-        # then unlocked
-        assert lock.acquire(False)
-        lock.release()
-
-    def test_fallback_crypto_lock_via_binding_api(self):
-        b = Binding()
-        b.init_static_locks()
-
-        self._skip_if_not_fallback_lock(b)
-
-        lock = b._locks[b.lib.CRYPTO_LOCK_SSL]
-
-        with pytest.raises(RuntimeError):
-            b._lock_cb(0, b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
-
-        # errors shouldn't cause locking
-        assert lock.acquire(False)
-        lock.release()
-
-        b._lock_cb(b.lib.CRYPTO_LOCK | b.lib.CRYPTO_READ,
-                   b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
-        # locked
-        assert not lock.acquire(False)
-
-        b._lock_cb(b.lib.CRYPTO_UNLOCK | b.lib.CRYPTO_READ,
-                   b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
-        # unlocked
-        assert lock.acquire(False)
-        lock.release()
 
     def test_add_engine_more_than_once(self):
         b = Binding()
@@ -137,17 +78,8 @@ class TestOpenSSL(object):
 
     def test_conditional_removal(self):
         b = Binding()
-        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10000000:
-            assert b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
-            assert b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
-        else:
-            with pytest.raises(AttributeError):
-                b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
 
-            with pytest.raises(AttributeError):
-                b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
-
-        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+        if b.lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER:
             assert b.lib.CMAC_Init
         else:
             with pytest.raises(AttributeError):
@@ -177,7 +109,7 @@ class TestOpenSSL(object):
         )]
 
     def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_098", raising=False)
+        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_100", raising=False)
         with pytest.raises(RuntimeError):
-            # OpenSSL 0.9.8zg
-            _verify_openssl_version(0x9081DF)
+            # OpenSSL 1.0.0
+            _verify_openssl_version(0x100000F)

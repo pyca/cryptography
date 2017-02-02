@@ -18,6 +18,9 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
+from cryptography.hazmat.primitives.kdf.kbkdf import (
+    CounterLocation, KBKDFHMAC, Mode
+)
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from ...utils import load_vectors_from_file
@@ -44,6 +47,11 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
 
 
 def encrypt_test(backend, cipher_factory, mode_factory, params):
+    if not backend.cipher_supported(
+        cipher_factory(**params), mode_factory(**params)
+    ):
+        pytest.skip("cipher/mode combo is unsupported by this backend")
+
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
     cipher = Cipher(
@@ -368,6 +376,57 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
         hkdf_test(backend, algorithm, params)
 
     return test_hkdf
+
+
+def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
+    all_params = _load_all_params(path, file_names, param_loader)
+
+    @pytest.mark.parametrize("params", all_params)
+    def test_kbkdf(self, backend, params):
+        kbkdf_counter_mode_test(backend, params)
+    return test_kbkdf
+
+
+def kbkdf_counter_mode_test(backend, params):
+    supported_algorithms = {
+        'hmac_sha1': hashes.SHA1,
+        'hmac_sha224': hashes.SHA224,
+        'hmac_sha256': hashes.SHA256,
+        'hmac_sha384': hashes.SHA384,
+        'hmac_sha512': hashes.SHA512,
+    }
+
+    supported_counter_locations = {
+        "before_fixed": CounterLocation.BeforeFixed,
+        "after_fixed": CounterLocation.AfterFixed,
+    }
+
+    algorithm = supported_algorithms.get(params.get('prf'))
+    if algorithm is None or not backend.hmac_supported(algorithm()):
+        pytest.skip("KBKDF does not support algorithm: {0}".format(
+            params.get('prf')
+        ))
+
+    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
+    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
+        pytest.skip("Does not support counter location: {0}".format(
+            params.get('ctrlocation')
+        ))
+
+    ctrkdf = KBKDFHMAC(
+        algorithm(),
+        Mode.CounterMode,
+        params['l'] // 8,
+        params['rlen'] // 8,
+        None,
+        ctr_loc,
+        None,
+        None,
+        binascii.unhexlify(params['fixedinputdata']),
+        backend=backend)
+
+    ko = ctrkdf.derive(binascii.unhexlify(params['ki']))
+    assert binascii.hexlify(ko) == params["ko"]
 
 
 def generate_rsa_verification_test(param_loader, path, file_names, hash_alg,

@@ -44,6 +44,7 @@ Custom asymmetric vectors
     :maxdepth: 1
 
     custom-vectors/secp256k1
+    custom-vectors/rsa-oaep-sha2
 
 * ``asymmetric/PEM_Serialization/ec_private_key.pem`` and
   ``asymmetric/DER_Serialization/ec_private_key.der`` - Contains an Elliptic
@@ -90,6 +91,13 @@ Key exchange
 * ``vectors/cryptography_vectors/asymmetric/DH/RFC5114.txt`` contains
   Diffie-Hellman examples from appendix A.1, A.2 and A.3 of :rfc:`5114`.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/vec.txt`` contains
+  Diffie-Hellman examples from `botan`_.
+
+* ``vectors/cryptography_vectors/asymmetric/DH/bad_exchange.txt`` contains
+  Diffie-Hellman vector pairs that were generated using OpenSSL
+  DH_generate_parameters_ex and DH_generate_key.
+
 X.509
 ~~~~~
 
@@ -116,6 +124,9 @@ X.509
 * ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
   cipher and containing numerous unusual encodings such as NUMERICSTRING in
   the subject DN.
+* ``alternate-rsa-sha1-oid.pem`` - A certificate from an
+  `unknown signature OID`_ Mozilla bug that uses an alternate signature OID for
+  RSA with SHA1.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -426,7 +437,7 @@ header format (substituting the correct information):
     # Verified against the CommonCrypto and Go crypto packages
     # Key Length : 128
 
-.. _`NIST`: http://www.nist.gov/
+.. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
 .. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
@@ -458,3 +469,5 @@ header format (substituting the correct information):
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
 .. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
+.. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966
+.. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec

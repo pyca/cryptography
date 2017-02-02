@@ -44,7 +44,7 @@ mathematical properties`_.
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
 
-    :param backend: A backend which provides
+    :param backend: A backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
     :return: An instance of
@@ -153,6 +153,20 @@ secure hash function and padding:
     >>> signer.update(message)
     >>> signature = signer.finalize()
 
+There is a shortcut to sign sufficiently short messages directly:
+
+.. doctest::
+
+    >>> message = b"A message I want to sign"
+    >>> signature = private_key.sign(
+    ...     message,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     hashes.SHA256()
+    ... )
+
 Valid paddings for signatures are
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
@@ -189,6 +203,20 @@ a public key to use in verification using
 
 If the signature does not match, ``verify()`` will raise an
 :class:`~cryptography.exceptions.InvalidSignature` exception.
+
+There is a shortcut to verify sufficiently short messages directly:
+
+.. doctest::
+
+    >>> public_key.verify(
+    ...     signature,
+    ...     message,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     hashes.SHA256()
+    ... )
 
 Encryption
 ~~~~~~~~~~
@@ -283,9 +311,8 @@ Padding
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param bytes label: A label to apply. This is a rarely used field and
         should typically be set to ``None`` or ``b""``, which are equivalent.
@@ -302,6 +329,20 @@ Padding
     :class:`OAEP` should be preferred for encryption and :class:`PSS` should be
     preferred for signatures.
 
+
+.. function:: calculate_max_pss_salt_length(key, hash_algorithm)
+
+    .. versionadded:: 1.5
+
+    :param key: An RSA public or private key.
+    :param hash_algorithm: A
+        :class:`cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+    :returns int: The computed salt length.
+
+    Computes the length of the salt that :class:`PSS` will use if
+    :data:`PSS.MAX_LENGTH` is used.
+
+
 Mask generation functions
 -------------------------
 
@@ -313,11 +354,10 @@ Mask generation functions
         Removed the deprecated ``salt_length`` parameter.
 
     MGF1 (Mask Generation Function 1) is used as the mask generation function
-    in :class:`PSS` padding. It takes a hash algorithm and a salt length.
+    in :class:`PSS` and :class:`OAEP` padding. It takes a hash algorithm.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
 Numbers
 ~~~~~~~
@@ -348,13 +388,11 @@ is unavailable.
 
     .. method:: public_key(backend)
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-            provider.
+        :returns: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
 .. class:: RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, public_numbers)
 
@@ -417,13 +455,11 @@ is unavailable.
 
     .. method:: private_key(backend)
 
-        :param backend: A new instance of a
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
+        :param backend: A new instance of
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
-        :returns: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-            provider.
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
 Handling partial RSA private keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,15 +484,15 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.4
 
-    Computes the ``dmp1`` parameter from the RSA private exponent and prime
-    ``p``.
+    Computes the ``dmp1`` parameter from the RSA private exponent (``d``) and
+    prime ``p``.
 
 .. function:: rsa_crt_dmq1(private_exponent, q)
 
     .. versionadded:: 0.4
 
-    Computes the ``dmq1`` parameter from the RSA private exponent and prime
-    ``q``.
+    Computes the ``dmq1`` parameter from the RSA private exponent (``d``) and
+    prime ``q``.
 
 .. function:: rsa_recover_prime_factors(n, e, d)
 
@@ -468,7 +504,9 @@ this without having to do the math themselves.
     .. note::
 
         When recovering prime factors this algorithm will always return ``p``
-        and ``q`` such that ``p < q``.
+        and ``q`` such that ``p > q``. Note: before 1.5, this function always
+        returned ``p`` and ``q`` such that ``p < q``. It was changed because
+        libraries commonly require ``p > q``.
 
     :return: A tuple ``(p, q)``
 
@@ -486,15 +524,14 @@ Key interfaces
 
         .. versionadded:: 0.3
 
-        Sign data which can be verified later by others using the public key.
+        Get signer to sign data which can be verified later by others using
+        the public key.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -507,9 +544,8 @@ Key interfaces
 
         :param bytes ciphertext: The ciphertext to decrypt.
 
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :return bytes: Decrypted data.
 
@@ -524,6 +560,28 @@ Key interfaces
         :type: int
 
         The bit length of the modulus.
+
+    .. method:: sign(data, padding, algorithm)
+
+        .. versionadded:: 1.4
+        .. versionchanged:: 1.6
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            can now be used as an ``algorithm``.
+
+        Sign one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes data: The message string to sign.
+
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
+
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            if the ``data`` you want to sign has already been hashed.
+
+        :return bytes: Signature.
 
 
 .. class:: RSAPrivateKeyWithSerialization
@@ -580,18 +638,16 @@ Key interfaces
 
         .. versionadded:: 0.3
 
-        Verify data was signed by the private key associated with this public
-        key.
+        Get verifier to verify data was signed by the private key associated
+        with this public key.
 
         :param bytes signature: The signature to verify.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -604,9 +660,8 @@ Key interfaces
 
         :param bytes plaintext: The plaintext to encrypt.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :return bytes: Encrypted data.
 
@@ -644,6 +699,31 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+    .. method:: verify(signature, data, padding, algorithm)
+
+        .. versionadded:: 1.4
+        .. versionchanged:: 1.6
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            can now be used as an ``algorithm``.
+
+        Verify one block of data was signed by the private key
+        associated with this public key.
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The message string that was signed.
+
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
+
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+            if the ``data`` you want to sign has already been hashed.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: RSAPublicKeyWithSerialization

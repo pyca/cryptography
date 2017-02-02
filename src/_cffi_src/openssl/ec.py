@@ -331,7 +331,7 @@ int (*EC_METHOD_get_field_type)(const EC_METHOD *) = NULL;
 static const long Cryptography_HAS_EC = 1;
 #endif
 
-#if defined(OPENSSL_NO_EC) || OPENSSL_VERSION_NUMBER < 0x1000100f
+#if defined(OPENSSL_NO_EC) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
 static const long Cryptography_HAS_EC_1_0_1 = 0;
 
 int (*EC_KEY_get_flags)(const EC_KEY *) = NULL;
@@ -371,7 +371,7 @@ EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
 static const long Cryptography_HAS_EC2M = 1;
 #endif
 
-#if defined(OPENSSL_NO_EC) || OPENSSL_VERSION_NUMBER < 0x1000200f || \
+#if defined(OPENSSL_NO_EC) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || \
     defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x20020002L
 static const long Cryptography_HAS_EC_1_0_2 = 0;
 const char *(*EC_curve_nid2nist)(int) = NULL;

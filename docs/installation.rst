@@ -13,10 +13,10 @@ Supported platforms
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 2.6+ on these operating systems.
 
-* x86-64 CentOS 7.x, 6.4 and CentOS 5.x
+* x86-64 CentOS 7.x, 6.4
 * x86-64 FreeBSD 10
-* OS X 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion,
-  and 10.7 Lion
+* OS X 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks,
+  10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
@@ -28,25 +28,24 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
-* ``OpenSSL 0.9.8k``
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
+* ``OpenSSL 1.1.0``
 
 .. warning::
-    OpenSSL versions 0.9.8 and 1.0.0 are no longer supported by the OpenSSL
-    project. Cryptography 1.4 has dropped support for OpenSSL 0.9.8, see the
-    :doc:`FAQ </faq>` for more details.
+    Cryptography 1.7 has dropped support for OpenSSL 1.0.0, see the
+    :doc:`FAQ </faq>` for more details
 
-On Windows
-----------
+Building cryptography on Windows
+--------------------------------
 
 The wheel package on Windows is a statically linked build (as of 0.5) so all
-dependencies are included. Just run
+dependencies are included. To install ``cryptography``, you will typically
+just run
 
 .. code-block:: console
 
@@ -172,7 +171,7 @@ dependencies.
     . env/bin/activate
     pip install -U setuptools
     pip install -U wheel pip
-    curl -O https://openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
+    curl -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
     tar xvf openssl-${OPENSSL_VERSION}.tar.gz
     cd openssl-${OPENSSL_VERSION}
     ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
@@ -195,7 +194,7 @@ users with pip 8 or above you only need one step:
 
     $ pip install cryptography
 
-If you want to build cryptography yourself or are on an older OS X version
+If you want to build cryptography yourself or are on an older OS X version,
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
 development tools.  To install the Xcode command line tools (on OS X 10.9+)
@@ -249,7 +248,7 @@ local `wheel cache`_.
 Building cryptography with conda
 --------------------------------
 
-Because of a `bug in conda`_, attempting to install cryptography out of the box
+Because of a bug in conda, attempting to install cryptography out of the box
 will result in an error. This can be resolved by setting the library path
 environment variable for your platform.
 
@@ -272,8 +271,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
-.. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _openssl.org: https://openssl.org/source/
+.. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching

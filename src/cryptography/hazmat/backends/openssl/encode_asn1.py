@@ -5,12 +5,13 @@
 from __future__ import absolute_import, division, print_function
 
 import calendar
+import ipaddress
 
 import idna
 
 import six
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
@@ -78,15 +79,23 @@ def _encode_inhibit_any_policy(backend, inhibit_any_policy):
     return _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
 
 
-def _encode_name(backend, attributes):
+def _encode_name(backend, name):
     """
     The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
     """
     subject = backend._lib.X509_NAME_new()
-    for attribute in attributes:
-        name_entry = _encode_name_entry(backend, attribute)
-        res = backend._lib.X509_NAME_add_entry(subject, name_entry, -1, 0)
-        backend.openssl_assert(res == 1)
+    for rdn in name.rdns:
+        set_flag = 0  # indicate whether to add to last RDN or create new RDN
+        for attribute in rdn:
+            name_entry = _encode_name_entry(backend, attribute)
+            # X509_NAME_add_entry dups the object so we need to gc this copy
+            name_entry = backend._ffi.gc(
+                name_entry, backend._lib.X509_NAME_ENTRY_free
+            )
+            res = backend._lib.X509_NAME_add_entry(
+                    subject, name_entry, -1, set_flag)
+            backend.openssl_assert(res == 1)
+            set_flag = -1
     return subject
 
 
@@ -358,6 +367,15 @@ def _encode_subject_key_identifier(backend, ski):
     return _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
 
 
+def _idna_encode(value):
+    # Retain prefixes '*.' for common/alt names and '.' for name constraints
+    for prefix in ['*.', '.']:
+        if value.startswith(prefix):
+            value = value[len(prefix):]
+            return prefix.encode('ascii') + idna.encode(value)
+    return idna.encode(value)
+
+
 def _encode_general_name(backend, name):
     if isinstance(name, x509.DNSName):
         gn = backend._lib.GENERAL_NAME_new()
@@ -366,11 +384,7 @@ def _encode_general_name(backend, name):
 
         ia5 = backend._lib.ASN1_IA5STRING_new()
         backend.openssl_assert(ia5 != backend._ffi.NULL)
-
-        if name.value.startswith(u"*."):
-            value = b"*." + idna.encode(name.value[2:])
-        else:
-            value = idna.encode(name.value)
+        value = _idna_encode(name.value)
 
         res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
         backend.openssl_assert(res == 1)
@@ -393,9 +407,19 @@ def _encode_general_name(backend, name):
     elif isinstance(name, x509.IPAddress):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
-        ipaddr = _encode_asn1_str(
-            backend, name.value.packed, len(name.value.packed)
-        )
+        if isinstance(name.value, ipaddress.IPv4Network):
+            packed = (
+                name.value.network_address.packed +
+                utils.int_to_bytes(((1 << 32) - name.value.num_addresses), 4)
+            )
+        elif isinstance(name.value, ipaddress.IPv6Network):
+            packed = (
+                name.value.network_address.packed +
+                utils.int_to_bytes((1 << 128) - name.value.num_addresses, 16)
+            )
+        else:
+            packed = name.value.packed
+        ipaddr = _encode_asn1_str(backend, packed, len(packed))
         gn.type = backend._lib.GEN_IPADD
         gn.d.iPAddress = ipaddr
     elif isinstance(name, x509.OtherName):

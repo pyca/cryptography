@@ -5,8 +5,7 @@ language: python
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/ossl-098l
-        - $HOME/ossl-100t
+        - $HOME/ossl/
 
 matrix:
     include:
@@ -21,23 +20,19 @@ matrix:
         - python: 3.5
           env: TOXENV=py35
         - python: pypy
-          env: TOXENV=pypy
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.0.0
-        - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.0.0
-        - python: 2.6
-          env: TOXENV=py26 OPENSSL=0.9.8
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=0.9.8
-        - python: 3.3
-          env: TOXENV=py33 OPENSSL=0.9.8
-        - python: 3.4
-          env: TOXENV=py34 OPENSSL=0.9.8
-        - python: 3.5
-          env: TOXENV=py35 OPENSSL=0.9.8
+          env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
         - python: pypy
-          env: TOXENV=pypy OPENSSL=0.9.8
+          env: TOXENV=pypy PYPY_VERSION=4.0.1
+        - python: pypy
+          env: TOXENV=pypy PYPY_VERSION=5.4.1
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.0.0t
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=1.0.0t
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.1.0c
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=1.1.0c
         - python: 2.7
           env: TOXENV=docs
           addons:
@@ -50,38 +45,43 @@ matrix:
           env: TOXENV=py3pep8
         - language: generic
           os: osx
-          # 7.1 is OS X 10.10.x
-          # see: https://docs.travis-ci.com/user/languages/objective-c/#Supported-OS-X-iOS-SDK-versions
-          osx_image: xcode7.1
+          # 8.1 is macOS 10.12.x
+          # see: https://docs.travis-ci.com/user/osx-ci-environment/
+          osx_image: xcode8.1
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode7.1
+          osx_image: xcode8.1
           env: TOXENV=py33 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode7.1
+          osx_image: xcode8.1
           env: TOXENV=py34 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode7.1
+          osx_image: xcode8.1
           env: TOXENV=py35 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode7.1
-          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+          osx_image: xcode8.1
+          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.4.1
         - language: generic
           os: osx
-          osx_image: xcode7.1
+          osx_image: xcode8.1
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=0
         - language: generic
           os: osx
-          # 7.2 is OS X 10.11.x
-          osx_image: xcode7.2
+          # 7.3 is OS X 10.11.x
+          osx_image: xcode7.3
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
-          osx_image: xcode7.2
+          # 6.4 is OS X 10.10.x
+          osx_image: xcode6.4
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode8.1
           env: TOXENV=docs CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
 
 install:
@@ -96,8 +96,11 @@ after_success:
 notifications:
     irc:
         channels:
-            - "irc.freenode.org#cryptography-dev"
+            # This is set to a secure variable to prevent forks from notifying the
+            # IRC channel whenever they fail a build. This can be removed when travis
+            # implements https://github.com/travis-ci/travis-ci/issues/1094.
+            # The value encrypted here was created via
+            # travis encrypt "irc.freenode.org#cryptography-dev"
+            - secure: "A93qvTOlwlMK5WoEvZQ5jQ8Z4Hd0JpeO53WYt8iIJ3s/L6AubkfiN7gwhThRtPnPx7DVMenoKRMlcRg76/ICvXEViVnGgXFjsypF0CzVcIay9pPdjpZjZHP735yLfX512RtxYEdEGwi5r25Z2CEFaydhhxNwfuMxGBtLUjusix4="
         use_notice: true
         skip_join: true
-    webhooks:
-        - https://buildtimetrend.herokuapp.com/travis

@@ -40,8 +40,21 @@ If you have no other libraries using OpenSSL in your process, or they do not
 appear to be at fault, it's possible that this is a bug in ``cryptography``.
 Please file an `issue`_ with instructions on how to reproduce it.
 
-Importing cryptography causes a ``RuntimeError`` about OpenSSL 0.9.8
+Importing cryptography causes a ``RuntimeError`` about OpenSSL 1.0.0
 --------------------------------------------------------------------
+
+The OpenSSL project has dropped support for the 1.0.0 release series. Since it
+is no longer receiving security patches from upstream, ``cryptography`` is also
+dropping support for it. To fix this issue you should upgrade to a newer
+version of OpenSSL (1.0.1 or later). This may require you to upgrade to a newer
+operating system.
+
+For the 1.7 release, you can set the ``CRYPTOGRAPHY_ALLOW_OPENSSL_100``
+environment variable. Please note that this is *temporary* and will be removed
+in ``cryptography`` 1.8.
+
+Installing cryptography with OpenSSL 0.9.8 fails
+------------------------------------------------
 
 The OpenSSL project has dropped support for the 0.9.8 release series. Since it
 is no longer receiving security patches from upstream, ``cryptography`` is also
@@ -49,11 +62,7 @@ dropping support for it. To fix this issue you should upgrade to a newer
 version of OpenSSL (1.0.1 or later). This may require you to upgrade to a newer
 operating system.
 
-For the 1.4 release, you can set the ``CRYPTOGRAPHY_ALLOW_OPENSSL_098``
-environment variable. Please note that this is *temporary* and will be removed
-in ``cryptography`` 1.5.
-
 .. _`NaCl`: https://nacl.cr.yp.to/
-.. _`PyNaCl`: https://pynacl.readthedocs.org
-.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.org/en/develop/configuration-directives/WSGIApplicationGroup.html
+.. _`PyNaCl`: https://pynacl.readthedocs.io
+.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues

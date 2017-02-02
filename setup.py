@@ -58,10 +58,11 @@ else:
     setup_requirements.append("cffi>=1.4.1")
 
 test_requirements = [
-    "pytest",
+    "pytest>=2.9.0",
     "pretend",
     "iso8601",
     "pyasn1_modules",
+    "pytz",
 ]
 if sys.version_info[:2] > (2, 6):
     test_requirements.append("hypothesis>=1.11.4")
@@ -309,15 +310,15 @@ setup(
     tests_require=test_requirements,
     extras_require={
         "test": test_requirements,
-        "docs-test": [
+        "docstest": [
             "doc8",
             "pyenchant",
-            "readme_renderer",
+            "readme_renderer >= 16.0",
             "sphinx",
             "sphinx_rtd_theme",
             "sphinxcontrib-spelling",
         ],
-        "pep8-test": [
+        "pep8test": [
             "flake8",
             "flake8-import-order",
             "pep8-naming",

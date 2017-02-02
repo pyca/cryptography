@@ -2,7 +2,7 @@ clint
 coverage
 invoke
 requests
-tox
+tox >= 2.4.1
 twine
--e .[test,docs-test,pep8-test]
+-e .[test,docstest,pep8test]
 -e vectors

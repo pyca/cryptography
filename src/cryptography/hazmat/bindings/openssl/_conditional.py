@@ -9,10 +9,6 @@ from __future__ import absolute_import, division, print_function
 # cffi supports #if in cdef
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_AES_WRAP": [
-        "AES_wrap_key",
-        "AES_unwrap_key",
-    ],
     "Cryptography_HAS_CMAC": [
         "CMAC_CTX_new",
         "CMAC_Init",
@@ -51,11 +47,6 @@ CONDITIONAL_NAMES = {
         "CMS_REUSE_DIGEST",
         "CMS_USE_KEYID",
         "CMS_DEBUG_DECRYPT",
-    ],
-    "Cryptography_HAS_CMS_BIO_FUNCTIONS": [
-        "BIO_new_CMS",
-        "i2d_CMS_bio_stream",
-        "PEM_write_bio_CMS_stream",
     ],
     "Cryptography_HAS_EC": [
         "OPENSSL_EC_NAMED_CURVE",
@@ -167,6 +158,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ECDH": [
         "ECDH_compute_key",
     ],
+    "Cryptography_HAS_SET_ECDH_AUTO": [
+        "SSL_CTX_set_ecdh_auto",
+    ],
     "Cryptography_HAS_ECDSA": [
         "ECDSA_SIG_new",
         "ECDSA_SIG_free",
@@ -184,31 +178,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
     ],
-    "Cryptography_HAS_REMOVE_THREAD_STATE": [
-        "ERR_remove_thread_state"
-    ],
-    "Cryptography_HAS_098H_ERROR_CODES": [
-        "ASN1_F_B64_READ_ASN1",
-        "ASN1_F_B64_WRITE_ASN1",
-        "ASN1_F_SMIME_READ_ASN1",
-        "ASN1_F_SMIME_TEXT",
-        "ASN1_R_NO_CONTENT_TYPE",
-        "ASN1_R_NO_MULTIPART_BODY_FAILURE",
-        "ASN1_R_NO_MULTIPART_BOUNDARY",
-    ],
-    "Cryptography_HAS_098C_CAMELLIA_CODES": [
-        "EVP_F_CAMELLIA_INIT_KEY",
-        "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
-    ],
     "Cryptography_HAS_EC_CODES": [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
-    ],
-    "Cryptography_HAS_TLSEXT_ERROR_CODES": [
-        "SSL_TLSEXT_ERR_OK",
-        "SSL_TLSEXT_ERR_ALERT_WARNING",
-        "SSL_TLSEXT_ERR_ALERT_FATAL",
-        "SSL_TLSEXT_ERR_NOACK",
     ],
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
@@ -218,40 +190,10 @@ CONDITIONAL_NAMES = {
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
     ],
-    "Cryptography_HAS_PBKDF2_HMAC": [
-        "PKCS5_PBKDF2_HMAC"
-    ],
-    "Cryptography_HAS_PKEY_CTX": [
-        "EVP_PKEY_CTX_new",
-        "EVP_PKEY_CTX_new_id",
-        "EVP_PKEY_CTX_dup",
-        "EVP_PKEY_CTX_free",
-        "EVP_PKEY_sign",
-        "EVP_PKEY_sign_init",
-        "EVP_PKEY_verify",
-        "EVP_PKEY_verify_init",
-        "Cryptography_EVP_PKEY_encrypt",
-        "EVP_PKEY_encrypt_init",
-        "Cryptography_EVP_PKEY_decrypt",
-        "EVP_PKEY_decrypt_init",
-        "EVP_PKEY_CTX_set_signature_md",
-        "EVP_PKEY_id",
-        "EVP_PKEY_CTX_set_rsa_padding",
-        "EVP_PKEY_CTX_set_rsa_pss_saltlen",
-    ],
-    "Cryptography_HAS_ECDSA_SHA2_NIDS": [
-        "NID_ecdsa_with_SHA224",
-        "NID_ecdsa_with_SHA256",
-        "NID_ecdsa_with_SHA384",
-        "NID_ecdsa_with_SHA512",
-    ],
     "Cryptography_HAS_EGD": [
         "RAND_egd",
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
-    ],
-    "Cryptography_HAS_PSS_PADDING": [
-        "RSA_PKCS1_PSS_PADDING",
     ],
     "Cryptography_HAS_MGF1_MD": [
         "EVP_PKEY_CTX_set_rsa_mgf1_md",
@@ -279,26 +221,6 @@ CONDITIONAL_NAMES = {
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_TLSEXT_HOSTNAME": [
-        "SSL_set_tlsext_host_name",
-        "SSL_get_servername",
-        "SSL_CTX_set_tlsext_servername_callback",
-    ],
-
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
-        "SSL_CTX_set_tlsext_status_cb",
-        "SSL_CTX_set_tlsext_status_arg"
-    ],
-
-    "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
-        "SSL_set_tlsext_status_ocsp_resp",
-        "SSL_get_tlsext_status_ocsp_resp",
-    ],
-
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": [
-        "SSL_set_tlsext_status_type",
-    ],
-
     "Cryptography_HAS_RELEASE_BUFFERS": [
         "SSL_MODE_RELEASE_BUFFERS",
     ],
@@ -315,11 +237,6 @@ CONDITIONAL_NAMES = {
         "SSL_OP_NO_TICKET",
     ],
 
-    "Cryptography_HAS_SSL_SET_SSL_CTX": [
-        "SSL_set_SSL_CTX",
-        "TLSEXT_NAMETYPE_host_name",
-    ],
-
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
     ],
@@ -329,12 +246,6 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_next_proto_select_cb",
         "SSL_select_next_proto",
         "SSL_get0_next_proto_negotiated",
-    ],
-
-    "Cryptography_HAS_SECURE_RENEGOTIATION": [
-        "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
-        "SSL_OP_LEGACY_SERVER_CONNECT",
-        "SSL_get_secure_renegotiation_support",
     ],
 
     "Cryptography_HAS_ALPN": [
@@ -354,12 +265,6 @@ CONDITIONAL_NAMES = {
         "SSL_get_server_tmp_key",
     ],
 
-    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
-        "SSL_CTX_set_client_cert_engine",
-    ],
-    "Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS": [
-        "SSL_CTX_clear_options",
-    ],
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
@@ -387,26 +292,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": [
         "X509_V_FLAG_PARTIAL_CHAIN",
     ],
-    "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": [
-        'X509_V_ERR_DIFFERENT_CRL_SCOPE',
-        'X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE',
-        'X509_V_ERR_UNNESTED_RESOURCE',
-        'X509_V_ERR_PERMITTED_VIOLATION',
-        'X509_V_ERR_EXCLUDED_VIOLATION',
-        'X509_V_ERR_SUBTREE_MINMAX',
-        'X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE',
-        'X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX',
-        'X509_V_ERR_UNSUPPORTED_NAME_SYNTAX',
-        'X509_V_ERR_CRL_PATH_VALIDATION_ERROR',
-    ],
-    "Cryptography_HAS_100_VERIFICATION_PARAMS": [
-        "Cryptography_HAS_100_VERIFICATION_PARAMS",
-        "X509_V_FLAG_EXTENDED_CRL_SUPPORT",
-        "X509_V_FLAG_USE_DELTAS",
-    ],
-    "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": [
-        "X509_V_FLAG_CHECK_SS_SIGNATURE",
-    ],
     "Cryptography_HAS_SET_CERT_CB": [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
@@ -430,5 +315,11 @@ CONDITIONAL_NAMES = {
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
         "CRYPTO_lock",
-    ]
+    ],
+    "Cryptography_HAS_SCRYPT": [
+        "EVP_PBE_scrypt",
+    ],
+    "Cryptography_HAS_NPN_NEGOTIATED": [
+        "OPENSSL_NPN_NEGOTIATED",
+    ],
 }

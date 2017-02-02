@@ -6,8 +6,7 @@ OpenSSL binding
 .. currentmodule:: cryptography.hazmat.bindings.openssl.binding
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library. Cryptography supports
-version ``0.9.8e`` (present in Red Hat Enterprise Linux 5) and greater. Earlier
-versions may work but are **not tested or supported**.
+OpenSSL version ``1.0.0`` and greater.
 
 .. class:: cryptography.hazmat.bindings.openssl.binding.Binding()
 
@@ -44,6 +43,6 @@ lower performance in some situations. In particular parallelism is reduced
 because it has to acquire the GIL whenever any lock operations occur within
 OpenSSL.
 
-.. _`CFFI`: https://cffi.readthedocs.org/
+.. _`CFFI`: https://cffi.readthedocs.io
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`thread safety facilities`: https://www.openssl.org/docs/manmaster/crypto/threads.html
+.. _`thread safety facilities`: https://www.openssl.org/docs/man1.0.2/crypto/threads.html

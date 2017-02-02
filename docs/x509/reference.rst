@@ -120,6 +120,14 @@ Loading Certificates
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+        >>> cert.serial_number
+        2
+
 .. function:: load_der_x509_certificate(data, backend)
 
     .. versionadded:: 0.7
@@ -135,14 +143,6 @@ Loading Certificates
         interface.
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-    >>> cert.serial
-    2
 
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,6 +164,15 @@ Loading Certificate Revocation Lists
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+        >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        True
+
 .. function:: load_der_x509_crl(data, backend)
 
     .. versionadded:: 1.1
@@ -179,15 +188,6 @@ Loading Certificate Revocation Lists
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
-    >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
-    True
 
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,6 +210,15 @@ Loading Certificate Signing Requests
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+        True
+
 .. function:: load_der_x509_csr(data, backend)
 
     .. versionadded:: 0.9
@@ -225,15 +234,6 @@ Loading Certificate Signing Requests
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
-    >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
-    True
 
 X.509 Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -273,7 +273,7 @@ X.509 Certificate Object
             >>> cert.fingerprint(hashes.SHA256())
             '\x86\xd2\x187Gc\xfc\xe7}[+E9\x8d\xb4\x8f\x10\xe5S\xda\x18u\xbe}a\x03\x08[\xac\xa04?'
 
-    .. attribute:: serial
+    .. attribute:: serial_number
 
         :type: int
 
@@ -281,7 +281,7 @@ X.509 Certificate Object
 
         .. doctest::
 
-            >>> cert.serial
+            >>> cert.serial_number
             2
 
     .. method:: public_key()
@@ -353,6 +353,22 @@ X.509 Certificate Object
             >>> from cryptography.hazmat.primitives import hashes
             >>> isinstance(cert.signature_hash_algorithm, hashes.SHA256)
             True
+
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the certificate. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+
+        .. doctest::
+
+            >>> cert.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
 
     .. attribute:: extensions
 
@@ -464,6 +480,21 @@ X.509 CRL (Certificate Revocation List) Object
             >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
             True
 
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the CRL. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+        .. doctest::
+
+            >>> crl.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
+
     .. attribute:: issuer
 
         :type: :class:`Name`
@@ -551,7 +582,6 @@ X.509 Certificate Builder
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.x509.oid import NameOID
         >>> import datetime
-        >>> import uuid
         >>> one_day = datetime.timedelta(1, 0, 0)
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
@@ -568,7 +598,7 @@ X.509 Certificate Builder
         ... ]))
         >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
         >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
-        >>> builder = builder.serial_number(int(uuid.uuid4()))
+        >>> builder = builder.serial_number(x509.random_serial_number())
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
@@ -606,15 +636,17 @@ X.509 Certificate Builder
     .. method:: serial_number(serial_number)
 
         Sets the certificate's serial number (an integer).  The CA's policy
-        determines how it attributes serial numbers to certificates.  The only
-        requirement is that this number uniquely identify the certificate given
-        the issuer.
+        determines how it attributes serial numbers to certificates. This
+        number must uniquely identify the certificate given the issuer.
+        `CABForum Guidelines`_ require entropy in the serial number
+        to provide protection against hash collision attacks. For more
+        information on secure random number generation, see
+        :doc:`/random-numbers`.
 
         :param serial_number: Integer number that will be used by the CA to
             identify this certificate (most notably during certificate
-            revocation checking). Users are encouraged to use a method of
-            generating 20 bytes of entropy, e.g., UUID4. For more information
-            on secure random number generation, see :doc:`/random-numbers`.
+            revocation checking). Users should consider using
+            :func:`~cryptography.x509.random_serial_number` when possible.
 
     .. method:: not_valid_before(time)
 
@@ -710,6 +742,21 @@ X.509 CSR (Certificate Signing Request) Object
             >>> from cryptography.hazmat.primitives import hashes
             >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
             True
+
+    .. attribute:: signature_algorithm_oid
+
+        .. versionadded:: 1.6
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the signature algorithm used
+        to sign the request. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+        .. doctest::
+
+            >>> csr.signature_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.5, name=sha1WithRSAEncryption)>
 
     .. attribute:: extensions
 
@@ -1055,6 +1102,18 @@ X.509 CSR (Certificate Signing Request) Builder Object
     slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
     ``CN=mydomain.com, O=My Org, C=US``).
 
+    Technically, a Name is a list of *sets* of attributes, called *Relative
+    Distinguished Names* or *RDNs*, although multi-valued RDNs are rarely
+    encountered.  The iteration order of values within a multi-valued RDN is
+    undefined.  If you need to handle multi-valued RDNs, the ``rdns`` property
+    gives access to an ordered list of :class:`RelativeDistinguishedName`
+    objects.
+
+    A Name can be initialized with an iterable of :class:`NameAttribute` (the
+    common case where each RDN has a single attribute) or an iterable of
+    :class:`RelativeDistinguishedName` objects (in the rare case of
+    multi-valued RDNs).
+
     .. doctest::
 
         >>> len(cert.subject)
@@ -1064,6 +1123,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
         <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
+
+    .. attribute:: rdns
+
+        .. versionadded:: 1.6
+
+        :type: list of :class:`RelativeDistinguishedName`
 
     .. method:: get_attributes_for_oid(oid)
 
@@ -1076,6 +1141,16 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
+
+    .. method:: public_bytes(backend)
+
+        .. versionadded:: 1.6
+
+        :param backend: A backend supporting the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :return bytes: The DER encoded name.
 
 .. class:: Version
 
@@ -1095,7 +1170,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. versionadded:: 0.8
 
-    An X.509 name consists of a list of NameAttribute instances.
+    An X.509 name consists of a list of :class:`RelativeDistinguishedName`
+    instances, which consist of a set of :class:`NameAttribute` instances.
 
     .. attribute:: oid
 
@@ -1108,6 +1184,22 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :type: :term:`text`
 
         The value of the attribute.
+
+
+.. class:: RelativeDistinguishedName(attributes)
+
+    .. versionadded:: 1.6
+
+    A relative distinguished name is a non-empty set of name attributes.  The
+    object is iterable to get every attribute.
+
+    .. method:: get_attributes_for_oid(oid)
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: A list of :class:`NameAttribute` instances that match the OID
+            provided.  The list should contain zero or one values.
+
 
 .. class:: ObjectIdentifier
 
@@ -1675,7 +1767,7 @@ X.509 Extensions
 
     .. method:: get_values_for_type(type)
 
-        :param type: A :class:`GeneralName` provider. This is one of the
+        :param type: A :class:`GeneralName` instance. This is one of the
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.
@@ -1716,7 +1808,7 @@ X.509 Extensions
 
     .. method:: get_values_for_type(type)
 
-        :param type: A :class:`GeneralName` provider. This is one of the
+        :param type: A :class:`GeneralName` instance. This is one of the
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.
@@ -1804,11 +1896,14 @@ X.509 Extensions
 
     .. attribute:: relative_name
 
-        :type: :class:`Name` or None
+        :type: :class:`RelativeDistinguishedName` or None
 
         This field describes methods to retrieve the CRL relative to the CRL
         issuer. At most one of ``full_name`` or ``relative_name`` will be
         non-None.
+
+        .. versionchanged:: 1.6
+            Changed from :class:`Name` to :class:`RelativeDistinguishedName`.
 
     .. attribute:: crl_issuer
 
@@ -2185,6 +2280,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.8"``.
 
+    .. attribute:: STREET_ADDRESS
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.9"``.
+
     .. attribute:: ORGANIZATION_NAME
 
         Corresponds to the dotted string ``"2.5.4.10"``.
@@ -2197,7 +2298,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.5"``. This is distinct from
         the serial number of the certificate itself (which can be obtained with
-        :func:`~cryptography.x509.Certificate.serial`).
+        :func:`~cryptography.x509.Certificate.serial_number`).
 
     .. attribute:: SURNAME
 
@@ -2215,6 +2316,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.44"``.
 
+    .. attribute:: X500_UNIQUE_IDENTIFIER
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.45"``.
+
     .. attribute:: DN_QUALIFIER
 
         Corresponds to the dotted string ``"2.5.4.46"``. This specifies
@@ -2224,6 +2331,12 @@ instances. The following common OIDs are available as constants.
     .. attribute:: PSEUDONYM
 
         Corresponds to the dotted string ``"2.5.4.65"``.
+
+    .. attribute:: USER_ID
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"0.9.2342.19200300.100.1.1"``.
 
     .. attribute:: DOMAIN_COMPONENT
 
@@ -2249,6 +2362,18 @@ instances. The following common OIDs are available as constants.
     .. attribute:: BUSINESS_CATEGORY
 
         Corresponds to the dotted string ``"2.5.4.15"``.
+
+    .. attribute:: POSTAL_ADDRESS
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.16"``.
+
+    .. attribute:: POSTAL_CODE
+
+        .. versionadded:: 1.6
+
+        Corresponds to the dotted string ``"2.5.4.17"``.
 
 
 .. class:: SignatureAlgorithmOID
@@ -2496,6 +2621,17 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.29.24"``.
 
+Helper Functions
+~~~~~~~~~~~~~~~~
+.. currentmodule:: cryptography.x509
+
+.. function:: random_serial_number()
+
+    .. versionadded:: 1.6
+
+    Generates a random serial number suitable for use when constructing
+    certificates.
+
 Exceptions
 ~~~~~~~~~~
 .. currentmodule:: cryptography.x509
@@ -2558,3 +2694,4 @@ Exceptions
 
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
+.. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/

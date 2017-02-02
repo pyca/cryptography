@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+import six
+
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
@@ -99,6 +101,20 @@ class TestPKCS7(object):
             unpadder.update(b"")
         with pytest.raises(AlreadyFinalized):
             unpadder.finalize()
+
+    def test_large_padding(self):
+        padder = padding.PKCS7(2040).padder()
+        padded_data = padder.update(b"")
+        padded_data += padder.finalize()
+
+        for i in six.iterbytes(padded_data):
+            assert i == 255
+
+        unpadder = padding.PKCS7(2040).unpadder()
+        data = unpadder.update(padded_data)
+        data += unpadder.finalize()
+
+        assert data == b""
 
 
 class TestANSIX923(object):

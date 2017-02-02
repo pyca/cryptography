@@ -15,6 +15,7 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
+typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
@@ -22,29 +23,14 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
+typedef ... Cryptography_STACK_OF_X509_OBJECT;
 
+typedef ... X509_OBJECT;
 typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
-
-typedef struct x509_store_ctx_st X509_STORE_CTX;
-struct x509_store_ctx_st {
-    X509_STORE *ctx;
-    int current_method;
-    X509 *cert;
-    Cryptography_STACK_OF_X509 *untrusted;
-    Cryptography_STACK_OF_X509_CRL *crls;
-    X509_VERIFY_PARAM *param;
-    void *other_ctx;
-    int (*verify)(X509_STORE_CTX *);
-    int (*verify_cb)(int, X509_STORE_CTX *);
-    int (*get_issuer)(X509 **, X509_STORE_CTX *, X509 *);
-    ...;
-};
+typedef ... X509_STORE_CTX;
 
 /* While these are defined in the source as ints, they're tagged here
    as longs, just in case they ever grow to large, such as what we saw
@@ -136,6 +122,9 @@ static const long X509_V_FLAG_SUITEB_128_LOS_ONLY;
 static const long X509_V_FLAG_SUITEB_192_LOS;
 static const long X509_V_FLAG_SUITEB_128_LOS;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
+
+static const long X509_LU_X509;
+static const long X509_LU_CRL;
 """
 
 FUNCTIONS = """
@@ -189,6 +178,7 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
                                     Cryptography_STACK_OF_ASN1_OBJECT *);
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
+void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
 """
 
 MACROS = """
@@ -209,11 +199,19 @@ int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const char *,
 int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
 int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
+
+int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
+X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
+X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
+Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
+X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
+int X509_OBJECT_get_type(const X509_OBJECT *);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
+/* OpenSSL 1.0.2beta2+ verification error codes */
+#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
+    !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
@@ -228,8 +226,9 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
-/* OpenSSL 1.0.2+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
+/* OpenSSL 1.0.2beta2+ verification parameters */
+#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
+    !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
@@ -266,36 +265,21 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
-/* OpenSSL 1.0.0+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 1;
-#else
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 0;
-static const long X509_V_ERR_DIFFERENT_CRL_SCOPE = 0;
-static const long X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 0;
-static const long X509_V_ERR_PERMITTED_VIOLATION = 0;
-static const long X509_V_ERR_EXCLUDED_VIOLATION = 0;
-static const long X509_V_ERR_SUBTREE_MINMAX = 0;
-static const long X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE = 0;
-static const long X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX = 0;
-static const long X509_V_ERR_UNSUPPORTED_NAME_SYNTAX = 0;
-static const long X509_V_ERR_CRL_PATH_VALIDATION_ERROR = 0;
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6 || defined(LIBRESSL_VERSION_NUMBER)
+Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
+    return ctx->objs;
+}
+X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *store) {
+    return store->param;
+}
+int X509_OBJECT_get_type(const X509_OBJECT *x) {
+    return x->type;
+}
 #endif
 
-/* OpenSSL 1.0.0+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
-#else
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 0;
-static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
-static const long X509_V_FLAG_USE_DELTAS = 0;
-#endif
-
-/* OpenSSL 0.9.8recent+ */
-#ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
-#else
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
-static const long X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
+    return x->data.x509;
+}
 #endif
 """

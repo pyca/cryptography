@@ -33,7 +33,7 @@ class _HMACContext(object):
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )
-            res = self._backend._lib.Cryptography_HMAC_Init_ex(
+            res = self._backend._lib.HMAC_Init_ex(
                 ctx, key, len(key), evp_md, self._backend._ffi.NULL
             )
             self._backend.openssl_assert(res != 0)
@@ -49,27 +49,21 @@ class _HMACContext(object):
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.Cryptography_HMAC_CTX_free
         )
-        res = self._backend._lib.Cryptography_HMAC_CTX_copy(
-            copied_ctx, self._ctx
-        )
+        res = self._backend._lib.HMAC_CTX_copy(copied_ctx, self._ctx)
         self._backend.openssl_assert(res != 0)
         return _HMACContext(
             self._backend, self._key, self.algorithm, ctx=copied_ctx
         )
 
     def update(self, data):
-        res = self._backend._lib.Cryptography_HMAC_Update(
-            self._ctx, data, len(data)
-        )
+        res = self._backend._lib.HMAC_Update(self._ctx, data, len(data))
         self._backend.openssl_assert(res != 0)
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self._backend._lib.EVP_MAX_MD_SIZE)
         outlen = self._backend._ffi.new("unsigned int *")
-        res = self._backend._lib.Cryptography_HMAC_Final(
-            self._ctx, buf, outlen
-        )
+        res = self._backend._lib.HMAC_Final(self._ctx, buf, outlen)
         self._backend.openssl_assert(res != 0)
         self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
         return self._backend._ffi.buffer(buf)[:outlen[0]]

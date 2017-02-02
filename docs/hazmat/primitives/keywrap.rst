@@ -24,7 +24,7 @@ protections offered by key wrapping are also offered by using authenticated
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-        provider that supports
+        instance that supports
         :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`.
 
     :return bytes: The wrapped key as bytes.
@@ -42,7 +42,7 @@ protections offered by key wrapping are also offered by using authenticated
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-        provider that supports
+        instance that supports
         :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`.
 
     :return bytes: The unwrapped key as bytes.

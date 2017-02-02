@@ -19,8 +19,11 @@ def _get_openssl_libraries(platform):
             os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
         )
     elif platform == "win32":
-        return ["libeay32", "ssleay32", "advapi32",
-                "crypt32", "gdi32", "user32", "ws2_32"]
+        if compiler_type() == "msvc":
+            libs = ["libeay32", "ssleay32"]
+        else:
+            libs = ["ssl", "crypto"]
+        return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
@@ -37,31 +40,20 @@ def _osx_libraries(build_static):
         return ["ssl", "crypto"]
 
 
-_PRE_INCLUDE = """
-#include <openssl/opensslv.h>
-/*
-    LibreSSL removed e_os2.h from the public headers so we'll only include it
-    if we're using vanilla OpenSSL.
-*/
-#if !defined(LIBRESSL_VERSION_NUMBER)
-#include <openssl/e_os2.h>
-#endif
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-"""
-
-
 ffi = build_ffi_for_binding(
     module_name="_openssl",
     module_prefix="_cffi_src.openssl.",
     modules=[
+        # This goes first so we can define some cryptography-wide symbols.
+        "cryptography",
+
         "aes",
         "asn1",
         "bignum",
         "bio",
         "cmac",
         "cms",
+        "conf",
         "crypto",
         "dh",
         "dsa",
@@ -76,6 +68,7 @@ ffi = build_ffi_for_binding(
         "objects",
         "ocsp",
         "opensslv",
+        "osrandom_engine",
         "pem",
         "pkcs12",
         "rand",
@@ -88,7 +81,6 @@ ffi = build_ffi_for_binding(
         "pkcs7",
         "callbacks",
     ],
-    pre_include=_PRE_INCLUDE,
     libraries=_get_openssl_libraries(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )

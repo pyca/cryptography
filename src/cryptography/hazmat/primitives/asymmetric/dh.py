@@ -11,6 +11,10 @@ import six
 from cryptography import utils
 
 
+def generate_parameters(generator, key_size, backend):
+    return backend.generate_dh_parameters(generator, key_size)
+
+
 class DHPrivateNumbers(object):
     def __init__(self, x, public_numbers):
         if not isinstance(x, six.integer_types):
@@ -34,6 +38,9 @@ class DHPrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def private_key(self, backend):
+        return backend.load_dh_private_numbers(self)
 
     public_numbers = utils.read_only_property("_public_numbers")
     x = utils.read_only_property("_x")
@@ -63,6 +70,9 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def public_key(self, backend):
+        return backend.load_dh_public_numbers(self)
+
     y = utils.read_only_property("_y")
     parameter_numbers = utils.read_only_property("_parameter_numbers")
 
@@ -74,6 +84,9 @@ class DHParameterNumbers(object):
             not isinstance(g, six.integer_types)
         ):
             raise TypeError("p and g must be integers")
+
+        if g not in (2, 5):
+            raise ValueError("DH generator must be 2 or 5")
 
         self._p = p
         self._g = g
@@ -89,6 +102,9 @@ class DHParameterNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def parameters(self, backend):
+        return backend.load_dh_parameter_numbers(self)
 
     p = utils.read_only_property("_p")
     g = utils.read_only_property("_g")
@@ -139,6 +155,13 @@ class DHPrivateKeyWithSerialization(DHPrivateKey):
     def private_numbers(self):
         """
         Returns a DHPrivateNumbers.
+        """
+
+    @abc.abstractmethod
+    def exchange(self, peer_public_key):
+        """
+        Given peer's DHPublicKey, carry out the key exchange and
+        return shared key as bytes.
         """
 
 

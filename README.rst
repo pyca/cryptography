@@ -39,6 +39,14 @@ key derivation functions. For example, to encrypt something with
 
 You can find more information in the `documentation`_.
 
+You can install ``cryptography`` with:
+
+.. code-block:: console
+
+    $ pip install cryptography
+
+For full details see `the installation documentation`_.
+
 Discussion
 ~~~~~~~~~~
 
@@ -51,5 +59,6 @@ involved.
 
 
 .. _`documentation`: https://cryptography.io/
+.. _`the installation documentation`: https://cryptography.io/en/latest/installation/
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
