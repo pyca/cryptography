@@ -155,15 +155,25 @@ class TestDH(object):
                                                int(vector["g"], 16),
                                                int(vector["q"], 16))
 
-    def test_convert_to_numbers(self, backend):
-        parameters = backend.generate_dh_private_key_and_parameters(2, 512)
+    @pytest.mark.parametrize("with_q", [False, True])
+    def test_convert_to_numbers(self, backend, with_q):
+        if with_q:
+            vector = load_vectors_from_file(
+                os.path.join("asymmetric", "DH", "RFC5114.txt"),
+                load_nist_vectors)[0]
+            p = int(vector["p"], 16)
+            g = int(vector["g"], 16)
+            q = int(vector["q"], 16)
+        else:
+            parameters = backend.generate_dh_private_key_and_parameters(2, 512)
 
-        private = parameters.private_numbers()
+            private = parameters.private_numbers()
 
-        p = private.public_numbers.parameter_numbers.p
-        g = private.public_numbers.parameter_numbers.g
+            p = private.public_numbers.parameter_numbers.p
+            g = private.public_numbers.parameter_numbers.g
+            q = None
 
-        params = dh.DHParameterNumbers(p, g)
+        params = dh.DHParameterNumbers(p, g, q)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 
@@ -186,11 +196,22 @@ class TestDH(object):
         with pytest.raises(ValueError):
             private.private_key(backend)
 
-    def test_generate_dh(self, backend):
-        generator = 2
-        key_size = 512
+    @pytest.mark.parametrize("with_q", [False, True])
+    def test_generate_dh(self, backend, with_q):
+        if with_q:
+            vector = load_vectors_from_file(
+                os.path.join("asymmetric", "DH", "RFC5114.txt"),
+                load_nist_vectors)[0]
+            p = int(vector["p"], 16)
+            g = int(vector["g"], 16)
+            q = int(vector["q"], 16)
+            parameters = dh.DHParameterNumbers(p, g, q).parameters(backend)
+            key_size = 1024
+        else:
+            generator = 2
+            key_size = 512
 
-        parameters = dh.generate_parameters(generator, key_size, backend)
+            parameters = dh.generate_parameters(generator, key_size, backend)
         assert isinstance(parameters, dh.DHParameters)
 
         key = parameters.generate_private_key()
