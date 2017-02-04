@@ -296,6 +296,32 @@ class TestDH(object):
 class TestDHPrivateKeySerialization(object):
 
     @pytest.mark.parametrize(
+        ("encoding", "loader_func"),
+        [
+            [
+                serialization.Encoding.PEM,
+                serialization.load_pem_private_key
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.load_der_private_key
+            ],
+        ]
+    )
+    def test_private_bytes_unencrypted(self, backend, encoding,
+                                       loader_func):
+        parameters = dh.generate_parameters(2, 512, backend)
+        key = parameters.generate_private_key()
+        serialized = key.private_bytes(
+            encoding, serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption()
+        )
+        loaded_key = loader_func(serialized, None, backend)
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [
             (
@@ -309,8 +335,33 @@ class TestDHPrivateKeySerialization(object):
             )
         ]
     )
+    def test_private_bytes_match(self, key_path, loader_func,
+                                 encoding, backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        key = loader_func(key_bytes, None, backend)
+        serialized = key.private_bytes(
+            encoding, serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption()
+        )
+        assert serialized == key_bytes
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhkey.pem"),
+                serialization.load_pem_private_key,
+            ), (
+                os.path.join("asymmetric", "DH", "dhkey.der"),
+                serialization.load_der_private_key,
+            )
+        ]
+    )
     def test_private_bytes_values(self, key_path, loader_func,
-                                  encoding, backend):
+                                  backend):
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -326,11 +377,6 @@ class TestDHPrivateKeySerialization(object):
             vec["g"])
         assert private_numbers.public_numbers.parameter_numbers.p == int(
             vec["p"], 16)
-        serialized = key.private_bytes(
-            encoding, serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption()
-        )
-        assert serialized == key_bytes
 
     def test_private_bytes_traditional_openssl_invalid(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
@@ -388,6 +434,31 @@ class TestDHPrivateKeySerialization(object):
 class TestDHPublicKeySerialization(object):
 
     @pytest.mark.parametrize(
+        ("encoding", "loader_func"),
+        [
+            [
+                serialization.Encoding.PEM,
+                serialization.load_pem_public_key
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.load_der_public_key
+            ],
+        ]
+    )
+    def test_public_bytes(self, backend, encoding,
+                          loader_func):
+        parameters = dh.generate_parameters(2, 512, backend)
+        key = parameters.generate_private_key().public_key()
+        serialized = key.public_bytes(
+            encoding, serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        loaded_key = loader_func(serialized, backend)
+        loaded_pub_num = loaded_key.public_numbers()
+        pub_num = key.public_numbers()
+        assert loaded_pub_num == pub_num
+
+    @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [
             (
@@ -401,8 +472,33 @@ class TestDHPublicKeySerialization(object):
             )
         ]
     )
+    def test_public_bytes_match(self, key_path, loader_func,
+                                encoding, backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        pub_key = loader_func(key_bytes, backend)
+        serialized = pub_key.public_bytes(
+            encoding,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert serialized == key_bytes
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhpub.pem"),
+                serialization.load_pem_public_key,
+            ), (
+                os.path.join("asymmetric", "DH", "dhpub.der"),
+                serialization.load_der_public_key,
+            )
+        ]
+    )
     def test_public_bytes_values(self, key_path, loader_func,
-                                 encoding, backend):
+                                 backend):
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -415,11 +511,6 @@ class TestDHPublicKeySerialization(object):
         assert public_numbers.y == int(vec["y"], 16)
         assert public_numbers.parameter_numbers.g == int(vec["g"])
         assert public_numbers.parameter_numbers.p == int(vec["p"], 16)
-        serialized = pub_key.public_bytes(
-            encoding,
-            serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-        assert serialized == key_bytes
 
     def test_public_bytes_invalid_encoding(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
