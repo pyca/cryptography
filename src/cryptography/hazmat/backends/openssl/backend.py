@@ -522,6 +522,11 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+        elif key_type == self._lib.EVP_PKEY_DH:
+            dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
+            self.openssl_assert(dh_cdata != self._ffi.NULL)
+            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+            return _DHPrivateKey(self, dh_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -549,6 +554,11 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+        elif key_type == self._lib.EVP_PKEY_DH:
+            dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
+            self.openssl_assert(dh_cdata != self._ffi.NULL)
+            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+            return _DHPublicKey(self, dh_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -1730,6 +1740,12 @@ class Backend(object):
 
         return _DHParameters(self, dh_param_cdata)
 
+    def _dh_cdata_to_evp_pkey(self, dh_cdata):
+        evp_pkey = self._create_evp_pkey_gc()
+        res = self._lib.EVP_PKEY_set1_DH(evp_pkey, dh_cdata)
+        self.openssl_assert(res == 1)
+        return evp_pkey
+
     def generate_dh_private_key(self, parameters):
         dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
         self.openssl_assert(dh_key_cdata != self._ffi.NULL)
@@ -1738,7 +1754,9 @@ class Backend(object):
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)
 
-        return _DHPrivateKey(self, dh_key_cdata)
+        evp_pkey = self._dh_cdata_to_evp_pkey(dh_key_cdata)
+
+        return _DHPrivateKey(self, dh_key_cdata, evp_pkey)
 
     def generate_dh_private_key_and_parameters(self, generator, key_size):
         return self.generate_dh_private_key(
@@ -1769,7 +1787,9 @@ class Backend(object):
         if codes[0] != 0:
             raise ValueError("DH private numbers did not pass safety checks.")
 
-        return _DHPrivateKey(self, dh_cdata)
+        evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
+
+        return _DHPrivateKey(self, dh_cdata, evp_pkey)
 
     def load_dh_public_numbers(self, numbers):
         dh_cdata = self._lib.DH_new()
@@ -1788,7 +1808,9 @@ class Backend(object):
         res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
         self.openssl_assert(res == 1)
 
-        return _DHPublicKey(self, dh_cdata)
+        evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
+
+        return _DHPublicKey(self, dh_cdata, evp_pkey)
 
     def load_dh_parameter_numbers(self, numbers):
         dh_cdata = self._lib.DH_new()

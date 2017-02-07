@@ -98,6 +98,19 @@ Key exchange
   Diffie-Hellman vector pairs that were generated using OpenSSL
   DH_generate_parameters_ex and DH_generate_key.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/dhp.pem``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey.pem`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub.pem`` contains
+  Diffie-Hellman parameters and key respectively. The keys were
+  generated using OpenSSL following `DHKE`_ guide.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey.txt`` contains
+  all parameter in text.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhp.der``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey.der`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub.der`` contains
+  are the above parameters and keys in DER format.
+
+
 X.509
 ~~~~~
 
@@ -471,3 +484,4 @@ header format (substituting the correct information):
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
 .. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966
 .. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec
+.. _`DHKE`: https://sandilands.info/sgordon/diffie-hellman-secret-key-exchange-with-openssl

@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
@@ -64,9 +65,10 @@ def _get_dh_num_bits(backend, dh_cdata):
 
 @utils.register_interface(dh.DHPrivateKeyWithSerialization)
 class _DHPrivateKey(object):
-    def __init__(self, backend, dh_cdata):
+    def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
+        self._evp_pkey = evp_pkey
         self._key_size_bytes = self._backend._lib.DH_size(dh_cdata)
 
     @property
@@ -141,18 +143,32 @@ class _DHPrivateKey(object):
                                              pub_key_dup,
                                              self._backend._ffi.NULL)
         self._backend.openssl_assert(res == 1)
-
-        return _DHPublicKey(self._backend, dh_cdata)
+        evp_pkey = self._backend._dh_cdata_to_evp_pkey(dh_cdata)
+        return _DHPublicKey(self._backend, dh_cdata, evp_pkey)
 
     def parameters(self):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        if format is not serialization.PrivateFormat.PKCS8:
+            raise ValueError(
+                "DH private keys support only PKCS8 serialization"
+            )
+        return self._backend._private_key_bytes(
+            encoding,
+            format,
+            encryption_algorithm,
+            self._evp_pkey,
+            self._dh_cdata
+        )
+
 
 @utils.register_interface(dh.DHPublicKeyWithSerialization)
 class _DHPublicKey(object):
-    def __init__(self, backend, dh_cdata):
+    def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
+        self._evp_pkey = evp_pkey
         self._key_size_bits = _get_dh_num_bits(self._backend, self._dh_cdata)
 
     @property
@@ -180,3 +196,18 @@ class _DHPublicKey(object):
 
     def parameters(self):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
+
+    def public_bytes(self, encoding, format):
+        if format is not serialization.PublicFormat.SubjectPublicKeyInfo:
+            raise ValueError(
+                "DH public keys support only "
+                "SubjectPublicKeyInfo serialization"
+            )
+
+        return self._backend._public_key_bytes(
+            encoding,
+            format,
+            self,
+            self._evp_pkey,
+            None
+        )
