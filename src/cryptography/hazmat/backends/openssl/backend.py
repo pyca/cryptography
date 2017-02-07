@@ -23,7 +23,8 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
-    _DHParameters, _DHPrivateKey, _DHPublicKey
+    _DHParameters, _DHPrivateKey, _DHPublicKey,
+    _dh_params_dup
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey
@@ -1731,9 +1732,7 @@ class Backend(object):
         return _DHParameters(self, dh_param_cdata)
 
     def generate_dh_private_key(self, parameters):
-        dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
-        self.openssl_assert(dh_key_cdata != self._ffi.NULL)
-        dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
+        dh_key_cdata = _dh_params_dup(parameters._dh_cdata, self)
 
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)

@@ -8,14 +8,26 @@ from cryptography import utils
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
-def _dh_cdata_to_parameters(dh_cdata, backend):
+def _dh_params_dup(dh_cdata, backend):
     lib = backend._lib
     ffi = backend._ffi
 
     param_cdata = lib.DHparams_dup(dh_cdata)
     backend.openssl_assert(param_cdata != ffi.NULL)
     param_cdata = ffi.gc(param_cdata, lib.DH_free)
+    if lib.OPENSSL_VERSION_NUMBER < 0x10002000:
+        # In OpenSSL versions < 1.0.2 DHparams_dup don't copy q
+        q = ffi.new("BIGNUM **")
+        lib.DH_get0_pqg(dh_cdata, ffi.NULL, q, ffi.NULL)
+        q_dup = lib.BN_dup(q[0])
+        res = lib.DH_set0_pqg(param_cdata, ffi.NULL, q_dup, ffi.NULL)
+        backend.openssl_assert(res == 1)
 
+    return param_cdata
+
+
+def _dh_cdata_to_parameters(dh_cdata, backend):
+    param_cdata = _dh_params_dup(dh_cdata, backend)
     return _DHParameters(backend, param_cdata)
 
 
@@ -134,12 +146,7 @@ class _DHPrivateKey(object):
             return key
 
     def public_key(self):
-        dh_cdata = self._backend._lib.DHparams_dup(self._dh_cdata)
-        self._backend.openssl_assert(dh_cdata != self._backend._ffi.NULL)
-        dh_cdata = self._backend._ffi.gc(
-            dh_cdata, self._backend._lib.DH_free
-        )
-
+        dh_cdata = _dh_params_dup(self._dh_cdata, self._backend)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata,
                                        pub_key, self._backend._ffi.NULL)
