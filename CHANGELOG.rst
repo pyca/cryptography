@@ -9,7 +9,7 @@ Changelog
 * Added support for Python 3.6.
 * Changed ASN.1 dependency from ``pyasn1`` to ``asn1crypto`` resulting in a
   general performance increase when encoding/decoding ASN.1 structures. Also,
-  the pyasn1_modules test dependency is no longer required.
+  the ``pyasn1_modules`` test dependency is no longer required.
 
 1.7.1 - 2016-12-13
 ~~~~~~~~~~~~~~~~~~
