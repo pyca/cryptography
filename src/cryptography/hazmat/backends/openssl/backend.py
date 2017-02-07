@@ -1124,7 +1124,7 @@ class Backend(object):
         if password is not None and not isinstance(password, bytes):
             raise TypeError("Password must be bytes")
 
-        userdata = self._ffi.new("CRYPTOGRAPHY_ST_PW_CB *")
+        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_CB_ST *")
         if password is not None:
             password_buf = self._ffi.new("char []", password)
             userdata.password = password_buf
@@ -1133,7 +1133,7 @@ class Backend(object):
         evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
-            self._ffi.addressof(_lib, "_cryptography_pem_password_cb"),
+            self._ffi.addressof(_lib, "Cryptography_pem_password_cb"),
             userdata,
         )
 
@@ -1141,15 +1141,16 @@ class Backend(object):
             if userdata.error != 0:
                 errors = self._consume_errors()
                 self.openssl_assert(errors)
-                raise {
-                    -1: TypeError(
+                if userdata.error == -1:
+                    raise TypeError(
                         "Password was not given but private key is encrypted"
-                    ),
-                    -2: ValueError(
+                    )
+                else:
+                    assert userdata.error == -2
+                    raise ValueError(
                         "Passwords longer than {0} bytes are not supported "
                         "by this backend.".format(userdata.maxsize - 1)
-                    ),
-                }[userdata.error]
+                    )
             else:
                 self._handle_key_loading_error()
 

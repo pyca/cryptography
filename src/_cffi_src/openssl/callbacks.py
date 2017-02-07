@@ -20,12 +20,12 @@ typedef struct {
     int called;
     int error;
     int maxsize;
-} CRYPTOGRAPHY_ST_PW_CB;
+} CRYPTOGRAPHY_PASSWORD_CB_ST;
 """
 
 FUNCTIONS = """
 int _setup_ssl_threads(void);
-int _cryptography_pem_password_cb(char *, int, int, void *);
+int Cryptography_pem_password_cb(char *, int, int, void *);
 """
 
 MACROS = """
@@ -102,13 +102,13 @@ typedef struct {
     int called;
     int error;
     int maxsize;
-} CRYPTOGRAPHY_ST_PW_CB;
+} CRYPTOGRAPHY_PASSWORD_CB_ST;
 
-int _cryptography_pem_password_cb(char *buf, int size,
+int Cryptography_pem_password_cb(char *buf, int size,
                                   int rwflag, void *userdata) {
     /* The password cb is only invoked if OpenSSL decides the private
        key is encrypted. So this path only occurs if it needs a password */
-    CRYPTOGRAPHY_ST_PW_CB *st = (CRYPTOGRAPHY_ST_PW_CB *)userdata;
+    CRYPTOGRAPHY_PASSWORD_CB_ST *st = (CRYPTOGRAPHY_PASSWORD_CB_ST *)userdata;
     st->called += 1;
     st->maxsize = size;
     if (st->length == 0) {
