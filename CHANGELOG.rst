@@ -8,6 +8,16 @@ Changelog
 
 * Added support for Python 3.6.
 
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.private_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`.
+
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization.public_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`.
+
 1.7.2 - 2017-01-27
 ~~~~~~~~~~~~~~~~~~
 
