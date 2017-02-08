@@ -78,6 +78,26 @@ class TestDERSerialization(object):
         _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["DER_Serialization", "enc-rsa-pkcs8.der"],
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_password_not_bytes(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = u"this password is not bytes"
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_private_key(
+                    derfile.read(), password, backend
+                ),
+                mode="rb"
+            )
+
+    @pytest.mark.parametrize(
         ("key_path", "password"),
         [
             (["DER_Serialization", "ec_private_key.der"], None),
@@ -483,6 +503,25 @@ class TestPEMSerialization(object):
     def test_unused_password(self, key_path, backend):
         key_file = os.path.join("asymmetric", *key_path)
         password = b"this password will not be used"
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda pemfile: load_pem_private_key(
+                    pemfile.read().encode(), password, backend
+                )
+            )
+
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+            ["PKCS8", "enc-rsa-pkcs8.pem"]
+        ]
+    )
+    def test_password_not_bytes(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = u"this password is not bytes"
 
         with pytest.raises(TypeError):
             load_vectors_from_file(

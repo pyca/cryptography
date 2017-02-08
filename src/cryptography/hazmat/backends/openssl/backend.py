@@ -66,6 +66,8 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 class _PasswordUserdata(object):
     def __init__(self, password):
+        if password is not None and not isinstance(password, bytes):
+            raise TypeError("Password must be bytes")
         self.password = password
         self.called = 0
         self.exception = None
