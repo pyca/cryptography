@@ -15,11 +15,15 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`.
-
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`.
+* :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
+  now require that ``password`` must be bytes if provided. Previously this
+  was documented but not enforced.
 
 1.7.2 - 2017-01-27
 ~~~~~~~~~~~~~~~~~~
