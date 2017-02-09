@@ -19,20 +19,16 @@ def _get_openssl_libraries(platform):
             os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
         )
     elif platform == "win32":
-        # A space separated list of libraries to link against. With MSVC this
-        # needs to be the full name of the lib, e.g. libcrypto, not crypto
-        lib_names = os.environ.get("CRYPTOGRAPHY_WINDOWS_LIBRARIES", None)
-        if lib_names is not None:
-            libs = lib_names.split(" ")
+        windows_link_openssl110 = os.environ.get(
+            "CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110", None
+        )
+        if compiler_type() == "msvc" and windows_link_openssl110 is None:
+            # These lib names are only accurate for OpenSSL < 1.1.0
+            # If linking against 1.1.0+ you'll need to use the
+            # CRYPTOGRAPHY_WINDOWS_LIBRARIES environment variable
+            libs = ["libeay32", "ssleay32"]
         else:
-            # Preserve the behavior of cryptography releases < 1.8
-            if compiler_type() == "msvc":
-                # These lib names are only accurate for OpenSSL < 1.1.0
-                # If linking against 1.1.0+ you'll need to use the
-                # CRYPTOGRAPHY_WINDOWS_LIBRARIES environment variable
-                libs = ["libeay32", "ssleay32"]
-            else:
-                libs = ["ssl", "crypto"]
+            libs = ["ssl", "crypto"]
         return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
         # In some circumstances, the order in which these libs are
