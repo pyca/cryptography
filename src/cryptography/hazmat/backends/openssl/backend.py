@@ -1124,7 +1124,7 @@ class Backend(object):
         if password is not None and not isinstance(password, bytes):
             raise TypeError("Password must be bytes")
 
-        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_CB_ST *")
+        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         if password is not None:
             password_buf = self._ffi.new("char []", password)
             userdata.password = password_buf

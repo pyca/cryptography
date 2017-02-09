@@ -498,7 +498,7 @@ class TestOpenSSLCreateRevokedCertificate(object):
 
 class TestOpenSSLSerializationWithOpenSSL(object):
     def test_pem_password_cb(self):
-        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_CB_ST *")
+        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         pw = b"abcdefg"
         password = backend._ffi.new("char []", pw)
         userdata.password = password
@@ -515,7 +515,7 @@ class TestOpenSSLSerializationWithOpenSSL(object):
         assert userdata.error == 0
 
     def test_pem_password_cb_no_password(self):
-        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_CB_ST *")
+        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         buflen = 10
         buf = backend._ffi.new("char []", buflen)
         res = backend._lib.Cryptography_pem_password_cb(
