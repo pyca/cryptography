@@ -22,12 +22,15 @@ def _get_openssl_libraries(platform):
         windows_link_openssl110 = os.environ.get(
             "CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110", None
         )
-        if compiler_type() == "msvc" and windows_link_openssl110 is None:
-            # These lib names are only accurate for OpenSSL < 1.1.0
-            # If linking against 1.1.0+ you'll need to use the
-            # CRYPTOGRAPHY_WINDOWS_LIBRARIES environment variable
-            libs = ["libeay32", "ssleay32"]
+        if compiler_type() == "msvc":
+            if windows_link_openssl110 is not None:
+                # Link against the 1.1.0 names
+                libs = ["libssl", "libcrypto"]
+            else:
+                # Link against the 1.0.2 and lower names
+                libs = ["libeay32", "ssleay32"]
         else:
+            # Support mingw, which behaves unix-like and prefixes "lib"
             libs = ["ssl", "crypto"]
         return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
