@@ -511,7 +511,7 @@ class TestOpenSSLSerializationWithOpenSSL(object):
         assert res == len(pw)
         assert userdata.called == 1
         assert backend._ffi.buffer(buf, len(pw))[:] == pw
-        assert userdata.maxsize > 0
+        assert userdata.maxsize == buflen
         assert userdata.error == 0
 
     def test_pem_password_cb_no_password(self):
