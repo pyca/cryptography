@@ -50,7 +50,7 @@ If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use the binaries we build for our
 release infrastructure (`openssl-release`_). Be sure to download the proper
 version for your architecture and Python (2010 works for Python 2.6, 2.7, 3.3,
-and 3.4 while 2015 is required for 3.5). Wherever you place your copy
+and 3.4 while 2015 is required for 3.5 and above). Wherever you place your copy
 of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE`` environment variables
 to include the proper locations. For example:
 
@@ -59,7 +59,13 @@ to include the proper locations. For example:
     C:\> \path\to\vcvarsall.bat x86_amd64
     C:\> set LIB=C:\OpenSSL-win64\lib;%LIB%
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
+    C:\> set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
     C:\> pip install cryptography
+
+As of OpenSSL 1.1.0 the library names have changed from ``libeay32`` and
+``ssleay32`` to ``libcrypto`` and ``libssl`` (matching their names on all other
+platforms). Due to this change when linking against 1.1.0 you **must** set
+``CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110`` or else installation will fail.
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
