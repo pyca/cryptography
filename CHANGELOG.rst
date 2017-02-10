@@ -7,6 +7,23 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * Added support for Python 3.6.
+* Changed ASN.1 dependency from ``pyasn1`` to ``asn1crypto`` resulting in a
+  general performance increase when encoding/decoding ASN.1 structures. Also,
+  the ``pyasn1_modules`` test dependency is no longer required.
+
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.private_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization.public_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`.
+* :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
+  now require that ``password`` must be bytes if provided. Previously this
+  was documented but not enforced.
 
 1.7.2 - 2017-01-27
 ~~~~~~~~~~~~~~~~~~

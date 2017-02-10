@@ -11,9 +11,7 @@ import os
 import sys
 import warnings
 
-from pyasn1.codec.der import decoder
-
-from pyasn1_modules import rfc2459
+from asn1crypto.x509 import Certificate
 
 import pytest
 
@@ -1458,17 +1456,12 @@ class TestRSACertificateRequest(object):
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsed, _ = decoder.decode(
-            cert.public_bytes(serialization.Encoding.DER),
-            asn1Spec=rfc2459.Certificate()
-        )
-        tbs_cert = parsed.getComponentByName('tbsCertificate')
-        subject = tbs_cert.getComponentByName('subject')
-        issuer = tbs_cert.getComponentByName('issuer')
-        # \x13 is printable string. The first byte of the value of the
-        # node corresponds to the ASN.1 string type.
-        assert subject[0][0][0][1][0] == b"\x13"[0]
-        assert issuer[0][0][0][1][0] == b"\x13"[0]
+        parsed = Certificate.load(
+            cert.public_bytes(serialization.Encoding.DER))
+
+        # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
+        assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
+        assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
 
 
 class TestCertificateBuilder(object):

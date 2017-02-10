@@ -145,6 +145,33 @@ Key interfaces
 
         :return bytes: The agreed key. The bytes are ordered in 'big' endian.
 
+    .. method:: private_bytes(encoding, format, encryption_algorithm)
+
+        .. versionadded:: 1.8
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`)
+        and encryption algorithm (such as
+        :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
+        or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
+            enum.
+
+        :param encryption_algorithm: An instance of an object conforming to the
+            :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+            interface.
+
+        :return bytes: Serialized key.
+
 
 .. class:: DHPublicKey
 
@@ -172,6 +199,25 @@ Key interfaces
         Return the numbers that make up this public key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+    .. method:: public_bytes(encoding, format)
+
+        .. versionadded:: 1.8
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
+
+        :return bytes: Serialized key.
 
 
 Numbers

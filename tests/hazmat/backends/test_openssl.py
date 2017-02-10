@@ -523,7 +523,7 @@ class TestOpenSSLSerializationWithOpenSSL(object):
             backend._evp_pkey_to_public_key(key)
 
     def test_very_long_pem_serialization_password(self):
-        password = "x" * 1024
+        password = b"x" * 1024
 
         with pytest.raises(ValueError):
             load_vectors_from_file(

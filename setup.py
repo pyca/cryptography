@@ -35,7 +35,7 @@ VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
     "idna>=2.0",
-    "pyasn1>=0.1.8",
+    "asn1crypto>=0.21.0",
     "six>=1.4.1",
     "setuptools>=11.3",
 ]
@@ -61,7 +61,6 @@ test_requirements = [
     "pytest>=2.9.0",
     "pretend",
     "iso8601",
-    "pyasn1_modules",
     "pytz",
 ]
 if sys.version_info[:2] > (2, 6):
