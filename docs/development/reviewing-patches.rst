@@ -44,8 +44,9 @@ devastating, ``cryptography`` has a strict merge policy for committers:
 * Patches must *never* be pushed directly to ``master``, all changes (even the
   most trivial typo fixes!) must be submitted as a pull request.
 * A committer may only merge their own pull request if it has been approved
-  through the GitHub UI by a second party. If multiple people work on a pull
-  request, it must be approved by someone who did not work on it.
+  through the GitHub UI by a second party who is also a committer. If multiple
+  people work on a pull request, it must be approved by someone who did not
+  work on it.
 * A patch that breaks tests, or introduces regressions by changing or removing
   existing tests should not be merged. Tests must always be passing on
   ``master``.
