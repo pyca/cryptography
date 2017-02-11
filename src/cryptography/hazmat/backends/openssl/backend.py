@@ -525,7 +525,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in (self._lib.EVP_PKEY_DH, self._lib.EVP_PKEY_DHX):
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -557,7 +557,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in (self._lib.EVP_PKEY_DH, self._lib.EVP_PKEY_DHX):
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
