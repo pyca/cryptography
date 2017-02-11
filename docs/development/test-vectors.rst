@@ -110,6 +110,20 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub.der`` contains
   are the above parameters and keys in DER format.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.pem``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.pem`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.pem`` contains
+  Diffie-Hellman parameters and key respectively. The keys were
+  generated using OpenSSL following `DHKE`_ guide. When creating the
+  parameters we added the `-pkeyopt dh_rfc5114:2` option to use
+  RFC5114 2048 bit DH parameters with 224 bit subgroup.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.txt`` contains
+  all parameter in text.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.der``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.der`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
+  are the above parameters and keys in DER format.
+
 
 X.509
 ~~~~~
