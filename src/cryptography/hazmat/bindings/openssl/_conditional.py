@@ -307,4 +307,7 @@ CONDITIONAL_NAMES = {
         "Cryptography_DTLSv1_get_timeout",
         "DTLSv1_handle_timeout",
     ],
+    "Cryptography_HAS_EVP_PKEY_DHX": [
+        "EVP_PKEY_DHX",
+    ],
 }
