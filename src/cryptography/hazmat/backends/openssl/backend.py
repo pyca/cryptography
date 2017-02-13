@@ -144,6 +144,9 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
+        self._dh_types = [self._lib.EVP_PKEY_DH]
+        if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
@@ -525,7 +528,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
-        elif key_type in (self._lib.EVP_PKEY_DH, self._lib.EVP_PKEY_DHX):
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -557,7 +560,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
-        elif key_type in (self._lib.EVP_PKEY_DH, self._lib.EVP_PKEY_DHX):
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
