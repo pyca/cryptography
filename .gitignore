@@ -12,3 +12,4 @@ htmlcov/
 .eggs/
 *.py[co]
 .hypothesis/
+.idea/
