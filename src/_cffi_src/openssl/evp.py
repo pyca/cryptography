@@ -19,6 +19,7 @@ typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
+static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_GCM_SET_IVLEN;
@@ -29,6 +30,7 @@ static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
+static const int Cryptography_HAS_EVP_PKEY_DHX;
 """
 
 FUNCTIONS = """
@@ -182,6 +184,13 @@ const long EVP_CTRL_GCM_SET_IVLEN = -1;
 
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
 const long Cryptography_HAS_PKEY_CTX = 1;
+
+#ifdef EVP_PKEY_DHX
+const long Cryptography_HAS_EVP_PKEY_DHX = 1;
+#else
+const long Cryptography_HAS_EVP_PKEY_DHX = 0;
+const long EVP_PKEY_DHX = -1;
+#endif
 
 #ifdef OPENSSL_NO_EC
 int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
