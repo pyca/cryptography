@@ -464,16 +464,15 @@ Interfaces
 
             This method allows you to avoid a memory copy by passing a writable
             buffer and reading the resulting data. You are responsible for
-            correctly sizing the buffer and properly handling the data. Failure
-            to do so correctly can result in crashes. This method should only
-            be used when extremely high performance is a requirement and
-            you will be making many small calls to ``update_into``.
+            correctly sizing the buffer and properly handling the data. This
+            method should only be used when extremely high performance is a
+            requirement and you will be making many small calls to
+            ``update_into``.
 
         :param bytes data: The data you wish to pass into the context.
         :param buf: A writable Python buffer that the data will be written
-            into. This buffer should be ``n - 1`` bytes bigger than the size of
-            ``data`` where ``n`` is the block size (in bytes) of the cipher
-            and mode combination.
+            into. This buffer should be ``len(data) + n - 1`` bytes where ``n``
+            is the block size (in bytes) of the cipher and mode combination.
         :return int: Number of bytes written.
         :raises NotImplementedError: This is raised if the version of ``cffi``
             used is too old (this can happen on older PyPy releases).
