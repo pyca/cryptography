@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import cffi
-
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import ciphers
@@ -111,30 +109,21 @@ class _CipherContext(object):
         self._backend.openssl_assert(res != 0)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
-    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
-    # remove this check in the future when we raise our minimum PyPy version.
-    if utils._version_check(cffi.__version__, "1.7"):
-        def update_into(self, data, buf):
-            if len(buf) < (len(data) + self._block_size_bytes - 1):
-                raise ValueError(
-                    "buffer must be at least {0} bytes for this "
-                    "payload".format(len(data) + self._block_size_bytes - 1)
-                )
+    def update_into(self, data, buf):
+        if len(buf) < (len(data) + self._block_size_bytes - 1):
+            raise ValueError(
+                "buffer must be at least {0} bytes for this "
+                "payload".format(len(data) + self._block_size_bytes - 1)
+            )
 
-            buf = self._backend._ffi.cast(
-                "unsigned char *", self._backend._ffi.from_buffer(buf)
-            )
-            outlen = self._backend._ffi.new("int *")
-            res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen,
-                                                      data, len(data))
-            self._backend.openssl_assert(res != 0)
-            return outlen[0]
-    else:
-        def update_into(self, data, buf):
-            raise NotImplementedError(
-                "update_into requires cffi 1.7+. To use this method please "
-                "update cffi."
-            )
+        buf = self._backend._ffi.cast(
+            "unsigned char *", self._backend._ffi.from_buffer(buf)
+        )
+        outlen = self._backend._ffi.new("int *")
+        res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen,
+                                                  data, len(data))
+        self._backend.openssl_assert(res != 0)
+        return outlen[0]
 
     def finalize(self):
         # OpenSSL 1.0.1 on Ubuntu 12.04 (and possibly other distributions)

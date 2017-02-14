@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
+import cffi
+
 import six
 
 from cryptography import utils
@@ -143,10 +145,19 @@ class _CipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
-    def update_into(self, data, buf):
-        if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized.")
-        return self._ctx.update_into(data, buf)
+    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
+    # remove this check in the future when we raise our minimum PyPy version.
+    if utils._version_check(cffi.__version__, "1.7"):
+        def update_into(self, data, buf):
+            if self._ctx is None:
+                raise AlreadyFinalized("Context was already finalized.")
+            return self._ctx.update_into(data, buf)
+    else:
+        def update_into(self, data, buf):
+            raise NotImplementedError(
+                "update_into requires cffi 1.7+. To use this method please "
+                "update cffi."
+            )
 
     def finalize(self):
         if self._ctx is None:
@@ -182,9 +193,19 @@ class _AEADCipherContext(object):
         self._check_limit(len(data))
         return self._ctx.update(data)
 
-    def update_into(self, data, buf):
-        self._check_limit(len(data))
-        return self._ctx.update_into(data, buf)
+    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
+    # remove this check in the future when we raise our minimum PyPy version.
+    if utils._version_check(cffi.__version__, "1.7"):
+        def update_into(self, data, buf):
+            if self._ctx is None:
+                raise AlreadyFinalized("Context was already finalized.")
+            return self._ctx.update_into(data, buf)
+    else:
+        def update_into(self, data, buf):
+            raise NotImplementedError(
+                "update_into requires cffi 1.7+. To use this method please "
+                "update cffi."
+            )
 
     def finalize(self):
         if self._ctx is None:

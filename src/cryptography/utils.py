@@ -10,7 +10,7 @@ import inspect
 import sys
 import warnings
 
-from pkg_resources import parse_version
+from packaging.version import parse
 
 
 # the functions deprecated in 1.0 and 1.4 are on an arbitrarily extended
@@ -102,7 +102,7 @@ else:
 
 def _version_check(version, required_version):
     # This is used to check if we support update_into on CipherContext.
-    return parse_version(version) >= parse_version(required_version)
+    return parse(version) >= parse(required_version)
 
 
 class _DeprecatedValue(object):
