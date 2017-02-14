@@ -90,7 +90,12 @@ class Binding(object):
 
     @classmethod
     def _register_osrandom_engine(cls):
-        _openssl_assert(cls.lib, cls.lib.ERR_peek_error() == 0)
+        # Clear any errors extant in the queue before we start. In many
+        # scenarios other things may be interacting with OpenSSL in the same
+        # process space and it has proven untenable to assume that they will
+        # reliably clear the error queue. Once we clear it here we will
+        # error on any subsequent unexpected item in the stack.
+        cls.lib.ERR_clear_error()
         cls._osrandom_engine_id = cls.lib.Cryptography_osrandom_engine_id
         cls._osrandom_engine_name = cls.lib.Cryptography_osrandom_engine_name
         result = cls.lib.Cryptography_add_osrandom_engine()
