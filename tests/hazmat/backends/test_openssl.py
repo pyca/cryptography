@@ -497,23 +497,32 @@ class TestOpenSSLCreateRevokedCertificate(object):
 
 
 class TestOpenSSLSerializationWithOpenSSL(object):
-    def test_pem_password_cb_buffer_too_small(self):
-        ffi_cb, userdata = backend._pem_password_cb(b"aa")
-        handle = backend._ffi.new_handle(userdata)
-        buf = backend._ffi.new('char *')
-        assert ffi_cb(buf, 1, False, handle) == 0
-        assert userdata.called == 1
-        assert isinstance(userdata.exception, ValueError)
-
     def test_pem_password_cb(self):
-        password = b'abcdefg'
-        buf_size = len(password) + 1
-        ffi_cb, userdata = backend._pem_password_cb(password)
-        handle = backend._ffi.new_handle(userdata)
-        buf = backend._ffi.new('char[]', buf_size)
-        assert ffi_cb(buf, buf_size, False, handle) == len(password)
+        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
+        pw = b"abcdefg"
+        password = backend._ffi.new("char []", pw)
+        userdata.password = password
+        userdata.length = len(pw)
+        buflen = 10
+        buf = backend._ffi.new("char []", buflen)
+        res = backend._lib.Cryptography_pem_password_cb(
+            buf, buflen, 0, userdata
+        )
+        assert res == len(pw)
         assert userdata.called == 1
-        assert backend._ffi.string(buf, len(password)) == password
+        assert backend._ffi.buffer(buf, len(pw))[:] == pw
+        assert userdata.maxsize == buflen
+        assert userdata.error == 0
+
+    def test_pem_password_cb_no_password(self):
+        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
+        buflen = 10
+        buf = backend._ffi.new("char []", buflen)
+        res = backend._lib.Cryptography_pem_password_cb(
+            buf, buflen, 0, userdata
+        )
+        assert res == 0
+        assert userdata.error == -1
 
     def test_unsupported_evp_pkey_type(self):
         key = backend._create_evp_pkey_gc()

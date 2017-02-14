@@ -45,7 +45,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
     _CertificateSigningRequest, _RevokedCertificate
 )
-from cryptography.hazmat.bindings._openssl import ffi as _ffi
+from cryptography.hazmat.bindings._openssl import lib as _lib
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -62,50 +62,6 @@ from cryptography.hazmat.primitives.kdf import scrypt
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-
-
-class _PasswordUserdata(object):
-    def __init__(self, password):
-        if password is not None and not isinstance(password, bytes):
-            raise TypeError("Password must be bytes")
-        self.password = password
-        self.called = 0
-        self.exception = None
-
-
-@binding.ffi_callback("int (char *, int, int, void *)",
-                      name="Cryptography_pem_password_cb")
-def _pem_password_cb(buf, size, writing, userdata_handle):
-    """
-    A pem_password_cb function pointer that copied the password to
-    OpenSSL as required and returns the number of bytes copied.
-
-    typedef int pem_password_cb(char *buf, int size,
-                                int rwflag, void *userdata);
-
-    Useful for decrypting PKCS8 files and so on.
-
-    The userdata pointer must point to a cffi handle of a
-    _PasswordUserdata instance.
-    """
-    ud = _ffi.from_handle(userdata_handle)
-    ud.called += 1
-
-    if not ud.password:
-        ud.exception = TypeError(
-            "Password was not given but private key is encrypted."
-        )
-        return -1
-    elif len(ud.password) < size:
-        pw_buf = _ffi.buffer(buf, size)
-        pw_buf[:len(ud.password)] = ud.password
-        return len(ud.password)
-    else:
-        ud.exception = ValueError(
-            "Passwords longer than {0} bytes are not supported "
-            "by this backend.".format(size - 1)
-        )
-        return 0
 
 
 @utils.register_interface(CipherBackend)
@@ -563,26 +519,6 @@ class Backend(object):
             return _DHPublicKey(self, dh_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
-
-    def _pem_password_cb(self, password):
-        """
-        Generate a pem_password_cb function pointer that copied the password to
-        OpenSSL as required and returns the number of bytes copied.
-
-        typedef int pem_password_cb(char *buf, int size,
-                                    int rwflag, void *userdata);
-
-        Useful for decrypting PKCS8 files and so on.
-
-        Returns a tuple of (cdata function pointer, userdata).
-        """
-        # Forward compatibility for new static callbacks:
-        # _pem_password_cb is not a nested function because closures don't
-        # work well with static callbacks. Static callbacks are registered
-        # globally. The backend is passed in as userdata argument.
-
-        userdata = _PasswordUserdata(password=password)
-        return _pem_password_cb, userdata
 
     def _oaep_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_RSA_OAEP_MD:
@@ -1185,21 +1121,36 @@ class Backend(object):
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
-        password_cb, userdata = self._pem_password_cb(password)
-        userdata_handle = self._ffi.new_handle(userdata)
+        if password is not None and not isinstance(password, bytes):
+            raise TypeError("Password must be bytes")
+
+        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
+        if password is not None:
+            password_buf = self._ffi.new("char []", password)
+            userdata.password = password_buf
+            userdata.length = len(password)
 
         evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
-            password_cb,
-            userdata_handle,
+            self._ffi.addressof(_lib, "Cryptography_pem_password_cb"),
+            userdata,
         )
 
         if evp_pkey == self._ffi.NULL:
-            if userdata.exception is not None:
+            if userdata.error != 0:
                 errors = self._consume_errors()
                 self.openssl_assert(errors)
-                raise userdata.exception
+                if userdata.error == -1:
+                    raise TypeError(
+                        "Password was not given but private key is encrypted"
+                    )
+                else:
+                    assert userdata.error == -2
+                    raise ValueError(
+                        "Passwords longer than {0} bytes are not supported "
+                        "by this backend.".format(userdata.maxsize - 1)
+                    )
             else:
                 self._handle_key_loading_error()
 

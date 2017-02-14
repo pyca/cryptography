@@ -61,25 +61,6 @@ def _openssl_assert(lib, ok):
         )
 
 
-def ffi_callback(signature, name, **kwargs):
-    """Callback dispatcher
-
-    The ffi_callback() dispatcher keeps callbacks compatible between dynamic
-    and static callbacks.
-    """
-    def wrapper(func):
-        if lib.Cryptography_STATIC_CALLBACKS:
-            # def_extern() returns a decorator that sets the internal
-            # function pointer and returns the original function unmodified.
-            ffi.def_extern(name=name, **kwargs)(func)
-            callback = getattr(lib, name)
-        else:
-            # callback() wraps the function in a cdata function.
-            callback = ffi.callback(signature, **kwargs)(func)
-        return callback
-    return wrapper
-
-
 def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
     excluded_names = set()
