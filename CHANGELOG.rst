@@ -11,7 +11,9 @@ Changelog
 * Changed ASN.1 dependency from ``pyasn1`` to ``asn1crypto`` resulting in a
   general performance increase when encoding/decoding ASN.1 structures. Also,
   the ``pyasn1_modules`` test dependency is no longer required.
-
+* Added support for
+  :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into` on
+  :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.private_bytes`
   to
