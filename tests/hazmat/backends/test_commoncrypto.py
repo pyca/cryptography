@@ -4,10 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import cffi
-
-from pkg_resources import parse_version
-
 import pytest
 
 from cryptography.exceptions import InternalError, _Reasons
@@ -56,16 +52,3 @@ class TestCommonCrypto(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
-
-    @pytest.mark.skipif(
-        parse_version(cffi.__version__) < parse_version('1.7'),
-        reason="cffi version too old"
-    )
-    def test_update_into_gcm_buffer_too_small(self):
-        from cryptography.hazmat.backends.commoncrypto.backend import backend
-        key = b"\x00" * 16
-        c = Cipher(AES(key), GCM(b"0" * 12), backend)
-        encryptor = c.encryptor()
-        buf = bytearray(5)
-        with pytest.raises(ValueError):
-            encryptor.update_into(b"testing", buf)
