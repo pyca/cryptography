@@ -225,6 +225,20 @@ class TestCipherUpdateInto(object):
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
+    def test_update_into_buffer_too_small_gcm(self, backend):
+        key = b"\x00" * 16
+        c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
+        encryptor = c.encryptor()
+        buf = bytearray(5)
+        with pytest.raises(ValueError):
+            encryptor.update_into(b"testing", buf)
+
 
 @pytest.mark.skipif(
     _version_check(cffi.__version__, '1.7'),
