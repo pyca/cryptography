@@ -488,12 +488,12 @@ Interfaces
             >>> iv = os.urandom(16)
             >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
             >>> encryptor = cipher.encryptor()
-            >>> buf = bytearray(31)
+            >>> buf = bytearray(31)  # size the buffer to b len(data) + n - 1
             >>> len_encrypted = encryptor.update_into(b"a secret message", buf)
-            >>> ct = bytes(buf[:len_encrypted]) + encryptor.finalize()
+            >>> ct = bytes(buf[:len_encrypted]) + encryptor.finalize()  # get the ciphertext from the buffer reading only the bytes written to it (len_encrypted)
             >>> decryptor = cipher.decryptor()
             >>> len_decrypted = decryptor.update_into(ct, buf)
-            >>> bytes(buf[:len_decrypted]) + decryptor.finalize()
+            >>> bytes(buf[:len_decrypted]) + decryptor.finalize()  # get the plaintext from the buffer reading only the bytes written (len_decrypted)
             'a secret message'
 
     .. method:: finalize()
