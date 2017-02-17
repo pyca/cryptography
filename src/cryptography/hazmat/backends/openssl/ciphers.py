@@ -109,6 +109,22 @@ class _CipherContext(object):
         self._backend.openssl_assert(res != 0)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
+    def update_into(self, data, buf):
+        if len(buf) < (len(data) + self._block_size_bytes - 1):
+            raise ValueError(
+                "buffer must be at least {0} bytes for this "
+                "payload".format(len(data) + self._block_size_bytes - 1)
+            )
+
+        buf = self._backend._ffi.cast(
+            "unsigned char *", self._backend._ffi.from_buffer(buf)
+        )
+        outlen = self._backend._ffi.new("int *")
+        res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen,
+                                                  data, len(data))
+        self._backend.openssl_assert(res != 0)
+        return outlen[0]
+
     def finalize(self):
         # OpenSSL 1.0.1 on Ubuntu 12.04 (and possibly other distributions)
         # appears to have a bug where you must make at least one call to update
