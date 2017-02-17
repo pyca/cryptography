@@ -161,9 +161,8 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
   methods to RSA keys.
-* Deprecated the :attr:`~cryptography.x509.X509.serial` attribute on
-  :class:`~cryptography.x509.X509`, in favor of
-  :attr:`~cryptography.x509.X509.serial_number`.
+* Deprecated the ``serial`` attribute on :class:`~cryptography.x509.X509`, in
+  favor of :attr:`~cryptography.x509.X509.serial_number`.
 
 
 1.3.4 - 2016-06-03
