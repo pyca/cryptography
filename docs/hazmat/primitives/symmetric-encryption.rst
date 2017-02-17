@@ -488,7 +488,8 @@ Interfaces
             >>> iv = os.urandom(16)
             >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
             >>> encryptor = cipher.encryptor()
-            >>> buf = bytearray(31)  # size the buffer to b len(data) + n - 1
+            >>> # the buffer needs to be at least len(data) + n - 1 where n is cipher/mode block size in bytes
+            >>> buf = bytearray(31)
             >>> len_encrypted = encryptor.update_into(b"a secret message", buf)
             >>> # get the ciphertext from the buffer reading only the bytes written to it (len_encrypted)
             >>> ct = bytes(buf[:len_encrypted]) + encryptor.finalize()
