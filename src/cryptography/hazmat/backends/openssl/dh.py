@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
@@ -171,6 +172,17 @@ class _DHPrivateKey(object):
             raise ValueError(
                 "DH private keys support only PKCS8 serialization"
             )
+        if not self._backend._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            q = self._backend._ffi.new("BIGNUM **")
+            self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                           self._backend._ffi.NULL,
+                                           q,
+                                           self._backend._ffi.NULL)
+            if q[0] != self._backend._ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "DH X9.42 serialization is not supported",
+                    _Reasons.UNSUPPORTED_SERIALIZATION)
+
         return self._backend._private_key_bytes(
             encoding,
             format,
@@ -225,6 +237,17 @@ class _DHPublicKey(object):
                 "DH public keys support only "
                 "SubjectPublicKeyInfo serialization"
             )
+
+        if not self._backend._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            q = self._backend._ffi.new("BIGNUM **")
+            self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                           self._backend._ffi.NULL,
+                                           q,
+                                           self._backend._ffi.NULL)
+            if q[0] != self._backend._ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "DH X9.42 serialization is not supported",
+                    _Reasons.UNSUPPORTED_SERIALIZATION)
 
         return self._backend._public_key_bytes(
             encoding,
