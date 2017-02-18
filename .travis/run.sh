@@ -43,6 +43,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     export CFLAGS="$CFLAGS -fsanitize=address,undefined"
     # TODO: this cannot possible be the right way to do this...
     export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+    export DYLD_FORCE_FLAT_NAMESPACE=1
 fi
 
 tox -- $TOX_FLAGS
