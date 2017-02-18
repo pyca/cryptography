@@ -109,7 +109,7 @@ and public disclosure may be shortened considerably.
 
 The list of people and organizations who receives advanced notification of
 security issues is not and will not be made public. This list generally
-consists of high profile downstream distributors and is entirely at the
+consists of high-profile downstream distributors and is entirely at the
 discretion of the ``cryptography`` team.
 
 .. _`master`: https://github.com/pyca/cryptography
