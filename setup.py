@@ -34,7 +34,7 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
-    "idna>=2.0",
+    "idna>=2.1",
     "asn1crypto>=0.21.0",
     "packaging",
     "six>=1.4.1",
