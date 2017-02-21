@@ -1258,6 +1258,23 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_CIPHER
             )
 
+        elif errors[0][1:] in (
+            (
+                self._lib.ERR_LIB_ASN1,
+                self._lib.ASN1_F_ASN1_CHECK_TLEN,
+                self._lib.ASN1_R_WRONG_TAG
+            ),
+            (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_READ_BIO,
+                self._lib.PEM_R_NO_START_LINE
+            ),
+        ):
+            raise UnsupportedAlgorithm(
+                "Unsupported public key algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
+
         elif any(
             error[1:] == (
                 self._lib.ERR_LIB_EVP,

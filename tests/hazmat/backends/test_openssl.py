@@ -633,3 +633,47 @@ class TestOpenSSLDHSerialization(object):
             public_key.public_bytes(
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.SubjectPublicKeyInfo)
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
+                serialization.load_pem_private_key,
+            ),
+            (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
+                serialization.load_der_private_key,
+            )
+        ]
+    )
+    def test_private_load_dhx_unsupported(self, key_path, loader_func,
+                                          backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+            loader_func(key_bytes, None, backend)
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+                serialization.load_pem_public_key,
+            ),
+            (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+                serialization.load_der_public_key,
+            )
+        ]
+    )
+    def test_public_load_dhx_unsupported(self, key_path, loader_func,
+                                         backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+            loader_func(key_bytes, backend)
