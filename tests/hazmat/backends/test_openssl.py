@@ -653,7 +653,8 @@ class TestOpenSSLDHSerialization(object):
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with raises_unsupported_algorithm(
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
             loader_func(key_bytes, None, backend)
 
     @pytest.mark.parametrize(
@@ -675,5 +676,6 @@ class TestOpenSSLDHSerialization(object):
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with raises_unsupported_algorithm(
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
             loader_func(key_bytes, backend)
