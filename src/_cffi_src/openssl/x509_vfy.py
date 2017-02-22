@@ -221,9 +221,12 @@ static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED = 0;
 static const long X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 = 0;
+#if !defined(LIBRESSL_VERSION_NUMBER) || \
+    LIBRESSL_VERSION_NUMBER < 0x2050100fL
 static const long X509_V_ERR_HOSTNAME_MISMATCH = 0;
 static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
+#endif
 #endif
 
 /* OpenSSL 1.0.2beta2+ verification parameters */
