@@ -335,7 +335,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         }
         return 1;
     }
-    return 0; /* unreachable */
+    __builtin_unreachable();
 }
 
 static int osrandom_finish(ENGINE *e) {
@@ -354,7 +354,7 @@ static int osrandom_rand_status(void) {
     case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         return 1;
     }
-    return 0; /* unreachable */
+    __builtin_unreachable();
 }
 
 static const char *osurandom_get_implementation(void) {
@@ -368,7 +368,7 @@ static const char *osurandom_get_implementation(void) {
     case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         return "getrandom";
     }
-    return "<invalid>"; /* unreachable */
+    __builtin_unreachable();
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM */
 

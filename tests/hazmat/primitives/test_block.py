@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
+import cffi
+
 import pytest
 
 from cryptography.exceptions import (
@@ -15,6 +17,7 @@ from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, base, modes
 )
+from cryptography.utils import _version_check
 
 from .utils import (
     generate_aead_exception_test, generate_aead_tag_exception_test
@@ -69,6 +72,23 @@ class TestCipherContext(object):
             decryptor.update(b"b" * 16)
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
+
+    @pytest.mark.skipif(
+        not _version_check(cffi.__version__, '1.7'),
+        reason="cffi version too old"
+    )
+    def test_use_update_into_after_finalize(self, backend):
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.update(b"a" * 16)
+        encryptor.finalize()
+        with pytest.raises(AlreadyFinalized):
+            buf = bytearray(31)
+            encryptor.update_into(b"b" * 16, buf)
 
     def test_unaligned_block_encryption(self, backend):
         cipher = Cipher(

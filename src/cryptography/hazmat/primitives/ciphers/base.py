@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
+import cffi
+
 import six
 
 from cryptography import utils
@@ -48,6 +50,13 @@ class CipherContext(object):
         """
         Processes the provided bytes through the cipher and returns the results
         as bytes.
+        """
+
+    @abc.abstractmethod
+    def update_into(self, data, buf):
+        """
+        Processes the provided bytes and writes the resulting data into the
+        provided buffer. Returns the number of bytes written.
         """
 
     @abc.abstractmethod
@@ -136,6 +145,20 @@ class _CipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
+    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
+    # remove this check in the future when we raise our minimum PyPy version.
+    if utils._version_check(cffi.__version__, "1.7"):
+        def update_into(self, data, buf):
+            if self._ctx is None:
+                raise AlreadyFinalized("Context was already finalized.")
+            return self._ctx.update_into(data, buf)
+    else:
+        def update_into(self, data, buf):
+            raise NotImplementedError(
+                "update_into requires cffi 1.7+. To use this method please "
+                "update cffi."
+            )
+
     def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
@@ -154,11 +177,11 @@ class _AEADCipherContext(object):
         self._tag = None
         self._updated = False
 
-    def update(self, data):
+    def _check_limit(self, data_size):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         self._updated = True
-        self._bytes_processed += len(data)
+        self._bytes_processed += data_size
         if self._bytes_processed > self._ctx._mode._MAX_ENCRYPTED_BYTES:
             raise ValueError(
                 "{0} has a maximum encrypted byte limit of {1}".format(
@@ -166,7 +189,22 @@ class _AEADCipherContext(object):
                 )
             )
 
+    def update(self, data):
+        self._check_limit(len(data))
         return self._ctx.update(data)
+
+    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
+    # remove this check in the future when we raise our minimum PyPy version.
+    if utils._version_check(cffi.__version__, "1.7"):
+        def update_into(self, data, buf):
+            self._check_limit(len(data))
+            return self._ctx.update_into(data, buf)
+    else:
+        def update_into(self, data, buf):
+            raise NotImplementedError(
+                "update_into requires cffi 1.7+. To use this method please "
+                "update cffi."
+            )
 
     def finalize(self):
         if self._ctx is None:

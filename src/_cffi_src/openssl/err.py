@@ -57,6 +57,7 @@ static const int ASN1_F_B64_READ_ASN1;
 static const int ASN1_F_B64_WRITE_ASN1;
 static const int ASN1_F_SMIME_READ_ASN1;
 static const int ASN1_F_SMIME_TEXT;
+static const int ASN1_F_ASN1_CHECK_TLEN;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;

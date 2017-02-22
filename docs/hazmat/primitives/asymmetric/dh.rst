@@ -35,7 +35,7 @@ exchange.
 To assemble a :class:`~DHParameters` and a :class:`~DHPublicKey` from
 primitive integers, you must first create the
 :class:`~DHParameterNumbers` and :class:`~DHPublicNumbers` objects. For
-example if **p**, **g**, and **y** are :class:`int` objects received from a
+example, if **p**, **g**, and **y** are :class:`int` objects received from a
 peer::
 
     pn = dh.DHParameterNumbers(p, g)

@@ -86,6 +86,24 @@ class _CipherContext(object):
         self._backend._check_cipher_response(res)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
+    def update_into(self, data, buf):
+        if len(buf) < (len(data) + self._byte_block_size - 1):
+            raise ValueError(
+                "buffer must be at least {0} bytes for this "
+                "payload".format(len(data) + self._byte_block_size - 1)
+            )
+        # Count bytes processed to handle block alignment.
+        self._bytes_processed += len(data)
+        outlen = self._backend._ffi.new("size_t *")
+        buf = self._backend._ffi.cast(
+            "unsigned char *", self._backend._ffi.from_buffer(buf)
+        )
+        res = self._backend._lib.CCCryptorUpdate(
+            self._ctx[0], data, len(data), buf,
+            len(data) + self._byte_block_size - 1, outlen)
+        self._backend._check_cipher_response(res)
+        return outlen[0]
+
     def finalize(self):
         # Raise error if block alignment is wrong.
         if self._bytes_processed % self._byte_block_size:
@@ -160,6 +178,24 @@ class _GCMCipherContext(object):
 
         self._backend._check_cipher_response(res)
         return self._backend._ffi.buffer(buf)[:]
+
+    def update_into(self, data, buf):
+        if len(buf) < len(data):
+            raise ValueError(
+                "buffer must be at least {0} bytes".format(len(data))
+            )
+
+        buf = self._backend._ffi.cast(
+            "unsigned char *", self._backend._ffi.from_buffer(buf)
+        )
+        args = (self._ctx[0], data, len(data), buf)
+        if self._operation == self._backend._lib.kCCEncrypt:
+            res = self._backend._lib.CCCryptorGCMEncrypt(*args)
+        else:
+            res = self._backend._lib.CCCryptorGCMDecrypt(*args)
+
+        self._backend._check_cipher_response(res)
+        return len(data)
 
     def finalize(self):
         # CommonCrypto has a yet another bug where you must make at least one

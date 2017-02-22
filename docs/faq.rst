@@ -38,6 +38,11 @@ If you have no other libraries using OpenSSL in your process, or they do not
 appear to be at fault, it's possible that this is a bug in ``cryptography``.
 Please file an `issue`_ with instructions on how to reproduce it.
 
+Installing ``cryptography`` fails with ``ImportError: No module named setuptools_ext``
+--------------------------------------------------------------------------------------
+
+Your ``cffi`` package is out of date. ``pip install -U cffi`` to update it.
+
 Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
 ---------------------------------------------------------
 

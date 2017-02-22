@@ -118,7 +118,7 @@ Use `tox`_ to build the documentation. For example:
 The HTML documentation index can now be found at
 ``docs/_build/html/index.html``.
 
-.. _`Homebrew`: http://brew.sh
+.. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`OpenSSL`: https://www.openssl.org
 .. _`pytest`: https://pypi.python.org/pypi/pytest

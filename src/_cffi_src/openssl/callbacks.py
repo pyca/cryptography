@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import cffi
-
 INCLUDES = """
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
@@ -16,45 +14,24 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_STATIC_CALLBACKS;
-
-/* crypto.h
- * CRYPTO_set_locking_callback
- * void (*cb)(int mode, int type, const char *file, int line)
- */
-extern "Python" void Cryptography_locking_cb(int, int, const char *, int);
-
-/* pem.h
- * int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
- */
-extern "Python" int Cryptography_pem_password_cb(char *, int, int, void *);
-
-/* rand.h
- * int (*bytes)(unsigned char *buf, int num);
- * int (*status)(void);
- */
-extern "Python" int Cryptography_rand_bytes(unsigned char *, int);
-extern "Python" int Cryptography_rand_status(void);
+typedef struct {
+    char *password;
+    int length;
+    int called;
+    int error;
+    int maxsize;
+} CRYPTOGRAPHY_PASSWORD_DATA;
 """
 
 FUNCTIONS = """
 int _setup_ssl_threads(void);
+int Cryptography_pem_password_cb(char *, int, int, void *);
 """
 
 MACROS = """
 """
 
 CUSTOMIZATIONS = """
-static const long Cryptography_STATIC_CALLBACKS = 1;
-"""
-
-if cffi.__version_info__ < (1, 4, 0):
-    # backwards compatibility for old cffi version on PyPy
-    TYPES = "static const long Cryptography_STATIC_CALLBACKS;"
-    CUSTOMIZATIONS = """static const long Cryptography_STATIC_CALLBACKS = 0;
-"""
-
-CUSTOMIZATIONS += """
 /* This code is derived from the locking code found in the Python _ssl module's
    locking callback for OpenSSL.
 
@@ -117,5 +94,32 @@ int _setup_ssl_threads(void) {
         CRYPTO_set_locking_callback(_ssl_thread_locking_function);
     }
     return 1;
+}
+
+typedef struct {
+    char *password;
+    int length;
+    int called;
+    int error;
+    int maxsize;
+} CRYPTOGRAPHY_PASSWORD_DATA;
+
+int Cryptography_pem_password_cb(char *buf, int size,
+                                  int rwflag, void *userdata) {
+    /* The password cb is only invoked if OpenSSL decides the private
+       key is encrypted. So this path only occurs if it needs a password */
+    CRYPTOGRAPHY_PASSWORD_DATA *st = (CRYPTOGRAPHY_PASSWORD_DATA *)userdata;
+    st->called += 1;
+    st->maxsize = size;
+    if (st->length == 0) {
+        st->error = -1;
+        return 0;
+    } else if (st->length < size) {
+        memcpy(buf, st->password, st->length);
+        return st->length;
+    } else {
+        st->error = -2;
+        return 0;
+    }
 }
 """

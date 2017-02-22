@@ -271,7 +271,7 @@ You will need to set this variable every time you start Python. For more
 information, consult `Greg Wilson's blog post`_ on the subject.
 
 
-.. _`Homebrew`: http://brew.sh
+.. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
