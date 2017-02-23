@@ -366,6 +366,13 @@ class DHBackend(object):
         Returns whether the backend supports DH with these parameter values.
         """
 
+    @abc.abstractmethod
+    def dhx_serialization_supported(self):
+        """
+        Returns True if the backend supports the serialization of DH objects
+        with subgroup order (q).
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class ScryptBackend(object):

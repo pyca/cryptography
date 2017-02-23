@@ -10,7 +10,6 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import (
     DHBackend, PEMSerializationBackend)
-from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length, int_from_bytes
@@ -19,9 +18,11 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
-skip_no_dhx = pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 0,
-    reason="Requires OpenSSL with EVP_PKEY_DHX (1.0.2+)")
+def _skip_dhx_unsupported(backend):
+    if not backend.dhx_serialization_supported():
+        pytest.skip(
+            "DHX serialization is not supported"
+        )
 
 
 def test_dh_parameternumbers():
@@ -407,21 +408,20 @@ class TestDHPrivateKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhkey.der"),
                 serialization.load_der_private_key,
                 serialization.Encoding.DER,
-            ), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
                 serialization.load_pem_private_key,
                 serialization.Encoding.PEM,
-            )), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
                 serialization.load_der_private_key,
                 serialization.Encoding.DER,
-            ))
+            )
         ]
     )
     def test_private_bytes_match(self, key_path, loader_func,
                                  encoding, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -444,21 +444,20 @@ class TestDHPrivateKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhkey.der"),
                 serialization.load_der_private_key,
                 os.path.join("asymmetric", "DH", "dhkey.txt")
-            ), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
                 serialization.load_pem_private_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt")
-            )), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
                 serialization.load_der_private_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt")
-            ))
+            )
         ]
     )
     def test_private_bytes_values(self, key_path, loader_func,
                                   vec_path, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -569,21 +568,20 @@ class TestDHPublicKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhpub.der"),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
-            ), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
                 serialization.load_pem_public_key,
                 serialization.Encoding.PEM,
-            )), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
-            ))
+            )
         ]
     )
     def test_public_bytes_match(self, key_path, loader_func,
                                 encoding, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -606,21 +604,20 @@ class TestDHPublicKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhpub.der"),
                 serialization.load_der_public_key,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-            ), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
                 serialization.load_pem_public_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-            )), skip_no_dhx
-            ((
+            ), (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
                 serialization.load_der_public_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-            ))
+            )
         ]
     )
     def test_public_bytes_values(self, key_path, loader_func,
                                  vec_path, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"

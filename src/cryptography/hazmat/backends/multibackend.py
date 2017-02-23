@@ -490,6 +490,15 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
         )
 
+    def dhx_serialization_supported(self):
+        for b in self._filtered_backends(DHBackend):
+            return b.dhx_serialization_supported()
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
     def x509_name_bytes(self, name):
         for b in self._filtered_backends(X509Backend):
             return b.x509_name_bytes(name)
