@@ -224,6 +224,6 @@ Interfaces
         :return: A :class:`HashContext` that is a copy of the current context.
 
 
-.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`Lifetimes of cryptographic hash functions`: https://valerieaurora.org/hash.html
 .. _`BLAKE2`: https://blake2.net
 .. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
