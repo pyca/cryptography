@@ -213,11 +213,15 @@ class _GCMCipherContext(object):
         self._backend._check_cipher_response(res)
         self._backend._release_cipher_ctx(self._ctx)
         self._tag = self._backend._ffi.buffer(tag_buf)[:]
-        if (self._operation == self._backend._lib.kCCDecrypt and
-                not constant_time.bytes_eq(
-                    self._tag[:len(self._mode.tag)], self._mode.tag
-                )):
-            raise InvalidTag
+        if self._operation == self._backend._lib.kCCDecrypt:
+            if self._mode.tag is None:
+                raise ValueError(
+                    "Authentication tag must be provided when decrypting."
+                )
+            if not constant_time.bytes_eq(
+                self._tag[:len(self._mode.tag)], self._mode.tag
+            ):
+                raise InvalidTag
         return b""
 
     def authenticate_additional_data(self, data):
