@@ -1439,58 +1439,15 @@ class Backend(object):
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
-        This is a port of EC_KEY_set_public_key_affine_coordinates that was
-        added in 1.0.1.
-
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
         """
-
-        if x < 0 or y < 0:
-            raise ValueError(
-                "Invalid EC key. Both x and y must be non-negative."
-            )
-
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ctx)
+        res = self._lib.EC_KEY_set_public_key_affine_coordinates(
+            ctx, self._int_to_bn(x), self._int_to_bn(y)
         )
-
-        point = self._lib.EC_POINT_new(group)
-        self.openssl_assert(point != self._ffi.NULL)
-        point = self._ffi.gc(point, self._lib.EC_POINT_free)
-
-        bn_x = self._int_to_bn(x)
-        bn_y = self._int_to_bn(y)
-
-        with self._tmp_bn_ctx() as bn_ctx:
-            check_x = self._lib.BN_CTX_get(bn_ctx)
-            check_y = self._lib.BN_CTX_get(bn_ctx)
-
-            res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            if res != 1:
-                self._consume_errors()
-                raise ValueError("EC point not on curve")
-
-            res = get_func(group, point, check_x, check_y, bn_ctx)
-            self.openssl_assert(res == 1)
-
-            res = self._lib.BN_cmp(bn_x, check_x)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key X point.")
-            res = self._lib.BN_cmp(bn_y, check_y)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key Y point.")
-
-        res = self._lib.EC_KEY_set_public_key(ctx, point)
-        self.openssl_assert(res == 1)
-
-        res = self._lib.EC_KEY_check_key(ctx)
-        if res != 1:
+        if res == 0:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
-
         return ctx
 
     def _private_key_bytes(self, encoding, format, encryption_algorithm,
