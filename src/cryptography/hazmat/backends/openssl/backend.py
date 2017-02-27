@@ -1451,9 +1451,10 @@ class Backend(object):
         res = self._lib.EC_KEY_set_public_key_affine_coordinates(
             ctx, self._int_to_bn(x), self._int_to_bn(y)
         )
-        if res == 0:
+        if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
+
         return ctx
 
     def _private_key_bytes(self, encoding, format, encryption_algorithm,
