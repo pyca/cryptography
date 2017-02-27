@@ -1442,6 +1442,12 @@ class Backend(object):
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
         """
+
+        if x < 0 or y < 0:
+            raise ValueError(
+                "Invalid EC key. Both x and y must be non-negative."
+            )
+
         res = self._lib.EC_KEY_set_public_key_affine_coordinates(
             ctx, self._int_to_bn(x), self._int_to_bn(y)
         )
