@@ -894,8 +894,8 @@ Interface
         stored derived key.
 
 
-.. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
-.. _`NIST SP 800-108`: http://csrc.nist.gov/publications/nistpubs/800-108/sp800-108.pdf
+.. _`NIST SP 800-132`: http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf
+.. _`NIST SP 800-108`: http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf
 .. _`NIST SP 800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
 .. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
