@@ -1331,9 +1331,7 @@ class Backend(object):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ec_cdata)
-        )
+        get_func, group = self._ec_key_determine_group_get_func(ec_cdata)
 
         point = self._lib.EC_POINT_new(group)
         self.openssl_assert(point != self._ffi.NULL)
@@ -1407,10 +1405,10 @@ class Backend(object):
         finally:
             self._lib.BN_CTX_end(bn_ctx)
 
-    def _ec_key_determine_group_get_set_funcs(self, ctx):
+    def _ec_key_determine_group_get_func(self, ctx):
         """
-        Given an EC_KEY determine the group and what methods are required to
-        get/set point coordinates.
+        Given an EC_KEY determine the group and what function is required to
+        get point coordinates.
         """
         self.openssl_assert(ctx != self._ffi.NULL)
 
@@ -1427,15 +1425,13 @@ class Backend(object):
         self.openssl_assert(nid != self._lib.NID_undef)
 
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
         else:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GFp
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
 
-        assert set_func and get_func
+        assert get_func
 
-        return set_func, get_func, group
+        return get_func, group
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
