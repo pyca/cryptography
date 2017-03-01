@@ -1331,9 +1331,7 @@ class Backend(object):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ec_cdata)
-        )
+        get_func, group = self._ec_key_determine_group_get_func(ec_cdata)
 
         point = self._lib.EC_POINT_new(group)
         self.openssl_assert(point != self._ffi.NULL)
@@ -1407,10 +1405,10 @@ class Backend(object):
         finally:
             self._lib.BN_CTX_end(bn_ctx)
 
-    def _ec_key_determine_group_get_set_funcs(self, ctx):
+    def _ec_key_determine_group_get_func(self, ctx):
         """
-        Given an EC_KEY determine the group and what methods are required to
-        get/set point coordinates.
+        Given an EC_KEY determine the group and what function is required to
+        get point coordinates.
         """
         self.openssl_assert(ctx != self._ffi.NULL)
 
@@ -1427,21 +1425,16 @@ class Backend(object):
         self.openssl_assert(nid != self._lib.NID_undef)
 
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
         else:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GFp
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
 
-        assert set_func and get_func
+        assert get_func
 
-        return set_func, get_func, group
+        return get_func, group
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
-        This is a port of EC_KEY_set_public_key_affine_coordinates that was
-        added in 1.0.1.
-
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
         """
@@ -1451,42 +1444,9 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ctx)
+        res = self._lib.EC_KEY_set_public_key_affine_coordinates(
+            ctx, self._int_to_bn(x), self._int_to_bn(y)
         )
-
-        point = self._lib.EC_POINT_new(group)
-        self.openssl_assert(point != self._ffi.NULL)
-        point = self._ffi.gc(point, self._lib.EC_POINT_free)
-
-        bn_x = self._int_to_bn(x)
-        bn_y = self._int_to_bn(y)
-
-        with self._tmp_bn_ctx() as bn_ctx:
-            check_x = self._lib.BN_CTX_get(bn_ctx)
-            check_y = self._lib.BN_CTX_get(bn_ctx)
-
-            res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            if res != 1:
-                self._consume_errors()
-                raise ValueError("EC point not on curve")
-
-            res = get_func(group, point, check_x, check_y, bn_ctx)
-            self.openssl_assert(res == 1)
-
-            res = self._lib.BN_cmp(bn_x, check_x)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key X point.")
-            res = self._lib.BN_cmp(bn_y, check_y)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key Y point.")
-
-        res = self._lib.EC_KEY_set_public_key(ctx, point)
-        self.openssl_assert(res == 1)
-
-        res = self._lib.EC_KEY_check_key(ctx)
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
