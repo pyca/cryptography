@@ -679,7 +679,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. versionadded:: 1.8
 
-    .. method:: dhx_serialization_supported()
+    .. method:: dh_x942_serialization_supported()
 
         :returns: True if serialization of DH objects with
             subgroup order (q) is supported by this backend.

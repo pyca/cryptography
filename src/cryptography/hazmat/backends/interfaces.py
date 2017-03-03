@@ -367,7 +367,7 @@ class DHBackend(object):
         """
 
     @abc.abstractmethod
-    def dhx_serialization_supported(self):
+    def dh_x942_serialization_supported(self):
         """
         Returns True if the backend supports the serialization of DH objects
         with subgroup order (q).

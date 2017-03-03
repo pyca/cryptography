@@ -1836,7 +1836,7 @@ class Backend(object):
 
         return codes[0] == 0
 
-    def dhx_serialization_supported(self):
+    def dh_x942_serialization_supported(self):
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x509_name_bytes(self, name):

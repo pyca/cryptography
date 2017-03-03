@@ -19,9 +19,9 @@ from ...utils import load_nist_vectors, load_vectors_from_file
 
 
 def _skip_dhx_unsupported(backend):
-    if not backend.dhx_serialization_supported():
+    if not backend.dh_x942_serialization_supported():
         pytest.skip(
-            "DHX serialization is not supported"
+            "DH x9.42 serialization is not supported"
         )
 
 
