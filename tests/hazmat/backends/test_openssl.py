@@ -617,7 +617,7 @@ class TestGOSTCertificate(object):
 
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
-    reason="Requires OpenSSL without EVP_PKEY_DHX (1.0.2-)")
+    reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)")
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestOpenSSLDHSerialization(object):
 
@@ -662,8 +662,7 @@ class TestOpenSSLDHSerialization(object):
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             loader_func(key_bytes, None, backend)
 
     @pytest.mark.parametrize(
@@ -685,6 +684,5 @@ class TestOpenSSLDHSerialization(object):
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             loader_func(key_bytes, backend)
