@@ -18,6 +18,13 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
+def _skip_dhx_unsupported(backend):
+    if not backend.dh_x942_serialization_supported():
+        pytest.skip(
+            "DH x9.42 serialization is not supported"
+        )
+
+
 def test_dh_parameternumbers():
     params = dh.DHParameterNumbers(
         65537, 2
@@ -44,6 +51,19 @@ def test_dh_parameternumbers():
     with pytest.raises(ValueError):
         dh.DHParameterNumbers(
             65537, 7
+        )
+
+    params = dh.DHParameterNumbers(
+        65537, 7, 1245
+    )
+
+    assert params.p == 65537
+    assert params.g == 7
+    assert params.q == 1245
+
+    with pytest.raises(TypeError):
+        dh.DHParameterNumbers(
+            65537, 2, "hello"
         )
 
 
@@ -89,7 +109,11 @@ def test_dh_numbers():
 
 def test_dh_parameter_numbers_equality():
     assert dh.DHParameterNumbers(65537, 2) == dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 7, 12345) == dh.DHParameterNumbers(
+        65537, 7, 12345)
     assert dh.DHParameterNumbers(6, 2) != dh.DHParameterNumbers(65537, 2)
+    assert dh.DHParameterNumbers(65537, 2, 123) != dh.DHParameterNumbers(
+        65537, 2, 456)
     assert dh.DHParameterNumbers(65537, 5) != dh.DHParameterNumbers(65537, 2)
     assert dh.DHParameterNumbers(65537, 2) != object()
 
@@ -132,15 +156,35 @@ class TestDH(object):
         assert backend.dh_parameters_supported(23, 5)
         assert not backend.dh_parameters_supported(23, 18)
 
-    def test_convert_to_numbers(self, backend):
-        parameters = backend.generate_dh_private_key_and_parameters(2, 512)
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "RFC5114.txt"),
+            load_nist_vectors))
+    def test_dh_parameters_supported_with_q(self, backend, vector):
+        assert backend.dh_parameters_supported(int(vector["p"], 16),
+                                               int(vector["g"], 16),
+                                               int(vector["q"], 16))
 
-        private = parameters.private_numbers()
+    @pytest.mark.parametrize("with_q", [False, True])
+    def test_convert_to_numbers(self, backend, with_q):
+        if with_q:
+            vector = load_vectors_from_file(
+                os.path.join("asymmetric", "DH", "RFC5114.txt"),
+                load_nist_vectors)[0]
+            p = int(vector["p"], 16)
+            g = int(vector["g"], 16)
+            q = int(vector["q"], 16)
+        else:
+            parameters = backend.generate_dh_private_key_and_parameters(2, 512)
 
-        p = private.public_numbers.parameter_numbers.p
-        g = private.public_numbers.parameter_numbers.g
+            private = parameters.private_numbers()
 
-        params = dh.DHParameterNumbers(p, g)
+            p = private.public_numbers.parameter_numbers.p
+            g = private.public_numbers.parameter_numbers.g
+            q = None
+
+        params = dh.DHParameterNumbers(p, g, q)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 
@@ -163,11 +207,22 @@ class TestDH(object):
         with pytest.raises(ValueError):
             private.private_key(backend)
 
-    def test_generate_dh(self, backend):
-        generator = 2
-        key_size = 512
+    @pytest.mark.parametrize("with_q", [False, True])
+    def test_generate_dh(self, backend, with_q):
+        if with_q:
+            vector = load_vectors_from_file(
+                os.path.join("asymmetric", "DH", "RFC5114.txt"),
+                load_nist_vectors)[0]
+            p = int(vector["p"], 16)
+            g = int(vector["g"], 16)
+            q = int(vector["q"], 16)
+            parameters = dh.DHParameterNumbers(p, g, q).parameters(backend)
+            key_size = 1024
+        else:
+            generator = 2
+            key_size = 512
 
-        parameters = dh.generate_parameters(generator, key_size, backend)
+            parameters = dh.generate_parameters(generator, key_size, backend)
         assert isinstance(parameters, dh.DHParameters)
 
         key = parameters.generate_private_key()
@@ -290,6 +345,27 @@ class TestDH(object):
 
         assert int_from_bytes(symkey, 'big') == int(vector["k"], 16)
 
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "RFC5114.txt"),
+            load_nist_vectors))
+    def test_dh_vectors_with_q(self, backend, vector):
+        parameters = dh.DHParameterNumbers(int(vector["p"], 16),
+                                           int(vector["g"], 16),
+                                           int(vector["q"], 16))
+        public1 = dh.DHPublicNumbers(int(vector["ystatcavs"], 16), parameters)
+        private1 = dh.DHPrivateNumbers(int(vector["xstatcavs"], 16), public1)
+        public2 = dh.DHPublicNumbers(int(vector["ystatiut"], 16), parameters)
+        private2 = dh.DHPrivateNumbers(int(vector["xstatiut"], 16), public2)
+        key1 = private1.private_key(backend)
+        key2 = private2.private_key(backend)
+        symkey1 = key1.exchange(public2.public_key(backend))
+        symkey2 = key2.exchange(public1.public_key(backend))
+
+        assert int_from_bytes(symkey1, 'big') == int(vector["z"], 16)
+        assert int_from_bytes(symkey2, 'big') == int(vector["z"], 16)
+
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
@@ -332,11 +408,20 @@ class TestDHPrivateKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhkey.der"),
                 serialization.load_der_private_key,
                 serialization.Encoding.DER,
+            ), (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
+                serialization.load_pem_private_key,
+                serialization.Encoding.PEM,
+            ), (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
+                serialization.load_der_private_key,
+                serialization.Encoding.DER,
             )
         ]
     )
     def test_private_bytes_match(self, key_path, loader_func,
                                  encoding, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -349,34 +434,48 @@ class TestDHPrivateKeySerialization(object):
         assert serialized == key_bytes
 
     @pytest.mark.parametrize(
-        ("key_path", "loader_func"),
+        ("key_path", "loader_func", "vec_path"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhkey.pem"),
                 serialization.load_pem_private_key,
+                os.path.join("asymmetric", "DH", "dhkey.txt")
             ), (
                 os.path.join("asymmetric", "DH", "dhkey.der"),
                 serialization.load_der_private_key,
+                os.path.join("asymmetric", "DH", "dhkey.txt")
+            ), (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
+                serialization.load_pem_private_key,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt")
+            ), (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
+                serialization.load_der_private_key,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt")
             )
         ]
     )
     def test_private_bytes_values(self, key_path, loader_func,
-                                  backend):
+                                  vec_path, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        vec = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhkey.txt"),
-            load_nist_vectors)[0]
+        vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
         key = loader_func(key_bytes, None, backend)
         private_numbers = key.private_numbers()
         assert private_numbers.x == int(vec["x"], 16)
         assert private_numbers.public_numbers.y == int(vec["y"], 16)
         assert private_numbers.public_numbers.parameter_numbers.g == int(
-            vec["g"])
+            vec["g"], 16)
         assert private_numbers.public_numbers.parameter_numbers.p == int(
             vec["p"], 16)
+        if "q" in vec:
+            assert private_numbers.public_numbers.parameter_numbers.q == int(
+                vec["q"], 16)
+        else:
+            assert private_numbers.public_numbers.parameter_numbers.q is None
 
     def test_private_bytes_traditional_openssl_invalid(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
@@ -469,11 +568,20 @@ class TestDHPublicKeySerialization(object):
                 os.path.join("asymmetric", "DH", "dhpub.der"),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
+            ), (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+                serialization.load_pem_public_key,
+                serialization.Encoding.PEM,
+            ), (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+                serialization.load_der_public_key,
+                serialization.Encoding.DER,
             )
         ]
     )
     def test_public_bytes_match(self, key_path, loader_func,
                                 encoding, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -486,31 +594,44 @@ class TestDHPublicKeySerialization(object):
         assert serialized == key_bytes
 
     @pytest.mark.parametrize(
-        ("key_path", "loader_func"),
+        ("key_path", "loader_func", "vec_path"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhpub.pem"),
                 serialization.load_pem_public_key,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
             ), (
                 os.path.join("asymmetric", "DH", "dhpub.der"),
                 serialization.load_der_public_key,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
+            ), (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+                serialization.load_pem_public_key,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+            ), (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+                serialization.load_der_public_key,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
             )
         ]
     )
     def test_public_bytes_values(self, key_path, loader_func,
-                                 backend):
+                                 vec_path, backend):
+        _skip_dhx_unsupported(backend)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        vec = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhkey.txt"),
-            load_nist_vectors)[0]
+        vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
         pub_key = loader_func(key_bytes, backend)
         public_numbers = pub_key.public_numbers()
         assert public_numbers.y == int(vec["y"], 16)
-        assert public_numbers.parameter_numbers.g == int(vec["g"])
+        assert public_numbers.parameter_numbers.g == int(vec["g"], 16)
         assert public_numbers.parameter_numbers.p == int(vec["p"], 16)
+        if "q" in vec:
+            assert public_numbers.parameter_numbers.q == int(vec["q"], 16)
+        else:
+            assert public_numbers.parameter_numbers.q is None
 
     def test_public_bytes_invalid_encoding(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)

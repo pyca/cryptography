@@ -23,7 +23,8 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
-    _DHParameters, _DHPrivateKey, _DHPublicKey
+    _DHParameters, _DHPrivateKey, _DHPublicKey,
+    _dh_params_dup
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey
@@ -99,6 +100,9 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
+        self._dh_types = [self._lib.EVP_PKEY_DH]
+        if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
@@ -480,7 +484,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -512,7 +516,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1205,6 +1209,23 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_CIPHER
             )
 
+        elif errors[0][1:] in (
+            (
+                self._lib.ERR_LIB_ASN1,
+                self._lib.ASN1_F_ASN1_CHECK_TLEN,
+                self._lib.ASN1_R_WRONG_TAG
+            ),
+            (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_READ_BIO,
+                self._lib.PEM_R_NO_START_LINE
+            ),
+        ):
+            raise UnsupportedAlgorithm(
+                "Unsupported public key algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
+
         elif any(
             error[1:] == (
                 self._lib.ERR_LIB_EVP,
@@ -1660,9 +1681,7 @@ class Backend(object):
         return evp_pkey
 
     def generate_dh_private_key(self, parameters):
-        dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
-        self.openssl_assert(dh_key_cdata != self._ffi.NULL)
-        dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
+        dh_key_cdata = _dh_params_dup(parameters._dh_cdata, self)
 
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)
@@ -1684,10 +1703,16 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.public_numbers.y)
         priv_key = self._int_to_bn(numbers.x)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
@@ -1713,9 +1738,15 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.y)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
@@ -1733,12 +1764,17 @@ class Backend(object):
         p = self._int_to_bn(numbers.p)
         g = self._int_to_bn(numbers.g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if numbers.q is not None:
+            q = self._int_to_bn(numbers.q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         return _DHParameters(self, dh_cdata)
 
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1746,7 +1782,12 @@ class Backend(object):
         p = self._int_to_bn(p)
         g = self._int_to_bn(g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if q is not None:
+            q = self._int_to_bn(q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
@@ -1754,6 +1795,9 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         return codes[0] == 0
+
+    def dh_x942_serialization_supported(self):
+        return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x509_name_bytes(self, name):
         x509_name = _encode_name_gc(self, name)

@@ -16,13 +16,13 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import RSABackend
+from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
+from cryptography.hazmat.primitives.asymmetric import dh, dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -32,7 +32,9 @@ from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )
 from ...test_x509 import _load_cert
-from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from ...utils import (
+    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+)
 
 
 def skip_if_libre_ssl(openssl_version):
@@ -611,3 +613,78 @@ class TestGOSTCertificate(object):
             assert cert.subject.get_attributes_for_oid(
                 x509.ObjectIdentifier("1.2.643.3.131.1.1")
             )[0].value == "007710474375"
+
+
+@pytest.mark.skipif(
+    backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
+    reason="Requires OpenSSL without EVP_PKEY_DHX (1.0.2-)")
+@pytest.mark.requires_backend_interface(interface=DHBackend)
+class TestOpenSSLDHSerialization(object):
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "RFC5114.txt"),
+            load_nist_vectors))
+    def test_dh_serialization_with_q_unsupported(self, backend, vector):
+        parameters = dh.DHParameterNumbers(int(vector["p"], 16),
+                                           int(vector["g"], 16),
+                                           int(vector["q"], 16))
+        public = dh.DHPublicNumbers(int(vector["ystatcavs"], 16), parameters)
+        private = dh.DHPrivateNumbers(int(vector["xstatcavs"], 16), public)
+        private_key = private.private_key(backend)
+        public_key = private_key.public_key()
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            private_key.private_bytes(serialization.Encoding.PEM,
+                                      serialization.PrivateFormat.PKCS8,
+                                      serialization.NoEncryption())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            public_key.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo)
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
+                serialization.load_pem_private_key,
+            ),
+            (
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
+                serialization.load_der_private_key,
+            )
+        ]
+    )
+    def test_private_load_dhx_unsupported(self, key_path, loader_func,
+                                          backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        with raises_unsupported_algorithm(
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+            loader_func(key_bytes, None, backend)
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+                serialization.load_pem_public_key,
+            ),
+            (
+                os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+                serialization.load_der_public_key,
+            )
+        ]
+    )
+    def test_public_load_dhx_unsupported(self, key_path, loader_func,
+                                         backend):
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        with raises_unsupported_algorithm(
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+            loader_func(key_bytes, backend)

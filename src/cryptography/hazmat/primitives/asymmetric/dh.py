@@ -78,18 +78,21 @@ class DHPublicNumbers(object):
 
 
 class DHParameterNumbers(object):
-    def __init__(self, p, g):
+    def __init__(self, p, g, q=None):
         if (
             not isinstance(p, six.integer_types) or
             not isinstance(g, six.integer_types)
         ):
             raise TypeError("p and g must be integers")
+        if q is not None and not isinstance(q, six.integer_types):
+            raise TypeError("q must be integer or None")
 
-        if g not in (2, 5):
+        if q is None and g not in (2, 5):
             raise ValueError("DH generator must be 2 or 5")
 
         self._p = p
         self._g = g
+        self._q = q
 
     def __eq__(self, other):
         if not isinstance(other, DHParameterNumbers):
@@ -97,7 +100,8 @@ class DHParameterNumbers(object):
 
         return (
             self._p == other._p and
-            self._g == other._g
+            self._g == other._g and
+            self._q == other._q
         )
 
     def __ne__(self, other):
@@ -108,6 +112,7 @@ class DHParameterNumbers(object):
 
     p = utils.read_only_property("_p")
     g = utils.read_only_property("_g")
+    q = utils.read_only_property("_q")
 
 
 @six.add_metaclass(abc.ABCMeta)

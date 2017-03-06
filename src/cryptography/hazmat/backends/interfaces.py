@@ -361,9 +361,16 @@ class DHBackend(object):
         """
 
     @abc.abstractmethod
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         """
         Returns whether the backend supports DH with these parameter values.
+        """
+
+    @abc.abstractmethod
+    def dh_x942_serialization_supported(self):
+        """
+        Returns True if the backend supports the serialization of DH objects
+        with subgroup order (q).
         """
 
 

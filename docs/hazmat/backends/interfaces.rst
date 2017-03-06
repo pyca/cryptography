@@ -666,14 +666,23 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
 
-    .. method:: dh_parameters_supported(p, g)
+    .. method:: dh_parameters_supported(p, g, q=None)
 
         :param int p: The p value of the DH key.
 
         :param int g: The g value of the DH key.
 
-        :returns: ``True`` if the given values of ``p`` and ``g`` are supported
-            by this backend, otherwise ``False``.
+        :param int q: The q value of the DH key.
+
+        :returns: ``True`` if the given values of ``p``, ``g`` and ``q``
+            are supported by this backend, otherwise ``False``.
+
+    .. versionadded:: 1.8
+
+    .. method:: dh_x942_serialization_supported()
+
+        :returns: True if serialization of DH objects with
+            subgroup order (q) is supported by this backend.
 
 
 .. class:: ScryptBackend
