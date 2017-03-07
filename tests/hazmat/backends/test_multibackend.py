@@ -625,6 +625,7 @@ class TestMultiBackend(object):
         backend.load_dh_public_numbers(object())
         backend.generate_dh_private_key_and_parameters(2, 512)
         backend.dh_parameters_supported(2, 3)
+        backend.dh_x942_serialization_supported()
 
         backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
