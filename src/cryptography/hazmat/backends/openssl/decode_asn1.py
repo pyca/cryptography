@@ -489,9 +489,15 @@ _DISTPOINT_TYPE_RELATIVENAME = 1
 
 def _decode_crl_distribution_points(backend, cdps):
     cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
-    cdps = backend._ffi.gc(cdps, backend._lib.sk_DIST_POINT_free)
-    num = backend._lib.sk_DIST_POINT_num(cdps)
 
+    dp_freefunc = backend._ffi.addressof(
+        backend._lib.original_lib, "DIST_POINT_free"
+    )
+    cdps = backend._ffi.gc(
+        cdps, lambda c: backend._lib.sk_DIST_POINT_pop_free(c, dp_freefunc)
+    )
+
+    num = backend._lib.sk_DIST_POINT_num(cdps)
     dist_points = []
     for i in range(num):
         full_name = None
