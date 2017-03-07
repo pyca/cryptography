@@ -46,7 +46,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
     _CertificateSigningRequest, _RevokedCertificate
 )
-from cryptography.hazmat.bindings._openssl import lib as _lib
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -1137,7 +1136,9 @@ class Backend(object):
         evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
-            self._ffi.addressof(_lib, "Cryptography_pem_password_cb"),
+            self._ffi.addressof(
+                self._lib._original_lib, "Cryptography_pem_password_cb"
+            ),
             userdata,
         )
 
