@@ -248,7 +248,14 @@ class _X509ExtensionParser(object):
 
 def _decode_certificate_policies(backend, cp):
     cp = backend._ffi.cast("Cryptography_STACK_OF_POLICYINFO *", cp)
-    cp = backend._ffi.gc(cp, backend._lib.sk_POLICYINFO_free)
+
+    cp_freefunc = backend._ffi.addressof(
+        backend._lib.original_lib, "POLICYINFO_free"
+    )
+    cp = backend._ffi.gc(
+        cp, lambda c: backend._lib.sk_POLICYINFO_pop_free(c, cp_freefunc)
+    )
+
     num = backend._lib.sk_POLICYINFO_num(cp)
     certificate_policies = []
     for i in range(num):
