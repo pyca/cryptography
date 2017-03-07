@@ -250,7 +250,7 @@ def _decode_certificate_policies(backend, cp):
     cp = backend._ffi.cast("Cryptography_STACK_OF_POLICYINFO *", cp)
 
     cp_freefunc = backend._ffi.addressof(
-        backend._lib.original_lib, "POLICYINFO_free"
+        backend._lib._original_lib, "POLICYINFO_free"
     )
     cp = backend._ffi.gc(
         cp, lambda c: backend._lib.sk_POLICYINFO_pop_free(c, cp_freefunc)
@@ -498,7 +498,7 @@ def _decode_crl_distribution_points(backend, cdps):
     cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
 
     dp_freefunc = backend._ffi.addressof(
-        backend._lib.original_lib, "DIST_POINT_free"
+        backend._lib._original_lib, "DIST_POINT_free"
     )
     cdps = backend._ffi.gc(
         cdps, lambda c: backend._lib.sk_DIST_POINT_pop_free(c, dp_freefunc)
