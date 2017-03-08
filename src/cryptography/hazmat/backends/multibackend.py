@@ -481,18 +481,9 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
         )
 
-    def dh_parameters_supported(self, p, g, q=None):
+    def dh_parameters_supported(self, p, g):
         for b in self._filtered_backends(DHBackend):
-            return b.dh_parameters_supported(p, g, q)
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support Diffie-Hellman",
-            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
-        )
-
-    def dh_x942_serialization_supported(self):
-        for b in self._filtered_backends(DHBackend):
-            return b.dh_x942_serialization_supported()
+            return b.dh_parameters_supported(p, g)
 
         raise UnsupportedAlgorithm(
             "This backend does not support Diffie-Hellman",
