@@ -79,6 +79,7 @@ def main():
             })
             for ptr in remaining
         )))
+        sys.stderr.flush()
         sys.exit(1)
 
 main()
