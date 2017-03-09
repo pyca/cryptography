@@ -91,7 +91,7 @@ def main():
             for ptr in remaining
         )))
         sys.stdout.flush()
-        sys.exit(1)
+        sys.exit(255)
 
 main()
 """
@@ -107,9 +107,12 @@ def assert_no_memory_leaks(s):
         stderr=subprocess.PIPE,
     )
     proc.wait()
-    if proc.returncode != 0:
+    if proc.returncode == 255:
         out = json.loads(proc.stdout.read().decode())
         raise AssertionError(out)
+    elif proc.returncode != 0:
+        # Any exception type will do to be honest
+        raise ValueError(proc.stdout.read(), proc.stderr.read())
 
 
 def skip_if_memtesting_not_supported():
@@ -154,4 +157,11 @@ class TestAssertNoMemoryLeaks(object):
                 )
                 b = Binding()
                 b.lib.X509_NAME_new()
+            """))
+
+    def test_errors(self):
+        with pytest.raises(ValueError):
+            assert_no_memory_leaks(textwrap.dedent("""
+            def func():
+                raise ZeroDivisionError
             """))
