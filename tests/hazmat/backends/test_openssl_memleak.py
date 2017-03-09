@@ -17,6 +17,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 MEMORY_LEAK_SCRIPT = """
 def main():
+    import ctypes.util
     import gc
     import json
     import sys
@@ -31,7 +32,7 @@ def main():
     void *realloc(void *, size_t);
     void free(void *);
     ''')
-    libc_lib = libc_ffi.dlopen(None)
+    libc_lib = libc_ffi.dlopen(ctypes.util.find_library("c"))
 
     heap = {}
 
