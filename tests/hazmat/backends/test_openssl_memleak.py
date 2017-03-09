@@ -84,7 +84,7 @@ def main():
         sys.stderr.write(json.dumps(dict(
             (int(libc_ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
-                "path": libc_ffi.string(heap[ptr][1]),
+                "path": libc_ffi.string(heap[ptr][1]).decode(),
                 "line": heap[ptr][2]
             })
             for ptr in remaining
