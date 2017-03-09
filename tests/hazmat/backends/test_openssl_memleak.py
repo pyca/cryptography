@@ -107,7 +107,7 @@ def assert_no_memory_leaks(s):
     )
     proc.wait()
     if proc.returncode != 0:
-        out = json.load(proc.stdout)
+        out = json.loads(proc.stdout.read().decode())
         raise AssertionError(out)
 
 
