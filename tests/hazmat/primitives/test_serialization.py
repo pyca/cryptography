@@ -236,12 +236,10 @@ class TestDERSerialization(object):
         """).encode()
         bad_der = base64.b64decode(b"".join(key_data.splitlines()))
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(bad_der, None, backend)
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(
                 bad_der, b"this password will not be used", backend
             )
@@ -577,14 +575,12 @@ class TestPEMSerialization(object):
     def test_wrong_private_format(self, backend):
         key_data = b"---- NOT A KEY ----\n"
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(
                 key_data, None, backend
             )
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
@@ -592,8 +588,7 @@ class TestPEMSerialization(object):
     def test_wrong_public_format(self, backend):
         key_data = b"---- NOT A KEY ----\n"
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_public_key(key_data, backend)
 
     def test_corrupt_traditional_format(self, backend):
@@ -725,14 +720,12 @@ class TestPEMSerialization(object):
 
         password = b"this password is wrong"
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(
                 key_data, None, backend
             )
 
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with pytest.raises(ValueError):
             load_pem_private_key(
                 key_data, password, backend
             )
@@ -852,9 +845,7 @@ class TestPEMSerialization(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
+        with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
