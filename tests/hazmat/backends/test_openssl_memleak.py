@@ -35,20 +35,20 @@ def main():
 
     heap = {}
 
-    @ffi.callback("void *(size_t, const char *, int)")
+    @libc_ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = libc_lib.malloc(size)
         heap[ptr] = (size, path, line)
         return ptr
 
-    @ffi.callback("void *(void *, size_t, const char *, int)")
+    @libc_ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         del heap[ptr]
         new_ptr = libc_lib.realloc(ptr, size)
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
-    @ffi.callback("void(void *, const char *, int)")
+    @libc_ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
         if ptr != libc_ffi.NULL:
             del heap[ptr]
@@ -67,6 +67,16 @@ def main():
     gc.collect()
     gc.collect()
     gc.collect()
+
+    # Swap back to the original functions so that if OpenSSL tries to free
+    # something from its atexit handle it won't be going through a Python
+    # function, which will be deallocated when this function returns
+    result = lib.Cryptography_CRYPTO_set_mem_functions(
+        ffi.addressof(lib, "Cryptography_malloc_wrapper"),
+        ffi.addressof(lib, "Cryptography_realloc_wrapper"),
+        ffi.addressof(lib, "Cryptography_free_wrapper"),
+    )
+    assert result == 1
 
     remaining = set(heap) - start_heap
 

@@ -65,6 +65,10 @@ int Cryptography_CRYPTO_set_mem_functions(
     void *(*)(size_t, const char *, int),
     void *(*)(void *, size_t, const char *, int),
     void (*)(void *, const char *, int));
+
+void *Cryptography_malloc_wrapper(size_t, const char *, int);
+void *Cryptography_realloc_wrapper(void *, size_t, const char *, int);
+void Cryptography_free_wrapper(void *, const char *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -131,4 +135,16 @@ int Cryptography_CRYPTO_set_mem_functions(
     return CRYPTO_set_mem_functions(m, r, f);
 }
 #endif
+
+void *Cryptography_malloc_wrapper(size_t size, const char *file, int line) {
+    return malloc(size);
+}
+
+void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *file, int line) {
+    return realloc(ptr, size);
+}
+
+void Cryptography_free_wrapper(void *ptr, const char *file, int line) {
+    return free(ptr);
+}
 """
