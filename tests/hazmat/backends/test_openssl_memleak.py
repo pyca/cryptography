@@ -58,6 +58,17 @@ def main(argv):
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
 
+    # Make sure these functions aren't free, this avoids the following
+    # scenario:
+    #   * We set up these pointers
+    #   * This function returns, and they're freed by ref-counting
+    #   * The whole program exits and OpenSSL's atexit handler is invoked
+    #   * OpenSSL tries to free things, and uses our callback which is a
+    #     dangling ptr
+    keepalive.append(malloc)
+    keepalive.append(realloc)
+    keepalive.append(free)
+
     # Trigger a bunch of initialization stuff.
     import cryptography.hazmat.backends.openssl
 
