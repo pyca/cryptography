@@ -172,6 +172,8 @@ typedef struct {
 } POLICYINFO;
 
 typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
+typedef void (*sk_DIST_POINT_freefunc)(DIST_POINT *);
+typedef void (*sk_POLICYINFO_freefunc)(POLICYINFO *);
 """
 
 
@@ -244,12 +246,16 @@ void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
 DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
 int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
+void sk_DIST_POINT_pop_free(Cryptography_STACK_OF_DIST_POINT *,
+                            sk_DIST_POINT_freefunc);
 
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
 POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
 int sk_POLICYINFO_push(Cryptography_STACK_OF_POLICYINFO *, POLICYINFO *);
 Cryptography_STACK_OF_POLICYINFO *sk_POLICYINFO_new_null(void);
+void sk_POLICYINFO_pop_free(Cryptography_STACK_OF_POLICYINFO *,
+                            sk_POLICYINFO_freefunc);
 
 POLICYINFO *POLICYINFO_new(void);
 void POLICYINFO_free(POLICYINFO *);
