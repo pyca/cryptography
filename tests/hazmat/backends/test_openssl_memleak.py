@@ -16,7 +16,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
 MEMORY_LEAK_SCRIPT = """
-def main():
+def main(keepalive):
     import gc
     import json
     import sys
@@ -57,6 +57,17 @@ def main():
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
 
+    # Make sure these functions aren't free, this avoids the following
+    # scenario:
+    #   * We set up these pointers
+    #   * This function returns, and they're freed by ref-counting
+    #   * The whole program exits and OpenSSL's atexit handler is invoked
+    #   * OpenSSL tries to free things, and uses our callback which is a
+    #     dangling ptr
+    keepalive.append(malloc)
+    keepalive.append(realloc)
+    keepalive.append(free)
+
     # Trigger a bunch of initialization stuff.
     from cryptography.hazmat.bindings.openssl.binding import Binding
     Binding()
@@ -82,7 +93,8 @@ def main():
         sys.stderr.flush()
         sys.exit(1)
 
-main()
+_keepalive = []
+main(_keepalive)
 """
 
 
