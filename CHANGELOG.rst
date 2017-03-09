@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.8 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.8 - 2017-03-09
+~~~~~~~~~~~~~~~~
 
 * Added support for Python 3.6.
 * Windows and macOS wheels now link against OpenSSL 1.1.0.
