@@ -81,7 +81,7 @@ def main():
     remaining = set(heap) - start_heap
 
     if remaining:
-        sys.stderr.write(json.dumps(dict(
+        sys.stdout.write(json.dumps(dict(
             (int(libc_ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
                 "path": libc_ffi.string(heap[ptr][1]).decode(),
@@ -89,7 +89,7 @@ def main():
             })
             for ptr in remaining
         )))
-        sys.stderr.flush()
+        sys.stdout.flush()
         sys.exit(1)
 
 main()
@@ -103,7 +103,7 @@ def assert_no_memory_leaks(s):
         [sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)],
         env=env,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stderr=subprocess.PIPE,
     )
     proc.wait()
     if proc.returncode != 0:
