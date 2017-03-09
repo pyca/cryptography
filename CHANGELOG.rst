@@ -8,6 +8,9 @@ Changelog
 
 * Added support for Python 3.6.
 * Windows and macOS wheels now link against OpenSSL 1.1.0.
+* macOS wheels are no longer universal. This change significantly shrinks the
+  size of the wheels. Users on macOS 32-bit Python (if there are any) should
+  migrate to 64-bit or build their own packages.
 * Changed ASN.1 dependency from ``pyasn1`` to ``asn1crypto`` resulting in a
   general performance increase when encoding/decoding ASN.1 structures. Also,
   the ``pyasn1_modules`` test dependency is no longer required.
