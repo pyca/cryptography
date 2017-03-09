@@ -223,7 +223,7 @@ Key interfaces
 Numbers
 ~~~~~~~
 
-.. class:: DHParameterNumbers(p, g, q=None)
+.. class:: DHParameterNumbers(p, g)
 
     .. versionadded:: 0.8
 
@@ -239,15 +239,7 @@ Numbers
 
         :type: int
 
-        The generator value. Must be 2 or 5 (Unless q is given).
-
-    .. attribute:: q
-
-        .. versionadded:: 1.8
-
-        :type: int
-
-        p subgroup order value.
+        The generator value. Must be 2 or 5.
 
 .. class:: DHPrivateNumbers(x, public_numbers)
 
