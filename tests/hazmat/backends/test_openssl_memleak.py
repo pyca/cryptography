@@ -35,13 +35,13 @@ def main(argv):
 
     heap = {}
 
-    @ffi.callback("void *(size_t, const char *, int)")
+    @libc_ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = lib.Cryptography_malloc_wrapper(size, path, line)
         heap[ptr] = (size, path, line)
         return ptr
 
-    @ffi.callback("void *(void *, size_t, const char *, int)")
+    @libc_ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         if ptr != ffi.NULL:
             del heap[ptr]
@@ -49,7 +49,7 @@ def main(argv):
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
-    @ffi.callback("void(void *, const char *, int)")
+    @libc_ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
         if ptr != ffi.NULL:
             del heap[ptr]
