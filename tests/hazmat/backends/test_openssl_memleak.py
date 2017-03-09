@@ -12,6 +12,8 @@ import textwrap
 
 import pytest
 
+from cryptography.hazmat.bindings.openssl.binding import Binding
+
 
 MEMORY_LEAK_SCRIPT = """
 def main():
@@ -98,6 +100,14 @@ def assert_no_memory_leaks(s):
         raise AssertionError(out)
 
 
+def skip_if_memtesting_not_supported():
+    return pytest.mark.skipif(
+        not Binding().lib.Cryptography_HAS_MEM_FUNCTIONS,
+        reason="Requires OpenSSL memory functions (>=1.1.0)"
+    )
+
+
+@skip_if_memtesting_not_supported()
 class TestAssertNoMemoryLeaks(object):
     def test_no_leak_no_malloc(self):
         assert_no_memory_leaks(textwrap.dedent("""
