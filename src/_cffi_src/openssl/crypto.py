@@ -140,7 +140,8 @@ void *Cryptography_malloc_wrapper(size_t size, const char *file, int line) {
     return malloc(size);
 }
 
-void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *file, int line) {
+void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *file,
+                                   int line) {
     return realloc(ptr, size);
 }
 
