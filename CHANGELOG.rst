@@ -27,6 +27,7 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
   now require that ``password`` must be bytes if provided. Previously this
   was documented but not enforced.
+* Added support for subgroup order in :doc:`/hazmat/primitives/asymmetric/dh`.
 
 1.7.2 - 2017-01-27
 ~~~~~~~~~~~~~~~~~~
