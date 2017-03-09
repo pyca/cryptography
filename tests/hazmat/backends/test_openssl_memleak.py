@@ -90,7 +90,7 @@ def assert_no_memory_leaks(s):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
     proc = subprocess.Popen(
-        [sys.executable, "-c", "{}\n\n{}".format(s, MEMORY_LEAK_SCRIPT)],
+        [sys.executable, "-c", "{0}\n\n{0}".format(s, MEMORY_LEAK_SCRIPT)],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
