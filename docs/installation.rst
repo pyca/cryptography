@@ -15,7 +15,7 @@ PyPy 2.6+ on these operating systems.
 
 * x86-64 CentOS 7.x, 6.4
 * x86-64 FreeBSD 10
-* OS X 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks,
+* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks,
   10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
@@ -134,9 +134,9 @@ build.
 Static Wheels
 ~~~~~~~~~~~~~
 
-Cryptography ships statically-linked wheels for OS X and Windows, ensuring that
-these platforms can always use the most-recent OpenSSL, regardless of what is
-shipped by default on those platforms. As a result of various difficulties
+Cryptography ships statically-linked wheels for macOS and Windows, ensuring
+that these platforms can always use the most-recent OpenSSL, regardless of what
+is shipped by default on those platforms. As a result of various difficulties
 around Linux binary linking, Cryptography cannot do the same on Linux.
 
 However, you can build your own statically-linked wheels that will work on your
@@ -182,25 +182,25 @@ dependencies.
     cd ..
     CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel --no-use-wheel cryptography
 
-Building cryptography on OS X
------------------------------
+Building cryptography on macOS
+------------------------------
 
 .. note::
 
     If installation gives a ``fatal error: 'openssl/aes.h' file not found``
     see the :doc:`FAQ </faq>` for information about how to fix this issue.
 
-The wheel package on OS X is a statically linked build (as of 1.0.1) so for
+The wheel package on macOS is a statically linked build (as of 1.0.1) so for
 users with pip 8 or above you only need one step:
 
 .. code-block:: console
 
     $ pip install cryptography
 
-If you want to build cryptography yourself or are on an older OS X version,
+If you want to build cryptography yourself or are on an older macOS version,
 cryptography requires the presence of a C compiler, development headers, and
-the proper libraries. On OS X much of this is provided by Apple's Xcode
-development tools.  To install the Xcode command line tools (on OS X 10.9+)
+the proper libraries. On macOS much of this is provided by Apple's Xcode
+development tools.  To install the Xcode command line tools (on macOS 10.9+)
 open a terminal window and run:
 
 .. code-block:: console
@@ -219,8 +219,8 @@ To build cryptography and dynamically link it:
 
 .. code-block:: console
 
-    $ brew install openssl
-    $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
+    $ brew install openssl@1.1
+    $ env LDFLAGS="-L$(brew --prefix openssl@1.1)/lib" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
@@ -235,8 +235,8 @@ You can also build cryptography statically:
 
 .. code-block:: console
 
-    $ brew install openssl
-    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl)/lib/libssl.a $(brew --prefix openssl)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
+    $ brew install openssl@1.1
+    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
@@ -255,7 +255,7 @@ Because of a bug in conda, attempting to install cryptography out of the box
 will result in an error. This can be resolved by setting the library path
 environment variable for your platform.
 
-On OS X:
+On macOS:
 
 .. code-block:: console
 
