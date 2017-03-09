@@ -134,9 +134,9 @@ build.
 Static Wheels
 ~~~~~~~~~~~~~
 
-Cryptography ships statically-linked wheels for macOS and Windows, ensuring that
-these platforms can always use the most-recent OpenSSL, regardless of what is
-shipped by default on those platforms. As a result of various difficulties
+Cryptography ships statically-linked wheels for macOS and Windows, ensuring
+that these platforms can always use the most-recent OpenSSL, regardless of what
+is shipped by default on those platforms. As a result of various difficulties
 around Linux binary linking, Cryptography cannot do the same on Linux.
 
 However, you can build your own statically-linked wheels that will work on your
