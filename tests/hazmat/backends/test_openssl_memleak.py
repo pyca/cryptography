@@ -21,30 +21,26 @@ def main():
     import json
     import sys
 
-    import cffi
-
     from cryptography.hazmat.bindings._openssl import ffi, lib
-
-    libc_ffi = cffi.FFI()
 
     heap = {}
 
-    @libc_ffi.callback("void *(size_t, const char *, int)")
+    @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = lib.Cryptography_malloc_wrapper(size, path, line)
         heap[ptr] = (size, path, line)
         return ptr
 
-    @libc_ffi.callback("void *(void *, size_t, const char *, int)")
+    @ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         del heap[ptr]
         new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
-    @libc_ffi.callback("void(void *, const char *, int)")
+    @ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
-        if ptr != libc_ffi.NULL:
+        if ptr != ffi.NULL:
             del heap[ptr]
             lib.Cryptography_free_wrapper(ptr, path, line)
 
@@ -76,9 +72,9 @@ def main():
 
     if remaining:
         sys.stdout.write(json.dumps(dict(
-            (int(libc_ffi.cast("size_t", ptr)), {
+            (int(ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
-                "path": libc_ffi.string(heap[ptr][1]).decode(),
+                "path": ffi.string(heap[ptr][1]).decode(),
                 "line": heap[ptr][2]
             })
             for ptr in remaining
