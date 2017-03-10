@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.8.1 - 2017-03-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed macOS wheels to properly link against 1.1.0 rather than 1.0.2.
+
 1.8 - 2017-03-09
 ~~~~~~~~~~~~~~~~
 
