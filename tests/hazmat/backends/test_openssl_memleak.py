@@ -89,6 +89,8 @@ main()
 def assert_no_memory_leaks(s):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
+    # Shell out to a fresh Python process because OpenSSL does not allow you to
+    # install new memory hooks after the first malloc/free occurs.
     proc = subprocess.Popen(
         [sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)],
         env=env,
@@ -97,6 +99,8 @@ def assert_no_memory_leaks(s):
     )
     proc.wait()
     if proc.returncode == 255:
+        # 255 means there was a leak, load the info about what mallocs weren't
+        # freed.
         out = json.loads(proc.stdout.read().decode())
         raise AssertionError(out)
     elif proc.returncode != 0:
