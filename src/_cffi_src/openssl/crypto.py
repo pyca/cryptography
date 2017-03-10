@@ -136,16 +136,16 @@ int Cryptography_CRYPTO_set_mem_functions(
 }
 #endif
 
-void *Cryptography_malloc_wrapper(size_t size, const char *file, int line) {
+void *Cryptography_malloc_wrapper(size_t size, const char *path, int line) {
     return malloc(size);
 }
 
-void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *file,
+void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
                                    int line) {
     return realloc(ptr, size);
 }
 
-void Cryptography_free_wrapper(void *ptr, const char *file, int line) {
+void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
     return free(ptr);
 }
 """
