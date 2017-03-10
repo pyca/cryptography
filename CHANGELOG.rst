@@ -1,6 +1,17 @@
 Changelog
 =========
 
+1.9 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+
+1.8.1 - 2017-03-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed macOS wheels to properly link against 1.1.0 rather than 1.0.2.
+
 1.8 - 2017-03-09
 ~~~~~~~~~~~~~~~~
 
