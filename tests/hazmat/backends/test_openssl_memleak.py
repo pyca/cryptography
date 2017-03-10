@@ -17,7 +17,6 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 MEMORY_LEAK_SCRIPT = """
 def main():
-    import ctypes.util
     import gc
     import json
     import sys
@@ -27,26 +26,19 @@ def main():
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
     libc_ffi = cffi.FFI()
-    libc_ffi.cdef('''
-    void *malloc(size_t);
-    void *realloc(void *, size_t);
-    void free(void *);
-    ''')
-    raise ValueError(ctypes.util.find_library("c"))
-    libc_lib = libc_ffi.dlopen(ctypes.util.find_library("c"))
 
     heap = {}
 
     @libc_ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
-        ptr = libc_lib.malloc(size)
+        ptr = lib.Cryptography_malloc_wrapper(size, path, line)
         heap[ptr] = (size, path, line)
         return ptr
 
     @libc_ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
         del heap[ptr]
-        new_ptr = libc_lib.realloc(ptr, size)
+        new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
         heap[new_ptr] = (size, path, line)
         return new_ptr
 
@@ -54,7 +46,7 @@ def main():
     def free(ptr, path, line):
         if ptr != libc_ffi.NULL:
             del heap[ptr]
-            libc_lib.free(ptr)
+            lib.Cryptography_free_wrapper(ptr, path, line)
 
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
