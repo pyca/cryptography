@@ -26,13 +26,6 @@ def main(argv):
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
     libc_ffi = cffi.FFI()
-    libc_ffi.cdef('''
-    void *malloc(size_t);
-    void *realloc(void *, size_t);
-    void free(void *);
-    ''')
-    raise ValueError(ctypes.util.find_library("c"))
-    libc_lib = libc_ffi.dlopen(ctypes.util.find_library("c"))
 
     heap = {}
 
