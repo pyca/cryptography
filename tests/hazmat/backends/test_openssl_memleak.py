@@ -32,6 +32,7 @@ def main():
     void *realloc(void *, size_t);
     void free(void *);
     ''')
+    raise ValueError(ctypes.util.find_library("c"))
     libc_lib = libc_ffi.dlopen(ctypes.util.find_library("c"))
 
     heap = {}
