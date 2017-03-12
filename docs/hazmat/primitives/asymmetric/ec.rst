@@ -421,7 +421,7 @@ Key Interfaces
 
         .. versionadded:: 1.1
 
-        Perform's a key exchange operation using the provided algorithm with
+        Performs a key exchange operation using the provided algorithm with
         the peer's public key.
 
         For most applications the result should be passed to a key derivation
