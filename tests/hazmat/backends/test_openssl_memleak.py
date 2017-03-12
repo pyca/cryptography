@@ -23,14 +23,32 @@ def main(argv):
     import gc
     import json
 
+    import cffi
+
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
+    libc_ffi = cffi.FFI()
+    libc_ffi.cdef('''
+    void free(void *);
+    int backtrace(void **, int);
+    char **backtrace_symbols(void *const *, int);
+    ''')
+    libc_lib = libc_ffi.dlopen(None)
+
     heap = {}
+
+    def _backtrace():
+        buf = libc_ffi.new("void *[]", 64)
+        result = libc_lib.backtrace(buf, len(buf))
+        strings = libc_lib.backtrace_symbols(buf, result)
+        stack = [libc_ffi.string(strings[i]) for i in range(result)]
+        libc_lib.free(strings)
+        return stack
 
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = lib.Cryptography_malloc_wrapper(size, path, line)
-        heap[ptr] = (size, path, line)
+        heap[ptr] = (size, path, line, _backtrace())
         return ptr
 
     @ffi.callback("void *(void *, size_t, const char *, int)")
@@ -38,7 +56,7 @@ def main(argv):
         if ptr != ffi.NULL:
             del heap[ptr]
         new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
-        heap[new_ptr] = (size, path, line)
+        heap[new_ptr] = (size, path, line, _backtrace())
         return new_ptr
 
     @ffi.callback("void(void *, const char *, int)")
@@ -162,3 +180,25 @@ class TestAssertNoMemoryLeaks(object):
             def func():
                 raise ZeroDivisionError
             """))
+
+
+@skip_if_memtesting_not_supported()
+class TestOpenSSLMemoryLeaks(object):
+    @pytest.mark.parametrize("path", [
+        "x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt",
+    ])
+    def test_x509_extensions(self, path):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            from cryptography import x509
+            from cryptography.hazmat.backends import default_backend
+
+            import cryptography_vectors
+
+            with cryptography_vectors.open_vector_file("{path}", "rb") as f:
+                cert = x509.load_der_x509_certificate(
+                    f.read(), default_backend()
+                )
+
+            cert.extensions
+        """.format(path=path)))
