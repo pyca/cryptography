@@ -519,22 +519,8 @@ static const long Cryptography_HAS_RELEASE_BUFFERS = 0;
 const long SSL_MODE_RELEASE_BUFFERS = 0;
 #endif
 
-#ifdef SSL_OP_NO_COMPRESSION
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
-#else
-static const long Cryptography_HAS_OP_NO_COMPRESSION = 0;
-const long SSL_OP_NO_COMPRESSION = 0;
-#endif
-
-#ifdef SSL_OP_NO_TLSv1_1
 static const long Cryptography_HAS_TLSv1_1 = 1;
-#else
-static const long Cryptography_HAS_TLSv1_1 = 0;
-static const long SSL_OP_NO_TLSv1_1 = 0;
-SSL_METHOD* (*TLSv1_1_method)(void) = NULL;
-SSL_METHOD* (*TLSv1_1_client_method)(void) = NULL;
-SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
-#endif
 
 #ifdef SSL_OP_NO_TLSv1_2
 static const long Cryptography_HAS_TLSv1_2 = 1;
@@ -557,12 +543,7 @@ const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 long (*SSL_CTX_set_tmp_ecdh)(SSL_CTX *, EC_KEY *) = NULL;
 #endif
 
-#ifdef SSL_OP_NO_TICKET
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
-#else
-static const long Cryptography_HAS_SSL_OP_NO_TICKET = 0;
-const long SSL_OP_NO_TICKET = 0;
-#endif
 
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 

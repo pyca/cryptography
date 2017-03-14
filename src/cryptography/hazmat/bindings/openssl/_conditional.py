@@ -182,11 +182,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
     ],
-    "Cryptography_HAS_GCM": [
-        "EVP_CTRL_GCM_GET_TAG",
-        "EVP_CTRL_GCM_SET_TAG",
-        "EVP_CTRL_GCM_SET_IVLEN",
-    ],
     "Cryptography_HAS_EGD": [
         "RAND_egd",
         "RAND_egd_bytes",
@@ -194,12 +189,6 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_RSA_OAEP_MD": [
         "EVP_PKEY_CTX_set_rsa_oaep_md",
-    ],
-    "Cryptography_HAS_TLSv1_1": [
-        "SSL_OP_NO_TLSv1_1",
-        "TLSv1_1_method",
-        "TLSv1_1_server_method",
-        "TLSv1_1_client_method",
     ],
 
     "Cryptography_HAS_TLSv1_2": [
@@ -219,16 +208,8 @@ CONDITIONAL_NAMES = {
         "SSL_MODE_RELEASE_BUFFERS",
     ],
 
-    "Cryptography_HAS_OP_NO_COMPRESSION": [
-        "SSL_OP_NO_COMPRESSION",
-    ],
-
     "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
         "SSL_OP_MSIE_SSLV2_RSA_PADDING",
-    ],
-
-    "Cryptography_HAS_SSL_OP_NO_TICKET": [
-        "SSL_OP_NO_TICKET",
     ],
 
     "Cryptography_HAS_NETBSD_D1_METH": [
