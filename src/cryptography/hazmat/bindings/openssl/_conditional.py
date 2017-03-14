@@ -189,10 +189,6 @@ CONDITIONAL_NAMES = {
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
-        "SSL_OP_MSIE_SSLV2_RSA_PADDING",
-    ],
-
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
     ],

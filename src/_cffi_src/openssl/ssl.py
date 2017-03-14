@@ -515,13 +515,7 @@ static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_TLSv1_1 = 1;
 static const long Cryptography_HAS_TLSv1_2 = 1;
-
-#ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
-#else
-static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
-const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
-#endif
 
 #ifdef OPENSSL_NO_EC
 long (*SSL_CTX_set_tmp_ecdh)(SSL_CTX *, EC_KEY *) = NULL;
