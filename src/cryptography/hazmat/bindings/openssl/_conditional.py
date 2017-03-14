@@ -9,14 +9,6 @@ from __future__ import absolute_import, division, print_function
 # cffi supports #if in cdef
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMAC": [
-        "CMAC_CTX_new",
-        "CMAC_Init",
-        "CMAC_Update",
-        "CMAC_Final",
-        "CMAC_CTX_copy",
-        "CMAC_CTX_free",
-    ],
     "Cryptography_HAS_CMS": [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",

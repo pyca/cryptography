@@ -649,11 +649,8 @@ class Backend(object):
         return True
 
     def cmac_algorithm_supported(self, algorithm):
-        return (
-            self._lib.Cryptography_HAS_CMAC == 1 and
-            self.cipher_supported(
-                algorithm, CBC(b"\x00" * algorithm.block_size)
-            )
+        return self.cipher_supported(
+            algorithm, CBC(b"\x00" * algorithm.block_size)
         )
 
     def create_cmac_ctx(self, algorithm):
