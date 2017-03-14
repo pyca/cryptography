@@ -25,16 +25,7 @@ int SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
 """
 
 CUSTOMIZATIONS = """
-#ifdef OPENSSL_NO_ECDH
-static const long Cryptography_HAS_ECDH = 0;
-
-int (*ECDH_compute_key)(void *, size_t, const EC_POINT *, EC_KEY *,
-                        void *(*)(const void *, size_t, void *,
-                        size_t *)) = NULL;
-
-#else
 static const long Cryptography_HAS_ECDH = 1;
-#endif
 
 #ifndef SSL_CTX_set_ecdh_auto
 static const long Cryptography_HAS_SET_ECDH_AUTO = 0;

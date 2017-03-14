@@ -1355,7 +1355,6 @@ class Backend(object):
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (
             self.elliptic_curve_supported(curve) and
-            self._lib.Cryptography_HAS_ECDH == 1 and
             isinstance(algorithm, ec.ECDH)
         )
 

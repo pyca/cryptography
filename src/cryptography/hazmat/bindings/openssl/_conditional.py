@@ -54,9 +54,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC_1_0_2": [
         "EC_curve_nid2nist",
     ],
-    "Cryptography_HAS_ECDH": [
-        "ECDH_compute_key",
-    ],
     "Cryptography_HAS_SET_ECDH_AUTO": [
         "SSL_CTX_set_ecdh_auto",
     ],
