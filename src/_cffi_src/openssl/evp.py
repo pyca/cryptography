@@ -185,12 +185,6 @@ const long Cryptography_HAS_EVP_PKEY_DHX = 0;
 const long EVP_PKEY_DHX = -1;
 #endif
 
-#ifdef OPENSSL_NO_EC
-int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
-EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
-int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
-#endif
-
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
     return EVP_PKEY_id(key);
 }
