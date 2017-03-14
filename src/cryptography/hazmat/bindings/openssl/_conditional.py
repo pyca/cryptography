@@ -9,14 +9,6 @@ from __future__ import absolute_import, division, print_function
 # cffi supports #if in cdef
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMAC": [
-        "CMAC_CTX_new",
-        "CMAC_Init",
-        "CMAC_Update",
-        "CMAC_Final",
-        "CMAC_CTX_copy",
-        "CMAC_CTX_free",
-    ],
     "Cryptography_HAS_CMS": [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
@@ -191,25 +183,10 @@ CONDITIONAL_NAMES = {
         "EVP_PKEY_CTX_set_rsa_oaep_md",
     ],
 
-    "Cryptography_HAS_TLSv1_2": [
-        "SSL_OP_NO_TLSv1_2",
-        "TLSv1_2_method",
-        "TLSv1_2_server_method",
-        "TLSv1_2_client_method",
-    ],
-
     "Cryptography_HAS_SSL3_METHOD": [
         "SSLv3_method",
         "SSLv3_client_method",
         "SSLv3_server_method",
-    ],
-
-    "Cryptography_HAS_RELEASE_BUFFERS": [
-        "SSL_MODE_RELEASE_BUFFERS",
-    ],
-
-    "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
-        "SSL_OP_MSIE_SSLV2_RSA_PADDING",
     ],
 
     "Cryptography_HAS_NETBSD_D1_METH": [

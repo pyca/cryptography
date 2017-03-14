@@ -28,17 +28,5 @@ void CMAC_CTX_free(CMAC_CTX *);
 """
 
 CUSTOMIZATIONS = """
-#if !defined(OPENSSL_NO_CMAC)
 static const long Cryptography_HAS_CMAC = 1;
-#else
-static const long Cryptography_HAS_CMAC = 0;
-typedef void CMAC_CTX;
-CMAC_CTX *(*CMAC_CTX_new)(void) = NULL;
-int (*CMAC_Init)(CMAC_CTX *, const void *, size_t, const EVP_CIPHER *,
-    ENGINE *) = NULL;
-int (*CMAC_Update)(CMAC_CTX *, const void *, size_t) = NULL;
-int (*CMAC_Final)(CMAC_CTX *, unsigned char *, size_t *) = NULL;
-int (*CMAC_CTX_copy)(CMAC_CTX *, const CMAC_CTX *) = NULL;
-void (*CMAC_CTX_free)(CMAC_CTX *) = NULL;
-#endif
 """
