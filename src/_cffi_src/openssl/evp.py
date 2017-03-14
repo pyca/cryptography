@@ -173,14 +173,7 @@ int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
 """
 
 CUSTOMIZATIONS = """
-#ifdef EVP_CTRL_GCM_SET_TAG
 const long Cryptography_HAS_GCM = 1;
-#else
-const long Cryptography_HAS_GCM = 0;
-const long EVP_CTRL_GCM_GET_TAG = -1;
-const long EVP_CTRL_GCM_SET_TAG = -1;
-const long EVP_CTRL_GCM_SET_IVLEN = -1;
-#endif
 
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
 const long Cryptography_HAS_PKEY_CTX = 1;
