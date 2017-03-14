@@ -57,20 +57,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_ECDH_AUTO": [
         "SSL_CTX_set_ecdh_auto",
     ],
-    "Cryptography_HAS_ECDSA": [
-        "ECDSA_SIG_new",
-        "ECDSA_SIG_free",
-        "i2d_ECDSA_SIG",
-        "d2i_ECDSA_SIG",
-        "ECDSA_do_sign",
-        "ECDSA_do_sign_ex",
-        "ECDSA_do_verify",
-        "ECDSA_sign_setup",
-        "ECDSA_sign",
-        "ECDSA_sign_ex",
-        "ECDSA_verify",
-        "ECDSA_size",
-    ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
     ],
