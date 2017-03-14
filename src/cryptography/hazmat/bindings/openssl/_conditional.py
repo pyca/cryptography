@@ -60,10 +60,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
     ],
-    "Cryptography_HAS_EC_CODES": [
-        "EC_R_UNKNOWN_GROUP",
-        "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
-    ],
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
     ],
