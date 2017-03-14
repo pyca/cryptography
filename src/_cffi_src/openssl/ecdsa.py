@@ -5,9 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#ifndef OPENSSL_NO_ECDSA
 #include <openssl/ecdsa.h>
-#endif
 """
 
 TYPES = """
