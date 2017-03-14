@@ -10,6 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS;
+static const long Cryptography_HAS_MEM_FUNCTIONS;
 
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
@@ -58,6 +59,16 @@ void OPENSSL_free(void *);
 
 /* This was removed in 1.1.0 */
 void CRYPTO_lock(int, int, const char *, int);
+
+/* Signature changed significantly in 1.1.0, only expose there for sanity */
+int Cryptography_CRYPTO_set_mem_functions(
+    void *(*)(size_t, const char *, int),
+    void *(*)(void *, size_t, const char *, int),
+    void (*)(void *, const char *, int));
+
+void *Cryptography_malloc_wrapper(size_t, const char *, int);
+void *Cryptography_realloc_wrapper(void *, size_t, const char *, int);
+void Cryptography_free_wrapper(void *, const char *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -102,4 +113,39 @@ static const long CRYPTO_LOCK_SSL = 0;
 #endif
 void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+/* This function has a significantly different signature pre-1.1.0. since it is
+ * for testing only, we don't bother to expose it on older OpenSSLs.
+ */
+static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
+int (*Cryptography_CRYPTO_set_mem_functions)(
+    void *(*)(size_t, const char *, int),
+    void *(*)(void *, size_t, const char *, int),
+    void (*)(void *, const char *, int)) = NULL;
+
+#else
+static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
+
+int Cryptography_CRYPTO_set_mem_functions(
+    void *(*m)(size_t, const char *, int),
+    void *(*r)(void *, size_t, const char *, int),
+    void (*f)(void *, const char *, int)
+) {
+    return CRYPTO_set_mem_functions(m, r, f);
+}
+#endif
+
+void *Cryptography_malloc_wrapper(size_t size, const char *path, int line) {
+    return malloc(size);
+}
+
+void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
+                                   int line) {
+    return realloc(ptr, size);
+}
+
+void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
+    return free(ptr);
+}
 """
