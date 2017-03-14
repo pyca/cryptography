@@ -96,6 +96,9 @@ def assert_no_memory_leaks(s, argv=[]):
     ] + argv
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.
+    argv = [
+        sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)
+    ] + argv
     proc = subprocess.Popen(
         argv,
         env=env,
@@ -124,13 +127,13 @@ def skip_if_memtesting_not_supported():
 class TestAssertNoMemoryLeaks(object):
     def test_no_leak_no_malloc(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func():
+        def func(argv):
             pass
         """))
 
     def test_no_leak_free(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func():
+        def func(argv):
             from cryptography.hazmat.bindings.openssl.binding import Binding
             b = Binding()
             name = b.lib.X509_NAME_new()
@@ -139,7 +142,7 @@ class TestAssertNoMemoryLeaks(object):
 
     def test_no_leak_gc(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func():
+        def func(argv):
             from cryptography.hazmat.bindings.openssl.binding import Binding
             b = Binding()
             name = b.lib.X509_NAME_new()
@@ -149,7 +152,7 @@ class TestAssertNoMemoryLeaks(object):
     def test_leak(self):
         with pytest.raises(AssertionError):
             assert_no_memory_leaks(textwrap.dedent("""
-            def func():
+            def func(argv):
                 from cryptography.hazmat.bindings.openssl.binding import (
                     Binding
                 )
@@ -160,7 +163,7 @@ class TestAssertNoMemoryLeaks(object):
     def test_errors(self):
         with pytest.raises(ValueError):
             assert_no_memory_leaks(textwrap.dedent("""
-            def func():
+            def func(argv):
                 raise ZeroDivisionError
             """))
 
@@ -172,16 +175,16 @@ class TestOpenSSLMemoryLeaks(object):
     ])
     def test_x509_extensions(self, path):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func():
+        def func(argv):
             from cryptography import x509
             from cryptography.hazmat.backends import default_backend
 
             import cryptography_vectors
 
-            with cryptography_vectors.open_vector_file("{path}", "rb") as f:
+            with cryptography_vectors.open_vector_file(argv[0], "rb") as f:
                 cert = x509.load_der_x509_certificate(
                     f.read(), default_backend()
                 )
 
             cert.extensions
-        """.format(path=path)))
+        """), [path])
