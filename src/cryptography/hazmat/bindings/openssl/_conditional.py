@@ -183,13 +183,6 @@ CONDITIONAL_NAMES = {
         "EVP_PKEY_CTX_set_rsa_oaep_md",
     ],
 
-    "Cryptography_HAS_TLSv1_2": [
-        "SSL_OP_NO_TLSv1_2",
-        "TLSv1_2_method",
-        "TLSv1_2_server_method",
-        "TLSv1_2_client_method",
-    ],
-
     "Cryptography_HAS_SSL3_METHOD": [
         "SSLv3_method",
         "SSLv3_client_method",

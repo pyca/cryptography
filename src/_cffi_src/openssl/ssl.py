@@ -521,16 +521,7 @@ const long SSL_MODE_RELEASE_BUFFERS = 0;
 
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_TLSv1_1 = 1;
-
-#ifdef SSL_OP_NO_TLSv1_2
 static const long Cryptography_HAS_TLSv1_2 = 1;
-#else
-static const long Cryptography_HAS_TLSv1_2 = 0;
-static const long SSL_OP_NO_TLSv1_2 = 0;
-SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
-SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
-SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
-#endif
 
 #ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
