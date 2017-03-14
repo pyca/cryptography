@@ -511,14 +511,7 @@ static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
-
-#ifdef SSL_MODE_RELEASE_BUFFERS
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
-#else
-static const long Cryptography_HAS_RELEASE_BUFFERS = 0;
-const long SSL_MODE_RELEASE_BUFFERS = 0;
-#endif
-
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_TLSv1_1 = 1;
 static const long Cryptography_HAS_TLSv1_2 = 1;

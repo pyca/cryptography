@@ -189,10 +189,6 @@ CONDITIONAL_NAMES = {
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_RELEASE_BUFFERS": [
-        "SSL_MODE_RELEASE_BUFFERS",
-    ],
-
     "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
         "SSL_OP_MSIE_SSLV2_RSA_PADDING",
     ],
