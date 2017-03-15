@@ -6,8 +6,8 @@ Doing a release of ``cryptography`` requires a few steps.
 Verifying and upgrading OpenSSL version
 ---------------------------------------
 
-The release process uses a static build for Windows and macOS wheels. Check that
-the Windows and macOS Jenkins builders have the latest version of OpenSSL
+The release process uses a static build for Windows and macOS wheels. Check
+that the Windows and macOS Jenkins builders have the latest version of OpenSSL
 installed before performing the release. If they do not:
 
 Upgrading Windows
