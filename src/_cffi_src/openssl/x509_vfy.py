@@ -206,6 +206,9 @@ X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
 int X509_OBJECT_get_type(const X509_OBJECT *);
+
+/* added in 1.1.0 */
+X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
 """
 
 CUSTOMIZATIONS = """
@@ -278,6 +281,12 @@ int X509_OBJECT_get_type(const X509_OBJECT *x) {
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x509_vfy.c */
+X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
+{
+    return ctx->cert;
+}
+
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
     return x->data.x509;
 }
