@@ -22,7 +22,7 @@ from cryptography.hazmat.backends.openssl.backend import (
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dh, dsa, ec, padding
+from cryptography.hazmat.primitives.asymmetric import dh, dsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -550,32 +550,10 @@ class TestOpenSSLSerializationWithOpenSSL(object):
             )
 
 
-class DummyLibrary(object):
-    Cryptography_HAS_EC = 0
-
-
 class TestOpenSSLEllipticCurve(object):
-    def test_elliptic_curve_supported(self, monkeypatch):
-        monkeypatch.setattr(backend, "_lib", DummyLibrary())
-
-        assert backend.elliptic_curve_supported(None) is False
-
-    def test_elliptic_curve_signature_algorithm_supported(self, monkeypatch):
-        monkeypatch.setattr(backend, "_lib", DummyLibrary())
-
-        assert backend.elliptic_curve_signature_algorithm_supported(
-            None, None
-        ) is False
-
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
-
-    def test_elliptic_curve_exchange_algorithm_supported(self, monkeypatch):
-        monkeypatch.setattr(backend, "_lib", DummyLibrary())
-        assert not backend.elliptic_curve_exchange_algorithm_supported(
-            ec.ECDH(), ec.SECP256R1()
-        )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

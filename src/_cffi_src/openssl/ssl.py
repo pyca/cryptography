@@ -516,13 +516,7 @@ static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_TLSv1_1 = 1;
 static const long Cryptography_HAS_TLSv1_2 = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
-
-#ifdef OPENSSL_NO_EC
-long (*SSL_CTX_set_tmp_ecdh)(SSL_CTX *, EC_KEY *) = NULL;
-#endif
-
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
-
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 
 /* NetBSD shipped without including d1_meth.c. This workaround checks to see

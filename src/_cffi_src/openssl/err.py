@@ -269,14 +269,7 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL without EC. e.g. RHEL
-#ifndef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC_CODES = 1;
-#else
-static const long Cryptography_HAS_EC_CODES = 0;
-static const int EC_R_UNKNOWN_GROUP = 0;
-static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
-#endif
 
 #ifdef RSA_R_PKCS_DECODING_ERROR
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;

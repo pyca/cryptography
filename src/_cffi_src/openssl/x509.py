@@ -374,20 +374,6 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 }
 #endif
 
-#ifdef OPENSSL_NO_EC
-int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
-EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;
-EC_KEY *(*d2i_EC_PUBKEY_bio)(BIO *, EC_KEY **) = NULL;
-int (*i2d_EC_PUBKEY_bio)(BIO *, EC_KEY *) = NULL;
-EC_KEY *(*d2i_ECPrivateKey)(EC_KEY **, const unsigned char **, long) = NULL;
-EC_KEY *(*d2i_ECPrivateKey_bio)(BIO *, EC_KEY **) = NULL;
-int (*i2d_ECPrivateKey)(EC_KEY *, unsigned char **) = NULL;
-int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
-
-EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
-int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
-#endif
-
 /* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
    IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
    it available on all OpenSSLs. */

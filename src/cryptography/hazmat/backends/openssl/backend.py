@@ -477,8 +477,7 @@ class Backend(object):
             self.openssl_assert(dsa_cdata != self._ffi.NULL)
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPrivateKey(self, dsa_cdata, evp_pkey)
-        elif (self._lib.Cryptography_HAS_EC == 1 and
-              key_type == self._lib.EVP_PKEY_EC):
+        elif key_type == self._lib.EVP_PKEY_EC:
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
@@ -509,8 +508,7 @@ class Backend(object):
             self.openssl_assert(dsa_cdata != self._ffi.NULL)
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPublicKey(self, dsa_cdata, evp_pkey)
-        elif (self._lib.Cryptography_HAS_EC == 1 and
-              key_type == self._lib.EVP_PKEY_EC):
+        elif key_type == self._lib.EVP_PKEY_EC:
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
@@ -1226,9 +1224,6 @@ class Backend(object):
             raise ValueError("Could not deserialize key data.")
 
     def elliptic_curve_supported(self, curve):
-        if self._lib.Cryptography_HAS_EC != 1:
-            return False
-
         try:
             curve_nid = self._elliptic_curve_to_nid(curve)
         except UnsupportedAlgorithm:
@@ -1255,9 +1250,6 @@ class Backend(object):
     def elliptic_curve_signature_algorithm_supported(
         self, signature_algorithm, curve
     ):
-        if self._lib.Cryptography_HAS_EC != 1:
-            return False
-
         # We only support ECDSA right now.
         if not isinstance(signature_algorithm, ec.ECDSA):
             return False
@@ -1363,7 +1355,6 @@ class Backend(object):
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (
             self.elliptic_curve_supported(curve) and
-            self._lib.Cryptography_HAS_ECDH == 1 and
             isinstance(algorithm, ec.ECDH)
         )
 
@@ -1498,7 +1489,6 @@ class Backend(object):
                 elif key_type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
                 else:
-                    assert self._lib.Cryptography_HAS_EC == 1
                     assert key_type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
@@ -1537,8 +1527,7 @@ class Backend(object):
     def _private_key_bytes_traditional_der(self, key_type, cdata):
         if key_type == self._lib.EVP_PKEY_RSA:
             write_bio = self._lib.i2d_RSAPrivateKey_bio
-        elif (self._lib.Cryptography_HAS_EC == 1 and
-              key_type == self._lib.EVP_PKEY_EC):
+        elif key_type == self._lib.EVP_PKEY_EC:
             write_bio = self._lib.i2d_ECPrivateKey_bio
         else:
             self.openssl_assert(key_type == self._lib.EVP_PKEY_DSA)
