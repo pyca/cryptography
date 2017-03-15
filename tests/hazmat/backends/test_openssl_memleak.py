@@ -96,9 +96,6 @@ def assert_no_memory_leaks(s, argv=[]):
     ] + argv
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.
-    argv = [
-        sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)
-    ] + argv
     proc = subprocess.Popen(
         argv,
         env=env,
@@ -127,13 +124,13 @@ def skip_if_memtesting_not_supported():
 class TestAssertNoMemoryLeaks(object):
     def test_no_leak_no_malloc(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func(argv):
+        def func():
             pass
         """))
 
     def test_no_leak_free(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func(argv):
+        def func():
             from cryptography.hazmat.bindings.openssl.binding import Binding
             b = Binding()
             name = b.lib.X509_NAME_new()
@@ -142,7 +139,7 @@ class TestAssertNoMemoryLeaks(object):
 
     def test_no_leak_gc(self):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func(argv):
+        def func():
             from cryptography.hazmat.bindings.openssl.binding import Binding
             b = Binding()
             name = b.lib.X509_NAME_new()
@@ -152,7 +149,7 @@ class TestAssertNoMemoryLeaks(object):
     def test_leak(self):
         with pytest.raises(AssertionError):
             assert_no_memory_leaks(textwrap.dedent("""
-            def func(argv):
+            def func():
                 from cryptography.hazmat.bindings.openssl.binding import (
                     Binding
                 )
@@ -163,7 +160,7 @@ class TestAssertNoMemoryLeaks(object):
     def test_errors(self):
         with pytest.raises(ValueError):
             assert_no_memory_leaks(textwrap.dedent("""
-            def func(argv):
+            def func():
                 raise ZeroDivisionError
             """))
 
