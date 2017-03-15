@@ -64,7 +64,7 @@ New releases for OpenSSL updates
 --------------------------------
 
 As of version 0.5, ``cryptography`` statically links OpenSSL on Windows, and as
-of version 1.0.1 on OS X, to ease installation. Due to this, ``cryptography``
+of version 1.0.1 on macOS, to ease installation. Due to this, ``cryptography``
 will release a new version whenever OpenSSL has a security or bug fix release to
 avoid shipping insecure software.
 

@@ -92,7 +92,7 @@ When importing only the binding it is added to the engine list but
 OS random sources
 -----------------
 
-On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
+On macOS and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
 utilizes the `Yarrow`_ algorithm.
 
 On Windows the implementation of ``CryptGenRandom`` depends on which version of
