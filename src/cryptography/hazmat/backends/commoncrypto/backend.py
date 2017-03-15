@@ -104,7 +104,7 @@ class Backend(object):
         return _HMACContext(self, key, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        # In OS X 10.11.2-5 (as of this writing) CommonCrypto has a bug with
+        # In macOS 10.11.2-5 (as of this writing) CommonCrypto has a bug with
         # Blowfish key lengths less than 64-bit. Filed as radar://26636600
         if isinstance(cipher, Blowfish) and len(cipher.key) < 8:
             return False

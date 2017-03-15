@@ -90,7 +90,7 @@ def extra_link_args(compiler_type):
 def compiler_type():
     """
     Gets the compiler type from distutils. On Windows with MSVC it will be
-    "msvc". On OS X and linux it is "unix".
+    "msvc". On macOS and linux it is "unix".
     """
     dist = Distribution()
     dist.parse_config_files()
