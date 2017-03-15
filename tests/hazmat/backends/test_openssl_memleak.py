@@ -16,10 +16,12 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
 MEMORY_LEAK_SCRIPT = """
-def main():
+import sys
+
+
+def main(argv):
     import gc
     import json
-    import sys
 
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
@@ -33,7 +35,8 @@ def main():
 
     @ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
-        del heap[ptr]
+        if ptr != ffi.NULL:
+            del heap[ptr]
         new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
         heap[new_ptr] = (size, path, line)
         return new_ptr
@@ -48,12 +51,11 @@ def main():
     assert result == 1
 
     # Trigger a bunch of initialization stuff.
-    from cryptography.hazmat.bindings.openssl.binding import Binding
-    Binding()
+    import cryptography.hazmat.backends.openssl
 
     start_heap = set(heap)
 
-    func()
+    func(*argv[1:])
     gc.collect()
     gc.collect()
     gc.collect()
@@ -75,24 +77,27 @@ def main():
             (int(ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
                 "path": ffi.string(heap[ptr][1]).decode(),
-                "line": heap[ptr][2]
+                "line": heap[ptr][2],
             })
             for ptr in remaining
         )))
         sys.stdout.flush()
         sys.exit(255)
 
-main()
+main(sys.argv)
 """
 
 
-def assert_no_memory_leaks(s):
+def assert_no_memory_leaks(s, argv=[]):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
+    argv = [
+        sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)
+    ] + argv
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.
     proc = subprocess.Popen(
-        [sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)],
+        argv,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
