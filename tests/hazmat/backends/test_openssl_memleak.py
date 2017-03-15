@@ -51,8 +51,7 @@ def main(argv):
     assert result == 1
 
     # Trigger a bunch of initialization stuff.
-    from cryptography.hazmat.backends import default_backend
-    default_backend()
+    import cryptography.hazmat.backends.openssl
 
     start_heap = set(heap)
 
