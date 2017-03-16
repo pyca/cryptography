@@ -172,15 +172,15 @@ class TestOpenSSLMemoryLeaks(object):
     ])
     def test_x509_extensions(self, path):
         assert_no_memory_leaks(textwrap.dedent("""
-        def func(argv):
+        def func(path):
             from cryptography import x509
-            from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.backends.openssl import backend
 
             import cryptography_vectors
 
-            with cryptography_vectors.open_vector_file(argv[0], "rb") as f:
+            with cryptography_vectors.open_vector_file(path, "rb") as f:
                 cert = x509.load_der_x509_certificate(
-                    f.read(), default_backend()
+                    f.read(), backend
                 )
 
             cert.extensions
