@@ -39,11 +39,9 @@ static const long Cryptography_HAS_RELEASE_BUFFERS;
  * supported
  */
 static const long Cryptography_HAS_OP_NO_COMPRESSION;
-
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
-static const long Cryptography_HAS_NETBSD_D1_METH;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
@@ -518,25 +516,6 @@ static const long Cryptography_HAS_TLSv1_2 = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
-
-/* NetBSD shipped without including d1_meth.c. This workaround checks to see
-   if the version of NetBSD we're currently running on is old enough to
-   have the bug and provides an empty implementation so we can link and
-   then remove the function from the ffi object. */
-#ifdef __NetBSD__
-#  include <sys/param.h>
-#  if (__NetBSD_Version__ < 699003800)
-static const long Cryptography_HAS_NETBSD_D1_METH = 0;
-const SSL_METHOD *DTLSv1_method(void) {
-    return NULL;
-}
-#  else
-static const long Cryptography_HAS_NETBSD_D1_METH = 1;
-#  endif
-#else
-static const long Cryptography_HAS_NETBSD_D1_METH = 1;
-#endif
-
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
 
 /* ALPN was added in OpenSSL 1.0.2. */
