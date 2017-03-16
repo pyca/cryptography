@@ -163,3 +163,25 @@ class TestAssertNoMemoryLeaks(object):
             def func():
                 raise ZeroDivisionError
             """))
+
+
+@skip_if_memtesting_not_supported()
+class TestOpenSSLMemoryLeaks(object):
+    @pytest.mark.parametrize("path", [
+        "x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt",
+    ])
+    def test_x509_extensions(self, path):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func(path):
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+
+            import cryptography_vectors
+
+            with cryptography_vectors.open_vector_file(path, "rb") as f:
+                cert = x509.load_der_x509_certificate(
+                    f.read(), backend
+                )
+
+            cert.extensions
+        """), [path])
