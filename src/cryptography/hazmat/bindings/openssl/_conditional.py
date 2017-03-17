@@ -78,10 +78,6 @@ CONDITIONAL_NAMES = {
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_NETBSD_D1_METH": [
-        "DTLSv1_method",
-    ],
-
     "Cryptography_HAS_ALPN": [
         "SSL_CTX_set_alpn_protos",
         "SSL_set_alpn_protos",
