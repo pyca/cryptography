@@ -1,5 +1,6 @@
 wmic qfe
 @set PATH="C:\Python27";"C:\Python27\Scripts";%PATH%
+@set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
 SET
 if "%TOXENV%" == "py26" (
     @set PYTHON="C:\Python26\python.exe"
@@ -15,6 +16,20 @@ if "%TOXENV%" == "py34" (
 )
 if "%TOXENV%" == "py35" (
     @set PYTHON="C:\Python35\python.exe"
+)
+if "%TOXENV%" == "py36" (
+    @set PYTHON="C:\Python36\python.exe"
+)
+
+@set py35orabove=true
+
+if not "%TOXENV%" == "py35" (
+    if not "%TOXENV%" == "py36" (
+        @set py35orabove=false
+    )
+)
+
+if "%py35orabove%" == "true" (
     if %label% == windows (
         @set INCLUDE="C:\OpenSSL-Win32-2015\include";%INCLUDE%
         @set LIB="C:\OpenSSL-Win32-2015\lib";%LIB%
