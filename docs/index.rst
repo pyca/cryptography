@@ -77,7 +77,7 @@ hazmat layer only when necessary.
 
 .. toctree::
     :maxdepth: 2
-    :caption: The ``cryptography`` open source project
+    :caption: The cryptography open source project
 
     installation
     development/index
