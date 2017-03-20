@@ -1187,7 +1187,6 @@ class PrecertificateSignedCertificateTimestamps(object):
         )
 
 
-
 @utils.register_interface(ExtensionType)
 class UnrecognizedExtension(object):
     def __init__(self, oid, value):
