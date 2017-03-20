@@ -1154,6 +1154,43 @@ class InvalidityDate(object):
 
 
 @utils.register_interface(ExtensionType)
+class PrecertificateSignedCertificateTimestamps(object):
+    oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+
+    def __init__(self, signed_certificate_timestamps):
+        self._signed_certificate_timestamps = signed_certificate_timestamps
+
+    def __iter__(self):
+        return iter(self._signed_certificate_timestamps)
+
+    def __len__(self):
+        return len(self._signed_certificate_timestamps)
+
+    def __getitem__(self, idx):
+        return self._signed_certificate_timestamps[idx]
+
+    def __eq__(self, other):
+        if not isinstance(other, PrecertificateSignedCertificateTimestamps):
+            return NotImplemented
+
+        return (
+            self._signed_certificate_timestamps ==
+            other._signed_certificate_timestamps
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return (
+            "<PrecertificateSignedCertificateTimestamps({0})>".format(
+                list(self)
+            )
+        )
+
+
+
+@utils.register_interface(ExtensionType)
 class UnrecognizedExtension(object):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
