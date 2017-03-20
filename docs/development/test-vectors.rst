@@ -154,6 +154,8 @@ X.509
 * ``alternate-rsa-sha1-oid.pem`` - A certificate from an
   `unknown signature OID`_ Mozilla bug that uses an alternate signature OID for
   RSA with SHA1.
+* ``badssl-sct.pem`` - A certificate with the certificate transparency signed
+  certificate timestamp extension.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
