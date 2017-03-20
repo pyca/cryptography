@@ -86,6 +86,9 @@ class ExtensionOID(object):
     SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
     CRL_NUMBER = ObjectIdentifier("2.5.29.20")
+    PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
+        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.2")
+    )
 
 
 class CRLEntryExtensionOID(object):

@@ -2605,6 +2605,12 @@ instances. The following common OIDs are available as constants.
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
 
+    .. attribute:: PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+
+        .. versionadded:: 1.9
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.2"``.
+
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
