@@ -8,7 +8,6 @@ import abc
 import datetime
 import hashlib
 import ipaddress
-import warnings
 from enum import Enum
 
 from asn1crypto.keys import PublicKeyInfo
@@ -421,16 +420,7 @@ class DistributionPoint(object):
                 )
 
         if relative_name:
-            if isinstance(relative_name, Name):
-                warnings.warn(
-                    "relative_name=<Name> is deprecated and will "
-                    "be removed in a future version; use "
-                    "<RelativeDistinguishedName> instead.",
-                    utils.DeprecatedIn16,
-                    stacklevel=2
-                )
-                relative_name = RelativeDistinguishedName(relative_name)
-            elif not isinstance(relative_name, RelativeDistinguishedName):
+            if not isinstance(relative_name, RelativeDistinguishedName):
                 raise TypeError(
                     "relative_name must be a RelativeDistinguishedName"
                 )

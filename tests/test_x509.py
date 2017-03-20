@@ -521,7 +521,7 @@ class TestRSACertificate(object):
         )
 
         with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.DeprecatedIn10)
+            warnings.simplefilter("always", utils.PersistentlyDeprecated)
             assert cert.serial == 2
             assert cert.serial_number == 2
 
@@ -533,7 +533,7 @@ class TestRSACertificate(object):
         )
 
         with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.DeprecatedIn10)
+            warnings.simplefilter("always", utils.PersistentlyDeprecated)
             with pytest.deprecated_call():
                 cert.serial
 
