@@ -1,9 +1,13 @@
 #!/bin/bash -xe
-# output the list of things we've installed as a point in time check of how up to date the builder is
+
+# output the list of things we've installed as a point in time check of how up
+# to date the builder is
 /usr/sbin/system_profiler SPInstallHistoryDataType
-# Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
+# Jenkins logs in as a non-interactive shell, so we don't even have
+# /usr/local/bin in PATH
 export PATH=/usr/local/bin:$PATH
-# pyenv is nothing but trouble with non-interactive shells so we can't eval "$(pyenv init -)"
+# pyenv is nothing but trouble with non-interactive shells so we can't
+# eval "$(pyenv init -)"
 export PATH="/Users/jenkins/.pyenv/shims:${PATH}"
 export PYENV_SHELL=bash
 
@@ -28,6 +32,9 @@ if [[ "${label}" == "10.10" ]]; then
         py35)
             PYTHON=python3.5
             ;;
+        py36)
+            PYTHON=python3.6
+            ;;
         pypy)
             PYTHON=pypy
             ;;
@@ -46,14 +53,18 @@ else
         py35)
             PYTHON=/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5
             ;;
+        py36)
+            PYTHON=/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6
+            ;;
     esac
 fi
 printenv
 
 virtualenv .venv -p $PYTHON
 source .venv/bin/activate
-pip install -U wheel # upgrade wheel to latest before we use it to build the wheel
-CRYPTOGRAPHY_OSX_NO_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl/lib/libcrypto.a /usr/local/opt/openssl/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl/include" pip wheel cryptography --wheel-dir=wheelhouse --no-use-wheel
+# upgrade wheel to latest before we use it to build the wheel
+pip install -U wheel
+CRYPTOGRAPHY_OSX_NO_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl@1.1/include" pip wheel cryptography --wheel-dir=wheelhouse --no-use-wheel
 pip install -f wheelhouse cryptography --no-index
 python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 otool -L `find .venv -name '_openssl*.so'`
