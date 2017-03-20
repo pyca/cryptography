@@ -56,11 +56,9 @@ admonition at the top.
 We recommend using the recipes layer whenever possible, and falling back to the
 hazmat layer only when necessary.
 
-The recipes layer
-~~~~~~~~~~~~~~~~~
-
 .. toctree::
     :maxdepth: 2
+    :caption: The recipes layer
 
     fernet
     x509/index
@@ -69,21 +67,17 @@ The recipes layer
     faq
     glossary
 
-The hazardous materials layer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. toctree::
     :maxdepth: 2
+    :caption: The hazardous materials layer
 
     hazmat/primitives/index
     hazmat/backends/index
     hazmat/bindings/index
 
-The ``cryptography`` open source project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. toctree::
     :maxdepth: 2
+    :caption: The cryptography open source project
 
     installation
     development/index
