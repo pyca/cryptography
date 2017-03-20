@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
-from cryptography.x509.name import Name, RelativeDistinguishedName
+from cryptography.x509.name import RelativeDistinguishedName
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
 )
