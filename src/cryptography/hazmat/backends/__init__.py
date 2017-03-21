@@ -20,7 +20,7 @@ def _available_backends():
         import pkg_resources
 
         entry_point_backends = [
-            # DeprecatedIn16
+            # PersistentlyDeprecated
             # setuptools 11.3 deprecated support for the require parameter to
             # load(), and introduced the new resolve() method instead.
             # We previously removed this fallback, but users are having issues

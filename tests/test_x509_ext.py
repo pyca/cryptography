@@ -3003,17 +3003,6 @@ class TestDistributionPoint(object):
         with pytest.raises(ValueError):
             x509.DistributionPoint("data", "notname", None, None)
 
-    def test_relative_name_name_value_deprecated(self):
-        with pytest.deprecated_call():
-            x509.DistributionPoint(
-                None,
-                x509.Name([
-                    x509.NameAttribute(NameOID.COMMON_NAME, u"myCN")
-                ]),
-                None,
-                None
-            )
-
     def test_crl_issuer_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(None, None, None, ["notgn"])

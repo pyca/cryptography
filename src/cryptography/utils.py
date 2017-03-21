@@ -13,12 +13,10 @@ import warnings
 from packaging.version import parse
 
 
-# the functions deprecated in 1.0 and 1.4 are on an arbitrarily extended
-# deprecation cycle and should not be removed until we agree on when that cycle
-# ends.
-DeprecatedIn10 = DeprecationWarning
-DeprecatedIn14 = DeprecationWarning
-DeprecatedIn16 = DeprecationWarning
+# Several APIs were deprecated with no specific end-of-life date because of the
+# ubiquity of their use. They should not be removed until we agree on when that
+# cycle ends.
+PersistentlyDeprecated = DeprecationWarning
 
 
 def read_only_property(name):
