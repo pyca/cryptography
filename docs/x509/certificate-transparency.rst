@@ -36,7 +36,7 @@ issued.
 
         :type: :class:`datetime.datetime`
 
-        A naïve datetime representing the timestamp at which the log asserts
+        A naïve datetime representing the time in UTC at which the log asserts
         the certificate had been submitted to it.
 
     .. attribute:: entry_type
