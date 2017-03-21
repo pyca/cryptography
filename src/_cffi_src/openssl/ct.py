@@ -13,6 +13,8 @@ typedef STACK_OF(SCT) Cryptography_STACK_OF_SCT;
 """
 
 TYPES = """
+static const long Cryptography_HAS_SCT;
+
 typedef enum {
     SCT_VERSION_NOT_SET,
     SCT_VERSION_V1
@@ -42,4 +44,13 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+static const long Cryptography_HAS_SCT = 1;
+#else
+static const long Cryptography_HAS_SCT = 0;
+sct_version_t (*SCT_get_version)(const SCT *) = NULL;
+ct_log_entry_type_t (*SCT_get_log_entry_type)(const SCT *) = NULL;
+size_t (*SCT_get0_log_id)(const SCT *, unsigned char **) = NULL;
+uint64_t (*SCT_get_timestamp)(const SCT *) = NULL;
+#endif
 """
