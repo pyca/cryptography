@@ -33,7 +33,7 @@ issued.
 
     .. attribute:: timestamp
 
-        :type: datetime.datetime
+        :type: :class:`datetime.datetime`
 
         A naïve datetime representing the timestamp at which the log asserts
         the certificate had been submitted to it.
