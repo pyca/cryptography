@@ -8,8 +8,8 @@ from __future__ import absolute_import, division, print_function
 # we can loop over them and delete them at runtime. It will be removed when
 # cffi supports #if in cdef
 
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMS": [
+def Cryptography_HAS_CMS():
+    return [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
         "PEM_write_bio_CMS_stream",
@@ -39,9 +39,11 @@ CONDITIONAL_NAMES = {
         "CMS_REUSE_DIGEST",
         "CMS_USE_KEYID",
         "CMS_DEBUG_DECRYPT",
-    ],
+    ]
 
-    "Cryptography_HAS_EC2M": [
+
+def Cryptography_HAS_EC2M():
+    return [
         "EC_GF2m_simple_method",
         "EC_POINT_set_affine_coordinates_GF2m",
         "EC_POINT_get_affine_coordinates_GF2m",
@@ -49,53 +51,80 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_set_curve_GF2m",
         "EC_GROUP_get_curve_GF2m",
         "EC_GROUP_new_curve_GF2m",
-    ],
+    ]
 
-    "Cryptography_HAS_EC_1_0_2": [
+
+def Cryptography_HAS_EC_1_0_2():
+    return [
         "EC_curve_nid2nist",
-    ],
-    "Cryptography_HAS_SET_ECDH_AUTO": [
+    ]
+
+
+def Cryptography_HAS_SET_ECDH_AUTO():
+    return [
         "SSL_CTX_set_ecdh_auto",
-    ],
-    "Cryptography_HAS_ENGINE_CRYPTODEV": [
+    ]
+
+
+def Cryptography_HAS_ENGINE_CRYPTODEV():
+    return [
         "ENGINE_load_cryptodev"
-    ],
-    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
+    ]
+
+
+def Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR():
+    return [
         "RSA_R_PKCS_DECODING_ERROR"
-    ],
-    "Cryptography_HAS_EGD": [
+    ]
+
+
+def Cryptography_HAS_EGD():
+    return [
         "RAND_egd",
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
-    ],
-    "Cryptography_HAS_RSA_OAEP_MD": [
-        "EVP_PKEY_CTX_set_rsa_oaep_md",
-    ],
+    ]
 
-    "Cryptography_HAS_SSL3_METHOD": [
+
+def Cryptography_HAS_RSA_OAEP_MD():
+    return [
+        "EVP_PKEY_CTX_set_rsa_oaep_md",
+    ]
+
+
+def Cryptography_HAS_SSL3_METHOD():
+    return [
         "SSLv3_method",
         "SSLv3_client_method",
         "SSLv3_server_method",
-    ],
+    ]
 
-    "Cryptography_HAS_ALPN": [
+
+def Cryptography_HAS_ALPN():
+    return [
         "SSL_CTX_set_alpn_protos",
         "SSL_set_alpn_protos",
         "SSL_CTX_set_alpn_select_cb",
         "SSL_get0_alpn_selected",
-    ],
+    ]
 
-    "Cryptography_HAS_COMPRESSION": [
+
+def Cryptography_HAS_COMPRESSION():
+    return [
         "SSL_get_current_compression",
         "SSL_get_current_expansion",
         "SSL_COMP_get_name",
-    ],
+    ]
 
-    "Cryptography_HAS_GET_SERVER_TMP_KEY": [
+
+def Cryptography_HAS_GET_SERVER_TMP_KEY():
+    return [
         "SSL_get_server_tmp_key",
-    ],
+    ]
 
-    "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
+
+def Cryptography_HAS_102_VERIFICATION_ERROR_CODES():
+    return [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
         'X509_V_ERR_SUITE_B_INVALID_CURVE',
@@ -105,8 +134,11 @@ CONDITIONAL_NAMES = {
         'X509_V_ERR_HOSTNAME_MISMATCH',
         'X509_V_ERR_EMAIL_MISMATCH',
         'X509_V_ERR_IP_ADDRESS_MISMATCH'
-    ],
-    "Cryptography_HAS_102_VERIFICATION_PARAMS": [
+    ]
+
+
+def Cryptography_HAS_102_VERIFICATION_PARAMS():
+    return [
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
@@ -115,45 +147,102 @@ CONDITIONAL_NAMES = {
         "X509_VERIFY_PARAM_set1_ip",
         "X509_VERIFY_PARAM_set1_ip_asc",
         "X509_VERIFY_PARAM_set_hostflags",
-    ],
-    "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
+    ]
+
+
+def Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST():
+    return [
         "X509_V_FLAG_TRUSTED_FIRST",
-    ],
-    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": [
+    ]
+
+
+def Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN():
+    return [
         "X509_V_FLAG_PARTIAL_CHAIN",
-    ],
-    "Cryptography_HAS_SET_CERT_CB": [
+    ]
+
+
+def Cryptography_HAS_SET_CERT_CB():
+    return [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
-    ],
-    "Cryptography_HAS_SSL_ST": [
+    ]
+
+
+def Cryptography_HAS_SSL_ST():
+    return [
         "SSL_ST_BEFORE",
         "SSL_ST_OK",
         "SSL_ST_INIT",
         "SSL_ST_RENEGOTIATE",
-    ],
-    "Cryptography_HAS_TLS_ST": [
+    ]
+
+
+def Cryptography_HAS_TLS_ST():
+    return [
         "TLS_ST_BEFORE",
         "TLS_ST_OK",
-    ],
-    "Cryptography_HAS_LOCKING_CALLBACKS": [
+    ]
+
+
+def Cryptography_HAS_LOCKING_CALLBACKS():
+    return [
         "CRYPTO_LOCK",
         "CRYPTO_UNLOCK",
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
         "CRYPTO_lock",
-    ],
-    "Cryptography_HAS_SCRYPT": [
+    ]
+
+
+def Cryptography_HAS_SCRYPT():
+    return [
         "EVP_PBE_scrypt",
-    ],
-    "Cryptography_HAS_DTLS": [
+    ]
+
+
+def Cryptography_HAS_DTLS():
+    return [
         "Cryptography_DTLSv1_get_timeout",
         "DTLSv1_handle_timeout",
-    ],
-    "Cryptography_HAS_EVP_PKEY_DHX": [
+    ]
+
+
+def Cryptography_HAS_EVP_PKEY_DHX():
+    return [
         "EVP_PKEY_DHX",
-    ],
-    "Cryptography_HAS_MEM_FUNCTIONS": [
+    ]
+
+
+def Cryptography_HAS_MEM_FUNCTIONS():
+    return [
         "Cryptography_CRYPTO_set_mem_functions",
-    ],
+    ]
+
+
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_CMS": Cryptography_HAS_CMS,
+    "Cryptography_HAS_EC2M": Cryptography_HAS_EC2M,
+    "Cryptography_HAS_EC_1_0_2": Cryptography_HAS_EC_1_0_2,
+    "Cryptography_HAS_SET_ECDH_AUTO": Cryptography_HAS_SET_ECDH_AUTO,
+    "Cryptography_HAS_ENGINE_CRYPTODEV": Cryptography_HAS_ENGINE_CRYPTODEV,
+    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR,
+    "Cryptography_HAS_EGD": Cryptography_HAS_EGD,
+    "Cryptography_HAS_RSA_OAEP_MD": Cryptography_HAS_RSA_OAEP_MD,
+    "Cryptography_HAS_SSL3_METHOD": Cryptography_HAS_SSL3_METHOD,
+    "Cryptography_HAS_ALPN": Cryptography_HAS_ALPN,
+    "Cryptography_HAS_COMPRESSION": Cryptography_HAS_COMPRESSION,
+    "Cryptography_HAS_GET_SERVER_TMP_KEY": Cryptography_HAS_GET_SERVER_TMP_KEY,
+    "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": Cryptography_HAS_102_VERIFICATION_ERROR_CODES,
+    "Cryptography_HAS_102_VERIFICATION_PARAMS": Cryptography_HAS_102_VERIFICATION_PARAMS,
+    "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST,
+    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN,
+    "Cryptography_HAS_SET_CERT_CB": Cryptography_HAS_SET_CERT_CB,
+    "Cryptography_HAS_SSL_ST": Cryptography_HAS_SSL_ST,
+    "Cryptography_HAS_TLS_ST": Cryptography_HAS_TLS_ST,
+    "Cryptography_HAS_LOCKING_CALLBACKS": Cryptography_HAS_LOCKING_CALLBACKS,
+    "Cryptography_HAS_SCRYPT": Cryptography_HAS_SCRYPT,
+    "Cryptography_HAS_DTLS": Cryptography_HAS_DTLS,
+    "Cryptography_HAS_EVP_PKEY_DHX": Cryptography_HAS_EVP_PKEY_DHX,
+    "Cryptography_HAS_MEM_FUNCTIONS": Cryptography_HAS_MEM_FUNCTIONS,
 }
