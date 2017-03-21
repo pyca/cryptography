@@ -41,7 +41,7 @@ issued.
     .. attribute:: entry_type
 
         :type:
-            :class:`~cryptogrography.x509.certificate_transparency.LogEntryType`
+            :class:`~cryptography.x509.certificate_transparency.LogEntryType`
 
         The type of submission to the log that this SCT is for. Log submissions
         can either be certificates themselves or "pre-certificates" which
