@@ -4,11 +4,33 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 
+import six
+
+
+@six.add_metaclass(abc.ABCMeta)
 class SignedCertificateTimestamp(object):
-    def __init__(self, version, log_id, timestamp, entry_type):
-        # TODO: extensions, signature value, NID.
-        self._version = version
-        self._log_id = log_id
-        self._timestamp = timestamp
-        self._entry_type = entry_type
+    @abc.abstractproperty
+    def version(self):
+        """
+        Returns the SCT version.
+        """
+
+    @abc.abstractproperty
+    def log_id(self):
+        """
+        Returns an identifier indicating which log this SCT is for.
+        """
+
+    @abc.abstractproperty
+    def timestamp(self):
+        """
+        Returns the timestamp for this SCT.
+        """
+
+    @abc.abstractproperty
+    def entry_type(self):
+        """
+        Returns whether this is an SCT for a certificate or pre-certificate.
+        """
