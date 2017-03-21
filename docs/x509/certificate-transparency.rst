@@ -16,7 +16,8 @@ issued.
     SignedCertificateTimestamps (SCTs) are small cryptographically signed
     assertions that the specified certificate has been submitted to a
     Certificate Transparency Log, and that it will be part of the public log
-    within some time period.
+    within some time period, this is called the "maximum merge delay" (MMD) and
+    each log specifies its own.
 
     .. attribute:: version
 
