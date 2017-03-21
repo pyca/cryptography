@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/ct.h>
+
+typedef STACK_OF(SCT) Cryptography_STACK_OF_SCT;
 """
 
 TYPES = """
@@ -21,6 +23,7 @@ typedef enum {
 } ct_log_entry_type_t;
 
 typedef ... SCT;
+typedef ... Cryptography_STACK_OF_SCT;
 """
 
 FUNCTIONS = """
