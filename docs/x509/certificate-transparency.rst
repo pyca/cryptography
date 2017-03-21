@@ -29,7 +29,8 @@ issued.
 
         :type: bytes
 
-        An opaque identifier, indicating which log this SCT is from.
+        An opaque identifier, indicating which log this SCT is from. This is
+        the SHA256 hash of the log's public key.
 
     .. attribute:: timestamp
 
