@@ -5,8 +5,18 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+from enum import Enum
 
 import six
+
+
+class LogEntryType(Enum):
+    X509_CERTIFICATE = 0
+    PRE_CERTIFICATE = 1
+
+
+class Version(Enum):
+    v1 = 0
 
 
 @six.add_metaclass(abc.ABCMeta)
