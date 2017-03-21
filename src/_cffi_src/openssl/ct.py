@@ -31,6 +31,9 @@ typedef ... Cryptography_STACK_OF_SCT;
 """
 
 FUNCTIONS = """
+"""
+
+MACROS = """
 sct_version_t SCT_get_version(const SCT *);
 
 ct_log_entry_type_t SCT_get_log_entry_type(const SCT *);
@@ -40,14 +43,23 @@ size_t SCT_get0_log_id(const SCT *, unsigned char **);
 uint64_t SCT_get_timestamp(const SCT *);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 #if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 static const long Cryptography_HAS_SCT = 1;
 #else
 static const long Cryptography_HAS_SCT = 0;
+
+typedef enum {
+    SCT_VERSION_NOT_SET,
+    SCT_VERSION_V1
+} sct_version_t;
+typedef enum {
+    CT_LOG_ENTRY_TYPE_NOT_SET,
+    CT_LOG_ENTRY_TYPE_X509,
+    CT_LOG_ENTRY_TYPE_PRECERT
+} ct_log_entry_type_t;
+typedef void SCT;
+
 sct_version_t (*SCT_get_version)(const SCT *) = NULL;
 ct_log_entry_type_t (*SCT_get_log_entry_type)(const SCT *) = NULL;
 size_t (*SCT_get0_log_id)(const SCT *, unsigned char **) = NULL;
