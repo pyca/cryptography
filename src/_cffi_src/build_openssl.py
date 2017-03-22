@@ -64,6 +64,7 @@ ffi = build_ffi_for_binding(
         "cms",
         "conf",
         "crypto",
+        "ct",
         "dh",
         "dsa",
         "ec",
