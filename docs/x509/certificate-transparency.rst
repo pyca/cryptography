@@ -3,8 +3,8 @@ Certificate Transparency
 
 .. currentmodule:: cryptography.x509.certificate_transparency
 
-Certificate Transparency is a set of protocols specified in :rfc:`6962` which
-allow X.509 certificates to be sent to append-only logs and have small
+`Certificate Transparency`_ is a set of protocols specified in :rfc:`6962`
+which allow X.509 certificates to be sent to append-only logs and have small
 cryptographic proofs that a certificate has been publicly logged. This allows
 for external auditing of the certificates that a certificate authority has
 issued.
@@ -74,3 +74,6 @@ issued.
     .. attribute:: PRE_CERTIFICATE
 
         For SCTs corresponding to pre-certificates.
+
+
+.. _`Certificate Transparency`: https://www.certificate-transparency.org/
