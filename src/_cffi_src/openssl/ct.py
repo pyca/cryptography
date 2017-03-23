@@ -62,6 +62,7 @@ typedef enum {
     CT_LOG_ENTRY_TYPE_PRECERT
 } ct_log_entry_type_t;
 typedef void SCT;
+typedef void Cryptography_STACK_OF_SCT;
 
 sct_version_t (*SCT_get_version)(const SCT *) = NULL;
 ct_log_entry_type_t (*SCT_get_log_entry_type)(const SCT *) = NULL;
