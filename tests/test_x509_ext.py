@@ -3668,6 +3668,30 @@ class TestInhibitAnyPolicyExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestPrecertificateSignedCertificateTimestampsExtension(object):
+    def test_simple(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        scts = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+        ).value
+        assert len(scts) == 1
+        [sct] = scts
+        assert sct.version == x509.certificate_transparency.Version.v1
+        assert sct.log_id == (
+            b"\xa7\xceJNb\x07\xe0\xad\xde\xe5\xfd\xaaK\x1f\x86v\x87g\xb5\xd0"
+            b"\x02\xa5]G1\x0e~g\n\x95\xea\xb2"
+        )
+        assert sct.timestamp == datetime.datetime(
+            2016, 11, 17, 1, 56, 25, 396000
+        )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestInvalidExtension(object):
     def test_invalid_certificate_policies_data(self, backend):
         cert = _load_cert(

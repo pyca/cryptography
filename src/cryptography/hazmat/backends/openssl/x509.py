@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import operator
 import warnings
 
@@ -433,3 +434,38 @@ class _CertificateSigningRequest(object):
             return False
 
         return True
+
+
+@utils.register_interface(
+    x509.certificate_transparency.SignedCertificateTimestamp
+)
+class _SignedCertificateTimestamp(object):
+    def __init__(self, backend, sct):
+        self._backend = backend
+        self._sct = sct
+
+    @property
+    def version(self):
+        version = self._backend._lib.SCT_get_version(self._sct)
+        if version == self._backend._lib.SCT_VERSION_V1:
+            return x509.certificate_transparency.Version.v1
+        raise x509.InvalidVersion
+
+    @property
+    def log_id(self):
+        out = self._backend._ffi.new("unsigned char **")
+        log_id_length = self._backend._lib.SCT_get0_log_id(self._sct, out)
+        assert log_id_length >= 0
+        return self._backend._ffi.buffer(out[0], log_id_length)[:]
+
+    @property
+    def timestamp(self):
+        timestamp = self._backend._lib.SCT_get_timestamp(self._sct)
+        milliseconds = timestamp % 1000
+        return datetime.datetime.utcfromtimestamp(
+            timestamp // 1000
+        ).replace(microsecond=milliseconds * 1000)
+
+    @property
+    def entry_type(self):
+        raise NotImplementedError

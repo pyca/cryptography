@@ -23,9 +23,9 @@ from cryptography.x509.extensions import (
     ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
     InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
-    PolicyInformation, ReasonFlags, SubjectAlternativeName,
-    SubjectKeyIdentifier, UnrecognizedExtension, UnsupportedExtension,
-    UserNotice
+    PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
+    SubjectAlternativeName, SubjectKeyIdentifier, UnrecognizedExtension,
+    UnsupportedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -185,4 +185,5 @@ __all__ = [
     "InvalidityDate",
     "UnrecognizedExtension",
     "PolicyConstraints",
+    "PrecertificateSignedCertificateTimestamps",
 ]
