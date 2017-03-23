@@ -49,3 +49,7 @@ entirely. In that case, here's how the process will work:
 
 In short, code that runs without warnings will always continue to work for a
 period of two releases.
+
+From time to time, we may decide to deprecate an API that is particularly
+widely used. In these cases, we may decide to provide an extended deprecation
+period, at our discretion.
