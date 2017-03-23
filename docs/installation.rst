@@ -123,7 +123,7 @@ this when configuring OpenSSL:
 
 You'll also need to generate your own ``openssl.ld`` file. For example::
 
-    OPENSSL_1.0.1F_CUSTOM {
+    OPENSSL_1.1.0E_CUSTOM {
         global:
             *;
     };
@@ -154,7 +154,7 @@ available from your system package manager.
 Then, paste the following into a shell script. You'll need to populate the
 ``OPENSSL_VERSION`` variable. To do that, visit `openssl.org`_ and find the
 latest non-FIPS release version number, then set the string appropriately. For
-example, for OpenSSL 1.0.2d, use ``OPENSSL_VERSION="1.0.2d"``.
+example, for OpenSSL 1.0.2k, use ``OPENSSL_VERSION="1.0.2k"``.
 
 When this shell script is complete, you'll find a collection of wheel files in
 a directory called ``wheelhouse``. These wheels can be installed by a
@@ -177,7 +177,7 @@ dependencies.
     curl -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
     tar xvf openssl-${OPENSSL_VERSION}.tar.gz
     cd openssl-${OPENSSL_VERSION}
-    ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
+    ./config no-shared no-ssl2 no-ssl3 -fPIC --prefix=${CWD}/openssl
     make && make install
     cd ..
     CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel --no-use-wheel cryptography
