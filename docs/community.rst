@@ -9,8 +9,7 @@ You can find ``cryptography`` all over the web:
 * `Documentation`_
 * IRC: ``#cryptography-dev`` on ``irc.freenode.net``
 
-Wherever we interact, we strive to follow the `Python Community Code of
-Conduct`_.
+Wherever we interact, we adhere to the `Python Community Code of Conduct`_.
 
 
 .. _`Mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
