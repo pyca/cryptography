@@ -36,7 +36,7 @@ Examples of things we wouldn't consider security issues:
 
 In general, if you're unsure, we request that you to default to treating things
 as security issues and handling them sensitively, the worst thing that can
-happen is that we'll ask you to file a bug issue.
+happen is that we'll ask you to file a public issue.
 
 Reporting a security issue
 --------------------------
