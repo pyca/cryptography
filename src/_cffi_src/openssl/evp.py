@@ -190,21 +190,20 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
 }
 
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
     return EVP_MD_CTX_create();
 #else
     return EVP_MD_CTX_new();
 #endif
 }
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
     EVP_MD_CTX_destroy(ctx);
 #else
     EVP_MD_CTX_free(ctx);
 #endif
 }
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER) \
-    || defined(OPENSSL_NO_SCRYPT)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 0;
 int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,

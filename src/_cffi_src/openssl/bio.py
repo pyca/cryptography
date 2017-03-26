@@ -138,7 +138,7 @@ void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4
 int BIO_up_ref(BIO *b) {
     CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
     return 1;

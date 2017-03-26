@@ -95,7 +95,7 @@ CUSTOMIZATIONS = """
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
 #endif
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
 #else
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
@@ -114,7 +114,7 @@ static const long CRYPTO_LOCK_SSL = 0;
 void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 /* This function has a significantly different signature pre-1.1.0. since it is
  * for testing only, we don't bother to expose it on older OpenSSLs.
  */
