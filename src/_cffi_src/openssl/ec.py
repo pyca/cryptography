@@ -208,8 +208,8 @@ EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
 static const long Cryptography_HAS_EC2M = 1;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER) && \
-    LIBRESSL_VERSION_NUMBER < 0x20020002L
+#if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102) || \
+    (CRYPTOGRAPHY_IS_LIBRESSL && LIBRESSL_VERSION_NUMBER < 0x20020002L)
 static const long Cryptography_HAS_EC_1_0_2 = 0;
 const char *(*EC_curve_nid2nist)(int) = NULL;
 #else
