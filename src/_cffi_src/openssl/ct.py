@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 #include <openssl/ct.h>
 
 typedef STACK_OF(SCT) Cryptography_STACK_OF_SCT;
@@ -47,7 +47,7 @@ SCT *sk_SCT_value(const Cryptography_STACK_OF_SCT *, int);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 static const long Cryptography_HAS_SCT = 1;
 #else
 static const long Cryptography_HAS_SCT = 0;

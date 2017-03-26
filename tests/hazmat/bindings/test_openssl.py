@@ -21,10 +21,7 @@ class TestOpenSSL(object):
 
     def test_crypto_lock_init(self):
         b = Binding()
-        if (
-            b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
-            not b.lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
+        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             pytest.skip("Requires an older OpenSSL. Must be < 1.1.0")
 
         b.init_static_locks()
@@ -79,10 +76,7 @@ class TestOpenSSL(object):
     def test_conditional_removal(self):
         b = Binding()
 
-        if (
-            b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
-            not b.lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
+        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             assert b.lib.TLS_ST_OK
         else:
             with pytest.raises(AttributeError):
