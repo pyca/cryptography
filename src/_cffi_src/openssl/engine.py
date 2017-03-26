@@ -137,7 +137,7 @@ void ENGINE_load_cryptodev(void);
 """
 
 CUSTOMIZATIONS = """
-#if defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_ENGINE_CRYPTODEV = 0;
 void (*ENGINE_load_cryptodev)(void) = NULL;
 #else
