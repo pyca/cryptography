@@ -18,7 +18,9 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
-def _skip_dhx_unsupported(backend):
+def _skip_dhx_unsupported(backend, key_path):
+    if "rfc5114" not in key_path:
+        return
     if not backend.dh_x942_serialization_supported():
         pytest.skip(
             "DH x9.42 serialization is not supported"
@@ -421,7 +423,7 @@ class TestDHPrivateKeySerialization(object):
     )
     def test_private_bytes_match(self, key_path, loader_func,
                                  encoding, backend):
-        _skip_dhx_unsupported(backend)
+        _skip_dhx_unsupported(backend, key_path)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -457,7 +459,7 @@ class TestDHPrivateKeySerialization(object):
     )
     def test_private_bytes_values(self, key_path, loader_func,
                                   vec_path, backend):
-        _skip_dhx_unsupported(backend)
+        _skip_dhx_unsupported(backend, key_path)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -581,7 +583,7 @@ class TestDHPublicKeySerialization(object):
     )
     def test_public_bytes_match(self, key_path, loader_func,
                                 encoding, backend):
-        _skip_dhx_unsupported(backend)
+        _skip_dhx_unsupported(backend, key_path)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
@@ -617,7 +619,7 @@ class TestDHPublicKeySerialization(object):
     )
     def test_public_bytes_values(self, key_path, loader_func,
                                  vec_path, backend):
-        _skip_dhx_unsupported(backend)
+        _skip_dhx_unsupported(backend, key_path)
         key_bytes = load_vectors_from_file(
             key_path,
             lambda pemfile: pemfile.read(), mode="rb"
