@@ -994,6 +994,17 @@ class Backend(object):
             else:
                 self._handle_key_loading_error()
 
+    def load_pem_parameters(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        # only DH is supported currently
+        dh_cdata = self._lib.PEM_read_bio_DHparams(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL)
+        if dh_cdata != self._ffi.NULL:
+            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+            return _DHParameters(self, dh_cdata)
+        else:
+            self._handle_key_loading_error()
+
     def load_der_private_key(self, data, password):
         # OpenSSL has a function called d2i_AutoPrivateKey that in theory
         # handles this automatically, however it doesn't handle encrypted
@@ -1049,6 +1060,17 @@ class Backend(object):
                 return _RSAPublicKey(self, rsa_cdata, evp_pkey)
             else:
                 self._handle_key_loading_error()
+
+    def load_der_parameters(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        dh_cdata = self._lib.d2i_DHparams_bio(
+            mem_bio.bio, self._ffi.NULL
+        )
+        if dh_cdata != self._ffi.NULL:
+            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+            return _DHParameters(self, dh_cdata)
+        else:
+            self._handle_key_loading_error()
 
     def load_pem_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)
@@ -1616,6 +1638,30 @@ class Backend(object):
                 serialization._ssh_write_string(curve_name) +
                 serialization._ssh_write_string(public_numbers.encode_point())
             )
+
+    def _parameter_bytes(self, encoding, format, cdata):
+        if not isinstance(format, serialization.ParameterFormat):
+            raise TypeError(
+                "format must be an item from the ParameterFormat enum"
+            )
+
+        if encoding is serialization.Encoding.OpenSSH:
+            raise TypeError(
+                "OpenSSH encoding is not supported"
+            )
+
+        # Only DH is supported here currently.
+        if encoding is serialization.Encoding.PEM:
+            write_bio = self._lib.PEM_write_bio_DHparams
+        elif encoding is serialization.Encoding.DER:
+            write_bio = self._lib.i2d_DHparams_bio
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        bio = self._create_mem_bio_gc()
+        res = write_bio(bio, cdata)
+        self.openssl_assert(res == 1)
+        return self._read_mem_bio(bio)
 
     def generate_dh_parameters(self, generator, key_size):
         if key_size < 512:

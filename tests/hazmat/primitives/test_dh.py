@@ -667,3 +667,123 @@ class TestDHPublicKeySerialization(object):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
+
+
+@pytest.mark.requires_backend_interface(interface=DHBackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestDHParameterSerialization(object):
+
+    @pytest.mark.parametrize(
+        ("encoding", "loader_func"),
+        [
+            [
+                serialization.Encoding.PEM,
+                serialization.load_pem_parameters
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.load_der_parameters
+            ],
+        ]
+    )
+    def test_parameter_bytes(self, backend, encoding,
+                             loader_func):
+        parameters = dh.generate_parameters(2, 512, backend)
+        serialized = parameters.parameter_bytes(
+            encoding, serialization.ParameterFormat.ASN1
+        )
+        loaded_key = loader_func(serialized, backend)
+        loaded_param_num = loaded_key.parameter_numbers()
+        assert loaded_param_num == parameters.parameter_numbers()
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhp.pem"),
+                serialization.load_pem_parameters,
+                serialization.Encoding.PEM,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp.der"),
+                serialization.load_der_parameters,
+                serialization.Encoding.DER,
+            ),
+            # (
+            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+            #     serialization.load_pem_public_key,
+            #     serialization.Encoding.PEM,
+            # ), (
+            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+            #     serialization.load_der_public_key,
+            #     serialization.Encoding.DER,
+            # )
+        ]
+    )
+    def test_parameter_bytes_match(self, key_path, loader_func,
+                                   encoding, backend):
+        _skip_dhx_unsupported(backend)
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        parameters = loader_func(key_bytes, backend)
+        serialized = parameters.parameter_bytes(
+            encoding,
+            serialization.ParameterFormat.ASN1,
+        )
+        assert serialized == key_bytes
+
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func", "vec_path"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhp.pem"),
+                serialization.load_pem_parameters,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
+            ), (
+                os.path.join("asymmetric", "DH", "dhp.der"),
+                serialization.load_der_parameters,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
+            ),
+            # (
+            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+            #     serialization.load_pem_public_key,
+            #     os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+            # ), (
+            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
+            #     serialization.load_der_public_key,
+            #     os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+            # )
+        ]
+    )
+    def test_public_bytes_values(self, key_path, loader_func,
+                                 vec_path, backend):
+        _skip_dhx_unsupported(backend)
+        key_bytes = load_vectors_from_file(
+            key_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
+        parameters = loader_func(key_bytes, backend)
+        parameter_numbers = parameters.parameter_numbers()
+        assert parameter_numbers.g == int(vec["g"], 16)
+        assert parameter_numbers.p == int(vec["p"], 16)
+        if "q" in vec:
+            assert parameter_numbers.q == int(vec["q"], 16)
+        else:
+            assert parameter_numbers.q is None
+
+    def test_parameter_bytes_invalid_encoding(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        with pytest.raises(TypeError):
+            parameters.parameter_bytes(
+                "notencoding",
+                serialization.ParameterFormat.ASN1
+            )
+
+    def test_parameter_bytes_OpenSSH_unsupported(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        with pytest.raises(TypeError):
+            parameters.parameter_bytes(
+                serialization.Encoding.OpenSSH, serialization.ParameterFormat.ASN1
+            )
