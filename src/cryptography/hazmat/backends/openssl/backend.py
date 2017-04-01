@@ -1652,7 +1652,15 @@ class Backend(object):
 
         # Only DH is supported here currently.
         if encoding is serialization.Encoding.PEM:
-            write_bio = self._lib.PEM_write_bio_DHparams
+            q = self._ffi.new("BIGNUM **")
+            self._lib.DH_get0_pqg(cdata,
+                                  self._ffi.NULL,
+                                  q,
+                                  self._ffi.NULL)
+            if q[0] != self._ffi.NULL:
+                write_bio = self._lib.PEM_write_bio_DHxparams
+            else:
+                write_bio = self._lib.PEM_write_bio_DHparams
         elif encoding is serialization.Encoding.DER:
             write_bio = self._lib.i2d_DHparams_bio
         else:

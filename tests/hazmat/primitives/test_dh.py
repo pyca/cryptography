@@ -707,16 +707,15 @@ class TestDHParameterSerialization(object):
                 os.path.join("asymmetric", "DH", "dhp.der"),
                 serialization.load_der_parameters,
                 serialization.Encoding.DER,
-            ),
-            # (
-            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
-            #     serialization.load_pem_public_key,
-            #     serialization.Encoding.PEM,
-            # ), (
-            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
-            #     serialization.load_der_public_key,
-            #     serialization.Encoding.DER,
-            # )
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
+                serialization.load_pem_parameters,
+                serialization.Encoding.PEM,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
+                serialization.load_der_parameters,
+                serialization.Encoding.DER,
+            )
         ]
     )
     def test_parameter_bytes_match(self, key_path, loader_func,
@@ -744,16 +743,15 @@ class TestDHParameterSerialization(object):
                 os.path.join("asymmetric", "DH", "dhp.der"),
                 serialization.load_der_parameters,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-            ),
-            # (
-            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
-            #     serialization.load_pem_public_key,
-            #     os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-            # ), (
-            #     os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
-            #     serialization.load_der_public_key,
-            #     os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-            # )
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
+                serialization.load_pem_parameters,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
+                serialization.load_der_parameters,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+            )
         ]
     )
     def test_public_bytes_values(self, key_path, loader_func,
