@@ -1271,9 +1271,6 @@ class Backend(object):
             res = self._lib.EC_KEY_generate_key(ec_cdata)
             self.openssl_assert(res == 1)
 
-            res = self._lib.EC_KEY_check_key(ec_cdata)
-            self.openssl_assert(res == 1)
-
             evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
