@@ -554,7 +554,7 @@ int Cryptography_add_osrandom_engine(void) {
     if (e == NULL) {
         return 0;
     }
-    if(!ENGINE_set_id(e, Cryptography_osrandom_engine_id) ||
+    if (!ENGINE_set_id(e, Cryptography_osrandom_engine_id) ||
             !ENGINE_set_name(e, Cryptography_osrandom_engine_name) ||
             !ENGINE_set_RAND(e, &osrandom_rand) ||
             !ENGINE_set_init_function(e, osrandom_init) ||
