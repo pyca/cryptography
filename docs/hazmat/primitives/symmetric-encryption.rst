@@ -292,7 +292,10 @@ Modes
     .. danger::
 
         When using this mode you **must** not use the decrypted data until
-        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
+        the appropriate finalization method
+        (:meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
+        or
+        :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`)
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
 
@@ -326,13 +329,19 @@ Modes
             truncation down to ``4`` bytes was always allowed.
 
     :param bytes tag: The tag bytes to verify during decryption. When
-        encrypting this must be ``None``.
+        encrypting this must be ``None``. When decrypting, it may be ``None``
+        if the tag is supplied on finalization using
+        :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+        Otherwise, the tag is mandatory.
 
     :param bytes min_tag_length: The minimum length ``tag`` must be. By default
         this is ``16``, meaning tag truncation is not allowed. Allowing tag
         truncation is strongly discouraged for most applications.
 
     :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
+
+    :raises NotImplementedError: This is raised if the version of the OpenSSL
+        backend used is 1.0.1 or earlier.
 
     An example of securely encrypting and decrypting data with ``AES`` in the
     ``GCM`` mode looks like:
@@ -553,7 +562,7 @@ Interfaces
 
 .. class:: AEADDecryptionContext
 
-    .. versionadded:: 1.8
+    .. versionadded:: 1.9
 
     When creating an encryption context using ``decryptor`` on a ``Cipher``
     object with an AEAD mode such as
@@ -570,10 +579,17 @@ Interfaces
         :raises ValueError: This is raised when the data provided isn't
             a multiple of the algorithm's block size, if ``min_tag_length`` is
             less than 4, or if ``len(tag) < min_tag_length``.
+        :raises NotImplementedError: This is raised if the version of the
+            OpenSSL backend used is 1.0.1 or earlier.
 
-        Set the authentication tag ``tag`` of the decryption mode before
-        invoking
-        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
+        If the authentication tag was not already supplied to the constructor
+        of the :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` mode
+        object, this method must be used instead of
+        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`.
+
+    .. note::
+
+        This method is not supported when compiled against OpenSSL 1.0.1.
 
 .. class:: CipherAlgorithm
 

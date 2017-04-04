@@ -221,6 +221,12 @@ class _AEADCipherContext(object):
         return data
 
     def finalize_with_tag(self, tag):
+        if self._ctx._backend.name == "openssl" and \
+                self._ctx._backend.openssl_version_number() < 0x10002000:
+            raise NotImplementedError(
+                "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
+                "method please update OpenSSL"
+            )
         self._ctx._mode._set_tag(tag)
         return self.finalize()
 
