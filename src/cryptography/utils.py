@@ -51,13 +51,26 @@ else:
         return int(bytes(data).encode('hex'), 16)
 
 
-def int_to_bytes(integer, length=None):
-    hex_string = '%x' % integer
-    if length is None:
-        n = len(hex_string)
-    else:
-        n = length * 2
-    return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
+if hasattr(int, "to_bytes"):
+    def int_to_bytes(integer, length=None):
+        return integer.to_bytes(
+            length or (integer.bit_length() + 7) // 8 or 1, 'big'
+        )
+else:
+    def int_to_bytes(integer, length=None):
+        hexed = '{:x}'.format(integer)
+
+        # Handle odd-length hex strings.
+        if len(hexed) & 1:
+            hexed = '0' + hexed
+
+        bytestr = binascii.unhexlify(hexed)
+
+        if not length:
+            return bytestr
+
+        # Pad bytes assuming big-endian.
+        return (b'\x00' * (length - len(bytestr))) + bytestr
 
 
 class InterfaceNotImplemented(Exception):
