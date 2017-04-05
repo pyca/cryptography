@@ -58,7 +58,7 @@ if hasattr(int, "to_bytes"):
         )
 else:
     def int_to_bytes(integer, length=None):
-        hexed = '{:x}'.format(integer)
+        hexed = '{0:x}'.format(integer)
 
         # Handle odd-length hex strings.
         if len(hexed) & 1:
