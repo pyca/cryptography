@@ -58,19 +58,12 @@ if hasattr(int, "to_bytes"):
         )
 else:
     def int_to_bytes(integer, length=None):
-        hexed = '{0:x}'.format(integer)
-
-        # Handle odd-length hex strings.
-        if len(hexed) & 1:
-            hexed = '0' + hexed
-
-        bytestr = binascii.unhexlify(hexed)
-
-        if not length:
-            return bytestr
-
-        # Pad bytes assuming big-endian.
-        return (b'\x00' * (length - len(bytestr))) + bytestr
+        hex_string = '%x' % integer
+        if length is None:
+            n = len(hex_string)
+        else:
+            n = length * 2
+        return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
 
 
 class InterfaceNotImplemented(Exception):
