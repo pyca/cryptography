@@ -130,6 +130,7 @@ typedef ... Cryptography_LHASH_OF_CONF_VALUE;
 
 
 typedef ... Cryptography_STACK_OF_DIST_POINT;
+typedef ... CRL_DIST_POINTS;
 
 typedef struct {
     int type;
@@ -248,7 +249,8 @@ DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
 int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
 void sk_DIST_POINT_pop_free(Cryptography_STACK_OF_DIST_POINT *,
                             sk_DIST_POINT_freefunc);
-void CRL_DIST_POINTS_free(Cryptography_STACK_OF_DIST_POINT *);
+
+void CRL_DIST_POINTS_free(CRL_DIST_POINTS *);
 
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
