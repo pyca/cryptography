@@ -40,7 +40,9 @@ int Cryptography_DH_check(const DH *, int *);
 MACROS = """
 int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 DH *d2i_DHparams_bio(BIO *, DH **);
+DH *d2i_DHxparams_bio(BIO *, DH **);
 int i2d_DHparams_bio(BIO *, DH *);
+int i2d_DHxparams_bio(BIO *, DH *);
 """
 
 CUSTOMIZATIONS = """
@@ -226,5 +228,13 @@ int Cryptography_DH_check(const DH *dh, int *ret)
 int Cryptography_DH_check(const DH *dh, int *ret) {
     return DH_check(dh, ret);
 }
+#endif
+
+/* These functions were added in OpenSSL 1.0.2l commit  */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102L
+#define d2i_DHxparams_bio(bp,x) \
+    ASN1_d2i_bio_of(DH, DH_new, d2i_DHxparams, bp, x)
+#define i2d_DHxparams_bio(bp,x) \
+    ASN1_i2d_bio_of_const(DH, i2d_DHxparams, bp, x)
 #endif
 """
