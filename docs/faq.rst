@@ -23,6 +23,10 @@ OpenSSL. You're seeing this error because your copy of pip is too old to find
 our wheel files. Upgrade your copy of pip with ``pip install -U pip`` and then
 try install ``cryptography`` again.
 
+If you are using PyPy, we do not currently ship ``cryptography`` wheels for
+PyPy. You will need to install your own copy of OpenSSL -- we recommend using
+Homebrew.
+
 Starting ``cryptography`` using ``mod_wsgi`` produces an ``InternalError`` during a call in ``_register_osrandom_engine``
 -------------------------------------------------------------------------------------------------------------------------
 

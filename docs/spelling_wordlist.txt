@@ -39,6 +39,7 @@ fernet
 FIPS
 Google
 hazmat
+Homebrew
 hostname
 indistinguishability
 initialisms
