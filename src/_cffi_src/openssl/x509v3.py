@@ -257,6 +257,7 @@ int sk_POLICYINFO_push(Cryptography_STACK_OF_POLICYINFO *, POLICYINFO *);
 Cryptography_STACK_OF_POLICYINFO *sk_POLICYINFO_new_null(void);
 void sk_POLICYINFO_pop_free(Cryptography_STACK_OF_POLICYINFO *,
                             sk_POLICYINFO_freefunc);
+void CERTIFICATEPOLICIES_free(Cryptography_STACK_OF_POLICYINFO *);
 
 POLICYINFO *POLICYINFO_new(void);
 void POLICYINFO_free(POLICYINFO *);
