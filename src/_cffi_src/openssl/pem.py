@@ -87,6 +87,6 @@ int PEM_write_bio_DHxparams(BIO *, DH *);
 
 CUSTOMIZATIONS = """
 #ifndef EVP_PKEY_DHX
-int PEM_write_bio_DHxparams(BIO *, DH *)= NULL;
+int (*PEM_write_bio_DHxparams)(BIO *, DH *) = NULL;
 #endif
 """
