@@ -231,15 +231,16 @@ int Cryptography_DH_check(const DH *dh, int *ret) {
 #endif
 
 /* These functions were added in OpenSSL 1.1.0f commit d0c50e80a8 */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
+/* Define our own to simplify support across all versions. */
 #ifdef EVP_PKEY_DHX
-#define d2i_DHxparams_bio(bp,x) \
-    ASN1_d2i_bio_of(DH, DH_new, d2i_DHxparams, bp, x)
-#define i2d_DHxparams_bio(bp,x) \
-    ASN1_i2d_bio_of_const(DH, i2d_DHxparams, bp, x)
+DH *Cryptography_d2i_DHxparams_bio(BIO *bp, DH **x) {
+    return ASN1_d2i_bio_of(DH, DH_new, d2i_DHxparams, bp, x);
+}
+int Cryptography_i2d_DHxparams_bio(BIO *bp, DH *x) {
+    return ASN1_i2d_bio_of_const(DH, i2d_DHxparams, bp, x);
+}
 #else
-#define d2i_DHxparams_bio(bp,x) NULL
-#define i2d_DHxparams_bio(bp,x) 0
-#endif
+DH *(*Cryptography_d2i_DHxparams_bio)(BIO *bp, DH **x) = NULL;
+int (*Cryptography_i2d_DHxparams_bio)(BIO *bp, DH *x) = NULL;
 #endif
 """
