@@ -230,8 +230,8 @@ int Cryptography_DH_check(const DH *dh, int *ret) {
 }
 #endif
 
-/* These functions were added in OpenSSL 1.0.2l commit  */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102L
+/* These functions were added in OpenSSL 1.1.0f commit d0c50e80a8 */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
 #ifdef EVP_PKEY_DHX
 #define d2i_DHxparams_bio(bp,x) \
     ASN1_d2i_bio_of(DH, DH_new, d2i_DHxparams, bp, x)
