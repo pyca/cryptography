@@ -239,7 +239,7 @@ int Cryptography_DH_check(const DH *dh, int *ret) {
     ASN1_i2d_bio_of_const(DH, i2d_DHxparams, bp, x)
 #else
 #define d2i_DHxparams_bio(bp,x) NULL
-#define i2d_DHxparams_bio(bp,x) NULL
+#define i2d_DHxparams_bio(bp,x) 0
 #endif
 #endif
 """
