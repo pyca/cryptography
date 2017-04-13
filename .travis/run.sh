@@ -40,7 +40,7 @@ source ~/.venv/bin/activate
 
 # TODO: $CC on Travis's Linux builders is too old for -fsanitize
 if [[ "$(uname -s)" == "Darwin" ]]; then
-    export CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    export CFLAGS="$CFLAGS -fsanitize=address"
     xcode_location="$(xcode-select -p)"
     export DYLD_INSERT_LIBRARIES="$(ls ${xcode_location}/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/*/lib/darwin/libclang_rt.asan_osx_dynamic.dylib)"
 fi
