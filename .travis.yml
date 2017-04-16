@@ -3,6 +3,7 @@ sudo: false
 language: python
 
 cache:
+    branch: md5deep
     directories:
         - $HOME/.cache/pip
         - $HOME/ossl-1/
