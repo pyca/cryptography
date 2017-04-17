@@ -46,7 +46,7 @@ if sys.version_info < (3, 4):
     requirements.append("enum34")
 
 if sys.version_info < (3, 3):
-    requirements.append("ipaddress")
+    requirements.append("ipaddress==1.0.7")
 
 if platform.python_implementation() == "PyPy":
     if sys.pypy_version_info < (2, 6):
