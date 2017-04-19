@@ -35,14 +35,14 @@ void DH_get0_key(const DH *, const BIGNUM **, const BIGNUM **);
 int DH_set0_key(DH *, BIGNUM *, BIGNUM *);
 
 int Cryptography_DH_check(const DH *, int *);
-DH *Cryptography_d2i_DHxparams_bio(BIO *bp, DH **x);
-int Cryptography_i2d_DHxparams_bio(BIO *bp, DH *x);
 """
 
 MACROS = """
 int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 DH *d2i_DHparams_bio(BIO *, DH **);
 int i2d_DHparams_bio(BIO *, DH *);
+DH *Cryptography_d2i_DHxparams_bio(BIO *bp, DH **x);
+int Cryptography_i2d_DHxparams_bio(BIO *bp, DH *x);
 """
 
 CUSTOMIZATIONS = """
