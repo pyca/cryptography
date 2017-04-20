@@ -96,7 +96,7 @@ Key exchange
 
 * ``vectors/cryptography_vectors/asymmetric/DH/bad_exchange.txt`` contains
   Diffie-Hellman vector pairs that were generated using OpenSSL
-  DH_generate_parameters_ex and DH_generate_key.
+  ``DH_generate_parameters_ex`` and ``DH_generate_key``.
 
 * ``vectors/cryptography_vectors/asymmetric/DH/dhp.pem``,
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey.pem`` and
