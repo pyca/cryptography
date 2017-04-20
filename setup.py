@@ -37,12 +37,15 @@ requirements = [
     "idna>=2.1",
     "asn1crypto>=0.21.0",
     "six>=1.4.1",
-]
-setup_requirements = []
 
-if sys.version_info < (3,):
-    requirements.append("enum34")
-    requirements.append("ipaddress")
+    "enum34 ; python_version < '3'",
+    "ipaddress ; python_version < '3'",
+
+    "cffi>=1.7 ; python_implementation != 'PyPy'",
+]
+setup_requirements = [
+    "cffi>=1.7 ; python_implementation != 'PyPy'",
+]
 
 if platform.python_implementation() == "PyPy":
     if sys.pypy_version_info < (5, 3):
@@ -50,19 +53,15 @@ if platform.python_implementation() == "PyPy":
             "cryptography 1.9 is not compatible with PyPy < 5.3. Please "
             "upgrade PyPy to use this library."
         )
-else:
-    requirements.append("cffi>=1.7")
-    setup_requirements.append("cffi>=1.7")
 
 test_requirements = [
     "pytest>=2.9.0",
     "pretend",
     "iso8601",
     "pytz",
-]
-if sys.version_info[:2] > (2, 6):
-    test_requirements.append("hypothesis>=1.11.4")
 
+    "hypothesis>=1.11.4 ; python_version > '2.6'",
+]
 
 # If there's no vectors locally that probably means we are in a tarball and
 # need to go and get the matching vectors package from PyPi
