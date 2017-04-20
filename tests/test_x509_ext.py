@@ -3688,7 +3688,10 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert sct.timestamp == datetime.datetime(
             2016, 11, 17, 1, 56, 25, 396000
         )
-        assert sct.entry_type == x509.certificate_transparency.LogEntryType.PreCert
+        assert (
+            sct.entry_type ==
+            x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

@@ -440,8 +440,10 @@ class _CertificateSigningRequest(object):
     x509.certificate_transparency.SignedCertificateTimestamp
 )
 class _SignedCertificateTimestamp(object):
-    def __init__(self, backend, sct):
+    def __init__(self, backend, sct_list, sct):
         self._backend = backend
+        # Keep the SCT_LIST that this SCT came from alive.
+        self._sct_list = sct_list
         self._sct = sct
 
     @property
