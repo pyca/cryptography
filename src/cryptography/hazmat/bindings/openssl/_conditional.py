@@ -161,7 +161,9 @@ CONDITIONAL_NAMES = {
         "SCT_get_log_entry_type",
         "SCT_get0_log_id",
         "SCT_get_timestamp",
+        "SCT_set_source",
         "sk_SCT_num",
         "sk_SCT_value",
+        "SCT_LIST_free",
     ],
 }
