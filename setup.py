@@ -63,7 +63,7 @@ test_requirements = [
     "pretend",
     "iso8601",
     "pytz",
-    
+
     "hypothesis>=1.11.4 ; python_version > '2.6'",
 ]
 
