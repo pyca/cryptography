@@ -38,7 +38,7 @@ requirements = [
     "asn1crypto>=0.21.0",
     "packaging",
     "six>=1.4.1",
-    "setuptools>=11.3",
+    "setuptools>=20.5",
 ]
 setup_requirements = []
 
