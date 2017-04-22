@@ -48,6 +48,9 @@ Changelog
   :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
   This behavior was based on a poor reading of the RFC, unknown critical
   extensions only need to be rejected on certificate verification.
+* Added support for parsing
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+  objects from X.509 certificate extensions.
 * The CommonCrypto backend has been removed.
 * MultiBackend has been removed.
 * ``Whirlpool`` and ``RIPEMD160`` have been deprecated.
