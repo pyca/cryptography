@@ -10,7 +10,7 @@ import inspect
 import sys
 import warnings
 
-from packaging.version import parse
+from pkg_resources import parse_version
 
 
 # Several APIs were deprecated with no specific end-of-life date because of the
@@ -106,7 +106,7 @@ else:
 
 def _version_check(version, required_version):
     # This is used to check if we support update_into on CipherContext.
-    return parse(version) >= parse(required_version)
+    return parse_version(version) >= parse_version(required_version)
 
 
 class _DeprecatedValue(object):
