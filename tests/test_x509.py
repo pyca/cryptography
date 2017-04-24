@@ -1440,9 +1440,11 @@ class TestRSACertificateRequest(object):
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u'US'),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ])).subject_name(x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u'US'),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ])).public_key(
             subject_private_key.public_key()
@@ -1460,6 +1462,8 @@ class TestRSACertificateRequest(object):
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
         assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
+        assert parsed.subject.chosen[1][0]['value'].chosen.tag == 19
+        assert parsed.issuer.chosen[1][0]['value'].chosen.tag == 19
 
 
 class TestCertificateBuilder(object):
