@@ -88,9 +88,10 @@ Adding constant, types, functions...
 
 You can create bindings for any name that exists in some version of
 the library you're binding against. However, the project also has to
-keep supporting older versions of the library. In order to achieve
-this, binding modules have ``CUSTOMIZATIONS`` and
-``CONDITIONAL_NAMES`` constants.
+keep supporting older versions of the library. In order to achieve this,
+binding modules have a ``CUSTOMIZATIONS`` constant, and there is a
+``CONDITIONAL_NAMES`` constants in
+``src/cryptography/hazmat/bindings/openssl/_conditional.py``.
 
 Let's say you want to enable quantum transmogrification. The upstream
 library implements this as the following API::
