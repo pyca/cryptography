@@ -133,16 +133,18 @@ def build(toxenv, label, image_name) {
                 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
             """
         } else if (label.contains("sierra")) {
-            sh """#!/usr/bin/env bash
-                set -xe
-                # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
-                export PATH=/usr/local/bin:\$PATH
-                # pyenv is nothing but trouble with non-interactive shells
-                #eval "\$(pyenv init -)"
-                export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
-                export PYENV_SHELL=bash
-                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
-            """
+            ansiColor {
+                sh """#!/usr/bin/env bash
+                    set -xe
+                    # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
+                    export PATH=/usr/local/bin:\$PATH
+                    # pyenv is nothing but trouble with non-interactive shells
+                    #eval "\$(pyenv init -)"
+                    export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
+                    export PYENV_SHELL=bash
+                    CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
+                """
+            }
         } else {
             ansiColor {
                 sh """#!/usr/bin/env bash
@@ -153,10 +155,10 @@ def build(toxenv, label, image_name) {
                         CFLAGS="-Werror" tox -vv -r -e $toxenv -- --color=yes
                     fi
                 """
-                sh "cat .tox/log/*"
             }
         }
     } finally {
+        sh "cat .tox/log/*"
         deleteDir()
     }
 
