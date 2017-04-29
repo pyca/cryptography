@@ -14,14 +14,14 @@
 
 
 def configs = [
-    [
-        label: 'windows',
-        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
-    ],
-    [
-        label: 'windows64',
-        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
-    ],
+    /* [ */
+    /*     label: 'windows', */
+    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
+    /* ], */
+    /* [ */
+    /*     label: 'windows64', */
+    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
+    /* ], */
     [
         label: 'freebsd11',
         toxenvs: ['py27'],
@@ -30,11 +30,11 @@ def configs = [
         label: 'sierra',
         toxenvs: ['py27'],
     ],
-    [
-        label: 'docker',
-        image_name: 'pyca/cryptography-runner-centos7',
-        toxenvs: ['py27'],
-    ],
+    /* [ */
+    /*     label: 'docker', */
+    /*     image_name: 'pyca/cryptography-runner-centos7', */
+    /*     toxenvs: ['py27'], */
+    /* ], */
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-wheezy',
@@ -55,21 +55,21 @@ def configs = [
         image_name: 'pyca/cryptography-runner-stretch',
         toxenvs: ['py27', 'py35'],
     ],
+    /* [ */
+    /*     label: 'docker', */
+    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
+    /*     toxenvs: ['py27'], */
+    /* ], */
     [
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
-        image_name: 'pyca/cryptography-runner-xenial',
+        image_name: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
-    [
-        label: 'docker',
-        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35'],
-    ],
+    /* [ */
+    /*     label: 'docker', */
+    /*     image_name: 'pyca/cryptography-runner-ubuntu-rolling', */
+    /*     toxenvs: ['py27', 'py35'], */
+    /* ], */
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-fedora',
@@ -132,15 +132,25 @@ def build(toxenv, label, image_name) {
                 tox -r -e $toxenv
                 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
             """
+        } else if (label.contains("sierra")) {
+            sh """#!/usr/bin/env bash -xe
+                # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
+                export PATH=/usr/local/bin:\$PATH
+                # pyenv is nothing but trouble with non-interactive shells
+                #eval "\$(pyenv init -)"
+                export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
+                export PYENV_SHELL=bash
+                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libcrypto.a /usr/local/opt/openssl\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
+            """
         } else {
             ansiColor {
-                sh """#!/usr/bin/env bash
+                sh """#!/usr/bin/env bash -xe
                     if [[ "$image_name" == *"libressl"* ]]; then
                         LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-Werror -I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
                     else
                         CFLAGS="-Werror" tox -vv -r -e $toxenv -- --color=yes
                     fi
-                    cat .tox/log/tox-0.log
+                    cat .tox/log/*
                 """
             }
         }
