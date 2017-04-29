@@ -140,7 +140,7 @@ def build(toxenv, label, image_name) {
                 #eval "\$(pyenv init -)"
                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                 export PYENV_SHELL=bash
-                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libcrypto.a /usr/local/opt/openssl\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
+                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
             """
         } else {
             ansiColor {
