@@ -10,8 +10,6 @@ import inspect
 import sys
 import warnings
 
-from packaging.version import parse
-
 
 # Several APIs were deprecated with no specific end-of-life date because of the
 # ubiquity of their use. They should not be removed until we agree on when that
@@ -102,11 +100,6 @@ if sys.version_info >= (2, 7):
 else:
     def bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))
-
-
-def _version_check(version, required_version):
-    # This is used to check if we support update_into on CipherContext.
-    return parse(version) >= parse(required_version)
 
 
 class _DeprecatedValue(object):

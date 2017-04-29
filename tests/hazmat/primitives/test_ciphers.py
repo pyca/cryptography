@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
-from cryptography.utils import _version_check
 
 from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
@@ -143,7 +142,7 @@ def test_invalid_backend():
 
 
 @pytest.mark.skipif(
-    not _version_check(cffi.__version__, '1.7'),
+    cffi.__version_info__ < (1, 7),
     reason="cffi version too old"
 )
 @pytest.mark.supported(
@@ -241,7 +240,7 @@ class TestCipherUpdateInto(object):
 
 
 @pytest.mark.skipif(
-    _version_check(cffi.__version__, '1.7'),
+    cffi.__version_info__ >= (1, 7),
     reason="cffi version too new"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
