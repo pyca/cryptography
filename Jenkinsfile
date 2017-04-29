@@ -144,9 +144,6 @@ def build(toxenv, label, image_name) {
                 """
             }
         }
-    } catch (e) {
-        currentBuild.result = 'FAILURE'
-        throw e
     } finally {
         deleteDir()
     }
@@ -162,7 +159,7 @@ for (config in configs) {
         def toxenv = _toxenv
 
         if (label.contains("docker")) {
-            def image_name = x["image_name"]
+            def image_name = config["image_name"]
             def combinedName = "${image_name}-${toxenv}"
             builders[combinedName] = {
                 node(label) {
