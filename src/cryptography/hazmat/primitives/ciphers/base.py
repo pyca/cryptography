@@ -147,7 +147,7 @@ class _CipherContext(object):
 
     # cffi 1.7 supports from_buffer on bytearray, which is required. We can
     # remove this check in the future when we raise our minimum PyPy version.
-    if utils._version_check(cffi.__version__, "1.7"):
+    if cffi.__version_info__ >= (1, 7):
         def update_into(self, data, buf):
             if self._ctx is None:
                 raise AlreadyFinalized("Context was already finalized.")
@@ -195,7 +195,7 @@ class _AEADCipherContext(object):
 
     # cffi 1.7 supports from_buffer on bytearray, which is required. We can
     # remove this check in the future when we raise our minimum PyPy version.
-    if utils._version_check(cffi.__version__, "1.7"):
+    if cffi.__version_info__ >= (1, 7):
         def update_into(self, data, buf):
             self._check_limit(len(data))
             return self._ctx.update_into(data, buf)
