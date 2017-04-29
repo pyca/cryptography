@@ -133,7 +133,8 @@ def build(toxenv, label, image_name) {
                 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
             """
         } else if (label.contains("sierra")) {
-            sh """#!/usr/bin/env bash -xe
+            sh """#!/usr/bin/env bash
+                set -xe
                 # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
                 export PATH=/usr/local/bin:\$PATH
                 # pyenv is nothing but trouble with non-interactive shells
@@ -144,7 +145,8 @@ def build(toxenv, label, image_name) {
             """
         } else {
             ansiColor {
-                sh """#!/usr/bin/env bash -xe
+                sh """#!/usr/bin/env bash
+                    set -xe
                     if [[ "$image_name" == *"libressl"* ]]; then
                         LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-Werror -I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
                     else
