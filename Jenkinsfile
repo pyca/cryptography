@@ -22,14 +22,14 @@ def configs = [
     /*     label: 'windows64', */
     /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
     /* ], */
-    [
-        label: 'freebsd11',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'sierra',
-        toxenvs: ['py27'],
-    ],
+    /* [ */
+    /*     label: 'freebsd11', */
+    /*     toxenvs: ['py27'], */
+    /* ], */
+    /* [ */
+    /*     label: 'sierra', */
+    /*     toxenvs: ['py27'], */
+    /* ], */
     /* [ */
     /*     label: 'docker', */
     /*     image_name: 'pyca/cryptography-runner-centos7', */
@@ -40,11 +40,11 @@ def configs = [
         image_name: 'pyca/cryptography-runner-wheezy',
         toxenvs: ['py27'],
     ],
-    [
-        label: 'docker',
-        image_name: 'pyca/cryptography-runner-jessie',
-        toxenvs: ['py27', 'py34'],
-    ],
+    /* [ */
+    /*     label: 'docker', */
+    /*     image_name: 'pyca/cryptography-runner-jessie', */
+    /*     toxenvs: ['py27', 'py34'], */
+    /* ], */
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-sid',
@@ -60,11 +60,11 @@ def configs = [
     /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
     /*     toxenvs: ['py27'], */
     /* ], */
-    [
-        label: 'docker',
-        image_name: 'pyca/cryptography-runner-ubuntu-xenial',
-        toxenvs: ['py27', 'py35'],
-    ],
+    /* [ */
+    /*     label: 'docker', */
+    /*     image_name: 'pyca/cryptography-runner-ubuntu-xenial', */
+    /*     toxenvs: ['py27', 'py35'], */
+    /* ], */
     /* [ */
     /*     label: 'docker', */
     /*     image_name: 'pyca/cryptography-runner-ubuntu-rolling', */
@@ -152,8 +152,8 @@ def build(toxenv, label, image_name) {
                     else
                         CFLAGS="-Werror" tox -vv -r -e $toxenv -- --color=yes
                     fi
-                    cat .tox/log/*
                 """
+                sh "cat .tox/log/*"
             }
         }
     } finally {
