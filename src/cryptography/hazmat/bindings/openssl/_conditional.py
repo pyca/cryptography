@@ -4,9 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-# This is a temporary copy of all the CONDITIONAL_NAMES from _cffi_src so
-# we can loop over them and delete them at runtime. It will be removed when
-# cffi supports #if in cdef
+# This is a mapping of {condition: names-dependent-on-that-condition} so we can
+# loop over them and delete unsupported names at runtime. It will be removed
+# when cffi supports #if in cdef.
 
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_CMS": [

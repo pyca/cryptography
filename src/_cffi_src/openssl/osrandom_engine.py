@@ -25,5 +25,3 @@ MACROS = """
 
 with open(os.path.join(HERE, "src/osrandom_engine.c")) as f:
     CUSTOMIZATIONS = f.read()
-
-CONDITIONAL_NAMES = {}
