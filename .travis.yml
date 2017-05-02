@@ -1,4 +1,6 @@
 sudo: false
+dist: trusty
+group: beta
 
 language: python
 
