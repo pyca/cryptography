@@ -574,6 +574,10 @@ Interfaces
 
     .. method:: finalize_with_tag(tag)
 
+        .. note::
+
+            This method is not supported when compiled against OpenSSL 1.0.1.
+
         :param bytes tag: The tag bytes to verify after decryption.
         :return bytes: Returns the remainder of the data.
         :raises ValueError: This is raised when the data provided isn't
@@ -586,10 +590,6 @@ Interfaces
         of the :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` mode
         object, this method must be used instead of
         :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`.
-
-    .. note::
-
-        This method is not supported when compiled against OpenSSL 1.0.1.
 
 .. class:: CipherAlgorithm
 
