@@ -232,7 +232,7 @@ int Cryptography_DH_check(const DH *dh, int *ret) {
 
 /* These functions were added in OpenSSL 1.1.0f commit d0c50e80a8 */
 /* Define our own to simplify support across all versions. */
-#ifdef EVP_PKEY_DHX
+#if defined(EVP_PKEY_DHX) && EVP_PKEY_DHX != -1
 DH *Cryptography_d2i_DHxparams_bio(BIO *bp, DH **x) {
     return ASN1_d2i_bio_of(DH, DH_new, d2i_DHxparams, bp, x);
 }
