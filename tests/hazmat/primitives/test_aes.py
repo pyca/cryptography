@@ -303,3 +303,99 @@ class TestAESModeGCM(object):
         assert encryptor._aad_bytes_processed == 8
         encryptor.authenticate_additional_data(b"0" * 18)
         assert encryptor._aad_bytes_processed == 26
+
+    def test_gcm_tag_decrypt_none(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+
+        if backend.name == "openssl" and \
+                backend.openssl_version_number() < 0x10002000:
+            with pytest.raises(NotImplementedError):
+                decryptor = base.Cipher(
+                    algorithms.AES(key),
+                    modes.GCM(iv),
+                    backend=backend
+                ).decryptor()
+        else:
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv),
+                backend=backend
+            ).decryptor()
+            decryptor.authenticate_additional_data(aad)
+            with pytest.raises(ValueError):
+                decryptor.finalize()
+
+    def test_gcm_tag_decrypt_mode(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+        tag = encryptor.tag
+
+        decryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv, tag),
+            backend=backend
+        ).decryptor()
+        decryptor.authenticate_additional_data(aad)
+        decryptor.finalize()
+
+    def test_gcm_tag_decrypt_finalize(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+        tag = encryptor.tag
+
+        if backend.name == "openssl" and \
+                backend.openssl_version_number() < 0x10002000:
+            with pytest.raises(NotImplementedError):
+                decryptor = base.Cipher(
+                    algorithms.AES(key),
+                    modes.GCM(iv),
+                    backend=backend
+                ).decryptor()
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv, tag=encryptor.tag),
+                backend=backend
+            ).decryptor()
+        else:
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv),
+                backend=backend
+            ).decryptor()
+        decryptor.authenticate_additional_data(aad)
+
+        if backend.name == "openssl" and \
+                backend.openssl_version_number() < 0x10002000:
+            with pytest.raises(NotImplementedError):
+                decryptor.finalize_with_tag(tag)
+            decryptor.finalize()
+        else:
+            decryptor.finalize_with_tag(tag)

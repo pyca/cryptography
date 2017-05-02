@@ -76,6 +76,16 @@ class AEADCipherContext(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class AEADDecryptionContext(object):
+    @abc.abstractmethod
+    def finalize_with_tag(self, tag):
+        """
+        Returns the results of processing the final block as bytes and allows
+        delayed passing of the authentication tag.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class AEADEncryptionContext(object):
     @abc.abstractproperty
     def tag(self):
@@ -115,11 +125,6 @@ class Cipher(object):
         return self._wrap_ctx(ctx, encrypt=True)
 
     def decryptor(self):
-        if isinstance(self.mode, modes.ModeWithAuthenticationTag):
-            if self.mode.tag is None:
-                raise ValueError(
-                    "Authentication tag must be provided when decrypting."
-                )
         ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
         )
@@ -169,6 +174,7 @@ class _CipherContext(object):
 
 @utils.register_interface(AEADCipherContext)
 @utils.register_interface(CipherContext)
+@utils.register_interface(AEADDecryptionContext)
 class _AEADCipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
@@ -213,6 +219,16 @@ class _AEADCipherContext(object):
         self._tag = self._ctx.tag
         self._ctx = None
         return data
+
+    def finalize_with_tag(self, tag):
+        if self._ctx._backend.name == "openssl" and \
+                self._ctx._backend.openssl_version_number() < 0x10002000:
+            raise NotImplementedError(
+                "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
+                "method please update OpenSSL"
+            )
+        self._ctx._mode._set_tag(tag)
+        return self.finalize()
 
     def authenticate_additional_data(self, data):
         if self._ctx is None:

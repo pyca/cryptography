@@ -304,8 +304,6 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         mode_factory(binascii.unhexlify(b"0" * 24)),
         backend
     )
-    with pytest.raises(ValueError):
-        cipher.decryptor()
 
     with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")
