@@ -6,6 +6,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Add support for providing ``tag`` during
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
+  :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+
 
 1.8.1 - 2017-03-10
 ~~~~~~~~~~~~~~~~~~
