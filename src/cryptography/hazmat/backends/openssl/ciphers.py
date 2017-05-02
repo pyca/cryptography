@@ -78,8 +78,11 @@ class _CipherContext(object):
                 len(iv_nonce), self._backend._ffi.NULL
             )
             self._backend.openssl_assert(res != 0)
-            if operation == self._DECRYPT and \
-                    self._backend.openssl_version_number() < 0x10002000:
+            if (
+                self._operation == self._DECRYPT and
+                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+                not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            ):
                 if mode.tag is None:
                     raise NotImplementedError(
                         "delayed passing of GCM tag requires OpenSSL >= 1.0.2."
@@ -140,9 +143,14 @@ class _CipherContext(object):
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
 
-        if self._operation == self._DECRYPT and \
-                isinstance(self._mode, modes.ModeWithAuthenticationTag) and \
-                self._backend.openssl_version_number() >= 0x10002000:
+        if (
+            self._operation == self._DECRYPT and
+            isinstance(self._mode, modes.ModeWithAuthenticationTag) and
+            (
+                not self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+                self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            )
+        ):
             tag = self._mode.tag
             if tag is None:
                 raise ValueError(
