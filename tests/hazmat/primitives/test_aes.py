@@ -317,8 +317,11 @@ class TestAESModeGCM(object):
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
 
-        if backend.name == "openssl" and \
-                backend.openssl_version_number() < 0x10002000:
+        if (
+            backend.name == "openssl" and
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
             with pytest.raises(NotImplementedError):
                 decryptor = base.Cipher(
                     algorithms.AES(key),
@@ -371,8 +374,11 @@ class TestAESModeGCM(object):
         encryptor.finalize()
         tag = encryptor.tag
 
-        if backend.name == "openssl" and \
-                backend.openssl_version_number() < 0x10002000:
+        if (
+            backend.name == "openssl" and
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
             with pytest.raises(NotImplementedError):
                 decryptor = base.Cipher(
                     algorithms.AES(key),
@@ -392,8 +398,11 @@ class TestAESModeGCM(object):
             ).decryptor()
         decryptor.authenticate_additional_data(aad)
 
-        if backend.name == "openssl" and \
-                backend.openssl_version_number() < 0x10002000:
+        if (
+            backend.name == "openssl" and
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
             with pytest.raises(NotImplementedError):
                 decryptor.finalize_with_tag(tag)
             decryptor.finalize()
