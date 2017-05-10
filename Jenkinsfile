@@ -79,7 +79,7 @@ def configs = [
 
 def build(toxenv, label, image_name) {
     try {
-        git 'https://github.com/pyca/cryptography'
+        checkout scm
         if (label.contains("windows")) {
             bat """
                 @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
@@ -150,15 +150,14 @@ def build(toxenv, label, image_name) {
                 sh """#!/usr/bin/env bash
                     set -xe
                     if [[ "$image_name" == *"libressl"* ]]; then
-                        LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-Werror -I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
+                        LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
                     else
-                        CFLAGS="-Werror" tox -vv -r -e $toxenv -- --color=yes
+                        CFLAGS="" tox -vv -r -e $toxenv -- --color=yes
                     fi
                 """
             }
         }
     } finally {
-        sh "cat .tox/log/*"
         deleteDir()
     }
 
