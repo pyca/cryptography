@@ -508,7 +508,7 @@ class TestECDSAVectors(object):
             ec.ECDSA(hash_type())
         )
         verifier.update(vector['message'])
-        assert verifier.verify()
+        verifier.verify()
 
     @pytest.mark.parametrize(
         "vector",
