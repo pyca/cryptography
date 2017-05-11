@@ -12,7 +12,7 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
   returns ``True`` on success. This brings it in line with the interface's
   documentation, and our intent. The correct way to use
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSAPublicKey.verify`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 
