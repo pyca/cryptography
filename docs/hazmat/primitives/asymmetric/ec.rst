@@ -593,7 +593,7 @@ This sample demonstrates how to generate a private key and serialize it.
     ...     encoding=serialization.Encoding.PEM,
     ...     format=serialization.PrivateFormat.PKCS8,
     ...     encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
-    ...     )
+    ... )
     >>> serialized_private.splitlines()[0]
     '-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
@@ -609,7 +609,7 @@ The public key is serialized as follows:
     >>> serialized_public = public_key.public_bytes(
     ...     encoding=serialization.Encoding.PEM,
     ...     format=serialization.PublicFormat.SubjectPublicKeyInfo
-    ...     )
+    ... )
     >>> serialized_public.splitlines()[0]
     '-----BEGIN PUBLIC KEY-----'
 
@@ -626,15 +626,16 @@ in PEM format.
 .. doctest::
 
     >>> loaded_public_key = serialization.load_pem_public_key(
-    ...    serialized_public,
-    ...    backend=default_backend()
-    ...    )
+    ...     serialized_public,
+    ...     backend=default_backend()
+    ... )
 
     >>> loaded_private_key = serialization.load_pem_private_key(
-    ...    serialized_private,
-    ...    password=b'testpassword',  # or password=None, if in plain text
-    ...    backend=default_backend()
-    ...    )
+    ...     serialized_private,
+    ...     # or password=None, if in plain text
+    ...     password=b'testpassword',
+    ...     backend=default_backend()
+    ... )
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
