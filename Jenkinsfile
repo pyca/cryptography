@@ -151,7 +151,7 @@ def build(toxenv, label, image_name) {
                         virtualenv .venv
                         source .venv/bin/activate
                         pip install coverage
-                        sh <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
+                        bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
                     """
                 }
             } else {
