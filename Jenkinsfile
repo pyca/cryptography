@@ -5,8 +5,6 @@
 /* You must escape backslashes because groovy. */
 
 /* TODO */
-/* add timeout */
-/* remove debug code around tox/cat */
 /* expand macOS testing */
 /* add codecov support */
 /* IRC notification on master merge */
@@ -78,83 +76,100 @@ def configs = [
 ]
 
 def build(toxenv, label, image_name) {
+
     try {
         checkout scm
-        if (label.contains("windows")) {
-            bat """
-                @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
-                @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
-                if $toxenv == py26 (
-                    @set PYTHON="C:\\Python26\\python.exe"
-                )
-                if $toxenv == py27 (
-                    @set PYTHON="C:\\Python27\\python.exe"
-                )
-                if $toxenv == py33 (
-                    @set PYTHON="C:\\Python33\\python.exe"
-                )
-                if $toxenv == py34 (
-                    @set PYTHON="C:\\Python34\\python.exe"
-                )
-                if $toxenv == py35 (
-                    @set PYTHON="C:\\Python35\\python.exe"
-                )
-                if $toxenv == py36 (
-                    @set PYTHON="C:\\Python36\\python.exe"
-                )
-
-                @set py35orabove=true
-
-                if not $toxenv == py35 (
-                    if not $toxenv == py36 (
-                        @set py35orabove=false
+        timeout(time: 30, unit: 'MINUTES') {
+            if (label.contains("windows")) {
+                bat """
+                    @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
+                    @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
+                    if $toxenv == py26 (
+                        @set PYTHON="C:\\Python26\\python.exe"
                     )
-                )
+                    if $toxenv == py27 (
+                        @set PYTHON="C:\\Python27\\python.exe"
+                    )
+                    if $toxenv == py33 (
+                        @set PYTHON="C:\\Python33\\python.exe"
+                    )
+                    if $toxenv == py34 (
+                        @set PYTHON="C:\\Python34\\python.exe"
+                    )
+                    if $toxenv == py35 (
+                        @set PYTHON="C:\\Python35\\python.exe"
+                    )
+                    if $toxenv == py36 (
+                        @set PYTHON="C:\\Python36\\python.exe"
+                    )
 
-                if "%py35orabove%" == "true" (
-                    if $label == windows (
-                        @set INCLUDE="C:\\OpenSSL-Win32-2015\\include";%INCLUDE%
-                        @set LIB="C:\\OpenSSL-Win32-2015\\lib";%LIB%
+                    @set py35orabove=true
+
+                    if not $toxenv == py35 (
+                        if not $toxenv == py36 (
+                            @set py35orabove=false
+                        )
+                    )
+
+                    if "%py35orabove%" == "true" (
+                        if $label == windows (
+                            @set INCLUDE="C:\\OpenSSL-Win32-2015\\include";%INCLUDE%
+                            @set LIB="C:\\OpenSSL-Win32-2015\\lib";%LIB%
+                        ) else (
+                            @set INCLUDE="C:\\OpenSSL-Win64-2015\\include";%INCLUDE%
+                            @set LIB="C:\\OpenSSL-Win64-2015\\lib";%LIB%
+                        )
                     ) else (
-                        @set INCLUDE="C:\\OpenSSL-Win64-2015\\include";%INCLUDE%
-                        @set LIB="C:\\OpenSSL-Win64-2015\\lib";%LIB%
+                        if $label == windows (
+                            @set INCLUDE="C:\\OpenSSL-Win32-2010\\include";%INCLUDE%
+                            @set LIB="C:\\OpenSSL-Win32-2010\\lib";%LIB%
+                        ) else (
+                            @set INCLUDE="C:\\OpenSSL-Win64-2010\\include";%INCLUDE%
+                            @set LIB="C:\\OpenSSL-Win64-2010\\lib";%LIB%
+                        )
                     )
-                ) else (
-                    if $label == windows (
-                        @set INCLUDE="C:\\OpenSSL-Win32-2010\\include";%INCLUDE%
-                        @set LIB="C:\\OpenSSL-Win32-2010\\lib";%LIB%
-                    ) else (
-                        @set INCLUDE="C:\\OpenSSL-Win64-2010\\include";%INCLUDE%
-                        @set LIB="C:\\OpenSSL-Win64-2010\\lib";%LIB%
-                    )
-                )
 
-                tox -r -e $toxenv
-                IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-            """
-        } else if (label.contains("sierra")) {
-            ansiColor {
-                sh """#!/usr/bin/env bash
-                    set -xe
-                    # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
-                    export PATH=/usr/local/bin:\$PATH
-                    # pyenv is nothing but trouble with non-interactive shells
-                    #eval "\$(pyenv init -)"
-                    export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
-                    export PYENV_SHELL=bash
-                    CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
+                    tox -r -e $toxenv
+                    IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
+                    virtualenv .codecov
+                    call .codecov/Scripts/activate
+                    pip install codecov
+                    codecov -e JOB_BASE_NAME
                 """
-            }
-        } else {
-            ansiColor {
-                sh """#!/usr/bin/env bash
-                    set -xe
-                    if [[ "$image_name" == *"libressl"* ]]; then
-                        LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
-                    else
-                        CFLAGS="" tox -vv -r -e $toxenv -- --color=yes
-                    fi
-                """
+            } else if (label.contains("sierra")) {
+                ansiColor {
+                    sh """#!/usr/bin/env bash
+                        set -xe
+                        # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
+                        export PATH=/usr/local/bin:\$PATH
+                        # pyenv is nothing but trouble with non-interactive shells
+                        #eval "\$(pyenv init -)"
+                        export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
+                        export PYENV_SHELL=bash
+                        CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r -e $toxenv --  --color=yes
+                        # In a perfect world this would be a separate stage. This is not a perfect world.
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        pip install coverage
+                        sh <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
+                    """
+                }
+            } else {
+                ansiColor {
+                    sh """#!/usr/bin/env bash
+                        set -xe
+                        if [[ "$image_name" == *"libressl"* ]]; then
+                            LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
+                        else
+                            CFLAGS="" tox -vv -r -e $toxenv -- --color=yes
+                        fi
+                        # In a perfect world this would be a separate stage. This is not a perfect world.
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        pip install coverage
+                        sh <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
+                    """
+                }
             }
         }
     } finally {
