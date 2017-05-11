@@ -78,20 +78,24 @@ Elliptic Curve Signature Algorithms
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
 
-    Verification requires the public key, the signature itself, the signed data, and knowledge of the hashing algorithm that was used when producing the signature:
+    Verification requires the public key, the signature itself, the signed
+    data, and knowledge of the hashing algorithm that was used when producing
+    the signature:
 
     >>> public_key = private_key.public_key()
     >>> verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA256()))
     >>> verifier.update(b"this is some data I'd like")
     >>> verifier.update(b" to sign")
     >>> verifier.verify()
-    True
 
-    The last call will either return ``True`` or raise an :class:`~cryptography.exceptions.InvalidSignature` exception.
+    If the signature is not valid, an
+    :class:`~cryptography.exceptions.InvalidSignature` exception will be raised.
 
     .. note::
-        Although in this case the public key was derived from the private one, in a typical setting you will not possess the private key. The `Key loading`_ section explains how to load the public key from other sources.
-
+        Although in this case the public key was derived from the private one,
+        in a typical setting you will not possess the private key. The
+        `Key loading`_ section explains how to load the public key from other
+        sources.
 
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
