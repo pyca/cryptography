@@ -9,6 +9,12 @@ Changelog
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+* **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
+  returns ``True`` on success. This brings it in line with the interface's
+  documentation, and our intent. The correct way to use
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
+  has always been to check whether or not
+  :class:`~cryptography.exceptions.InvalidSignature` was raised.
 
 
 1.8.1 - 2017-03-10
