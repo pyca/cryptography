@@ -300,7 +300,8 @@ def _rsa_sig_verify(backend, padding, padding_enum, algorithm, public_key,
         errors = backend._consume_errors()
         assert errors
         raise InvalidSignature
-
+    else:
+        return res
 
 @utils.register_interface(AsymmetricSignatureContext)
 class _RSASignatureContext(object):
