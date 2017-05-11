@@ -86,7 +86,6 @@ def _ecdsa_sig_verify(backend, public_key, signature, data):
     if res != 1:
         backend._consume_errors()
         raise InvalidSignature
-    return True
 
 
 @utils.register_interface(AsymmetricSignatureContext)
@@ -118,7 +117,7 @@ class _ECDSAVerificationContext(object):
 
     def verify(self):
         digest = self._digest.finalize()
-        return _ecdsa_sig_verify(
+        _ecdsa_sig_verify(
             self._backend, self._public_key, self._signature, digest
         )
 
@@ -283,4 +282,4 @@ class _EllipticCurvePublicKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, signature_algorithm._algorithm
         )
-        return _ecdsa_sig_verify(self._backend, self, signature, data)
+        _ecdsa_sig_verify(self._backend, self, signature, data)
