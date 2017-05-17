@@ -314,7 +314,7 @@ setup(
             "doc8",
             "pyenchant",
             "readme_renderer >= 16.0",
-            "sphinx",
+            "sphinx != 1.6.1",
             "sphinx_rtd_theme",
             "sphinxcontrib-spelling",
         ],
