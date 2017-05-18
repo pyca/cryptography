@@ -168,6 +168,5 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAX_X509_STORE_CTX_GET_ISSUER": [
         "X509_STORE_set_get_issuer",
-        "X509_STORE_CTX_get1_issuer",
     ],
 }
