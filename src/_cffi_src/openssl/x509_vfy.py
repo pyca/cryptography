@@ -167,6 +167,7 @@ int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
+int X509_STORE_CTX_get1_issuer(X509 **, X509_STORE_CTX *, X509 *);
 
 /* X509_VERIFY_PARAM */
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
@@ -293,6 +294,7 @@ X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
 void (*X509_STORE_set_get_issuer)(X509_STORE *, X509_STORE_CTX_get_issuer_fn) = NULL;
+int (*X509_STORE_CTX_get1_issuer)(X509 **, X509_STORE_CTX *, X509 *) = NULL;
 #else
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
 #endif
