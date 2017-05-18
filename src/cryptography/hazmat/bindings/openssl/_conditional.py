@@ -166,7 +166,7 @@ CONDITIONAL_NAMES = {
         "sk_SCT_value",
         "SCT_LIST_free",
     ],
-    "Cryptography_HAX_X509_STORE_CTX_GET_ISSUER": [
+    "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": [
         "X509_STORE_set_get_issuer",
     ],
 }
