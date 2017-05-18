@@ -293,7 +293,7 @@ X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
-typedef void X509_STORE_CTX_get_issuer_fn;
+typedef void *X509_STORE_CTX_get_issuer_fn;
 void (*X509_STORE_set_get_issuer)(X509_STORE *, X509_STORE_CTX_get_issuer_fn) = NULL;
 int (*X509_STORE_CTX_get1_issuer)(X509 **, X509_STORE_CTX *, X509 *) = NULL;
 #else
