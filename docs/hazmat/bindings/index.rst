@@ -20,4 +20,3 @@ Individual bindings
     :maxdepth: 1
 
     openssl
-    commoncrypto

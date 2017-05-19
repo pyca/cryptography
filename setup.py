@@ -82,11 +82,6 @@ backends = [
     "openssl = cryptography.hazmat.backends.openssl:backend"
 ]
 
-if cc_is_available():
-    backends.append(
-        "commoncrypto = cryptography.hazmat.backends.commoncrypto:backend",
-    )
-
 
 class PyTest(test):
     def finalize_options(self):
@@ -212,8 +207,6 @@ def keywords_with_side_effects(argv):
             "src/_cffi_src/build_constant_time.py:ffi",
             "src/_cffi_src/build_padding.py:ffi",
         ]
-        if cc_is_available():
-            cffi_modules.append("src/_cffi_src/build_commoncrypto.py:ffi")
 
         return {
             "setup_requires": setup_requirements,

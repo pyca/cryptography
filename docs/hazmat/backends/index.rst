@@ -31,6 +31,5 @@ Individual backends
     :maxdepth: 1
 
     openssl
-    commoncrypto
     multibackend
     interfaces

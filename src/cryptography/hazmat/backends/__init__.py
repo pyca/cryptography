@@ -14,54 +14,11 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
-        # Lazy import pkg_resources here to avoid the performance issue
-        # on systems with many packages detailed in
-        # https://github.com/pypa/setuptools/issues/926
-        import pkg_resources
-
-        entry_point_backends = [
-            # PersistentlyDeprecated
-            # setuptools 11.3 deprecated support for the require parameter to
-            # load(), and introduced the new resolve() method instead.
-            # We previously removed this fallback, but users are having issues
-            # where Python loads an older setuptools due to various syspath
-            # weirdness.
-            ep.resolve() if hasattr(ep, "resolve") else ep.load(require=False)
-            for ep in pkg_resources.iter_entry_points(
-                "cryptography.backends"
-            )
-        ]
-
-        _available_backends_list = _backend_import_fallback(
-            entry_point_backends
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as be_ossl
         )
-
+        _available_backends_list = [be_ossl]
     return _available_backends_list
-
-
-def _backend_import_fallback(backends):
-    # If backends already exist just return them. This branch is here
-    # to get full line coverage from our tests.
-    if backends:
-        return backends
-
-    # if iter_entry_points fails to find any backends then manually try to
-    # import our current backends as a workaround for issues with application
-    # bundlers like pyinstaller, cx_freeze, etc
-
-    # OpenSSL is guaranteed to be present until we unbundle the backends.
-    from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
-    backends = [be_ossl]
-    try:
-        from cryptography.hazmat.backends.commoncrypto.backend import (
-            backend as be_cc
-        )
-    except ImportError:
-        pass
-    else:
-        backends.append(be_cc)
-
-    return backends
 
 
 _default_backend = None
