@@ -6,6 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for :class:`~cryptography.x509.name.NameAttribute` having a bitstring value.
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
