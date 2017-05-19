@@ -2680,6 +2680,14 @@ Exceptions
 
         Returns the OID.
 
+    .. attribute:: value
+
+        .. versionadded:: 1.3.3
+
+        :type: byte
+
+        Returns the DER encoded bytes payload of the extension.
+
 .. class:: ExtensionNotFound
 
     This is raised when calling :meth:`Extensions.get_extension_for_oid` with

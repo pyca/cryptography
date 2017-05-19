@@ -1089,6 +1089,7 @@ class TestExtensions(object):
             cert.extensions
 
         assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
+        assert exc.value.value == b'value'
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_unsupported_extension(self, backend):

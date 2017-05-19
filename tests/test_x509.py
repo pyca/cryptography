@@ -1133,6 +1133,7 @@ class TestRSACertificateRequest(object):
             request.extensions
 
         assert exc.value.oid == x509.ObjectIdentifier('1.2.3.4')
+        assert exc.value.value == b'value'
 
     def test_unsupported_extension(self, backend):
         request = _load_cert(
