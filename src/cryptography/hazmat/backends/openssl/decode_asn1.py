@@ -36,7 +36,7 @@ def _decode_x509_name_entry(backend, x509_name_entry):
     backend.openssl_assert(obj != backend._ffi.NULL)
     data = backend._lib.X509_NAME_ENTRY_get_data(x509_name_entry)
     backend.openssl_assert(data != backend._ffi.NULL)
-    value = _asn1_string_to_utf8(backend, data)
+    value = _asn1_string_to_any(backend, data)
     oid = _obj2txt(backend, obj)
 
     return x509.NameAttribute(x509.ObjectIdentifier(oid), value)
@@ -705,6 +705,15 @@ def _asn1_string_to_utf8(backend, asn1_string):
         buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
     )
     return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+
+
+_asn1_string_type_decoders = {
+    3: _asn1_string_to_bytes, # 3==V_ASN1_BIT_STRING
+    }
+def _asn1_string_to_any(backend, asn1_string):
+    typ = backend._lib.ASN1_STRING_type(asn1_string)
+    decoder = _asn1_string_type_decoders.get(typ, decode_asn1._asn1_string_to_utf8)
+    return decoder(backend, asn1_string)
 
 
 def _parse_asn1_time(backend, asn1_time):

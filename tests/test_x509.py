@@ -10,6 +10,7 @@ import ipaddress
 import os
 import sys
 import warnings
+import struct
 
 from asn1crypto.x509 import Certificate
 
@@ -672,6 +673,19 @@ class TestRSACertificate(object):
             x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test0@test.local'),
             x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test1@test.local'),
         ]
+
+    def test_bitstring_subject_name(self, backend):
+        cert = load_cert(
+            os.path.join(
+                "x509",
+                "gbcs_supplier_ds.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        x500_GUID = cert.subject.get_attributes_for_oid(NameOID.X500_UNIQUE_IDENTIFIER)[0].value
+        expected_bitstring = 0b0111000010110011110101010001111100110000010111110000000000000001
+        assert x500_GUID == struct.pack('>Q', expected_bitstring)
 
     def test_subject(self, backend):
         cert = _load_cert(

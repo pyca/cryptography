@@ -18,8 +18,8 @@ class NameAttribute(object):
             )
 
         if not isinstance(value, six.text_type):
-            raise TypeError(
-                "value argument must be a text type."
+            warnings.warn(
+                "NameAttribute value argument should be a text type."
             )
 
         if oid == NameOID.COUNTRY_NAME and len(value.encode("utf8")) != 2:
