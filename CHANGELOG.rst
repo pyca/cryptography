@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Python 2.6 support is deprecated, and support will be removed in the next
+  release of ``cryptography``.
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.

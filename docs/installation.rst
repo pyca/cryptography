@@ -22,8 +22,8 @@ PyPy 2.6+ on these operating systems.
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
 .. warning::
-    Python 2.6 is no longer supported by the Python core team. A future version
-    of cryptography will drop support for this version.
+    Python 2.6 is no longer supported by the Python core team, the next version
+    of ``cryptography`` will drop support for this version.
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
