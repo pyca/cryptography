@@ -16,7 +16,7 @@ Changelog
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * Accessing a critical extension on an X.509 object will no longer raise an
-  ``UnsupportedExtension`` exception, instead an
+  :class:`~cryptography.x509.UnsupportedExtension` exception, instead an
   :class:`~cryptography.x509.UnknownExtension` object will be returned. This
   behavior was based on a poor reading of the RFC, and critical extensions only
   need to be rejected on certificate verification.
@@ -493,9 +493,9 @@ Changelog
   * :class:`~cryptography.x509.CertificatePolicies`
 
   Note that unsupported extensions with the critical flag raise
-  ``UnsupportedExtension`` while unsupported extensions set to non-critical are
-  silently ignored. Read the :doc:`X.509 documentation</x509/index>` for more
-  information.
+  :class:`~cryptography.x509.UnsupportedExtension` while unsupported extensions
+  set to non-critical are silently ignored. Read the
+  :doc:`X.509 documentation</x509/index>` for more information.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
