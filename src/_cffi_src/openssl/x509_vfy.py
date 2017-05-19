@@ -23,6 +23,7 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 typedef ... Cryptography_STACK_OF_X509_OBJECT;
@@ -31,6 +32,8 @@ typedef ... X509_OBJECT;
 typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
 typedef ... X509_STORE_CTX;
+
+typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **, X509_STORE_CTX *, X509 *);
 
 /* While these are defined in the source as ints, they're tagged here
    as longs, just in case they ever grow to large, such as what we saw
@@ -140,7 +143,6 @@ int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
 void X509_STORE_free(X509_STORE *);
 
-
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
 void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
@@ -164,6 +166,7 @@ int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
+int X509_STORE_CTX_get1_issuer(X509 **, X509_STORE_CTX *, X509 *);
 
 /* X509_VERIFY_PARAM */
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
@@ -209,6 +212,8 @@ int X509_OBJECT_get_type(const X509_OBJECT *);
 
 /* added in 1.1.0 */
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
+X509_STORE_CTX_get_issuer_fn X509_STORE_get_get_issuer(X509_STORE *);
+void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
@@ -285,5 +290,15 @@ X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
     return x->data.x509;
 }
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
+typedef void *X509_STORE_CTX_get_issuer_fn;
+X509_STORE_CTX_get_issuer_fn (*X509_STORE_get_get_issuer)(X509_STORE *) = NULL;
+void (*X509_STORE_set_get_issuer)(X509_STORE *,
+                                  X509_STORE_CTX_get_issuer_fn) = NULL;
+#else
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
 #endif
 """
