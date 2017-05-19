@@ -17,7 +17,7 @@ Changelog
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * Accessing a critical extension on an X.509 object will no longer raise an
   :class:`~cryptography.x509.UnsupportedExtension` exception, instead an
-  :class:`~cryptography.x509.UnknownExtension` object will be returned. This
+  ``cryptography.x509.UnknownExtension`` object will be returned. This
   behavior was based on a poor reading of the RFC, and critical extensions only
   need to be rejected on certificate verification.
 
