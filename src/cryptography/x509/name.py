@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import six
+import warnings
 
 from cryptography import utils
 from cryptography.x509.oid import NameOID, ObjectIdentifier
