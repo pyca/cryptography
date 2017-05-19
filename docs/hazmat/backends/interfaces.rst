@@ -22,7 +22,6 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: cipher_supported(cipher, mode)
 
@@ -84,7 +83,6 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hash_supported(algorithm)
 
@@ -118,7 +116,6 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hmac_supported(algorithm)
 
@@ -181,7 +178,6 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: pbkdf2_hmac_supported(algorithm)
 
