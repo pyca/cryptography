@@ -712,7 +712,7 @@ _asn1_string_type_decoders = {
     }
 def _asn1_string_to_any(backend, asn1_string):
     typ = backend._lib.ASN1_STRING_type(asn1_string)
-    decoder = _asn1_string_type_decoders.get(typ, decode_asn1._asn1_string_to_utf8)
+    decoder = _asn1_string_type_decoders.get(typ, _asn1_string_to_utf8)
     return decoder(backend, asn1_string)
 
 
