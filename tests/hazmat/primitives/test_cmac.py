@@ -6,11 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
-import pretend
-
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -23,15 +20,6 @@ from cryptography.hazmat.primitives.cmac import CMAC
 from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
-
-
-@utils.register_interface(CMACBackend)
-class DummyCMACBackend(object):
-    def cmac_algorithm_supported(self, algorithm):
-        return True
-
-    def create_cmac_ctx(self, algorithm):
-        pass
 
 
 vectors_aes128 = load_vectors_from_file(
@@ -194,17 +182,6 @@ class TestCMAC(object):
         cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
         copy_cmac = cmac.copy()
         assert cmac.finalize() == copy_cmac.finalize()
-
-
-def test_copy():
-    backend = DummyCMACBackend()
-    copied_ctx = pretend.stub()
-    pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-    key = b"2b7e151628aed2a6abf7158809cf4f3c"
-    cmac = CMAC(AES(key), backend=backend, ctx=pretend_ctx)
-
-    assert cmac._backend is backend
-    assert cmac.copy()._backend is backend
 
 
 def test_invalid_backend():

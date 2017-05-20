@@ -4,11 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -18,15 +15,6 @@ from cryptography.hazmat.primitives import hashes, hmac
 from .utils import generate_base_hmac_test
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(HMACBackend)
-class DummyHMACBackend(object):
-    def hmac_supported(self, algorithm):
-        return True
-
-    def create_hmac_ctx(self, key, algorithm):
-        pass
 
 
 @pytest.mark.supported(
@@ -46,14 +34,6 @@ class TestHMAC(object):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             h.update(u"\u00FC")
-
-    def test_copy_backend_object(self):
-        backend = DummyHMACBackend()
-        copied_ctx = pretend.stub()
-        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend, ctx=pretend_ctx)
-        assert h._backend is backend
-        assert h.copy()._backend is backend
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
