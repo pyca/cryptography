@@ -143,25 +143,6 @@ class _CipherContext(object):
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
 
-        if (
-            self._operation == self._DECRYPT and
-            isinstance(self._mode, modes.ModeWithAuthenticationTag) and
-            (
-                not self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-                self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            )
-        ):
-            tag = self._mode.tag
-            if tag is None:
-                raise ValueError(
-                    "Authentication tag must be provided when decrypting."
-                )
-            res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-                self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
-                len(tag), tag
-            )
-            self._backend.openssl_assert(res != 0)
-
         buf = self._backend._ffi.new("unsigned char[]", self._block_size_bytes)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
@@ -202,6 +183,23 @@ class _CipherContext(object):
         res = self._backend._lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
+
+    def finalize_with_tag(self, tag):
+        if (
+            not self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+            self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            if tag is None:
+                raise ValueError(
+                    "Authentication tag must be provided when decrypting."
+                )
+            res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
+                self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
+                len(tag), tag
+            )
+            self._backend.openssl_assert(res != 0)
+        return self.finalize()
+
 
     def authenticate_additional_data(self, data):
         outlen = self._backend._ffi.new("int *")
