@@ -86,20 +86,6 @@ You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
 
 
-Explicit backend selection
---------------------------
-
-While testing you may want to run tests against a subset of the backends that
-cryptography supports. Explicit backend selection can be done via the
-``--backend`` flag. This flag should be passed to ``py.test`` with a comma
-delimited list of backend names.
-
-
-.. code-block:: console
-
-    $ tox -- --backend=openssl
-    $ py.test --backend=openssl,commoncrypto
-
 Building documentation
 ----------------------
 

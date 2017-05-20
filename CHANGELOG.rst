@@ -20,6 +20,7 @@ Changelog
   :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
   This behavior was based on a poor reading of the RFC, unknown critical
   extensions only need to be rejected on certificate verification.
+* The CommonCrypto backend has been removed.
 
 
 1.8.1 - 2017-03-10
@@ -745,7 +746,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
 * Added ``PKCS8SerializationBackend`` and
@@ -755,7 +756,7 @@ Changelog
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
 * Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
   specific providers of the
   :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -830,8 +831,8 @@ Changelog
 0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
 
-* Added :doc:`/hazmat/backends/commoncrypto`.
-* Added initial :doc:`/hazmat/bindings/commoncrypto`.
+* Added ``commoncrypto``.
+* Added initial ``commoncrypto``.
 * Removed ``register_cipher_adapter`` method from
   :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
 * Added support for the OpenSSL backend under Windows.

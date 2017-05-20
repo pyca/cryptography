@@ -47,10 +47,9 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
 
 
 def encrypt_test(backend, cipher_factory, mode_factory, params):
-    if not backend.cipher_supported(
+    assert backend.cipher_supported(
         cipher_factory(**params), mode_factory(**params)
-    ):
-        pytest.skip("cipher/mode combo is unsupported by this backend")
+    )
 
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]

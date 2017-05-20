@@ -73,19 +73,9 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
-def cc_is_available():
-    return sys.platform == "darwin" and list(map(
-        int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
-
-
 backends = [
     "openssl = cryptography.hazmat.backends.openssl:backend"
 ]
-
-if cc_is_available():
-    backends.append(
-        "commoncrypto = cryptography.hazmat.backends.commoncrypto:backend",
-    )
 
 
 class PyTest(test):
@@ -212,8 +202,6 @@ def keywords_with_side_effects(argv):
             "src/_cffi_src/build_constant_time.py:ffi",
             "src/_cffi_src/build_padding.py:ffi",
         ]
-        if cc_is_available():
-            cffi_modules.append("src/_cffi_src/build_commoncrypto.py:ffi")
 
         return {
             "setup_requires": setup_requirements,
