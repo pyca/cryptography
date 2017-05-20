@@ -73,11 +73,6 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
-def cc_is_available():
-    return sys.platform == "darwin" and list(map(
-        int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
-
-
 backends = [
     "openssl = cryptography.hazmat.backends.openssl:backend"
 ]
