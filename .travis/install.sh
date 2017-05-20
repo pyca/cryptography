@@ -56,7 +56,7 @@ else
     # temporary pyenv installation to get latest pypy until the travis
     # container infra is upgraded
     if [[ "${TOXENV}" = pypy* ]]; then
-        git -C ~/.pyenv git pull
+        git -C ~/.pyenv pull
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
