@@ -115,7 +115,7 @@ def release(version):
 
     run(
         "twine", "upload", "-s", "dist/cryptography-{0}*".format(version),
-        "vectors/dist/cryptography_vectors-{0}*".format(version()), shell=True
+        "vectors/dist/cryptography_vectors-{0}*".format(version), shell=True
     )
 
     session = requests.Session()
