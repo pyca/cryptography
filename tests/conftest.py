@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
-from .utils import check_backend_support, select_backends, skip_if_empty
+from .utils import check_backend_support, skip_if_empty
 
 
 def pytest_report_header(config):
