@@ -457,6 +457,18 @@ Serialization Formats
         The public key format used by OpenSSH (e.g. as found in
         ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
 
+.. class:: ParameterFormat
+
+    .. versionadded:: 1.9
+
+    An enumeration for parameters formats. Used with the ``parameter_bytes``
+    method available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization`.
+
+    .. attribute:: ASN1
+
+        Abstract Syntax Notation One.
+
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
