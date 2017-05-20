@@ -16,6 +16,8 @@ Changelog
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  LibreSSL 2.5.x.
 * Accessing an unrecognized extension marked critical on an X.509 object will
   no longer raise an ``UnsupportedExtension`` exception, instead an
   :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
