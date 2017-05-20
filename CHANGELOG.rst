@@ -15,6 +15,8 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  LibreSSL 2.5.x.
 * Accessing an unrecognized extension marked critical on an X.509 object will
   no longer raise an ``UnsupportedExtension`` exception, instead an
   :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
