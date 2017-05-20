@@ -164,9 +164,6 @@ class GCM(object):
         if not isinstance(initialization_vector, bytes):
             raise TypeError("initialization_vector must be bytes")
         self._initialization_vector = initialization_vector
-        self._set_tag(tag, min_tag_length)
-
-    def _set_tag(self, tag, min_tag_length=16):
         if tag is not None:
             if not isinstance(tag, bytes):
                 raise TypeError("tag must be bytes or None")
