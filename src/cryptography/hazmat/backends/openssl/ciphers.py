@@ -197,7 +197,7 @@ class _CipherContext(object):
     def finalize_with_tag(self, tag):
         if (
             self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-            self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         ):
             raise NotImplementedError(
                 "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
