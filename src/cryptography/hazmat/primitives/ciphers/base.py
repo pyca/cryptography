@@ -215,13 +215,10 @@ class _AEADCipherContext(object):
     def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if self._ctx._operation == self._ctx._DECRYPT:
-            return self.finalize_with_tag(self._ctx._mode.tag)
-        else:
-            data = self._ctx.finalize()
-            self._tag = self._ctx.tag
-            self._ctx = None
-            return data
+        data = self._ctx.finalize()
+        self._tag = self._ctx.tag
+        self._ctx = None
+        return data
 
     def finalize_with_tag(self, tag):
         if self._ctx is None:
