@@ -8,14 +8,23 @@ import pretend
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test
-from ..backends.test_multibackend import DummyHashBackend
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
+
+
+@utils.register_interface(HashBackend)
+class DummyHashBackend(object):
+    def hash_supported(self, algorithm):
+        return True
+
+    def create_hash_ctx(self, algorithm):
+        pass
 
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -26,7 +35,7 @@ class TestHashContext(object):
             m.update(u"\u00FC")
 
     def test_copy_backend_object(self):
-        backend = DummyHashBackend([hashes.SHA1])
+        backend = DummyHashBackend()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=backend, ctx=pretend_ctx)
