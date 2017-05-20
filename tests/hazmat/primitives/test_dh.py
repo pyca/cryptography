@@ -787,9 +787,10 @@ class TestDHParameterSerialization(object):
                 serialization.ParameterFormat.ASN1
             )
 
-    def test_parameter_bytes_OpenSSH_unsupported(self, backend):
+    def test_parameter_bytes_openssh_unsupported(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
-                serialization.Encoding.OpenSSH, serialization.ParameterFormat.ASN1
+                serialization.Encoding.OpenSSH,
+                serialization.ParameterFormat.ASN1
             )
