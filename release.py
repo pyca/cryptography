@@ -20,6 +20,11 @@ import requests
 JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
 
 
+def run(*args, **kwargs):
+    kwargs.setdefault("stderr", subprocess.STDOUT)
+    subprocess.check_output(list(args), **kwargs)
+
+
 def wait_for_build_completed(session):
     # Wait 20 seconds before actually checking if the build is complete, to
     # ensure that it had time to really start.
@@ -102,20 +107,16 @@ def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
-    subprocess.check_call(
-        ["git", "tag", "-s", version, "-m", "{0} release".format(version)]
-    )
-    subprocess.check_call(["git", "push", "--tags"])
+    run("git", "tag", "-s", version, "-m", "{0} release".format(version))
+    run("git", "push", "--tags")
 
-    subprocess.check_call(["python", "setup.py", "sdist"])
-    subprocess.check_call(
-        ["python", "setup.py", "sdist", "bdist_wheel"], cwd="vectors/"
-    )
+    run("python", "setup.py", "sdist")
+    run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    subprocess.check_call([
+    run(
         "twine", "upload", "-s", "dist/cryptography-{0}*".format(version),
-        "vectors/dist/cryptography_vectors-{0}*".format(version())
-    ], shell=True)
+        "vectors/dist/cryptography_vectors-{0}*".format(version()), shell=True
+    )
 
     session = requests.Session()
 
@@ -141,7 +142,7 @@ def release(version):
     response.raise_for_status()
     wait_for_build_completed(session)
     paths = download_artifacts(session)
-    subprocess.check_call(["twine", "upload", " ".join(paths)])
+    run("twine", "upload", " ".join(paths))
 
 
 if __name__ == "__main__":
