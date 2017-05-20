@@ -143,10 +143,15 @@ class _CipherContext(object):
         # and is harmless for all other versions of OpenSSL.
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
-            if self._operation == self._DECRYPT and self.tag is None:
-                raise ValueError(
-                    "Authentication tag must be provided when decrypting."
-                )
+
+        if (
+            self._operation == self._DECRYPT and
+            isinstance(self._mode, modes.ModeWithAuthenticationTag) and
+            self.tag is None
+        ):
+            raise ValueError(
+                "Authentication tag must be provided when decrypting."
+            )
 
         buf = self._backend._ffi.new("unsigned char[]", self._block_size_bytes)
         outlen = self._backend._ffi.new("int *")
