@@ -71,6 +71,12 @@ Key Serialization
     -----END DH PARAMETERS-----
     """.strip()
 
+    parameters_der_data = base64.b64decode(
+        b"MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx+ccNs+In"
+        b"ANsz\ncuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQXrX/McKw+hS6GP"
+        b"VQnw6tZhgG\no9apdNdYgeLQeQded8Bum8jqzP3rAgEC"
+    )
+
 There are several common schemes for serializing asymmetric private and public
 keys to bytes. They generally support encryption of private keys and additional
 key metadata.
@@ -306,6 +312,38 @@ the rest.
         >>> from cryptography.hazmat.primitives.serialization import load_der_public_key
         >>> key = load_der_public_key(public_der_data, backend=default_backend())
         >>> isinstance(key, rsa.RSAPublicKey)
+        True
+
+.. function:: load_der_parameters(data, backend)
+
+    .. versionadded:: 1.9
+
+    Deserialize encryption parameters from DER encoded data to one of the supported
+    asymmetric encryption parameters types. The DER encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
+
+    :param bytes data: The DER encoded parameters data.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
+
+    :returns: Currently only
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        supported.
+
+    :raises ValueError: If the DER data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import dh
+        >>> from cryptography.hazmat.primitives.serialization import load_der_parameters
+        >>> parameters = load_der_parameters(parameters_der_data, backend=default_backend())
+        >>> isinstance(parameters, dh.DHParameters)
         True
 
 
