@@ -438,8 +438,10 @@ class TestRevokedCertificate(object):
             backend
         )
 
-        with pytest.raises(x509.UnsupportedExtension):
-            crl[0].extensions
+        ext = crl[0].extensions.get_extension_for_oid(
+            x509.ObjectIdentifier("1.2.3.4")
+        )
+        assert ext.value.value == b"\n\x01\x00"
 
     def test_unsupported_reason(self, backend):
         crl = _load_cert(
@@ -1129,10 +1131,10 @@ class TestRSACertificateRequest(object):
             x509.load_pem_x509_csr,
             backend
         )
-        with pytest.raises(x509.UnsupportedExtension) as exc:
-            request.extensions
-
-        assert exc.value.oid == x509.ObjectIdentifier('1.2.3.4')
+        ext = request.extensions.get_extension_for_oid(
+            x509.ObjectIdentifier('1.2.3.4')
+        )
+        assert ext.value.value == b"value"
 
     def test_unsupported_extension(self, backend):
         request = _load_cert(

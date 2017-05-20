@@ -1085,10 +1085,10 @@ class TestExtensions(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        with pytest.raises(x509.UnsupportedExtension) as exc:
-            cert.extensions
-
-        assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ObjectIdentifier("1.2.3.4")
+        )
+        assert ext.value.value == b"value"
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_unsupported_extension(self, backend):
