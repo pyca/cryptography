@@ -78,21 +78,21 @@ class _CipherContext(object):
                 len(iv_nonce), self._backend._ffi.NULL
             )
             self._backend.openssl_assert(res != 0)
-            if (
-                self._operation == self._DECRYPT and
-                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-                not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            ):
-                if mode.tag is None:
-                    raise NotImplementedError(
-                        "delayed passing of GCM tag requires OpenSSL >= 1.0.2."
-                        " To use this feature please update OpenSSL"
-                    )
+            if mode.tag is not None:
                 res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 self._backend.openssl_assert(res != 0)
+            else if (
+                self._operation == self._DECRYPT and
+                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+                not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            ):
+                raise NotImplementedError(
+                    "delayed passing of GCM tag requires OpenSSL >= 1.0.2."
+                    " To use this feature please update OpenSSL"
+                )
 
         # pass key/iv
         res = self._backend._lib.EVP_CipherInit_ex(
@@ -185,19 +185,24 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize_with_tag(self, tag):
-        if (
-            not self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-            self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            if tag is None:
-                raise ValueError(
-                    "Authentication tag must be provided when decrypting."
+        if tag is not None:
+            if (
+                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+                self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            ):
+                raise NotImplementedError(
+                    "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
+                    "method please update OpenSSL"
                 )
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
                 len(tag), tag
             )
             self._backend.openssl_assert(res != 0)
+        elif self._mode.tag is None:
+            raise ValueError(
+                "Authentication tag must be provided when decrypting."
+            )
         return self.finalize()
 
     def authenticate_additional_data(self, data):
