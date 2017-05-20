@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
 from .utils import check_backend_support, select_backends, skip_if_empty
@@ -19,7 +18,7 @@ def pytest_report_header(config):
 def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
         names = metafunc.config.getoption("--backend")
-        selected_backends = select_backends(names, _available_backends())
+        selected_backends = select_backends(names, [openssl_backend])
 
         filtered_backends = []
         required = metafunc.function.requires_backend_interface
