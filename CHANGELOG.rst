@@ -12,7 +12,7 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
-* **BACBWARDS INCOMPATBLE:** Dropped support for macOS 10.7 and 10.8.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
