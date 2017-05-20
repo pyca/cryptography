@@ -84,7 +84,7 @@ class _CipherContext(object):
                     len(mode.tag), mode.tag
                 )
                 self._backend.openssl_assert(res != 0)
-            else if (
+            elif (
                 self._operation == self._DECRYPT and
                 self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
                 not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
