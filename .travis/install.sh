@@ -10,7 +10,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew outdated openssl || brew upgrade openssl
 
     # install pyenv
-    git clone --depth 1 https://github.com/yyuu/pyenv.git ~/.pyenv
+    git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
     PYENV_ROOT="$HOME/.pyenv"
     PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
@@ -56,6 +56,11 @@ else
     # temporary pyenv installation to get latest pypy until the travis
     # container infra is upgraded
     if [[ "${TOXENV}" = pypy* ]]; then
+        rm -rf ~/.pyenv
+        git clone https://github.com/pyenv/pyenv ~/.pyenv
+        PYENV_ROOT="$HOME/.pyenv"
+        PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init -)"
         pyenv install "pypy-$PYPY_VERSION"
         pyenv global "pypy-$PYPY_VERSION"
     fi
