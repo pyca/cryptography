@@ -173,4 +173,7 @@ CONDITIONAL_NAMES = {
         "X509_STORE_get_get_issuer",
         "X509_STORE_set_get_issuer",
     ],
+    "Cryptography_HAS_X25519": [
+        "NID_X25519",
+    ],
 }
