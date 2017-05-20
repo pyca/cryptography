@@ -200,7 +200,6 @@ class _CipherContext(object):
             self._backend.openssl_assert(res != 0)
         return self.finalize()
 
-
     def authenticate_additional_data(self, data):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
