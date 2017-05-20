@@ -24,6 +24,7 @@ Changelog
   This behavior was based on a poor reading of the RFC, unknown critical
   extensions only need to be rejected on certificate verification.
 * The CommonCrypto backend has been removed.
+* MultiBackend has been removed.
 
 
 1.8.1 - 2017-03-10
@@ -723,15 +724,13 @@ Changelog
 0.5.2 - 2014-07-09
 ~~~~~~~~~~~~~~~~~~
 
-* Add ``TraditionalOpenSSLSerializationBackend`` support to
-  :doc:`/hazmat/backends/multibackend`.
+* Add ``TraditionalOpenSSLSerializationBackend`` support to ``multibackend``.
 * Fix compilation error on OS X 10.8 (Mountain Lion).
 
 0.5.1 - 2014-07-07
 ~~~~~~~~~~~~~~~~~~
 
-* Add ``PKCS8SerializationBackend`` support to
-  :doc:`/hazmat/backends/multibackend`.
+* Add ``PKCS8SerializationBackend`` support to ``multibackend``.
 
 0.5 - 2014-07-07
 ~~~~~~~~~~~~~~~~
@@ -844,7 +843,7 @@ Changelog
   available, such as CentOS.
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
-* Added :doc:`/hazmat/backends/multibackend`.
+* Added ``multibackend``.
 * Set default random for the :doc:`/hazmat/backends/openssl` to the OS
   random engine.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
