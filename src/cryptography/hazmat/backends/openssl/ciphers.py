@@ -84,6 +84,7 @@ class _CipherContext(object):
                     len(mode.tag), mode.tag
                 )
                 self._backend.openssl_assert(res != 0)
+                self._tag = mode.tag
             elif (
                 self._operation == self._DECRYPT and
                 self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
@@ -142,6 +143,10 @@ class _CipherContext(object):
         # and is harmless for all other versions of OpenSSL.
         if isinstance(self._mode, modes.GCM):
             self.update(b"")
+            if self._operation == self._DECRYPT and self.tag is None:
+                raise ValueError(
+                    "Authentication tag must be provided when decrypting."
+                )
 
         buf = self._backend._ffi.new("unsigned char[]", self._block_size_bytes)
         outlen = self._backend._ffi.new("int *")
@@ -185,24 +190,20 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize_with_tag(self, tag):
-        if tag is not None:
-            if (
-                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-                self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            ):
-                raise NotImplementedError(
-                    "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
-                    "method please update OpenSSL"
-                )
-            res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-                self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
-                len(tag), tag
+        if (
+            self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+            self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            raise NotImplementedError(
+                "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
+                "method please update OpenSSL"
             )
-            self._backend.openssl_assert(res != 0)
-        elif self._mode.tag is None:
-            raise ValueError(
-                "Authentication tag must be provided when decrypting."
-            )
+        res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
+            self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
+            len(tag), tag
+        )
+        self._backend.openssl_assert(res != 0)
+        self._tag = tag
         return self.finalize()
 
     def authenticate_additional_data(self, data):
