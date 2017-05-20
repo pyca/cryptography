@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 @utils.register_interface(ciphers.CipherContext)
 @utils.register_interface(ciphers.AEADCipherContext)
 @utils.register_interface(ciphers.AEADEncryptionContext)
+@utils.register_interface(ciphers.AEADDecryptionContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
