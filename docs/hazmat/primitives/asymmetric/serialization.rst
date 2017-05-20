@@ -63,6 +63,14 @@ Key Serialization
     def sign_with_dsa_key(key, message):
         return b""
 
+    parameters_pem_data = b"""
+    -----BEGIN DH PARAMETERS-----
+    MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx
+    +ccNs+InANszcuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQ
+    XrX/McKw+hS6GPVQnw6tZhgGo9apdNdYgeLQeQded8Bum8jqzP3rAgEC
+    -----END DH PARAMETERS-----
+    """.strip()
+
 There are several common schemes for serializing asymmetric private and public
 keys to bytes. They generally support encryption of private keys and additional
 key metadata.
@@ -179,6 +187,38 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         successfully.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        is of a type that is not supported by the backend.
+
+.. function:: load_pem_parameters(data, backend)
+
+    .. versionadded:: 1.9
+
+    Deserialize encryption parameters from PEM encoded data to one of the supported
+    asymmetric encryption parameters types. The PEM encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.serialization import load_pem_parameters
+        >>> from cryptography.hazmat.primitives.asymmetric import dh
+        >>> parameters = load_pem_parameters(parameters_pem_data, backend=default_backend())
+        >>> isinstance(parameters, dh.DHParameters)
+        True
+
+    :param bytes data: The PEM encoded parameters data.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
+
+
+    :returns: Currently only
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        supported.
+
+    :raises ValueError: If the PEM data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized parameters
         is of a type that is not supported by the backend.
 
 DER
