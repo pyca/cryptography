@@ -252,17 +252,21 @@ def downstream_builders = [
     paramiko: {
         node("docker") {
             docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
-                checkout_git("docker")
-                sh """#!/bin/bash -xe
-                    git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
-                    cd paramiko
-                    virtualenv .venv
-                    source .venv/bin/activate
-                    pip install ../cryptography
-                    pip install -e .
-                    pip install -r dev-requirements.txt
-                    inv test
-                """
+                try {
+                    checkout_git("docker")
+                    sh """#!/bin/bash -xe
+                        git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+                        cd paramiko
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        pip install ../cryptography
+                        pip install -e .
+                        pip install -r dev-requirements.txt
+                        inv test
+                    """
+                } finally {
+                    deleteDir()
+                }
             }
         }
     }
