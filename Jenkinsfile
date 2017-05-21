@@ -74,7 +74,7 @@ def configs = [
     ],
 ]
 
-def checkout() {
+def checkout_git() {
     if (env.BRANCH_NAME.startsWith('PR-')) {
         def script = """
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
@@ -214,7 +214,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(image_name).inside {
-                            checkout()
+                            checkout_git()
                             build(toxenv, label, image_name)
                         }
                     }
