@@ -108,6 +108,9 @@ def build(toxenv, label, image_name) {
 
     try {
         timeout(time: 30, unit: 'MINUTES') {
+
+            checkout_git(label)
+
             withCredentials([string(credentialsId: 'cryptography-codecov-token', variable: 'CODECOV_TOKEN')]) {
                 withEnv(["LABEL=$label", "TOXENV=$toxenv", "IMAGE_NAME=$image_name"]) {
                     if (label.contains("windows")) {
@@ -228,7 +231,6 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(image_name).inside {
-                            checkout_git(label)
                             build(toxenv, label, image_name)
                         }
                     }
@@ -239,7 +241,6 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        checkout_git(label)
                         build(toxenv, label, '')
                     }
                 }
