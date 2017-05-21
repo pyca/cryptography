@@ -82,6 +82,8 @@ def checkout_git(label) {
     def script = ""
     if (env.BRANCH_NAME.startsWith('PR-')) {
         script = """
+        ls -la
+        echo `pwd`
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
         cd cryptography
         git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
