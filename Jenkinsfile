@@ -6,7 +6,6 @@
 
 /* TODO */
 /* expand macOS testing */
-/* IRC notification on master merge */
 /* smoke tests */
 
 
@@ -106,6 +105,7 @@ def build(toxenv, label, image_name) {
                 if (label.contains("windows")) {
                     bat """
                         cd cryptography
+                        @set LABEL=$label
                         @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                         @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
                         if $toxenv == py26 (
@@ -158,7 +158,7 @@ def build(toxenv, label, image_name) {
                         virtualenv .codecov
                         call .codecov/Scripts/activate
                         pip install codecov
-                        codecov -e JOB_BASE_NAME
+                        codecov -e JOB_BASE_NAME,LABEL
                     """
                 } else if (label.contains("sierra")) {
                     ansiColor {
@@ -166,6 +166,7 @@ def build(toxenv, label, image_name) {
                             set -xe
                             # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
                             export PATH=/usr/local/bin:\$PATH
+                            export LABEL=$label
                             # pyenv is nothing but trouble with non-interactive shells
                             #eval "\$(pyenv init -)"
                             export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
@@ -176,7 +177,7 @@ def build(toxenv, label, image_name) {
                             virtualenv .venv
                             source .venv/bin/activate
                             pip install coverage
-                            bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
+                            bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                         """
                     }
                 } else {
@@ -184,6 +185,7 @@ def build(toxenv, label, image_name) {
                         sh """#!/usr/bin/env bash
                             set -xe
                             cd cryptography
+                            export LABEL=$label
                             if [[ "$image_name" == *"libressl"* ]]; then
                                 LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
                             else
@@ -193,7 +195,7 @@ def build(toxenv, label, image_name) {
                             virtualenv .venv
                             source .venv/bin/activate
                             pip install coverage
-                            bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME
+                            bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                         """
                     }
                 }
