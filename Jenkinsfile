@@ -10,67 +10,67 @@
 
 
 def configs = [
-    /* [ */
-    /*     label: 'windows', */
-    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
-    /* ], */
-    /* [ */
-    /*     label: 'windows64', */
-    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
-    /* ], */
-    /* [ */
-    /*     label: 'freebsd11', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'sierra', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-centos7', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-wheezy', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie', */
-    /*     toxenvs: ['py27', 'py34'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-sid', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-stretch', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.5.4', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-xenial', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-rolling', */
-    /*     toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8'], */
-    /* ], */
+    [
+        label: 'windows',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'windows64',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'freebsd11',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'sierra',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-centos7',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-wheezy',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-jessie',
+        toxenvs: ['py27', 'py34'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-sid',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-stretch',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-jessie-libressl:2.5.4',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-xenial',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8'],
+    ],
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-fedora',
@@ -256,7 +256,6 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
-                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
                         cd paramiko
                         virtualenv .venv
@@ -278,7 +277,6 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
-                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/twisted/twisted.git twisted
                         cd twisted
                         virtualenv .venv
@@ -300,7 +298,6 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
-                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
                         cd pyopenssl
                         virtualenv .venv
