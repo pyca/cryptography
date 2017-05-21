@@ -76,7 +76,7 @@ def configs = [
 
 def build(toxenv, label, image_name) {
 
-    println(env)
+    echo sh(returnStdout: true, script: 'env')
     try {
         checkout scm
         timeout(time: 30, unit: 'MINUTES') {
