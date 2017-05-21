@@ -231,6 +231,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
+                        checkout_git(label)
                         build(toxenv, label, '')
                     }
                 }
