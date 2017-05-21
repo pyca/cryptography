@@ -2,7 +2,7 @@
 /* Parallel tasks, when executed, show up as "part of <job name>" rather than a more descriptive name. See http://stackoverflow.com/questions/37812588/how-can-i-override-the-part-of-app-pipeline-buildname */
 
 /* notes */
-/* You must escape backslashes because groovy. */
+/* You must escape backslashes and $ because groovy. */
 
 /* TODO */
 /* expand macOS testing */
@@ -189,7 +189,7 @@ def build(toxenv, label, image_name) {
                             sh """#!/usr/bin/env bash
                                 set -xe
                                 cd cryptography
-                                if [[ "${IMAGE_NAME}" == *"libressl"* ]]; then
+                                if [[ "\${IMAGE_NAME}" == *"libressl"* ]]; then
                                     LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -- --color=yes
                                 else
                                     CFLAGS="" tox -vv -r -- --color=yes
