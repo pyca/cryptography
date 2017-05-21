@@ -82,8 +82,6 @@ def checkout_git(label) {
     def script = ""
     if (env.BRANCH_NAME.startsWith('PR-')) {
         script = """
-        ls -la
-        echo `pwd`
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
         cd cryptography
         git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
@@ -272,7 +270,49 @@ def downstream_builders = [
                 }
             }
         }
-    }
+    },
+    twisted: {
+        node("docker") {
+            docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
+                try {
+                    checkout_git("docker")
+                    sh """#!/bin/bash -xe
+                        git clone --depth=1 https://github.com/twisted/twisted.git twisted
+                        cd twisted
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        pip install ../cryptography
+                        pip install pyopenssl service_identity pycrypto
+                        pip install -e .
+                        python -m twisted.trial src/twisted
+                    """
+                } finally {
+                    deleteDir()
+                }
+            }
+        }
+    },
+    pyopenssl: {
+        node("docker") {
+            docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
+                try {
+                    checkout_git("docker")
+                    sh """#!/bin/bash -xe
+                        git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
+                        cd pyopenssl
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        pip install ../cryptography
+                        pip install -e .
+                        pip install pytest
+                        pytest tests
+                    """
+                } finally {
+                    deleteDir()
+                }
+            }
+        }
+    },
 ]
 
 stage("Downstreams") {
