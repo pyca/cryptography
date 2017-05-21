@@ -24,55 +24,12 @@ from .utils import (
     load_hash_vectors, load_kasvs_dh_vectors,
     load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, raises_unsupported_algorithm, select_backends,
-    skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm, skip_if_empty
 )
 
 
 class FakeInterface(object):
     pass
-
-
-def test_select_one_backend():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "b2"
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 1
-    assert selected_backends[0] == b2
-
-
-def test_select_no_backend():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "back!"
-    with pytest.raises(ValueError):
-        select_backends(name, backends)
-
-
-def test_select_backends_none():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = None
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 3
-
-
-def test_select_two_backends():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "b2 ,b1 "
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 2
-    assert selected_backends == [b1, b2]
 
 
 def test_skip_if_empty():
