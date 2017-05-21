@@ -181,6 +181,7 @@ def build(toxenv, label, image_name) {
                     ansiColor {
                         sh """#!/usr/bin/env bash
                             set -xe
+                            cd cryptography
                             if [[ "$image_name" == *"libressl"* ]]; then
                                 LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -e $toxenv -- --color=yes
                             else
