@@ -247,3 +247,21 @@ for (config in configs) {
 }
 
 parallel builders
+
+stage("Downstreams") {
+    def builders = [
+        paramiko: node("docker") {
+            checkout_git("docker")
+            sh """#!/bin/bash -xe
+                git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+                cd paramiko
+                virtualenv .venv
+                source .venv/bin/activate
+                pip install ../cryptography
+                pip install -e .
+                pip install -r dev-requirements.txt
+                inv test
+            """
+        }
+    ]
+}
