@@ -69,7 +69,7 @@ def configs = [
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35'],
+        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8'],
     ],
     [
         label: 'docker',
