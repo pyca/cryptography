@@ -75,15 +75,16 @@ def configs = [
 ]
 
 def checkout_git(label) {
+    def script = ""
     if (env.BRANCH_NAME.startsWith('PR-')) {
-        def script = """
+        script = """
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
         cd cryptography
         git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
         git checkout -qf FETCH_HEAD
         """
     } else {
-        def script = """
+        script = """
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
         cd cryptography
         git checkout ${env.BRANCH_NAME}
