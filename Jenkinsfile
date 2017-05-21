@@ -9,6 +9,8 @@
 /* smoke tests */
 
 
+def timeout_interval = 30
+
 def configs = [
     [
         label: 'windows',
@@ -58,7 +60,7 @@ def configs = [
     ],
     [
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-jessie-libressl:2.5.4',
+        image_name: 'pyca/cryptography-runner-jessie-libressl:2.5.3',
         toxenvs: ['py27'],
     ],
     [
@@ -75,6 +77,54 @@ def configs = [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-fedora',
         toxenvs: ['py27', 'py35'],
+    ],
+]
+
+def downstreams = [
+    [
+        downstreamName: 'pyOpenSSL',
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
+            cd pyopenssl
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install -e .
+            pip install pytest
+            pytest tests
+        """
+    ],
+    [
+        downstreamName: 'Twisted',
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/twisted/twisted.git twisted
+            cd twisted
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install pyopenssl service_identity pycrypto
+            pip install -e .
+            python -m twisted.trial src/twisted
+        """
+    ],
+    [
+        downstreamName: 'paramiko',
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+            cd paramiko
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install -e .
+            pip install -r dev-requirements.txt
+            inv test
+        """
     ],
 ]
 
@@ -105,7 +155,7 @@ def checkout_git(label) {
 def build(toxenv, label, image_name) {
 
     try {
-        timeout(time: 30, unit: 'MINUTES') {
+        timeout(time: timeout_interval, unit: 'MINUTES') {
 
             checkout_git(label)
 
@@ -249,72 +299,24 @@ for (config in configs) {
 
 parallel builders
 
-def downstream_builders = [
-    paramiko: {
-        node("docker") {
-            docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
+def downstreamBuilders = [:]
+for (downstream in downstreams) {
+    downstreamBuilders[downstreamName] = {
+        node(label) {
+            docker.image(image_name).inside {
                 try {
-                    checkout_git("docker")
-                    sh """#!/bin/bash -xe
-                        git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
-                        cd paramiko
-                        virtualenv .venv
-                        source .venv/bin/activate
-                        pip install ../cryptography
-                        pip install -e .
-                        pip install -r dev-requirements.txt
-                        inv test
-                    """
+                    timeout(time: timeout_interval, unit: 'MINUTES') {
+                        checkout_git(label)
+                        sh script
+                    }
                 } finally {
                     deleteDir()
                 }
             }
         }
-    },
-    twisted: {
-        node("docker") {
-            docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
-                try {
-                    checkout_git("docker")
-                    sh """#!/bin/bash -xe
-                        git clone --depth=1 https://github.com/twisted/twisted.git twisted
-                        cd twisted
-                        virtualenv .venv
-                        source .venv/bin/activate
-                        pip install ../cryptography
-                        pip install pyopenssl service_identity pycrypto
-                        pip install -e .
-                        python -m twisted.trial src/twisted
-                    """
-                } finally {
-                    deleteDir()
-                }
-            }
-        }
-    },
-    pyopenssl: {
-        node("docker") {
-            docker.image('pyca/cryptography-runner-ubuntu-rolling').inside {
-                try {
-                    checkout_git("docker")
-                    sh """#!/bin/bash -xe
-                        git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
-                        cd pyopenssl
-                        virtualenv .venv
-                        source .venv/bin/activate
-                        pip install ../cryptography
-                        pip install -e .
-                        pip install pytest
-                        pytest tests
-                    """
-                } finally {
-                    deleteDir()
-                }
-            }
-        }
-    },
-]
+    }
+}
 
 stage("Downstreams") {
-    parallel downstream_builders
+    parallel downstreamBuilders
 }
