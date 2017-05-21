@@ -11,62 +11,62 @@
 
 
 def configs = [
-    /* [ */
-    /*     label: 'windows', */
-    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
-    /* ], */
-    /* [ */
-    /*     label: 'windows64', */
-    /*     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'], */
-    /* ], */
-    /* [ */
-    /*     label: 'freebsd11', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'sierra', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-centos7', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-wheezy', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie', */
-    /*     toxenvs: ['py27', 'py34'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-sid', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-stretch', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
-    /*     toxenvs: ['py27'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-xenial', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
-    /* [ */
-    /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-rolling', */
-    /*     toxenvs: ['py27', 'py35'], */
-    /* ], */
+    [
+        label: 'windows',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'windows64',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'freebsd11',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'sierra',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-centos7',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-wheezy',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-jessie',
+        toxenvs: ['py27', 'py34'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-sid',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-stretch',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-xenial',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        toxenvs: ['py27', 'py35'],
+    ],
     [
         label: 'docker',
         image_name: 'pyca/cryptography-runner-fedora',
@@ -82,12 +82,14 @@ def checkout_git(label) {
         cd cryptography
         git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
         git checkout -qf FETCH_HEAD
+        git rev-parse HEAD
         """
     } else {
         script = """
         git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
         cd cryptography
         git checkout ${env.BRANCH_NAME}
+        git rev-parse HEAD
         """
     }
     if (label.contains("windows")) {
