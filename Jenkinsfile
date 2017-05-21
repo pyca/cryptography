@@ -256,6 +256,7 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
+                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
                         cd paramiko
                         virtualenv .venv
@@ -277,6 +278,7 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
+                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/twisted/twisted.git twisted
                         cd twisted
                         virtualenv .venv
@@ -298,6 +300,7 @@ def downstream_builders = [
                 try {
                     checkout_git("docker")
                     sh """#!/bin/bash -xe
+                        export LANG="C.UTF-8"
                         git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
                         cd pyopenssl
                         virtualenv .venv
