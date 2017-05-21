@@ -37,7 +37,6 @@ requirements = [
     "idna>=2.1",
     "asn1crypto>=0.21.0",
     "six>=1.4.1",
-    "setuptools>=20.5",
 ]
 setup_requirements = []
 
