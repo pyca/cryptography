@@ -9,8 +9,6 @@
 /* smoke tests */
 
 
-def timeout_interval = 30
-
 def configs = [
     /* [ */
     /*     label: 'windows', */
@@ -155,7 +153,7 @@ def checkout_git(label) {
 def build(toxenv, label, image_name) {
 
     try {
-        timeout(time: timeout_interval, unit: 'MINUTES') {
+        timeout(time: 30, unit: 'MINUTES') {
 
             checkout_git(label)
 
@@ -305,7 +303,7 @@ for (downstream in downstreams) {
         node(label) {
             docker.image(image_name).inside {
                 try {
-                    timeout(time: timeout_interval, unit: 'MINUTES') {
+                    timeout(time: 30, unit: 'MINUTES') {
                         checkout_git(label)
                         sh script
                     }
