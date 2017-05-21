@@ -21,15 +21,9 @@ def pytest_generate_tests(metafunc):
             mark.kwargs["interface"]
             for mark in metafunc.function.requires_backend_interface
         ]
-        if not all(
+        assert all(
             isinstance(openssl_backend, iface) for iface in required_interfaces
-        ):
-            pytest.skip(
-                "Backends doesn't provide the interfaces: {0}".format(
-                    ", ".join(iface.__name__ for iface in required_interfaces)
-                )
-            )
-
+        )
         metafunc.parametrize("backend", [openssl_backend])
 
 
