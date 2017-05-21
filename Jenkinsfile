@@ -74,11 +74,30 @@ def configs = [
     ],
 ]
 
+def checkout() {
+    if (env.BRANCH_NAME.startsWith('PR-')) {
+        def script = """
+        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
+        cd cryptography
+        git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
+        git checkout -qf FETCH_HEAD
+        """
+    } else {
+        def script = """
+        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
+        cd cryptography
+        git checkout ${env.BRANCH_NAME}
+        """
+    }
+    if (label.contains("windows")) {
+        bat script
+    } else {
+        sh script
+    }
+}
 def build(toxenv, label, image_name) {
 
-    echo sh(returnStdout: true, script: 'env')
     try {
-        checkout scm
         timeout(time: 30, unit: 'MINUTES') {
             withCredentials([string(credentialsId: 'cryptography-codecov-token', variable: 'CODECOV_TOKEN')]) {
                 if (label.contains("windows")) {
@@ -195,6 +214,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(image_name).inside {
+                            checkout()
                             build(toxenv, label, image_name)
                         }
                     }
