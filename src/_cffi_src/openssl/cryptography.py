@@ -7,6 +7,11 @@ from __future__ import absolute_import, division, print_function
 INCLUDES = """
 #include <openssl/opensslv.h>
 
+#if defined(OPENSSL_IS_BORINGSSL)
+#define CRYPTOGRAPHY_IS_BORINGSSL 1
+#else
+#define CRYPTOGRAPHY_IS_BORINGSSL 0
+#endif
 
 #if defined(LIBRESSL_VERSION_NUMBER)
 #define CRYPTOGRAPHY_IS_LIBRESSL 1
@@ -15,10 +20,10 @@ INCLUDES = """
 #endif
 
 /*
-    LibreSSL removed e_os2.h from the public headers so we'll only include it
-    if we're using vanilla OpenSSL.
+    LibreSSL and BoringSSL removed e_os2.h from the public headers so we'll
+    only include it if we're using vanilla OpenSSL.
 */
-#if !CRYPTOGRAPHY_IS_LIBRESSL
+#if !CRYPTOGRAPHY_IS_LIBRESSL && !CRYPTOGRAPHY_IS_BORINGSSL
 #include <openssl/e_os2.h>
 #endif
 #if defined(_WIN32)

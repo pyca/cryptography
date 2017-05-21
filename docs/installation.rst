@@ -24,6 +24,8 @@ PyPy 2.6+ on these operating systems.
     Python 2.6 is no longer supported by the Python core team. A future version
     of cryptography will drop support for this version.
 
+    Python 3.3 support will be removed in the next cryptography release.
+
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
