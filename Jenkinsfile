@@ -302,6 +302,7 @@ for (downstream in downstreams) {
     def downstreamName = downstream["downstreamName"]
     def imageName = downstream["imageName"]
     def label = downstream["label"]
+    def script = downstream["script"]
     downstreamBuilders[downstreamName] = {
         node(label) {
             docker.image(imageName).inside {
