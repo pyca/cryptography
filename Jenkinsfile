@@ -28,52 +28,52 @@ def configs = [
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-centos7', */
+    /*     imageName: 'pyca/cryptography-runner-centos7', */
     /*     toxenvs: ['py27'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-wheezy', */
+    /*     imageName: 'pyca/cryptography-runner-wheezy', */
     /*     toxenvs: ['py27'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie', */
+    /*     imageName: 'pyca/cryptography-runner-jessie', */
     /*     toxenvs: ['py27', 'py34'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-sid', */
+    /*     imageName: 'pyca/cryptography-runner-sid', */
     /*     toxenvs: ['py27', 'py35'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-stretch', */
+    /*     imageName: 'pyca/cryptography-runner-stretch', */
     /*     toxenvs: ['py27', 'py35'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
+    /*     imageName: 'pyca/cryptography-runner-jessie-libressl:2.4.5', */
     /*     toxenvs: ['py27'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-jessie-libressl:2.5.3', */
+    /*     imageName: 'pyca/cryptography-runner-jessie-libressl:2.5.3', */
     /*     toxenvs: ['py27'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-xenial', */
+    /*     imageName: 'pyca/cryptography-runner-ubuntu-xenial', */
     /*     toxenvs: ['py27', 'py35'], */
     /* ], */
     /* [ */
     /*     label: 'docker', */
-    /*     image_name: 'pyca/cryptography-runner-ubuntu-rolling', */
+    /*     imageName: 'pyca/cryptography-runner-ubuntu-rolling', */
     /*     toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8'], */
     /* ], */
     [
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-fedora',
+        imageName: 'pyca/cryptography-runner-fedora',
         toxenvs: ['py27', 'py35'],
     ],
 ]
@@ -82,7 +82,7 @@ def downstreams = [
     [
         downstreamName: 'pyOpenSSL',
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
             git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
             cd pyopenssl
@@ -97,7 +97,7 @@ def downstreams = [
     [
         downstreamName: 'Twisted',
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
             git clone --depth=1 https://github.com/twisted/twisted.git twisted
             cd twisted
@@ -112,7 +112,7 @@ def downstreams = [
     [
         downstreamName: 'paramiko',
         label: 'docker',
-        image_name: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
             git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
             cd paramiko
@@ -150,7 +150,7 @@ def checkout_git(label) {
         sh script
     }
 }
-def build(toxenv, label, image_name) {
+def build(toxenv, label, imageName) {
 
     try {
         timeout(time: 30, unit: 'MINUTES') {
@@ -158,7 +158,7 @@ def build(toxenv, label, image_name) {
             checkout_git(label)
 
             withCredentials([string(credentialsId: 'cryptography-codecov-token', variable: 'CODECOV_TOKEN')]) {
-                withEnv(["LABEL=$label", "TOXENV=$toxenv", "IMAGE_NAME=$image_name"]) {
+                withEnv(["LABEL=$label", "TOXENV=$toxenv", "IMAGE_NAME=$imageName"]) {
                     if (label.contains("windows")) {
                         bat """
                             cd cryptography
@@ -271,13 +271,13 @@ for (config in configs) {
         def toxenv = _toxenv
 
         if (label.contains("docker")) {
-            def image_name = config["image_name"]
-            def combinedName = "${image_name}-${toxenv}"
+            def imageName = config["imageName"]
+            def combinedName = "${imageName}-${toxenv}"
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        docker.image(image_name).inside {
-                            build(toxenv, label, image_name)
+                        docker.image(imageName).inside {
+                            build(toxenv, label, imageName)
                         }
                     }
                 }
@@ -299,9 +299,12 @@ parallel builders
 
 def downstreamBuilders = [:]
 for (downstream in downstreams) {
+    def downstreamName = downstream["downstreamName"]
+    def imageName = downstream["imageName"]
+    def label = downstream["label"]
     downstreamBuilders[downstreamName] = {
         node(label) {
-            docker.image(image_name).inside {
+            docker.image(imageName).inside {
                 try {
                     timeout(time: 30, unit: 'MINUTES') {
                         checkout_git(label)
