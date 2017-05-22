@@ -58,11 +58,6 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.5.3',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
@@ -172,23 +167,25 @@ def build(toxenv, label, imageName) {
                             py36: "C:\\Python36\\python.exe"
                         ]
                         if (toxenv == "py35" || toxenv == "py36") {
-                            includeLib = [
+                            opensslPaths = [
                                 "windows": [
-                                    "include": '"C:\\OpenSSL-Win32-2015\\include"',
-                                    "lib": '"C:\\OpenSSL-Win32-2015\\lib"'
-                                ], "windows64": [
-                                    "include": '"C:\\OpenSSL-Win64-2015\\include"' ,
-                                    "lib": '"C:\\OpenSSL-Win64-2015\\lib"'
+                                    "include": "C:\\OpenSSL-Win32-2015\\include",
+                                    "lib": "C:\\OpenSSL-Win32-2015\\lib"
+                                ],
+                                "windows64": [
+                                    "include": "C:\\OpenSSL-Win64-2015\\include",
+                                    "lib": "C:\\OpenSSL-Win64-2015\\lib"
                                 ]
                             ]
                         } else {
-                            includeLib = [
+                            opensslPaths = [
                                 "windows": [
-                                    "include": '"C:\\OpenSSL-Win32-2010\\include"',
-                                    "lib": '"C:\\OpenSSL-Win32-2010\\lib"'
-                                ], "windows64": [
-                                    "include": '"C:\\OpenSSL-Win64-2010\\include"' ,
-                                    "lib": '"C:\\OpenSSL-Win64-2010\\lib"'
+                                    "include": "C:\\OpenSSL-Win32-2010\\include",
+                                    "lib": "C:\\OpenSSL-Win32-2010\\lib"
+                                ],
+                                "windows64": [
+                                    "include": "C:\\OpenSSL-Win64-2010\\include",
+                                    "lib": "C:\\OpenSSL-Win64-2010\\lib"
                                 ]
                             ]
                         }
@@ -198,8 +195,8 @@ def build(toxenv, label, imageName) {
                             @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
                             @set PYTHON="${pythonPath[toxenv]}"
 
-                            @set INCLUDE=${includeLib[label]['include']};%INCLUDE%
-                            @set LIB=${includeLib[label]['lib']};%LIB%
+                            @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
+                            @set LIB="${opensslPaths[label]['lib']}";%LIB%
                             tox -r
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
@@ -287,6 +284,19 @@ for (config in configs) {
         }
     }
 }
+
+/* Add the linkcheck job to our build list if we're on master */
+if (env.BRANCH_NAME == "master") {
+    builders=["linkcheck"] = {
+        def label = "docker"
+        def imageName = "pyca/cryptography-runner-ubuntu-rolling"
+        def toxenv = "docs-linkcheck"
+        node(label) {
+            docker.image(imageName).inside {
+                build(toxenv, label, imageName)
+            }
+        }
+    }
 
 parallel builders
 
