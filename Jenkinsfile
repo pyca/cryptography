@@ -97,22 +97,21 @@ def downstreams = [
             pytest tests
         """
     ],
-    /* http://twistedmatrix.com/trac/ticket/9144 */
-    /* [ */
-    /*     downstreamName: 'Twisted', */
-    /*     label: 'docker', */
-    /*     imageName: 'pyca/cryptography-runner-ubuntu-rolling', */
-    /*     script: """#!/bin/bash -xe */
-    /*         git clone --depth=1 https://github.com/twisted/twisted.git twisted */
-    /*         cd twisted */
-    /*         virtualenv .venv */
-    /*         source .venv/bin/activate */
-    /*         pip install ../cryptography */
-    /*         pip install pyopenssl service_identity pycrypto */
-    /*         pip install -e . */
-    /*         python -m twisted.trial src/twisted */
-    /*     """ */
-    /* ], */
+    [
+        downstreamName: 'Twisted',
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/twisted/twisted.git twisted
+            cd twisted
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install pyopenssl service_identity pycrypto
+            pip install -e .
+            python -m twisted.trial src/twisted
+        """
+    ],
     [
         downstreamName: 'paramiko',
         label: 'docker',
