@@ -301,9 +301,9 @@ builders["setup.py-test"] = {
                 checkout_git("docker")
                 sh """#!/bin/sh
                     set -xe
+                    cd cryptography
                     virtualenv .venv
                     source .venv/bin/activate
-                    cd cryptography
                     python setup.py test
                 """
 
