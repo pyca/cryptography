@@ -617,6 +617,10 @@ class TestOpenSSLDHSerialization(object):
             public_key.public_bytes(
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.SubjectPublicKeyInfo)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            parameters.parameters(backend).parameters_bytes(
+                serialization.Encoding.PEM,
+                serialization.ParameterFormat.ASN1)
 
     @pytest.mark.parametrize(
         ("key_path", "loader_func"),
