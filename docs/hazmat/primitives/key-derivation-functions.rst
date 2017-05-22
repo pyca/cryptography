@@ -49,6 +49,7 @@ Different KDFs are suitable for different tasks such as:
         >>> from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
+        >>> # Salts should be randomly generated
         >>> salt = os.urandom(16)
         >>> # derive
         >>> kdf = PBKDF2HMAC(
@@ -73,8 +74,8 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
     :param int length: The desired length of the derived key. Maximum is
         (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
-    :param bytes salt: A salt. `NIST SP 800-132`_ recommends 128-bits or
-        longer.
+    :param bytes salt: A salt. Secure values [#nist]_ are 128-bits (16 bytes)
+        or longer and randomly generated.
     :param int iterations: The number of iterations to perform of the hash
         function. This can be used to control the length of time the operation
         takes. Higher numbers help mitigate brute force attacks against derived
@@ -893,6 +894,8 @@ Interface
         something like checking whether a user's password attempt matches the
         stored derived key.
 
+
+.. [#nist] See `NIST SP 800-132`_.
 
 .. _`NIST SP 800-132`: http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf
 .. _`NIST SP 800-108`: http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf
