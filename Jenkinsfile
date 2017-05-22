@@ -73,6 +73,17 @@ def configs = [
     ],
 ]
 
+/* Add the linkcheck job to our config list if we're on master */
+if (env.BRANCH_NAME == "master") {
+    configs.add(
+        [
+            label: 'docker',
+            imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+            toxenvs: ['docs-linkcheck'],
+        ]
+    )
+}
+
 def downstreams = [
     [
         downstreamName: 'pyOpenSSL',
@@ -280,20 +291,6 @@ for (config in configs) {
                         build(toxenv, label, '')
                     }
                 }
-            }
-        }
-    }
-}
-
-/* Add the linkcheck job to our build list if we're on master */
-if (env.BRANCH_NAME == "master") {
-    builders["linkcheck"] = {
-        def label = "docker"
-        def imageName = "pyca/cryptography-runner-ubuntu-rolling"
-        def toxenv = "docs-linkcheck"
-        node(label) {
-            docker.image(imageName).inside {
-                build(toxenv, label, imageName)
             }
         }
     }
