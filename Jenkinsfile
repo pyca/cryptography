@@ -1,9 +1,3 @@
-/* known issues */
-/* Parallel tasks, when executed, show up as "part of <job name>" rather than a more descriptive name. See http://stackoverflow.com/questions/37812588/how-can-i-override-the-part-of-app-pipeline-buildname */
-
-/* notes */
-/* You must escape backslashes and $ because groovy. */
-
 if (env.BRANCH_NAME == "master") {
     properties([pipelineTriggers([cron('@daily')])])
 }
@@ -223,9 +217,8 @@ def build(toxenv, label, imageName) {
                             sh """#!/usr/bin/env bash
                                 set -xe
                                 # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
-                                export PATH=/usr/local/bin:\$PATH
+                                export PATH="/usr/local/bin:\${PATH}"
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
-                                export PYENV_SHELL=bash
                                 cd cryptography
                                 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
