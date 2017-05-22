@@ -287,7 +287,7 @@ for (config in configs) {
 
 /* Add the linkcheck job to our build list if we're on master */
 if (env.BRANCH_NAME == "master") {
-    builders=["linkcheck"] = {
+    builders["linkcheck"] = {
         def label = "docker"
         def imageName = "pyca/cryptography-runner-ubuntu-rolling"
         def toxenv = "docs-linkcheck"
@@ -297,6 +297,7 @@ if (env.BRANCH_NAME == "master") {
             }
         }
     }
+}
 
 parallel builders
 
