@@ -675,7 +675,7 @@ class TestRSACertificate(object):
         ]
 
     def test_bitstring_subject_name(self, backend):
-        cert = load_cert(
+        cert = _load_cert(
             os.path.join(
                 "x509",
                 "gbcs_supplier_ds.pem"
@@ -3609,7 +3609,7 @@ class TestNameAttribute(object):
             x509.NameAttribute(None, u'value')
 
     def test_init_bad_value(self):
-        with pytest.raises(TypeError):
+        with pytest.warns(UserWarning):
             x509.NameAttribute(
                 x509.ObjectIdentifier('2.999.1'),
                 b'bytes'
