@@ -4,10 +4,9 @@
 /* notes */
 /* You must escape backslashes and $ because groovy. */
 
-/* TODO */
-/* expand macOS testing */
-/* smoke tests */
-
+if (env.BRANCH_NAME == "master") {
+    properties([pipelineTriggers([cron('@daily')])])
+}
 
 def configs = [
     [
@@ -24,6 +23,10 @@ def configs = [
     ],
     [
         label: 'sierra',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'yosemite',
         toxenvs: ['py27'],
     ],
     [
