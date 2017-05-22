@@ -218,7 +218,7 @@ def build(toxenv, label, imageName) {
                             pip install codecov
                             codecov -e JOB_BASE_NAME,LABEL
                         """
-                    } else if (label.contains("sierra")) {
+                    } else if (label.contains("sierra") || label.contains("yosemite")) {
                         ansiColor {
                             sh """#!/usr/bin/env bash
                                 set -xe
