@@ -61,7 +61,7 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8'],
+        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8', 'randomorder'],
     ],
     [
         label: 'docker',
@@ -288,6 +288,25 @@ for (config in configs) {
                         build(toxenv, label, '')
                     }
                 }
+            }
+        }
+    }
+}
+
+/* Add the python setup.py test builder */
+builders["setup.py-test"] = {
+    node("docker") {
+        stage("python setup.py test") {
+            docker.image("pyca/cryptography-runner-ubuntu-rolling").inside {
+                checkout_git("docker")
+                sh """#!/bin/sh
+                    set -xe
+                    virtualenv .venv
+                    source .venv/bin/activate
+                    cd cryptography
+                    python setup.py test
+                """
+
             }
         }
     }
