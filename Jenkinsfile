@@ -147,7 +147,10 @@ def checkout_git(label) {
     if (label.contains("windows")) {
         bat script
     } else {
-        sh script
+        sh """#!/bin/sh
+        set -xe
+        ${script}
+        """
     }
 }
 def build(toxenv, label, imageName) {
@@ -160,55 +163,43 @@ def build(toxenv, label, imageName) {
             withCredentials([string(credentialsId: 'cryptography-codecov-token', variable: 'CODECOV_TOKEN')]) {
                 withEnv(["LABEL=$label", "TOXENV=$toxenv", "IMAGE_NAME=$imageName"]) {
                     if (label.contains("windows")) {
+                        def pythonPath = [
+                            py26: "C:\\Python26\\python.exe",
+                            py27: "C:\\Python27\\python.exe",
+                            py33: "C:\\Python33\\python.exe",
+                            py34: "C:\\Python34\\python.exe",
+                            py35: "C:\\Python35\\python.exe",
+                            py36: "C:\\Python36\\python.exe"
+                        ]
+                        if (toxenv == "py35" || toxenv == "py36") {
+                            includeLib = [
+                                "windows": [
+                                    "include": '"C:\\OpenSSL-Win32-2015\\include"',
+                                    "lib": '"C:\\OpenSSL-Win32-2015\\lib"'
+                                ], "windows64": [
+                                    "include": '"C:\\OpenSSL-Win64-2015\\include"' ,
+                                    "lib": '"C:\\OpenSSL-Win64-2015\\lib"'
+                                ]
+                            ]
+                        } else {
+                            includeLib = [
+                                "windows": [
+                                    "include": '"C:\\OpenSSL-Win32-2010\\include"',
+                                    "lib": '"C:\\OpenSSL-Win32-2010\\lib"'
+                                ], "windows64": [
+                                    "include": '"C:\\OpenSSL-Win64-2010\\include"' ,
+                                    "lib": '"C:\\OpenSSL-Win64-2010\\lib"'
+                                ]
+                            ]
+                        }
                         bat """
                             cd cryptography
                             @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                             @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
-                            if %TOXENV% == py26 (
-                                @set PYTHON="C:\\Python26\\python.exe"
-                            )
-                            if %TOXENV% == py27 (
-                                @set PYTHON="C:\\Python27\\python.exe"
-                            )
-                            if %TOXENV% == py33 (
-                                @set PYTHON="C:\\Python33\\python.exe"
-                            )
-                            if %TOXENV% == py34 (
-                                @set PYTHON="C:\\Python34\\python.exe"
-                            )
-                            if %TOXENV% == py35 (
-                                @set PYTHON="C:\\Python35\\python.exe"
-                            )
-                            if %TOXENV% == py36 (
-                                @set PYTHON="C:\\Python36\\python.exe"
-                            )
+                            @set PYTHON="${pythonPath[toxenv]}"
 
-                            @set py35orabove=true
-
-                            if not %TOXENV% == py35 (
-                                if not %TOXENV% == py36 (
-                                    @set py35orabove=false
-                                )
-                            )
-
-                            if "%py35orabove%" == "true" (
-                                if %LABEL% == windows (
-                                    @set INCLUDE="C:\\OpenSSL-Win32-2015\\include";%INCLUDE%
-                                    @set LIB="C:\\OpenSSL-Win32-2015\\lib";%LIB%
-                                ) else (
-                                    @set INCLUDE="C:\\OpenSSL-Win64-2015\\include";%INCLUDE%
-                                    @set LIB="C:\\OpenSSL-Win64-2015\\lib";%LIB%
-                                )
-                            ) else (
-                                if %LABEL% == windows (
-                                    @set INCLUDE="C:\\OpenSSL-Win32-2010\\include";%INCLUDE%
-                                    @set LIB="C:\\OpenSSL-Win32-2010\\lib";%LIB%
-                                ) else (
-                                    @set INCLUDE="C:\\OpenSSL-Win64-2010\\include";%INCLUDE%
-                                    @set LIB="C:\\OpenSSL-Win64-2010\\lib";%LIB%
-                                )
-                            )
-
+                            @set INCLUDE=${includeLib[label]['include']};%INCLUDE%
+                            @set LIB=${includeLib[label]['lib']};%LIB%
                             tox -r
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
@@ -222,13 +213,13 @@ def build(toxenv, label, imageName) {
                                 set -xe
                                 # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
                                 export PATH=/usr/local/bin:\$PATH
-                                # pyenv is nothing but trouble with non-interactive shells
-                                #eval "\$(pyenv init -)"
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 export PYENV_SHELL=bash
                                 cd cryptography
-                                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" tox -r --  --color=yes
-                                # In a perfect world this would be a separate stage. This is not a perfect world.
+                                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 \
+                                    LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
+                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" \
+                                    tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 pip install coverage
@@ -241,11 +232,13 @@ def build(toxenv, label, imageName) {
                                 set -xe
                                 cd cryptography
                                 if [[ "\${IMAGE_NAME}" == *"libressl"* ]]; then
-                                    LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" LDFLAGS="-L/usr/local/libressl/lib" CFLAGS="-I/usr/local/libressl/include" tox -r -- --color=yes
+                                    LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" \
+                                        LDFLAGS="-L/usr/local/libressl/lib" \
+                                        CFLAGS="-I/usr/local/libressl/include" \
+                                        tox -r -- --color=yes
                                 else
-                                    CFLAGS="" tox -vv -r -- --color=yes
+                                    tox -r -- --color=yes
                                 fi
-                                # In a perfect world this would be a separate stage. This is not a perfect world.
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 pip install coverage
