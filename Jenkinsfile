@@ -3,66 +3,66 @@ if (env.BRANCH_NAME == "master") {
 }
 
 def configs = [
-    // [
-    //     label: 'windows',
-    //     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
-    // ],
-    // [
-    //     label: 'windows64',
-    //     toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
-    // ],
-    // [
-    //     label: 'freebsd11',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'sierra',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'yosemite',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-centos7',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-wheezy',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-jessie',
-    //     toxenvs: ['py27', 'py34'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-sid',
-    //     toxenvs: ['py27', 'py35'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-stretch',
-    //     toxenvs: ['py27', 'py35'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
-    //     toxenvs: ['py27'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-ubuntu-xenial',
-    //     toxenvs: ['py27', 'py35'],
-    // ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-    //     toxenvs: ['py27', 'py35', 'pep8', 'py3pep8', 'randomorder'],
-    // ],
+    [
+        label: 'windows',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'windows64',
+        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'freebsd11',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'sierra',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'yosemite',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-centos7',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-wheezy',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-jessie',
+        toxenvs: ['py27', 'py34'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-sid',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-stretch',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-xenial',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        toxenvs: ['py27', 'py35', 'pep8', 'py3pep8', 'randomorder'],
+    ],
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
@@ -70,11 +70,11 @@ def configs = [
         artifacts: 'cryptography/docs/_build/html/**',
         artifactExcludes: '**/*.doctree',
     ],
-    // [
-    //     label: 'docker',
-    //     imageName: 'pyca/cryptography-runner-fedora',
-    //     toxenvs: ['py27', 'py35'],
-    // ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-fedora',
+        toxenvs: ['py27', 'py35'],
+    ],
 ]
 
 /* Add the linkcheck job to our config list if we're on master */
