@@ -102,15 +102,19 @@ def assert_no_memory_leaks(s, argv=[]):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    proc.wait()
-    if proc.returncode == 255:
-        # 255 means there was a leak, load the info about what mallocs weren't
-        # freed.
-        out = json.loads(proc.stdout.read().decode())
-        raise AssertionError(out)
-    elif proc.returncode != 0:
-        # Any exception type will do to be honest
-        raise ValueError(proc.stdout.read(), proc.stderr.read())
+    try:
+        proc.wait()
+        if proc.returncode == 255:
+            # 255 means there was a leak, load the info about what mallocs
+            # weren't freed.
+            out = json.loads(proc.stdout.read().decode())
+            raise AssertionError(out)
+        elif proc.returncode != 0:
+            # Any exception type will do to be honest
+            raise ValueError(proc.stdout.read(), proc.stderr.read())
+    finally:
+        proc.stdout.close()
+        proc.stderr.close()
 
 
 def skip_if_memtesting_not_supported():
