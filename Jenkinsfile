@@ -298,7 +298,7 @@ builders["setup.py-test"] = {
             docker.image("pyca/cryptography-runner-ubuntu-rolling").inside {
                 try {
                     checkout_git("docker")
-                    sh """#!/bin/sh
+                    sh """#!/usr/bin/env bash
                         set -xe
                         cd cryptography
                         virtualenv .venv
