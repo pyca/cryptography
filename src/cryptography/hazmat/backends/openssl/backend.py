@@ -1652,11 +1652,6 @@ class Backend(object):
             )
 
     def _parameter_bytes(self, encoding, format, cdata):
-        if not isinstance(format, serialization.ParameterFormat):
-            raise TypeError(
-                "format must be an item from the ParameterFormat enum"
-            )
-
         if encoding is serialization.Encoding.OpenSSH:
             raise TypeError(
                 "OpenSSH encoding is not supported"
