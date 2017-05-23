@@ -1,9 +1,24 @@
 Welcome to ``cryptography``
 ===========================
 
-``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives. Our goal is for it to be your "cryptographic standard library". If
-you are interested in learning more about the field of cryptography, we
+``cryptography`` includes both high level recipes, and low level interfaces to
+common cryptographic algorithms such as symmetric ciphers, message digests and
+key derivation functions. For example, to encrypt something with
+``cryptography``'s high level symmetric encryption recipe:
+
+.. code-block:: pycon
+
+    >>> from cryptography.fernet import Fernet
+    >>> # Put this somewhere safe!
+    >>> key = Fernet.generate_key()
+    >>> f = Fernet(key)
+    >>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+    >>> token
+    '...'
+    >>> f.decrypt(token)
+    'A really secret message. Not for prying eyes.'
+
+If you are interested in learning more about the field of cryptography, we
 recommend `Crypto 101, by Laurens Van Houtven`_.
 
 Installation
@@ -16,27 +31,8 @@ You can install ``cryptography`` with ``pip``:
 
 See :doc:`Installation <installation>` for more information.
 
-Why a new crypto library for Python?
-------------------------------------
-
-If you've done cryptographic work in Python before, you've probably seen some
-other libraries in Python, such as *M2Crypto*, *PyCrypto*, or *PyOpenSSL*. In
-building ``cryptography`` we wanted to address a few issues we observed in the
-existing libraries:
-
-* Lack of PyPy and Python 3 support.
-* Lack of maintenance.
-* Use of poor implementations of algorithms (i.e. ones with known side-channel
-  attacks).
-* Lack of high level, "Cryptography for humans", APIs.
-* Absence of algorithms such as
-  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
-* Poor introspectability, and thus poor testability.
-* Extremely error prone APIs, and bad defaults.
-
-
 .. _cryptography-layout:
+
 
 Layout
 ------
