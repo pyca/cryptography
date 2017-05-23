@@ -618,7 +618,7 @@ class TestOpenSSLDHSerialization(object):
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.SubjectPublicKeyInfo)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            parameters.parameters(backend).parameters_bytes(
+            parameters.parameters(backend).parameter_bytes(
                 serialization.Encoding.PEM,
                 serialization.ParameterFormat.ASN1)
 
