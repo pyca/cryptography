@@ -67,7 +67,7 @@ def configs = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         toxenvs: ['docs'],
-        artifacts: 'docs/_build/**/*'
+        artifacts: 'docs/_build/**/*.*'
     ],
     // [
     //     label: 'docker',
