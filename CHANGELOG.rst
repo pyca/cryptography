@@ -27,6 +27,7 @@ Changelog
   extensions only need to be rejected on certificate verification.
 * The CommonCrypto backend has been removed.
 * MultiBackend has been removed.
+* ``Whirlpool`` and ``RIPEMD160`` have been deprecated.
 
 
 1.8.1 - 2017-03-10

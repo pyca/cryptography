@@ -150,22 +150,6 @@ SHA-1
     vulnerable to practical collision attacks, and collisions have been
     demonstrated.
 
-RIPEMD160
-~~~~~~~~~
-
-.. class:: RIPEMD160()
-
-    RIPEMD160 is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 160-bit message digest.
-
-Whirlpool
-~~~~~~~~~
-
-.. class:: Whirlpool()
-
-    Whirlpool is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 512-bit message digest.
-
 MD5
 ~~~
 
