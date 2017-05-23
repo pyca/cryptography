@@ -9,7 +9,6 @@ import datetime
 import ipaddress
 import os
 import sys
-import warnings
 
 from asn1crypto.x509 import Certificate
 
@@ -522,8 +521,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.PersistentlyDeprecated)
+        with pytest.deprecated_call():
             assert cert.serial == 2
             assert cert.serial_number == 2
 
@@ -534,10 +532,8 @@ class TestRSACertificate(object):
             backend
         )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.PersistentlyDeprecated)
-            with pytest.deprecated_call():
-                cert.serial
+        with pytest.deprecated_call():
+            cert.serial
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
