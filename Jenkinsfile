@@ -293,7 +293,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        build(toxenv, label, '')
+                        build(toxenv, label, '', null)
                     }
                 }
             }
