@@ -7,16 +7,22 @@ from __future__ import absolute_import, division, print_function
 import getpass
 import io
 import os
+import subprocess
 import time
 
-from clint.textui.progress import Bar as ProgressBar
+import click
 
-import invoke
+from clint.textui.progress import Bar as ProgressBar
 
 import requests
 
 
 JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
+
+
+def run(*args, **kwargs):
+    kwargs.setdefault("stderr", subprocess.STDOUT)
+    subprocess.check_output(list(args), **kwargs)
 
 
 def wait_for_build_completed(session):
@@ -95,20 +101,21 @@ def download_artifacts(session):
     return paths
 
 
-@invoke.task
+@click.command()
+@click.argument("version")
 def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
-    invoke.run("git tag -s {0} -m '{0} release'".format(version))
-    invoke.run("git push --tags")
+    run("git", "tag", "-s", version, "-m", "{0} release".format(version))
+    run("git", "push", "--tags")
 
-    invoke.run("python setup.py sdist")
-    invoke.run("cd vectors/ && python setup.py sdist bdist_wheel")
+    run("python", "setup.py", "sdist")
+    run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    invoke.run(
-        "twine upload -s dist/cryptography-{0}* "
-        "vectors/dist/cryptography_vectors-{0}*".format(version)
+    run(
+        "twine", "upload", "-s", "dist/cryptography-{0}*".format(version),
+        "vectors/dist/cryptography_vectors-{0}*".format(version), shell=True
     )
 
     session = requests.Session()
@@ -135,4 +142,8 @@ def release(version):
     response.raise_for_status()
     wait_for_build_completed(session)
     paths = download_artifacts(session)
-    invoke.run("twine upload {0}".format(" ".join(paths)))
+    run("twine", "upload", " ".join(paths))
+
+
+if __name__ == "__main__":
+    release()

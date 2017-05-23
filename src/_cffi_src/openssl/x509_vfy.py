@@ -231,9 +231,17 @@ static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED = 0;
 static const long X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 = 0;
+/* These 3 defines are unavailable in LibreSSL 2.5.x, but may be added
+   in the future... */
+#ifndef X509_V_ERR_HOSTNAME_MISMATCH
 static const long X509_V_ERR_HOSTNAME_MISMATCH = 0;
+#endif
+#ifndef X509_V_ERR_EMAIL_MISMATCH
 static const long X509_V_ERR_EMAIL_MISMATCH = 0;
+#endif
+#ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
+#endif
 
 /* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
    below because it shows up in some earlier 3rd party OpenSSL packages. */

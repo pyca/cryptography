@@ -42,7 +42,7 @@ The commit that merged the version number bump is now the official release
 commit for this release. You will need to have ``gpg`` installed and a ``gpg``
 key in order to do a release. Once this has happened:
 
-* Run ``invoke release {version}``.
+* Run ``python release.py {version}``.
 
 The release should now be available on PyPI and a tag should be available in
 the repository.

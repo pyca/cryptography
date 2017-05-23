@@ -11,7 +11,7 @@ import cffi
 
 import pytest
 
-from cryptography.exceptions import _Reasons
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
@@ -195,6 +195,28 @@ class TestCipherUpdateInto(object):
         decryptor.finalize()
         assert res == len(pt)
         assert bytes(buf)[:res] == pt
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
+    def test_finalize_with_tag_already_finalized(self, backend):
+        key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
+        iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
+        encryptor = ciphers.Cipher(
+            AES(key), modes.GCM(iv), backend
+        ).encryptor()
+        ciphertext = encryptor.update(b"abc") + encryptor.finalize()
+
+        decryptor = ciphers.Cipher(
+            AES(key), modes.GCM(iv, tag=encryptor.tag), backend
+        ).decryptor()
+        decryptor.update(ciphertext)
+        decryptor.finalize()
+        with pytest.raises(AlreadyFinalized):
+            decryptor.finalize_with_tag(encryptor.tag)
 
     @pytest.mark.parametrize(
         "params",

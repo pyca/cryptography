@@ -379,9 +379,6 @@ X.509 Certificate Object
         :raises cryptography.x509.DuplicateExtension: If more than one
             extension of the same type is found within the certificate.
 
-        :raises cryptography.x509.UnsupportedExtension: If the certificate
-            contains an extension that is not supported.
-
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
@@ -772,9 +769,6 @@ X.509 CSR (Certificate Signing Request) Object
 
         :raises cryptography.x509.DuplicateExtension: If more than one
             extension of the same type is found within the certificate signing request.
-
-        :raises cryptography.x509.UnsupportedExtension: If the certificate signing request
-            contains an extension that is not supported.
 
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
@@ -2067,10 +2061,8 @@ X.509 Extensions
 
     .. versionadded:: 1.2
 
-    A generic extension class used to hold the raw value of **non-critical**
-    extensions that ``cryptography`` does not know how to parse. Extensions
-    marked critical will raise
-    :class:`~cryptography.x509.UnsupportedExtension`.
+    A generic extension class used to hold the raw value of extensions that
+    ``cryptography`` does not know how to parse.
 
     .. attribute:: oid
 
@@ -2662,17 +2654,6 @@ Exceptions
 
     This is raised when more than one X.509 extension of the same type is
     found within a certificate.
-
-    .. attribute:: oid
-
-        :type: :class:`ObjectIdentifier`
-
-        Returns the OID.
-
-.. class:: UnsupportedExtension
-
-    This is raised when a certificate contains an unsupported extension type
-    that is marked ``critical``.
 
     .. attribute:: oid
 

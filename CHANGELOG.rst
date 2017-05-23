@@ -8,15 +8,27 @@ Changelog
 
 * Python 2.6 support is deprecated, and support will be removed in the next
   release of ``cryptography``.
-* Add support for providing ``tag`` during
-  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
-  :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
 * **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
   returns ``True`` on success. This brings it in line with the interface's
   documentation, and our intent. The correct way to use
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
+* Python 3.3 support has been deprecated, and will be removed in the
+  ``cryptography`` release.
+* Add support for providing ``tag`` during
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
+  :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  LibreSSL 2.5.x.
+* Accessing an unrecognized extension marked critical on an X.509 object will
+  no longer raise an ``UnsupportedExtension`` exception, instead an
+  :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
+  This behavior was based on a poor reading of the RFC, unknown critical
+  extensions only need to be rejected on certificate verification.
+* The CommonCrypto backend has been removed.
+* MultiBackend has been removed.
 
 
 1.8.1 - 2017-03-10
@@ -490,9 +502,9 @@ Changelog
   * :class:`~cryptography.x509.CertificatePolicies`
 
   Note that unsupported extensions with the critical flag raise
-  :class:`~cryptography.x509.UnsupportedExtension` while unsupported extensions
-  set to non-critical are silently ignored. Read the
-  :doc:`X.509 documentation</x509/index>` for more information.
+  ``UnsupportedExtension`` while unsupported extensions set to non-critical are
+  silently ignored. Read the :doc:`X.509 documentation</x509/index>` for more
+  information.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
@@ -716,15 +728,13 @@ Changelog
 0.5.2 - 2014-07-09
 ~~~~~~~~~~~~~~~~~~
 
-* Add ``TraditionalOpenSSLSerializationBackend`` support to
-  :doc:`/hazmat/backends/multibackend`.
+* Add ``TraditionalOpenSSLSerializationBackend`` support to ``multibackend``.
 * Fix compilation error on OS X 10.8 (Mountain Lion).
 
 0.5.1 - 2014-07-07
 ~~~~~~~~~~~~~~~~~~
 
-* Add ``PKCS8SerializationBackend`` support to
-  :doc:`/hazmat/backends/multibackend`.
+* Add ``PKCS8SerializationBackend`` support to ``multibackend``.
 
 0.5 - 2014-07-07
 ~~~~~~~~~~~~~~~~
@@ -742,7 +752,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
 * Added ``PKCS8SerializationBackend`` and
@@ -752,7 +762,7 @@ Changelog
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
 * Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
   specific providers of the
   :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -827,8 +837,8 @@ Changelog
 0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
 
-* Added :doc:`/hazmat/backends/commoncrypto`.
-* Added initial :doc:`/hazmat/bindings/commoncrypto`.
+* Added ``commoncrypto``.
+* Added initial ``commoncrypto``.
 * Removed ``register_cipher_adapter`` method from
   :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
 * Added support for the OpenSSL backend under Windows.
@@ -837,7 +847,7 @@ Changelog
   available, such as CentOS.
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
-* Added :doc:`/hazmat/backends/multibackend`.
+* Added ``multibackend``.
 * Set default random for the :doc:`/hazmat/backends/openssl` to the OS
   random engine.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`

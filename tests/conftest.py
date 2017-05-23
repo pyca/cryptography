@@ -6,10 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
-from .utils import check_backend_support, select_backends, skip_if_empty
+from .utils import check_backend_support, skip_if_empty
 
 
 def pytest_report_header(config):
@@ -18,19 +17,15 @@ def pytest_report_header(config):
 
 def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
-        names = metafunc.config.getoption("--backend")
-        selected_backends = select_backends(names, _available_backends())
-
         filtered_backends = []
-        required = metafunc.function.requires_backend_interface
         required_interfaces = [
-            mark.kwargs["interface"] for mark in required
+            mark.kwargs["interface"]
+            for mark in metafunc.function.requires_backend_interface
         ]
-        for backend in selected_backends:
-            if all(
-                isinstance(backend, iface) for iface in required_interfaces
-            ):
-                filtered_backends.append(backend)
+        if all(
+            isinstance(openssl_backend, iface) for iface in required_interfaces
+        ):
+            filtered_backends.append(openssl_backend)
 
         # If you pass an empty list to parametrize Bad Things(tm) happen
         # as of pytest 2.6.4 when the test also has a parametrize decorator

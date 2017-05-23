@@ -1,4 +1,5 @@
 sudo: false
+dist: trusty
 
 language: python
 
@@ -9,7 +10,8 @@ cache:
 
 matrix:
     include:
-        - python: 2.6 # these are just to make travis's UI a bit prettier
+        # these are just to make travis's UI a bit prettier
+        - python: 2.6
           env: TOXENV=py26
         - python: 2.7
           env: TOXENV=py27
@@ -21,12 +23,9 @@ matrix:
           env: TOXENV=py35
         - python: 3.6
           env: TOXENV=py36
-        - python: pypy
-          env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
-        - python: pypy
-          env: TOXENV=pypy PYPY_VERSION=4.0.1
-        - python: pypy
-          env: TOXENV=pypy PYPY_VERSION=5.6.0
+        - env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
+        - env: TOXENV=pypy PYPY_VERSION=4.0.1
+        - env: TOXENV=pypy PYPY_VERSION=5.7.1
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0e
         - python: 3.5
@@ -66,7 +65,7 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode8.1
-          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.6.0
+          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.7.1
         - language: generic
           os: osx
           osx_image: xcode8.1

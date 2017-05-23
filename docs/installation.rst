@@ -15,8 +15,7 @@ PyPy 2.6+ on these operating systems.
 
 * x86-64 CentOS 7.x, 6.4
 * x86-64 FreeBSD 10
-* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks,
-  10.8 Mountain Lion, and 10.7 Lion
+* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks
 * x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
@@ -24,6 +23,8 @@ PyPy 2.6+ on these operating systems.
 .. warning::
     Python 2.6 is no longer supported by the Python core team, the next version
     of ``cryptography`` will drop support for this version.
+
+    Python 3.3 support will be removed in the next cryptography release.
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
