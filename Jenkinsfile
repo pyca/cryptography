@@ -61,7 +61,14 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8', 'randomorder'],
+        toxenvs: ['py27', 'py35', 'pep8', 'py3pep8', 'randomorder'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        toxenvs: ['docs'],
+        artifacts: 'cryptography/docs/_build/html/**',
+        artifactExcludes: '**/*.doctree',
     ],
     [
         label: 'docker',
@@ -156,7 +163,7 @@ def checkout_git(label) {
         """
     }
 }
-def build(toxenv, label, imageName) {
+def build(toxenv, label, imageName, artifacts, artifactExcludes) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
 
@@ -248,6 +255,9 @@ def build(toxenv, label, imageName) {
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
                         }
+                        if (artifacts) {
+                            archiveArtifacts artifacts: artifacts, excludes: artifactExcludes
+                        }
                     }
                 }
             }
@@ -262,6 +272,8 @@ def builders = [:]
 for (config in configs) {
     def label = config["label"]
     def toxenvs = config["toxenvs"]
+    def artifacts = config["artifacts"]
+    def artifactExcludes = config["artifactExcludes"]
 
     for (_toxenv in toxenvs) {
         def toxenv = _toxenv
@@ -273,7 +285,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(imageName).inside {
-                            build(toxenv, label, imageName)
+                            build(toxenv, label, imageName, artifacts, artifactExcludes)
                         }
                     }
                 }
@@ -283,7 +295,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        build(toxenv, label, '')
+                        build(toxenv, label, '', null, null)
                     }
                 }
             }
