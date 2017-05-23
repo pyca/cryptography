@@ -13,6 +13,8 @@ Changelog
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
+* Python 3.3 support has been deprecated, and will be removed in the
+  ``cryptography`` release.
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
