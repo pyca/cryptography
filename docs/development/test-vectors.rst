@@ -56,6 +56,11 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/ec_public_key.pem`` and
   ``asymmetric/DER_Serialization/ec_public_key.der``- Contains the public key
   corresponding to ``ec_private_key.pem``, generated using OpenSSL.
+* ``asymmetric/PEM_Serialization/ec_public_key_c2pnb163v1.pem`` - Contains the
+  public key corresponding to ``ec_private_key_c2pnb163v1.pem``.
+* ``asymmetric/PEM_Serialization/ec_private_key_c2pnb163v1.pem`` - Contains a
+  private key generated using the named curve ``c2pnb163v1``, an X9.62 curve
+  over a 163 bit binary field.
 * ``asymmetric/PEM_Serialization/rsa_private_key.pem`` - Contains an RSA 2048
   bit key generated using OpenSSL, protected by the secret "123456" with DES3
   encryption.
