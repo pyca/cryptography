@@ -157,8 +157,6 @@ def checkout_git(label) {
     }
 }
 def build(toxenv, label, imageName) {
-    /* Jenkins is terrible so let's deleteDir before we do anything too */
-    deleteDir()
     try {
         timeout(time: 30, unit: 'MINUTES') {
 
@@ -296,17 +294,20 @@ for (config in configs) {
 /* Add the python setup.py test builder */
 builders["setup.py-test"] = {
     node("docker") {
-        deleteDir()
         stage("python setup.py test") {
             docker.image("pyca/cryptography-runner-ubuntu-rolling").inside {
-                checkout_git("docker")
-                sh """#!/bin/sh
-                    set -xe
-                    cd cryptography
-                    virtualenv .venv
-                    source .venv/bin/activate
-                    python setup.py test
-                """
+                try {
+                    checkout_git("docker")
+                    sh """#!/bin/sh
+                        set -xe
+                        cd cryptography
+                        virtualenv .venv
+                        source .venv/bin/activate
+                        python setup.py test
+                    """
+                } finally {
+                    deleteDir()
+                }
 
             }
         }
@@ -323,7 +324,6 @@ for (downstream in downstreams) {
     def script = downstream["script"]
     downstreamBuilders[downstreamName] = {
         node(label) {
-            deleteDir()
             docker.image(imageName).inside {
                 try {
                     timeout(time: 30, unit: 'MINUTES') {
