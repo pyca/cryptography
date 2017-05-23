@@ -9,7 +9,6 @@ import datetime
 import ipaddress
 import os
 import sys
-import warnings
 
 from asn1crypto.x509 import Certificate
 
