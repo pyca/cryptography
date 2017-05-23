@@ -42,7 +42,7 @@ matrix:
           env: TOXENV=py3pep8
         - language: generic
           os: osx
-          # 8.1 is macOS 10.12.x
+          # 8.3 is macOS 10.12.x
           # see: https://docs.travis-ci.com/user/osx-ci-environment/
           osx_image: xcode8.3
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
