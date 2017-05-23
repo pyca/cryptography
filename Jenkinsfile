@@ -282,7 +282,7 @@ for (config in configs) {
                         docker.image(imageName).inside {
                             build(toxenv, label, imageName)
                             if (artifacts) {
-                                archiveArtifacts artifacts: artifacts, onlyIfSuccessful: true
+                                archiveArtifacts artifacts: artifacts
                             }
                         }
                     }
