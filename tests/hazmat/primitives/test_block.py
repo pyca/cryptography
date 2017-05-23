@@ -72,10 +72,6 @@ class TestCipherContext(object):
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
 
-    @pytest.mark.skipif(
-        cffi.__version_info__ < (1, 7),
-        reason="cffi version too old"
-    )
     def test_use_update_into_after_finalize(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
