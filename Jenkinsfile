@@ -162,7 +162,7 @@ def checkout_git(label) {
         """
     }
 }
-def build(toxenv, label, imageName) {
+def build(toxenv, label, imageName, artifacts) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
 
@@ -254,6 +254,9 @@ def build(toxenv, label, imageName) {
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
                         }
+                        if (artifacts) {
+                            archiveArtifacts artifacts: artifacts
+                        }
                     }
                 }
             }
@@ -280,10 +283,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(imageName).inside {
-                            build(toxenv, label, imageName)
-                            if (artifacts) {
-                                archiveArtifacts artifacts: artifacts
-                            }
+                            build(toxenv, label, imageName, artifacts)
                         }
                     }
                 }
