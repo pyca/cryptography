@@ -67,7 +67,8 @@ def configs = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         toxenvs: ['docs'],
-        artifacts: 'cryptography/docs/_build/html/**'
+        artifacts: 'cryptography/docs/_build/html/**',
+        artifactExcludes: 'cryptography/docs/html/**/*.doctree',
     ],
     // [
     //     label: 'docker',
@@ -162,7 +163,7 @@ def checkout_git(label) {
         """
     }
 }
-def build(toxenv, label, imageName, artifacts) {
+def build(toxenv, label, imageName, artifacts, artifactExcludes) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
 
@@ -255,7 +256,7 @@ def build(toxenv, label, imageName, artifacts) {
                             """
                         }
                         if (artifacts) {
-                            archiveArtifacts artifacts: artifacts
+                            archiveArtifacts artifacts: artifacts, excludes: artifactExcludes
                         }
                     }
                 }
@@ -272,6 +273,7 @@ for (config in configs) {
     def label = config["label"]
     def toxenvs = config["toxenvs"]
     def artifacts = config["artifacts"]
+    def artifactExcludes = config["artifactExcludes"]
 
     for (_toxenv in toxenvs) {
         def toxenv = _toxenv
@@ -283,7 +285,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(imageName).inside {
-                            build(toxenv, label, imageName, artifacts)
+                            build(toxenv, label, imageName, artifacts, artifactExcludes)
                         }
                     }
                 }
@@ -293,7 +295,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        build(toxenv, label, '', null)
+                        build(toxenv, label, '', null, null)
                     }
                 }
             }
