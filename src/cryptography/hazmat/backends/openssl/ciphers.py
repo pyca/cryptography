@@ -112,13 +112,9 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
-        buf = self._backend._ffi.new("unsigned char[]",
-                                     len(data) + self._block_size_bytes - 1)
-        outlen = self._backend._ffi.new("int *")
-        res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
-                                                  len(data))
-        self._backend.openssl_assert(res != 0)
-        return self._backend._ffi.buffer(buf)[:outlen[0]]
+        buf = bytearray(len(data) + self._block_size_bytes - 1)
+        n = self.update_into(data, buf)
+        return bytes(buf[:n])
 
     def update_into(self, data, buf):
         if len(buf) < (len(data) + self._block_size_bytes - 1):
