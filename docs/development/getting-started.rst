@@ -46,7 +46,7 @@ For example, with `Homebrew`_:
         pip install --requirement ./dev-requirements.txt
 
 Alternatively for a static build you can specify
-``CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the
+``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the
 absolute path for the `OpenSSL`_ libraries before calling pip.
 
 .. tip::

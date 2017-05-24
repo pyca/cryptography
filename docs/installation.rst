@@ -60,13 +60,13 @@ to include the proper locations. For example:
     C:\> \path\to\vcvarsall.bat x86_amd64
     C:\> set LIB=C:\OpenSSL-win64\lib;%LIB%
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
-    C:\> set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
     C:\> pip install cryptography
 
 As of OpenSSL 1.1.0 the library names have changed from ``libeay32`` and
 ``ssleay32`` to ``libcrypto`` and ``libssl`` (matching their names on all other
-platforms). Due to this change when linking against 1.1.0 you **must** set
-``CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110`` or else installation will fail.
+platforms). ``cryptography`` links against the new 1.1.0 names by default. If
+you need to compile ``cryptography`` against an older version then you **must**
+set ``CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL`` or else installation will fail.
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
@@ -237,14 +237,14 @@ You can also build cryptography statically:
 .. code-block:: console
 
     $ brew install openssl@1.1
-    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
+    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
     $ sudo port install openssl
-    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
+    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.

@@ -13,39 +13,26 @@ from _cffi_src.utils import (
 
 
 def _get_openssl_libraries(platform):
+    if os.environ.get("CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS", None):
+        return []
     # OpenSSL goes by a different library name on different operating systems.
-    if platform == "darwin":
-        return _osx_libraries(
-            os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
+    if platform == "win32" and compiler_type() == "msvc":
+        windows_link_legacy_openssl = os.environ.get(
+            "CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL", None
         )
-    elif platform == "win32":
-        windows_link_openssl110 = os.environ.get(
-            "CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110", None
-        )
-        if compiler_type() == "msvc":
-            if windows_link_openssl110 is not None:
-                # Link against the 1.1.0 names
-                libs = ["libssl", "libcrypto"]
-            else:
-                # Link against the 1.0.2 and lower names
-                libs = ["libeay32", "ssleay32"]
+        if windows_link_legacy_openssl is None:
+            # Link against the 1.1.0 names
+            libs = ["libssl", "libcrypto"]
         else:
-            # Support mingw, which behaves unix-like and prefixes "lib"
-            libs = ["ssl", "crypto"]
+            # Link against the 1.0.2 and lower names
+            libs = ["libeay32", "ssleay32"]
         return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
+        # darwin, linux, mingw all use this path
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
         # libssl must come before libcrypto
         # (http://marc.info/?l=openssl-users&m=135361825921871)
-        return ["ssl", "crypto"]
-
-
-def _osx_libraries(build_static):
-    # For building statically we don't want to pass the -lssl or -lcrypto flags
-    if build_static == "1":
-        return []
-    else:
         return ["ssl", "crypto"]
 
 
