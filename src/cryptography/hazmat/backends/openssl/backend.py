@@ -1081,8 +1081,8 @@ class Backend(object):
                 if dh_cdata != self._ffi.NULL:
                     dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
                     return _DHParameters(self, dh_cdata)
-            else:
-                self._handle_key_loading_error()
+
+            self._handle_key_loading_error()
 
     def load_pem_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)
