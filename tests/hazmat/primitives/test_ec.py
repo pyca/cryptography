@@ -277,6 +277,15 @@ def test_ec_private_numbers_hash():
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_ec_key_key_size(backend):
+    curve = ec.SECP256R1()
+    _skip_curve_unsupported(backend, curve)
+    key = ec.generate_private_key(curve, backend)
+    assert key.key_size == 256
+    assert key.public_key().key_size == 256
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     @pytest.mark.parametrize(
         ("vector", "hash_type"),

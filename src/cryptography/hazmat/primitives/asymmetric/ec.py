@@ -22,7 +22,7 @@ class EllipticCurve(object):
     @abc.abstractproperty
     def key_size(self):
         """
-        The bit length of the base point of the curve.
+        Bit size of a secret scalar for the curve.
         """
 
 
@@ -63,6 +63,12 @@ class EllipticCurvePrivateKey(object):
         """
 
     @abc.abstractproperty
+    def key_size(self):
+        """
+        Bit size of a secret scalar for the curve.
+        """
+
+    @abc.abstractproperty
     def sign(self, data, signature_algorithm):
         """
         Signs the data
@@ -96,6 +102,12 @@ class EllipticCurvePublicKey(object):
     def curve(self):
         """
         The EllipticCurve that this key is on.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        Bit size of a secret scalar for the curve.
         """
 
     @abc.abstractmethod

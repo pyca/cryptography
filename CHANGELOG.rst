@@ -21,6 +21,12 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
 * Fixed an issue preventing ``cryptography`` from compiling against
   LibreSSL 2.5.x.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.key_size`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.key_size`
+  as convenience methods for determining the bit size of a secret scalar for
+  the curve.
 * Accessing an unrecognized extension marked critical on an X.509 object will
   no longer raise an ``UnsupportedExtension`` exception, instead an
   :class:`~cryptography.x509.UnrecognizedExtension` object will be returned.
