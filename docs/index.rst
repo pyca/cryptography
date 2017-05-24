@@ -1,5 +1,5 @@
-Welcome to ``cryptography``
-===========================
+Welcome to ``pyca/cryptography``
+================================
 
 ``cryptography`` includes both high level recipes, and low level interfaces to
 common cryptographic algorithms such as symmetric ciphers, message digests and
