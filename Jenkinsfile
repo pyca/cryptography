@@ -223,7 +223,6 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                         bat """
                             cd cryptography
                             @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
-                            @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
                             @set PYTHON="${pythonPath[toxenv]}"
 
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
@@ -243,7 +242,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 export PATH="/usr/local/bin:\${PATH}"
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 cd cryptography
-                                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 \
+                                CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
                                     CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" \
                                     tox -r --  --color=yes
