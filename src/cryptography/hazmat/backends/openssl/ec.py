@@ -135,6 +135,10 @@ class _EllipticCurvePrivateKey(object):
 
     curve = utils.read_only_property("_curve")
 
+    @property
+    def key_size(self):
+        return self.curve.key_size
+
     def signer(self, signature_algorithm):
         _check_signature_algorithm(signature_algorithm)
         return _ECDSASignatureContext(
@@ -230,6 +234,10 @@ class _EllipticCurvePublicKey(object):
         self._curve = _sn_to_elliptic_curve(backend, sn)
 
     curve = utils.read_only_property("_curve")
+
+    @property
+    def key_size(self):
+        return self.curve.key_size
 
     def verifier(self, signature, signature_algorithm):
         if not isinstance(signature, bytes):
