@@ -126,13 +126,9 @@ class _CipherContext(object):
         buf = self._backend._ffi.cast(
             "unsigned char *", self._backend._ffi.from_buffer(buf)
         )
-        data_len = len(data)
-        data = self._backend._ffi.cast(
-            "unsigned char *", self._backend._ffi.from_buffer(data)
-        )
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen,
-                                                  data, data_len)
+                                                  data, len(data))
         self._backend.openssl_assert(res != 0)
         return outlen[0]
 
