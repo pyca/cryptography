@@ -318,7 +318,6 @@ class TestAESModeGCM(object):
         encryptor.finalize()
 
         if (
-            backend.name == "openssl" and
             backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
             not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         ):
@@ -375,7 +374,6 @@ class TestAESModeGCM(object):
         tag = encryptor.tag
 
         if (
-            backend.name == "openssl" and
             backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
             not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         ):
@@ -399,7 +397,6 @@ class TestAESModeGCM(object):
         decryptor.authenticate_additional_data(aad)
 
         if (
-            backend.name == "openssl" and
             backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
             not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         ):
