@@ -88,7 +88,7 @@ Changelog
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Added support for Diffie-Hellman key exchange using
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.exchange`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.exchange`.
 * The OS random engine for OpenSSL has been rewritten to improve compatibility
   with embedded Python and other edge cases. More information about this change
   can be found in the
