@@ -29,8 +29,7 @@ derivation function.
 DHE (or EDH), the ephemeral form of this exchange, is **strongly
 preferred** over simple DH and provides `forward secrecy`_ when used.
 You must generate a new private key using :func:`~DHParameters.generate_private_key` for
-each :meth:`~DHPrivateKeyWithSerialization.exchange` when performing an DHE key
-exchange.
+each :meth:`~DHPrivateKey.exchange` when performing an DHE key exchange.
 
 To assemble a :class:`~DHParameters` and a :class:`~DHPublicKey` from
 primitive integers, you must first create the
@@ -123,27 +122,28 @@ Key interfaces
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
+    .. method:: exchange(peer_public_key)
+
+        .. versionadded:: 1.7
+
+        :param DHPublicKeyWithSerialization peer_public_key: The public key for
+            the peer.
+
+        :return bytes: The agreed key. The bytes are ordered in 'big' endian.
+
 
 .. class:: DHPrivateKeyWithSerialization
 
     .. versionadded:: 0.9
 
-    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+    Inherits from
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
     .. method:: private_numbers()
 
         Return the numbers that make up this private key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
-
-    .. method:: exchange(peer_public_key)
-
-        .. versionadded:: 1.7
-
-        :param DHPublicKeyWithSerialization peer_public_key: The public key for the
-            peer.
-
-        :return bytes: The agreed key. The bytes are ordered in 'big' endian.
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
