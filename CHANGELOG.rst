@@ -13,6 +13,7 @@ Changelog
   has always been to check whether or not
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
+* **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.3.
 * Python 3.3 support has been deprecated, and will be removed in the
   ``cryptography`` release.
 * Add support for providing ``tag`` during
