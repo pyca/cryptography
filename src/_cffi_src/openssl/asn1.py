@@ -77,8 +77,6 @@ int ASN1_INTEGER_set(ASN1_INTEGER *, long);
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
 void ASN1_TIME_free(ASN1_TIME *);
-ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
-                                                   ASN1_GENERALIZEDTIME **);
 ASN1_TIME *ASN1_TIME_set(ASN1_TIME *, time_t);
 int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
@@ -112,6 +110,10 @@ int ASN1_STRING_type(ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
 long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
 int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
+
+/* This became const ASN1_TIME in 1.1.0f */
+ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
+                                                   ASN1_GENERALIZEDTIME **);
 
 ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
