@@ -8,6 +8,12 @@ cache:
         - $HOME/.cache/pip
         - $HOME/ossl-1/
 
+# Only build master and the version branches (e.g. 1.7.x)
+branches:
+    only:
+        - master
+        - /\d+\.\d+\.+x/
+
 matrix:
     include:
         # these are just to make travis's UI a bit prettier
@@ -104,8 +110,3 @@ notifications:
             - secure: "A93qvTOlwlMK5WoEvZQ5jQ8Z4Hd0JpeO53WYt8iIJ3s/L6AubkfiN7gwhThRtPnPx7DVMenoKRMlcRg76/ICvXEViVnGgXFjsypF0CzVcIay9pPdjpZjZHP735yLfX512RtxYEdEGwi5r25Z2CEFaydhhxNwfuMxGBtLUjusix4="
         use_notice: true
         skip_join: true
-
-branches:
-    only:
-        - master
-        - /\d+\.\d+\.+x/
