@@ -1,6 +1,5 @@
 wmic qfe
 @set PATH="C:\Python27";"C:\Python27\Scripts";%PATH%
-@set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
 SET
 if "%TOXENV%" == "py26" (
     @set PYTHON="C:\Python26\python.exe"
