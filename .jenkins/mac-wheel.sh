@@ -64,7 +64,7 @@ virtualenv .venv -p $PYTHON
 source .venv/bin/activate
 # upgrade wheel to latest before we use it to build the wheel
 pip install -U wheel
-CRYPTOGRAPHY_OSX_NO_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl@1.1/include" pip wheel cryptography --wheel-dir=wheelhouse --no-use-wheel
+CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl@1.1/include" pip wheel cryptography --wheel-dir=wheelhouse --no-use-wheel
 pip install -f wheelhouse cryptography --no-index
 python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 otool -L `find .venv -name '_openssl*.so'`
