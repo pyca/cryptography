@@ -26,9 +26,9 @@ matrix:
         - env: TOXENV=pypy PYPY_VERSION=5.3
         - env: TOXENV=pypy PYPY_VERSION=5.7.1
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0e
+          env: TOXENV=py27 OPENSSL=1.1.0f
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0e
+          env: TOXENV=py35 OPENSSL=1.1.0f
         - python: 2.7
           env: TOXENV=docs
           addons:
