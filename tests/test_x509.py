@@ -1462,7 +1462,13 @@ class TestRSACertificateRequest(object):
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
         assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
-        if backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if (
+            # This only works correctly in OpenSSL 1.1.0f+ and 1.0.2l+
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER or (
+                backend._lib.CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER and
+                not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+            )
+        ):
             assert parsed.subject.chosen[1][0]['value'].chosen.tag == 19
             assert parsed.issuer.chosen[1][0]['value'].chosen.tag == 19
 
