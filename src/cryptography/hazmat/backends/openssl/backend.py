@@ -810,7 +810,7 @@ class Backend(object):
         self.openssl_assert(
             errors[0]._lib_reason_match(
                 self._lib.ERR_LIB_ASN1,
-                self._lib.ASN1_R_ERROR_GETTING_TIMER
+                self._lib.ASN1_R_ERROR_GETTING_TIME
             )
         )
         raise ValueError(
@@ -1192,8 +1192,6 @@ class Backend(object):
 
         elif errors[0]._lib_reason_match(
             self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
         ) or errors[0]._lib_reason_match(
             self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
         ):
