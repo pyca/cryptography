@@ -8,6 +8,14 @@ cache:
         - $HOME/.cache/pip
         - $HOME/ossl-1/
 
+# Only build master, the version branches (e.g. 1.7.x), and
+# version tags (which are apparently considered branches by travis)
+branches:
+    only:
+        - master
+        - /\d+\.\d+\.x/
+        - /\d+\.\d+(\.\d+)?/
+
 matrix:
     include:
         # these are just to make travis's UI a bit prettier
