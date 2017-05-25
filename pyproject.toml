@@ -1,0 +1,6 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "cffi >= 1.4.1; platform_python_implementation != 'PyPy'",
+]
