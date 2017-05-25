@@ -12,11 +12,20 @@ from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
-_OpenSSLError = collections.namedtuple("_OpenSSLError",
-                                       ["code", "lib", "func", "reason"])
 _OpenSSLErrorWithText = collections.namedtuple(
     "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
 )
+
+
+class _OpenSSLError(object):
+    def __init__(self, code, lib, func, reason):
+        self.code = code
+        self.lib = lib
+        self.func = func
+        self.reason = reason
+
+    def _lib_reason_match(self, lib, reason):
+        return lib == self.lib and reason == self.reason
 
 
 def _consume_errors(lib):

@@ -160,13 +160,11 @@ class _CipherContext(object):
                 raise InvalidTag
 
             self._backend.openssl_assert(
-                errors[0][1:] == (
+                errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
-                    self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-                ) or errors[0][1:] == (
+                ) or errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
-                    self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
                 )
             )
