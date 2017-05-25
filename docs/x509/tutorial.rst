@@ -153,8 +153,8 @@ Then we generate the certificate itself:
 And now we have a private key and certificate that can be used for local
 testing.
 
-Determining Certificate/CSR Key Type
-------------------------------------
+Determining Certificate or Certificate Signing Request Key Type
+---------------------------------------------------------------
 
 Certificates and certificate signing requests can be issued with multiple
 key types. You can determine what the key type is by using ``isinstance``
