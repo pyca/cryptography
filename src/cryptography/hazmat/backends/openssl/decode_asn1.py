@@ -607,12 +607,6 @@ def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
     scts = []
     for i in range(backend._lib.sk_SCT_num(asn1_scts)):
         sct = backend._lib.sk_SCT_value(asn1_scts, i)
-        # Needed until https://github.com/openssl/openssl/pull/3149 is merged
-        # and in every version of OpenSSL we care about.
-        res = backend._lib.SCT_set_source(
-            sct, backend._lib.SCT_SOURCE_X509V3_EXTENSION
-        )
-        assert res == 1
 
         scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
     return x509.PrecertificateSignedCertificateTimestamps(scts)
