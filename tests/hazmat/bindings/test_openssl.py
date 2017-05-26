@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorWithText, _consume_errors, _openssl_assert
+    Binding, _consume_errors, _openssl_assert
 )
 
 
@@ -99,7 +99,7 @@ class TestOpenSSL(object):
         assert error.lib == b.lib.ERR_LIB_EVP
         assert error.func == b.lib.EVP_F_EVP_ENCRYPTFINAL_EX
         assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-        assert len(error.reason_text) > 0
+        assert b"data not multiple of block length" in error.reason_text
 
     def test_check_startup_errors_are_allowed(self):
         b = Binding()
