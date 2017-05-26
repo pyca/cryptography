@@ -14,7 +14,6 @@ Changelog
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
 * **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.3.
-* Updated Windows and macOS wheels to be compiled against OpenSSL 1.1.0f.
 * Python 3.3 support has been deprecated, and will be removed in the next
   ``cryptography`` release.
 * Add support for providing ``tag`` during
@@ -37,6 +36,11 @@ Changelog
 * MultiBackend has been removed.
 * ``Whirlpool`` and ``RIPEMD160`` have been deprecated.
 
+1.8.2 - 2017-05-26
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a compilation bug affecting OpenSSL 1.1.0f.
+* Updated Windows and macOS wheels to be compiled against OpenSSL 1.1.0f.
 
 1.8.1 - 2017-03-10
 ~~~~~~~~~~~~~~~~~~
