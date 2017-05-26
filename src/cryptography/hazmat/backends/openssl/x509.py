@@ -473,7 +473,6 @@ class _SignedCertificateTimestamp(object):
         entry_type = self._backend._lib.SCT_get_log_entry_type(self._sct)
         if entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_X509:
             return x509.certificate_transparency.LogEntryType.X509_CERTIFICATE
-        elif entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT:
-            return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         else:
-            raise WTF
+            assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
+            return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
