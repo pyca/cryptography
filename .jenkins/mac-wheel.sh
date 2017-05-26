@@ -9,7 +9,6 @@ export PATH=/usr/local/bin:$PATH
 # pyenv is nothing but trouble with non-interactive shells so we can't
 # eval "$(pyenv init -)"
 export PATH="/Users/jenkins/.pyenv/shims:${PATH}"
-export PYENV_SHELL=bash
 
 # TODO: upgrade wheel builder VM and run it on El Cap with python.org Pythons.
 if [[ "${label}" == "10.10" ]]; then
