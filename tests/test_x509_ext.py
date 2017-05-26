@@ -409,6 +409,7 @@ class TestPolicyInformation(object):
         assert pi != object()
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificatePolicies(object):
     def test_invalid_policies(self):
         pq = [u"string"]
@@ -480,6 +481,26 @@ class TestCertificatePolicies(object):
         cp = x509.CertificatePolicies([pi, pi2, pi3, pi4, pi5])
         assert cp[-1] == cp[4]
         assert cp[2:6:2] == [cp[2], cp[4]]
+
+    def test_long_oid(self, backend):
+        """
+        Test that parsing a CertificatePolicies ext with
+        a very long OID succeeds.
+        """
+        cert = _load_cert(
+            os.path.join("x509", "bigoid.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.CertificatePolicies)
+
+        oid = x509.ObjectIdentifier(
+            "1.3.6.1.4.1.311.21.8.8950086.10656446.2706058"
+            ".12775672.480128.147.13466065.13029902"
+        )
+
+        assert ext.value[0].policy_identifier == oid
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

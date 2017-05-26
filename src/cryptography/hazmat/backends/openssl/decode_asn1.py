@@ -24,9 +24,23 @@ from cryptography.x509.oid import (
 def _obj2txt(backend, obj):
     # Set to 80 on the recommendation of
     # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
+    #
+    # But OIDs longer than this occur in real life (e.g. Active
+    # Directory makes some very long OIDs).  So we need to detect
+    # and properly handle the case where the default buffer is not
+    # big enough.
+    #
     buf_len = 80
     buf = backend._ffi.new("char[]", buf_len)
+
+    # 'res' is the number of bytes that *would* be written if the
+    # buffer is large enough.  If 'res' > buf_len - 1, we need to
+    # alloc a big-enough buffer and go again.
     res = backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
+    if res > buf_len - 1:  # account for terminating null byte
+        buf_len = res + 1
+        buf = backend._ffi.new("char[]", buf_len)
+        res = backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
     backend.openssl_assert(res > 0)
     return backend._ffi.buffer(buf, res)[:].decode()
 
