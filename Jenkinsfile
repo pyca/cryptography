@@ -83,8 +83,8 @@ def configs = [
 ]
 
 /* Add the linkcheck job to our config list if we're on master */
-if (env.BRANCH_NAME == "master") {
-    configs.add(
+if (env.BRANCH_NAME == "master" || true) {
+    configs.push(
         [
             label: 'docker',
             imageName: 'pyca/cryptography-runner-ubuntu-rolling',
