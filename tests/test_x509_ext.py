@@ -3670,7 +3670,7 @@ class TestInhibitAnyPolicyExtension(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_simple(self, backend):
-        if not b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             pytest.skip("Requires 1.1.0")
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
