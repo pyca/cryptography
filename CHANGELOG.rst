@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.8.2 - 2017-05-26
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a compilation bug affecting OpenSSL 1.1.0f.
+* Updated Windows and macOS wheels to be compiled against OpenSSL 1.1.0f.
+
 1.8.1 - 2017-03-10
 ~~~~~~~~~~~~~~~~~~
 
