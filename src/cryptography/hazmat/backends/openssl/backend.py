@@ -91,7 +91,7 @@ class Backend(object):
         self._lib = self._binding.lib
 
         # Set the default string mask for encoding ASN1 strings to UTF8. This
-        # is the default for newer OpenSSLs for several years and is
+        # is the default for newer OpenSSLs for several years (1.0.1h+) and is
         # recommended in RFC 2459.
         res = self._lib.ASN1_STRING_set_default_mask_asc(b"utf8only")
         self.openssl_assert(res == 1)
