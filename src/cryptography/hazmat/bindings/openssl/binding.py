@@ -8,6 +8,7 @@ import collections
 import threading
 import types
 
+from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -19,13 +20,18 @@ _OpenSSLErrorWithText = collections.namedtuple(
 
 class _OpenSSLError(object):
     def __init__(self, code, lib, func, reason):
-        self.code = code
-        self.lib = lib
-        self.func = func
-        self.reason = reason
+        self._code = code
+        self._lib = lib
+        self._func = func
+        self._reason = reason
 
     def _lib_reason_match(self, lib, reason):
         return lib == self.lib and reason == self.reason
+
+    code = utils.read_only_property("_code")
+    lib = utils.read_only_property("_lib")
+    func = utils.read_only_property("_func")
+    reason = utils.read_only_property("_reason")
 
 
 def _consume_errors(lib):

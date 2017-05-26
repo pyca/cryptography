@@ -1182,18 +1182,22 @@ class Backend(object):
         if not errors:
             raise ValueError("Could not deserialize key data.")
 
-        elif errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_PKCS12,
-            self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
+            ) or errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_PKCS12,
+                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR
+            )
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 
-        elif errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+            ) or errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+            )
         ):
             raise UnsupportedAlgorithm(
                 "PEM data is encrypted with an unsupported cipher",
