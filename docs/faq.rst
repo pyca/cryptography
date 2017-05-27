@@ -22,16 +22,16 @@ other libraries in Python such as *M2Crypto*, *PyCrypto*, or *PyOpenSSL*. In
 building ``cryptography`` we wanted to address a few issues we observed in the
 legacy libraries:
 
-* Lack of PyPy and Python 3 support.
-* Lack of maintenance.
+* Extremely error prone APIs and insecure defaults.
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
   attacks).
+* Lack of maintenance.
 * Lack of high level APIs.
+* Lack of PyPy and Python 3 support.
+* Poor introspectability and thus poor testability.
 * Absence of algorithms such as
   :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
-* Poor introspectability and thus poor testability.
-* Extremely error prone APIs and bad defaults.
 
 Compiling ``cryptography`` on macOS produces a ``fatal error: 'openssl/aes.h' file not found`` error
 ----------------------------------------------------------------------------------------------------
