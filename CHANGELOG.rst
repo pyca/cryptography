@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Python 2.6 support is deprecated, and support will be removed in the next
+  release of ``cryptography``.
 * **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
   returns ``True`` on success. This brings it in line with the interface's
   documentation, and our intent. The correct way to use
