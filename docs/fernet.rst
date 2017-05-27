@@ -163,6 +163,13 @@ Specifically it uses:
 
 For complete details consult the `specification`_.
 
+Limitations
+-----------
+
+Fernet is ideal for encrypting data that easily fits in memory. As a design
+feature it does not expose unauthenticated bytes. Unfortunately, this makes it
+generally unsuitable for very large files at this time.
+
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
