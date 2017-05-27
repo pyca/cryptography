@@ -6,7 +6,7 @@ Diffie-Hellman key exchange
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.dh
 
 .. note::
-    We suggest using
+    For security and performance reasons we suggest using
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` instead of DH
     where possible.
 
