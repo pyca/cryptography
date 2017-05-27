@@ -6,7 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
+* **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no longer
   returns ``True`` on success. This brings it in line with the interface's
   documentation, and our intent. The correct way to use
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
