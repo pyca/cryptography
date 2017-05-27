@@ -4,7 +4,8 @@ Random number generation
 When generating random data for use in cryptographic operations, such as an
 initialization vector for encryption in
 :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode, you do not
-want to use the standard :mod:`random` module APIs. This is because they do not
+want to use the standard :mod:`random` module APIs unless it is initialized
+with ``random.SystemRandom()``. This is because they do not
 provide a cryptographically secure random number generator, which can result in
 major security issues depending on the algorithms in use.
 
@@ -23,10 +24,11 @@ Windows.
 
 If you need your random number as an integer (for example, for
 :meth:`~cryptography.x509.CertificateBuilder.serial_number`), you can use
-``int.from_bytes`` to convert the result of ``os.urandom``:
+``getrandbits()`` from ``random.SystemRandom()``.
 
 .. code-block:: pycon
 
-    >>> serial = int.from_bytes(os.urandom(20), byteorder="big")
+    >>> r = random.SystemRandom()
+    >>> serial = r.getrandbits(160)
 
 .. _`always use your operating system's provided random number generator`: https://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
