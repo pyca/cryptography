@@ -177,3 +177,8 @@ epub_theme = 'epub'
 # Retry requests in the linkcheck builder so that we're resillient against
 # transient network errors.
 linkcheck_retries = 2
+
+linkcheck_ignore = [
+    # Certificate is issued by a Japanese CA that isn't publicly trusted
+    "https://www.cryptrec.go.jp",
+]
