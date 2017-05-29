@@ -539,7 +539,7 @@ Changelog
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
 * :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
-  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.kdf`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509/index>` for more information.
@@ -593,33 +593,33 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 * :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.hashes`.
 * :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.AEADCipherContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.AEADEncryptionContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`, and
   :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.ciphers`.
 * :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithAuthenticationTag`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
 * :class:`~cryptography.hazmat.primitives.padding.PaddingContext` was moved
-  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.padding`.
 *
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-  was moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  was moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
 *
   :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
@@ -627,7 +627,7 @@ Changelog
   ``DSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
   ``DSAPublicKeyWithNumbers`` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
 * :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
@@ -635,13 +635,13 @@ Changelog
   ``EllipticCurvePrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
   and ``EllipticCurvePublicKeyWithNumbers``
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   ``RSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
   ``RSAPublicKeyWithNumbers`` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 
 0.7.2 - 2015-01-16
@@ -669,7 +669,7 @@ Changelog
   :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
-* Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
+* Added :class:`~cryptography.hazmat.primitives.mac.MACContext` as a
   common interface for CMAC and HMAC and deprecated ``CMACContext``.
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.
