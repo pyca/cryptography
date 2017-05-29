@@ -331,9 +331,9 @@ class Backend(object):
             return bn_ptr
 
         else:
-            # Under Python 2 the best we can do is hex()
-
-            hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
+            # Under Python 2 the best we can do is hex(), [2:] removes the 0x
+            # prefix.
+            hex_num = hex(num).rstrip("L")[2:].encode("ascii")
             bn_ptr = self._ffi.new("BIGNUM **")
             bn_ptr[0] = bn
             res = self._lib.BN_hex2bn(bn_ptr, hex_num)
