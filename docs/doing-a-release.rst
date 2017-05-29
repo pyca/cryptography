@@ -19,8 +19,7 @@ to the Windows builders and unzip them in the root of the file system.
 Upgrading macOS
 ~~~~~~~~~~~~~~~
 
-``brew update`` and then ``brew upgrade openssl@1.1 --build-bottle`` to
-install a 64-bit only library compatible with all Intel Macs.
+Run the ``update-brew-openssl`` Jenkins job.
 
 Bumping the version number
 --------------------------
