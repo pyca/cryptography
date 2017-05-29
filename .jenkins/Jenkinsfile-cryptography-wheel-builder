@@ -75,6 +75,10 @@ def build(version, label) {
                 ansiColor {
                     sh """#!/usr/bin/env bash
                         set -xe
+                        # output the list of things we've installed as a point in time check of how up
+                        # to date the builder is
+                        /usr/sbin/system_profiler SPInstallHistoryDataType
+
                         # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
                         export PATH="/usr/local/bin:\${PATH}"
                         export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
