@@ -14,5 +14,4 @@ Primitives
     keywrap
     asymmetric/index
     constant-time
-    interfaces
     twofactor
