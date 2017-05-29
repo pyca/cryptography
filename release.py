@@ -19,7 +19,7 @@ import requests
 
 JENKINS_URL = (
     "https://ci.cryptography.io/job/cryptography-support-jobs/"
-    "job/wheel-builder/"
+    "job/wheel-builder"
 )
 
 
