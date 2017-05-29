@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.9 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.9 - 2017-05-29
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no longer
   returns ``True`` on success. This brings it in line with the interface's
