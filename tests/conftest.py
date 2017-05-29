@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
-from .utils import check_backend_support, skip_if_empty
+from .utils import check_backend_support
 
 
 def pytest_report_header(config):
@@ -17,21 +17,20 @@ def pytest_report_header(config):
 
 def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
-        filtered_backends = []
         required_interfaces = [
             mark.kwargs["interface"]
             for mark in metafunc.function.requires_backend_interface
         ]
-        if all(
+        if not all(
             isinstance(openssl_backend, iface) for iface in required_interfaces
         ):
-            filtered_backends.append(openssl_backend)
+            pytest.skip(
+                "Backends doesn't provide the interfaces: {0}".format(
+                    ", ".join(iface.__name__ for iface in required_interfaces)
+                )
+            )
 
-        # If you pass an empty list to parametrize Bad Things(tm) happen
-        # as of pytest 2.6.4 when the test also has a parametrize decorator
-        skip_if_empty(filtered_backends, required_interfaces)
-
-        metafunc.parametrize("backend", filtered_backends)
+        metafunc.parametrize("backend", [openssl_backend])
 
 
 @pytest.mark.trylast
