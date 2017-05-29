@@ -1,0 +1,127 @@
+def configs = [
+    [
+        label: 'windows',
+        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'windows64',
+        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ],
+    [
+        label: 'sierra',
+        versions: ['py26', 'py27', 'py34', 'py35', 'py36'],
+    ],
+]
+
+
+def build(version, label) {
+    try {
+        timeout(time: 30, unit: 'MINUTES') {
+            if (label.contains("windows")) {
+                def pythonPath = [
+                    py26: "C:\\Python26\\python.exe",
+                    py27: "C:\\Python27\\python.exe",
+                    py33: "C:\\Python33\\python.exe",
+                    py34: "C:\\Python34\\python.exe",
+                    py35: "C:\\Python35\\python.exe",
+                    py36: "C:\\Python36\\python.exe"
+                ]
+                if (version == "py35" || version == "py36") {
+                    opensslPaths = [
+                        "windows": [
+                            "include": "C:\\OpenSSL-Win32-2015\\include",
+                            "lib": "C:\\OpenSSL-Win32-2015\\lib"
+                        ],
+                        "windows64": [
+                            "include": "C:\\OpenSSL-Win64-2015\\include",
+                            "lib": "C:\\OpenSSL-Win64-2015\\lib"
+                        ]
+                    ]
+                } else {
+                    opensslPaths = [
+                        "windows": [
+                            "include": "C:\\OpenSSL-Win32-2010\\include",
+                            "lib": "C:\\OpenSSL-Win32-2010\\lib"
+                        ],
+                        "windows64": [
+                            "include": "C:\\OpenSSL-Win64-2010\\include",
+                            "lib": "C:\\OpenSSL-Win64-2010\\lib"
+                        ]
+                    ]
+                }
+                bat """
+                    wmic qfe
+                    @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
+                    @set PYTHON="${pythonPath[version]}"
+
+                    @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
+                    @set LIB="${opensslPaths[label]['lib']}";%LIB%
+                    virtualenv -p %PYTHON% .release
+                    call .release\\Scripts\\activate
+                    pip install wheel virtualenv
+                    pip wheel cryptography --wheel-dir=wheelhouse --no-binary cryptography
+                    pip install -f wheelhouse cryptography --no-index
+                    python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+                """
+            } else if (label.contains("sierra")) {
+                def pythonPath = [
+                    py26: "python2.6",
+                    py27: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7",
+                    py34: "/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4",
+                    py35: "/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5",
+                    py36: "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6",
+                ]
+                ansiColor {
+                    sh """#!/usr/bin/env bash
+                        set -xe
+                        # output the list of things we've installed as a point in time check of how up
+                        # to date the builder is
+                        /usr/sbin/system_profiler SPInstallHistoryDataType
+
+                        # Jenkins logs in as a non-interactive shell, so we don't even have /usr/local/bin in PATH
+                        export PATH="/usr/local/bin:\${PATH}"
+                        export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
+
+                        printenv
+
+                        virtualenv .venv -p ${pythonPath[version]}
+                        source .venv/bin/activate
+                        pip install -U wheel # upgrade wheel to latest before we use it to build the wheel
+                        # -mmacosx-version-min=10.9 can be remove when https://github.com/pyca/cryptography/issues/3635 is resolved
+                        CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" pip wheel cryptography --wheel-dir=wheelhouse --no-binary cryptography
+                        pip install -f wheelhouse cryptography --no-index
+                        python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+                        otool -L `find .venv -name '_openssl*.so'`
+                        lipo -info `find .venv -name '*.so'`
+                        otool -L `find .venv -name '_openssl*.so'` | grep -vG "libcrypto\\|libssl"
+                    """
+                }
+            }
+            archiveArtifacts artifacts: "wheelhouse/cryptography*.whl"
+        }
+    } finally {
+        deleteDir()
+    }
+
+}
+
+def builders = [:]
+for (config in configs) {
+    def label = config["label"]
+    def versions = config["versions"]
+
+    for (_version in versions) {
+        def version = _version
+
+        def combinedName = "${label}-${version}"
+        builders[combinedName] = {
+            node(label) {
+                stage(combinedName) {
+                    build(version, label)
+                }
+            }
+        }
+    }
+}
+
+parallel builders
