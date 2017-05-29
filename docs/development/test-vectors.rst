@@ -156,6 +156,9 @@ X.509
   RSA with SHA1.
 * ``badssl-sct.pem`` - A certificate with the certificate transparency signed
   certificate timestamp extension.
+* ``bigoid.pem`` - A certificate with a rather long OID in the
+  Certificate Policies extension.  We need to make sure we can parse
+  long OIDs.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
