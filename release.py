@@ -17,7 +17,10 @@ from clint.textui.progress import Bar as ProgressBar
 import requests
 
 
-JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
+JENKINS_URL = (
+    "https://ci.cryptography.io/job/cryptography-support-jobs/"
+    "job/wheel-builder"
+)
 
 
 def run(*args, **kwargs):
@@ -128,14 +131,11 @@ def release(version):
     )
     response.raise_for_status()
 
-    username = getpass.getpass("Input the GitHub/Jenkins username: ")
     token = getpass.getpass("Input the Jenkins token: ")
-    response = session.post(
+    response = session.get(
         "{0}/build".format(JENKINS_URL),
-        auth=requests.auth.HTTPBasicAuth(
-            username, token
-        ),
         params={
+            "token": token,
             "cause": "Building wheels for {0}".format(version)
         }
     )
