@@ -219,7 +219,6 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    long n;
     int len, res;
 
     switch(getentropy_works) {
