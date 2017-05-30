@@ -80,49 +80,6 @@ static const char *osurandom_get_implementation(void) {
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM */
 
 /****************************************************************************
- * BSD getentropy
- */
-#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
-static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
-
-static int osrandom_init(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    int len, res;
-    while (size > 0) {
-        /* OpenBSD and macOS restrict maximum buffer size to 256. */
-        len = size > 256 ? 256 : size;
-        res = getentropy(buffer, len);
-        if (res < 0) {
-            ERR_Cryptography_OSRandom_error(
-                CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
-                CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
-                __FILE__, __LINE__
-            );
-            return 0;
-        }
-        buffer += len;
-        size -= len;
-    }
-    return 1;
-}
-
-static int osrandom_finish(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_status(void) {
-    return 1;
-}
-
-static const char *osurandom_get_implementation(void) {
-    return "getentropy";
-}
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
-
-/****************************************************************************
  * /dev/urandom helpers for all non-BSD Unix platforms
  */
 #ifdef CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM
@@ -235,6 +192,49 @@ static void dev_urandom_close(void) {
     }
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM */
+
+/****************************************************************************
+ * BSD getentropy
+ */
+#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
+static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
+
+static int osrandom_init(ENGINE *e) {
+    return 1;
+}
+
+static int osrandom_rand_bytes(unsigned char *buffer, int size) {
+    int len, res;
+    while (size > 0) {
+        /* OpenBSD and macOS restrict maximum buffer size to 256. */
+        len = size > 256 ? 256 : size;
+        res = getentropy(buffer, len);
+        if (res < 0) {
+            ERR_Cryptography_OSRandom_error(
+                CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+                CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
+                __FILE__, __LINE__
+            );
+            return 0;
+        }
+        buffer += len;
+        size -= len;
+    }
+    return 1;
+}
+
+static int osrandom_finish(ENGINE *e) {
+    return 1;
+}
+
+static int osrandom_rand_status(void) {
+    return 1;
+}
+
+static const char *osurandom_get_implementation(void) {
+    return "getentropy";
+}
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
 
 /****************************************************************************
  * Linux getrandom engine with fallback to dev_urandom
