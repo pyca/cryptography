@@ -38,8 +38,8 @@ Layout
 ------
 
 ``cryptography`` is broadly divided into two levels. One with safe
-cryptographic recipes, "cryptography for humans" if you will. These are safe
-and easy to use and don't require developers to make many decisions.
+cryptographic recipes that require little to no configuration choices. These
+are safe and easy to use and don't require developers to make many decisions.
 
 The other level is low-level cryptographic primitives. These are often
 dangerous and can be used incorrectly. They require making decisions and having
