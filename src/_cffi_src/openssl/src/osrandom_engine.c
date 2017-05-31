@@ -199,28 +199,50 @@ static void dev_urandom_close(void) {
 #if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
 
+static int getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_NOT_INIT;
+
 static int osrandom_init(ENGINE *e) {
+#if !defined(__APPLE__)
+    getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+#else
+    if (getentropy != NULL) {
+        getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+    } else {
+        getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
+        int fd = dev_urandom_fd();
+        if (fd < 0) {
+            return 0;
+        }
+    }
+#endif
     return 1;
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     int len, res;
-    while (size > 0) {
-        /* OpenBSD and macOS restrict maximum buffer size to 256. */
-        len = size > 256 ? 256 : size;
-        res = getentropy(buffer, len);
-        if (res < 0) {
-            ERR_Cryptography_OSRandom_error(
-                CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
-                CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
-                __FILE__, __LINE__
-            );
-            return 0;
+
+    switch(getentropy_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
+        return dev_urandom_read(buffer, size);
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
+        while (size > 0) {
+            /* OpenBSD and macOS restrict maximum buffer size to 256. */
+            len = size > 256 ? 256 : size;
+            res = getentropy(buffer, len);
+            if (res < 0) {
+                ERR_Cryptography_OSRandom_error(
+                    CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+                    CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
+                    __FILE__, __LINE__
+                );
+                return 0;
+            }
+            buffer += len;
+            size -= len;
         }
-        buffer += len;
-        size -= len;
+        return 1;
     }
-    return 1;
+    __builtin_unreachable();
 }
 
 static int osrandom_finish(ENGINE *e) {
@@ -232,7 +254,13 @@ static int osrandom_rand_status(void) {
 }
 
 static const char *osurandom_get_implementation(void) {
-    return "getentropy";
+    switch(getentropy_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
+        return "/dev/urandom";
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
+        return "getentropy";
+    }
+    __builtin_unreachable();
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
 
