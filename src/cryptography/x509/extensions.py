@@ -216,7 +216,7 @@ class AuthorityKeyIdentifier(object):
     def __hash__(self):
         return hash((
             self.key_identifier,
-            self.authority_cert_issuer,
+            str(self.authority_cert_issuer),
             self.authority_cert_serial_number
         ))
 
