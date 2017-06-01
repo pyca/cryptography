@@ -99,7 +99,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
+            git clone --depth=1 https://github.com/pyca/pyopenssl
             cd pyopenssl
             virtualenv .venv
             source .venv/bin/activate
@@ -114,7 +114,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/twisted/twisted.git twisted
+            git clone --depth=1 https://github.com/twisted/twisted
             cd twisted
             virtualenv .venv
             source .venv/bin/activate
@@ -129,7 +129,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+            git clone --depth=1 https://github.com/paramiko/paramiko
             cd paramiko
             virtualenv .venv
             source .venv/bin/activate
@@ -145,7 +145,7 @@ def checkout_git(label) {
     def script = ""
     if (env.BRANCH_NAME.startsWith('PR-')) {
         script = """
-        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
+        git clone --depth=1 https://github.com/pyca/cryptography
         cd cryptography
         git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
         git checkout -qf FETCH_HEAD
