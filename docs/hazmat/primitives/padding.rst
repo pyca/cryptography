@@ -1,7 +1,7 @@
 .. hazmat::
 
-Padding
-=======
+Symmetric Padding
+=================
 
 .. module:: cryptography.hazmat.primitives.padding
 

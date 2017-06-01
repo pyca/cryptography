@@ -152,6 +152,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_EVP_PKEY_DHX": [
         "EVP_PKEY_DHX",
+        "Cryptography_d2i_DHxparams_bio",
+        "Cryptography_i2d_DHxparams_bio",
+        "PEM_write_bio_DHxparams",
     ],
     "Cryptography_HAS_MEM_FUNCTIONS": [
         "Cryptography_CRYPTO_set_mem_functions",
@@ -165,5 +168,12 @@ CONDITIONAL_NAMES = {
         "sk_SCT_num",
         "sk_SCT_value",
         "SCT_LIST_free",
+    ],
+    "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": [
+        "X509_STORE_get_get_issuer",
+        "X509_STORE_set_get_issuer",
+    ],
+    "Cryptography_HAS_X25519": [
+        "NID_X25519",
     ],
 }

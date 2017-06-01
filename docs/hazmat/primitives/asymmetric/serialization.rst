@@ -130,6 +130,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -169,6 +170,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -205,6 +207,7 @@ the rest.
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -245,6 +248,7 @@ the rest.
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -329,6 +333,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
 
@@ -352,6 +357,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
     , and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 
@@ -383,10 +389,12 @@ Serialization Encodings
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
     as well as ``public_bytes`` on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 
@@ -419,6 +427,7 @@ Serialization Encryption Types
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
     All other classes in this section represent the available choices for

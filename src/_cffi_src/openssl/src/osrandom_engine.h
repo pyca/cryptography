@@ -13,7 +13,6 @@
 
   #ifdef __APPLE__
     #include <sys/random.h>
-    #include <AvailabilityMacros.h>
   #endif
 
   #ifdef __linux__
@@ -34,11 +33,9 @@
   #if defined(_WIN32)
     /* Windows */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM
-  #elif defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
-    /* macOS 10.12+ */
-    #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
-  #elif defined(BSD) && defined(SYS_getentropy) && !defined(__APPLE__)
-    /* OpenBSD 5.6+ */
+  #elif defined(BSD) && defined(SYS_getentropy)
+    /* OpenBSD 5.6+ & macOS with SYS_getentropy defined, although < 10.12 will fallback
+     * to urandom */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
   #elif defined(__linux__) && defined(SYS_getrandom)
     /* Linux 3.4.17+ */
@@ -51,7 +48,9 @@
 
 /* Fallbacks need /dev/urandom helper functions. */
 #if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM || \
-     CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM
+     CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_DEV_URANDOM || \
+     (CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY && \
+     defined(__APPLE__))
   #define CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM 1
 #endif
 
@@ -60,6 +59,12 @@ enum {
     CRYPTOGRAPHY_OSRANDOM_GETRANDOM_NOT_INIT,
     CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK,
     CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS
+};
+
+enum {
+    CRYPTOGRAPHY_OSRANDOM_GETENTROPY_NOT_INIT,
+    CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK,
+    CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS
 };
 
 /* engine ctrl */

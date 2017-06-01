@@ -14,6 +14,25 @@ to NaCl.
 
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
+Why use ``cryptography``?
+-------------------------
+
+If you've done cryptographic work in Python before you have likely encountered
+other libraries in Python such as *M2Crypto*, *PyCrypto*, or *PyOpenSSL*. In
+building ``cryptography`` we wanted to address a few issues we observed in the
+legacy libraries:
+
+* Extremely error prone APIs and insecure defaults.
+* Use of poor implementations of algorithms (i.e. ones with known side-channel
+  attacks).
+* Lack of maintenance.
+* Lack of high level APIs.
+* Lack of PyPy and Python 3 support.
+* Poor introspectability and thus poor testability.
+* Absence of algorithms such as
+  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
+
 Compiling ``cryptography`` on macOS produces a ``fatal error: 'openssl/aes.h' file not found`` error
 ----------------------------------------------------------------------------------------------------
 

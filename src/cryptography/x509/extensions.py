@@ -52,9 +52,7 @@ class DuplicateExtension(Exception):
 
 
 class UnsupportedExtension(Exception):
-    def __init__(self, msg, oid):
-        super(UnsupportedExtension, self).__init__(msg)
-        self.oid = oid
+    pass
 
 
 class ExtensionNotFound(Exception):

@@ -25,23 +25,6 @@ KeyedHashVector = collections.namedtuple(
 )
 
 
-def select_backends(names, backend_list):
-    if names is None:
-        return backend_list
-    split_names = [x.strip() for x in names.split(',')]
-    selected_backends = []
-    for backend in backend_list:
-        if backend.name in split_names:
-            selected_backends.append(backend)
-
-    if len(selected_backends) > 0:
-        return selected_backends
-    else:
-        raise ValueError(
-            "No backend selected. Tried to select: {0}".format(split_names)
-        )
-
-
 def skip_if_empty(backend_list, required_interfaces):
     if not backend_list:
         pytest.skip(
