@@ -213,6 +213,13 @@ class AuthorityKeyIdentifier(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((
+            self.key_identifier,
+            self.authority_cert_issuer,
+            self.authority_cert_serial_number
+        ))
+
     key_identifier = utils.read_only_property("_key_identifier")
     authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
     authority_cert_serial_number = utils.read_only_property(
