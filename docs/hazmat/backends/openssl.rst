@@ -92,8 +92,9 @@ When importing only the binding it is added to the engine list but
 OS random sources
 -----------------
 
-On macOS and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
-utilizes the `Yarrow`_ algorithm.
+On macOS and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random``. The
+implementation on macOS uses the `Yarrow`_ algorithm. FreeBSD uses the
+`Fortuna`_ algorithm.
 
 On Windows the implementation of ``CryptGenRandom`` depends on which version of
 the operation system you are using. See the `Microsoft documentation`_ for more
@@ -120,5 +121,6 @@ seeded from the same pool as ``/dev/random``.
 
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_private_keys_.28Debian-specific.29
+.. _`Fortuna`: https://en.wikipedia.org/wiki/Fortuna_(PRNG)
 .. _`Yarrow`: https://en.wikipedia.org/wiki/Yarrow_algorithm
 .. _`Microsoft documentation`: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379942(v=vs.85).aspx
