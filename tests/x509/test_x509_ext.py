@@ -1025,6 +1025,9 @@ class TestAuthorityKeyIdentifier(object):
         assert aki != object()
 
     def test_hash(self):
+        dirname = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
+        )
         aki1 = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
         aki2 = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
         aki3 = x509.AuthorityKeyIdentifier(b"digest", None, None)
