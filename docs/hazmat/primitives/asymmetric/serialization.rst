@@ -200,8 +200,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     .. versionadded:: 1.9
 
     Deserialize encryption parameters from PEM encoded data to one of the supported
-    asymmetric encryption parameters types. The PEM encoded data is typically a
-    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
+    asymmetric encryption parameters types.
 
     .. doctest::
 
@@ -319,8 +318,7 @@ the rest.
     .. versionadded:: 1.9
 
     Deserialize encryption parameters from DER encoded data to one of the supported
-    asymmetric encryption parameters types. The DER encoded data is typically a
-    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
+    asymmetric encryption parameters types.
 
     :param bytes data: The DER encoded parameters data.
 
