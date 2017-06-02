@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -121,6 +121,7 @@ class _DSAPrivateKey(object):
     key_size = utils.read_only_property("_key_size")
 
     def signer(self, signature_algorithm):
+        _check_not_prehashed(signature_algorithm)
         return _DSASignatureContext(self._backend, self, signature_algorithm)
 
     def private_numbers(self):
@@ -210,6 +211,7 @@ class _DSAPublicKey(object):
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
 
+        _check_not_prehashed(signature_algorithm)
         return _DSAVerificationContext(
             self._backend, self, signature, signature_algorithm
         )

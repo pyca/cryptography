@@ -9,6 +9,12 @@ Signature Interfaces
 
     .. versionadded:: 0.2
 
+    .. note::
+
+        :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+        is not supported by this context. You must use the ``sign`` method
+        on the private key object.
+
     .. method:: update(data)
 
         :param bytes data: The data you want to sign.
@@ -21,6 +27,12 @@ Signature Interfaces
 .. class:: AsymmetricVerificationContext
 
     .. versionadded:: 0.2
+
+    .. note::
+
+        :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
+        is not supported by this context. You must use the ``verify`` method
+        on the public key object.
 
     .. method:: update(data)
 

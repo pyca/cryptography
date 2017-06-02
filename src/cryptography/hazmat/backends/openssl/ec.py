@@ -9,7 +9,7 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -141,6 +141,7 @@ class _EllipticCurvePrivateKey(object):
 
     def signer(self, signature_algorithm):
         _check_signature_algorithm(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSASignatureContext(
             self._backend, self, signature_algorithm.algorithm
         )
@@ -244,6 +245,7 @@ class _EllipticCurvePublicKey(object):
             raise TypeError("signature must be bytes.")
 
         _check_signature_algorithm(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSAVerificationContext(
             self._backend, self, signature, signature_algorithm.algorithm
         )
