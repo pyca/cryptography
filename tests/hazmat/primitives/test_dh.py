@@ -9,7 +9,7 @@ import os
 import pytest
 
 from cryptography.hazmat.backends.interfaces import (
-    DHBackend, PEMSerializationBackend, DERSerializationBackend)
+    DERSerializationBackend, DHBackend, PEMSerializationBackend)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length, int_from_bytes
