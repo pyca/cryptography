@@ -673,15 +673,16 @@ class TestRSACertificate(object):
         ]
 
     def test_bitstring_subject_name(self, backend):
-        cert = _load_cert(
-            os.path.join(
-                "x509",
-                "gbcs_supplier_ds.pem"
-            ),
-            x509.load_pem_x509_certificate,
-            backend
-        )
-        x500_GUID = cert.subject.get_attributes_for_oid(NameOID.X500_UNIQUE_IDENTIFIER)[0].value
+        with pytest.warns(None): # depending on what tests have run before, there may or may not be a warning
+            cert = _load_cert(
+                os.path.join(
+                    "x509",
+                    "gbcs_supplier_ds.pem"
+                ),
+                x509.load_pem_x509_certificate,
+                backend
+            )
+            x500_GUID = cert.subject.get_attributes_for_oid(NameOID.X500_UNIQUE_IDENTIFIER)[0].value
         expected_bitstring = 0b0111000010110011110101010001111100110000010111110000000000000001
         assert x500_GUID == struct.pack('>Q', expected_bitstring)
 
@@ -3618,11 +3619,16 @@ class TestNameAttribute(object):
             x509.NameAttribute(None, u'value')
 
     def test_init_bad_value(self):
-        with pytest.warns(UserWarning):
-            x509.NameAttribute(
-                x509.ObjectIdentifier('2.999.1'),
-                b'bytes'
-            )
+        if sys.version_info < (3,4):
+            # Apparently, pytest doesn't capture UserWarning for Python 3.3 or older.
+            # Maybe because repeated warnings are suppressed?
+            pytest.skip("Python < 3.4")
+        else:
+            with pytest.warns(UserWarning):
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.1'),
+                    b'bytes'
+                )
 
     def test_init_bad_country_code_value(self):
         with pytest.raises(ValueError):
