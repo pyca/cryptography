@@ -1069,20 +1069,19 @@ class Backend(object):
         if dh_cdata != self._ffi.NULL:
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHParameters(self, dh_cdata)
-        else:
-            if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
-                # We check to see if the is dhx.
-                self._consume_errors()
-                res = self._lib.BIO_reset(mem_bio.bio)
-                self.openssl_assert(res == 1)
-                dh_cdata = self._lib.Cryptography_d2i_DHxparams_bio(
-                    mem_bio.bio, self._ffi.NULL
-                )
-                if dh_cdata != self._ffi.NULL:
-                    dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-                    return _DHParameters(self, dh_cdata)
+        elif self._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            # We check to see if the is dhx.
+            self._consume_errors()
+            res = self._lib.BIO_reset(mem_bio.bio)
+            self.openssl_assert(res == 1)
+            dh_cdata = self._lib.Cryptography_d2i_DHxparams_bio(
+                mem_bio.bio, self._ffi.NULL
+            )
+            if dh_cdata != self._ffi.NULL:
+                dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+                return _DHParameters(self, dh_cdata)
 
-            self._handle_key_loading_error()
+        self._handle_key_loading_error()
 
     def load_pem_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)

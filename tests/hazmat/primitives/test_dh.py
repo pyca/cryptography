@@ -9,7 +9,7 @@ import os
 import pytest
 
 from cryptography.hazmat.backends.interfaces import (
-    DHBackend, PEMSerializationBackend)
+    DHBackend, PEMSerializationBackend, DERSerializationBackend)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length, int_from_bytes
@@ -671,6 +671,7 @@ class TestDHPublicKeySerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHParameterSerialization(object):
 
     @pytest.mark.parametrize(
@@ -697,7 +698,7 @@ class TestDHParameterSerialization(object):
         assert loaded_param_num == parameters.parameter_numbers()
 
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "encoding", "is_dhx"),
+        ("param_path", "loader_func", "encoding", "is_dhx"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
@@ -722,22 +723,22 @@ class TestDHParameterSerialization(object):
             )
         ]
     )
-    def test_parameter_bytes_match(self, key_path, loader_func,
+    def test_parameter_bytes_match(self, param_path, loader_func,
                                    encoding, backend, is_dhx):
         _skip_dhx_unsupported(backend, is_dhx)
-        key_bytes = load_vectors_from_file(
-            key_path,
+        param_bytes = load_vectors_from_file(
+            param_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        parameters = loader_func(key_bytes, backend)
+        parameters = loader_func(param_bytes, backend)
         serialized = parameters.parameter_bytes(
             encoding,
             serialization.ParameterFormat.ASN1,
         )
-        assert serialized == key_bytes
+        assert serialized == param_bytes
 
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "vec_path", "is_dhx"),
+        ("param_path", "loader_func", "vec_path", "is_dhx"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
@@ -762,11 +763,11 @@ class TestDHParameterSerialization(object):
             )
         ]
     )
-    def test_public_bytes_values(self, key_path, loader_func,
+    def test_public_bytes_values(self, param_path, loader_func,
                                  vec_path, backend, is_dhx):
         _skip_dhx_unsupported(backend, is_dhx)
         key_bytes = load_vectors_from_file(
-            key_path,
+            param_path,
             lambda pemfile: pemfile.read(), mode="rb"
         )
         vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
