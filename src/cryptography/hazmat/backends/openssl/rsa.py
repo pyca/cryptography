@@ -11,12 +11,11 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed
 )
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, rsa,
-    utils as asym_utils
+    AsymmetricSignatureContext, AsymmetricVerificationContext, rsa
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS, calculate_max_pss_salt_length
@@ -24,14 +23,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKeyWithSerialization, RSAPublicKeyWithSerialization
 )
-
-
-def _check_not_prehashed(signature_algorithm):
-    if isinstance(signature_algorithm, asym_utils.Prehashed):
-        raise TypeError(
-            "Prehashed is only supported in the sign and verify methods. "
-            "It cannot be used with the signer or verifier context."
-        )
 
 
 def _get_rsa_pss_salt_length(pss, key, hash_algorithm):

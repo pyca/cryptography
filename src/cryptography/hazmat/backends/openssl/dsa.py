@@ -7,12 +7,11 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa,
-    utils as asym_utils
+    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
 )
 
 
@@ -42,14 +41,6 @@ def _dsa_sig_verify(backend, public_key, signature, data):
     if res != 1:
         backend._consume_errors()
         raise InvalidSignature
-
-
-def _check_not_prehashed(signature_algorithm):
-    if isinstance(signature_algorithm, asym_utils.Prehashed):
-        raise TypeError(
-            "Prehashed is only supported in the sign and verify methods. "
-            "It cannot be used with the signer or verifier context."
-        )
 
 
 @utils.register_interface(AsymmetricVerificationContext)

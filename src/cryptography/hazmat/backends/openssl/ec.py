@@ -9,12 +9,11 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, ec,
-    utils as asym_utils
+    AsymmetricSignatureContext, AsymmetricVerificationContext, ec
 )
 
 
@@ -23,14 +22,6 @@ def _check_signature_algorithm(signature_algorithm):
         raise UnsupportedAlgorithm(
             "Unsupported elliptic curve signature algorithm.",
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-
-def _check_not_prehashed(signature_algorithm):
-    if isinstance(signature_algorithm.algorithm, asym_utils.Prehashed):
-        raise TypeError(
-            "Prehashed is only supported in the sign and verify methods. "
-            "It cannot be used with the signer or verifier context."
-        )
 
 
 def _ec_key_curve_sn(backend, ec_key):
@@ -150,7 +141,7 @@ class _EllipticCurvePrivateKey(object):
 
     def signer(self, signature_algorithm):
         _check_signature_algorithm(signature_algorithm)
-        _check_not_prehashed(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSASignatureContext(
             self._backend, self, signature_algorithm.algorithm
         )
@@ -254,7 +245,7 @@ class _EllipticCurvePublicKey(object):
             raise TypeError("signature must be bytes.")
 
         _check_signature_algorithm(signature_algorithm)
-        _check_not_prehashed(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSAVerificationContext(
             self._backend, self, signature, signature_algorithm.algorithm
         )
