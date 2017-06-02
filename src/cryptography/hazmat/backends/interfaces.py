@@ -243,6 +243,12 @@ class PEMSerializationBackend(object):
         Loads a public key from PEM encoded data.
         """
 
+    @abc.abstractmethod
+    def load_pem_parameters(self, data):
+        """
+        Load encryption parameters from PEM encoded data.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DERSerializationBackend(object):
@@ -257,6 +263,12 @@ class DERSerializationBackend(object):
     def load_der_public_key(self, data):
         """
         Loads a public key from DER encoded data.
+        """
+
+    @abc.abstractmethod
+    def load_der_parameters(self, data):
+        """
+        Load encryption parameters from DER encoded data.
         """
 
 
