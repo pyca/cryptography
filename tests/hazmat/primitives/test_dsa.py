@@ -638,6 +638,18 @@ class TestDSAVerification(object):
         with pytest.raises(ValueError):
             public_key.verify(b"\x00" * 128, digest, prehashed_alg)
 
+    def test_prehashed_unsupported_in_signer_ctx(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        with pytest.raises(TypeError):
+            private_key.signer(Prehashed(hashes.SHA1()))
+
+    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
+        public_key = DSA_KEY_1024.private_key(backend).public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(
+                b"0" * 64, Prehashed(hashes.SHA1())
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSASignature(object):

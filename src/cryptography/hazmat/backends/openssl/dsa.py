@@ -11,7 +11,8 @@ from cryptography.hazmat.backends.openssl.utils import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
+    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa,
+    utils as asym_utils
 )
 
 
@@ -41,6 +42,14 @@ def _dsa_sig_verify(backend, public_key, signature, data):
     if res != 1:
         backend._consume_errors()
         raise InvalidSignature
+
+
+def _check_not_prehashed(signature_algorithm):
+    if isinstance(signature_algorithm, asym_utils.Prehashed):
+        raise TypeError(
+            "Prehashed is only supported in the sign and verify methods. "
+            "It cannot be used with the signer or verifier context."
+        )
 
 
 @utils.register_interface(AsymmetricVerificationContext)
@@ -121,6 +130,7 @@ class _DSAPrivateKey(object):
     key_size = utils.read_only_property("_key_size")
 
     def signer(self, signature_algorithm):
+        _check_not_prehashed(signature_algorithm)
         return _DSASignatureContext(self._backend, self, signature_algorithm)
 
     def private_numbers(self):
@@ -210,6 +220,7 @@ class _DSAPublicKey(object):
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
 
+        _check_not_prehashed(signature_algorithm)
         return _DSAVerificationContext(
             self._backend, self, signature, signature_algorithm
         )
