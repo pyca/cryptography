@@ -197,7 +197,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
 .. function:: load_pem_parameters(data, backend)
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     Deserialize encryption parameters from PEM encoded data to one of the supported
     asymmetric encryption parameters types.
@@ -315,7 +315,7 @@ the rest.
 
 .. function:: load_der_parameters(data, backend)
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     Deserialize encryption parameters from DER encoded data to one of the supported
     asymmetric encryption parameters types.
@@ -457,7 +457,7 @@ Serialization Formats
 
 .. class:: ParameterFormat
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     An enumeration for parameters formats. Used with the ``parameter_bytes``
     method available on

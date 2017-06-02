@@ -101,7 +101,7 @@ Group parameters
 
     .. method:: parameter_bytes(encoding, format)
 
-        .. versionadded:: 1.9
+        .. versionadded:: 2.0
 
         Allows serialization of the parameters to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
