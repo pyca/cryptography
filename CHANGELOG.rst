@@ -6,6 +6,19 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated the use of ``signer`` on
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+  in favor of ``sign``.
+* Deprecated the use of ``verifier`` on
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+  in favor of ``verify``.
+
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
 
@@ -618,12 +631,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
   was moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
-*
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-  and
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
+* ``AsymmetricSignatureContext`` and ``AsymmetricVerificationContext``
   were moved from ``cryptography.hazmat.primitives.interfaces`` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric`.
+  ``cryptography.hazmat.primitives.asymmetric``.
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
