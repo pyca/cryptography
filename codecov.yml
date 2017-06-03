@@ -7,12 +7,3 @@ coverage:
         project:
             default:
                 target: '100'
-
-# Workaround for
-# https://bitbucket.org/ned/coveragepy/issues/578/incomplete-file-path-in-xml-report
-fixes:
-    # Label all the files with a `tests/` prefix.
-    - "::tests/"
-    # Move things with a `tests/src/cryptography` prefix back to
-    # `src/cryptography/`
-    - "tests/src/cryptography/::src/cryptography/"
