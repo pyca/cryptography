@@ -89,4 +89,4 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox codecov
+pip install tox codecov coverage==4.3.4
