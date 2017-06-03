@@ -142,36 +142,38 @@ def downstreams = [
 ]
 
 def checkout_git(label) {
-    def script = ""
-    if (env.BRANCH_NAME.startsWith('PR-')) {
-        script = """
-        git clone --depth=1 https://github.com/pyca/cryptography
-        cd cryptography
-        git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
-        git checkout -qf FETCH_HEAD
-        """
-        if (label.contains("windows")) {
-            bat script
-        } else {
-            sh """#!/bin/sh
-                set -xe
-                ${script}
+    retry(3) {
+        def script = ""
+        if (env.BRANCH_NAME.startsWith('PR-')) {
+            script = """
+            git clone --depth=1 https://github.com/pyca/cryptography
+            cd cryptography
+            git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
+            git checkout -qf FETCH_HEAD
             """
+            if (label.contains("windows")) {
+                bat script
+            } else {
+                sh """#!/bin/sh
+                    set -xe
+                    ${script}
+                """
+            }
+        } else {
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: "*/${env.BRANCH_NAME}"]],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: 'cryptography'
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    'url': 'https://github.com/pyca/cryptography'
+                ]]
+            ])
         }
-    } else {
-        checkout([
-            $class: 'GitSCM',
-            branches: [[name: "*/${env.BRANCH_NAME}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[
-                $class: 'RelativeTargetDirectory',
-                relativeTargetDir: 'cryptography'
-            ]],
-            submoduleCfg: [],
-            userRemoteConfigs: [[
-                'url': 'https://github.com/pyca/cryptography'
-            ]]
-        ])
     }
     if (label.contains("windows")) {
         bat """
