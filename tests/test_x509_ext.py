@@ -3704,7 +3704,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert scts1 == scts4
 
         assert not (scts1 != scts4)
-        assert not (scts == object())
+        assert not (scts1 == object())
 
     def test_simple(self, backend):
         cert = _load_cert(
