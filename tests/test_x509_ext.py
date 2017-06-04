@@ -3682,6 +3682,11 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             "<PrecertificateSignedCertificateTimestamps([])>"
         )
 
+    def test_eq(self):
+        scts = x509.PrecertificateSignedCertificateTimestamps([])
+
+        assert not (scts == object())
+
     def test_simple(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
