@@ -9,18 +9,14 @@ import hmac
 from cryptography.hazmat.bindings._constant_time import lib
 
 
-if hasattr(hmac, "compare_digest"):
-    def bytes_eq(a, b):
-        if not isinstance(a, bytes) or not isinstance(b, bytes):
-            raise TypeError("a and b must be bytes.")
+def bytes_eq(a, b):
+    if not isinstance(a, bytes) or not isinstance(b, bytes):
+        raise TypeError("a and b must be bytes.")
 
+    if hasattr(hmac, "compare_digest"):
         return hmac.compare_digest(a, b)
 
-else:
-    def bytes_eq(a, b):
-        if not isinstance(a, bytes) or not isinstance(b, bytes):
-            raise TypeError("a and b must be bytes.")
-
+    else:
         return lib.Cryptography_constant_time_bytes_eq(
             a, len(a), b, len(b)
         ) == 1
