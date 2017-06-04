@@ -435,7 +435,7 @@ Insecure modes
     **Padding is required when using this mode.**
 
 Interfaces
-----------
+~~~~~~~~~~
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
 
