@@ -11,7 +11,7 @@ issued.
 
 .. class:: SignedCertificateTimestamp
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     SignedCertificateTimestamps (SCTs) are small cryptographically signed
     assertions that the specified certificate has been submitted to a
@@ -53,7 +53,7 @@ issued.
 
 .. class:: Version
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     An enumeration for SignedCertificateTimestamp versions.
 
@@ -63,7 +63,7 @@ issued.
 
 .. class:: LogEntryType
 
-    .. versionadded:: 1.9
+    .. versionadded:: 2.0
 
     An enumeration for SignedCertificateTimestamp log entry types.
 
