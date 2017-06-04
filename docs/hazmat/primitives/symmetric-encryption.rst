@@ -690,6 +690,17 @@ Interfaces used by the symmetric cipher modes described in
         Exact requirements of the tag are described by the documentation of
         individual modes.
 
+Exceptions
+~~~~~~~~~~
+
+.. currentmodule:: cryptography.exceptions
+
+
+.. class:: InvalidTag
+
+    This is raised if an authenticated encryption tag fails to verify during
+    decryption.
+
 
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
