@@ -25,17 +25,14 @@ KeyedHashVector = collections.namedtuple(
 )
 
 
-def check_backend_support(item):
+def check_backend_support(backend, item):
     supported = item.keywords.get("supported")
-    if supported and "backend" in item.funcargs:
+    if supported:
         for mark in supported:
-            if not mark.kwargs["only_if"](item.funcargs["backend"]):
+            if not mark.kwargs["only_if"](backend):
                 pytest.skip("{0} ({1})".format(
-                    mark.kwargs["skip_message"], item.funcargs["backend"]
+                    mark.kwargs["skip_message"], backend
                 ))
-    elif supported:
-        raise ValueError("This mark is only available on methods that take a "
-                         "backend")
 
 
 @contextmanager
