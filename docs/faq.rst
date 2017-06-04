@@ -28,7 +28,6 @@ legacy libraries:
 * Lack of maintenance.
 * Lack of high level APIs.
 * Lack of PyPy and Python 3 support.
-* Poor introspectability and thus poor testability.
 * Absence of algorithms such as
   :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
