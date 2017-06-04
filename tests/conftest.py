@@ -21,24 +21,14 @@ def backend(request):
         mark.kwargs["interface"]
         for mark in request.node.get_marker("requires_backend_interface")
     ]
-    if all(
+    if not all(
         isinstance(openssl_backend, iface) for iface in required_interfaces
     ):
-        return openssl_backend
-    pytest.skip(
-        "OpenSSL doesn't implement required interfaces: {0}".format(
-            required_interfaces
+        pytest.skip(
+            "OpenSSL doesn't implement required interfaces: {0}".format(
+                required_interfaces
+            )
         )
-    )
 
-
-@pytest.mark.trylast
-def pytest_runtest_setup(item):
-    check_backend_support(item)
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--backend", action="store", metavar="NAME",
-        help="Only run tests matching the backend NAME."
-    )
+    check_backend_support(openssl_backend, request)
+    return openssl_backend
