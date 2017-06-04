@@ -24,19 +24,8 @@ from .utils import (
     load_hash_vectors, load_kasvs_dh_vectors,
     load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, raises_unsupported_algorithm, skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm
 )
-
-
-class FakeInterface(object):
-    pass
-
-
-def test_skip_if_empty():
-    with pytest.raises(pytest.skip.Exception):
-        skip_if_empty([], [FakeInterface])
-
-    skip_if_empty(["notempty"], [FakeInterface])
 
 
 def test_check_backend_support_skip():
