@@ -256,8 +256,11 @@ class TestRSASignature(object):
                 n=private["modulus"]
             )
         ).private_key(backend)
-        with pytest.deprecated_call():
-            signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
+        signer = pytest.deprecated_call(
+            private_key.signer,
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -584,12 +587,12 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        with pytest.deprecated_call():
-            verifier = public_key.verifier(
-                binascii.unhexlify(example["signature"]),
-                padding.PKCS1v15(),
-                hashes.SHA1()
-            )
+        verifier = pytest.deprecated_call(
+            public_key.verifier,
+            binascii.unhexlify(example["signature"]),
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 

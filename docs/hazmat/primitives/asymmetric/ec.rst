@@ -102,7 +102,6 @@ Elliptic Curve Signature Algorithms
 
     .. doctest::
 
-        >>> public_key = private_key.public_key()
         >>> chosen_hash = hashes.SHA256()
         >>> hasher = hashes.Hash(chosen_hash, default_backend())
         >>> hasher.update(b"data & ")

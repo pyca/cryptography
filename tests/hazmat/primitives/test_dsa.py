@@ -575,8 +575,9 @@ class TestDSAVerification(object):
             y=vector['y']
         ).public_key(backend)
         sig = encode_dss_signature(vector['r'], vector['s'])
-        with pytest.deprecated_call():
-            verifier = public_key.verifier(sig, algorithm())
+        verifier = pytest.deprecated_call(
+            public_key.verifier, sig, algorithm()
+        )
 
         verifier.update(vector['msg'])
         if vector['result'] == "F":
@@ -687,8 +688,7 @@ class TestDSASignature(object):
             ),
             x=vector['x']
         ).private_key(backend)
-        with pytest.deprecated_call():
-            signer = private_key.signer(algorithm())
+        signer = pytest.deprecated_call(private_key.signer, algorithm())
         signer.update(vector['msg'])
         signature = signer.finalize()
         assert signature

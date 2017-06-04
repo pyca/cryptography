@@ -16,10 +16,6 @@ import warnings
 # cycle ends.
 PersistentlyDeprecated = DeprecationWarning
 DeprecatedIn19 = DeprecationWarning
-# Asymmetric signature and verification contexts were deprecated in 2.0
-# However they are widely used and we will obey a longer than normal
-# deprecation cycle for them.
-PersistentlyDeprecatedIn20 = PendingDeprecationWarning
 
 
 def read_only_property(name):
