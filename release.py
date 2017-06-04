@@ -28,7 +28,7 @@ def run(*args, **kwargs):
     try:
         subprocess.check_output(list(args), **kwargs)
     except subprocess.CalledProcessError as e:
-        # Reraise this with a different type so that str(e) is somethign with
+        # Reraise this with a different type so that str(e) is something with
         # stdout in it.
         raise Exception(e.cmd, e.returncode, e.output)
 
