@@ -25,7 +25,12 @@ JENKINS_URL = (
 
 def run(*args, **kwargs):
     kwargs.setdefault("stderr", subprocess.STDOUT)
-    subprocess.check_output(list(args), **kwargs)
+    try:
+        subprocess.check_output(list(args), **kwargs)
+    except subprocess.CalledProcessError as e:
+        # Reraise this with a different type so that str(e) is somethign with
+        # stdout in it.
+        raise Exception(e.cmd, e.returncode, e.output)
 
 
 def wait_for_build_completed(session):
