@@ -3668,10 +3668,12 @@ class TestInhibitAnyPolicyExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER,
+    skip_message="Requires OpenSSL 1.1.0+",
+)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_simple(self, backend):
-        if not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
-            pytest.skip("Requires 1.1.0")
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
