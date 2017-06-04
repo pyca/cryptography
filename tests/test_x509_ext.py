@@ -3682,9 +3682,28 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             "<PrecertificateSignedCertificateTimestamps([])>"
         )
 
-    def test_eq(self):
-        scts = x509.PrecertificateSignedCertificateTimestamps([])
+    def test_eq(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        scts1 = cert.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
 
+        scts2 = x509.PrecertificateSignedCertificateTimestamps([])
+        scts3 = x509.PrecertificateSignedCertificateTimestamps([
+            scts1[0], scts1[0]
+        ])
+        scts4 = x509.PrecertificateSignedCertificateTimestamps([scts1[0]])
+
+        assert scts1 == scts1
+        assert scts1 != scts2
+        assert scts1 != scts3
+        assert scts1 == scts4
+
+        assert not (scts1 != scts4)
         assert not (scts == object())
 
     def test_simple(self, backend):
@@ -3711,9 +3730,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             sct.entry_type ==
             x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
-
-        assert scts == scts
-        assert not (scts != scts)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
