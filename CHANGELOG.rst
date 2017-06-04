@@ -18,6 +18,9 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
   in favor of ``verify``.
+* Added support for parsing
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+  objects from X.509 certificate extensions.
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~

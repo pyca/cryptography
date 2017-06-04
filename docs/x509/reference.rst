@@ -1814,6 +1814,32 @@ X.509 Extensions
         :returns: A list of values extracted from the matched general names.
 
 
+.. class:: PrecertificateSignedCertificateTimestamps(scts)
+
+    .. versionadded:: 2.0
+
+    This extension contains
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    instances which were issued for the pre-certificate corresponding to this
+    certificate. These can be used to verify that the certificate is included
+    in a public Certificate Transparency log.
+
+    It is an iterable containing one or more
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    objects.
+
+    :param list scts: A ``list`` of
+        :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+        objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
+
+
 .. class:: AuthorityInformationAccess(descriptions)
 
     .. versionadded:: 0.9

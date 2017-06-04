@@ -597,6 +597,21 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
+def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+    from cryptography.hazmat.backends.openssl.x509 import (
+        _SignedCertificateTimestamp
+    )
+    asn1_scts = backend._ffi.cast("Cryptography_STACK_OF_SCT *", asn1_scts)
+    asn1_scts = backend._ffi.gc(asn1_scts, backend._lib.SCT_LIST_free)
+
+    scts = []
+    for i in range(backend._lib.sk_SCT_num(asn1_scts)):
+        sct = backend._lib.sk_SCT_value(asn1_scts, i)
+
+        scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
+    return x509.PrecertificateSignedCertificateTimestamps(scts)
+
+
 #    CRLReason ::= ENUMERATED {
 #        unspecified             (0),
 #        keyCompromise           (1),
@@ -751,6 +766,9 @@ _EXTENSION_HANDLERS = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
+        _decode_precert_signed_certificate_timestamps
+    ),
 }
 
 _REVOKED_EXTENSION_HANDLERS = {

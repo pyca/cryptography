@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import operator
 import warnings
 
@@ -433,3 +434,43 @@ class _CertificateSigningRequest(object):
             return False
 
         return True
+
+
+@utils.register_interface(
+    x509.certificate_transparency.SignedCertificateTimestamp
+)
+class _SignedCertificateTimestamp(object):
+    def __init__(self, backend, sct_list, sct):
+        self._backend = backend
+        # Keep the SCT_LIST that this SCT came from alive.
+        self._sct_list = sct_list
+        self._sct = sct
+
+    @property
+    def version(self):
+        version = self._backend._lib.SCT_get_version(self._sct)
+        assert version == self._backend._lib.SCT_VERSION_V1
+        return x509.certificate_transparency.Version.v1
+
+    @property
+    def log_id(self):
+        out = self._backend._ffi.new("unsigned char **")
+        log_id_length = self._backend._lib.SCT_get0_log_id(self._sct, out)
+        assert log_id_length >= 0
+        return self._backend._ffi.buffer(out[0], log_id_length)[:]
+
+    @property
+    def timestamp(self):
+        timestamp = self._backend._lib.SCT_get_timestamp(self._sct)
+        milliseconds = timestamp % 1000
+        return datetime.datetime.utcfromtimestamp(
+            timestamp // 1000
+        ).replace(microsecond=milliseconds * 1000)
+
+    @property
+    def entry_type(self):
+        entry_type = self._backend._lib.SCT_get_log_entry_type(self._sct)
+        # We currently only support loading SCTs from the X.509 extension, so
+        # we only have precerts.
+        assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
+        return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
