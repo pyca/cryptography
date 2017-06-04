@@ -37,3 +37,9 @@ Exceptions
 
     This is raised when the verify method of a key derivation function's
     computed key does not match the expected key.
+
+
+.. class:: InvalidTag
+
+    This is raised if an authenticated encryption tag fails to verify during
+    decryption.
