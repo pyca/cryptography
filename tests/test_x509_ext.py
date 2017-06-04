@@ -3673,17 +3673,27 @@ class TestInhibitAnyPolicyExtension(object):
     skip_message="Requires OpenSSL 1.1.0f+",
 )
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
+    def test_init(self):
+        with pytest.raises(TypeError):
+            x509.PrecertificateSignedCertificateTimestamps([object()])
+
+    def test_repr(self):
+        assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
+            "<PrecertificateSignedCertificateTimestamps([])>"
+        )
+
     def test_simple(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
-        scts = cert.extensions.get_extension_for_oid(
-            ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+        scts = cert.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
         ).value
         assert len(scts) == 1
         [sct] = scts
+        assert scts[0] == sct
         assert sct.version == x509.certificate_transparency.Version.v1
         assert sct.log_id == (
             b"\xa7\xceJNb\x07\xe0\xad\xde\xe5\xfd\xaaK\x1f\x86v\x87g\xb5\xd0"
@@ -3696,6 +3706,9 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             sct.entry_type ==
             x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
+
+        assert scts == scts
+        assert not (scts != scts)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

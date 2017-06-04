@@ -449,9 +449,8 @@ class _SignedCertificateTimestamp(object):
     @property
     def version(self):
         version = self._backend._lib.SCT_get_version(self._sct)
-        if version == self._backend._lib.SCT_VERSION_V1:
-            return x509.certificate_transparency.Version.v1
-        raise x509.InvalidVersion
+        assert version == self._backend._lib.SCT_VERSION_V1:
+        return x509.certificate_transparency.Version.v1
 
     @property
     def log_id(self):
@@ -471,8 +470,7 @@ class _SignedCertificateTimestamp(object):
     @property
     def entry_type(self):
         entry_type = self._backend._lib.SCT_get_log_entry_type(self._sct)
-        if entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_X509:
-            return x509.certificate_transparency.LogEntryType.X509_CERTIFICATE
-        else:
-            assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
-            return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
+        # We currently only support loading SCTs from the X.509 extension, so
+        # we only have precerts.
+        assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
+        return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
