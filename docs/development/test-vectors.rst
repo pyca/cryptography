@@ -478,7 +478,7 @@ header format (substituting the correct information):
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
-.. _`OpenSSL's evpciph.txt`: https://github.com/openssl/openssl/blob/5a7bc0be97dee9ac715897fe8180a08e211bc6ea/test/evpciph.txt#L2362-L2403
+.. _`OpenSSL's evpciph.txt`: https://github.com/openssl/openssl/blob/5a7bc0be97dee9ac715897fe8180a08e211bc6ea/test/evpciph.txt#L2362
 .. _`BoringSSL ChaCha20Poly1305 tests`: https://boringssl.googlesource.com/boringssl/+/2e2a226ac9201ac411a84b5e79ac3a7333d8e1c9/crypto/cipher_extra/test/chacha20_poly1305_tests.txt
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
