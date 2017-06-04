@@ -449,7 +449,7 @@ class _SignedCertificateTimestamp(object):
     @property
     def version(self):
         version = self._backend._lib.SCT_get_version(self._sct)
-        assert version == self._backend._lib.SCT_VERSION_V1:
+        assert version == self._backend._lib.SCT_VERSION_V1
         return x509.certificate_transparency.Version.v1
 
     @property
