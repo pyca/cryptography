@@ -58,15 +58,6 @@ Elliptic Curve Signature Algorithms
         >>> private_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
         ... )
-        >>> signer = private_key.signer(ec.ECDSA(hashes.SHA256()))
-        >>> signer.update(b"this is some data I'd like")
-        >>> signer.update(b" to sign")
-        >>> signature = signer.finalize()
-
-    There is a shortcut to sign sufficiently short messages directly:
-
-    .. doctest::
-
         >>> data = b"this is some data I'd like to sign"
         >>> signature = private_key.sign(
         ...     data,
@@ -77,19 +68,50 @@ Elliptic Curve Signature Algorithms
     described in :rfc:`3279`. This can be decoded using
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
+    If your data is too large to be passed in a single call, you can hash it
+    separately and pass that value using
+    :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.asymmetric import utils
+        >>> chosen_hash = hashes.SHA256()
+        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher.update(b"data & ")
+        >>> hasher.update(b"more data")
+        >>> digest = hasher.finalize()
+        >>> sig = private_key.sign(
+        ...     digest,
+        ...     ec.ECDSA(utils.Prehashed(chosen_hash))
+        ... )
+
 
     Verification requires the public key, the signature itself, the signed
     data, and knowledge of the hashing algorithm that was used when producing
     the signature:
 
     >>> public_key = private_key.public_key()
-    >>> verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA256()))
-    >>> verifier.update(b"this is some data I'd like")
-    >>> verifier.update(b" to sign")
-    >>> verifier.verify()
+    >>> public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
 
     If the signature is not valid, an
     :class:`~cryptography.exceptions.InvalidSignature` exception will be raised.
+
+    If your data is too large to be passed in a single call, you can hash it
+    separately and pass that value using
+    :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+    .. doctest::
+
+        >>> chosen_hash = hashes.SHA256()
+        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher.update(b"data & ")
+        >>> hasher.update(b"more data")
+        >>> digest = hasher.finalize()
+        >>> public_key.verify(
+        ...     sig,
+        ...     digest,
+        ...     ec.ECDSA(utils.Prehashed(chosen_hash))
+        ... )
 
     .. note::
         Although in this case the public key was derived from the private one,
@@ -421,18 +443,6 @@ Key Interfaces
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. method:: signer(signature_algorithm)
-
-        Sign data which can be verified later by others using the public key.
-        The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`3279`.
-
-        :param signature_algorithm: An instance of
-            :class:`EllipticCurveSignatureAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-
     .. method:: exchange(algorithm, peer_public_key)
 
         .. versionadded:: 1.1
@@ -525,20 +535,6 @@ Key Interfaces
     .. versionadded:: 0.5
 
     An elliptic curve public key.
-
-    .. method:: verifier(signature, signature_algorithm)
-
-        Verify data was signed by the private key associated with this public
-        key.
-
-        :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`3279`.
-
-        :param signature_algorithm: An instance of
-            :class:`EllipticCurveSignatureAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
      .. attribute:: curve
 

@@ -351,11 +351,13 @@ class TestECDSAVectors(object):
         pkey = key.public_key()
         assert pkey
 
-        signer = key.signer(ec.ECDSA(hash_type()))
+        signer = pytest.deprecated_call(key.signer, ec.ECDSA(hash_type()))
         signer.update(b"YELLOW SUBMARINE")
         signature = signer.finalize()
 
-        verifier = pkey.verifier(signature, ec.ECDSA(hash_type()))
+        verifier = pytest.deprecated_call(
+            pkey.verifier, signature, ec.ECDSA(hash_type())
+        )
         verifier.update(b"YELLOW SUBMARINE")
         verifier.verify()
 

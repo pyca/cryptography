@@ -72,15 +72,6 @@ instance.
     ...     key_size=1024,
     ...     backend=default_backend()
     ... )
-    >>> signer = private_key.signer(hashes.SHA256())
-    >>> data = b"this is some data I'd like to sign"
-    >>> signer.update(data)
-    >>> signature = signer.finalize()
-
-There is a shortcut to sign sufficiently short messages directly:
-
-.. doctest::
-
     >>> data = b"this is some data I'd like to sign"
     >>> signature = private_key.sign(
     ...     data,
@@ -90,6 +81,23 @@ There is a shortcut to sign sufficiently short messages directly:
 The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
 described in :rfc:`3279`. This can be decoded using
 :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
+
+If your data is too large to be passed in a single call, you can hash it
+separately and pass that value using
+:class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+.. doctest::
+
+    >>> from cryptography.hazmat.primitives.asymmetric import utils
+    >>> chosen_hash = hashes.SHA256()
+    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher.update(b"data & ")
+    >>> hasher.update(b"more data")
+    >>> digest = hasher.finalize()
+    >>> sig = private_key.sign(
+    ...     digest,
+    ...     utils.Prehashed(chosen_hash)
+    ... )
 
 Verification
 ~~~~~~~~~~~~
@@ -106,25 +114,34 @@ You can get a public key object with
 .. doctest::
 
     >>> public_key = private_key.public_key()
-    >>> verifier = public_key.verifier(signature, hashes.SHA256())
-    >>> verifier.update(data)
-    >>> verifier.verify()
-
-There is a shortcut to verify sufficiently short messages directly:
-
-.. doctest::
-
     >>> public_key.verify(
     ...     signature,
     ...     data,
     ...     hashes.SHA256()
     ... )
 
-``verifier()`` takes the signature in the same format as is returned by
-``signer.finalize()``.
+``verify()`` takes the signature in the same format as is returned by
+``sign()``.
 
 ``verify()`` will raise an :class:`~cryptography.exceptions.InvalidSignature`
 exception if the signature isn't valid.
+
+If your data is too large to be passed in a single call, you can hash it
+separately and pass that value using
+:class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+.. doctest::
+
+    >>> chosen_hash = hashes.SHA256()
+    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher.update(b"data & ")
+    >>> hasher.update(b"more data")
+    >>> digest = hasher.finalize()
+    >>> public_key.verify(
+    ...     sig,
+    ...     digest,
+    ...     utils.Prehashed(chosen_hash)
+    ... )
 
 Numbers
 ~~~~~~~
@@ -275,23 +292,6 @@ Key interfaces
 
         The DSAParameters object associated with this private key.
 
-    .. method:: signer(algorithm, backend)
-
-        .. versionadded:: 0.4
-
-        Sign data which can be verified later by others using the public key.
-        The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`3279`.
-
-        :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-
-        :param backend: An instance of
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-
     .. attribute:: key_size
 
         :type: int
@@ -379,25 +379,6 @@ Key interfaces
         :return: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
 
         The DSAParameters object associated with this public key.
-
-    .. method:: verifier(signature, algorithm, backend)
-
-        .. versionadded:: 0.4
-
-        Verify data was signed by the private key associated with this public
-        key.
-
-        :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`3279`.
-
-        :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-
-        :param backend: An instance of
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
     .. method:: public_numbers()
 

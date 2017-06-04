@@ -4,6 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
+from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
@@ -31,3 +34,12 @@ def _check_not_prehashed(signature_algorithm):
             "Prehashed is only supported in the sign and verify methods. "
             "It cannot be used with signer or verifier."
         )
+
+
+def _warn_sign_verify_deprecated():
+    warnings.warn(
+        "signer and verifier have been deprecated. Please use sign "
+        "and verify instead.",
+        utils.PersistentlyDeprecated,
+        stacklevel=2
+    )
