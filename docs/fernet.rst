@@ -21,7 +21,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> token
         '...'
         >>> f.decrypt(token)
-        'my deep dark secret'
+        b'my deep dark secret'
 
     :param bytes key: A URL-safe base64-encoded 32-byte key. This **must** be
                       kept secret. Anyone with this key is able to create and
@@ -90,7 +90,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> token
         '...'
         >>> f.decrypt(token)
-        'Secret message!'
+        b'Secret message!'
 
     MultiFernet performs all encryption options using the *first* key in the
     ``list`` provided. MultiFernet attempts to decrypt tokens with each key in
@@ -138,7 +138,7 @@ password through a key derivation function such as
     >>> token
     '...'
     >>> f.decrypt(token)
-    'Secret message!'
+    b'Secret message!'
 
 In this scheme, the salt has to be stored in a retrievable location in order
 to derive the same key from the password in the future.
