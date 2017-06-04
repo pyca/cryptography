@@ -1179,18 +1179,6 @@ class PrecertificateSignedCertificateTimestamps(object):
     def __getitem__(self, idx):
         return self._signed_certificate_timestamps[idx]
 
-    def __eq__(self, other):
-        if not isinstance(other, PrecertificateSignedCertificateTimestamps):
-            return NotImplemented
-
-        return (
-            self._signed_certificate_timestamps ==
-            other._signed_certificate_timestamps
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
     def __repr__(self):
         return (
             "<PrecertificateSignedCertificateTimestamps({0})>".format(
