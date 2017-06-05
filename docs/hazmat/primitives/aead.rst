@@ -22,6 +22,7 @@ not require encryption.
 
     .. doctest::
 
+        >>> import os
         >>> from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
         >>> data = b"a secret message"
         >>> aad = b"authenticated but unencrypted data"
@@ -45,8 +46,8 @@ not require encryption.
             Reuse of a ``nonce`` with a given ``key`` compromises the security
             of any message with that ``nonce`` and ``key`` pair.
 
-        :param bytes nonce: A random 12 byte value. **NEVER REUSE A NONCE**
-            with a key.
+        :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
+            key.
         :param bytes data: The data to encrypt.
         :param bytes additional_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
@@ -56,6 +57,10 @@ not require encryption.
 
     .. method:: decrypt(nonce, tag, data, additional_data)
 
+        :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
+            key.
+        :param bytes tag: A 16 byte ``tag`` value obtained from a previous call
+            to ``encrypt``.
         :param bytes data: The data to decrypt.
         :param bytes additional_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.

@@ -709,3 +709,39 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :return bytes: Derived key.
 
+
+.. class:: ChaCha20Poly1305Backend
+
+    .. versionadded:: 2.0
+
+    A backend with methods for using ChaCha20Poly1305.
+
+    .. method:: chacha20poly1305_encrypt(key, nonce, data, additional_data)
+
+        :param bytes key: A 32-byte key.
+        :param bytes nonce: A random 12 byte value. **NEVER REUSE A NONCE**
+            with a key.
+        :param bytes data: The data to encrypt.
+        :param bytes additional_data: Additional data that should be
+            authenticated with the key, but does not need to be encrypted. Can
+            be ``None``.
+        :returns: A tuple ``(ciphertext, tag)`` where ``ciphertext`` is the
+            encrypted data and ``tag`` is a 16 byte value.
+
+    .. method:: chacha20poly1305_decrypt(key, nonce, tag, data,
+                                         additional_data)
+
+        :param bytes key: A 32-byte key.
+        :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
+            key.
+        :param bytes tag: A 16 byte ``tag`` value obtained from a previous call
+            to ``encrypt``.
+        :param bytes data: The data to decrypt.
+        :param bytes additional_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :returns bytes: The original plaintext.
+
+    .. method:: chacha20poly1305_supported()
+
+        :returns: ``True`` if the backend supports ChaCha20Poly1305, otherwise
+            ``False``.

@@ -16,7 +16,8 @@ import six
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
+    CMACBackend, ChaCha20Poly1305Backend, CipherBackend,
+    DERSerializationBackend, DHBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
@@ -78,6 +79,9 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 @utils.register_interface(X509Backend)
 @utils.register_interface_if(
     binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
+)
+@utils.register_interface(
+    ChaCha20Poly1305Backend
 )
 class Backend(object):
     """

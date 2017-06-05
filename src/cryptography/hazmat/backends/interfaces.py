@@ -381,3 +381,24 @@ class ScryptBackend(object):
         """
         Return bytes derived from provided Scrypt parameters.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ChaCha20Poly1305Backend(object):
+    @abc.abstractmethod
+    def chacha20poly1305_encrypt(self, key, nonce, data, additional_data):
+        """
+        Encrypts and returns a tuple (ciphertext, tag)
+        """
+
+    @abc.abstractmethod
+    def chacha20poly1305_decrypt(self, key, nonce, tag, data, additional_data):
+        """
+        Decrypts the ciphertext or raises InvalidTag
+        """
+
+    @abc.abstractmethod
+    def chacha20poly1305_supported(self):
+        """
+        Returns True if the backend supports ChaCha20Poly1305
+        """
