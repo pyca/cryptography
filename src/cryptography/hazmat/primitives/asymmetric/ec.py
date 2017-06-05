@@ -296,13 +296,18 @@ class EllipticCurvePublicNumbers(object):
     def public_key(self, backend):
         return backend.load_elliptic_curve_public_numbers(self)
 
-    def encode_point(self):
+    def encode_point(self, compress=False):
         # key_size is in bits. Convert to bytes and round up
         byte_length = (self.curve.key_size + 7) // 8
-        return (
-            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
-            utils.int_to_bytes(self.y, byte_length)
-        )
+
+        if not compress:
+            return (
+                b'\x04' + utils.int_to_bytes(self.x, byte_length) +
+                utils.int_to_bytes(self.y, byte_length)
+            )
+
+        y_parity = b'\x03' if self.y & 1 else b'\x02'
+        return y_parity + utils.int_to_bytes(self.x, byte_length)
 
     @classmethod
     def from_encoded_point(cls, curve, data):
