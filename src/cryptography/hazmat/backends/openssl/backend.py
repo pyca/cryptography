@@ -1776,10 +1776,11 @@ class Backend(object):
         return self._ffi.buffer(pp[0], res)[:]
 
     def x25519_load_public_bytes(self, data):
-        # TODO
+        # TODO: determine format
         return _X25519PublicKey(self, data)
 
     def x25519_load_private_bytes(self, data):
+        # TODO: determine format
         pass
 
     def x25519_generate_key(self):

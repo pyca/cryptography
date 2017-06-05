@@ -29,6 +29,7 @@ private key is able to decrypt it.
     dh
     serialization
     utils
+    x25519
 
 
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure

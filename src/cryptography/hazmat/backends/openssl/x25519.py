@@ -17,6 +17,7 @@ class _X25519PublicKey(object):
         self._evp_pkey = evp_pkey
 
     def public_bytes(self):
+        # TODO: determine format
         bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_PUBKEY_bio(bio, self._evp_pkey)
         self._backend.openssl_assert(res == 1)
@@ -39,12 +40,16 @@ class _X25519PrivateKey(object):
         return _X25519PublicKey(self._backend, evp_pkey)
 
     def private_bytes(self):
+        # TODO: determine format
         bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_PrivateKey_bio(bio, self._evp_pkey)
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
-    def exchange(self, public_key):
+    def exchange(self, peer_public_key):
+        if not isinstance(peer_public_key, X25519PublicKey):
+            raise TypeError("peer_public_key must be X25519PublicKey.")
+
         ctx = self._backend._lib.EVP_PKEY_CTX_new(
             self._evp_pkey, self._backend._ffi.NULL
         )
@@ -53,7 +58,7 @@ class _X25519PrivateKey(object):
         res = self._backend._lib.EVP_PKEY_derive_init(ctx)
         self._backend.openssl_assert(res == 1)
         res = self._backend._lib.EVP_PKEY_derive_set_peer(
-            ctx, public_key._evp_pkey
+            ctx, peer_public_key._evp_pkey
         )
         self._backend.openssl_assert(res == 1)
         keylen = self._backend._ffi.new("size_t *")
