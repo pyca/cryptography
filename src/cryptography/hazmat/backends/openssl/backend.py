@@ -16,11 +16,11 @@ import six
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, ChaCha20Poly1305Backend, CipherBackend,
-    DERSerializationBackend, DHBackend, DSABackend,
+    CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
+from cryptography.hazmat.backends.openssl import chacha20poly1305
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
@@ -79,9 +79,6 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 @utils.register_interface(X509Backend)
 @utils.register_interface_if(
     binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
-)
-@utils.register_interface(
-    ChaCha20Poly1305Backend
 )
 class Backend(object):
     """
@@ -1785,87 +1782,22 @@ class Backend(object):
         return self._ffi.buffer(buf)[:]
 
     def chacha20poly1305_encrypt(self, key, nonce, data, additional_data):
-        return aead_enc_dec(self, key, nonce, None, data, additional_data, 1)
+        return chacha20poly1305.encrypt(
+            self, key, nonce, data, additional_data, chacha20poly1305._ENCRYPT
+        )
 
     def chacha20poly1305_decrypt(self, key, nonce, tag, data,
                                  additional_data):
-        return aead_enc_dec(self, key, nonce, tag, data, additional_data, 0)
+        return chacha20poly1305.decrypt(
+            self, key, nonce, tag, data, additional_data,
+            chacha20poly1305._DECRYPT
+        )
 
     def chacha20poly1305_supported(self):
         return (
             self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
             self._ffi.NULL
         )
-
-
-def aead_enc_dec(backend, key, nonce, tag, data, additional_data, enc_dec):
-    evp_cipher = backend._lib.EVP_get_cipherbyname(b"chacha20-poly1305")
-    ctx = backend._lib.EVP_CIPHER_CTX_new()
-    ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
-    res = backend._lib.EVP_CipherInit_ex(
-        ctx,
-        evp_cipher,
-        backend._ffi.NULL,
-        backend._ffi.NULL,
-        backend._ffi.NULL,
-        enc_dec
-    )
-    backend.openssl_assert(res != 0)
-    res = backend._lib.EVP_CIPHER_CTX_set_key_length(ctx, len(key))
-    backend.openssl_assert(res != 0)
-    res = backend._lib.EVP_CIPHER_CTX_ctrl(
-        ctx,
-        backend._lib.EVP_CTRL_GCM_SET_IVLEN,
-        len(nonce),
-        backend._ffi.NULL
-    )
-    backend.openssl_assert(res != 0)
-    if enc_dec == 0:
-        if tag is None or len(tag) != 16:
-            raise ValueError("Tag must be 16 bytes")
-
-        res = backend._lib.EVP_CIPHER_CTX_ctrl(
-            ctx, backend._lib.EVP_CTRL_GCM_SET_TAG, len(tag), tag
-        )
-        backend.openssl_assert(res != 0)
-    res = backend._lib.EVP_CipherInit_ex(
-        ctx, backend._ffi.NULL, backend._ffi.NULL, key, nonce, enc_dec
-    )
-    backend.openssl_assert(res != 0)
-
-    outlen = backend._ffi.new("int *")
-    # Process the AAD
-    res = backend._lib.EVP_CipherUpdate(
-        ctx, backend._ffi.NULL, outlen, additional_data, len(additional_data)
-    )
-    backend.openssl_assert(res != 0)
-    # encrypt the plaintext
-    buf = backend._ffi.new("unsigned char[]", len(data))
-    res = backend._lib.EVP_CipherUpdate(
-        ctx, buf, outlen, data, len(data)
-    )
-    backend.openssl_assert(res != 0)
-    processed_data = backend._ffi.buffer(buf, outlen[0])[:]
-    res = backend._lib.EVP_CipherFinal_ex(ctx, buf, outlen)
-    if res == 0:
-        # TODO: covering all branches here will be hard. refactor?
-        errors = backend._consume_errors()
-        if not errors and enc_dec == 0:
-            raise InvalidTag
-
-    backend.openssl_assert(outlen[0] == 0)
-    if enc_dec == 1:
-        # get the tag
-        tag_buf = backend._ffi.new("unsigned char[]", 16)
-        res = backend._lib.EVP_CIPHER_CTX_ctrl(
-            ctx, backend._lib.EVP_CTRL_GCM_GET_TAG, 16, tag_buf
-        )
-        backend.openssl_assert(res != 0)
-        tag = backend._ffi.buffer(tag_buf)[:]
-
-        return (processed_data, tag)
-    else:
-        return processed_data
 
 
 class GetCipherByName(object):
