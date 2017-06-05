@@ -132,6 +132,9 @@ int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
 int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
 int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
+int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
+int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
+int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
 
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
