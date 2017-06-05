@@ -9,8 +9,6 @@ import ipaddress
 
 from email.utils import parseaddr
 
-import idna
-
 import six
 
 from six.moves import urllib_parse
@@ -86,6 +84,10 @@ def _decode_general_names(backend, gns):
 
 
 def _decode_general_name(backend, gn):
+    # idna takes significant time and memory to import so we lazily load it
+    # so only users needing it will pay the penalty.
+    import idna
+
     if gn.type == backend._lib.GEN_DNS:
         data = _asn1_string_to_bytes(backend, gn.d.dNSName)
         if not data:

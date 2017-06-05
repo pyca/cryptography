@@ -8,8 +8,6 @@ import abc
 import ipaddress
 from email.utils import parseaddr
 
-import idna
-
 import six
 
 from six.moves import urllib_parse
@@ -64,6 +62,10 @@ class RFC822Name(object):
             # No IDNA encoding needed since there is no domain component.
             encoded = address.encode("ascii")
         else:
+            # idna takes significant time and memory to import so we lazily
+            # load it so only users needing it will pay the penalty.
+            import idna
+
             # A normal email of the form user@domain.com. Let's attempt to
             # encode the domain component and reconstruct the address.
             encoded = parts[0].encode("ascii") + b"@" + idna.encode(parts[1])
@@ -115,6 +117,10 @@ class DNSName(object):
 @utils.register_interface(GeneralName)
 class UniformResourceIdentifier(object):
     def __init__(self, value):
+        # idna takes significant time and memory to import so we lazily
+        # load it so only users needing it will pay the penalty.
+        import idna
+
         if not isinstance(value, six.text_type):
             raise TypeError("value must be a unicode string")
 

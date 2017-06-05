@@ -7,8 +7,6 @@ from __future__ import absolute_import, division, print_function
 import calendar
 import ipaddress
 
-import idna
-
 import six
 
 from cryptography import utils, x509
@@ -371,6 +369,10 @@ def _encode_subject_key_identifier(backend, ski):
 
 
 def _idna_encode(value):
+    # idna takes significant time and memory to import so we lazily load it
+    # so only users needing it will pay the penalty.
+    import idna
+
     # Retain prefixes '*.' for common/alt names and '.' for name constraints
     for prefix in ['*.', '.']:
         if value.startswith(prefix):
