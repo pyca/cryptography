@@ -22,9 +22,9 @@ static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
 static const int EVP_MAX_MD_SIZE;
-static const int EVP_CTRL_GCM_SET_IVLEN;
-static const int EVP_CTRL_GCM_GET_TAG;
-static const int EVP_CTRL_GCM_SET_TAG;
+static const int EVP_CTRL_AEAD_SET_IVLEN;
+static const int EVP_CTRL_AEAD_GET_TAG;
+static const int EVP_CTRL_AEAD_SET_TAG;
 
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
@@ -210,5 +210,16 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
+#endif
+
+/* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
+#if !defined(EVP_CTRL_AEAD_SET_IVLEN)
+# define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
+#endif
+#if !defined(EVP_CTRL_AEAD_GET_TAG)
+# define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
+#endif
+#if !defined(EVP_CTRL_AEAD_SET_TAG)
+# define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
 #endif
 """
