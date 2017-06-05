@@ -39,13 +39,6 @@ class _X25519PrivateKey(object):
         )
         return _X25519PublicKey(self._backend, evp_pkey)
 
-    def private_bytes(self):
-        # TODO: determine format
-        bio = self._backend._create_mem_bio_gc()
-        res = self._backend._lib.i2d_PrivateKey_bio(bio, self._evp_pkey)
-        self._backend.openssl_assert(res == 1)
-        return self._backend._read_mem_bio(bio)
-
     def exchange(self, peer_public_key):
         if not isinstance(peer_public_key, X25519PublicKey):
             raise TypeError("peer_public_key must be X25519PublicKey.")
