@@ -1772,6 +1772,19 @@ class Backend(object):
         self.openssl_assert(res > 0)
         return self._ffi.buffer(pp[0], res)[:]
 
+    def x25519_load_public_key(self, data):
+        pass
+
+    def x25519_load_private_key(self, data):
+        pass
+
+    def x25519_generate_key(self):
+        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(self._lib.NID_X25519)
+        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
+        evp_pkey_ctx = self._ffi.gc(
+            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
+        )
+
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
         res = self._lib.EVP_PBE_scrypt(
