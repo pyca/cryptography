@@ -7,6 +7,12 @@ from __future__ import absolute_import, division, print_function
 from enum import Enum
 
 
+class CryptographyException(Exception):
+    """
+    Base class for cryptography library exceptions to inherit from.
+    """
+
+
 class _Reasons(Enum):
     BACKEND_MISSING_INTERFACE = 0
     UNSUPPORTED_HASH = 1
@@ -21,37 +27,37 @@ class _Reasons(Enum):
     UNSUPPORTED_DIFFIE_HELLMAN = 10
 
 
-class UnsupportedAlgorithm(Exception):
+class UnsupportedAlgorithm(CryptographyException):
     def __init__(self, message, reason=None):
         super(UnsupportedAlgorithm, self).__init__(message)
         self._reason = reason
 
 
-class AlreadyFinalized(Exception):
+class AlreadyFinalized(CryptographyException):
     pass
 
 
-class AlreadyUpdated(Exception):
+class AlreadyUpdated(CryptographyException):
     pass
 
 
-class NotYetFinalized(Exception):
+class NotYetFinalized(CryptographyException):
     pass
 
 
-class InvalidTag(Exception):
+class InvalidTag(CryptographyException):
     pass
 
 
-class InvalidSignature(Exception):
+class InvalidSignature(CryptographyException):
     pass
 
 
-class InternalError(Exception):
+class InternalError(CryptographyException):
     def __init__(self, msg, err_code):
         super(InternalError, self).__init__(msg)
         self.err_code = err_code
 
 
-class InvalidKey(Exception):
+class InvalidKey(CryptographyException):
     pass
