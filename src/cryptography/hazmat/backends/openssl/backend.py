@@ -14,7 +14,7 @@ from contextlib import contextmanager
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
