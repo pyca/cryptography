@@ -26,7 +26,8 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
     res = backend._lib.EVP_CIPHER_CTX_set_key_length(ctx, len(key))
     backend.openssl_assert(res != 0)
     res = backend._lib.EVP_CIPHER_CTX_ctrl(
-        ctx, backend._lib.EVP_CTRL_AEAD_SET_IVLEN, len(nonce), backend._ffi.NULL
+        ctx, backend._lib.EVP_CTRL_AEAD_SET_IVLEN, len(nonce),
+        backend._ffi.NULL
     )
     backend.openssl_assert(res != 0)
     if operation == _DECRYPT:
@@ -45,10 +46,10 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
     return ctx
 
 
-def _process_aad(backend, ctx, additional_data):
+def _process_aad(backend, ctx, associated_data):
     outlen = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherUpdate(
-        ctx, backend._ffi.NULL, outlen, additional_data, len(additional_data)
+        ctx, backend._ffi.NULL, outlen, associated_data, len(associated_data)
     )
     backend.openssl_assert(res != 0)
 
@@ -61,10 +62,10 @@ def _process_data(backend, ctx, data):
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
-def encrypt(backend, key, nonce, data, additional_data, operation):
-    ctx = _chacha20poly1305_setup(backend, key, nonce, None, operation)
+def encrypt(backend, key, nonce, data, associated_data):
+    ctx = _chacha20poly1305_setup(backend, key, nonce, None, _ENCRYPT)
 
-    _process_aad(backend, ctx, additional_data)
+    _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
@@ -81,9 +82,9 @@ def encrypt(backend, key, nonce, data, additional_data, operation):
     return (processed_data, tag)
 
 
-def decrypt(backend, key, nonce, tag, data, additional_data, operation):
-    ctx = _chacha20poly1305_setup(backend, key, nonce, tag, operation)
-    _process_aad(backend, ctx, additional_data)
+def decrypt(backend, key, nonce, tag, data, associated_data):
+    ctx = _chacha20poly1305_setup(backend, key, nonce, tag, _DECRYPT)
+    _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)

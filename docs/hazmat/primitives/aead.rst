@@ -6,9 +6,9 @@ Authenticated encryption
 
 .. module:: cryptography.hazmat.primitives.ciphers.aead
 
-Authenticated encryption with additional data allows the user to guarantee
-the integrity of both their ciphertext and optional additional data that does
-not require encryption.
+Authenticated encryption with associated data (AEAD) are encryption schemes
+which provide both confidentiality and integrity for their ciphertext. They
+also support providing integrity for associated data which is not encrypted.
 
 .. class:: ChaCha20Poly1305(key)
 
@@ -39,7 +39,7 @@ not require encryption.
 
         :returns bytes: A 32 byte key.
 
-    .. method:: encrypt(nonce, data, additional_data)
+    .. method:: encrypt(nonce, data, associated_data)
 
         .. warning::
 
@@ -49,23 +49,23 @@ not require encryption.
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
         :param bytes data: The data to encrypt.
-        :param bytes additional_data: Additional data that should be
+        :param bytes associated_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
             be ``None``.
         :returns: A tuple ``(ciphertext, tag)`` where ``ciphertext`` is the
             encrypted data and ``tag`` is a 16 byte value.
 
-    .. method:: decrypt(nonce, tag, data, additional_data)
+    .. method:: decrypt(nonce, tag, data, associated_data)
 
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
         :param bytes tag: A 16 byte ``tag`` value obtained from a previous call
             to ``encrypt``.
         :param bytes data: The data to decrypt.
-        :param bytes additional_data: Additional data to authenticate. Can be
+        :param bytes associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't match this exception will be raised. This will occur when
             the ciphertext has been changed, but will also occur when the key,
-            nonce, or additional data are wrong.
+            nonce, or associated data are wrong.

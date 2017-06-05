@@ -1781,16 +1781,15 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def chacha20poly1305_encrypt(self, key, nonce, data, additional_data):
+    def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
         return chacha20poly1305.encrypt(
-            self, key, nonce, data, additional_data, chacha20poly1305._ENCRYPT
+            self, key, nonce, data, associated_data
         )
 
     def chacha20poly1305_decrypt(self, key, nonce, tag, data,
-                                 additional_data):
+                                 associated_data):
         return chacha20poly1305.decrypt(
-            self, key, nonce, tag, data, additional_data,
-            chacha20poly1305._DECRYPT
+            self, key, nonce, tag, data, associated_data
         )
 
     def chacha20poly1305_supported(self):
