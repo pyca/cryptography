@@ -130,6 +130,9 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
+int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
+int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
+
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
