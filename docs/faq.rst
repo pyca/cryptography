@@ -45,6 +45,18 @@ If you are using PyPy, we do not currently ship ``cryptography`` wheels for
 PyPy. You will need to install your own copy of OpenSSL -- we recommend using
 Homebrew.
 
+Compiling ``cryptography`` on macOS produces a ``fatal error: 'openssl/opensslv.h' file not found`` error
+---------------------------------------------------------------------------------------------------------
+
+You may get this message with the newest version of pip and a version of Python
+that can't install from wheels (like PyPy). Install OpenSSL using Homebrew
+(``brew install openssl``) and then link against Homebrew's OpenSSL when
+installing cryptography by running
+
+.. code-block::
+
+    pip install cryptography --global-option=build_ext --global-option="-L$(brew --prefix)/opt/openssl/lib" --global-option="-I$(brew --prefix)/opt/openssl/include"
+
 Starting ``cryptography`` using ``mod_wsgi`` produces an ``InternalError`` during a call in ``_register_osrandom_engine``
 -------------------------------------------------------------------------------------------------------------------------
 
