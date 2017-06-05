@@ -17,7 +17,10 @@ class _X25519PublicKey(object):
         self._evp_pkey = evp_pkey
 
     def public_bytes(self):
-        pass
+        bio = self._backend._create_mem_bio_gc()
+        res = self._backend._lib.i2d_PUBKEY_bio(bio, self._evp_pkey)
+        self._backend.openssl_assert(res == 1)
+        return self._backend._read_mem_bio(bio)
 
 
 @utils.register_interface(X25519PrivateKey)
@@ -27,10 +30,39 @@ class _X25519PrivateKey(object):
         self._evp_pkey = evp_pkey
 
     def public_key(self):
-        pass
+        bio = self._backend._create_mem_bio_gc()
+        res = self._backend._lib.i2d_PUBKEY_bio(bio, self._evp_pkey)
+        self._backend.openssl_assert(res == 1)
+        evp_pkey = self._backend._lib.d2i_PUBKEY_bio(
+            bio, self._backend._ffi.NULL
+        )
+        return _X25519PublicKey(self._backend, evp_pkey)
 
     def private_bytes(self):
-        pass
+        bio = self._backend._create_mem_bio_gc()
+        res = self._backend._lib.i2d_PrivateKey_bio(bio, self._evp_pkey)
+        self._backend.openssl_assert(res == 1)
+        return self._backend._read_mem_bio(bio)
 
     def exchange(self, public_key):
-        pass
+        ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            self._evp_pkey, self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
+        ctx = self._backend._ffi.gc(ctx, self._backend._lib.EVP_PKEY_CTX_free)
+        res = self._backend._lib.EVP_PKEY_derive_init(ctx)
+        self._backend.openssl_assert(res == 1)
+        res = self._backend._lib.EVP_PKEY_derive_set_peer(
+            ctx, public_key._evp_pkey
+        )
+        self._backend.openssl_assert(res == 1)
+        keylen = self._backend._ffi.new("size_t *")
+        res = self._backend._lib.EVP_PKEY_derive(
+            ctx, self._backend._ffi.NULL, keylen
+        )
+        self._backend.openssl_assert(res == 1)
+        self._backend.openssl_assert(keylen[0] > 0)
+        buf = self._backend._ffi.new("unsigned char[]", keylen[0])
+        res = self._backend._lib.EVP_PKEY_derive(ctx, buf, keylen)
+        self._backend.openssl_assert(res == 1)
+        return self._backend._ffi.buffer(buf, keylen[0])[:]

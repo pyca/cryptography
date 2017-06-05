@@ -8,8 +8,6 @@ import abc
 
 import six
 
-from cryptography.hazmat.backends.openssl.backend import backend
-
 # EVP_PKEY_CTX_new_id(NID_ED25519, NULL);
 
 
@@ -17,7 +15,8 @@ from cryptography.hazmat.backends.openssl.backend import backend
 class X25519PublicKey(object):
     @classmethod
     def from_public_bytes(cls, data):
-        pass
+        from cryptography.hazmat.backends.openssl.backend import backend
+        return backend.x25519_load_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(self):
@@ -28,11 +27,13 @@ class X25519PublicKey(object):
 class X25519PrivateKey(object):
     @classmethod
     def generate(cls):
+        from cryptography.hazmat.backends.openssl.backend import backend
         return backend.x25519_generate_key()
 
     @classmethod
     def _from_private_bytes(cls, data):
-        pass
+        from cryptography.hazmat.backends.openssl.backend import backend
+        return backend.x25519_load_private_bytes(data)
 
     @abc.abstractmethod
     def public_key(self):
