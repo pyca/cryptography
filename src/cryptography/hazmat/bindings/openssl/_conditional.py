@@ -178,5 +178,6 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint": [
         "EVP_PKEY_get1_tls_encodedpoint",
+        "EVP_PKEY_set1_tls_encodedpoint",
     ],
 }
