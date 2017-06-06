@@ -40,7 +40,12 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
         backend.openssl_assert(res != 0)
 
     res = backend._lib.EVP_CipherInit_ex(
-        ctx, backend._ffi.NULL, backend._ffi.NULL, key, nonce, operation
+        ctx,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        key,
+        nonce,
+        int(operation == _ENCRYPT)
     )
     backend.openssl_assert(res != 0)
     return ctx

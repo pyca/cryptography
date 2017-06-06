@@ -12,7 +12,7 @@ from cryptography.hazmat.backends.openssl.backend import backend
 
 class ChaCha20Poly1305(object):
     def __init__(self, key):
-        utils.check_bytes("key", key)
+        utils._check_bytes("key", key)
 
         if len(key) != 32:
             raise ValueError("ChaCha20Poly1305 key must be 32 bytes.")
@@ -27,7 +27,7 @@ class ChaCha20Poly1305(object):
         if associated_data is None:
             associated_data = b""
 
-        self._check_vars(nonce, data, associated_data)
+        self._check_params(nonce, data, associated_data)
         return backend.chacha20poly1305_encrypt(
             self._key, nonce, data, associated_data
         )
@@ -36,8 +36,8 @@ class ChaCha20Poly1305(object):
         if associated_data is None:
             associated_data = b""
 
-        self._check_vars(nonce, data, associated_data)
-        utils.check_bytes("tag", tag)
+        self._check_params(nonce, data, associated_data)
+        utils._check_bytes("tag", tag)
         if not len(tag) == 16:
             raise ValueError("tag must be 16 bytes")
 
@@ -45,9 +45,9 @@ class ChaCha20Poly1305(object):
             self._key, nonce, tag, data, associated_data
         )
 
-    def _check_vars(self, nonce, data, associated_data):
-        utils.check_bytes("nonce", nonce)
-        utils.check_bytes("data", data)
-        utils.check_bytes("associated_data", associated_data)
+    def _check_params(self, nonce, data, associated_data):
+        utils._check_bytes("nonce", nonce)
+        utils._check_bytes("data", data)
+        utils._check_bytes("associated_data", associated_data)
         if not len(nonce) == 12:
             raise ValueError("Nonce must be 12 bytes")

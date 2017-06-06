@@ -18,7 +18,7 @@ PersistentlyDeprecated = DeprecationWarning
 DeprecatedIn19 = DeprecationWarning
 
 
-def check_bytes(name, value):
+def _check_bytes(name, value):
     if not isinstance(value, bytes):
         raise TypeError("{0} must be bytes".format(name))
 

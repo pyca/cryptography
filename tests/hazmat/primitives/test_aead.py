@@ -124,13 +124,13 @@ class TestChaCha20Poly1305(object):
     def test_boringssl_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        if vector["ad"].startswith(b"\""):
+        if vector["ad"].startswith(b'"'):
             aad = vector["ad"][1:-1]
         else:
             aad = binascii.unhexlify(vector["ad"])
         tag = binascii.unhexlify(vector["tag"])
-        if vector["in"].startswith(b"\""):
-            pt = vector["in"].strip(b"\"")
+        if vector["in"].startswith(b'"'):
+            pt = vector["in"][1:-1]
         else:
             pt = binascii.unhexlify(vector["in"])
         ct = binascii.unhexlify(vector["ct"].strip(b"\""))

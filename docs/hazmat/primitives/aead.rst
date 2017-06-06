@@ -35,7 +35,7 @@ also support providing integrity for associated data which is not encrypted.
 
     .. classmethod:: generate_key()
 
-        Generates a random ChaCha20Poly1305 key using ``os.urandom``.
+        Securly generates a random ChaCha20Poly1305 key.
 
         :returns bytes: A 32 byte key.
 
