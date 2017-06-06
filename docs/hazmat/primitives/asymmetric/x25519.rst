@@ -42,6 +42,8 @@ Key interfaces
 
 .. class:: X25519PrivateKey
 
+    TODO: Document the other terminology used for X25519 private components.
+
     .. versionadded:: 2.0
 
     .. classmethod:: generate()
@@ -63,17 +65,19 @@ Key interfaces
 
 .. class:: X25519PublicKey
 
+    TODO: Document the other terminology used for X25519 public components.
+
     .. versionadded:: 2.0
 
     .. classmethod:: from_public_bytes(data)
 
-        :param bytes data: TODO WHAT IS THIS
+        :param bytes data: 32 byte public key.
 
         :returns: :class:`X25519PublicKey`
 
     .. method:: public_bytes()
 
-        :returns: TODO
+        :returns bytes: The raw bytes of the public key.
 
 
 .. _`Diffie-Hellman key exchange`: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
