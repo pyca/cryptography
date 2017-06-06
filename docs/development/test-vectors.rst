@@ -35,6 +35,7 @@ Asymmetric ciphers
   * `Botan's ECC private keys`_.
 * `asymmetric/public/PKCS1/dsa.pub.pem`_ is a PKCS1 DSA public key from the
   Ruby test suite.
+* X25519 test vectors from :rfc:`7748`.
 
 
 Custom asymmetric vectors
