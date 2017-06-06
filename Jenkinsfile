@@ -237,7 +237,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
 
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
                             @set LIB="${opensslPaths[label]['lib']}";%LIB%
-                            pip install -U pip setuptools virtualenv
+                            python -m pip install -U pip setuptools virtualenv
                             tox -r
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
