@@ -31,7 +31,7 @@ static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
-static const int Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint;
+static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 """
 
 FUNCTIONS = """
