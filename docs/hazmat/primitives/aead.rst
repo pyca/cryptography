@@ -38,7 +38,7 @@ also support providing integrity for associated data which is not encrypted.
 
     .. classmethod:: generate_key()
 
-        Securly generates a random ChaCha20Poly1305 key.
+        Securely generates a random ChaCha20Poly1305 key.
 
         :returns bytes: A 32 byte key.
 
