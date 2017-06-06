@@ -70,7 +70,7 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-sid',
         toxenvs: ['docs'],
         artifacts: 'cryptography/docs/_build/html/**',
         artifactExcludes: '**/*.doctree',
@@ -87,7 +87,7 @@ if (env.BRANCH_NAME == "master") {
     configs.add(
         [
             label: 'docker',
-            imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+            imageName: 'pyca/cryptography-runner-sid',
             toxenvs: ['docs-linkcheck'],
         ]
     )
