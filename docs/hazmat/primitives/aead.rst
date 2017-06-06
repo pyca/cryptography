@@ -32,8 +32,8 @@ also support providing integrity for associated data which is not encrypted.
         >>> key = ChaCha20Poly1305.generate_key()
         >>> chacha = ChaCha20Poly1305(key)
         >>> nonce = os.urandom(12)
-        >>> ct, tag = chacha.encrypt(nonce, data, aad)
-        >>> chacha.decrypt(nonce, tag, ct, aad)
+        >>> ct = chacha.encrypt(nonce, data, aad)
+        >>> chacha.decrypt(nonce, ct, aad)
         'a secret message'
 
     .. classmethod:: generate_key()
@@ -55,16 +55,13 @@ also support providing integrity for associated data which is not encrypted.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
             be ``None``.
-        :returns: A tuple ``(ciphertext, tag)`` where ``ciphertext`` is the
-            encrypted data and ``tag`` is a 16 byte value.
+        :returns bytes: The ciphertext bytes with the 16 byte tag appended.
 
-    .. method:: decrypt(nonce, tag, data, associated_data)
+    .. method:: decrypt(nonce, data, associated_data)
 
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
-        :param bytes tag: A 16 byte ``tag`` value obtained from a previous call
-            to ``encrypt``.
-        :param bytes data: The data to decrypt.
+        :param bytes data: The data to decrypt (with tag appended).
         :param bytes associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
         :returns bytes: The original plaintext.

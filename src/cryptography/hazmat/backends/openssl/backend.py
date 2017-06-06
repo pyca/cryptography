@@ -1786,10 +1786,9 @@ class Backend(object):
             self, key, nonce, data, associated_data
         )
 
-    def chacha20poly1305_decrypt(self, key, nonce, tag, data,
-                                 associated_data):
+    def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
         return chacha20poly1305.decrypt(
-            self, key, nonce, tag, data, associated_data
+            self, key, nonce, data, associated_data
         )
 
     def chacha20poly1305_supported(self):

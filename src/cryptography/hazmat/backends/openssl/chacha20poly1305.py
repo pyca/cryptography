@@ -84,10 +84,12 @@ def encrypt(backend, key, nonce, data, associated_data):
     backend.openssl_assert(res != 0)
     tag = backend._ffi.buffer(tag_buf)[:]
 
-    return (processed_data, tag)
+    return processed_data + tag
 
 
-def decrypt(backend, key, nonce, tag, data, associated_data):
+def decrypt(backend, key, nonce, data, associated_data):
+    tag = data[-16:]
+    data = data[:-16]
     ctx = _chacha20poly1305_setup(backend, key, nonce, tag, _DECRYPT)
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)

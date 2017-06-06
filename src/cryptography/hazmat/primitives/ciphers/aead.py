@@ -36,17 +36,13 @@ class ChaCha20Poly1305(object):
             self._key, nonce, data, associated_data
         )
 
-    def decrypt(self, nonce, tag, data, associated_data):
+    def decrypt(self, nonce, data, associated_data):
         if associated_data is None:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        utils._check_bytes("tag", tag)
-        if not len(tag) == 16:
-            raise ValueError("tag must be 16 bytes")
-
         return backend.chacha20poly1305_decrypt(
-            self._key, nonce, tag, data, associated_data
+            self._key, nonce, data, associated_data
         )
 
     def _check_params(self, nonce, data, associated_data):

@@ -60,21 +60,8 @@ class TestChaCha20Poly1305(object):
         with pytest.raises(TypeError):
             chacha.encrypt(nonce, data, associated_data)
 
-    @pytest.mark.parametrize(
-        ("nonce", "tag", "data", "associated_data"),
-        [
-            [object(), b"0" * 16, b"data", b""],
-            [b"0" * 12, object(), b"data", b""],
-            [b"0" * 12, b"0" * 16, object(), b""],
-            [b"0" * 12, b"0" * 16, b"data", object()]
-        ]
-    )
-    def test_params_not_bytes_decrypt(self, nonce, tag, data, associated_data,
-                                      backend):
-        key = ChaCha20Poly1305.generate_key()
-        chacha = ChaCha20Poly1305(key)
         with pytest.raises(TypeError):
-            chacha.decrypt(nonce, tag, data, associated_data)
+            chacha.decrypt(nonce, data, associated_data)
 
     def test_nonce_not_12_bytes(self, backend):
         key = ChaCha20Poly1305.generate_key()
@@ -83,24 +70,17 @@ class TestChaCha20Poly1305(object):
             chacha.encrypt(b"00", b"hello", b"")
 
         with pytest.raises(ValueError):
-            chacha.decrypt(b"00", b"0" * 12, b"hello", b"")
-
-    def test_tag_not_16_bytes(self, backend):
-        key = ChaCha20Poly1305.generate_key()
-        chacha = ChaCha20Poly1305(key)
-        with pytest.raises(ValueError):
-            chacha.decrypt(b"0" * 12, b"0", b"hello", b"")
+            chacha.decrypt(b"00", b"hello", b"")
 
     def test_associated_data_none_equal_to_empty_bytestring(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         nonce = os.urandom(12)
-        ct1, tag1 = chacha.encrypt(nonce, b"some_data", None)
-        ct2, tag2 = chacha.encrypt(nonce, b"some_data", b"")
+        ct1 = chacha.encrypt(nonce, b"some_data", None)
+        ct2 = chacha.encrypt(nonce, b"some_data", b"")
         assert ct1 == ct2
-        assert tag1 == tag2
-        pt1 = chacha.decrypt(nonce, tag1, ct1, None)
-        pt2 = chacha.decrypt(nonce, tag2, ct2, b"")
+        pt1 = chacha.decrypt(nonce, ct1, None)
+        pt2 = chacha.decrypt(nonce, ct2, b"")
         assert pt1 == pt2
 
     @pytest.mark.parametrize(
@@ -120,13 +100,12 @@ class TestChaCha20Poly1305(object):
         chacha = ChaCha20Poly1305(key)
         if vector.get("result") == b"CIPHERFINAL_ERROR":
             with pytest.raises(InvalidTag):
-                chacha.decrypt(nonce, tag, ct, aad)
+                chacha.decrypt(nonce, ct + tag, aad)
         else:
-            computed_pt = chacha.decrypt(nonce, tag, ct, aad)
+            computed_pt = chacha.decrypt(nonce, ct + tag, aad)
             assert computed_pt == pt
-            computed_ct, computed_tag = chacha.encrypt(nonce, pt, aad)
-            assert computed_ct == ct
-            assert computed_tag == tag
+            computed_ct = chacha.encrypt(nonce, pt, aad)
+            assert computed_ct == ct + tag
 
     @pytest.mark.parametrize(
         "vector",
@@ -147,10 +126,9 @@ class TestChaCha20Poly1305(object):
             pt = vector["in"][1:-1]
         else:
             pt = binascii.unhexlify(vector["in"])
-        ct = binascii.unhexlify(vector["ct"].strip(b"\""))
+        ct = binascii.unhexlify(vector["ct"].strip(b'"'))
         chacha = ChaCha20Poly1305(key)
-        computed_pt = chacha.decrypt(nonce, tag, ct, aad)
+        computed_pt = chacha.decrypt(nonce, ct + tag, aad)
         assert computed_pt == pt
-        computed_ct, computed_tag = chacha.encrypt(nonce, pt, aad)
-        assert computed_ct == ct
-        assert computed_tag == tag
+        computed_ct = chacha.encrypt(nonce, pt, aad)
+        assert computed_ct == ct + tag
