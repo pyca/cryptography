@@ -31,6 +31,7 @@ static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
+static const int Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint;
 """
 
 FUNCTIONS = """
@@ -147,6 +148,9 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 """
 
 MACROS = """
+/* Added in 1.1.0 */
+size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
+
 /* PKCS8_PRIV_KEY_INFO * became const in 1.1.0 */
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 
@@ -216,6 +220,13 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+static const long Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint = 1;
+#else
+static const long Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint = 0;
+size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
 #endif
 
 /* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
