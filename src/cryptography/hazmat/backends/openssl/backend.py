@@ -1776,8 +1776,14 @@ class Backend(object):
         return self._ffi.buffer(pp[0], res)[:]
 
     def x25519_load_public_bytes(self, data):
-        # TODO: determine format
-        return _X25519PublicKey(self, data)
+        evp_pkey = self._create_evp_pkey_gc()
+        res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
+        backend.openssl_assert(res == 1)
+        res = self._lib.EVP_PKEY_set1_tls_encodedpoint(
+            evp_pkey, data, len(data)
+        )
+        backend.openssl_assert(res == 1)
+        return _X25519PublicKey(self, evp_pkey)
 
     def x25519_load_private_bytes(self, data):
         # TODO: determine format
