@@ -6,12 +6,16 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from cryptography import utils
+from cryptography import exceptions, utils
 from cryptography.hazmat.backends.openssl.backend import backend
 
 
 class ChaCha20Poly1305(object):
     def __init__(self, key):
+        if not backend.chacha20poly1305_supported():
+            raise exceptions.UnsupportedAlgorithm(
+                "ChaCha20Poly1305 is not supported by this version of OpenSSL."
+            )
         utils._check_bytes("key", key)
 
         if len(key) != 32:

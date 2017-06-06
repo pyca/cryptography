@@ -20,6 +20,9 @@ also support providing integrity for associated data which is not encrypted.
 
     :param bytes key: A 32-byte key. This **must** be kept secret.
 
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
+        OpenSSL does not support ChaCha20Poly1305.
+
     .. doctest::
 
         >>> import os

@@ -9,11 +9,23 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidTag
+from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from ...utils import load_nist_vectors, load_vectors_from_file
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: (
+        not backend.chacha20poly1305_supported()
+    ),
+    skip_message="Requires OpenSSL without ChaCha20Poly1305 support"
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+def test_chacha20poly1305_unsupported_on_older_openssl(backend):
+    with pytest.raises(UnsupportedAlgorithm):
+        ChaCha20Poly1305(ChaCha20Poly1305.generate_key())
 
 
 @pytest.mark.supported(
@@ -26,7 +38,7 @@ class TestChaCha20Poly1305(object):
         key = ChaCha20Poly1305.generate_key()
         assert len(key) == 32
 
-    def test_bad_key(self):
+    def test_bad_key(self, backend):
         with pytest.raises(TypeError):
             ChaCha20Poly1305(object())
 
@@ -41,7 +53,8 @@ class TestChaCha20Poly1305(object):
             [b"0" * 12, b"data", object()]
         ]
     )
-    def test_vars_not_bytes_encrypt(self, nonce, data, associated_data):
+    def test_params_not_bytes_encrypt(self, nonce, data, associated_data,
+                                      backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(TypeError):
@@ -56,13 +69,14 @@ class TestChaCha20Poly1305(object):
             [b"0" * 12, b"0" * 16, b"data", object()]
         ]
     )
-    def test_vars_not_bytes_decrypt(self, nonce, tag, data, associated_data):
+    def test_params_not_bytes_decrypt(self, nonce, tag, data, associated_data,
+                                      backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(TypeError):
             chacha.decrypt(nonce, tag, data, associated_data)
 
-    def test_nonce_not_12_bytes(self):
+    def test_nonce_not_12_bytes(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(ValueError):
@@ -71,13 +85,13 @@ class TestChaCha20Poly1305(object):
         with pytest.raises(ValueError):
             chacha.decrypt(b"00", b"0" * 12, b"hello", b"")
 
-    def test_tag_not_16_bytes(self):
+    def test_tag_not_16_bytes(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(ValueError):
             chacha.decrypt(b"0" * 12, b"0", b"hello", b"")
 
-    def test_associated_data_none_equal_to_empty_bytestring(self):
+    def test_associated_data_none_equal_to_empty_bytestring(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         nonce = os.urandom(12)
