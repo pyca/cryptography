@@ -12,11 +12,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     # set our flags to use homebrew openssl
     # if the build is static we need different LDFLAGS
     if [[ "${CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS}" == "1" ]]; then
-        export LDFLAGS="/usr/local/opt/openssl/lib/libssl.a /usr/local/opt/openssl/lib/libcrypto.a"
+        export LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libssl.a /usr/local/opt/openssl\@1.1/lib/libcrypto.a"
     else
-        export LDFLAGS="-L/usr/local/opt/openssl/lib"
+        export LDFLAGS="-L/usr/local/opt/openssl\@1.1/lib"
     fi
-    export CFLAGS="-I/usr/local/opt/openssl/include"
+    export CFLAGS="-I/usr/local/opt/openssl\@1.1/include"
 else
     if [[ "${TOXENV}" == "pypy" ]]; then
         PYENV_ROOT="$HOME/.pyenv"
