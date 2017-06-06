@@ -1786,8 +1786,18 @@ class Backend(object):
         return _X25519PublicKey(self, evp_pkey)
 
     def x25519_load_private_bytes(self, data):
-        # TODO: determine format
-        pass
+        # OpenSSL only has facilities for loading PKCS8 formatted private
+        # keys using the algorithm identifiers specified in
+        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-03.
+        # This is the standard PKCS8 prefix for a 32 byte X25519 key.
+        # The form is:
+        # (SEQUENCE INTEGER ALGORITHMIDENTIFIER OCTETSTRING)
+        pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
+        bio = self._bytes_to_bio(pkcs8_prefix + data)
+        evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return _X25519PrivateKey(self, evp_pkey)
 
     def x25519_generate_key(self):
         evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
