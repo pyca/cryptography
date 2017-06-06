@@ -10,9 +10,6 @@ X25519 is an elliptic curve `Diffie-Hellman key exchange`_ using `Curve25519`_.
 It allows two parties to jointly agree on a shared secret using an insecure
 channel.
 
-TODO: this is an elliptic curve (and a good one), should we mention it on
-the ec docs page?
-
 
 Exchange Algorithm
 ~~~~~~~~~~~~~~~~~~
@@ -20,7 +17,7 @@ Exchange Algorithm
 For most applications the ``shared_key`` should be passed to a key
 derivation function.
 
-.. code-block:: pycon
+.. doctest::
 
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
