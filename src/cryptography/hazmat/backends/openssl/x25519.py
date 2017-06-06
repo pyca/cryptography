@@ -17,11 +17,16 @@ class _X25519PublicKey(object):
         self._evp_pkey = evp_pkey
 
     def public_bytes(self):
-        # TODO: determine format
-        bio = self._backend._create_mem_bio_gc()
-        res = self._backend._lib.i2d_PUBKEY_bio(bio, self._evp_pkey)
-        self._backend.openssl_assert(res == 1)
-        return self._backend._read_mem_bio(bio)
+        ucharpp = self._backend._ffi.new("unsigned char **")
+        res = self._backend._lib.EVP_PKEY_get1_tls_encodedpoint(
+            self._evp_pkey, ucharpp
+        )
+        self._backend.openssl_assert(res == 32)
+        self._backend.openssl_assert(ucharpp[0] != self._backend._ffi.NULL)
+        data = self._backend._ffi.gc(
+            ucharpp[0], self._backend._lib.OPENSSL_free
+        )
+        return self._backend._ffi.buffer(data, res)[:]
 
 
 @utils.register_interface(X25519PrivateKey)

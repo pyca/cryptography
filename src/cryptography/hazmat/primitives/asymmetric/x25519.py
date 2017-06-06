@@ -40,9 +40,5 @@ class X25519PrivateKey(object):
         pass
 
     @abc.abstractmethod
-    def private_bytes(self):
-        pass
-
-    @abc.abstractmethod
-    def exchange(self, public_key):
+    def exchange(self, peer_public_key):
         pass
