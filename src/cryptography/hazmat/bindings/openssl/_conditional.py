@@ -176,4 +176,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_X25519": [
         "NID_X25519",
     ],
+    "Cryptography_HAS_EVP_PKEY_get1_tls_encodedpoint": [
+        "EVP_PKEY_get1_tls_encodedpoint",
+    ],
 }
