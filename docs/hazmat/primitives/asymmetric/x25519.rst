@@ -54,10 +54,6 @@ Key interfaces
 
         :returns: :class:`X25519PublicKey`
 
-    .. method:: private_bytes()
-
-        :returns: TODO
-
     .. method:: exchange(peer_public_key)
 
         :param X25519PublicKey peer_public_key: The public key for the
