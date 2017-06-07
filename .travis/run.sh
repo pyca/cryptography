@@ -14,9 +14,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     if [[ "${CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS}" == "1" ]]; then
         export LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libssl.a /usr/local/opt/openssl\@1.1/lib/libcrypto.a"
     else
-        export LDFLAGS="-L/usr/local/opt/openssl\@1.1/lib"
-        # Dynamic linkers are the worst.
-        export DYLD_LIBRARY_PATH="/usr/local/opt/openssl\@1.1/lib"
+        # Compile the dynamic link build against 1.0.2 because the linker refuses to properly load 1.1.0
+        export LDFLAGS="-L/usr/local/opt/openssl/lib"
     fi
     export CFLAGS="-I/usr/local/opt/openssl\@1.1/include"
 else
