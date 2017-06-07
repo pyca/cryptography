@@ -15,6 +15,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         export LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libssl.a /usr/local/opt/openssl\@1.1/lib/libcrypto.a"
     else
         export LDFLAGS="-L/usr/local/opt/openssl\@1.1/lib"
+        # Dynamic linkers are the worst.
+        export DYLD_LIBRARY_PATH="/usr/local/opt/openssl\@1.1/lib"
     fi
     export CFLAGS="-I/usr/local/opt/openssl\@1.1/include"
 else
