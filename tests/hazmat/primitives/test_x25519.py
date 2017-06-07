@@ -9,6 +9,8 @@ import os
 
 import pytest
 
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
 )
@@ -16,6 +18,24 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: not backend.x25519_supported(),
+    skip_message="Requires OpenSSL without X25519 support"
+)
+@pytest.mark.requires_backend_interface(interface=DHBackend)
+def test_x25519_unsupported(backend):
+    with pytest.raises(UnsupportedAlgorithm):
+        X25519PublicKey.from_public_bytes(b"0" * 32)
+
+    with pytest.raises(UnsupportedAlgorithm):
+        X25519PrivateKey.generate()
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x25519_supported(),
+    skip_message="Requires OpenSSL with X25519 support"
+)
+@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestX25519Exchange(object):
     @pytest.mark.parametrize(
         "vector",
@@ -24,7 +44,7 @@ class TestX25519Exchange(object):
             load_nist_vectors
         )
     )
-    def test_rfc7748(self, vector):
+    def test_rfc7748(self, vector, backend):
         private = binascii.unhexlify(vector["input_scalar"])
         public = binascii.unhexlify(vector["input_u"])
         shared_key = binascii.unhexlify(vector["output_u"])
@@ -33,7 +53,7 @@ class TestX25519Exchange(object):
         computed_shared_key = private_key.exchange(public_key)
         assert computed_shared_key == shared_key
 
-    def test_rfc7748_1000_iteration(self):
+    def test_rfc7748_1000_iteration(self, backend):
         old_private = private = public = binascii.unhexlify(
             b"090000000000000000000000000000000000000000000000000000000000"
             b"0000"

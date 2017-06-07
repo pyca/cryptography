@@ -1816,6 +1816,9 @@ class Backend(object):
         evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
         return _X25519PrivateKey(self, evp_pkey)
 
+    def x25519_supported(self):
+        return getattr(self._lib, "NID_X25519", None) is not None
+
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
         res = self._lib.EVP_PBE_scrypt(

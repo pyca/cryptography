@@ -8,7 +8,7 @@ import abc
 
 import six
 
-# EVP_PKEY_CTX_new_id(NID_ED25519, NULL);
+from cryptography.exceptions import UnsupportedAlgorithm
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -16,6 +16,10 @@ class X25519PublicKey(object):
     @classmethod
     def from_public_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+        if not backend.x25519_supported():
+            raise UnsupportedAlgorithm(
+                "X25519 is not supported by this version of OpenSSL"
+            )
         return backend.x25519_load_public_bytes(data)
 
     @abc.abstractmethod
@@ -28,6 +32,10 @@ class X25519PrivateKey(object):
     @classmethod
     def generate(cls):
         from cryptography.hazmat.backends.openssl.backend import backend
+        if not backend.x25519_supported():
+            raise UnsupportedAlgorithm(
+                "X25519 is not supported by this version of OpenSSL"
+            )
         return backend.x25519_generate_key()
 
     @classmethod
