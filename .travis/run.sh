@@ -12,11 +12,13 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     # set our flags to use homebrew openssl
     # if the build is static we need different LDFLAGS
     if [[ "${CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS}" == "1" ]]; then
-        export LDFLAGS="/usr/local/opt/openssl/lib/libssl.a /usr/local/opt/openssl/lib/libcrypto.a"
+        export LDFLAGS="/usr/local/opt/openssl\@1.1/lib/libssl.a /usr/local/opt/openssl\@1.1/lib/libcrypto.a"
+        export CFLAGS="-I/usr/local/opt/openssl\@1.1/include"
     else
+        # Compile the dynamic link build against 1.0.2 because the linker refuses to properly load 1.1.0
         export LDFLAGS="-L/usr/local/opt/openssl/lib"
+        export CFLAGS="-I/usr/local/opt/openssl/include"
     fi
-    export CFLAGS="-I/usr/local/opt/openssl/include"
 else
     if [[ "${TOXENV}" == "pypy" ]]; then
         PYENV_ROOT="$HOME/.pyenv"
