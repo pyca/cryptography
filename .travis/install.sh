@@ -7,7 +7,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     sw_vers
     brew update || brew update
 
-    brew outdated openssl@1.1 || brew upgrade openssl@1.1
+    brew install openssl@1.1
 
     # install pyenv
     git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
