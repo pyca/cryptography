@@ -39,8 +39,6 @@ Key interfaces
 
 .. class:: X25519PrivateKey
 
-    TODO: Document the other terminology used for X25519 private components.
-
     .. versionadded:: 2.0
 
     .. classmethod:: generate()
@@ -61,8 +59,6 @@ Key interfaces
         :returns bytes: A shared key.
 
 .. class:: X25519PublicKey
-
-    TODO: Document the other terminology used for X25519 public components.
 
     .. versionadded:: 2.0
 
