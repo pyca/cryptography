@@ -753,7 +753,7 @@ Different KDFs are suitable for different tasks such as:
     :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
     interface.
 
-    .. code-block:: python
+    .. doctest::
 
         >>> import os
         >>> from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
