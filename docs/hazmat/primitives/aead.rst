@@ -49,6 +49,10 @@ also support providing integrity for associated data which is not encrypted.
             Reuse of a ``nonce`` with a given ``key`` compromises the security
             of any message with that ``nonce`` and ``key`` pair.
 
+        Encrypts the ``data`` provided and authenticates the
+        ``associated_data``.  The output of this can be passed directly
+        to the ``decrypt`` method.
+
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
         :param bytes data: The data to encrypt.
@@ -59,6 +63,10 @@ also support providing integrity for associated data which is not encrypted.
 
     .. method:: decrypt(nonce, data, associated_data)
 
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail.
+
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
         :param bytes data: The data to decrypt (with tag appended).
@@ -66,6 +74,6 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
-            doesn't match this exception will be raised. This will occur when
-            the ciphertext has been changed, but will also occur when the key,
-            nonce, or associated data are wrong.
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.

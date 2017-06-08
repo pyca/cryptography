@@ -72,6 +72,12 @@ class TestChaCha20Poly1305(object):
         with pytest.raises(ValueError):
             chacha.decrypt(b"00", b"hello", b"")
 
+    def test_decrypt_data_too_short(self, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        with pytest.raises(InvalidTag):
+            chacha.decrypt(b"0" * 12, b"0", None)
+
     def test_associated_data_none_equal_to_empty_bytestring(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)

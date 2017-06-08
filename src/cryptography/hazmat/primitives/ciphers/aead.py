@@ -49,5 +49,5 @@ class ChaCha20Poly1305(object):
         utils._check_bytes("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
-        if not len(nonce) == 12:
+        if len(nonce) != 12:
             raise ValueError("Nonce must be 12 bytes")

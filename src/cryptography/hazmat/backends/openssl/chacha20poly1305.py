@@ -20,7 +20,7 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
         backend._ffi.NULL,
         backend._ffi.NULL,
         backend._ffi.NULL,
-        operation
+        int(operation == _ENCRYPT)
     )
     backend.openssl_assert(res != 0)
     res = backend._lib.EVP_CIPHER_CTX_set_key_length(ctx, len(key))
@@ -31,7 +31,6 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
     )
     backend.openssl_assert(res != 0)
     if operation == _DECRYPT:
-        assert len(tag) == 16
         res = backend._lib.EVP_CIPHER_CTX_ctrl(
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
         )
@@ -86,6 +85,8 @@ def encrypt(backend, key, nonce, data, associated_data):
 
 
 def decrypt(backend, key, nonce, data, associated_data):
+    if len(data) < 16:
+        raise InvalidTag
     tag = data[-16:]
     data = data[:-16]
     ctx = _chacha20poly1305_setup(backend, key, nonce, tag, _DECRYPT)
