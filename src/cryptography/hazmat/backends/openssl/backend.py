@@ -44,7 +44,7 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x25519 import (
-    _X25519PublicKey, _X25519PrivateKey
+    _X25519PrivateKey, _X25519PublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
