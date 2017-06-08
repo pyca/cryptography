@@ -58,15 +58,6 @@ Elliptic Curve Signature Algorithms
         >>> private_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
         ... )
-        >>> signer = private_key.signer(ec.ECDSA(hashes.SHA256()))
-        >>> signer.update(b"this is some data I'd like")
-        >>> signer.update(b" to sign")
-        >>> signature = signer.finalize()
-
-    There is a shortcut to sign sufficiently short messages directly:
-
-    .. doctest::
-
         >>> data = b"this is some data I'd like to sign"
         >>> signature = private_key.sign(
         ...     data,
@@ -77,21 +68,56 @@ Elliptic Curve Signature Algorithms
     described in :rfc:`3279`. This can be decoded using
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
+    If your data is too large to be passed in a single call, you can hash it
+    separately and pass that value using
+    :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
 
-    Verification requires the public key, the signature itself, the signed data, and knowledge of the hashing algorithm that was used when producing the signature:
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.asymmetric import utils
+        >>> chosen_hash = hashes.SHA256()
+        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher.update(b"data & ")
+        >>> hasher.update(b"more data")
+        >>> digest = hasher.finalize()
+        >>> sig = private_key.sign(
+        ...     digest,
+        ...     ec.ECDSA(utils.Prehashed(chosen_hash))
+        ... )
+
+
+    Verification requires the public key, the signature itself, the signed
+    data, and knowledge of the hashing algorithm that was used when producing
+    the signature:
 
     >>> public_key = private_key.public_key()
-    >>> verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA256()))
-    >>> verifier.update(b"this is some data I'd like")
-    >>> verifier.update(b" to sign")
-    >>> verifier.verify()
-    True
+    >>> public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
 
-    The last call will either return ``True`` or raise an :class:`~cryptography.exceptions.InvalidSignature` exception.
+    If the signature is not valid, an
+    :class:`~cryptography.exceptions.InvalidSignature` exception will be raised.
+
+    If your data is too large to be passed in a single call, you can hash it
+    separately and pass that value using
+    :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+    .. doctest::
+
+        >>> chosen_hash = hashes.SHA256()
+        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher.update(b"data & ")
+        >>> hasher.update(b"more data")
+        >>> digest = hasher.finalize()
+        >>> public_key.verify(
+        ...     sig,
+        ...     digest,
+        ...     ec.ECDSA(utils.Prehashed(chosen_hash))
+        ... )
 
     .. note::
-        Although in this case the public key was derived from the private one, in a typical setting you will not possess the private key. The `Key loading`_ section explains how to load the public key from other sources.
-
+        Although in this case the public key was derived from the private one,
+        in a typical setting you will not possess the private key. The
+        `Key loading`_ section explains how to load the public key from other
+        sources.
 
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
@@ -206,13 +232,25 @@ Elliptic Curve Key Exchange algorithm
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> # Generate a private key for use in the exchange.
         >>> private_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
         ... )
+        >>> # In a real handshake the peer_public_key will be received from the
+        >>> # other party. For this example we'll generate another private key
+        >>> # and get a public key from that.
         >>> peer_public_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
         ... ).public_key()
         >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
+        >>> # For the next handshake we MUST generate another private key.
+        >>> private_key_2 = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> peer_public_key_2 = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... ).public_key()
+        >>> shared_key_2 = private_key_2.exchange(ec.ECDH(), peer_public_key_2)
 
     ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
     preferred** over simple ECDH and provides `forward secrecy`_ when used.
@@ -405,18 +443,6 @@ Key Interfaces
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. method:: signer(signature_algorithm)
-
-        Sign data which can be verified later by others using the public key.
-        The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`3279`.
-
-        :param signature_algorithm: An instance of
-            :class:`EllipticCurveSignatureAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-
     .. method:: exchange(algorithm, peer_public_key)
 
         .. versionadded:: 1.1
@@ -454,6 +480,15 @@ Key Interfaces
             :class:`EllipticCurveSignatureAlgorithm`, such as :class:`ECDSA`.
 
         :return bytes: Signature.
+
+    .. attribute:: key_size
+
+        .. versionadded:: 1.9
+
+        :type: int
+
+        Size (in bits) of a secret scalar for the curve (as generated by
+        :func:`generate_private_key`).
 
 
 .. class:: EllipticCurvePrivateKeyWithSerialization
@@ -501,20 +536,6 @@ Key Interfaces
 
     An elliptic curve public key.
 
-    .. method:: verifier(signature, signature_algorithm)
-
-        Verify data was signed by the private key associated with this public
-        key.
-
-        :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`3279`.
-
-        :param signature_algorithm: An instance of
-            :class:`EllipticCurveSignatureAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
-
      .. attribute:: curve
 
         :type: :class:`EllipticCurve`
@@ -561,6 +582,15 @@ Key Interfaces
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 
+    .. attribute:: key_size
+
+        .. versionadded:: 1.9
+
+        :type: int
+
+        Size (in bits) of a secret scalar for the curve (as generated by
+        :func:`generate_private_key`).
+
 
 .. class:: EllipticCurvePublicKeyWithSerialization
 
@@ -589,7 +619,7 @@ This sample demonstrates how to generate a private key and serialize it.
     ...     encoding=serialization.Encoding.PEM,
     ...     format=serialization.PrivateFormat.PKCS8,
     ...     encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
-    ...     )
+    ... )
     >>> serialized_private.splitlines()[0]
     '-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
@@ -605,7 +635,7 @@ The public key is serialized as follows:
     >>> serialized_public = public_key.public_bytes(
     ...     encoding=serialization.Encoding.PEM,
     ...     format=serialization.PublicFormat.SubjectPublicKeyInfo
-    ...     )
+    ... )
     >>> serialized_public.splitlines()[0]
     '-----BEGIN PUBLIC KEY-----'
 
@@ -622,15 +652,16 @@ in PEM format.
 .. doctest::
 
     >>> loaded_public_key = serialization.load_pem_public_key(
-    ...    serialized_public,
-    ...    backend=default_backend()
-    ...    )
+    ...     serialized_public,
+    ...     backend=default_backend()
+    ... )
 
     >>> loaded_private_key = serialization.load_pem_private_key(
-    ...    serialized_private,
-    ...    password=b'testpassword',  # or password=None, if in plain text
-    ...    backend=default_backend()
-    ...    )
+    ...     serialized_private,
+    ...     # or password=None, if in plain text
+    ...     password=b'testpassword',
+    ...     backend=default_backend()
+    ... )
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf

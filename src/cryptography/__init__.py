@@ -25,3 +25,9 @@ if sys.version_info[:2] == (2, 6):
         "support for Python 2.6",
         DeprecationWarning
     )
+if sys.version_info[:2] == (3, 3):
+    warnings.warn(
+        "Python 3.3 support will be dropped in the next release of"
+        "cryptography. Please upgrade your Python.",
+        DeprecationWarning,
+    )

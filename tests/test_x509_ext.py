@@ -409,6 +409,7 @@ class TestPolicyInformation(object):
         assert pi != object()
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificatePolicies(object):
     def test_invalid_policies(self):
         pq = [u"string"]
@@ -480,6 +481,26 @@ class TestCertificatePolicies(object):
         cp = x509.CertificatePolicies([pi, pi2, pi3, pi4, pi5])
         assert cp[-1] == cp[4]
         assert cp[2:6:2] == [cp[2], cp[4]]
+
+    def test_long_oid(self, backend):
+        """
+        Test that parsing a CertificatePolicies ext with
+        a very long OID succeeds.
+        """
+        cert = _load_cert(
+            os.path.join("x509", "bigoid.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.CertificatePolicies)
+
+        oid = x509.ObjectIdentifier(
+            "1.3.6.1.4.1.311.21.8.8950086.10656446.2706058"
+            ".12775672.480128.147.13466065.13029902"
+        )
+
+        assert ext.value[0].policy_identifier == oid
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1085,10 +1106,10 @@ class TestExtensions(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        with pytest.raises(x509.UnsupportedExtension) as exc:
-            cert.extensions
-
-        assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ObjectIdentifier("1.2.3.4")
+        )
+        assert ext.value.value == b"value"
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_unsupported_extension(self, backend):
@@ -3643,6 +3664,48 @@ class TestInhibitAnyPolicyExtension(object):
             ExtensionOID.INHIBIT_ANY_POLICY
         ).value
         assert iap.skip_certs == 5
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER,
+    skip_message="Requires OpenSSL 1.1.0f+",
+)
+class TestPrecertificateSignedCertificateTimestampsExtension(object):
+    def test_init(self):
+        with pytest.raises(TypeError):
+            x509.PrecertificateSignedCertificateTimestamps([object()])
+
+    def test_repr(self):
+        assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
+            "<PrecertificateSignedCertificateTimestamps([])>"
+        )
+
+    def test_simple(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        scts = cert.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        assert len(scts) == 1
+        [sct] = scts
+        assert scts[0] == sct
+        assert sct.version == x509.certificate_transparency.Version.v1
+        assert sct.log_id == (
+            b"\xa7\xceJNb\x07\xe0\xad\xde\xe5\xfd\xaaK\x1f\x86v\x87g\xb5\xd0"
+            b"\x02\xa5]G1\x0e~g\n\x95\xea\xb2"
+        )
+        assert sct.timestamp == datetime.datetime(
+            2016, 11, 17, 1, 56, 25, 396000
+        )
+        assert (
+            sct.entry_type ==
+            x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

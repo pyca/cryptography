@@ -4,7 +4,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.backends.commoncrypto.backend import backend
+import pytest
+
+from cryptography import utils
 
 
-__all__ = ["backend"]
+def test_deprecated_maccontext():
+    with pytest.warns(utils.DeprecatedIn19):
+        from cryptography.hazmat.primitives.interfaces import MACContext
+        assert MACContext

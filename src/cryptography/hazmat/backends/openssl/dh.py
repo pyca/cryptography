@@ -63,11 +63,11 @@ class _DHParameters(object):
 def _handle_dh_compute_key_error(errors, backend):
     lib = backend._lib
 
-    backend.openssl_assert(errors[0][1:] == (
-        lib.ERR_LIB_DH,
-        lib.DH_F_COMPUTE_KEY,
-        lib.DH_R_INVALID_PUBKEY
-    ))
+    backend.openssl_assert(
+        errors[0]._lib_reason_match(
+            lib.ERR_LIB_DH, lib.DH_R_INVALID_PUBKEY
+        )
+    )
 
     raise ValueError("Public key value is invalid for this exchange.")
 

@@ -120,9 +120,12 @@ def _encode_sk_name_entry(backend, attributes):
 def _encode_name_entry(backend, attribute):
     value = attribute.value.encode('utf8')
     obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
-    if attribute.oid == NameOID.COUNTRY_NAME:
+    if attribute.oid in [
+        NameOID.COUNTRY_NAME, NameOID.JURISDICTION_COUNTRY_NAME
+    ]:
         # Per RFC5280 Appendix A.1 countryName should be encoded as
-        # PrintableString, not UTF8String
+        # PrintableString, not UTF8String. EV Guidelines section 9.2.5 says
+        # jurisdictionCountryName follows the same rules as countryName.
         type = backend._lib.MBSTRING_ASC
     else:
         type = backend._lib.MBSTRING_UTF8

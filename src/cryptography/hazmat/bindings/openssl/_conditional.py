@@ -4,9 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-# This is a temporary copy of all the CONDITIONAL_NAMES from _cffi_src so
-# we can loop over them and delete them at runtime. It will be removed when
-# cffi supports #if in cdef
+# This is a mapping of {condition: names-dependent-on-that-condition} so we can
+# loop over them and delete unsupported names at runtime. It will be removed
+# when cffi supports #if in cdef.
 
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_CMS": [
@@ -152,6 +152,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_EVP_PKEY_DHX": [
         "EVP_PKEY_DHX",
+        "Cryptography_d2i_DHxparams_bio",
+        "Cryptography_i2d_DHxparams_bio",
+        "PEM_write_bio_DHxparams",
     ],
     "Cryptography_HAS_MEM_FUNCTIONS": [
         "Cryptography_CRYPTO_set_mem_functions",
@@ -161,7 +164,20 @@ CONDITIONAL_NAMES = {
         "SCT_get_log_entry_type",
         "SCT_get0_log_id",
         "SCT_get_timestamp",
+        "SCT_set_source",
         "sk_SCT_num",
         "sk_SCT_value",
+        "SCT_LIST_free",
+    ],
+    "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": [
+        "X509_STORE_get_get_issuer",
+        "X509_STORE_set_get_issuer",
+    ],
+    "Cryptography_HAS_X25519": [
+        "NID_X25519",
+    ],
+    "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": [
+        "EVP_PKEY_get1_tls_encodedpoint",
+        "EVP_PKEY_set1_tls_encodedpoint",
     ],
 }

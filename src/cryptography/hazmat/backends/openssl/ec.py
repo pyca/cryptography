@@ -9,7 +9,8 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed,
+    _warn_sign_verify_deprecated
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -86,7 +87,6 @@ def _ecdsa_sig_verify(backend, public_key, signature, data):
     if res != 1:
         backend._consume_errors()
         raise InvalidSignature
-    return True
 
 
 @utils.register_interface(AsymmetricSignatureContext)
@@ -118,7 +118,7 @@ class _ECDSAVerificationContext(object):
 
     def verify(self):
         digest = self._digest.finalize()
-        return _ecdsa_sig_verify(
+        _ecdsa_sig_verify(
             self._backend, self._public_key, self._signature, digest
         )
 
@@ -136,8 +136,14 @@ class _EllipticCurvePrivateKey(object):
 
     curve = utils.read_only_property("_curve")
 
+    @property
+    def key_size(self):
+        return self.curve.key_size
+
     def signer(self, signature_algorithm):
+        _warn_sign_verify_deprecated()
         _check_signature_algorithm(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSASignatureContext(
             self._backend, self, signature_algorithm.algorithm
         )
@@ -232,11 +238,17 @@ class _EllipticCurvePublicKey(object):
 
     curve = utils.read_only_property("_curve")
 
+    @property
+    def key_size(self):
+        return self.curve.key_size
+
     def verifier(self, signature, signature_algorithm):
+        _warn_sign_verify_deprecated()
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
 
         _check_signature_algorithm(signature_algorithm)
+        _check_not_prehashed(signature_algorithm.algorithm)
         return _ECDSAVerificationContext(
             self._backend, self, signature, signature_algorithm.algorithm
         )
@@ -283,4 +295,4 @@ class _EllipticCurvePublicKey(object):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, signature_algorithm._algorithm
         )
-        return _ecdsa_sig_verify(self._backend, self, signature, data)
+        _ecdsa_sig_verify(self._backend, self, signature, data)

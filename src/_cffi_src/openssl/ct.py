@@ -26,6 +26,13 @@ typedef enum {
     CT_LOG_ENTRY_TYPE_PRECERT
 } ct_log_entry_type_t;
 
+typedef enum {
+    SCT_SOURCE_UNKNOWN,
+    SCT_SOURCE_TLS_EXTENSION,
+    SCT_SOURCE_X509V3_EXTENSION,
+    SCT_SOURCE_OCSP_STAPLED_RESPONSE
+} sct_source_t;
+
 typedef ... SCT;
 typedef ... Cryptography_STACK_OF_SCT;
 """
@@ -42,8 +49,12 @@ size_t SCT_get0_log_id(const SCT *, unsigned char **);
 
 uint64_t SCT_get_timestamp(const SCT *);
 
+int SCT_set_source(SCT *, sct_source_t);
+
 int sk_SCT_num(const Cryptography_STACK_OF_SCT *);
 SCT *sk_SCT_value(const Cryptography_STACK_OF_SCT *, int);
+
+void SCT_LIST_free(Cryptography_STACK_OF_SCT *);
 """
 
 CUSTOMIZATIONS = """
@@ -61,6 +72,12 @@ typedef enum {
     CT_LOG_ENTRY_TYPE_X509,
     CT_LOG_ENTRY_TYPE_PRECERT
 } ct_log_entry_type_t;
+typedef enum {
+    SCT_SOURCE_UNKNOWN,
+    SCT_SOURCE_TLS_EXTENSION,
+    SCT_SOURCE_X509V3_EXTENSION,
+    SCT_SOURCE_OCSP_STAPLED_RESPONSE
+} sct_source_t;
 typedef void SCT;
 typedef void Cryptography_STACK_OF_SCT;
 
@@ -69,7 +86,11 @@ ct_log_entry_type_t (*SCT_get_log_entry_type)(const SCT *) = NULL;
 size_t (*SCT_get0_log_id)(const SCT *, unsigned char **) = NULL;
 uint64_t (*SCT_get_timestamp)(const SCT *) = NULL;
 
+int (*SCT_set_source)(SCT *, sct_source_t) = NULL;
+
 int (*sk_SCT_num)(const Cryptography_STACK_OF_SCT *) = NULL;
 SCT *(*sk_SCT_value)(const Cryptography_STACK_OF_SCT *, int) = NULL;
+
+void (*SCT_LIST_free)(Cryptography_STACK_OF_SCT *) = NULL;
 #endif
 """

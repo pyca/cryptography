@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
+from cryptography.hazmat.backends.openssl import chacha20poly1305
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
@@ -91,7 +92,7 @@ class Backend(object):
         self._lib = self._binding.lib
 
         # Set the default string mask for encoding ASN1 strings to UTF8. This
-        # is the default for newer OpenSSLs for several years and is
+        # is the default for newer OpenSSLs for several years (1.0.1h+) and is
         # recommended in RFC 2459.
         res = self._lib.ASN1_STRING_set_default_mask_asc(b"utf8only")
         self.openssl_assert(res == 1)
@@ -331,9 +332,9 @@ class Backend(object):
             return bn_ptr
 
         else:
-            # Under Python 2 the best we can do is hex()
-
-            hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
+            # Under Python 2 the best we can do is hex(), [2:] removes the 0x
+            # prefix.
+            hex_num = hex(num).rstrip("L")[2:].encode("ascii")
             bn_ptr = self._ffi.new("BIGNUM **")
             bn_ptr[0] = bn
             res = self._lib.BN_hex2bn(bn_ptr, hex_num)
@@ -710,10 +711,13 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
+
             raise ValueError("Digest too big for RSA key")
 
         return _CertificateSigningRequest(self, x509_req)
@@ -792,9 +796,11 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
             raise ValueError("Digest too big for RSA key")
 
@@ -802,9 +808,11 @@ class Backend(object):
 
     def _raise_time_set_error(self):
         errors = self._consume_errors()
-        self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_ASN1)
         self.openssl_assert(
-            errors[0][3] == self._lib.ASN1_R_ERROR_GETTING_TIME
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_ASN1,
+                self._lib.ASN1_R_ERROR_GETTING_TIME
+            )
         )
         raise ValueError(
             "Invalid time. This error can occur if you set a time too far in "
@@ -879,9 +887,11 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
             raise ValueError("Digest too big for RSA key")
 
@@ -1173,31 +1183,21 @@ class Backend(object):
         if not errors:
             raise ValueError("Could not deserialize key data.")
 
-        elif errors[0][1:] in (
-            (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                self._lib.EVP_R_BAD_DECRYPT
-            ),
-            (
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
+            ) or errors[0]._lib_reason_match(
                 self._lib.ERR_LIB_PKCS12,
-                self._lib.PKCS12_F_PKCS12_PBE_CRYPT,
-                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
+                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR
             )
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 
-        elif errors[0][1:] in (
-            (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
-                self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
-            ),
-
-            (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_PBE_CIPHERINIT,
-                self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+            ) or errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
             )
         ):
             raise UnsupportedAlgorithm(
@@ -1206,9 +1206,8 @@ class Backend(object):
             )
 
         elif any(
-            error[1:] == (
+            error._lib_reason_match(
                 self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_PKCS82PKEY,
                 self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
             )
             for error in errors
@@ -1216,7 +1215,7 @@ class Backend(object):
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            assert errors[0][1] in (
+            assert errors[0].lib in (
                 self._lib.ERR_LIB_EVP,
                 self._lib.ERR_LIB_PEM,
                 self._lib.ERR_LIB_ASN1,
@@ -1235,9 +1234,8 @@ class Backend(object):
             errors = self._consume_errors()
             self.openssl_assert(
                 curve_nid == self._lib.NID_undef or
-                errors[0][1:] == (
+                errors[0]._lib_reason_match(
                     self._lib.ERR_LIB_EC,
-                    self._lib.EC_F_EC_GROUP_NEW_BY_CURVE_NAME,
                     self._lib.EC_R_UNKNOWN_GROUP
                 )
             )
@@ -1782,6 +1780,22 @@ class Backend(object):
         )
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
+
+    def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
+        return chacha20poly1305.encrypt(
+            self, key, nonce, data, associated_data
+        )
+
+    def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
+        return chacha20poly1305.decrypt(
+            self, key, nonce, data, associated_data
+        )
+
+    def chacha20poly1305_supported(self):
+        return (
+            self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
+            self._ffi.NULL
+        )
 
 
 class GetCipherByName(object):

@@ -7,18 +7,15 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-import cffi
-
 import pytest
 
-from cryptography.exceptions import _Reasons
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
-from cryptography.utils import _version_check
 
 from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
@@ -142,10 +139,6 @@ def test_invalid_backend():
         ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), modes.ECB, pretend_backend)
 
 
-@pytest.mark.skipif(
-    not _version_check(cffi.__version__, '1.7'),
-    reason="cffi version too old"
-)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         AES(b"\x00" * 16), modes.ECB()
@@ -197,6 +190,28 @@ class TestCipherUpdateInto(object):
         assert res == len(pt)
         assert bytes(buf)[:res] == pt
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
+    def test_finalize_with_tag_already_finalized(self, backend):
+        key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
+        iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
+        encryptor = ciphers.Cipher(
+            AES(key), modes.GCM(iv), backend
+        ).encryptor()
+        ciphertext = encryptor.update(b"abc") + encryptor.finalize()
+
+        decryptor = ciphers.Cipher(
+            AES(key), modes.GCM(iv, tag=encryptor.tag), backend
+        ).decryptor()
+        decryptor.update(ciphertext)
+        decryptor.finalize()
+        with pytest.raises(AlreadyFinalized):
+            decryptor.finalize_with_tag(encryptor.tag)
+
     @pytest.mark.parametrize(
         "params",
         load_vectors_from_file(
@@ -238,45 +253,3 @@ class TestCipherUpdateInto(object):
         buf = bytearray(5)
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
-
-
-@pytest.mark.skipif(
-    _version_check(cffi.__version__, '1.7'),
-    reason="cffi version too new"
-)
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCipherUpdateIntoUnsupported(object):
-    def _too_old(self, mode, backend):
-        key = b"\x00" * 16
-        c = ciphers.Cipher(AES(key), mode, backend)
-        encryptor = c.encryptor()
-        buf = bytearray(32)
-        with pytest.raises(NotImplementedError):
-            encryptor.update_into(b"\x00" * 16, buf)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.ECB()
-        ),
-        skip_message="Does not support AES ECB",
-    )
-    def test_cffi_too_old_ecb(self, backend):
-        self._too_old(modes.ECB(), backend)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.CTR(b"0" * 16)
-        ),
-        skip_message="Does not support AES CTR",
-    )
-    def test_cffi_too_old_ctr(self, backend):
-        self._too_old(modes.CTR(b"0" * 16), backend)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.GCM(b"0" * 16)
-        ),
-        skip_message="Does not support AES GCM",
-    )
-    def test_cffi_too_old_gcm(self, backend):
-        self._too_old(modes.GCM(b"0" * 16), backend)

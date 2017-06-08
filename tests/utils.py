@@ -25,43 +25,14 @@ KeyedHashVector = collections.namedtuple(
 )
 
 
-def select_backends(names, backend_list):
-    if names is None:
-        return backend_list
-    split_names = [x.strip() for x in names.split(',')]
-    selected_backends = []
-    for backend in backend_list:
-        if backend.name in split_names:
-            selected_backends.append(backend)
-
-    if len(selected_backends) > 0:
-        return selected_backends
-    else:
-        raise ValueError(
-            "No backend selected. Tried to select: {0}".format(split_names)
-        )
-
-
-def skip_if_empty(backend_list, required_interfaces):
-    if not backend_list:
-        pytest.skip(
-            "No backends provided supply the interface: {0}".format(
-                ", ".join(iface.__name__ for iface in required_interfaces)
-            )
-        )
-
-
-def check_backend_support(item):
+def check_backend_support(backend, item):
     supported = item.keywords.get("supported")
-    if supported and "backend" in item.funcargs:
+    if supported:
         for mark in supported:
-            if not mark.kwargs["only_if"](item.funcargs["backend"]):
+            if not mark.kwargs["only_if"](backend):
                 pytest.skip("{0} ({1})".format(
-                    mark.kwargs["skip_message"], item.funcargs["backend"]
+                    mark.kwargs["skip_message"], backend
                 ))
-    elif supported:
-        raise ValueError("This mark is only available on methods that take a "
-                         "backend")
 
 
 @contextmanager

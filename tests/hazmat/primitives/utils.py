@@ -47,10 +47,9 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
 
 
 def encrypt_test(backend, cipher_factory, mode_factory, params):
-    if not backend.cipher_supported(
+    assert backend.cipher_supported(
         cipher_factory(**params), mode_factory(**params)
-    ):
-        pytest.skip("cipher/mode combo is unsupported by this backend")
+    )
 
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
@@ -304,8 +303,6 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         mode_factory(binascii.unhexlify(b"0" * 24)),
         backend
     )
-    with pytest.raises(ValueError):
-        cipher.decryptor()
 
     with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")

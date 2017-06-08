@@ -256,7 +256,11 @@ class TestRSASignature(object):
                 n=private["modulus"]
             )
         ).private_key(backend)
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
+        signer = pytest.deprecated_call(
+            private_key.signer,
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -531,6 +535,35 @@ class TestRSASignature(object):
         with pytest.raises(ValueError):
             private_key.sign(digest, pss, prehashed_alg)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5."
+    )
+    def test_prehashed_unsupported_in_signer_ctx(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        with pytest.raises(TypeError):
+            private_key.signer(
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1())
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5."
+    )
+    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
+        public_key = RSA_KEY_512.private_key(backend).public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(
+                b"0" * 64,
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1())
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
@@ -554,7 +587,8 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        verifier = public_key.verifier(
+        verifier = pytest.deprecated_call(
+            public_key.verifier,
             binascii.unhexlify(example["signature"]),
             padding.PKCS1v15(),
             hashes.SHA1()

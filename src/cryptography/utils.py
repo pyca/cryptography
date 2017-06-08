@@ -10,13 +10,17 @@ import inspect
 import sys
 import warnings
 
-from packaging.version import parse
-
 
 # Several APIs were deprecated with no specific end-of-life date because of the
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
 PersistentlyDeprecated = DeprecationWarning
+DeprecatedIn19 = DeprecationWarning
+
+
+def _check_bytes(name, value):
+    if not isinstance(value, bytes):
+        raise TypeError("{0} must be bytes".format(name))
 
 
 def read_only_property(name):
@@ -104,11 +108,6 @@ else:
         return len(bin(x)) - (2 + (x <= 0))
 
 
-def _version_check(version, required_version):
-    # This is used to check if we support update_into on CipherContext.
-    return parse(version) >= parse(required_version)
-
-
 class _DeprecatedValue(object):
     def __init__(self, value, message, warning_class):
         self.value = value
@@ -144,5 +143,5 @@ class _ModuleWithDeprecations(object):
 def deprecated(value, module_name, message, warning_class):
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):
-        sys.modules[module_name] = module = _ModuleWithDeprecations(module)
+        sys.modules[module_name] = _ModuleWithDeprecations(module)
     return _DeprecatedValue(value, message, warning_class)

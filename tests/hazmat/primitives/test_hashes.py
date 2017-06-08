@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
@@ -13,7 +11,6 @@ from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test
-from ..backends.test_multibackend import DummyHashBackend
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
@@ -24,14 +21,6 @@ class TestHashContext(object):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             m.update(u"\u00FC")
-
-    def test_copy_backend_object(self):
-        backend = DummyHashBackend([hashes.SHA1])
-        copied_ctx = pretend.stub()
-        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hashes.Hash(hashes.SHA1(), backend=backend, ctx=pretend_ctx)
-        assert h._backend is backend
-        assert h.copy()._backend is h._backend
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):

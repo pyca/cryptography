@@ -11,19 +11,20 @@ Supported platforms
 -------------------
 
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, 3.6, and
-PyPy 2.6+ on these operating systems.
+PyPy 5.3+ on these operating systems.
 
-* x86-64 CentOS 7.x, 6.4
-* x86-64 FreeBSD 10
-* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks,
-  10.8 Mountain Lion, and 10.7 Lion
-* x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
-* x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
+* x86-64 CentOS 7.x
+* x86-64 FreeBSD 11
+* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks
+* x86-64 Ubuntu 14.04, 16.04, and rolling
+* x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
 .. warning::
     Python 2.6 is no longer supported by the Python core team. A future version
     of cryptography will drop support for this version.
+
+    Python 3.3 support will be removed in the next cryptography release.
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
@@ -59,13 +60,13 @@ to include the proper locations. For example:
     C:\> \path\to\vcvarsall.bat x86_amd64
     C:\> set LIB=C:\OpenSSL-win64\lib;%LIB%
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
-    C:\> set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
     C:\> pip install cryptography
 
 As of OpenSSL 1.1.0 the library names have changed from ``libeay32`` and
 ``ssleay32`` to ``libcrypto`` and ``libssl`` (matching their names on all other
-platforms). Due to this change when linking against 1.1.0 you **must** set
-``CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110`` or else installation will fail.
+platforms). ``cryptography`` links against the new 1.1.0 names by default. If
+you need to compile ``cryptography`` against an older version then you **must**
+set ``CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL`` or else installation will fail.
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
@@ -236,14 +237,14 @@ You can also build cryptography statically:
 .. code-block:: console
 
     $ brew install openssl@1.1
-    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
+    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
     $ sudo port install openssl
-    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
+    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
@@ -273,7 +274,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
+.. _`openssl-release`: https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/

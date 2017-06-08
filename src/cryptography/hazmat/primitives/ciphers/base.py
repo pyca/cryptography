@@ -6,8 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
-import cffi
-
 import six
 
 from cryptography import utils
@@ -76,6 +74,16 @@ class AEADCipherContext(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class AEADDecryptionContext(object):
+    @abc.abstractmethod
+    def finalize_with_tag(self, tag):
+        """
+        Returns the results of processing the final block as bytes and allows
+        delayed passing of the authentication tag.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class AEADEncryptionContext(object):
     @abc.abstractproperty
     def tag(self):
@@ -115,11 +123,6 @@ class Cipher(object):
         return self._wrap_ctx(ctx, encrypt=True)
 
     def decryptor(self):
-        if isinstance(self.mode, modes.ModeWithAuthenticationTag):
-            if self.mode.tag is None:
-                raise ValueError(
-                    "Authentication tag must be provided when decrypting."
-                )
         ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
         )
@@ -145,19 +148,10 @@ class _CipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
-    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
-    # remove this check in the future when we raise our minimum PyPy version.
-    if utils._version_check(cffi.__version__, "1.7"):
-        def update_into(self, data, buf):
-            if self._ctx is None:
-                raise AlreadyFinalized("Context was already finalized.")
-            return self._ctx.update_into(data, buf)
-    else:
-        def update_into(self, data, buf):
-            raise NotImplementedError(
-                "update_into requires cffi 1.7+. To use this method please "
-                "update cffi."
-            )
+    def update_into(self, data, buf):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+        return self._ctx.update_into(data, buf)
 
     def finalize(self):
         if self._ctx is None:
@@ -169,6 +163,7 @@ class _CipherContext(object):
 
 @utils.register_interface(AEADCipherContext)
 @utils.register_interface(CipherContext)
+@utils.register_interface(AEADDecryptionContext)
 class _AEADCipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
@@ -193,23 +188,22 @@ class _AEADCipherContext(object):
         self._check_limit(len(data))
         return self._ctx.update(data)
 
-    # cffi 1.7 supports from_buffer on bytearray, which is required. We can
-    # remove this check in the future when we raise our minimum PyPy version.
-    if utils._version_check(cffi.__version__, "1.7"):
-        def update_into(self, data, buf):
-            self._check_limit(len(data))
-            return self._ctx.update_into(data, buf)
-    else:
-        def update_into(self, data, buf):
-            raise NotImplementedError(
-                "update_into requires cffi 1.7+. To use this method please "
-                "update cffi."
-            )
+    def update_into(self, data, buf):
+        self._check_limit(len(data))
+        return self._ctx.update_into(data, buf)
 
     def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         data = self._ctx.finalize()
+        self._tag = self._ctx.tag
+        self._ctx = None
+        return data
+
+    def finalize_with_tag(self, tag):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+        data = self._ctx.finalize_with_tag(tag)
         self._tag = self._ctx.tag
         self._ctx = None
         return data
