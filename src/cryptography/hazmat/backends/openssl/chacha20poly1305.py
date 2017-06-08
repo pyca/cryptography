@@ -31,9 +31,7 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
     )
     backend.openssl_assert(res != 0)
     if operation == _DECRYPT:
-        if tag is None or len(tag) != 16:
-            raise ValueError("Tag must be 16 bytes")
-
+        assert len(tag) == 16
         res = backend._lib.EVP_CIPHER_CTX_ctrl(
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
         )
