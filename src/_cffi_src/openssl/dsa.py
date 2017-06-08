@@ -23,6 +23,9 @@ int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
 int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
                DSA *);
 
+/* added in 1.0.2 */
+DH *DSA_dup_DH(const DSA *r);
+
 /* added in 1.1.0 to access the opaque struct */
 void DSA_get0_pqg(const DSA *, const BIGNUM **, const BIGNUM **,
                   const BIGNUM **);
@@ -37,6 +40,11 @@ int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
 """
 
 CUSTOMIZATIONS = """
+/* These functions were added in OpenSSL 1.0.2 */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+DH *(*DSA_dup_DH)(const DSA *r) = null;
+#endif
+
 /* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
 void DSA_get0_pqg(const DSA *d,
