@@ -21,6 +21,8 @@ Changelog
 * Added support for parsing
   :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
   objects from X.509 certificate extensions.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
