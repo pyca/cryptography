@@ -73,3 +73,44 @@ class TestX25519Exchange(object):
             old_private = computed_shared_key
 
         assert computed_shared_key == shared_key
+
+    # These vectors are also from RFC 7748
+    # https://tools.ietf.org/html/rfc7748#section-6.1
+    @pytest.mark.parametrize(
+        ("private_bytes", "public_bytes"),
+        [
+            [
+                binascii.unhexlify(
+                    b"77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba"
+                    b"51db92c2a"
+                ),
+                binascii.unhexlify(
+                    b"8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98"
+                    b"eaa9b4e6a"
+                )
+            ],
+            [
+                binascii.unhexlify(
+                    b"5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b2"
+                    b"7ff88e0eb"
+                ),
+                binascii.unhexlify(
+                    b"de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e1"
+                    b"46f882b4f"
+                )
+            ]
+        ]
+    )
+    def test_public_bytes(self, private_bytes, public_bytes, backend):
+            private_key = X25519PrivateKey._from_private_bytes(private_bytes)
+            assert private_key.public_key().public_bytes() == public_bytes
+
+    def test_generate(self, backend):
+        key = X25519PrivateKey.generate()
+        assert key
+        assert key.public_key()
+
+    def test_invalid_type_exchange(self, backend):
+        key = X25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            key.exchange(object())
