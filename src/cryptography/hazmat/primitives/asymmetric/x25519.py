@@ -19,7 +19,7 @@ class X25519PublicKey(object):
         if not backend.x25519_supported():
             raise UnsupportedAlgorithm(
                 "X25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_X25519
+                _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
         return backend.x25519_load_public_bytes(data)
 
@@ -36,7 +36,7 @@ class X25519PrivateKey(object):
         if not backend.x25519_supported():
             raise UnsupportedAlgorithm(
                 "X25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_X25519
+                _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
         return backend.x25519_generate_key()
 
