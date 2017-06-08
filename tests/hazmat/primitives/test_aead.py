@@ -9,11 +9,13 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm
+from cryptography.exceptions import InvalidTag, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-from ...utils import load_nist_vectors, load_vectors_from_file
+from ...utils import (
+    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+)
 
 
 @pytest.mark.supported(
@@ -24,7 +26,7 @@ from ...utils import load_nist_vectors, load_vectors_from_file
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_chacha20poly1305_unsupported_on_older_openssl(backend):
-    with pytest.raises(UnsupportedAlgorithm):
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
         ChaCha20Poly1305(ChaCha20Poly1305.generate_key())
 
 
