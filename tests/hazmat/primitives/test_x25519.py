@@ -106,6 +106,8 @@ class TestX25519Exchange(object):
     def test_public_bytes(self, private_bytes, public_bytes, backend):
             private_key = X25519PrivateKey._from_private_bytes(private_bytes)
             assert private_key.public_key().public_bytes() == public_bytes
+            public_key = X25519PublicKey.from_public_bytes(public_bytes)
+            assert public_key.public_bytes() == public_bytes
 
     def test_generate(self, backend):
         key = X25519PrivateKey.generate()
