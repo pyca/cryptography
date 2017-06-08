@@ -9,13 +9,15 @@ import os
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
 )
 
-from ...utils import load_nist_vectors, load_vectors_from_file
+from ...utils import (
+    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+)
 
 
 @pytest.mark.supported(
@@ -24,10 +26,10 @@ from ...utils import load_nist_vectors, load_vectors_from_file
 )
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x25519_unsupported(backend):
-    with pytest.raises(UnsupportedAlgorithm):
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X25519):
         X25519PublicKey.from_public_bytes(b"0" * 32)
 
-    with pytest.raises(UnsupportedAlgorithm):
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X25519):
         X25519PrivateKey.generate()
 
 
