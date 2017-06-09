@@ -90,7 +90,7 @@ Key dumping
 
 The ``serialization`` module contains functions for loading keys from
 ``bytes``. To dump a ``key`` object to ``bytes``, you must call the appropriate
-bytes on the key object. Documentation for these methods in found in the
+method on the key object. Documentation for these methods in found in the
 :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`,
 :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
 :mod:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
