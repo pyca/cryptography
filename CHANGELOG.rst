@@ -23,6 +23,7 @@ Changelog
   objects from X.509 certificate extensions.
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
+* Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~

@@ -43,6 +43,9 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
+from cryptography.hazmat.backends.openssl.x25519 import (
+    _X25519PrivateKey, _X25519PublicKey
+)
 from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
     _CertificateSigningRequest, _RevokedCertificate
@@ -1771,6 +1774,57 @@ class Backend(object):
         )
         self.openssl_assert(res > 0)
         return self._ffi.buffer(pp[0], res)[:]
+
+    def x25519_load_public_bytes(self, data):
+        evp_pkey = self._create_evp_pkey_gc()
+        res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
+        backend.openssl_assert(res == 1)
+        res = self._lib.EVP_PKEY_set1_tls_encodedpoint(
+            evp_pkey, data, len(data)
+        )
+        backend.openssl_assert(res == 1)
+        return _X25519PublicKey(self, evp_pkey)
+
+    def x25519_load_private_bytes(self, data):
+        # OpenSSL only has facilities for loading PKCS8 formatted private
+        # keys using the algorithm identifiers specified in
+        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-03.
+        # This is the standard PKCS8 prefix for a 32 byte X25519 key.
+        # The form is:
+        #    0:d=0  hl=2 l=  46 cons: SEQUENCE
+        #    2:d=1  hl=2 l=   1 prim: INTEGER           :00
+        #    5:d=1  hl=2 l=   5 cons: SEQUENCE
+        #    7:d=2  hl=2 l=   3 prim: OBJECT            :1.3.101.110
+        #    12:d=1  hl=2 l=  34 prim: OCTET STRING      (the key)
+        # Of course there's a bit more complexity. In reality OCTET STRING
+        # contains an OCTET STRING of length 32! So the last two bytes here
+        # are \x04\x20, which is an OCTET STRING of length 32.
+        pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
+        bio = self._bytes_to_bio(pkcs8_prefix + data)
+        evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return _X25519PrivateKey(self, evp_pkey)
+
+    def x25519_generate_key(self):
+        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
+            self._lib.NID_X25519, self._ffi.NULL
+        )
+        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
+        evp_pkey_ctx = self._ffi.gc(
+            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
+        )
+        res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
+        self.openssl_assert(res == 1)
+        evp_ppkey = self._ffi.new("EVP_PKEY **")
+        res = self._lib.EVP_PKEY_keygen(evp_pkey_ctx, evp_ppkey)
+        self.openssl_assert(res == 1)
+        self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
+        return _X25519PrivateKey(self, evp_pkey)
+
+    def x25519_supported(self):
+        return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
