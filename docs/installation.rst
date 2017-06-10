@@ -11,13 +11,13 @@ Supported platforms
 -------------------
 
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, 3.6, and
-PyPy 2.6+ on these operating systems.
+PyPy 5.3+ on these operating systems.
 
-* x86-64 CentOS 7.x, 6.4
-* x86-64 FreeBSD 10
+* x86-64 CentOS 7.x
+* x86-64 FreeBSD 11
 * macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks
-* x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
-* x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
+* x86-64 Ubuntu 14.04, 16.04, and rolling
+* x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
 .. warning::
@@ -274,7 +274,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
+.. _`openssl-release`: https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/

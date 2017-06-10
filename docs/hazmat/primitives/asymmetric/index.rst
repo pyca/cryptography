@@ -28,8 +28,8 @@ private key is able to decrypt it.
     rsa
     dh
     serialization
-    interfaces
     utils
+    x25519
 
 
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure

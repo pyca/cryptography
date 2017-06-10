@@ -8,6 +8,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update || brew update
 
     brew outdated openssl || brew upgrade openssl
+    brew install openssl@1.1
 
     # install pyenv
     git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
@@ -89,4 +90,4 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox codecov
+pip install tox codecov coverage==4.3.4

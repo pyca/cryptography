@@ -351,11 +351,13 @@ class TestECDSAVectors(object):
         pkey = key.public_key()
         assert pkey
 
-        signer = key.signer(ec.ECDSA(hash_type()))
+        signer = pytest.deprecated_call(key.signer, ec.ECDSA(hash_type()))
         signer.update(b"YELLOW SUBMARINE")
         signature = signer.finalize()
 
-        verifier = pkey.verifier(signature, ec.ECDSA(hash_type()))
+        verifier = pytest.deprecated_call(
+            pkey.verifier, signature, ec.ECDSA(hash_type())
+        )
         verifier.update(b"YELLOW SUBMARINE")
         verifier.verify()
 
@@ -627,6 +629,22 @@ class TestECDSAVectors(object):
         with pytest.raises(ValueError):
             public_key.verify(
                 b"\x00" * 32, data, ec.ECDSA(Prehashed(hashes.SHA256()))
+            )
+
+    def test_prehashed_unsupported_in_signer_ctx(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        with pytest.raises(TypeError):
+            private_key.signer(ec.ECDSA(Prehashed(hashes.SHA1())))
+
+    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        public_key = private_key.public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(
+                b"0" * 64,
+                ec.ECDSA(Prehashed(hashes.SHA1()))
             )
 
 

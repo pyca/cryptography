@@ -75,13 +75,13 @@ class _CipherContext(object):
         self._backend.openssl_assert(res != 0)
         if isinstance(mode, modes.GCM):
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-                ctx, self._backend._lib.EVP_CTRL_GCM_SET_IVLEN,
+                ctx, self._backend._lib.EVP_CTRL_AEAD_SET_IVLEN,
                 len(iv_nonce), self._backend._ffi.NULL
             )
             self._backend.openssl_assert(res != 0)
             if mode.tag is not None:
                 res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-                    ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
+                    ctx, self._backend._lib.EVP_CTRL_AEAD_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 self._backend.openssl_assert(res != 0)
@@ -160,13 +160,11 @@ class _CipherContext(object):
                 raise InvalidTag
 
             self._backend.openssl_assert(
-                errors[0][1:] == (
+                errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
-                    self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-                ) or errors[0][1:] == (
+                ) or errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
-                    self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
                 )
             )
@@ -181,7 +179,7 @@ class _CipherContext(object):
                 "unsigned char[]", self._block_size_bytes
             )
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-                self._ctx, self._backend._lib.EVP_CTRL_GCM_GET_TAG,
+                self._ctx, self._backend._lib.EVP_CTRL_AEAD_GET_TAG,
                 self._block_size_bytes, tag_buf
             )
             self._backend.openssl_assert(res != 0)
@@ -201,7 +199,7 @@ class _CipherContext(object):
                 "method please update OpenSSL"
             )
         res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
-            self._ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
+            self._ctx, self._backend._lib.EVP_CTRL_AEAD_SET_TAG,
             len(tag), tag
         )
         self._backend.openssl_assert(res != 0)

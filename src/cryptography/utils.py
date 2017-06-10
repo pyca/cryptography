@@ -15,7 +15,12 @@ import warnings
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
 PersistentlyDeprecated = DeprecationWarning
-DeprecatedIn19 = PendingDeprecationWarning
+DeprecatedIn19 = DeprecationWarning
+
+
+def _check_bytes(name, value):
+    if not isinstance(value, bytes):
+        raise TypeError("{0} must be bytes".format(name))
 
 
 def read_only_property(name):

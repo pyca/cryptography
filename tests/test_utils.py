@@ -24,29 +24,17 @@ from .utils import (
     load_hash_vectors, load_kasvs_dh_vectors,
     load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, raises_unsupported_algorithm, skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm
 )
-
-
-class FakeInterface(object):
-    pass
-
-
-def test_skip_if_empty():
-    with pytest.raises(pytest.skip.Exception):
-        skip_if_empty([], [FakeInterface])
-
-    skip_if_empty(["notempty"], [FakeInterface])
 
 
 def test_check_backend_support_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]},
-                        funcargs={"backend": True})
+    item = pretend.stub(keywords={"supported": [supported]})
     with pytest.raises(pytest.skip.Exception) as exc_info:
-        check_backend_support(item)
+        check_backend_support(True, item)
     assert exc_info.value.args[0] == "Nope (True)"
 
 
@@ -54,19 +42,8 @@ def test_check_backend_support_no_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: True, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]},
-                        funcargs={"backend": True})
-    assert check_backend_support(item) is None
-
-
-def test_check_backend_support_no_backend():
-    supported = pretend.stub(
-        kwargs={"only_if": "notalambda", "skip_message": "Nope"}
-    )
-    item = pretend.stub(keywords={"supported": supported},
-                        funcargs={})
-    with pytest.raises(ValueError):
-        check_backend_support(item)
+    item = pretend.stub(keywords={"supported": [supported]})
+    assert check_backend_support(None, item) is None
 
 
 def test_load_nist_vectors():

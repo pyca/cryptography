@@ -18,6 +18,9 @@ from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from cryptography.x509.certificate_transparency import (
+    SignedCertificateTimestamp
+)
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import RelativeDistinguishedName
 from cryptography.x509.oid import (
@@ -1149,6 +1152,39 @@ class InvalidityDate(object):
         return hash(self.invalidity_date)
 
     invalidity_date = utils.read_only_property("_invalidity_date")
+
+
+@utils.register_interface(ExtensionType)
+class PrecertificateSignedCertificateTimestamps(object):
+    oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+
+    def __init__(self, signed_certificate_timestamps):
+        signed_certificate_timestamps = list(signed_certificate_timestamps)
+        if not all(
+            isinstance(sct, SignedCertificateTimestamp)
+            for sct in signed_certificate_timestamps
+        ):
+            raise TypeError(
+                "Every item in the signed_certificate_timestamps list must be "
+                "a SignedCertificateTimestamp"
+            )
+        self._signed_certificate_timestamps = signed_certificate_timestamps
+
+    def __iter__(self):
+        return iter(self._signed_certificate_timestamps)
+
+    def __len__(self):
+        return len(self._signed_certificate_timestamps)
+
+    def __getitem__(self, idx):
+        return self._signed_certificate_timestamps[idx]
+
+    def __repr__(self):
+        return (
+            "<PrecertificateSignedCertificateTimestamps({0})>".format(
+                list(self)
+            )
+        )
 
 
 @utils.register_interface(ExtensionType)

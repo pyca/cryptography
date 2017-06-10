@@ -77,8 +77,6 @@ int ASN1_INTEGER_set(ASN1_INTEGER *, long);
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
 void ASN1_TIME_free(ASN1_TIME *);
-ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
-                                                   ASN1_GENERALIZEDTIME **);
 ASN1_TIME *ASN1_TIME_set(ASN1_TIME *, time_t);
 int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
@@ -113,6 +111,10 @@ int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
 long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
 int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
 
+/* This became const ASN1_TIME in 1.1.0f */
+ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
+                                                   ASN1_GENERALIZEDTIME **);
+
 ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
@@ -123,7 +125,6 @@ int i2d_ASN1_OCTET_STRING(ASN1_OCTET_STRING *, unsigned char **);
 int i2d_ASN1_INTEGER(ASN1_INTEGER *, unsigned char **);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
-ASN1_TIME *M_ASN1_TIME_dup(void *);
 const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
@@ -157,10 +158,4 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
-/* This macro is removed in 1.1.0. We re-add it if required to support
-   pyOpenSSL versions older than whatever resolves
-   https://github.com/pyca/pyopenssl/issues/431 */
-#if !defined(M_ASN1_TIME_dup)
-#define M_ASN1_TIME_dup(a) (ASN1_TIME *)ASN1_STRING_dup((const ASN1_STRING *)a)
-#endif
 """

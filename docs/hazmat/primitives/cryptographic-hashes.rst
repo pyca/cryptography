@@ -1,7 +1,7 @@
 .. hazmat::
 
-Message digests
-===============
+Message digests (Hashing)
+=========================
 
 .. module:: cryptography.hazmat.primitives.hashes
 

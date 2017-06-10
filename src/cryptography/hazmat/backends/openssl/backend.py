@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
+from cryptography.hazmat.backends.openssl import chacha20poly1305
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
@@ -41,6 +42,9 @@ from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
+)
+from cryptography.hazmat.backends.openssl.x25519 import (
+    _X25519PrivateKey, _X25519PublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
@@ -91,7 +95,7 @@ class Backend(object):
         self._lib = self._binding.lib
 
         # Set the default string mask for encoding ASN1 strings to UTF8. This
-        # is the default for newer OpenSSLs for several years and is
+        # is the default for newer OpenSSLs for several years (1.0.1h+) and is
         # recommended in RFC 2459.
         res = self._lib.ASN1_STRING_set_default_mask_asc(b"utf8only")
         self.openssl_assert(res == 1)
@@ -331,9 +335,9 @@ class Backend(object):
             return bn_ptr
 
         else:
-            # Under Python 2 the best we can do is hex()
-
-            hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
+            # Under Python 2 the best we can do is hex(), [2:] removes the 0x
+            # prefix.
+            hex_num = hex(num).rstrip("L")[2:].encode("ascii")
             bn_ptr = self._ffi.new("BIGNUM **")
             bn_ptr[0] = bn
             res = self._lib.BN_hex2bn(bn_ptr, hex_num)
@@ -710,10 +714,13 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
+
             raise ValueError("Digest too big for RSA key")
 
         return _CertificateSigningRequest(self, x509_req)
@@ -792,9 +799,11 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
             raise ValueError("Digest too big for RSA key")
 
@@ -802,9 +811,11 @@ class Backend(object):
 
     def _raise_time_set_error(self):
         errors = self._consume_errors()
-        self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_ASN1)
         self.openssl_assert(
-            errors[0][3] == self._lib.ASN1_R_ERROR_GETTING_TIME
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_ASN1,
+                self._lib.ASN1_R_ERROR_GETTING_TIME
+            )
         )
         raise ValueError(
             "Invalid time. This error can occur if you set a time too far in "
@@ -879,9 +890,11 @@ class Backend(object):
         )
         if res == 0:
             errors = self._consume_errors()
-            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
             self.openssl_assert(
-                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_RSA,
+                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+                )
             )
             raise ValueError("Digest too big for RSA key")
 
@@ -1206,31 +1219,21 @@ class Backend(object):
         if not errors:
             raise ValueError("Could not deserialize key data.")
 
-        elif errors[0][1:] in (
-            (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                self._lib.EVP_R_BAD_DECRYPT
-            ),
-            (
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
+            ) or errors[0]._lib_reason_match(
                 self._lib.ERR_LIB_PKCS12,
-                self._lib.PKCS12_F_PKCS12_PBE_CRYPT,
-                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
+                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR
             )
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 
-        elif errors[0][1:] in (
-            (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
-                self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
-            ),
-
-            (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_PBE_CIPHERINIT,
-                self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+            ) or errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
             )
         ):
             raise UnsupportedAlgorithm(
@@ -1239,9 +1242,8 @@ class Backend(object):
             )
 
         elif any(
-            error[1:] == (
+            error._lib_reason_match(
                 self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_PKCS82PKEY,
                 self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
             )
             for error in errors
@@ -1249,7 +1251,7 @@ class Backend(object):
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            assert errors[0][1] in (
+            assert errors[0].lib in (
                 self._lib.ERR_LIB_EVP,
                 self._lib.ERR_LIB_PEM,
                 self._lib.ERR_LIB_ASN1,
@@ -1268,9 +1270,8 @@ class Backend(object):
             errors = self._consume_errors()
             self.openssl_assert(
                 curve_nid == self._lib.NID_undef or
-                errors[0][1:] == (
+                errors[0]._lib_reason_match(
                     self._lib.ERR_LIB_EC,
-                    self._lib.EC_F_EC_GROUP_NEW_BY_CURVE_NAME,
                     self._lib.EC_R_UNKNOWN_GROUP
                 )
             )
@@ -1837,6 +1838,57 @@ class Backend(object):
         self.openssl_assert(res > 0)
         return self._ffi.buffer(pp[0], res)[:]
 
+    def x25519_load_public_bytes(self, data):
+        evp_pkey = self._create_evp_pkey_gc()
+        res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
+        backend.openssl_assert(res == 1)
+        res = self._lib.EVP_PKEY_set1_tls_encodedpoint(
+            evp_pkey, data, len(data)
+        )
+        backend.openssl_assert(res == 1)
+        return _X25519PublicKey(self, evp_pkey)
+
+    def x25519_load_private_bytes(self, data):
+        # OpenSSL only has facilities for loading PKCS8 formatted private
+        # keys using the algorithm identifiers specified in
+        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-03.
+        # This is the standard PKCS8 prefix for a 32 byte X25519 key.
+        # The form is:
+        #    0:d=0  hl=2 l=  46 cons: SEQUENCE
+        #    2:d=1  hl=2 l=   1 prim: INTEGER           :00
+        #    5:d=1  hl=2 l=   5 cons: SEQUENCE
+        #    7:d=2  hl=2 l=   3 prim: OBJECT            :1.3.101.110
+        #    12:d=1  hl=2 l=  34 prim: OCTET STRING      (the key)
+        # Of course there's a bit more complexity. In reality OCTET STRING
+        # contains an OCTET STRING of length 32! So the last two bytes here
+        # are \x04\x20, which is an OCTET STRING of length 32.
+        pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
+        bio = self._bytes_to_bio(pkcs8_prefix + data)
+        evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return _X25519PrivateKey(self, evp_pkey)
+
+    def x25519_generate_key(self):
+        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
+            self._lib.NID_X25519, self._ffi.NULL
+        )
+        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
+        evp_pkey_ctx = self._ffi.gc(
+            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
+        )
+        res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
+        self.openssl_assert(res == 1)
+        evp_ppkey = self._ffi.new("EVP_PKEY **")
+        res = self._lib.EVP_PKEY_keygen(evp_pkey_ctx, evp_ppkey)
+        self.openssl_assert(res == 1)
+        self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
+        return _X25519PrivateKey(self, evp_pkey)
+
+    def x25519_supported(self):
+        return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
         res = self._lib.EVP_PBE_scrypt(
@@ -1845,6 +1897,22 @@ class Backend(object):
         )
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
+
+    def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
+        return chacha20poly1305.encrypt(
+            self, key, nonce, data, associated_data
+        )
+
+    def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
+        return chacha20poly1305.decrypt(
+            self, key, nonce, data, associated_data
+        )
+
+    def chacha20poly1305_supported(self):
+        return (
+            self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
+            self._ffi.NULL
+        )
 
 
 class GetCipherByName(object):

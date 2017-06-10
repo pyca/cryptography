@@ -1,12 +1,34 @@
 Changelog
 =========
 
-1.9 - `master`_
+2.0 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no long
+* Deprecated the use of ``signer`` on
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+  in favor of ``sign``.
+* Deprecated the use of ``verifier`` on
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+  in favor of ``verify``.
+* Added support for parsing
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+  objects from X.509 certificate extensions.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
+* Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
+
+1.9 - 2017-05-29
+~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Elliptic Curve signature verification no longer
   returns ``True`` on success. This brings it in line with the interface's
   documentation, and our intent. The correct way to use
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
@@ -14,7 +36,7 @@ Changelog
   :class:`~cryptography.exceptions.InvalidSignature` was raised.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.7 and 10.8.
 * **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.3.
-* Python 3.3 support has been deprecated, and will be removed in the
+* Python 3.3 support has been deprecated, and will be removed in the next
   ``cryptography`` release.
 * Add support for providing ``tag`` during
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` finalization via
@@ -36,6 +58,11 @@ Changelog
 * MultiBackend has been removed.
 * ``Whirlpool`` and ``RIPEMD160`` have been deprecated.
 
+1.8.2 - 2017-05-26
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a compilation bug affecting OpenSSL 1.1.0f.
+* Updated Windows and macOS wheels to be compiled against OpenSSL 1.1.0f.
 
 1.8.1 - 2017-03-10
 ~~~~~~~~~~~~~~~~~~
@@ -88,7 +115,7 @@ Changelog
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Added support for Diffie-Hellman key exchange using
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization.exchange`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.exchange`.
 * The OS random engine for OpenSSL has been rewritten to improve compatibility
   with embedded Python and other edge cases. More information about this change
   can be found in the
@@ -534,7 +561,7 @@ Changelog
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
 * :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
-  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.kdf`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509/index>` for more information.
@@ -588,41 +615,38 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 * :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.hashes`.
 * :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.AEADCipherContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.AEADEncryptionContext`,
   :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`, and
   :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.ciphers`.
 * :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithAuthenticationTag`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
 * :class:`~cryptography.hazmat.primitives.padding.PaddingContext` was moved
-  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.padding`.
 *
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-  was moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  was moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
-*
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-  and
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric`.
+* ``AsymmetricSignatureContext`` and ``AsymmetricVerificationContext``
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
+  ``cryptography.hazmat.primitives.asymmetric``.
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
   ``DSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
   ``DSAPublicKeyWithNumbers`` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
 * :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
@@ -630,13 +654,13 @@ Changelog
   ``EllipticCurvePrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
   and ``EllipticCurvePublicKeyWithNumbers``
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  were moved from ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   ``RSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
   ``RSAPublicKeyWithNumbers`` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``cryptography.hazmat.primitives.interfaces`` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 
 0.7.2 - 2015-01-16
@@ -664,7 +688,7 @@ Changelog
   :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
-* Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
+* Added :class:`~cryptography.hazmat.primitives.mac.MACContext` as a
   common interface for CMAC and HMAC and deprecated ``CMACContext``.
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.

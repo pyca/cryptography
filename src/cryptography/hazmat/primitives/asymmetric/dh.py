@@ -153,6 +153,13 @@ class DHPrivateKey(object):
         The DHParameters object associated with this private key.
         """
 
+    @abc.abstractmethod
+    def exchange(self, peer_public_key):
+        """
+        Given peer's DHPublicKey, carry out the key exchange and
+        return shared key as bytes.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHPrivateKeyWithSerialization(DHPrivateKey):
@@ -160,13 +167,6 @@ class DHPrivateKeyWithSerialization(DHPrivateKey):
     def private_numbers(self):
         """
         Returns a DHPrivateNumbers.
-        """
-
-    @abc.abstractmethod
-    def exchange(self, peer_public_key):
-        """
-        Given peer's DHPublicKey, carry out the key exchange and
-        return shared key as bytes.
         """
 
 

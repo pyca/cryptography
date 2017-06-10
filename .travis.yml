@@ -8,6 +8,14 @@ cache:
         - $HOME/.cache/pip
         - $HOME/ossl-1/
 
+# Only build master, the version branches (e.g. 1.7.x), and
+# version tags (which are apparently considered branches by travis)
+branches:
+    only:
+        - master
+        - /\d+\.\d+\.x/
+        - /\d+\.\d+(\.\d+)?/
+
 matrix:
     include:
         # these are just to make travis's UI a bit prettier
@@ -26,11 +34,11 @@ matrix:
         - env: TOXENV=pypy PYPY_VERSION=5.3
         - env: TOXENV=pypy PYPY_VERSION=5.7.1
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0e
+          env: TOXENV=py27 OPENSSL=1.1.0f
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0e
+          env: TOXENV=py35 OPENSSL=1.1.0f
         - python: 2.7
-          env: TOXENV=docs
+          env: TOXENV=docs OPENSSL=1.1.0f
           addons:
               apt:
                   packages:
