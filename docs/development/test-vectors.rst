@@ -408,7 +408,7 @@ Recipes
 Symmetric ciphers
 ~~~~~~~~~~~~~~~~~
 
-* AES (CBC, CFB, ECB, GCM, OFB) from `NIST CAVP`_.
+* AES (CBC, CFB, ECB, GCM, OFB, CCM) from `NIST CAVP`_.
 * AES CTR from :rfc:`3686`.
 * 3DES (CBC, CFB, ECB, OFB) from `NIST CAVP`_.
 * ARC4 (KEY-LENGTH: 40, 56, 64, 80, 128, 192, 256) from :rfc:`6229`.
