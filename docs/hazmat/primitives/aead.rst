@@ -77,3 +77,91 @@ also support providing integrity for associated data which is not encrypted.
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
             key, nonce, or associated data are wrong.
+
+.. class:: AESCCM(key)
+
+    .. versionadded:: 2.0
+
+    .. note:
+
+        AES-CCM is provided largely for compatibility with existing protocols.
+        Due to its construction it is not as computationally efficient as
+        other AEAD ciphers.
+
+    The AES-CCM construction is composed of the
+    :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
+    cipher utilizing Counter with CBC-MAC (CCM) (specified in :rfc:`3610`).
+
+    :param bytes key: A 128, 192, or 256-bit key. This **must** be kept secret.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
+        OpenSSL does not support AES-CCM.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.aead import AESCCM
+        >>> data = b"a secret message"
+        >>> aad = b"authenticated but unencrypted data"
+        >>> key = AESCCM.generate_key(bit_length=128)
+        >>> aesccm = AESCCM(key)
+        >>> nonce = os.urandom(13)
+        >>> ct = aesccm.encrypt(nonce, data, aad)
+        >>> aesccm.decrypt(nonce, ct, aad)
+        'a secret message'
+
+    .. classmethod:: generate_key(bit_length)
+
+        Securely generates a random AES-CCM key.
+
+        :param bit_length: The bit length of the key to generate. Must be
+            128, 192, or 256.
+
+        :returns bytes: The generated key.
+
+    .. method:: encrypt(nonce, data, associated_data, tag_length=16)
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output of this can be
+        passed directly to the ``decrypt`` method.
+
+        :param bytes nonce: A value of between 7 and 13 bytes. The maximum
+            length is determined by the length of the ciphertext you are
+            encrypting and must satisfy the condition:
+            ``len(data) < 2 ** (8 * (15 - len(nonce)))``
+            **NEVER REUSE A NONCE** with a key.
+        :param bytes data: The data to encrypt.
+        :param bytes associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :param int tag_length: The length of the authentication tag. This
+            defaults to 16 bytes and it is **strongly** recommended that you
+            do not make it shorter unless absolutely necessary. Valid tag
+            lengths are 4, 6, 8, 12, 14, and 16.
+        :returns bytes: The ciphertext bytes with the tag appended.
+
+    .. method:: decrypt(nonce, data, associated_data, tag_length=16)
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail.
+
+        :param bytes nonce: A value of between 7 and 13 bytes. This
+            is the same value used when you originally called encrypt.
+            **NEVER REUSE A NONCE** with a key.
+        :param bytes data: The data to decrypt (with tag appended).
+        :param bytes associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :param int tag_length: The length of the authentication tag. This
+            defaults to 16 bytes. You only need to change this if your existing
+            ciphertext has a shorter tag. Valid tag lengths are 4, 6, 8, 12,
+            14, and 16.
+        :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.

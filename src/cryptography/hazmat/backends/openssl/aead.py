@@ -13,10 +13,13 @@ _DECRYPT = 0
 
 def _aead_cipher_name(cipher):
     from cryptography.hazmat.primitives.ciphers.aead import (
-        ChaCha20Poly1305
+        AESCCM, ChaCha20Poly1305
     )
-    assert isinstance(cipher, ChaCha20Poly1305)
-    return b"chacha20-poly1305"
+    if isinstance(cipher, ChaCha20Poly1305):
+        return b"chacha20-poly1305"
+    else:
+        assert isinstance(cipher, AESCCM)
+        return "aes-{0}-ccm".format(len(cipher._key) * 8).encode("ascii")
 
 
 def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
@@ -61,6 +64,18 @@ def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
     return ctx
 
 
+def _set_length(backend, ctx, data_len):
+    intptr = backend._ffi.new("int *")
+    res = backend._lib.EVP_CipherUpdate(
+        ctx,
+        backend._ffi.NULL,
+        intptr,
+        backend._ffi.NULL,
+        data_len
+    )
+    backend.openssl_assert(res != 0)
+
+
 def _process_aad(backend, ctx, associated_data):
     outlen = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherUpdate(
@@ -78,10 +93,15 @@ def _process_data(backend, ctx, data):
 
 
 def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
     cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
         backend, cipher_name, cipher._key, nonce, None, tag_length, _ENCRYPT
     )
+    # CCM requires us to pass the length of the data before processing anything
+    # However calling this with any other AEAD results in an error
+    if isinstance(cipher, AESCCM):
+        _set_length(backend, ctx, len(data))
 
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
@@ -100,6 +120,7 @@ def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
 
 
 def _decrypt(backend, cipher, nonce, data, associated_data, tag_length):
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
     if len(data) < tag_length:
         raise InvalidTag
     tag = data[-tag_length:]
@@ -108,12 +129,29 @@ def _decrypt(backend, cipher, nonce, data, associated_data, tag_length):
     ctx = _aead_setup(
         backend, cipher_name, cipher._key, nonce, tag, tag_length, _DECRYPT
     )
+    # CCM requires us to pass the length of the data before processing anything
+    # However calling this with any other AEAD results in an error
+    if isinstance(cipher, AESCCM):
+        _set_length(backend, ctx, len(data))
+
     _process_aad(backend, ctx, associated_data)
-    processed_data = _process_data(backend, ctx, data)
-    outlen = backend._ffi.new("int *")
-    res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
-    if res == 0:
-        backend._consume_errors()
-        raise InvalidTag
+    # CCM has a different error path if the tag doesn't match. Errors are
+    # raised in Update and Final is irrelevant.
+    if isinstance(cipher, AESCCM):
+        outlen = backend._ffi.new("int *")
+        buf = backend._ffi.new("unsigned char[]", len(data))
+        res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
+        if res != 1:
+            backend._consume_errors()
+            raise InvalidTag
+
+        processed_data = backend._ffi.buffer(buf, outlen[0])[:]
+    else:
+        processed_data = _process_data(backend, ctx, data)
+        outlen = backend._ffi.new("int *")
+        res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
+        if res == 0:
+            backend._consume_errors()
+            raise InvalidTag
 
     return processed_data
