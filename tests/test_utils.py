@@ -22,9 +22,9 @@ from .utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_hash_vectors, load_kasvs_dh_vectors,
-    load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, raises_unsupported_algorithm
+    load_kasvs_ecdh_vectors, load_nist_ccm_vectors, load_nist_kbkdf_vectors,
+    load_nist_vectors, load_pkcs1_vectors, load_rsa_nist_vectors,
+    load_vectors_from_file, load_x963_vectors, raises_unsupported_algorithm
 )
 
 
@@ -3607,6 +3607,190 @@ aa1b91eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7',
          'instring': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91\
 eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701',
          'ko': b'b8894c6133a46701909b5c8a84322dec'}
+    ]
+
+
+def test_load_nist_ccm_vectors_dvpt():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  "CCM-DVPT" information
+    #  AES Keylen: 128
+    #  Generated on Tue Mar 15 08:09:25 2011
+
+
+    [Alen = 0, Plen = 0, Nlen = 7, Tlen = 4]
+
+    Key = 4ae701103c63deca5b5a3939d7d05992
+
+    Count = 0
+    Nonce = 5a8aa485c316e9
+    Adata = 00
+    CT = 02209f55
+    Result = Pass
+    Payload = 00
+
+    Count = 1
+    Nonce = 3796cf51b87266
+    Adata = 00
+    CT = 9a04c241
+    Result = Fail
+
+    [Alen = 0, Plen = 0, Nlen = 7, Tlen = 16]
+
+    Key = 4bb3c4a4f893ad8c9bdc833c325d62b3
+
+    Count = 15
+    Nonce = 5a8aa485c316e9
+    Adata = 00
+    CT = 75d582db43ce9b13ab4b6f7f14341330
+    Result = Pass
+    Payload = 00
+
+    Count = 16
+    Nonce = 3796cf51b87266
+    Adata = 00
+    CT = 3a65e03af37b81d05acc7ec1bc39deb0
+    Result = Fail
+    """).splitlines()
+    assert load_nist_ccm_vectors(vector_data) == [
+        {
+            'key': b'4ae701103c63deca5b5a3939d7d05992',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 4,
+            'nonce': b'5a8aa485c316e9',
+            'adata': b'00',
+            'ct': b'02209f55',
+            'fail': False,
+            'payload': b'00'
+        },
+        {
+            'key': b'4ae701103c63deca5b5a3939d7d05992',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 4,
+            'nonce': b'3796cf51b87266',
+            'adata': b'00',
+            'ct': b'9a04c241',
+            'fail': True,
+            'payload': b'00'
+        },
+        {
+            'key': b'4bb3c4a4f893ad8c9bdc833c325d62b3',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 16,
+            'nonce': b'5a8aa485c316e9',
+            'adata': b'00',
+            'ct': b'75d582db43ce9b13ab4b6f7f14341330',
+            'fail': False,
+            'payload': b'00'
+        },
+        {
+            'key': b'4bb3c4a4f893ad8c9bdc833c325d62b3',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 16,
+            'nonce': b'3796cf51b87266',
+            'adata': b'00',
+            'ct': b'3a65e03af37b81d05acc7ec1bc39deb0',
+            'fail': True,
+            'payload': b'00'
+        }
+    ]
+
+
+def test_load_nist_ccm_vectors_vadt():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  "CCM-VADT" information
+    #  AES Keylen: 128
+    #  Generated on Tue Mar 15 08:09:24 2011
+
+    Plen = 24
+    Nlen = 13
+    Tlen = 16
+
+    [Alen = 0]
+
+    Key = d24a3d3dde8c84830280cb87abad0bb3
+    Nonce = f1100035bb24a8d26004e0e24b
+
+    Count = 0
+    Adata = 00
+    Payload = 7c86135ed9c2a515aaae0e9a208133897269220f30870006
+    CT = 1faeb0ee2ca2cd52f0aa3966578344f24e69b742c4ab37ab11233
+
+    Count = 1
+    Adata = 00
+    Payload = 48df73208cdc63d716752df7794807b1b2a80794a2433455
+    CT = 2bf7d09079bc0b904c711a0b0e4a70ca8ea892d9566f03f8b77a1
+    CT = 642145210f947bc4a0b1e678fd8c990c2c1d89d4110a95c954d61
+
+    [Alen = 1]
+
+    Key = 08b0da255d2083808a1b4d367090bacc
+    Nonce = 777828b13679a9e2ca89568233
+
+    Count = 10
+    Adata = dd
+    Payload = 1b156d7e2bf7c9a25ad91cff7b0b02161cb78ff9162286b0
+    CT = e8b80af4960d5417c15726406e345c5c46831192b03432eed16b6
+
+    Count = 11
+    Adata = c5
+    Payload = 032fee9dbffccc751e6a1ee6d07bb218b3a7ec6bf5740ead
+    CT = f0828917020651c085e42459c544ec52e99372005362baf308ebe
+    """).splitlines()
+    assert load_nist_ccm_vectors(vector_data) == [
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 0,
+            'key': b'd24a3d3dde8c84830280cb87abad0bb3',
+            'nonce': b'f1100035bb24a8d26004e0e24b',
+            'adata': b'00',
+            'payload': b'7c86135ed9c2a515aaae0e9a208133897269220f30870006',
+            'ct': b'1faeb0ee2ca2cd52f0aa3966578344f24e69b742c4ab37ab11233'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 0,
+            'key': b'd24a3d3dde8c84830280cb87abad0bb3',
+            'nonce': b'f1100035bb24a8d26004e0e24b',
+            'adata': b'00',
+            'payload': b'48df73208cdc63d716752df7794807b1b2a80794a2433455',
+            'ct': b'642145210f947bc4a0b1e678fd8c990c2c1d89d4110a95c954d61'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 1,
+            'key': b'08b0da255d2083808a1b4d367090bacc',
+            'nonce': b'777828b13679a9e2ca89568233',
+            'adata': b'dd',
+            'payload': b'1b156d7e2bf7c9a25ad91cff7b0b02161cb78ff9162286b0',
+            'ct': b'e8b80af4960d5417c15726406e345c5c46831192b03432eed16b6'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 1,
+            'key': b'08b0da255d2083808a1b4d367090bacc',
+            'nonce': b'777828b13679a9e2ca89568233',
+            'adata': b'c5',
+            'payload': b'032fee9dbffccc751e6a1ee6d07bb218b3a7ec6bf5740ead',
+            'ct': b'f0828917020651c085e42459c544ec52e99372005362baf308ebe'
+        }
     ]
 
 

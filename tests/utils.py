@@ -834,3 +834,76 @@ def load_ed25519_vectors(vector_data):
             "signature": signature
         })
     return data
+
+
+def load_nist_ccm_vectors(vector_data):
+    test_data = None
+    section_data = None
+    global_data = {}
+    new_section = False
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and comments should be ignored
+        if not line or line.startswith("#"):
+            continue
+
+        # Some of the CCM vectors have global values for this. They are always
+        # at the top before the first section header (see: VADT, VNT, VPT)
+        if line.startswith(("Alen", "Plen", "Nlen", "Tlen")):
+            name, value = [c.strip() for c in line.split("=")]
+            global_data[name.lower()] = int(value)
+            continue
+
+        # section headers contain length data we might care about
+        if line.startswith("["):
+            new_section = True
+            section_data = {}
+            section = line[1:-1]
+            items = [c.strip() for c in section.split(",")]
+            for item in items:
+                name, value = [c.strip() for c in item.split("=")]
+                section_data[name.lower()] = int(value)
+            continue
+
+        name, value = [c.strip() for c in line.split("=")]
+
+        if name.lower() in ("key", "nonce") and new_section:
+            section_data[name.lower()] = value.encode("ascii")
+            continue
+
+        new_section = False
+
+        # Payload is sometimes special because these vectors are absurd. Each
+        # example may or may not have a payload. If it does not then the
+        # previous example's payload should be used. We accomplish this by
+        # writing it into the section_data. Because we update each example
+        # with the section data it will be overwritten if a new payload value
+        # is present. NIST should be ashamed of their vector creation.
+        if name.lower() == "payload":
+            section_data[name.lower()] = value.encode("ascii")
+
+        # Result is a special token telling us if the test should pass/fail.
+        # This is only present in the DVPT CCM tests
+        if name.lower() == "result":
+            if value.lower() == "pass":
+                test_data["fail"] = False
+            else:
+                test_data["fail"] = True
+            continue
+
+        # COUNT is a special token that indicates a new block of data
+        if name.lower() == "count":
+            test_data = {}
+            test_data.update(global_data)
+            test_data.update(section_data)
+            data.append(test_data)
+            continue
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data
