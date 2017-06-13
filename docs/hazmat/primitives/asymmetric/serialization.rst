@@ -463,9 +463,9 @@ Serialization Formats
     method available on
     :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization`.
 
-    .. attribute:: ASN1
+    .. attribute:: DHParameter
 
-        Abstract Syntax Notation One.
+        ASN1 DH parameters sequence as defined in PKCS3.
 
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~

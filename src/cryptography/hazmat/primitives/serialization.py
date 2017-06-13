@@ -187,7 +187,7 @@ class PublicFormat(Enum):
 
 
 class ParameterFormat(Enum):
-    ASN1 = "ASN.1"
+    DHParameter = "PKCS3"
 
 
 @six.add_metaclass(abc.ABCMeta)
