@@ -374,7 +374,7 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp256r1``. Also called NIST P-256.
 
 
-.. class:: SECT224R1
+.. class:: SECP224R1
 
     .. versionadded:: 0.5
 
