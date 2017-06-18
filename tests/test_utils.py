@@ -18,7 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 import cryptography_vectors
 
 from .utils import (
-    check_backend_support, load_cryptrec_vectors,
+    check_backend_support, load_cryptrec_vectors, load_ed25519_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_hash_vectors, load_kasvs_dh_vectors,
@@ -127,6 +127,98 @@ def test_load_nist_vectors_with_null_chars():
         },
         {
             "key": b"00000000000000000000000000000000",
+        },
+    ]
+
+
+def test_load_ed25519_vectors():
+    vector_data = (
+        "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a9"
+        "80182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a:d75a98018"
+        "2b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a::e5564300c360"
+        "ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc"
+        "61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b:\n"
+        "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb3d401"
+        "7c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c:3d4017c3e"
+        "843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c:72:92a009a9f0"
+        "d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996"
+        "e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c0072:\n"
+        "c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b4458f7fc51c"
+        "d8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025:fc51cd8e6"
+        "218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025:af82:6291d657"
+        "deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f"
+        "290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40aaf82:\n"
+        "0d4a05b07352a5436e180356da0ae6efa0345ff7fb1572575772e8005ed978e9e61a1"
+        "85bcef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57057:e61a185bc"
+        "ef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57057:cbc77b:d9868d"
+        "52c2bebce5f3fa5a79891970f309cb6591e3e1702a70276fa97c24b3a8e58606c38c9"
+        "758529da50ee31b8219cba45271c689afa60b0ea26c99db19b00ccbc77b:\n"
+    ).splitlines()
+
+    assert load_ed25519_vectors(vector_data) == [
+        {
+            "secret_key": (
+                "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7"
+                "f60"
+            ),
+            "public_key": (
+                "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f7075"
+                "11a"
+            ),
+            "message": "",
+            "signature": (
+                "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490"
+                "1555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e"
+                "7a100b"
+            )
+        },
+        {
+            "secret_key": (
+                "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a"
+                "6fb"
+            ),
+            "public_key": (
+                "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af46"
+                "60c"
+            ),
+            "message": "72",
+            "signature": (
+                "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb6"
+                "9da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612"
+                "bb0c00"
+            )
+        },
+        {
+            "secret_key": (
+                "c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b445"
+                "8f7"
+            ),
+            "public_key": (
+                "fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908"
+                "025"
+            ),
+            "message": "af82",
+            "signature": (
+                "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac"
+                "3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea"
+                "1ec40a"
+            )
+        },
+        {
+            "secret_key": (
+                "0d4a05b07352a5436e180356da0ae6efa0345ff7fb1572575772e8005ed97"
+                "8e9"
+            ),
+            "public_key": (
+                "e61a185bcef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57"
+                "057"
+            ),
+            "message": "cbc77b",
+            "signature": (
+                "d9868d52c2bebce5f3fa5a79891970f309cb6591e3e1702a70276fa97c24b"
+                "3a8e58606c38c9758529da50ee31b8219cba45271c689afa60b0ea26c99db"
+                "19b00c"
+            )
         },
     ]
 
