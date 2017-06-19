@@ -465,7 +465,7 @@ Serialization Formats
 
     .. attribute:: DHParameter
 
-        ASN1 DH parameters sequence as defined in PKCS3.
+        ASN1 DH parameters sequence as defined in `PKCS3`_.
 
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -533,3 +533,6 @@ Serialization Encryption Types
 .. class:: NoEncryption
 
     Do not encrypt.
+
+
+.. _`PKCS3`: https://www.emc.com/emc-plus/rsa-labs/standards-initiatives/pkcs-3-diffie-hellman-key-agreement-standar.htm
