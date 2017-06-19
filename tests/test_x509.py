@@ -3624,6 +3624,10 @@ class TestNameAttribute(object):
                 u'\U0001F37A\U0001F37A'
             )
 
+    def test_init_empty_value(self):
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'')
+
     def test_eq(self):
         assert x509.NameAttribute(
             x509.ObjectIdentifier('2.999.1'), u'value'
