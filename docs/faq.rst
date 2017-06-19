@@ -1,6 +1,16 @@
 Frequently asked questions
 ==========================
 
+``cryptography`` failed to install!
+-----------------------------------
+
+If you are having issues installing ``cryptography`` the first troubleshooting
+step is to upgrade ``pip`` and then try to install again. For most users this will
+take the form of ``pip install -U pip``, but on Windows you should do
+``python -m pip install -U pip``. If you are still seeing errors after upgrading
+and trying ``pip install cryptography`` again, please see the :doc:`/installation`
+documentation.
+
 How does ``cryptography`` compare to NaCl (Networking and Cryptography Library)?
 --------------------------------------------------------------------------------
 
