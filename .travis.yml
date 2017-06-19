@@ -31,8 +31,8 @@ matrix:
           env: TOXENV=py35
         - python: 3.6
           env: TOXENV=py36
-        - env: TOXENV=pypy PYPY_VERSION=5.3
-        - env: TOXENV=pypy PYPY_VERSION=5.7.1
+        - env: TOXENV=pypy PYPY_VERSION=pypy2-5.3
+        - env: TOXENV=pypy PYPY_VERSION=pypy2.7-5.8.0
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0f
         - python: 3.5
@@ -72,7 +72,7 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode8.3
-          env: TOXENV=pypy CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 PYPY_VERSION=5.7.1
+          env: TOXENV=pypy CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 PYPY_VERSION=pypy2.7-5.8.0
         - language: generic
           os: osx
           osx_image: xcode8.3
