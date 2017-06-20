@@ -817,3 +817,20 @@ def load_nist_kbkdf_vectors(vector_data):
             test_data[name.lower()] = value.encode("ascii")
 
     return vectors
+
+
+def load_ed25519_vectors(vector_data):
+    data = []
+    for line in vector_data:
+        secret_key, public_key, message, signature, _ = line.split(':')
+        # In the vectors the first element is secret key + public key
+        secret_key = secret_key[0:64]
+        # In the vectors the signature section is signature + message
+        signature = signature[0:128]
+        data.append({
+            "secret_key": secret_key,
+            "public_key": public_key,
+            "message": message,
+            "signature": signature
+        })
+    return data
