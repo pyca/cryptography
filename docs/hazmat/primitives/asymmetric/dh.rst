@@ -130,7 +130,8 @@ Group parameters
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
         :param format: A value from the
-            :class:`~cryptography.hazmat.primitives.serialization.ParameterFormat` enum.
+            :class:`~cryptography.hazmat.primitives.serialization.ParameterFormat`
+            enum. At the moment only ``PKCS3`` is supported.
 
         :return bytes: Serialized parameters.
 

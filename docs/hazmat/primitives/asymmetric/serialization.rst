@@ -199,8 +199,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     .. versionadded:: 2.0
 
-    Deserialize encryption parameters from PEM encoded data to one of the supported
-    asymmetric encryption parameters types.
+    Deserialize parameters from PEM encoded data to one of the supported
+    asymmetric parameters types.
 
     .. doctest::
 
@@ -317,8 +317,8 @@ the rest.
 
     .. versionadded:: 2.0
 
-    Deserialize encryption parameters from DER encoded data to one of the supported
-    asymmetric encryption parameters types.
+    Deserialize parameters from DER encoded data to one of the supported
+    asymmetric parameters types.
 
     :param bytes data: The DER encoded parameters data.
 
