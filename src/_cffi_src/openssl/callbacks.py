@@ -53,10 +53,10 @@ static inline void mutex1_unlock(mutex1_t *mutex) {
 #include <stdlib.h>
 #include <pthread.h>
 typedef pthread_mutex_t mutex1_t;
-#define ASSERT_STATUS(call)                             \
-    if (call != 0) {                                    \
-        perror("Fatal error in _cffi_ssl: " #call);     \
-        abort();                                        \
+#define ASSERT_STATUS(call)                                           \
+    if (call != 0) {                                                  \
+        perror("Fatal error in callback initialization: " #call);     \
+        abort();                                                      \
     }
 static inline void mutex1_init(mutex1_t *mutex) {
 #if !defined(pthread_mutexattr_default)
@@ -123,7 +123,7 @@ int _setup_ssl_threads(void) {
         if (_ssl_locks == NULL) {
             return 0;
         }
-        memset(_ssl_locks, 0, sizeof(PyThread_type_lock) * _ssl_locks_count);
+        memset(_ssl_locks, 0, sizeof(mutex1_t) * _ssl_locks_count);
         init_mutexes();
         CRYPTO_set_locking_callback(_ssl_thread_locking_function);
 #ifndef _WIN32
