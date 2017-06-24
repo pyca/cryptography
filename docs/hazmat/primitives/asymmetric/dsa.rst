@@ -278,8 +278,9 @@ Key interfaces
 
     .. versionadded:: 0.3
 
-    A `DSA`_ private key. DSA private key objects have methods from this
-    interface as well as :class:`DSAPrivateKeyWithSerialization`.
+    A `DSA`_ private key. A DSA private key that is not an
+    :term:`opaque key` also implements :class:`DSAPrivateKeyWithSerialization`
+    to provide serialization methods.
 
     .. method:: public_key()
 

@@ -143,8 +143,8 @@ Key interfaces
 
     .. versionadded:: 0.9
 
-    DH private key objects have methods from this interface as well as
-    :class:`DHPrivateKeyWithSerialization`.
+    A DH private key that is not an :term:`opaque key` also implements
+    :class:`DHPrivateKeyWithSerialization` to provide serialization methods.
 
     .. attribute:: key_size
 

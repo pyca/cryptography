@@ -530,8 +530,9 @@ Key interfaces
 
     .. versionadded:: 0.2
 
-    An `RSA`_ private key. RSA private key objects have methods from this
-    interface as well as :class:`RSAPrivateKeyWithSerialization`.
+    An `RSA`_ private key. An RSA private key that is not an
+    :term:`opaque key` also implements :class:`RSAPrivateKeyWithSerialization`
+    to provide serialization methods.
 
     .. method:: decrypt(ciphertext, padding)
 
