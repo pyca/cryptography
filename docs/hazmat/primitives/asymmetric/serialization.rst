@@ -463,7 +463,7 @@ Serialization Formats
     method available on
     :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization`.
 
-    .. attribute:: DHParameter
+    .. attribute:: PKCS3
 
         ASN1 DH parameters sequence as defined in `PKCS3`_.
 

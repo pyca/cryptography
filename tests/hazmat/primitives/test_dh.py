@@ -691,7 +691,7 @@ class TestDHParameterSerialization(object):
                              loader_func):
         parameters = dh.generate_parameters(2, 512, backend)
         serialized = parameters.parameter_bytes(
-            encoding, serialization.ParameterFormat.DHParameter
+            encoding, serialization.ParameterFormat.PKCS3
         )
         loaded_key = loader_func(serialized, backend)
         loaded_param_num = loaded_key.parameter_numbers()
@@ -733,7 +733,7 @@ class TestDHParameterSerialization(object):
         parameters = loader_func(param_bytes, backend)
         serialized = parameters.parameter_bytes(
             encoding,
-            serialization.ParameterFormat.DHParameter,
+            serialization.ParameterFormat.PKCS3,
         )
         assert serialized == param_bytes
 
@@ -785,7 +785,7 @@ class TestDHParameterSerialization(object):
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 "notencoding",
-                serialization.ParameterFormat.DHParameter
+                serialization.ParameterFormat.PKCS3
             )
 
     def test_parameter_bytes_invalid_format(self, backend):
@@ -801,5 +801,5 @@ class TestDHParameterSerialization(object):
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 serialization.Encoding.OpenSSH,
-                serialization.ParameterFormat.DHParameter
+                serialization.ParameterFormat.PKCS3
             )

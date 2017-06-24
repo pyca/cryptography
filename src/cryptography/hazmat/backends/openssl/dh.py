@@ -60,9 +60,9 @@ class _DHParameters(object):
         return self._backend.generate_dh_private_key(self)
 
     def parameter_bytes(self, encoding, format):
-        if format is not serialization.ParameterFormat.DHParameter:
+        if format is not serialization.ParameterFormat.PKCS3:
             raise ValueError(
-                "Only DHParameter serialization is supported"
+                "Only PKCS3 serialization is supported"
             )
         if not self._backend._lib.Cryptography_HAS_EVP_PKEY_DHX:
             q = self._backend._ffi.new("BIGNUM **")

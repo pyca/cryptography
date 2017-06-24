@@ -123,7 +123,7 @@ Group parameters
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.ParameterFormat.DHParameter`)
+        :attr:`~cryptography.hazmat.primitives.serialization.ParameterFormat.PKCS3`)
         are chosen to define the exact serialization.
 
         :param encoding: A value from the
