@@ -458,7 +458,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param bytes data: PEM data to load.
         :return: A new instance of the appropriate type of encryption
-            parameters serialized data contains.
+            parameters the serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
 .. class:: DERSerializationBackend
@@ -491,7 +491,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param bytes data: DER data to load.
         :return: A new instance of the appropriate type of encryption
-            parameters serialized data contains.
+            parameters the serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
 
