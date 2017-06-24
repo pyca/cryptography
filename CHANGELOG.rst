@@ -29,7 +29,7 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_parameters`,
   :func:`~cryptography.hazmat.primitives.serialization.load_der_parameters`,
   and
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization.parameter_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters.parameter_bytes`
   .
 
 1.9 - 2017-05-29
@@ -95,9 +95,9 @@ Changelog
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey.public_bytes`
   to
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`.
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
 * :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   and
   :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`

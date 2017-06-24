@@ -102,13 +102,6 @@ Group parameters
         :return: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
-
-.. class:: DHParametersWithSerialization
-
-    .. versionadded:: 0.9
-
-    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
-
     .. method:: parameter_numbers()
 
         Return the numbers that make up this set of parameters.
@@ -134,6 +127,12 @@ Group parameters
             enum. At the moment only ``PKCS3`` is supported.
 
         :return bytes: Serialized parameters.
+
+.. class:: DHParametersWithSerialization
+
+    .. versionadded:: 0.9
+
+    Alias for :class:`DHParameters`.
 
 
 Key interfaces
@@ -163,7 +162,7 @@ Key interfaces
 
         .. versionadded:: 1.7
 
-        :param DHPublicKeyWithSerialization peer_public_key: The public key for
+        :param DHPublicKey peer_public_key: The public key for
             the peer.
 
         :return bytes: The agreed key. The bytes are ordered in 'big' endian.
@@ -224,13 +223,6 @@ Key interfaces
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
-
-.. class:: DHPublicKeyWithSerialization
-
-    .. versionadded:: 0.9
-
-    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
-
     .. method:: public_numbers()
 
         Return the numbers that make up this public key.
@@ -255,6 +247,12 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+.. class:: DHPublicKeyWithSerialization
+
+    .. versionadded:: 0.9
+
+    Alias for :class:`DHPublicKey`.
 
 
 Numbers
