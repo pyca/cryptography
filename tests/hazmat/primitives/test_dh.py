@@ -9,7 +9,7 @@ import os
 import pytest
 
 from cryptography.hazmat.backends.interfaces import (
-    DHBackend, PEMSerializationBackend)
+    DERSerializationBackend, DHBackend, PEMSerializationBackend)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length, int_from_bytes
@@ -371,6 +371,7 @@ class TestDH(object):
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHPrivateKeySerialization(object):
 
     @pytest.mark.parametrize(
@@ -540,6 +541,7 @@ class TestDHPrivateKeySerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHPublicKeySerialization(object):
 
     @pytest.mark.parametrize(
