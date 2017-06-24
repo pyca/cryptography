@@ -122,8 +122,6 @@ static void init_mutexes(void)
 
 
 int _setup_ssl_threads(void) {
-    unsigned int i;
-
     if (_ssl_locks == NULL) {
         _ssl_locks_count = CRYPTO_num_locks();
         _ssl_locks = malloc(sizeof(mutex1_t) * _ssl_locks_count);
