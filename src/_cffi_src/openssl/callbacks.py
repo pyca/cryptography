@@ -123,7 +123,7 @@ static void init_mutexes(void) {
 int _setup_ssl_threads(void) {
     if (_ssl_locks == NULL) {
         _ssl_locks_count = CRYPTO_num_locks();
-        _ssl_locks = calloc(sizeof(Cryptography_mutex) * _ssl_locks_count);
+        _ssl_locks = calloc(_ssl_locks_count, sizeof(Cryptography_mutex));
         if (_ssl_locks == NULL) {
             return 0;
         }
