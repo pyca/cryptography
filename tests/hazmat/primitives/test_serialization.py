@@ -18,8 +18,9 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.serialization import (
-    BestAvailableEncryption, load_der_private_key, load_der_public_key,
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
+    BestAvailableEncryption, load_der_parameters, load_der_private_key,
+    load_der_public_key, load_pem_parameters, load_pem_private_key,
+    load_pem_public_key, load_ssh_public_key
 )
 
 
@@ -310,6 +311,14 @@ class TestDERSerialization(object):
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
+    def test_wrong_parameters_format(self, backend):
+        param_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_der_parameters(
+                param_data, backend
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPEMSerialization(object):
@@ -590,6 +599,12 @@ class TestPEMSerialization(object):
 
         with pytest.raises(ValueError):
             load_pem_public_key(key_data, backend)
+
+    def test_wrong_parameters_format(self, backend):
+        param_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_pem_parameters(param_data, backend)
 
     def test_corrupt_traditional_format(self, backend):
         # privkey.pem with a bunch of data missing.

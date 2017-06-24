@@ -59,6 +59,28 @@ class _DHParameters(object):
     def generate_private_key(self):
         return self._backend.generate_dh_private_key(self)
 
+    def parameter_bytes(self, encoding, format):
+        if format is not serialization.ParameterFormat.PKCS3:
+            raise ValueError(
+                "Only PKCS3 serialization is supported"
+            )
+        if not self._backend._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            q = self._backend._ffi.new("BIGNUM **")
+            self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                           self._backend._ffi.NULL,
+                                           q,
+                                           self._backend._ffi.NULL)
+            if q[0] != self._backend._ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "DH X9.42 serialization is not supported",
+                    _Reasons.UNSUPPORTED_SERIALIZATION)
+
+        return self._backend._parameter_bytes(
+            encoding,
+            format,
+            self._dh_cdata
+        )
+
 
 def _handle_dh_compute_key_error(errors, backend):
     lib = backend._lib

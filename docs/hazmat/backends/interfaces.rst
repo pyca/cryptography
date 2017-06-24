@@ -452,6 +452,15 @@ A specific ``backend`` may provide one or more of these interfaces.
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
+    .. method:: load_pem_parameters(data)
+
+        .. versionadded:: 2.0
+
+        :param bytes data: PEM data to load.
+        :return: A new instance of the appropriate type of encryption
+            parameters the serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 .. class:: DERSerializationBackend
 
     .. versionadded:: 0.8
@@ -475,6 +484,16 @@ A specific ``backend`` may provide one or more of these interfaces.
         :return: A new instance of the appropriate type of public key
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
+
+    .. method:: load_der_parameters(data)
+
+        .. versionadded:: 2.0
+
+        :param bytes data: DER data to load.
+        :return: A new instance of the appropriate type of encryption
+            parameters the serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 
 .. class:: X509Backend
 

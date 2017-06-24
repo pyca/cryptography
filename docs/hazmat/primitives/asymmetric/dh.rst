@@ -115,6 +115,25 @@ Group parameters
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
 
+    .. method:: parameter_bytes(encoding, format)
+
+        .. versionadded:: 2.0
+
+        Allows serialization of the parameters to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.ParameterFormat.PKCS3`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.ParameterFormat` enum.
+
+        :return bytes: Serialized parameters.
+
 
 Key interfaces
 ~~~~~~~~~~~~~~

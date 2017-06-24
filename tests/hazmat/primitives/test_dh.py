@@ -669,3 +669,139 @@ class TestDHPublicKeySerialization(object):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
+
+
+@pytest.mark.requires_backend_interface(interface=DHBackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
+class TestDHParameterSerialization(object):
+
+    @pytest.mark.parametrize(
+        ("encoding", "loader_func"),
+        [
+            [
+                serialization.Encoding.PEM,
+                serialization.load_pem_parameters
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.load_der_parameters
+            ],
+        ]
+    )
+    def test_parameter_bytes(self, backend, encoding,
+                             loader_func):
+        parameters = dh.generate_parameters(2, 512, backend)
+        serialized = parameters.parameter_bytes(
+            encoding, serialization.ParameterFormat.PKCS3
+        )
+        loaded_key = loader_func(serialized, backend)
+        loaded_param_num = loaded_key.parameter_numbers()
+        assert loaded_param_num == parameters.parameter_numbers()
+
+    @pytest.mark.parametrize(
+        ("param_path", "loader_func", "encoding", "is_dhx"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhp.pem"),
+                serialization.load_pem_parameters,
+                serialization.Encoding.PEM,
+                False,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp.der"),
+                serialization.load_der_parameters,
+                serialization.Encoding.DER,
+                False,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
+                serialization.load_pem_parameters,
+                serialization.Encoding.PEM,
+                True,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
+                serialization.load_der_parameters,
+                serialization.Encoding.DER,
+                True,
+            )
+        ]
+    )
+    def test_parameter_bytes_match(self, param_path, loader_func,
+                                   encoding, backend, is_dhx):
+        _skip_dhx_unsupported(backend, is_dhx)
+        param_bytes = load_vectors_from_file(
+            param_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        parameters = loader_func(param_bytes, backend)
+        serialized = parameters.parameter_bytes(
+            encoding,
+            serialization.ParameterFormat.PKCS3,
+        )
+        assert serialized == param_bytes
+
+    @pytest.mark.parametrize(
+        ("param_path", "loader_func", "vec_path", "is_dhx"),
+        [
+            (
+                os.path.join("asymmetric", "DH", "dhp.pem"),
+                serialization.load_pem_parameters,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
+                False,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp.der"),
+                serialization.load_der_parameters,
+                os.path.join("asymmetric", "DH", "dhkey.txt"),
+                False,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
+                serialization.load_pem_parameters,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+                True,
+            ), (
+                os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
+                serialization.load_der_parameters,
+                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
+                True,
+            )
+        ]
+    )
+    def test_public_bytes_values(self, param_path, loader_func,
+                                 vec_path, backend, is_dhx):
+        _skip_dhx_unsupported(backend, is_dhx)
+        key_bytes = load_vectors_from_file(
+            param_path,
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
+        parameters = loader_func(key_bytes, backend)
+        parameter_numbers = parameters.parameter_numbers()
+        assert parameter_numbers.g == int(vec["g"], 16)
+        assert parameter_numbers.p == int(vec["p"], 16)
+        if "q" in vec:
+            assert parameter_numbers.q == int(vec["q"], 16)
+        else:
+            assert parameter_numbers.q is None
+
+    def test_parameter_bytes_invalid_encoding(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        with pytest.raises(TypeError):
+            parameters.parameter_bytes(
+                "notencoding",
+                serialization.ParameterFormat.PKCS3
+            )
+
+    def test_parameter_bytes_invalid_format(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        with pytest.raises(ValueError):
+            parameters.parameter_bytes(
+                serialization.Encoding.PEM,
+                "notformat"
+            )
+
+    def test_parameter_bytes_openssh_unsupported(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        with pytest.raises(TypeError):
+            parameters.parameter_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.ParameterFormat.PKCS3
+            )

@@ -24,12 +24,20 @@ def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
 
 
+def load_pem_parameters(data, backend):
+    return backend.load_pem_parameters(data)
+
+
 def load_der_private_key(data, password, backend):
     return backend.load_der_private_key(data, password)
 
 
 def load_der_public_key(data, backend):
     return backend.load_der_public_key(data)
+
+
+def load_der_parameters(data, backend):
+    return backend.load_der_parameters(data)
 
 
 def load_ssh_public_key(data, backend):
@@ -176,6 +184,10 @@ class PublicFormat(Enum):
     SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
     PKCS1 = "Raw PKCS#1"
     OpenSSH = "OpenSSH"
+
+
+class ParameterFormat(Enum):
+    PKCS3 = "PKCS3"
 
 
 @six.add_metaclass(abc.ABCMeta)
