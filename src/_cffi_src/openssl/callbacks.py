@@ -60,10 +60,10 @@ static __inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
 }
 #else
 typedef pthread_mutex_t Cryptography_mutex;
-#define ASSERT_STATUS(call)                                           \
-    if (call != 0) {                                                  \
-        perror("Fatal error in callback initialization: " #call);     \
-        abort();                                                      \
+#define ASSERT_STATUS(call)                                             \
+    if ((call) != 0) {                                                  \
+        perror("Fatal error in callback initialization: " #call);       \
+        abort();                                                        \
     }
 static inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
 #if !defined(pthread_mutexattr_default)
