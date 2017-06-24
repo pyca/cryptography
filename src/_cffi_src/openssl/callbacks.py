@@ -48,33 +48,33 @@ CUSTOMIZATIONS = """
 */
 
 #ifdef _WIN32
-typedef CRITICAL_SECTION mutex1_t;
-static __inline void mutex1_init(mutex1_t *mutex) {
+typedef CRITICAL_SECTION Cryptography_mutex;
+static __inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
     InitializeCriticalSection(mutex);
 }
-static __inline void mutex1_lock(mutex1_t *mutex) {
+static __inline void cryptography_mutex_lock(Cryptography_mutex *mutex) {
     EnterCriticalSection(mutex);
 }
-static __inline void mutex1_unlock(mutex1_t *mutex) {
+static __inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
     LeaveCriticalSection(mutex);
 }
 #else
-typedef pthread_mutex_t mutex1_t;
+typedef pthread_mutex_t Cryptography_mutex;
 #define ASSERT_STATUS(call)                                           \
     if (call != 0) {                                                  \
         perror("Fatal error in callback initialization: " #call);     \
         abort();                                                      \
     }
-static inline void mutex1_init(mutex1_t *mutex) {
+static inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
 #if !defined(pthread_mutexattr_default)
 #  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
 #endif
     ASSERT_STATUS(pthread_mutex_init(mutex, pthread_mutexattr_default));
 }
-static inline void mutex1_lock(mutex1_t *mutex) {
+static inline void cryptography_mutex_lock(Cryptography_mutex *mutex) {
     ASSERT_STATUS(pthread_mutex_lock(mutex));
 }
-static inline void mutex1_unlock(mutex1_t *mutex) {
+static inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
     ASSERT_STATUS(pthread_mutex_unlock(mutex));
 }
 #endif
@@ -82,7 +82,7 @@ static inline void mutex1_unlock(mutex1_t *mutex) {
 
 
 static unsigned int _ssl_locks_count = 0;
-static mutex1_t *_ssl_locks = NULL;
+static Cryptography_mutex *_ssl_locks = NULL;
 
 static void _ssl_thread_locking_function(int mode, int n, const char *file,
                                          int line) {
@@ -106,17 +106,16 @@ static void _ssl_thread_locking_function(int mode, int n, const char *file,
     }
 
     if (mode & CRYPTO_LOCK) {
-        mutex1_lock(_ssl_locks + n);
+        cryptography_mutex_lock(_ssl_locks + n);
     } else {
-        mutex1_unlock(_ssl_locks + n);
+        cryptography_mutex_unlock(_ssl_locks + n);
     }
 }
 
-static void init_mutexes(void)
-{
+static void init_mutexes(void) {
     int i;
-    for (i = 0;  i < _ssl_locks_count;  i++) {
-        mutex1_init(_ssl_locks + i);
+    for (i = 0; i < _ssl_locks_count; i++) {
+        cryptography_mutex_init(_ssl_locks + i);
     }
 }
 
@@ -124,11 +123,10 @@ static void init_mutexes(void)
 int _setup_ssl_threads(void) {
     if (_ssl_locks == NULL) {
         _ssl_locks_count = CRYPTO_num_locks();
-        _ssl_locks = malloc(sizeof(mutex1_t) * _ssl_locks_count);
+        _ssl_locks = calloc(sizeof(Cryptography_mutex) * _ssl_locks_count);
         if (_ssl_locks == NULL) {
             return 0;
         }
-        memset(_ssl_locks, 0, sizeof(mutex1_t) * _ssl_locks_count);
         init_mutexes();
         CRYPTO_set_locking_callback(_ssl_thread_locking_function);
 #ifndef _WIN32
