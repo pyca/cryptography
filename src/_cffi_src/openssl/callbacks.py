@@ -9,8 +9,6 @@ INCLUDES = """
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #include <openssl/crypto.h>
-
-#include <pythread.h>
 """
 
 TYPES = """
@@ -38,8 +36,46 @@ CUSTOMIZATIONS = """
    Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
 */
 
+#ifdef _WIN32
+#include <Windows.h>
+typedef CRITICAL_SECTION mutex1_t;
+static inline void mutex1_init(mutex1_t *mutex) {
+    InitializeCriticalSection(mutex);
+}
+static inline void mutex1_lock(mutex1_t *mutex) {
+    EnterCriticalSection(mutex);
+}
+static inline void mutex1_unlock(mutex1_t *mutex) {
+    LeaveCriticalSection(mutex);
+}
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+typedef pthread_mutex_t mutex1_t;
+#define ASSERT_STATUS(call)                             \
+    if (call != 0) {                                    \
+        perror("Fatal error in _cffi_ssl: " #call);     \
+        abort();                                        \
+    }
+static inline void mutex1_init(mutex1_t *mutex) {
+#if !defined(pthread_mutexattr_default)
+#  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
+#endif
+    ASSERT_STATUS(pthread_mutex_init(mutex, pthread_mutexattr_default));
+}
+static inline void mutex1_lock(mutex1_t *mutex) {
+    ASSERT_STATUS(pthread_mutex_lock(mutex));
+}
+static inline void mutex1_unlock(mutex1_t *mutex) {
+    ASSERT_STATUS(pthread_mutex_unlock(mutex));
+}
+#endif
+
+
+
 static unsigned int _ssl_locks_count = 0;
-static PyThread_type_lock *_ssl_locks = NULL;
+static mutex1_t *_ssl_locks = NULL;
 
 static void _ssl_thread_locking_function(int mode, int n, const char *file,
                                          int line) {
@@ -63,35 +99,36 @@ static void _ssl_thread_locking_function(int mode, int n, const char *file,
     }
 
     if (mode & CRYPTO_LOCK) {
-        PyThread_acquire_lock(_ssl_locks[n], 1);
+        mutex1_lock(_ssl_locks + n);
     } else {
-        PyThread_release_lock(_ssl_locks[n]);
+        mutex1_unlock(_ssl_locks + n);
     }
 }
+
+static void init_mutexes(void)
+{
+    int i;
+    for (i = 0;  i < _ssl_locks_count;  i++) {
+        mutex1_init(_ssl_locks + i);
+    }
+}
+
 
 int _setup_ssl_threads(void) {
     unsigned int i;
 
     if (_ssl_locks == NULL) {
         _ssl_locks_count = CRYPTO_num_locks();
-        _ssl_locks = PyMem_New(PyThread_type_lock, _ssl_locks_count);
+        _ssl_locks = malloc(sizeof(mutex1_t) * _ssl_locks_count);
         if (_ssl_locks == NULL) {
-            PyErr_NoMemory();
             return 0;
         }
         memset(_ssl_locks, 0, sizeof(PyThread_type_lock) * _ssl_locks_count);
-        for (i = 0;  i < _ssl_locks_count;  i++) {
-            _ssl_locks[i] = PyThread_allocate_lock();
-            if (_ssl_locks[i] == NULL) {
-                unsigned int j;
-                for (j = 0;  j < i;  j++) {
-                    PyThread_free_lock(_ssl_locks[j]);
-                }
-                PyMem_Free(_ssl_locks);
-                return 0;
-            }
-        }
+        init_mutexes();
         CRYPTO_set_locking_callback(_ssl_thread_locking_function);
+#ifndef _WIN32
+        pthread_atfork(NULL, NULL, &init_mutexes);
+#endif
     }
     return 1;
 }
