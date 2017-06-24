@@ -24,6 +24,13 @@ Changelog
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
 * Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
+* Added support for serializing and deserializing Diffie-Hellman parameters
+  with
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_parameters`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_parameters`,
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization.parameter_bytes`
+  .
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
