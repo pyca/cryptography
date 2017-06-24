@@ -123,6 +123,12 @@ class DHParameters(object):
         Generates and returns a DHPrivateKey.
         """
 
+    @abc.abstractmethod
+    def parameter_bytes(self, encoding, format):
+        """
+        Returns the parameters serialized as bytes.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHParametersWithSerialization(DHParameters):
@@ -169,6 +175,12 @@ class DHPrivateKeyWithSerialization(DHPrivateKey):
         Returns a DHPrivateNumbers.
         """
 
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        Returns the key serialized as bytes.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHPublicKey(object):
@@ -191,4 +203,10 @@ class DHPublicKeyWithSerialization(DHPublicKey):
     def public_numbers(self):
         """
         Returns a DHPublicNumbers.
+        """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding, format):
+        """
+        Returns the key serialized as bytes.
         """
