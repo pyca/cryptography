@@ -9,6 +9,14 @@ INCLUDES = """
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #include <openssl/crypto.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#endif
 """
 
 TYPES = """
@@ -34,24 +42,23 @@ CUSTOMIZATIONS = """
    locking callback for OpenSSL.
 
    Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
+
+   It has been subsequently modified to use cross platform locking without
+   using CPython APIs by Armin Rigo of the PyPy project.
 */
 
 #ifdef _WIN32
-#include <Windows.h>
 typedef CRITICAL_SECTION mutex1_t;
-static inline void mutex1_init(mutex1_t *mutex) {
+static __inline void mutex1_init(mutex1_t *mutex) {
     InitializeCriticalSection(mutex);
 }
-static inline void mutex1_lock(mutex1_t *mutex) {
+static __inline void mutex1_lock(mutex1_t *mutex) {
     EnterCriticalSection(mutex);
 }
-static inline void mutex1_unlock(mutex1_t *mutex) {
+static __inline void mutex1_unlock(mutex1_t *mutex) {
     LeaveCriticalSection(mutex);
 }
 #else
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
 typedef pthread_mutex_t mutex1_t;
 #define ASSERT_STATUS(call)                                           \
     if (call != 0) {                                                  \
