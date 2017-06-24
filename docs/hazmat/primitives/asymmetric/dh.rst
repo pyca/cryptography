@@ -143,6 +143,9 @@ Key interfaces
 
     .. versionadded:: 0.9
 
+    DH private key objects have methods from this interface as well as
+    :class:`DHPrivateKeyWithSerialization`.
+
     .. attribute:: key_size
 
         The bit length of the prime modulus.
@@ -173,8 +176,9 @@ Key interfaces
 
     .. versionadded:: 0.9
 
-    Inherits from
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`DHPrivateKey`.
 
     .. method:: private_numbers()
 

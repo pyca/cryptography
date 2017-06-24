@@ -441,7 +441,8 @@ Key Interfaces
     .. versionadded:: 0.5
 
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
-    `EdDSA`_.
+    `EdDSA`_. Elliptic curve private key objects have methods from this
+    interface as well as :class:`EllipticCurvePrivateKeyWithSerialization`.
 
     .. method:: exchange(algorithm, peer_public_key)
 
@@ -495,7 +496,9 @@ Key Interfaces
 
     .. versionadded:: 0.8
 
-    Extends :class:`EllipticCurvePrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`EllipticCurvePrivateKey`.
 
     .. method:: private_numbers()
 

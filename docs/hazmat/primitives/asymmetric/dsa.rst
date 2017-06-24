@@ -278,7 +278,8 @@ Key interfaces
 
     .. versionadded:: 0.3
 
-    A `DSA`_ private key.
+    A `DSA`_ private key. DSA private key objects have methods from this
+    interface as well as :class:`DSAPrivateKeyWithSerialization`.
 
     .. method:: public_key()
 
@@ -322,7 +323,9 @@ Key interfaces
 
     .. versionadded:: 0.8
 
-    Extends :class:`DSAPrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`DSAPrivateKey`.
 
     .. method:: private_numbers()
 
