@@ -55,11 +55,6 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.5.4',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
@@ -79,6 +74,11 @@ def configs = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-fedora',
         toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-alpine:latest',
+        toxenvs: ['py36'],
     ],
 ]
 
