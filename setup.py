@@ -72,11 +72,6 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
-backends = [
-    "openssl = cryptography.hazmat.backends.openssl:backend"
-]
-
-
 class PyTest(test):
     def finalize_options(self):
         test.finalize_options(self)
@@ -315,8 +310,5 @@ setup(
     # for cffi
     zip_safe=False,
     ext_package="cryptography.hazmat.bindings",
-    entry_points={
-        "cryptography.backends": backends,
-    },
     **keywords_with_side_effects(sys.argv)
 )
