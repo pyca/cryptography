@@ -150,10 +150,7 @@ CONDITIONAL_NAMES = {
         "Cryptography_DTLSv1_get_timeout",
         "DTLSv1_handle_timeout",
     ],
-    "Cryptography_HAS_DTLS12": [
-        "DTLSv1_2_method",
-        "DTLSv1_2_server_method",
-        "DTLSv1_2_client_method",
+    "Cryptography_HAS_GENERIC_DTLS_METHOD": [
         "DTLS_method",
         "DTLS_server_method",
         "DTLS_client_method",

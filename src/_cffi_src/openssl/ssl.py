@@ -26,7 +26,7 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
-static const long Cryptography_HAS_DTLS12;
+static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -333,9 +333,6 @@ const SSL_METHOD *DTLSv1_server_method(void);
 const SSL_METHOD *DTLSv1_client_method(void);
 
 /* Added in 1.0.2 */
-const SSL_METHOD *DTLSv1_2_method(void);
-const SSL_METHOD *DTLSv1_2_server_method(void);
-const SSL_METHOD *DTLSv1_2_client_method(void);
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
 const SSL_METHOD *DTLS_client_method(void);
@@ -599,19 +596,13 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
-#if defined(OPENSSL_NO_DTLS1_2_METHOD) || \
-    defined(OPENSSL_NO_DTLS1_2) || \
-    defined(OPENSSL_NO_DTLS) || \
-    CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
-static const long Cryptography_HAS_DTLS12 = 0;
-const SSL_METHOD *(*DTLSv1_2_method)(void) = NULL;
-const SSL_METHOD *(*DTLSv1_2_server_method)(void) = NULL;
-const SSL_METHOD *(*DTLSv1_2_client_method)(void) = NULL;
+#if defined(OPENSSL_NO_DTLS) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
 #else
-static const long Cryptography_HAS_DTLS12 = 1;
+static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif
 
 #ifndef OPENSSL_NO_DTLS
