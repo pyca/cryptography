@@ -205,7 +205,7 @@ static int osrandom_init(ENGINE *e) {
 #if !defined(__APPLE__)
     getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
 #else
-    if (getentropy != NULL) {
+    if (&getentropy != NULL) {
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
     } else {
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
@@ -219,7 +219,8 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    int len, res;
+    size_t len;
+    int res;
 
     switch(getentropy_works) {
     case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
@@ -227,7 +228,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
         while (size > 0) {
             /* OpenBSD and macOS restrict maximum buffer size to 256. */
-            len = size > 256 ? 256 : size;
+            len = size > 256 ? 256 : (size_t)size;
             res = getentropy(buffer, len);
             if (res < 0) {
                 ERR_Cryptography_OSRandom_error(
@@ -476,7 +477,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
         len = strlen(name);
         if ((p == NULL) && (i == 0)) {
             /* return required buffer len */
-            return len;
+            return (int)len;
         }
         if ((p == NULL) || i < 0 || ((size_t)i <= len)) {
             /* no buffer or buffer too small */
@@ -484,7 +485,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
             return 0;
         }
         strncpy((char *)p, name, len);
-        return len;
+        return (int)len;
     default:
         ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED);
         return 0;

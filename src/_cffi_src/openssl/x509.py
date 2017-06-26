@@ -296,7 +296,7 @@ int i2d_RSAPrivateKey(RSA *, unsigned char **);
 int i2d_DSAPublicKey(DSA *, unsigned char **);
 int i2d_DSAPrivateKey(DSA *, unsigned char **);
 
-int X509_CRL_get_version(X509_CRL *);
+long X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
