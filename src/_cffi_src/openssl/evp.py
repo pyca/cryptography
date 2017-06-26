@@ -230,8 +230,8 @@ static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
 #else
 static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
 size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
-size_t (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
-                                         size_t) = NULL;
+int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
+                                      size_t) = NULL;
 #endif
 
 /* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
