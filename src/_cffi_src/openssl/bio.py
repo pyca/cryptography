@@ -99,7 +99,7 @@ BIO_METHOD *BIO_f_null(void);
 BIO_METHOD *BIO_f_buffer(void);
 /* BIO_new_mem_buf became const void * in 1.0.2g */
 BIO *BIO_new_mem_buf(void *, int);
-long BIO_set_fd(BIO *, long, int);
+long BIO_set_fd(BIO *, int, long);
 long BIO_get_fd(BIO *, char *);
 long BIO_set_mem_eof_return(BIO *, int);
 long BIO_get_mem_data(BIO *, char **);
