@@ -1,6 +1,6 @@
 def configs = ["sierra", "yosemite"]
 
-def build(label) {
+def _build(label) {
     node(label) {
         try {
             timeout(time: 30, unit: 'MINUTES') {
@@ -24,12 +24,10 @@ def builders = [:]
 for (_label in configs) {
     def label = _label
     builders[label] = {
-        build(label)
+        _build(label)
     }
 }
 
 parallel builders
 
-/* We'd like to trigger a downstream job, but bugs. Commented out for now */
-/* Re-enable when the exception from https://ci.cryptography.io/job/cryptography-update-brew-openssl/6/console is fixed */
-/* build job: 'pyca/cryptography/master', wait: false */
+build job: 'pyca/cryptography/master', wait: false
