@@ -68,9 +68,7 @@ int BN_clear_bit(BIGNUM *, int);
 int BN_is_bit_set(const BIGNUM *, int);
 
 int BN_mask_bits(BIGNUM *, int);
-"""
 
-MACROS = """
 int BN_num_bytes(const BIGNUM *);
 
 int BN_zero(BIGNUM *);

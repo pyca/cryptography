@@ -38,9 +38,6 @@ typedef ... Cryptography_STACK_OF_SCT;
 """
 
 FUNCTIONS = """
-"""
-
-MACROS = """
 sct_version_t SCT_get_version(const SCT *);
 
 ct_log_entry_type_t SCT_get_log_entry_type(const SCT *);

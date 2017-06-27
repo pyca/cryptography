@@ -101,9 +101,6 @@ int i2d_ASN1_ENUMERATED(ASN1_ENUMERATED *, unsigned char **);
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);
 int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
-"""
-
-MACROS = """
 /* These became const ASN1_* in 1.1.0 */
 int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
 int ASN1_STRING_type(ASN1_STRING *);

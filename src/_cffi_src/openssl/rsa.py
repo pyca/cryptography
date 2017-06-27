@@ -59,9 +59,6 @@ void RSA_get0_key(const RSA *, const BIGNUM **, const BIGNUM **,
 void RSA_get0_factors(const RSA *, const BIGNUM **, const BIGNUM **);
 void RSA_get0_crt_params(const RSA *, const BIGNUM **, const BIGNUM **,
                          const BIGNUM **);
-"""
-
-MACROS = """
 int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
 int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
 int EVP_PKEY_CTX_set_rsa_mgf1_md(EVP_PKEY_CTX *, EVP_MD *);

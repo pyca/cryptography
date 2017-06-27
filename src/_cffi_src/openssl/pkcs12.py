@@ -17,9 +17,6 @@ void PKCS12_free(PKCS12 *);
 
 PKCS12 *d2i_PKCS12_bio(BIO *, PKCS12 **);
 int i2d_PKCS12_bio(BIO *, PKCS12 *);
-"""
-
-MACROS = """
 int PKCS12_parse(PKCS12 *, const char *, EVP_PKEY **, X509 **,
                  Cryptography_STACK_OF_X509 **);
 PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,

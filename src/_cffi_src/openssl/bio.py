@@ -82,9 +82,6 @@ int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 int BIO_method_type(const BIO *);
-"""
-
-MACROS = """
 /* Added in 1.1.0 */
 int BIO_up_ref(BIO *);
 

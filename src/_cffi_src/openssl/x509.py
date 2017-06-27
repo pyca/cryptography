@@ -212,9 +212,6 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
                                                  PKCS8_PRIV_KEY_INFO **);
 void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
-"""
-
-MACROS = """
 /* These became const X509 in 1.1.0 */
 int X509_get_ext_count(X509 *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
