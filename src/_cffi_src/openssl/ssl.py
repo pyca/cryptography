@@ -611,7 +611,7 @@ static const long Cryptography_HAS_DTLS = 1;
 long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
                                      long *ptv_usec) {
     struct timeval tv = { 0 };
-    int r = DTLSv1_get_timeout(ssl, &tv);
+    long r = DTLSv1_get_timeout(ssl, &tv);
 
     if (r == 1) {
         if (ptv_sec) {
