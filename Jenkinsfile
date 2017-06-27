@@ -242,7 +242,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             codecov -e JOB_BASE_NAME,LABEL
                         """
                     } else if (label.contains("sierra") || label.contains("yosemite")) {
-                        if label.contains("sierra") {
+                        if (label.contains("sierra")) {
                             sanitizers = "address,undefined"
                         } else {
                             /* Yosemite's clang doesn't have UBSan */
