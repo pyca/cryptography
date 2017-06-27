@@ -245,9 +245,6 @@ size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 
 const char *SSL_get_servername(const SSL *, const int);
-"""
-
-MACROS = """
 /* Function signature changed to const char * in 1.1.0 */
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 /* These became macros in 1.1.0 */

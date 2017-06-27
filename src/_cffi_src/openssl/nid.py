@@ -226,9 +226,6 @@ static const int NID_ad_ca_issuers;
 FUNCTIONS = """
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 #ifndef NID_X25519
 static const long Cryptography_HAS_X25519 = 0;

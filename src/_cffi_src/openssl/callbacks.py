@@ -34,9 +34,6 @@ int _setup_ssl_threads(void);
 int Cryptography_pem_password_cb(char *, int, int, void *);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 /* This code is derived from the locking code found in the Python _ssl module's
    locking callback for OpenSSL.

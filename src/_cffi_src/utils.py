@@ -18,8 +18,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
 
     * ``INCLUDES``: A string containing C includes.
     * ``TYPES``: A string containing C declarations for types.
-    * ``FUNCTIONS``: A string containing C declarations for functions.
-    * ``MACROS``: A string containing C declarations for any macros.
+    * ``FUNCTIONS``: A string containing C declarations for functions & macros.
     * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
         can be used to do things like test for a define and provide an
         alternate implementation based on that.
@@ -27,14 +26,12 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
     types = []
     includes = []
     functions = []
-    macros = []
     customizations = []
     for name in modules:
         __import__(module_prefix + name)
         module = sys.modules[module_prefix + name]
 
         types.append(module.TYPES)
-        macros.append(module.MACROS)
         functions.append(module.FUNCTIONS)
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
@@ -49,12 +46,11 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
     #   int foo(short);
     verify_source = "\n".join(
         includes +
-        functions +
         customizations
     )
     ffi = build_ffi(
         module_name,
-        cdef_source="\n".join(types + functions + macros),
+        cdef_source="\n".join(types + functions),
         verify_source=verify_source,
         libraries=libraries,
         extra_compile_args=extra_compile_args,

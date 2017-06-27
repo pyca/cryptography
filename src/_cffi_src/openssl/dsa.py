@@ -29,9 +29,6 @@ void DSA_get0_pqg(const DSA *, const BIGNUM **, const BIGNUM **,
 int DSA_set0_pqg(DSA *, BIGNUM *, BIGNUM *, BIGNUM *);
 void DSA_get0_key(const DSA *, const BIGNUM **, const BIGNUM **);
 int DSA_set0_key(DSA *, BIGNUM *, BIGNUM *);
-"""
-
-MACROS = """
 int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
                                int *, unsigned long *, BN_GENCB *);
 """

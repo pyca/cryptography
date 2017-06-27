@@ -146,9 +146,6 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
    without worrying about what OpenSSL we're running against. */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
-"""
-
-MACROS = """
 /* Added in 1.1.0 */
 size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
 int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,

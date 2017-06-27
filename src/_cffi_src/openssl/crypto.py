@@ -34,9 +34,6 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-"""
-
-MACROS = """
 /* CRYPTO_cleanup_all_ex_data became a macro in 1.1.0 */
 void CRYPTO_cleanup_all_ex_data(void);
 

@@ -255,9 +255,6 @@ void ERR_put_error(int, int, int, const char *, int);
 void ERR_add_error_data(int, ...);
 int ERR_get_next_error_library(void);
 ERR_STATE *ERR_get_state(void);
-"""
-
-MACROS = """
 /* ERR_free_strings became a macro in 1.1.0 */
 void ERR_free_strings(void);
 

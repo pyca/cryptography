@@ -19,9 +19,6 @@ typedef ... CRYPTO_EX_free;
 """
 
 FUNCTIONS = """
-"""
-
-MACROS = """
 ECDSA_SIG *ECDSA_SIG_new();
 void ECDSA_SIG_free(ECDSA_SIG *);
 int i2d_ECDSA_SIG(const ECDSA_SIG *, unsigned char **);

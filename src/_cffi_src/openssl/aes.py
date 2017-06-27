@@ -27,9 +27,6 @@ int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
                    const unsigned char *, unsigned int);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_AES_WRAP = 1;
 """
