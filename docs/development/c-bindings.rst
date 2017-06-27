@@ -128,9 +128,7 @@ opaque struct::
         ...;
     } QM_TRANSMOGRIFICATION_CTX;
 
-Confusingly, functions that aren't always available on all supported
-versions of the library, should be defined in ``MACROS`` and *not* in
-``FUNCTIONS``. Fortunately, you just have to copy the signature::
+For functions just add the signature to ``FUNCTIONS``::
 
     int QM_transmogrify(QM_TRANSMOGRIFICATION_CTX *, int);
 
