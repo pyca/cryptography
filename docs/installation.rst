@@ -10,7 +10,7 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, 3.6, and
+Currently we test ``cryptography`` on Python 2.6, 2.7, 3.4, 3.5, 3.6, and
 PyPy 5.3+ on these operating systems.
 
 * x86-64 CentOS 7.x
@@ -23,8 +23,6 @@ PyPy 5.3+ on these operating systems.
 .. warning::
     Python 2.6 is no longer supported by the Python core team. A future version
     of cryptography will drop support for this version.
-
-    Python 3.3 support will be removed in the next cryptography release.
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:

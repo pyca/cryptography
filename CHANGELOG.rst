@@ -6,6 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
 * Deprecated the use of ``signer`` on
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
