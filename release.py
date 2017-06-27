@@ -126,6 +126,7 @@ def release(version):
         "{0}/build".format(JENKINS_URL),
         params={
             "token": token,
+            "BUILD_VERSION": version,
             "cause": "Building wheels for {0}".format(version)
         }
     )
