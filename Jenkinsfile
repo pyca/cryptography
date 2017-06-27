@@ -256,7 +256,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 cd cryptography
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-                                    LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
+                                    LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a -fsanitize=$sanitizers" \
                                     CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -fsanitize=$sanitizers -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -mmacosx-version-min=10.9" \
                                     tox -r --  --color=yes
                                 virtualenv .venv
