@@ -150,6 +150,11 @@ CONDITIONAL_NAMES = {
         "Cryptography_DTLSv1_get_timeout",
         "DTLSv1_handle_timeout",
     ],
+    "Cryptography_HAS_GENERIC_DTLS_METHOD": [
+        "DTLS_method",
+        "DTLS_server_method",
+        "DTLS_client_method",
+    ],
     "Cryptography_HAS_EVP_PKEY_DHX": [
         "EVP_PKEY_DHX",
         "Cryptography_d2i_DHxparams_bio",
