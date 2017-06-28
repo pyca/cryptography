@@ -763,7 +763,7 @@ Different KDFs are suitable for different tasks such as:
         >>> # derive
         >>> kdf = Scrypt(
         ...     salt=salt,
-        ...     length=64,
+        ...     length=32,
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
@@ -773,7 +773,7 @@ Different KDFs are suitable for different tasks such as:
         >>> # verify
         >>> kdf = Scrypt(
         ...     salt=salt,
-        ...     length=64,
+        ...     length=32,
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
