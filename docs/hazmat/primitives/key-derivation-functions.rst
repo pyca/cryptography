@@ -344,14 +344,14 @@ Different KDFs are suitable for different tasks such as:
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     otherinfo=otherinfo,
         ...     backend=backend
         ... )
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     otherinfo=otherinfo,
         ...     backend=backend
         ... )
@@ -427,7 +427,7 @@ Different KDFs are suitable for different tasks such as:
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHMAC(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
         ...     backend=backend
@@ -435,7 +435,7 @@ Different KDFs are suitable for different tasks such as:
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHMAC(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
         ...     backend=backend
@@ -528,14 +528,14 @@ Different KDFs are suitable for different tasks such as:
         >>> sharedinfo = b"ANSI X9.63 Example"
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     sharedinfo=sharedinfo,
         ...     backend=backend
         ... )
         >>> key = xkdf.derive(b"input key")
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     sharedinfo=sharedinfo,
         ...     backend=backend
         ... )
@@ -621,7 +621,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = KBKDFHMAC(
         ...     algorithm=hashes.SHA256(),
         ...     mode=Mode.CounterMode,
-        ...     length=256,
+        ...     length=32,
         ...     rlen=4,
         ...     llen=4,
         ...     location=CounterLocation.BeforeFixed,
@@ -634,7 +634,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = KBKDFHMAC(
         ...     algorithm=hashes.SHA256(),
         ...     mode=Mode.CounterMode,
-        ...     length=256,
+        ...     length=32,
         ...     rlen=4,
         ...     llen=4,
         ...     location=CounterLocation.BeforeFixed,
