@@ -72,8 +72,8 @@ Different KDFs are suitable for different tasks such as:
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-    :param int length: The desired length of the derived key. Maximum is
-        (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
     :param bytes salt: A salt. Secure values [#nist]_ are 128-bits (16 bytes)
         or longer and randomly generated.
     :param int iterations: The number of iterations to perform of the hash
@@ -171,8 +171,8 @@ Different KDFs are suitable for different tasks such as:
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-    :param int length: The desired length of the derived key. Maximum is
-        ``255 * (algorithm.digest_size // 8)``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is ``255 * (algorithm.digest_size // 8)``.
 
     :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
         highly recommended. Ideally as many bits of entropy as the security
@@ -270,8 +270,8 @@ Different KDFs are suitable for different tasks such as:
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-    :param int length: The desired length of the derived key. Maximum is
-        ``255 * (algorithm.digest_size // 8)``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is ``255 * (algorithm.digest_size // 8)``.
 
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
@@ -782,7 +782,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf.verify(b"my great password", key)
 
     :param bytes salt: A salt.
-    :param int length: The desired length of the derived key.
+    :param int length: The desired length of the derived key in bytes.
     :param int n: CPU/Memory cost parameter. It must be larger than 1 and be a
         power of 2.
     :param int r: Block size parameter.
