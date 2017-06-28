@@ -193,10 +193,7 @@ class TestOpenSSLMemoryLeaks(object):
     def test_ec_public_numbers_public_key(self):
         assert_no_memory_leaks(textwrap.dedent("""
         def func():
-            import binascii
-
             from cryptography.hazmat.backends.openssl import backend
-            from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import ec
 
             ec.EllipticCurvePublicNumbers(
