@@ -1465,9 +1465,9 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        res = self._lib.EC_KEY_set_public_key_affine_coordinates(
-            ctx, self._int_to_bn(x), self._int_to_bn(y)
-        )
+        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
+        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
+        res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
