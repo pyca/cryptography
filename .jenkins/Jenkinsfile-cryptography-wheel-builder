@@ -18,10 +18,28 @@ def configs = [
         label: 'sierra',
         versions: ['py26', 'py27', 'py34', 'py35', 'py36'],
     ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-manylinux1:i686',
+        versions: [
+            'cp26-cp26m', 'cp26-cp26mu', 'cp27-cp27m',
+            'cp27-cp27mu', 'cp34-cp34m', 'cp35-cp35m',
+            'cp36-cp36m'
+        ],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-manylinux1:x86_64',
+        versions: [
+            'cp26-cp26m', 'cp26-cp26mu', 'cp27-cp27m',
+            'cp27-cp27mu', 'cp34-cp34m', 'cp35-cp35m',
+            'cp36-cp36m'
+        ],
+    ],
 ]
 
 
-def build(version, label) {
+def build(version, label, imageName) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
@@ -103,6 +121,29 @@ def build(version, label) {
                         otool -L `find .venv -name '_openssl*.so'` | grep -vG "libcrypto\\|libssl"
                     """
                 }
+            } else if (label.contains("docker")) {
+                linux32 = ""
+                if (imageName.contains("i686")) {
+                    linux32 = "linux32"
+                }
+                sh """#!/usr/bin/env bash
+                    set -x -e
+                    # Because we are doing this as root in the container, but we write to a mounted dir that is outside the container
+                    # we need to make sure we set these files writable such that the jenkins user can delete them afterwards
+                    mkdir -p tmpwheelhouse
+                    mkdir -p wheelhouse
+                    chmod -R 777 tmpwheelhouse
+                    chmod -R 777 wheelhouse
+
+                    $linux32 /opt/python/$version/bin/pip install cffi six idna asn1crypto ipaddress enum34
+                    LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
+                        CFLAGS="-I/opt/pyca/cryptography/openssl/include" \
+                        $linux32 /opt/python/$version/bin/pip wheel cryptography==$BUILD_VERSION -w tmpwheelhouse/ --no-binary cryptography --no-deps
+                    LD_LIBRARY_PATH="/opt/pyca/cryptography/openssl/lib" \
+                        $linux32 auditwheel repair tmpwheelhouse/cryptography*.whl -w wheelhouse/
+                    $linux32 /opt/python/$version/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
+                    $linux32 /opt/python/$version/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+                """
             }
             archiveArtifacts artifacts: "wheelhouse/cryptography*.whl"
         }
@@ -120,11 +161,25 @@ for (config in configs) {
     for (_version in versions) {
         def version = _version
 
-        def combinedName = "${label}-${version}"
-        builders[combinedName] = {
-            node(label) {
-                stage(combinedName) {
-                    build(version, label)
+        if (label.contains("docker")) {
+            def imageName = config["imageName"]
+            def combinedName = "${imageName}-${version}"
+            builders[combinedName] = {
+                node(label) {
+                    stage(combinedName) {
+                        docker.image(imageName).inside("-u root") {
+                            build(version, label, imageName)
+                        }
+                    }
+                }
+            }
+        } else {
+            def combinedName = "${label}-${version}"
+            builders[combinedName] = {
+                node(label) {
+                    stage(combinedName) {
+                        build(version, label, "")
+                    }
                 }
             }
         }
