@@ -40,12 +40,17 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-sid',
+        imageName: 'pyca/cryptography-runner-stretch',
         toxenvs: ['py27', 'py35'],
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-stretch',
+        imageName: 'pyca/cryptography-runner-buster',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-sid',
         toxenvs: ['py27', 'py35'],
     ],
     [
