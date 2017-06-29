@@ -72,8 +72,8 @@ Different KDFs are suitable for different tasks such as:
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-    :param int length: The desired length of the derived key. Maximum is
-        (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
     :param bytes salt: A salt. Secure values [#nist]_ are 128-bits (16 bytes)
         or longer and randomly generated.
     :param int iterations: The number of iterations to perform of the hash
@@ -171,8 +171,8 @@ Different KDFs are suitable for different tasks such as:
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-    :param int length: The desired length of the derived key. Maximum is
-        ``255 * (algorithm.digest_size // 8)``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is ``255 * (algorithm.digest_size // 8)``.
 
     :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
         highly recommended. Ideally as many bits of entropy as the security
@@ -270,8 +270,8 @@ Different KDFs are suitable for different tasks such as:
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-    :param int length: The desired length of the derived key. Maximum is
-        ``255 * (algorithm.digest_size // 8)``.
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is ``255 * (algorithm.digest_size // 8)``.
 
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
@@ -344,14 +344,14 @@ Different KDFs are suitable for different tasks such as:
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     otherinfo=otherinfo,
         ...     backend=backend
         ... )
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     otherinfo=otherinfo,
         ...     backend=backend
         ... )
@@ -427,7 +427,7 @@ Different KDFs are suitable for different tasks such as:
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHMAC(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
         ...     backend=backend
@@ -435,7 +435,7 @@ Different KDFs are suitable for different tasks such as:
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHMAC(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
         ...     backend=backend
@@ -528,14 +528,14 @@ Different KDFs are suitable for different tasks such as:
         >>> sharedinfo = b"ANSI X9.63 Example"
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     sharedinfo=sharedinfo,
         ...     backend=backend
         ... )
         >>> key = xkdf.derive(b"input key")
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
-        ...     length=256,
+        ...     length=32,
         ...     sharedinfo=sharedinfo,
         ...     backend=backend
         ... )
@@ -621,7 +621,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = KBKDFHMAC(
         ...     algorithm=hashes.SHA256(),
         ...     mode=Mode.CounterMode,
-        ...     length=256,
+        ...     length=32,
         ...     rlen=4,
         ...     llen=4,
         ...     location=CounterLocation.BeforeFixed,
@@ -634,7 +634,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf = KBKDFHMAC(
         ...     algorithm=hashes.SHA256(),
         ...     mode=Mode.CounterMode,
-        ...     length=256,
+        ...     length=32,
         ...     rlen=4,
         ...     llen=4,
         ...     location=CounterLocation.BeforeFixed,
@@ -763,7 +763,7 @@ Different KDFs are suitable for different tasks such as:
         >>> # derive
         >>> kdf = Scrypt(
         ...     salt=salt,
-        ...     length=64,
+        ...     length=32,
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
@@ -773,7 +773,7 @@ Different KDFs are suitable for different tasks such as:
         >>> # verify
         >>> kdf = Scrypt(
         ...     salt=salt,
-        ...     length=64,
+        ...     length=32,
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
@@ -782,7 +782,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf.verify(b"my great password", key)
 
     :param bytes salt: A salt.
-    :param int length: The desired length of the derived key.
+    :param int length: The desired length of the derived key in bytes.
     :param int n: CPU/Memory cost parameter. It must be larger than 1 and be a
         power of 2.
     :param int r: Block size parameter.
