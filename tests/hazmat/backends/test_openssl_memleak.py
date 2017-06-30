@@ -190,21 +190,27 @@ class TestOpenSSLMemoryLeaks(object):
             cert.extensions
         """), [path])
 
-    def test_ec_public_numbers_public_key(self):
+    def test_ec_private_numbers_private_key(self):
         assert_no_memory_leaks(textwrap.dedent("""
         def func():
             from cryptography.hazmat.backends.openssl import backend
             from cryptography.hazmat.primitives.asymmetric import ec
 
-            ec.EllipticCurvePublicNumbers(
-                curve=ec.SECP384R1(),
-                x=int(
-                    '10036914308591746758780165503819213553101287571902957054148542'
-                    '504671046744460374996612408381962208627004841444205030'
+            ec.EllipticCurvePrivateNumbers(
+                private_value=int(
+                    '280814107134858470598753916394807521398239633534281633982576099083'
+                    '35787109896602102090002196616273211495718603965098'
                 ),
-                y=int(
-                    '17337335659928075994560513699823544906448896792102247714689323'
-                    '575406618073069185107088229463828921069465902299522926'
+                public_numbers=ec.EllipticCurvePublicNumbers(
+                    curve=ec.SECP384R1(),
+                    x=int(
+                        '10036914308591746758780165503819213553101287571902957054148542'
+                        '504671046744460374996612408381962208627004841444205030'
+                    ),
+                    y=int(
+                        '17337335659928075994560513699823544906448896792102247714689323'
+                        '575406618073069185107088229463828921069465902299522926'
+                    )
                 )
-            ).public_key(backend)
+            ).private_key(backend)
         """))
