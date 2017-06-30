@@ -1326,8 +1326,10 @@ class Backend(object):
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, public.x, public.y)
 
-        res = self._lib.EC_KEY_set_private_key(
-            ec_cdata, self._int_to_bn(numbers.private_value))
+        private_value = self._ffi.gc(
+            self._int_to_bn(numbers.private_value), self._lib.BN_free
+        )
+        res = self._lib.EC_KEY_set_private_key(ec_cdata, private_value)
         self.openssl_assert(res == 1)
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
