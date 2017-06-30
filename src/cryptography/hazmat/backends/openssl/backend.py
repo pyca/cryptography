@@ -662,6 +662,9 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
+        if (isinstance(algorithm, hashes.MD5)):
+            raise ValueError("MD5 is not a supported hash algorithm for CSRs")
+
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -730,6 +733,11 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if (isinstance(algorithm, hashes.MD5)):
+            raise ValueError(
+                "MD5 is not a supported hash algorithm for certificates"
+            )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(

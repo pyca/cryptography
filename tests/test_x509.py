@@ -1933,6 +1933,9 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(private_key, object(), backend)
 
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.MD5(), backend)
+
     @pytest.mark.parametrize(
         "cdp",
         [
@@ -2621,6 +2624,9 @@ class TestCertificateSigningRequestBuilder(object):
         )
         with pytest.raises(TypeError):
             builder.sign(private_key, 'NotAHash', backend)
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.MD5(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_no_subject_name(self, backend):

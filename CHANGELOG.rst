@@ -7,6 +7,10 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
+* **BACKWARDS INCOMPATIBLE:** The ``MD5`` hash algorithm can't be used
+  for signing with
+  :class:`~cryptography.x509.CertificateBuilder` and
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 * Deprecated the use of ``signer`` on
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
