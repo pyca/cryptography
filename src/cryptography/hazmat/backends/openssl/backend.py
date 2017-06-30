@@ -662,8 +662,13 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if (isinstance(algorithm, hashes.MD5)):
-            raise ValueError("MD5 is not a supported hash algorithm for CSRs")
+        if (
+            isinstance(algorithm, hashes.MD5) and not
+            isinstance(private_key, rsa.RSAPrivateKey)
+        ):
+            raise ValueError(
+                "MD5 is not a supported hash algorithm for EC/DSA CSRs"
+            )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -734,9 +739,12 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if (isinstance(algorithm, hashes.MD5)):
+        if (
+            isinstance(algorithm, hashes.MD5) and not
+            isinstance(private_key, rsa.RSAPrivateKey)
+        ):
             raise ValueError(
-                "MD5 is not a supported hash algorithm for certificates"
+                "MD5 is not a supported hash algorithm for EC/DSA certificates"
             )
 
         # Resolve the signature algorithm.
