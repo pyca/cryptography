@@ -112,11 +112,9 @@ Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
 RHEL/CentOS
 ~~~~~~~~~~~
 
-Replace ``python3-devel`` with ``python-devel`` if you're using Python 2.
-
 .. code-block:: console
 
-    $ sudo yum install gcc libffi-devel python3-devel openssl-devel
+    $ sudo yum install gcc libffi-devel python-devel openssl-devel
 
 
 Building
