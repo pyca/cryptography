@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import AuthorityInformationAccessOID, NameOID
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
+from .hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 
@@ -390,7 +391,7 @@ class TestCertificateRevocationListBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_ec_key_unsupported(self, backend):
+    def test_sign_ec_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         invalidity_date = x509.InvalidityDate(
@@ -432,6 +433,37 @@ class TestCertificateRevocationListBuilder(object):
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
         assert ext.value == invalidity_date
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_dsa_key_sign_md5(self, backend):
+        private_key = DSA_KEY_2048.private_key(backend)
+        last_time = datetime.datetime(2012, 1, 16, 22, 43)
+        next_time = datetime.datetime(2022, 1, 17, 6, 43)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(last_time).next_update(next_time)
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.MD5(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_ec_key_sign_md5(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = EC_KEY_SECP256R1.private_key(backend)
+        last_time = datetime.datetime(2012, 1, 16, 22, 43)
+        next_time = datetime.datetime(2022, 1, 17, 6, 43)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(last_time).next_update(next_time)
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.MD5(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
