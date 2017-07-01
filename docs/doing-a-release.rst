@@ -6,9 +6,11 @@ Doing a release of ``cryptography`` requires a few steps.
 Verifying and upgrading OpenSSL version
 ---------------------------------------
 
-The release process uses a static build for Windows and macOS wheels. Check
-that the Windows and macOS Jenkins builders have the latest version of OpenSSL
-installed before performing the release. If they do not:
+The release process creates wheels bundling OpenSSL for Windows, macOS, and
+Linux. Check that the Windows and macOS Jenkins builders have the latest
+version of OpenSSL installed and verify that the latest version is present in
+the ``pyca/cryptography-manylinux1`` docker containers. If anything is out
+of date:
 
 Upgrading Windows
 ~~~~~~~~~~~~~~~~~
@@ -20,6 +22,13 @@ Upgrading macOS
 ~~~~~~~~~~~~~~~
 
 Run the ``update-brew-openssl`` Jenkins job.
+
+Upgrading ``manylinux1`` docker containers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Send a pull request to the ``pyca/infra`` project updating the version and
+file hash in ``cryptography-manylinux1/install_openssl.sh``. Once this is
+merged the updated image will be available to the wheel builder.
 
 Bumping the version number
 --------------------------
