@@ -35,6 +35,7 @@ from cryptography.x509.oid import (
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from .hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
@@ -1979,7 +1980,7 @@ class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_sign_ec_with_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        private_key = EC_KEY_SECP256R1.private_key(backend)
         builder = x509.CertificateBuilder()
         builder = builder.subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
@@ -2698,7 +2699,7 @@ class TestCertificateSigningRequestBuilder(object):
         request = builder.sign(private_key, hashes.MD5(), backend)
         assert isinstance(request.signature_hash_algorithm, hashes.MD5)
 
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
     def test_sign_dsa_with_md5(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder().subject_name(
@@ -2712,7 +2713,7 @@ class TestCertificateSigningRequestBuilder(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_sign_ec_with_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        private_key = EC_KEY_SECP256R1.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
