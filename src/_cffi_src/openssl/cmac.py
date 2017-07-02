@@ -16,9 +16,6 @@ typedef ... CMAC_CTX;
 """
 
 FUNCTIONS = """
-"""
-
-MACROS = """
 CMAC_CTX *CMAC_CTX_new(void);
 int CMAC_Init(CMAC_CTX *, const void *, size_t, const EVP_CIPHER *, ENGINE *);
 int CMAC_Update(CMAC_CTX *, const void *, size_t);

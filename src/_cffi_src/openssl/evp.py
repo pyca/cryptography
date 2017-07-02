@@ -22,15 +22,16 @@ static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
 static const int EVP_MAX_MD_SIZE;
-static const int EVP_CTRL_GCM_SET_IVLEN;
-static const int EVP_CTRL_GCM_GET_TAG;
-static const int EVP_CTRL_GCM_SET_TAG;
+static const int EVP_CTRL_AEAD_SET_IVLEN;
+static const int EVP_CTRL_AEAD_GET_TAG;
+static const int EVP_CTRL_AEAD_SET_TAG;
 
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
+static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 """
 
 FUNCTIONS = """
@@ -130,6 +131,13 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
+int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
+int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
+int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
+int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
+int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
+int EVP_PKEY_set_type(EVP_PKEY *, int);
+
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
@@ -138,9 +146,11 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
    without worrying about what OpenSSL we're running against. */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
-"""
+/* Added in 1.1.0 */
+size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
+int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
+                                   size_t);
 
-MACROS = """
 /* PKCS8_PRIV_KEY_INFO * became const in 1.1.0 */
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 
@@ -210,5 +220,25 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
+#else
+static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
+size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
+int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
+                                      size_t) = NULL;
+#endif
+
+/* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
+#if !defined(EVP_CTRL_AEAD_SET_IVLEN)
+# define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
+#endif
+#if !defined(EVP_CTRL_AEAD_GET_TAG)
+# define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
+#endif
+#if !defined(EVP_CTRL_AEAD_SET_TAG)
+# define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
 #endif
 """

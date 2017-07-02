@@ -72,9 +72,6 @@ PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *, BIO *,
 int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
 
 BIO *PKCS7_dataInit(PKCS7 *, BIO *);
-"""
-
-MACROS = """
 int PKCS7_type_is_encrypted(PKCS7 *);
 int PKCS7_type_is_signed(PKCS7 *);
 int PKCS7_type_is_enveloped(PKCS7 *);

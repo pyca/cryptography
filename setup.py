@@ -72,11 +72,6 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
-backends = [
-    "openssl = cryptography.hazmat.backends.openssl:backend"
-]
-
-
 class PyTest(test):
     def finalize_options(self):
         test.finalize_options(self)
@@ -280,7 +275,6 @@ setup(
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
@@ -301,7 +295,7 @@ setup(
             "doc8",
             "pyenchant",
             "readme_renderer >= 16.0",
-            "sphinx > 1.6.2",
+            "sphinx >= 1.6.3",
             "sphinx_rtd_theme",
             "sphinxcontrib-spelling",
         ],
@@ -315,8 +309,5 @@ setup(
     # for cffi
     zip_safe=False,
     ext_package="cryptography.hazmat.bindings",
-    entry_points={
-        "cryptography.backends": backends,
-    },
     **keywords_with_side_effects(sys.argv)
 )

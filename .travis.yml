@@ -23,22 +23,21 @@ matrix:
           env: TOXENV=py26
         - python: 2.7
           env: TOXENV=py27
-        - python: 3.3
-          env: TOXENV=py33
         - python: 3.4
           env: TOXENV=py34
         - python: 3.5
           env: TOXENV=py35
         - python: 3.6
           env: TOXENV=py36
-        - env: TOXENV=pypy PYPY_VERSION=5.3
-        - env: TOXENV=pypy PYPY_VERSION=5.7.1
+        - env: TOXENV=pypy PYPY_VERSION=pypy2-5.3
+        - env: TOXENV=pypy PYPY_VERSION=pypy2.7-5.8.0
+        - env: TOXENV=pypy-nocoverage PYPY_VERSION=pypy3.5-5.8.0
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0f
         - python: 3.5
           env: TOXENV=py35 OPENSSL=1.1.0f
         - python: 2.7
-          env: TOXENV=docs
+          env: TOXENV=docs OPENSSL=1.1.0f
           addons:
               apt:
                   packages:
@@ -56,10 +55,6 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode8.3
-          env: TOXENV=py33 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
           env: TOXENV=py34 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
         - language: generic
           os: osx
@@ -72,7 +67,7 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode8.3
-          env: TOXENV=pypy CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 PYPY_VERSION=5.7.1
+          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 PYPY_VERSION=pypy2.7-5.8.0
         - language: generic
           os: osx
           osx_image: xcode8.3

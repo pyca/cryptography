@@ -13,9 +13,6 @@ TYPES = """
 
 FUNCTIONS = """
 void OPENSSL_config(const char *);
-"""
-
-MACROS = """
 /* This is a macro in 1.1.0 */
 void OPENSSL_no_config(void);
 """

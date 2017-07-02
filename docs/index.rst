@@ -38,8 +38,8 @@ Layout
 ------
 
 ``cryptography`` is broadly divided into two levels. One with safe
-cryptographic recipes, "cryptography for humans" if you will. These are safe
-and easy to use and don't require developers to make many decisions.
+cryptographic recipes that require little to no configuration choices. These
+are safe and easy to use and don't require developers to make many decisions.
 
 The other level is low-level cryptographic primitives. These are often
 dangerous and can be used incorrectly. They require making decisions and having
@@ -58,16 +58,14 @@ hazmat layer only when necessary.
 
     fernet
     x509/index
-    random-numbers
-    exceptions
-    faq
-    glossary
 
 .. toctree::
     :maxdepth: 2
     :caption: The hazardous materials layer
 
     hazmat/primitives/index
+    exceptions
+    random-numbers
     hazmat/backends/index
     hazmat/bindings/index
 
@@ -76,13 +74,15 @@ hazmat layer only when necessary.
     :caption: The cryptography open source project
 
     installation
+    changelog
+    faq
     development/index
     security
     limitations
     api-stability
     doing-a-release
-    changelog
     community
+    glossary
 
 
 .. note::

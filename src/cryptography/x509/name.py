@@ -27,6 +27,9 @@ class NameAttribute(object):
                 "Country name must be a 2 character country code"
             )
 
+        if len(value) == 0:
+            raise ValueError("Value cannot be an empty string")
+
         self._oid = oid
         self._value = value
 

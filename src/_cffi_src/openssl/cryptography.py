@@ -64,8 +64,5 @@ static const int CRYPTOGRAPHY_IS_LIBRESSL;
 FUNCTIONS = """
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 """

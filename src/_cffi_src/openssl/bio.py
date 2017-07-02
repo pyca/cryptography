@@ -82,9 +82,6 @@ int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 int BIO_method_type(const BIO *);
-"""
-
-MACROS = """
 /* Added in 1.1.0 */
 int BIO_up_ref(BIO *);
 
@@ -99,7 +96,7 @@ BIO_METHOD *BIO_f_null(void);
 BIO_METHOD *BIO_f_buffer(void);
 /* BIO_new_mem_buf became const void * in 1.0.2g */
 BIO *BIO_new_mem_buf(void *, int);
-long BIO_set_fd(BIO *, long, int);
+long BIO_set_fd(BIO *, int, long);
 long BIO_get_fd(BIO *, char *);
 long BIO_set_mem_eof_return(BIO *, int);
 long BIO_get_mem_data(BIO *, char **);

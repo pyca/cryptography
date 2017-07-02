@@ -36,6 +36,22 @@ def _get_openssl_libraries(platform):
         return ["ssl", "crypto"]
 
 
+def _extra_compile_args(platform):
+    """
+    We set -Wconversion args here so that we only do Wconversion checks on the
+    code we're compiling and not on cffi itself (as passing -Wconversion in
+    CFLAGS would do). We set no error on sign conversion because some
+    function signatures in OpenSSL have changed from long -> unsigned long
+    in the past. Since that isn't a precision issue we don't care.
+    When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+    revisit this.
+    """
+    if platform != "win32":
+        return ["-Wconversion", "-Wno-error=sign-conversion"]
+    else:
+        return []
+
+
 ffi = build_ffi_for_binding(
     module_name="_openssl",
     module_prefix="_cffi_src.openssl.",
@@ -79,5 +95,13 @@ ffi = build_ffi_for_binding(
         "callbacks",
     ],
     libraries=_get_openssl_libraries(sys.platform),
+    # These args are passed here so that we only do Wconversion checks on the
+    # code we're compiling and not on cffi itself (as passing -Wconversion in
+    # CFLAGS would do). We set no error on sign convesrion because some
+    # function signatures in OpenSSL have changed from long -> unsigned long
+    # in the past. Since that isn't a precision issue we don't care.
+    # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+    # revisit this.
+    extra_compile_args=_extra_compile_args(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )

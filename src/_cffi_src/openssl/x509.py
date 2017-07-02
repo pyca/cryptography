@@ -212,9 +212,6 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
                                                  PKCS8_PRIV_KEY_INFO **);
 void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
-"""
-
-MACROS = """
 /* These became const X509 in 1.1.0 */
 int X509_get_ext_count(X509 *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
@@ -296,7 +293,7 @@ int i2d_RSAPrivateKey(RSA *, unsigned char **);
 int i2d_DSAPublicKey(DSA *, unsigned char **);
 int i2d_DSAPrivateKey(DSA *, unsigned char **);
 
-int X509_CRL_get_version(X509_CRL *);
+long X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);

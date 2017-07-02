@@ -101,9 +101,6 @@ int i2d_ASN1_ENUMERATED(ASN1_ENUMERATED *, unsigned char **);
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);
 int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
-"""
-
-MACROS = """
 /* These became const ASN1_* in 1.1.0 */
 int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
 int ASN1_STRING_type(ASN1_STRING *);
@@ -125,7 +122,6 @@ int i2d_ASN1_OCTET_STRING(ASN1_OCTET_STRING *, unsigned char **);
 int i2d_ASN1_INTEGER(ASN1_INTEGER *, unsigned char **);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
-ASN1_TIME *M_ASN1_TIME_dup(void *);
 const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
@@ -159,10 +155,4 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
-/* This macro is removed in 1.1.0. We re-add it if required to support
-   pyOpenSSL versions older than whatever resolves
-   https://github.com/pyca/pyopenssl/issues/431 */
-#if !defined(M_ASN1_TIME_dup)
-#define M_ASN1_TIME_dup(a) (ASN1_TIME *)ASN1_STRING_dup((const ASN1_STRING *)a)
-#endif
 """

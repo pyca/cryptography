@@ -8,6 +8,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update || brew update
 
     brew outdated openssl || brew upgrade openssl
+    brew install openssl@1.1
 
     # install pyenv
     git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
@@ -25,20 +26,20 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.3.6
             ;;
         py34)
-            pyenv install 3.4.5
-            pyenv global 3.4.5
+            pyenv install 3.4.6
+            pyenv global 3.4.6
             ;;
         py35)
-            pyenv install 3.5.2
-            pyenv global 3.5.2
+            pyenv install 3.5.3
+            pyenv global 3.5.3
             ;;
         py36)
-            pyenv install 3.6.0
-            pyenv global 3.6.0
+            pyenv install 3.6.1
+            pyenv global 3.6.1
             ;;
         pypy*)
-            pyenv install "pypy-$PYPY_VERSION"
-            pyenv global "pypy-$PYPY_VERSION"
+            pyenv install "$PYPY_VERSION"
+            pyenv global "$PYPY_VERSION"
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
@@ -61,8 +62,8 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install "pypy-$PYPY_VERSION"
-        pyenv global "pypy-$PYPY_VERSION"
+        pyenv install "$PYPY_VERSION"
+        pyenv global "$PYPY_VERSION"
     fi
 
     # download, compile, and install if it's not already present via travis
@@ -89,4 +90,4 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox codecov
+pip install tox codecov coverage==4.3.4

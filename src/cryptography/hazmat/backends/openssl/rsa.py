@@ -11,7 +11,8 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm
+    _calculate_digest_and_algorithm, _check_not_prehashed,
+    _warn_sign_verify_deprecated
 )
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
@@ -378,6 +379,8 @@ class _RSAPrivateKey(object):
     key_size = utils.read_only_property("_key_size")
 
     def signer(self, padding, algorithm):
+        _warn_sign_verify_deprecated()
+        _check_not_prehashed(algorithm)
         return _RSASignatureContext(self._backend, self, padding, algorithm)
 
     def decrypt(self, ciphertext, padding):
@@ -471,9 +474,11 @@ class _RSAPublicKey(object):
     key_size = utils.read_only_property("_key_size")
 
     def verifier(self, signature, padding, algorithm):
+        _warn_sign_verify_deprecated()
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
 
+        _check_not_prehashed(algorithm)
         return _RSAVerificationContext(
             self._backend, self, signature, padding, algorithm
         )

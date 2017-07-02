@@ -20,8 +20,5 @@ FUNCTIONS = """
 int Cryptography_add_osrandom_engine(void);
 """
 
-MACROS = """
-"""
-
 with open(os.path.join(HERE, "src/osrandom_engine.c")) as f:
     CUSTOMIZATIONS = f.read()

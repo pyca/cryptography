@@ -182,9 +182,6 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
-"""
-
-MACROS = """
 /* this CRYPTO_EX_DATA function became a macro in 1.1.0 */
 int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
                                     CRYPTO_EX_dup *, CRYPTO_EX_free *);

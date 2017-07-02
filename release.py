@@ -17,12 +17,20 @@ from clint.textui.progress import Bar as ProgressBar
 import requests
 
 
-JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
+JENKINS_URL = (
+    "https://ci.cryptography.io/job/cryptography-support-jobs/"
+    "job/wheel-builder"
+)
 
 
 def run(*args, **kwargs):
     kwargs.setdefault("stderr", subprocess.STDOUT)
-    subprocess.check_output(list(args), **kwargs)
+    try:
+        subprocess.check_output(list(args), **kwargs)
+    except subprocess.CalledProcessError as e:
+        # Reraise this with a different type so that str(e) is something with
+        # stdout in it.
+        raise Exception(e.cmd, e.returncode, e.output)
 
 
 def wait_for_build_completed(session):
@@ -51,53 +59,38 @@ def download_artifacts(session):
         }
     )
     response.raise_for_status()
-    assert not response.json()["building"]
-    assert response.json()["result"] == "SUCCESS"
+    json_response = response.json()
+    assert not json_response["building"]
+    assert json_response["result"] == "SUCCESS"
 
     paths = []
 
-    last_build_number = response.json()["number"]
-    for run in response.json()["runs"]:
-        if run["number"] != last_build_number:
-            print(
-                "Skipping {0} as it is not from the latest build ({1})".format(
-                    run["url"], last_build_number
-                )
-            )
-            continue
-
+    for artifact in json_response["artifacts"]:
         response = session.get(
-            run["url"] + "api/json/",
-            headers={
-                "Accept": "application/json",
-            }
+            "{0}artifact/{1}".format(
+                json_response["url"], artifact["relativePath"]
+            ), stream=True
         )
-        response.raise_for_status()
-        for artifact in response.json()["artifacts"]:
-            response = session.get(
-                "{0}artifact/{1}".format(run["url"], artifact["relativePath"]),
-                stream=True
-            )
-            assert response.headers["content-length"]
-            print("Downloading {0}".format(artifact["fileName"]))
-            bar = ProgressBar(
-                expected_size=int(response.headers["content-length"]),
-                filled_char="="
-            )
-            content = io.BytesIO()
-            for data in response.iter_content(chunk_size=8192):
-                content.write(data)
-                bar.show(content.tell())
-            assert bar.expected_size == content.tell()
-            bar.done()
-            out_path = os.path.join(
-                os.path.dirname(__file__),
-                "dist",
-                artifact["fileName"],
-            )
-            with open(out_path, "wb") as f:
-                f.write(content.getvalue())
-            paths.append(out_path)
+        assert response.headers["content-length"]
+        print("Downloading {0}".format(artifact["fileName"]))
+        bar = ProgressBar(
+            expected_size=int(response.headers["content-length"]),
+            filled_char="="
+        )
+        content = io.BytesIO()
+        for data in response.iter_content(chunk_size=8192):
+            content.write(data)
+            bar.show(content.tell())
+        assert bar.expected_size == content.tell()
+        bar.done()
+        out_path = os.path.join(
+            os.path.dirname(__file__),
+            "dist",
+            artifact["fileName"],
+        )
+        with open(out_path, "wb") as f:
+            f.write(content.getvalue())
+        paths.append(out_path)
     return paths
 
 
@@ -128,14 +121,12 @@ def release(version):
     )
     response.raise_for_status()
 
-    username = getpass.getpass("Input the GitHub/Jenkins username: ")
     token = getpass.getpass("Input the Jenkins token: ")
-    response = session.post(
+    response = session.get(
         "{0}/build".format(JENKINS_URL),
-        auth=requests.auth.HTTPBasicAuth(
-            username, token
-        ),
         params={
+            "token": token,
+            "BUILD_VERSION": version,
             "cause": "Building wheels for {0}".format(version)
         }
     )

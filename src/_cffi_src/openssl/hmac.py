@@ -22,9 +22,6 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void);
 void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
 #if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER

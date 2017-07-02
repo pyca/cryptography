@@ -5,11 +5,11 @@ if (env.BRANCH_NAME == "master") {
 def configs = [
     [
         label: 'windows',
-        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+        toxenvs: ['py26', 'py27', 'py34', 'py35', 'py36'],
     ],
     [
         label: 'windows64',
-        toxenvs: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+        toxenvs: ['py26', 'py27', 'py34', 'py35', 'py36'],
     ],
     [
         label: 'freebsd11',
@@ -55,11 +55,6 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.5.4',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
@@ -70,7 +65,7 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-sid',
         toxenvs: ['docs'],
         artifacts: 'cryptography/docs/_build/html/**',
         artifactExcludes: '**/*.doctree',
@@ -80,6 +75,11 @@ def configs = [
         imageName: 'pyca/cryptography-runner-fedora',
         toxenvs: ['py27', 'py35'],
     ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-alpine:latest',
+        toxenvs: ['py36'],
+    ],
 ]
 
 /* Add the linkcheck job to our config list if we're on master */
@@ -87,7 +87,7 @@ if (env.BRANCH_NAME == "master") {
     configs.add(
         [
             label: 'docker',
-            imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+            imageName: 'pyca/cryptography-runner-sid',
             toxenvs: ['docs-linkcheck'],
         ]
     )
@@ -99,13 +99,13 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
+            git clone --depth=1 https://github.com/pyca/pyopenssl
             cd pyopenssl
             virtualenv .venv
             source .venv/bin/activate
             pip install ../cryptography
             pip install -e .
-            pip install pytest
+            pip install pytest pretend
             pytest tests
         """
     ],
@@ -114,7 +114,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/twisted/twisted.git twisted
+            git clone --depth=1 https://github.com/twisted/twisted
             cd twisted
             virtualenv .venv
             source .venv/bin/activate
@@ -129,7 +129,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+            git clone --depth=1 https://github.com/paramiko/paramiko
             cd paramiko
             virtualenv .venv
             source .venv/bin/activate
@@ -142,36 +142,38 @@ def downstreams = [
 ]
 
 def checkout_git(label) {
-    def script = ""
-    if (env.BRANCH_NAME.startsWith('PR-')) {
-        script = """
-        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
-        cd cryptography
-        git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
-        git checkout -qf FETCH_HEAD
-        """
-        if (label.contains("windows")) {
-            bat script
-        } else {
-            sh """#!/bin/sh
-                set -xe
-                ${script}
+    retry(3) {
+        def script = ""
+        if (env.BRANCH_NAME.startsWith('PR-')) {
+            script = """
+            git clone --depth=1 https://github.com/pyca/cryptography
+            cd cryptography
+            git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
+            git checkout -qf FETCH_HEAD
             """
+            if (label.contains("windows")) {
+                bat script
+            } else {
+                sh """#!/bin/sh
+                    set -xe
+                    ${script}
+                """
+            }
+        } else {
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: "*/${env.BRANCH_NAME}"]],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: 'cryptography'
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    'url': 'https://github.com/pyca/cryptography'
+                ]]
+            ])
         }
-    } else {
-        checkout([
-            $class: 'GitSCM',
-            branches: [[name: "*/${env.BRANCH_NAME}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[
-                $class: 'RelativeTargetDirectory',
-                relativeTargetDir: 'cryptography'
-            ]],
-            submoduleCfg: [],
-            userRemoteConfigs: [[
-                'url': 'https://github.com/pyca/cryptography'
-            ]]
-        ])
     }
     if (label.contains("windows")) {
         bat """
@@ -197,7 +199,6 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                         def pythonPath = [
                             py26: "C:\\Python26\\python.exe",
                             py27: "C:\\Python27\\python.exe",
-                            py33: "C:\\Python33\\python.exe",
                             py34: "C:\\Python34\\python.exe",
                             py35: "C:\\Python35\\python.exe",
                             py36: "C:\\Python36\\python.exe"
@@ -236,6 +237,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
                             call .codecov/Scripts/activate
+                            pip install coverage==4.3.4
                             pip install codecov
                             codecov -e JOB_BASE_NAME,LABEL
                         """
@@ -249,11 +251,11 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 cd cryptography
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" \
+                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
                                     tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
-                                pip install coverage
+                                pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
                         }
@@ -272,7 +274,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 fi
                                 virtualenv .venv
                                 source .venv/bin/activate
-                                pip install coverage
+                                pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
                         }

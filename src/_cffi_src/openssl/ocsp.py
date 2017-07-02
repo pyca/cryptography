@@ -54,9 +54,6 @@ OCSP_REQUEST *OCSP_REQUEST_new(void);
 void OCSP_REQUEST_free(OCSP_REQUEST *);
 int OCSP_request_add1_nonce(OCSP_REQUEST *, unsigned char *, int);
 int OCSP_REQUEST_add1_ext_i2d(OCSP_REQUEST *, int, void *, int, unsigned long);
-"""
-
-MACROS = """
 OCSP_REQUEST *d2i_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST **);
 OCSP_RESPONSE *d2i_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE **);
 int i2d_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST *);

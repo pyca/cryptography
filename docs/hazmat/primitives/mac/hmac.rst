@@ -1,7 +1,7 @@
 .. hazmat::
 
-Hash-based message authentication codes
-=======================================
+Hash-based message authentication codes (HMAC)
+==============================================
 
 .. currentmodule:: cryptography.hazmat.primitives.hmac
 

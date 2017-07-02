@@ -1,0 +1,33 @@
+def configs = ["sierra", "yosemite"]
+
+def _build(label) {
+    node(label) {
+        try {
+            timeout(time: 30, unit: 'MINUTES') {
+                stage("Compile") {
+                    sh """
+                        set -xe
+
+                        /usr/local/bin/brew update
+                        /usr/local/bin/brew reinstall openssl@1.1 --build-bottle
+                    """
+                }
+            }
+        } finally {
+            deleteDir()
+        }
+    }
+}
+
+def builders = [:]
+
+for (_label in configs) {
+    def label = _label
+    builders[label] = {
+        _build(label)
+    }
+}
+
+parallel builders
+
+build job: 'pyca/cryptography/master', wait: false

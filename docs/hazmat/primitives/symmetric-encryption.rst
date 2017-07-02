@@ -435,7 +435,7 @@ Insecure modes
     **Padding is required when using this mode.**
 
 Interfaces
-----------
+~~~~~~~~~~
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
 
@@ -689,6 +689,17 @@ Interfaces used by the symmetric cipher modes described in
 
         Exact requirements of the tag are described by the documentation of
         individual modes.
+
+Exceptions
+~~~~~~~~~~
+
+.. currentmodule:: cryptography.exceptions
+
+
+.. class:: InvalidTag
+
+    This is raised if an authenticated encryption tag fails to verify during
+    decryption.
 
 
 

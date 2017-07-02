@@ -10,7 +10,7 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, 3.6, and
+Currently we test ``cryptography`` on Python 2.6, 2.7, 3.4, 3.5, 3.6, and
 PyPy 5.3+ on these operating systems.
 
 * x86-64 CentOS 7.x
@@ -18,13 +18,12 @@ PyPy 5.3+ on these operating systems.
 * macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks
 * x86-64 Ubuntu 14.04, 16.04, and rolling
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
+* x86-64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
 .. warning::
     Python 2.6 is no longer supported by the Python core team. A future version
     of cryptography will drop support for this version.
-
-    Python 3.3 support will be removed in the next cryptography release.
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
@@ -76,31 +75,58 @@ local `wheel cache`_.
 Building cryptography on Linux
 ------------------------------
 
-``cryptography`` should build very easily on Linux provided you have a C
-compiler, headers for Python (if you're not using ``pypy``), and headers for
-the OpenSSL and ``libffi`` libraries available on your system.
-
-For Debian and Ubuntu, the following command will ensure that the required
-dependencies are installed (replace ``python-dev`` with ``python3-dev`` if
-you're using Python 3):
+``cryptography`` ships a ``manylinux1`` wheel (as of 2.0) so all dependencies
+are included. For users on pip 8.1 or above running on a ``manylinux1``
+compatible distribution (almost everything except Alpine) all you should
+need to do is:
 
 .. code-block:: console
 
-    $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+    $ pip install cryptography
 
-For Fedora and RHEL-derivatives, the following command will ensure that the
-required dependencies are installed (replace ``python-devel`` with
-``python3-devel`` if you're using Python 3):
+If you are on Alpine or just want to compile it yourself then
+``cryptography`` requires a compiler, headers for Python (if you're not
+using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
+available on your system.
+
+Alpine
+~~~~~~
+
+Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
+
+.. code-block:: console
+
+    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+
+If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
+
+Debian/Ubuntu
+~~~~~~~~~~~~~
+
+Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
+
+.. code-block:: console
+
+    $ sudo apt-get install build-essential libssl-dev libffi-dev python3-dev
+
+RHEL/CentOS
+~~~~~~~~~~~
 
 .. code-block:: console
 
     $ sudo yum install gcc libffi-devel python-devel openssl-devel
 
-You should now be able to build and install cryptography with the usual
+
+Building
+~~~~~~~~
+
+You should now be able to build and install cryptography. To avoid getting
+the pre-built wheel on ``manylinux1`` distributions you'll need to use
+``--no-binary``.
 
 .. code-block:: console
 
-    $ pip install cryptography
+    $ pip install cryptography --no-binary cryptography
 
 
 Using your own OpenSSL on Linux
@@ -274,7 +300,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
+.. _`openssl-release`: https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/
 .. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/

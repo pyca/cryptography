@@ -102,18 +102,37 @@ Group parameters
         :return: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
-
-.. class:: DHParametersWithSerialization
-
-    .. versionadded:: 0.9
-
-    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
-
     .. method:: parameter_numbers()
 
         Return the numbers that make up this set of parameters.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+
+    .. method:: parameter_bytes(encoding, format)
+
+        .. versionadded:: 2.0
+
+        Allows serialization of the parameters to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.ParameterFormat.PKCS3`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.ParameterFormat`
+            enum. At the moment only ``PKCS3`` is supported.
+
+        :return bytes: Serialized parameters.
+
+.. class:: DHParametersWithSerialization
+
+    .. versionadded:: 0.9
+
+    Alias for :class:`DHParameters`.
 
 
 Key interfaces
@@ -122,6 +141,9 @@ Key interfaces
 .. class:: DHPrivateKey
 
     .. versionadded:: 0.9
+
+    A DH private key that is not an :term:`opaque key` also implements
+    :class:`DHPrivateKeyWithSerialization` to provide serialization methods.
 
     .. attribute:: key_size
 
@@ -143,7 +165,7 @@ Key interfaces
 
         .. versionadded:: 1.7
 
-        :param DHPublicKeyWithSerialization peer_public_key: The public key for
+        :param DHPublicKey peer_public_key: The public key for
             the peer.
 
         :return bytes: The agreed key. The bytes are ordered in 'big' endian.
@@ -153,8 +175,9 @@ Key interfaces
 
     .. versionadded:: 0.9
 
-    Inherits from
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`DHPrivateKey`.
 
     .. method:: private_numbers()
 
@@ -204,13 +227,6 @@ Key interfaces
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
-
-.. class:: DHPublicKeyWithSerialization
-
-    .. versionadded:: 0.9
-
-    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
-
     .. method:: public_numbers()
 
         Return the numbers that make up this public key.
@@ -235,6 +251,12 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+.. class:: DHPublicKeyWithSerialization
+
+    .. versionadded:: 0.9
+
+    Alias for :class:`DHPublicKey`.
 
 
 Numbers

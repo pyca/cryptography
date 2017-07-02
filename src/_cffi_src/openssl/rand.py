@@ -20,9 +20,6 @@ const char *RAND_file_name(char *, size_t);
 int RAND_load_file(const char *, long);
 int RAND_write_file(const char *);
 int RAND_bytes(unsigned char *, int);
-"""
-
-MACROS = """
 /* ERR_load_RAND_strings started returning an int in 1.1.0. Unfortunately we
    can't declare a conditional signature like that. Since it always returns
    1 we'll just lie about the signature to preserve compatibility for

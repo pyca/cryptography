@@ -45,9 +45,6 @@ static const int CMS_DEBUG_DECRYPT;
 """
 
 FUNCTIONS = """
-"""
-
-MACROS = """
 BIO *BIO_new_CMS(BIO *, CMS_ContentInfo *);
 int i2d_CMS_bio_stream(BIO *, CMS_ContentInfo *, BIO *, int);
 int PEM_write_bio_CMS_stream(BIO *, CMS_ContentInfo *, BIO *, int);

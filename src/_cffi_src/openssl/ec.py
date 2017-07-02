@@ -33,9 +33,6 @@ typedef enum {
 """
 
 FUNCTIONS = """
-"""
-
-MACROS = """
 EC_GROUP *EC_GROUP_new(const EC_METHOD *);
 void EC_GROUP_free(EC_GROUP *);
 void EC_GROUP_clear_free(EC_GROUP *);

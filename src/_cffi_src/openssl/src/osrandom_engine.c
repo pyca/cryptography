@@ -80,49 +80,6 @@ static const char *osurandom_get_implementation(void) {
 #endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_CRYPTGENRANDOM */
 
 /****************************************************************************
- * BSD getentropy
- */
-#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
-static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
-
-static int osrandom_init(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    int len, res;
-    while (size > 0) {
-        /* OpenBSD and macOS restrict maximum buffer size to 256. */
-        len = size > 256 ? 256 : size;
-        res = getentropy(buffer, len);
-        if (res < 0) {
-            ERR_Cryptography_OSRandom_error(
-                CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
-                CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
-                __FILE__, __LINE__
-            );
-            return 0;
-        }
-        buffer += len;
-        size -= len;
-    }
-    return 1;
-}
-
-static int osrandom_finish(ENGINE *e) {
-    return 1;
-}
-
-static int osrandom_rand_status(void) {
-    return 1;
-}
-
-static const char *osurandom_get_implementation(void) {
-    return "getentropy";
-}
-#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
-
-/****************************************************************************
  * /dev/urandom helpers for all non-BSD Unix platforms
  */
 #ifdef CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM
@@ -235,6 +192,78 @@ static void dev_urandom_close(void) {
     }
 }
 #endif /* CRYPTOGRAPHY_OSRANDOM_NEEDS_DEV_URANDOM */
+
+/****************************************************************************
+ * BSD getentropy
+ */
+#if CRYPTOGRAPHY_OSRANDOM_ENGINE == CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
+static const char *Cryptography_osrandom_engine_name = "osrandom_engine getentropy()";
+
+static int getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_NOT_INIT;
+
+static int osrandom_init(ENGINE *e) {
+#if !defined(__APPLE__)
+    getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+#else
+    if (&getentropy != NULL) {
+        getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+    } else {
+        getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
+        int fd = dev_urandom_fd();
+        if (fd < 0) {
+            return 0;
+        }
+    }
+#endif
+    return 1;
+}
+
+static int osrandom_rand_bytes(unsigned char *buffer, int size) {
+    size_t len;
+    int res;
+
+    switch(getentropy_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
+        return dev_urandom_read(buffer, size);
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
+        while (size > 0) {
+            /* OpenBSD and macOS restrict maximum buffer size to 256. */
+            len = size > 256 ? 256 : (size_t)size;
+            res = getentropy(buffer, len);
+            if (res < 0) {
+                ERR_Cryptography_OSRandom_error(
+                    CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+                    CRYPTOGRAPHY_OSRANDOM_R_GETENTROPY_FAILED,
+                    __FILE__, __LINE__
+                );
+                return 0;
+            }
+            buffer += len;
+            size -= len;
+        }
+        return 1;
+    }
+    __builtin_unreachable();
+}
+
+static int osrandom_finish(ENGINE *e) {
+    return 1;
+}
+
+static int osrandom_rand_status(void) {
+    return 1;
+}
+
+static const char *osurandom_get_implementation(void) {
+    switch(getentropy_works) {
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
+        return "/dev/urandom";
+    case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
+        return "getentropy";
+    }
+    __builtin_unreachable();
+}
+#endif /* CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY */
 
 /****************************************************************************
  * Linux getrandom engine with fallback to dev_urandom
@@ -448,7 +477,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
         len = strlen(name);
         if ((p == NULL) && (i == 0)) {
             /* return required buffer len */
-            return len;
+            return (int)len;
         }
         if ((p == NULL) || i < 0 || ((size_t)i <= len)) {
             /* no buffer or buffer too small */
@@ -456,7 +485,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
             return 0;
         }
         strncpy((char *)p, name, len);
-        return len;
+        return (int)len;
     default:
         ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED);
         return 0;

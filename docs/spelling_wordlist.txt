@@ -19,12 +19,14 @@ cryptographic
 cryptographically
 Debian
 decrypt
+Decrypts
 decrypted
 decrypting
 DER
 deserialize
 deserialized
 Deserialization
+deserializing
 Diffie
 Diffie
 disambiguating
