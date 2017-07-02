@@ -228,6 +228,15 @@ class _X509ExtensionParser(object):
                 )
             try:
                 handler = self.handlers[oid]
+                # Prior to OpenSSL 1.1.0 this OID cannot be parsed, but
+                # users may try to parse a cert with it. To preserve
+                # previous behavior we pretend it's an unrecognized extension
+                # on those old OpenSSLs.
+                if (
+                    oid == ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+                    and not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+                ):
+                    raise KeyError
             except KeyError:
                 # Dump the DER payload into an UnrecognizedExtension object
                 data = backend._lib.X509_EXTENSION_get_data(ext)
