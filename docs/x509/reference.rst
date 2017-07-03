@@ -2511,6 +2511,13 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.9"``. This is used
         to denote that a certificate may be used for signing OCSP responses.
 
+    .. attribute:: ANY_EXTENDED_KEY_USAGE
+
+        .. versionadded:: 2.0
+
+        Corresponds to the dotted string ``"2.5.29.37.0"``. This is used to
+        denote that a certificate may be used for _any_ purposes.
+
 
 .. class:: AuthorityInformationAccessOID
 
