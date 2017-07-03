@@ -171,6 +171,7 @@ class ExtendedKeyUsageOID(object):
     EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
     TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
     OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
+    ANY_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37.0")
 
 
 class AuthorityInformationAccessOID(object):
