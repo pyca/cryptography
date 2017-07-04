@@ -161,10 +161,11 @@ build.
 Static Wheels
 ~~~~~~~~~~~~~
 
-Cryptography ships statically-linked wheels for macOS and Windows, ensuring
-that these platforms can always use the most-recent OpenSSL, regardless of what
-is shipped by default on those platforms. As a result of various difficulties
-around Linux binary linking, Cryptography cannot do the same on Linux.
+Cryptography ships statically-linked wheels for macOS, Windows, and Linux (via
+``manylinux1``). This allows compatible environments to use the most recent
+OpenSSL, regardless of what is shipped by default on those platforms. Some
+Linux distributions (most notably Alpine) are not ``manylinux1`` compatible so
+we cannot distribute wheels for them.
 
 However, you can build your own statically-linked wheels that will work on your
 own systems. This will allow you to continue to use relatively old Linux
