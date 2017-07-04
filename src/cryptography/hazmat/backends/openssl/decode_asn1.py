@@ -228,15 +228,6 @@ class _X509ExtensionParser(object):
                 )
             try:
                 handler = self.handlers[oid]
-                # Prior to OpenSSL 1.1.0 this OID cannot be parsed, but
-                # users may try to parse a cert with it. To preserve
-                # previous behavior we pretend it's an unrecognized extension
-                # on those old OpenSSLs.
-                if (
-                    oid == ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
-                    and not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-                ):
-                    raise KeyError
             except KeyError:
                 # Dump the DER payload into an UnrecognizedExtension object
                 data = backend._lib.X509_EXTENSION_get_data(ext)
@@ -758,7 +749,7 @@ def _parse_asn1_generalized_time(backend, generalized_time):
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
-_EXTENSION_HANDLERS = {
+_EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
     ExtensionOID.KEY_USAGE: _decode_key_usage,
@@ -775,9 +766,6 @@ _EXTENSION_HANDLERS = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
-    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
-        _decode_precert_signed_certificate_timestamps
-    ),
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
@@ -794,6 +782,17 @@ _CRL_EXTENSION_HANDLERS = {
         _decode_authority_information_access
     ),
 }
+
+_CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
+    handlers=_EXTENSION_HANDLERS_NO_SCT
+)
+
+_EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
+_EXTENSION_HANDLERS[
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+] = _decode_precert_signed_certificate_timestamps
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
