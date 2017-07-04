@@ -11,10 +11,10 @@ import warnings
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CERTIFICATE_EXTENSION_PARSER, _CRL_EXTENSION_PARSER,
-    _CSR_EXTENSION_PARSER, _REVOKED_CERTIFICATE_EXTENSION_PARSER,
-    _asn1_integer_to_int, _asn1_string_to_bytes, _decode_x509_name, _obj2txt,
-    _parse_asn1_time
+    _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
+    _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
+    _REVOKED_CERTIFICATE_EXTENSION_PARSER, _asn1_integer_to_int,
+    _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
 )
 from cryptography.hazmat.primitives import hashes, serialization
 
@@ -128,7 +128,14 @@ class _Certificate(object):
 
     @property
     def extensions(self):
-        return _CERTIFICATE_EXTENSION_PARSER.parse(self._backend, self._x509)
+        if self._backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+            return _CERTIFICATE_EXTENSION_PARSER.parse(
+                self._backend, self._x509
+            )
+        else:
+            return _CERTIFICATE_EXTENSION_PARSER_NO_SCT.parse(
+                self._backend, self._x509
+            )
 
     @property
     def signature(self):
