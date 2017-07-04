@@ -3725,6 +3725,11 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
                 x509.PrecertificateSignedCertificateTimestamps
             )
 
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+        )
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

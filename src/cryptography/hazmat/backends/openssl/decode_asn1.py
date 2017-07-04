@@ -767,6 +767,11 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
 }
+_EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
+_EXTENSION_HANDLERS[
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+] = _decode_precert_signed_certificate_timestamps
+
 
 _REVOKED_EXTENSION_HANDLERS = {
     CRLEntryExtensionOID.CRL_REASON: _decode_crl_reason,
@@ -788,11 +793,6 @@ _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
     handlers=_EXTENSION_HANDLERS_NO_SCT
 )
-
-_EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
-_EXTENSION_HANDLERS[
-    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
-] = _decode_precert_signed_certificate_timestamps
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
