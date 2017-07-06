@@ -30,11 +30,20 @@ else
 
         export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
         export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
-        # rpath on linux will cause it to use an absolute path so we don't need to do LD_LIBRARY_PATH
+        # rpath on linux will cause it to use an absolute path so we don't need
+        # to do LD_LIBRARY_PATH
         export LDFLAGS="-L$HOME/$OPENSSL_DIR/lib -Wl,-rpath=$HOME/$OPENSSL_DIR/lib"
     fi
 fi
 source ~/.venv/bin/activate
+
+# TODO: $CC on Travis's Linux builders is too old for -fsanitize
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    export CFLAGS="$CFLAGS -fsanitize=address"
+    xcode_location="$(xcode-select -p)"
+    export DYLD_INSERT_LIBRARIES="$(ls ${xcode_location}/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/*/lib/darwin/libclang_rt.asan_osx_dynamic.dylib)"
+fi
+
 tox
 # Output information about linking of the OpenSSL library on OS X
 if [[ "$(uname -s)" == "Darwin" ]]; then
