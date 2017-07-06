@@ -37,6 +37,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
     .. method:: encrypt(data)
 
+        Encrypts data passed. The result of this encryption is known as a
+        "Fernet token" and has strong privacy and authenticity guarantees.
+
         :param bytes data: The message you would like to encrypt.
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
@@ -51,6 +54,11 @@ has support for implementing key rotation via :class:`MultiFernet`.
             therefore be visible to a possible attacker.
 
     .. method:: decrypt(token, ttl=None)
+
+        Decrypts a Fernet token. If successfully decrypted you will receive the
+        original plaintext as the result, otherwise an exception will be
+        raised. It is safe to use this data immediately as Fernet verifies
+        that the data has not been tampered with prior to returning it.
 
         :param bytes token: The Fernet token. This is the result of calling
                             :meth:`encrypt`.
