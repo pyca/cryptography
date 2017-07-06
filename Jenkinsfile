@@ -242,6 +242,12 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             codecov -e JOB_BASE_NAME,LABEL
                         """
                     } else if (label.contains("sierra") || label.contains("yosemite")) {
+                        if (label.contains("sierra")) {
+                            sanitizers = "address,undefined"
+                        } else {
+                            /* Yosemite's clang doesn't have UBSan */
+                            sanitizers = "address"
+                        }
                         ansiColor {
                             sh """#!/usr/bin/env bash
                                 set -xe
@@ -250,8 +256,8 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 cd cryptography
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-                                    LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
+                                    LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a -fsanitize=$sanitizers" \
+                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -fsanitize=$sanitizers -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -mmacosx-version-min=10.9" \
                                     tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
