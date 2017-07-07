@@ -167,7 +167,9 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        docker.image(imageName).inside("-u root") {
+                        def buildImage = docker.image(imageName)
+                        buildImage.pull()
+                        buildImage.inside("-u root") {
                             build(version, label, imageName)
                         }
                     }
