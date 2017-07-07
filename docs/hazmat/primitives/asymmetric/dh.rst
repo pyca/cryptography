@@ -288,6 +288,15 @@ Numbers
 
         p subgroup order value.
 
+    .. method:: parameters(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHParameters`.
+
 .. class:: DHPrivateNumbers(x, public_numbers)
 
     .. versionadded:: 0.8
@@ -307,6 +316,15 @@ Numbers
 
         The private value.
 
+    .. method:: private_key(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHPrivateKey`.
+
 
 .. class:: DHPublicNumbers(y, parameter_numbers)
 
@@ -325,6 +343,15 @@ Numbers
         :type: int
 
         The public value.
+
+    .. method:: public_key(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHPublicKey`.
 
 
 .. _`Diffie-Hellman key exchange`: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
