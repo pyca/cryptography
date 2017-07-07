@@ -306,7 +306,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        buildImage = docker.image(imageName)
+                        def buildImage = docker.image(imageName)
                         buildImage.pull()
                         buildImage.inside {
                             build(toxenv, label, imageName, artifacts, artifactExcludes)
