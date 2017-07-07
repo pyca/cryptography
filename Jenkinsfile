@@ -104,8 +104,7 @@ def downstreams = [
             virtualenv .venv
             source .venv/bin/activate
             pip install ../cryptography
-            pip install -e .
-            pip install pytest pretend
+            pip install -e .[test]
             pytest tests
         """
     ],
