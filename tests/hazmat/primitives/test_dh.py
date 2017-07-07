@@ -201,14 +201,6 @@ class TestDH(object):
         assert isinstance(deserialized_private,
                           dh.DHPrivateKeyWithSerialization)
 
-    def test_numbers_unsupported_parameters(self, backend):
-        params = dh.DHParameterNumbers(23, 2)
-        public = dh.DHPublicNumbers(1, params)
-        private = dh.DHPrivateNumbers(2, public)
-
-        with pytest.raises(ValueError):
-            private.private_key(backend)
-
     @pytest.mark.parametrize("with_q", [False, True])
     def test_generate_dh(self, backend, with_q):
         if with_q:
