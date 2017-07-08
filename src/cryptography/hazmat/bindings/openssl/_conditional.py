@@ -4,9 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-# This is a mapping of {condition: names-dependent-on-that-condition} so we can
-# loop over them and delete unsupported names at runtime. It will be removed
-# when cffi supports #if in cdef.
 
 
 def Cryptography_HAS_CMS():
@@ -255,6 +252,11 @@ def Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint():
     ]
 
 
+# This is a mapping of
+# {condition: function-returning-names-dependent-on-that-condition} so we can
+# loop over them and delete unsupported names at runtime. It will be removed
+# when cffi supports #if in cdef. We use functions instead of just a dict of
+# lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_CMS": Cryptography_HAS_CMS,
     "Cryptography_HAS_EC2M": Cryptography_HAS_EC2M,
