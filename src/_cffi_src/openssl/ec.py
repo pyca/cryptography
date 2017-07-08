@@ -178,7 +178,32 @@ const char *EC_curve_nid2nist(int);
 
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_EC = 1;
+
+#if defined(OPENSSL_NO_EC2M)
+static const long Cryptography_HAS_EC2M = 0;
+
+const EC_METHOD *(*EC_GF2m_simple_method)() = NULL;
+
+int (*EC_POINT_set_affine_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+    const BIGNUM *, const BIGNUM *, BN_CTX *) = NULL;
+
+int (*EC_POINT_get_affine_coordinates_GF2m)(const EC_GROUP *,
+    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
+
+int (*EC_POINT_set_compressed_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+    const BIGNUM *, int, BN_CTX *) = NULL;
+
+int (*EC_GROUP_set_curve_GF2m)(
+    EC_GROUP *, const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+
+int (*EC_GROUP_get_curve_GF2m)(
+    const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
+
+EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
+    const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+#else
 static const long Cryptography_HAS_EC2M = 1;
+#endif
 
 #if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102) || \
     (CRYPTOGRAPHY_IS_LIBRESSL && LIBRESSL_VERSION_NUMBER < 0x20020002L)

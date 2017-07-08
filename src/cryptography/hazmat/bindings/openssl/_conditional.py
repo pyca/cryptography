@@ -41,6 +41,16 @@ CONDITIONAL_NAMES = {
         "CMS_DEBUG_DECRYPT",
     ],
 
+    "Cryptography_HAS_EC2M": [
+        "EC_GF2m_simple_method",
+        "EC_POINT_set_affine_coordinates_GF2m",
+        "EC_POINT_get_affine_coordinates_GF2m",
+        "EC_POINT_set_compressed_coordinates_GF2m",
+        "EC_GROUP_set_curve_GF2m",
+        "EC_GROUP_get_curve_GF2m",
+        "EC_GROUP_new_curve_GF2m",
+    ],
+
     "Cryptography_HAS_EC_1_0_2": [
         "EC_curve_nid2nist",
     ],
