@@ -20,7 +20,7 @@ from ...utils import (
 
 @pytest.mark.supported(
     only_if=lambda backend: (
-        not backend.chacha20poly1305_supported()
+        not backend.aead_cipher_supported(ChaCha20Poly1305)
     ),
     skip_message="Requires OpenSSL without ChaCha20Poly1305 support"
 )
@@ -31,7 +31,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.chacha20poly1305_supported(),
+    only_if=lambda backend: backend.aead_cipher_supported(ChaCha20Poly1305),
     skip_message="Does not support ChaCha20Poly1305"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)

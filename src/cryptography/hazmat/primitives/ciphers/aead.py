@@ -12,7 +12,7 @@ from cryptography.hazmat.backends.openssl.backend import backend
 
 class ChaCha20Poly1305(object):
     def __init__(self, key):
-        if not backend.chacha20poly1305_supported():
+        if not backend.aead_cipher_supported(type(self)):
             raise exceptions.UnsupportedAlgorithm(
                 "ChaCha20Poly1305 is not supported by this version of OpenSSL",
                 exceptions._Reasons.UNSUPPORTED_CIPHER
