@@ -11,8 +11,9 @@ _ENCRYPT = 1
 _DECRYPT = 0
 
 
-def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
-    evp_cipher = backend._lib.EVP_get_cipherbyname(b"chacha20-poly1305")
+def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
+    evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
+    backend.openssl_assert(evp_cipher != backend._ffi.NULL)
     ctx = backend._lib.EVP_CIPHER_CTX_new()
     ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
     res = backend._lib.EVP_CipherInit_ex(
@@ -35,6 +36,10 @@ def _chacha20poly1305_setup(backend, key, nonce, tag, operation):
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
         )
         backend.openssl_assert(res != 0)
+    else:
+        res = backend._lib.EVP_CIPHER_CTX_ctrl(
+            ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, tag_len, backend._ffi.NULL
+        )
 
     res = backend._lib.EVP_CipherInit_ex(
         ctx,
@@ -64,8 +69,11 @@ def _process_data(backend, ctx, data):
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
-def encrypt(backend, key, nonce, data, associated_data):
-    ctx = _chacha20poly1305_setup(backend, key, nonce, None, _ENCRYPT)
+def _encrypt(backend, cipher_name, key, nonce, data, associated_data,
+             tag_length):
+    ctx = _aead_setup(
+        backend, cipher_name, key, nonce, None, tag_length, _ENCRYPT
+    )
 
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
@@ -73,10 +81,9 @@ def encrypt(backend, key, nonce, data, associated_data):
     res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
     backend.openssl_assert(res != 0)
     backend.openssl_assert(outlen[0] == 0)
-    # get the tag
-    tag_buf = backend._ffi.new("unsigned char[]", 16)
+    tag_buf = backend._ffi.new("unsigned char[]", tag_length)
     res = backend._lib.EVP_CIPHER_CTX_ctrl(
-        ctx, backend._lib.EVP_CTRL_AEAD_GET_TAG, 16, tag_buf
+        ctx, backend._lib.EVP_CTRL_AEAD_GET_TAG, tag_length, tag_buf
     )
     backend.openssl_assert(res != 0)
     tag = backend._ffi.buffer(tag_buf)[:]
@@ -84,12 +91,15 @@ def encrypt(backend, key, nonce, data, associated_data):
     return processed_data + tag
 
 
-def decrypt(backend, key, nonce, data, associated_data):
-    if len(data) < 16:
+def _decrypt(backend, cipher_name, key, nonce, data, associated_data,
+             tag_length):
+    if len(data) < tag_length:
         raise InvalidTag
-    tag = data[-16:]
-    data = data[:-16]
-    ctx = _chacha20poly1305_setup(backend, key, nonce, tag, _DECRYPT)
+    tag = data[-tag_length:]
+    data = data[:-tag_length]
+    ctx = _aead_setup(
+        backend, cipher_name, key, nonce, tag, tag_length, _DECRYPT
+    )
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")

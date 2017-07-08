@@ -20,7 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
-from cryptography.hazmat.backends.openssl import chacha20poly1305
+from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
@@ -1925,13 +1925,13 @@ class Backend(object):
         return self._ffi.buffer(buf)[:]
 
     def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
-        return chacha20poly1305.encrypt(
-            self, key, nonce, data, associated_data
+        return aead._encrypt(
+            self, b"chacha20-poly1305", key, nonce, data, associated_data, 16
         )
 
     def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
-        return chacha20poly1305.decrypt(
-            self, key, nonce, data, associated_data
+        return aead._decrypt(
+            self, b"chacha20-poly1305", key, nonce, data, associated_data, 16
         )
 
     def chacha20poly1305_supported(self):
