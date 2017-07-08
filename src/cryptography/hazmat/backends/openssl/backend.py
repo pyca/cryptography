@@ -1471,7 +1471,7 @@ class Backend(object):
         nid = self._lib.EC_METHOD_get_field_type(method)
         self.openssl_assert(nid != self._lib.NID_undef)
 
-        if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
+        if nid == nid_two_field:
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
         else:
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp

@@ -602,7 +602,6 @@ const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif
 
-#ifndef OPENSSL_NO_DTLS
 static const long Cryptography_HAS_DTLS = 1;
 /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
 long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
@@ -622,9 +621,4 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
 
     return r;
 }
-#else
-static const long Cryptography_HAS_DTLS = 0;
-long (*DTLSv1_get_timeout_wrapped)(SSL *, time_t *, long int *) = NULL;
-long (*DTLSv1_handle_timeout)(SSL *) = NULL;
-#endif
 """
