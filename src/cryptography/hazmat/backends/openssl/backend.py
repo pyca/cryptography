@@ -1934,7 +1934,11 @@ class Backend(object):
             self, b"chacha20-poly1305", key, nonce, data, associated_data, 16
         )
 
-    def chacha20poly1305_supported(self):
+    def aead_cipher_supported(self, cls):
+        from cryptography.hazmat.primitives.ciphers.aead import (
+            ChaCha20Poly1305
+        )
+        assert cls is ChaCha20Poly1305
         return (
             self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
             self._ffi.NULL
