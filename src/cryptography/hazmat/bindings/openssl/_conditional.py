@@ -5,8 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 
-
-def Cryptography_HAS_CMS():
+def cryptography_has_cms():
     return [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
@@ -40,7 +39,7 @@ def Cryptography_HAS_CMS():
     ]
 
 
-def Cryptography_HAS_EC2M():
+def cryptography_has_ec2m():
     return [
         "EC_GF2m_simple_method",
         "EC_POINT_set_affine_coordinates_GF2m",
@@ -52,31 +51,31 @@ def Cryptography_HAS_EC2M():
     ]
 
 
-def Cryptography_HAS_EC_1_0_2():
+def cryptography_has_ec_1_0_2():
     return [
         "EC_curve_nid2nist",
     ]
 
 
-def Cryptography_HAS_SET_ECDH_AUTO():
+def cryptography_has_set_ecdh_auto():
     return [
         "SSL_CTX_set_ecdh_auto",
     ]
 
 
-def Cryptography_HAS_ENGINE_CRYPTODEV():
+def cryptography_has_engine_cryptodev():
     return [
         "ENGINE_load_cryptodev"
     ]
 
 
-def Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR():
+def cryptography_has_rsa_r_pkcs_decoding_error():
     return [
         "RSA_R_PKCS_DECODING_ERROR"
     ]
 
 
-def Cryptography_HAS_EGD():
+def cryptography_has_egd():
     return [
         "RAND_egd",
         "RAND_egd_bytes",
@@ -84,13 +83,13 @@ def Cryptography_HAS_EGD():
     ]
 
 
-def Cryptography_HAS_RSA_OAEP_MD():
+def cryptography_has_rsa_oaep_md():
     return [
         "EVP_PKEY_CTX_set_rsa_oaep_md",
     ]
 
 
-def Cryptography_HAS_SSL3_METHOD():
+def cryptography_has_ssl3_method():
     return [
         "SSLv3_method",
         "SSLv3_client_method",
@@ -98,7 +97,7 @@ def Cryptography_HAS_SSL3_METHOD():
     ]
 
 
-def Cryptography_HAS_ALPN():
+def cryptography_has_alpn():
     return [
         "SSL_CTX_set_alpn_protos",
         "SSL_set_alpn_protos",
@@ -107,7 +106,7 @@ def Cryptography_HAS_ALPN():
     ]
 
 
-def Cryptography_HAS_COMPRESSION():
+def cryptography_has_compression():
     return [
         "SSL_get_current_compression",
         "SSL_get_current_expansion",
@@ -115,13 +114,13 @@ def Cryptography_HAS_COMPRESSION():
     ]
 
 
-def Cryptography_HAS_GET_SERVER_TMP_KEY():
+def cryptography_has_get_server_tmp_key():
     return [
         "SSL_get_server_tmp_key",
     ]
 
 
-def Cryptography_HAS_102_VERIFICATION_ERROR_CODES():
+def cryptography_has_102_verification_error_codes():
     return [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
@@ -135,7 +134,7 @@ def Cryptography_HAS_102_VERIFICATION_ERROR_CODES():
     ]
 
 
-def Cryptography_HAS_102_VERIFICATION_PARAMS():
+def cryptography_has_102_verification_params():
     return [
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
@@ -148,26 +147,26 @@ def Cryptography_HAS_102_VERIFICATION_PARAMS():
     ]
 
 
-def Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST():
+def cryptography_has_x509_v_flag_trusted_first():
     return [
         "X509_V_FLAG_TRUSTED_FIRST",
     ]
 
 
-def Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN():
+def cryptography_has_x509_v_flag_partial_chain():
     return [
         "X509_V_FLAG_PARTIAL_CHAIN",
     ]
 
 
-def Cryptography_HAS_SET_CERT_CB():
+def cryptography_has_set_cert_cb():
     return [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ]
 
 
-def Cryptography_HAS_SSL_ST():
+def cryptography_has_ssl_st():
     return [
         "SSL_ST_BEFORE",
         "SSL_ST_OK",
@@ -176,14 +175,14 @@ def Cryptography_HAS_SSL_ST():
     ]
 
 
-def Cryptography_HAS_TLS_ST():
+def cryptography_has_tls_st():
     return [
         "TLS_ST_BEFORE",
         "TLS_ST_OK",
     ]
 
 
-def Cryptography_HAS_LOCKING_CALLBACKS():
+def cryptography_has_locking_callbacks():
     return [
         "CRYPTO_LOCK",
         "CRYPTO_UNLOCK",
@@ -193,13 +192,13 @@ def Cryptography_HAS_LOCKING_CALLBACKS():
     ]
 
 
-def Cryptography_HAS_SCRYPT():
+def cryptography_has_scrypt():
     return [
         "EVP_PBE_scrypt",
     ]
 
 
-def Cryptography_HAS_GENERIC_DTLS_METHOD():
+def cryptography_has_generic_dtls_method():
     return [
         "DTLS_method",
         "DTLS_server_method",
@@ -207,19 +206,19 @@ def Cryptography_HAS_GENERIC_DTLS_METHOD():
     ]
 
 
-def Cryptography_HAS_EVP_PKEY_DHX():
+def cryptography_has_evp_pkey_dhx():
     return [
         "EVP_PKEY_DHX",
     ]
 
 
-def Cryptography_HAS_MEM_FUNCTIONS():
+def cryptography_has_mem_functions():
     return [
         "Cryptography_CRYPTO_set_mem_functions",
     ]
 
 
-def Cryptography_HAS_SCT():
+def cryptography_has_sct():
     return [
         "SCT_get_version",
         "SCT_get_log_entry_type",
@@ -232,20 +231,20 @@ def Cryptography_HAS_SCT():
     ]
 
 
-def Cryptography_HAS_X509_STORE_CTX_GET_ISSUER():
+def cryptography_has_x509_store_ctx_get_issuer():
     return [
         "X509_STORE_get_get_issuer",
         "X509_STORE_set_get_issuer",
     ]
 
 
-def Cryptography_HAS_X25519():
+def cryptography_has_x25519():
     return [
         "NID_X25519",
     ]
 
 
-def Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint():
+def cryptography_has_evp_pkey_get_set_tls_encodedpoint():
     return [
         "EVP_PKEY_get1_tls_encodedpoint",
         "EVP_PKEY_set1_tls_encodedpoint",
@@ -258,48 +257,48 @@ def Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint():
 # when cffi supports #if in cdef. We use functions instead of just a dict of
 # lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMS": Cryptography_HAS_CMS,
-    "Cryptography_HAS_EC2M": Cryptography_HAS_EC2M,
-    "Cryptography_HAS_EC_1_0_2": Cryptography_HAS_EC_1_0_2,
-    "Cryptography_HAS_SET_ECDH_AUTO": Cryptography_HAS_SET_ECDH_AUTO,
-    "Cryptography_HAS_ENGINE_CRYPTODEV": Cryptography_HAS_ENGINE_CRYPTODEV,
+    "Cryptography_HAS_CMS": cryptography_has_cms,
+    "Cryptography_HAS_EC2M": cryptography_has_ec2m,
+    "Cryptography_HAS_EC_1_0_2": cryptography_has_ec_1_0_2,
+    "Cryptography_HAS_SET_ECDH_AUTO": cryptography_has_set_ecdh_auto,
+    "Cryptography_HAS_ENGINE_CRYPTODEV": cryptography_has_engine_cryptodev,
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": (
-        Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR
+        cryptography_has_rsa_r_pkcs_decoding_error
     ),
-    "Cryptography_HAS_EGD": Cryptography_HAS_EGD,
-    "Cryptography_HAS_RSA_OAEP_MD": Cryptography_HAS_RSA_OAEP_MD,
-    "Cryptography_HAS_SSL3_METHOD": Cryptography_HAS_SSL3_METHOD,
-    "Cryptography_HAS_ALPN": Cryptography_HAS_ALPN,
-    "Cryptography_HAS_COMPRESSION": Cryptography_HAS_COMPRESSION,
-    "Cryptography_HAS_GET_SERVER_TMP_KEY": Cryptography_HAS_GET_SERVER_TMP_KEY,
+    "Cryptography_HAS_EGD": cryptography_has_egd,
+    "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
+    "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
+    "Cryptography_HAS_ALPN": cryptography_has_alpn,
+    "Cryptography_HAS_COMPRESSION": cryptography_has_compression,
+    "Cryptography_HAS_GET_SERVER_TMP_KEY": cryptography_has_get_server_tmp_key,
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": (
-        Cryptography_HAS_102_VERIFICATION_ERROR_CODES
+        cryptography_has_102_verification_error_codes
     ),
     "Cryptography_HAS_102_VERIFICATION_PARAMS": (
-        Cryptography_HAS_102_VERIFICATION_PARAMS
+        cryptography_has_102_verification_params
     ),
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": (
-        Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST
+        cryptography_has_x509_v_flag_trusted_first
     ),
     "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": (
-        Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN
+        cryptography_has_x509_v_flag_partial_chain
     ),
-    "Cryptography_HAS_SET_CERT_CB": Cryptography_HAS_SET_CERT_CB,
-    "Cryptography_HAS_SSL_ST": Cryptography_HAS_SSL_ST,
-    "Cryptography_HAS_TLS_ST": Cryptography_HAS_TLS_ST,
-    "Cryptography_HAS_LOCKING_CALLBACKS": Cryptography_HAS_LOCKING_CALLBACKS,
-    "Cryptography_HAS_SCRYPT": Cryptography_HAS_SCRYPT,
+    "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
+    "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
+    "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
+    "Cryptography_HAS_LOCKING_CALLBACKS": cryptography_has_locking_callbacks,
+    "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_GENERIC_DTLS_METHOD": (
-        Cryptography_HAS_GENERIC_DTLS_METHOD
+        cryptography_has_generic_dtls_method
     ),
-    "Cryptography_HAS_EVP_PKEY_DHX": Cryptography_HAS_EVP_PKEY_DHX,
-    "Cryptography_HAS_MEM_FUNCTIONS": Cryptography_HAS_MEM_FUNCTIONS,
-    "Cryptography_HAS_SCT": Cryptography_HAS_SCT,
+    "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
+    "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
+    "Cryptography_HAS_SCT": cryptography_has_sct,
     "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
-        Cryptography_HAS_X509_STORE_CTX_GET_ISSUER
+        cryptography_has_x509_store_ctx_get_issuer
     ),
-    "Cryptography_HAS_X25519": Cryptography_HAS_X25519,
+    "Cryptography_HAS_X25519": cryptography_has_x25519,
     "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": (
-        Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint
+        cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
 }
