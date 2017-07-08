@@ -1924,24 +1924,10 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
-        return aead._encrypt(
-            self, b"chacha20-poly1305", key, nonce, data, associated_data, 16
-        )
-
-    def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
-        return aead._decrypt(
-            self, b"chacha20-poly1305", key, nonce, data, associated_data, 16
-        )
-
     def aead_cipher_supported(self, cls):
-        from cryptography.hazmat.primitives.ciphers.aead import (
-            ChaCha20Poly1305
-        )
-        assert cls is ChaCha20Poly1305
+        cipher_name = aead._aead_cipher_name(cls, None)
         return (
-            self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
-            self._ffi.NULL
+            self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
 
 

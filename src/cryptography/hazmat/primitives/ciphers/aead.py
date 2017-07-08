@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from cryptography import exceptions, utils
+from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.backend import backend
 
 
@@ -33,8 +34,8 @@ class ChaCha20Poly1305(object):
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return backend.chacha20poly1305_encrypt(
-            self._key, nonce, data, associated_data
+        return aead._encrypt(
+            backend, type(self), self._key, nonce, data, associated_data, 16
         )
 
     def decrypt(self, nonce, data, associated_data):
@@ -42,8 +43,8 @@ class ChaCha20Poly1305(object):
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return backend.chacha20poly1305_decrypt(
-            self._key, nonce, data, associated_data
+        return aead._decrypt(
+            backend, type(self), self._key, nonce, data, associated_data, 16
         )
 
     def _check_params(self, nonce, data, associated_data):
