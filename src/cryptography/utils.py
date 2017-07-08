@@ -149,10 +149,12 @@ def deprecated(value, module_name, message, warning_class):
 
 def cached_property(func):
     cached_name = "_cached_{0}".format(func)
+    sentinel = object()
 
     def inner(instance):
-        if hasattr(instance, cached_name):
-            return getattr(instance, cached_name)
+        cache = getattr(instance, cached_name, sentinel)
+        if cache is not sentinel:
+            return cache
         result = func(instance)
         setattr(instance, cached_name, result)
         return result
