@@ -89,6 +89,9 @@ Custom asymmetric vectors
 Key exchange
 ~~~~~~~~~~~~
 
+* ``vectors/cryptography_vectors/asymmetric/DH/rfc3526.txt`` contains
+  several standardized Diffie-Hellman groups from :rfc:`3526`.
+
 * ``vectors/cryptography_vectors/asymmetric/DH/RFC5114.txt`` contains
   Diffie-Hellman examples from appendix A.1, A.2 and A.3 of :rfc:`5114`.
 
