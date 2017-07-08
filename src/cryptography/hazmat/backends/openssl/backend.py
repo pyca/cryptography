@@ -1772,13 +1772,6 @@ class Backend(object):
         res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
         self.openssl_assert(res == 1)
 
-        codes = self._ffi.new("int[]", 1)
-        res = self._lib.Cryptography_DH_check(dh_cdata, codes)
-        self.openssl_assert(res == 1)
-
-        if codes[0] != 0:
-            raise ValueError("DH private numbers did not pass safety checks.")
-
         evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
 
         return _DHPrivateKey(self, dh_cdata, evp_pkey)
