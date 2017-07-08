@@ -167,14 +167,21 @@ the necessarily type definitions are in place.
 Finally, add an entry to ``CONDITIONAL_NAMES`` with all of the things
 you want to conditionally export::
 
-    CONDITIONAL_NAMES = {
-        ...
-        "Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION": [
+    def Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION():
+        return [
             "QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT",
             "QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT",
             "QM_transmogrify"
         ]
+
+
+    CONDITIONAL_NAMES = {
+        ...
+        "Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION": (
+            Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION
+        ),
     }
+
 
 Caveats
 ~~~~~~~
