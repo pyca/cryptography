@@ -145,3 +145,15 @@ def deprecated(value, module_name, message, warning_class):
     if not isinstance(module, _ModuleWithDeprecations):
         sys.modules[module_name] = _ModuleWithDeprecations(module)
     return _DeprecatedValue(value, message, warning_class)
+
+
+def cached_property(func):
+    cached_name = "_cached_{0}".format(func)
+
+    def inner(instance):
+        if hasattr(instance, cached_name):
+            return getattr(instance, cached_name)
+        result = func(instance)
+        setattr(instance, cached_name, result)
+        return result
+    return property(inner)

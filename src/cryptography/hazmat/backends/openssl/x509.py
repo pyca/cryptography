@@ -126,7 +126,7 @@ class _Certificate(object):
         oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         if self._backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             return _CERTIFICATE_EXTENSION_PARSER.parse(
@@ -200,7 +200,7 @@ class _RevokedCertificate(object):
             )
         )
 
-    @property
+    @utils.cached_property
     def extensions(self):
         return _REVOKED_CERTIFICATE_EXTENSION_PARSER.parse(
             self._backend, self._x509_revoked
@@ -334,7 +334,7 @@ class _CertificateRevocationList(object):
         else:
             return self._backend._lib.sk_X509_REVOKED_num(revoked)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
 
@@ -391,7 +391,7 @@ class _CertificateSigningRequest(object):
         oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
         return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
