@@ -1779,8 +1779,7 @@ class Backend(object):
         # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
         # equal 11 when the generator is 2. We want to ignore that error
         # because p % 24 == 23 is also fine. See:
-        # https://crypto.stackexchange.com/questions/12961/diffie-hellman-
-        # parameter-check-when-g-2-must-p-mod-24-11
+        # https://crypto.stackexchange.com/questions/12961
         if codes[0] != 0 and not (
             parameter_numbers.g == 2 and
             codes[0] ^ self._lib.DH_NOT_SUITABLE_GENERATOR == 0
