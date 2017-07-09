@@ -17,6 +17,7 @@ static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
+static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
@@ -64,6 +65,7 @@ static const long SSL_OP_NO_SSLv3;
 static const long SSL_OP_NO_TLSv1;
 static const long SSL_OP_NO_TLSv1_1;
 static const long SSL_OP_NO_TLSv1_2;
+static const long SSL_OP_NO_TLSv1_3;
 static const long SSL_OP_NO_COMPRESSION;
 static const long SSL_OP_SINGLE_DH_USE;
 static const long SSL_OP_EPHEMERAL_RSA;
@@ -506,6 +508,13 @@ SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
 SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_SSL3_METHOD = 1;
+#endif
+
+#ifdef SSL_OP_NO_TLSv1_3
+static const long Cryptography_HAS_TLSv1_3 = 1;
+#else
+static const long Cryptography_HAS_TLSv1_3 = 0;
+static const long SSL_OP_NO_TLSv1_3 = 0;
 #endif
 
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
