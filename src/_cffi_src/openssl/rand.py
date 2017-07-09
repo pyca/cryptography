@@ -9,6 +9,7 @@ INCLUDES = """
 """
 
 TYPES = """
+static const long Cryptography_HAS_EGD;
 """
 
 FUNCTIONS = """
@@ -30,4 +31,5 @@ void RAND_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
+static const long Cryptography_HAS_EGD = 0;
 """
