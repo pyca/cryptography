@@ -16,6 +16,7 @@ def test_int_from_bytes_bytearray():
 class TestCachedProperty(object):
     def test_simple(self):
         accesses = []
+
         class T(object):
             @utils.cached_property
             def t(self):
@@ -37,6 +38,7 @@ class TestCachedProperty(object):
 
     def test_set(self):
         accesses = []
+
         class T(object):
             @utils.cached_property
             def t(self):
