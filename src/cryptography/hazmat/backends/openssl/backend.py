@@ -1924,8 +1924,8 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def aead_cipher_supported(self, cls):
-        cipher_name = aead._aead_cipher_name(cls, None)
+    def aead_cipher_supported(self, cipher):
+        cipher_name = aead._aead_cipher_name(cipher)
         return (
             self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
