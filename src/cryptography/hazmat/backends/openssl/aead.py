@@ -11,12 +11,11 @@ _ENCRYPT = 1
 _DECRYPT = 0
 
 
-def _aead_cipher_name(cls, key_length):
+def _aead_cipher_name(cipher):
     from cryptography.hazmat.primitives.ciphers.aead import (
         ChaCha20Poly1305
     )
-    assert cls is ChaCha20Poly1305
-    assert key_length == 32 or key_length is None
+    assert isinstance(cipher, ChaCha20Poly1305)
     return b"chacha20-poly1305"
 
 
@@ -78,11 +77,10 @@ def _process_data(backend, ctx, data):
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
-def _encrypt(backend, cipher_cls, key, nonce, data, associated_data,
-             tag_length):
-    cipher_name = _aead_cipher_name(cipher_cls, len(key))
+def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
+    cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
-        backend, cipher_name, key, nonce, None, tag_length, _ENCRYPT
+        backend, cipher_name, cipher._key, nonce, None, tag_length, _ENCRYPT
     )
 
     _process_aad(backend, ctx, associated_data)
@@ -101,15 +99,14 @@ def _encrypt(backend, cipher_cls, key, nonce, data, associated_data,
     return processed_data + tag
 
 
-def _decrypt(backend, cipher_cls, key, nonce, data, associated_data,
-             tag_length):
+def _decrypt(backend, cipher, nonce, data, associated_data, tag_length):
     if len(data) < tag_length:
         raise InvalidTag
     tag = data[-tag_length:]
     data = data[:-tag_length]
-    cipher_name = _aead_cipher_name(cipher_cls, len(key))
+    cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
-        backend, cipher_name, key, nonce, tag, tag_length, _DECRYPT
+        backend, cipher_name, cipher._key, nonce, tag, tag_length, _DECRYPT
     )
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)

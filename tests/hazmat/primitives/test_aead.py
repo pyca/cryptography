@@ -9,7 +9,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidTag, _Reasons
+from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
@@ -18,11 +18,17 @@ from ...utils import (
 )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: (
-        not backend.aead_cipher_supported(ChaCha20Poly1305)
-    ),
-    skip_message="Requires OpenSSL without ChaCha20Poly1305 support"
+def _chacha20poly1305_supported():
+    try:
+        ChaCha20Poly1305(b"0" * 32)
+        return True
+    except UnsupportedAlgorithm:
+        return False
+
+
+@pytest.mark.skipif(
+    _chacha20poly1305_supported(),
+    reason="Requires OpenSSL without ChaCha20Poly1305 support"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_chacha20poly1305_unsupported_on_older_openssl(backend):
@@ -30,9 +36,9 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
         ChaCha20Poly1305(ChaCha20Poly1305.generate_key())
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.aead_cipher_supported(ChaCha20Poly1305),
-    skip_message="Does not support ChaCha20Poly1305"
+@pytest.mark.skipif(
+    not _chacha20poly1305_supported(),
+    reason="Does not support ChaCha20Poly1305"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20Poly1305(object):
