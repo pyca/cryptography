@@ -221,6 +221,11 @@ class TestDH(object):
                           dh.DHPrivateKeyWithSerialization)
 
     def test_numbers_unsupported_parameters(self, backend):
+        # p is set to 21 because when calling private_key we want it to
+        # fail the DH_check call OpenSSL does. Originally this was 23, but
+        # we are allowing p % 24 to == 23 with this PR (see #3768 for more)
+        # By setting it to 21 it fails later in DH_check in a primality check
+        # which triggers the code path we want to test
         params = dh.DHParameterNumbers(21, 2)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
