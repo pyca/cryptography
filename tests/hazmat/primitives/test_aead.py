@@ -9,7 +9,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidTag, _Reasons, UnsupportedAlgorithm
+from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
