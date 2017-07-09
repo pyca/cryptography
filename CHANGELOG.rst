@@ -35,6 +35,13 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters.parameter_bytes`
   .
+* The ``extensions`` attribute on :class:`~cryptography.x509.Certificate`,
+  :class:`~cryptography.x509.CertificateSigningRequest`,
+  :class:`~cryptography.x509.CertificateRevocationList`, and
+  :class:`~cryptography.x509.RevokedCertificate` now caches the computed
+  ``Extensions`` object. There should be no performance change, just a
+  performance improvement for programs accessing the ``extensions`` attribute
+  multiple times.
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
