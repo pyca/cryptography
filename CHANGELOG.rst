@@ -355,6 +355,8 @@ Changelog
   CRLs.
 * Unrecognized non-critical X.509 extensions are now parsed into an
   :class:`~cryptography.x509.UnrecognizedExtension` object.
+* Added :class: `~cryptography.x509.CertificationVerificationContext` to allow
+  verification of certificate signatures.
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~

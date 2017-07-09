@@ -1214,6 +1214,34 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+X.509 Certificate Verification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateVerificationContext
+
+    .. versionadded:: 1.2
+
+    .. method:: update(certificate)
+
+       Processes the provided certificate. Raises an exception if the
+       certificate is invalid.
+
+       :param certificate: The certificate whose signature needs to be
+           verified.
+
+       :raises cryptography.x509.verification.InvalidCertificate: If the
+           certificate is an invalid type.
+
+    .. method:: verify()
+
+       Verifies the signature of the certificate provided to update against
+       the certificate associated with the context. Raises an exception if the
+       verification process fails.
+
+       :raises cryptography.x509.verification.InvalidCertificate: If the
+           certificate provided to update was not issued by the certificate
+           associated with the context.
+
 .. _general_name_classes:
 
 General Name Classes
@@ -2717,6 +2745,13 @@ Exceptions
         The integer value of the unsupported type. The complete list of
         types can be found in `RFC 5280 section 4.2.1.6`_.
 
+.. currentmodule:: cryptography.x509.verification
+
+.. class:: InvalidCertificate
+
+    This is raised by :class:`~cryptography.x509.CertificateVerificationContext`
+    when dealing with invalid certificate arguments and when certificate
+    signature verification fails.
 
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
