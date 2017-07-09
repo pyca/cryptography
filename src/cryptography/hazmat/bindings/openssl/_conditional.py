@@ -75,14 +75,6 @@ def cryptography_has_rsa_r_pkcs_decoding_error():
     ]
 
 
-def cryptography_has_egd():
-    return [
-        "RAND_egd",
-        "RAND_egd_bytes",
-        "RAND_query_egd_bytes",
-    ]
-
-
 def cryptography_has_rsa_oaep_md():
     return [
         "EVP_PKEY_CTX_set_rsa_oaep_md",

@@ -9,7 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_EGD;
 """
 
 FUNCTIONS = """
@@ -28,19 +27,7 @@ void ERR_load_RAND_strings(void);
 
 /* RAND_cleanup became a macro in 1.1.0 */
 void RAND_cleanup(void);
-
-int RAND_egd(const char *);
-int RAND_egd_bytes(const char *, int);
-int RAND_query_egd_bytes(const char *, unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-static const long Cryptography_HAS_EGD = 0;
-int (*RAND_egd)(const char *) = NULL;
-int (*RAND_egd_bytes)(const char *, int) = NULL;
-int (*RAND_query_egd_bytes)(const char *, unsigned char *, int) = NULL;
-#else
-static const long Cryptography_HAS_EGD = 1;
-#endif
 """
