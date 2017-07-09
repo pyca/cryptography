@@ -1779,7 +1779,7 @@ class Backend(object):
         # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
         # equal 11 when the generator is 2 (a quadratic nonresidue).
         # We want to ignore that error because p % 24 == 23 is also fine.
-        # Specifically, it is a quadratic residue. Within the context of
+        # Specifically, g is then a quadratic residue. Within the context of
         # Diffie-Hellman this means it can only generate half the possible
         # values. That sounds bad, but quadratic nonresidues leak a bit of
         # the key to the attacker in exchange for having the full key space
