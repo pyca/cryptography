@@ -63,12 +63,6 @@ def cryptography_has_set_ecdh_auto():
     ]
 
 
-def cryptography_has_engine_cryptodev():
-    return [
-        "ENGINE_load_cryptodev"
-    ]
-
-
 def cryptography_has_rsa_r_pkcs_decoding_error():
     return [
         "RSA_R_PKCS_DECODING_ERROR"
@@ -261,7 +255,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC2M": cryptography_has_ec2m,
     "Cryptography_HAS_EC_1_0_2": cryptography_has_ec_1_0_2,
     "Cryptography_HAS_SET_ECDH_AUTO": cryptography_has_set_ecdh_auto,
-    "Cryptography_HAS_ENGINE_CRYPTODEV": cryptography_has_engine_cryptodev,
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": (
         cryptography_has_rsa_r_pkcs_decoding_error
     ),
