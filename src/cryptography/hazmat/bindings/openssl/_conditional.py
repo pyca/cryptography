@@ -257,7 +257,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": (
         cryptography_has_rsa_r_pkcs_decoding_error
     ),
-    "Cryptography_HAS_EGD": cryptography_has_egd,
     "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
     "Cryptography_HAS_ALPN": cryptography_has_alpn,
