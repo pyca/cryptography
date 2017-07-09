@@ -63,12 +63,6 @@ def cryptography_has_set_ecdh_auto():
     ]
 
 
-def cryptography_has_engine_cryptodev():
-    return [
-        "ENGINE_load_cryptodev"
-    ]
-
-
 def cryptography_has_rsa_r_pkcs_decoding_error():
     return [
         "RSA_R_PKCS_DECODING_ERROR"
