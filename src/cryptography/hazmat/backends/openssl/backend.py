@@ -1776,8 +1776,21 @@ class Backend(object):
         res = self._lib.Cryptography_DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
-        if codes[0] != 0:
-            raise ValueError("DH private numbers did not pass safety checks.")
+        # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
+        # equal 11 when the generator is 2 (a quadratic nonresidue).
+        # We want to ignore that error because p % 24 == 23 is also fine.
+        # Specifically, g is then a quadratic residue. Within the context of
+        # Diffie-Hellman this means it can only generate half the possible
+        # values. That sounds bad, but quadratic nonresidues leak a bit of
+        # the key to the attacker in exchange for having the full key space
+        # available. See: https://crypto.stackexchange.com/questions/12961
+        if codes[0] != 0 and not (
+            parameter_numbers.g == 2 and
+            codes[0] ^ self._lib.DH_NOT_SUITABLE_GENERATOR == 0
+        ):
+            raise ValueError(
+                "DH private numbers did not pass safety checks."
+            )
 
         evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
 

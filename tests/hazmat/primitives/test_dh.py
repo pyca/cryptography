@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import os
 
 import pytest
@@ -161,6 +162,24 @@ class TestDH(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "rfc3526.txt"),
+            load_nist_vectors
+        )
+    )
+    def test_dh_parameters_allows_rfc3526_groups(self, backend, vector):
+        p = int_from_bytes(binascii.unhexlify(vector["p"]), 'big')
+        params = dh.DHParameterNumbers(p, int(vector["g"]))
+        param = params.parameters(backend)
+        key = param.generate_private_key()
+        # This confirms that a key generated with this group
+        # will pass DH_check when we serialize and de-serialize it via
+        # the Numbers path.
+        roundtripped_key = key.private_numbers().private_key(backend)
+        assert key.private_numbers() == roundtripped_key.private_numbers()
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
             os.path.join("asymmetric", "DH", "RFC5114.txt"),
             load_nist_vectors))
     def test_dh_parameters_supported_with_q(self, backend, vector):
@@ -202,7 +221,12 @@ class TestDH(object):
                           dh.DHPrivateKeyWithSerialization)
 
     def test_numbers_unsupported_parameters(self, backend):
-        params = dh.DHParameterNumbers(23, 2)
+        # p is set to 21 because when calling private_key we want it to
+        # fail the DH_check call OpenSSL does. Originally this was 23, but
+        # we are allowing p % 24 to == 23 with this PR (see #3768 for more)
+        # By setting it to 21 it fails later in DH_check in a primality check
+        # which triggers the code path we want to test
+        params = dh.DHParameterNumbers(21, 2)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 
