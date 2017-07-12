@@ -45,7 +45,7 @@ class TestDeriveKey(object):
     def test_random_source_length(self, backend):
         key_material = urandom(16)
         identifier = b'region123'
-        length = 4096
+        length = 1024
         derived_key = derive_key(
             key_material, identifier, length=length,
             strong=True, backend=backend
