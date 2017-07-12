@@ -57,6 +57,7 @@ hazmat layer only when necessary.
     :caption: The recipes layer
 
     fernet
+    derive
     x509/index
 
 .. toctree::

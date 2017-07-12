@@ -10,6 +10,7 @@ Changelog
 * We now ship ``manylinux1`` wheels linked against OpenSSL 1.1.0f. These wheels
   will be automatically used with most Linux distributions if you are running
   the latest pip.
+* Added a new recipe in the form of :func:`~cryptography.derive.derive_key`.
 * Deprecated the use of ``signer`` on
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
