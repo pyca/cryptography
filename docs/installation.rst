@@ -114,7 +114,8 @@ RHEL/CentOS
 
 .. code-block:: console
 
-    $ sudo yum install gcc libffi-devel python-devel openssl-devel
+    $ sudo yum install redhat-rpm-config gcc libffi-devel python-devel \
+        openssl-devel
 
 
 Building
