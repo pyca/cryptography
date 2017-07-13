@@ -78,7 +78,7 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-fedora',
-        toxenvs: ['py27', 'py35'],
+        toxenvs: ['py27', 'py36'],
     ],
     [
         label: 'docker',
