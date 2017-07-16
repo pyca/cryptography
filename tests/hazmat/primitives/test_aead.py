@@ -11,23 +11,27 @@ import pytest
 
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
-from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+from cryptography.hazmat.primitives.ciphers.aead import (
+    AESCCM, ChaCha20Poly1305
+)
 
+from .utils import _load_all_params
 from ...utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_ccm_vectors, load_nist_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 
-def _chacha20poly1305_supported():
+def _aead_supported(cls):
     try:
-        ChaCha20Poly1305(b"0" * 32)
+        cls(b"0" * 32)
         return True
     except UnsupportedAlgorithm:
         return False
 
 
 @pytest.mark.skipif(
-    _chacha20poly1305_supported(),
+    _aead_supported(ChaCha20Poly1305),
     reason="Requires OpenSSL without ChaCha20Poly1305 support"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -37,7 +41,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 
 
 @pytest.mark.skipif(
-    not _chacha20poly1305_supported(),
+    not _aead_supported(ChaCha20Poly1305),
     reason="Does not support ChaCha20Poly1305"
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -146,3 +150,144 @@ class TestChaCha20Poly1305(object):
         assert computed_pt == pt
         computed_ct = chacha.encrypt(nonce, pt, aad)
         assert computed_ct == ct + tag
+
+
+@pytest.mark.skipif(
+    _aead_supported(AESCCM),
+    reason="Requires OpenSSL without AES-CCM support"
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+def test_aesccm_unsupported_on_older_openssl(backend):
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        AESCCM(AESCCM.generate_key(128))
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESCCM),
+    reason="Does not support AESCCM"
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+class TestAESCCM(object):
+    def test_default_tag_length(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        pt = b"hello"
+        ct = aesccm.encrypt(nonce, pt, None)
+        assert len(ct) == len(pt) + 16
+
+    def test_invalid_tag_length(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"hello"
+        nonce = os.urandom(12)
+        with pytest.raises(ValueError):
+            aesccm.encrypt(nonce, pt, None, tag_length=7)
+
+        with pytest.raises(ValueError):
+            aesccm.encrypt(nonce, pt, None, tag_length=2)
+
+    def test_invalid_nonce_length(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"hello"
+        nonce = os.urandom(14)
+        with pytest.raises(ValueError):
+            aesccm.encrypt(nonce, pt, None)
+
+        with pytest.raises(ValueError):
+            aesccm.encrypt(nonce[:6], pt, None)
+
+    @pytest.mark.parametrize(
+        "vector",
+        _load_all_params(
+            os.path.join("ciphers", "AES", "CCM"),
+            [
+                "DVPT128.rsp", "DVPT192.rsp", "DVPT256.rsp",
+                "VADT128.rsp", "VADT192.rsp", "VADT256.rsp",
+                "VNT128.rsp", "VNT192.rsp", "VNT256.rsp",
+                "VPT128.rsp", "VPT192.rsp", "VPT256.rsp",
+            ],
+            load_nist_ccm_vectors
+        )
+    )
+    def test_vectors(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        nonce = binascii.unhexlify(vector["nonce"])
+        adata = binascii.unhexlify(vector["adata"])[:vector["alen"]]
+        ct = binascii.unhexlify(vector["ct"])
+        pt = binascii.unhexlify(vector["payload"])[:vector["plen"]]
+        aesccm = AESCCM(key)
+        if vector.get('fail'):
+            with pytest.raises(InvalidTag):
+                aesccm.decrypt(nonce, ct, adata, vector["tlen"])
+        else:
+            computed_pt = aesccm.decrypt(nonce, ct, adata, vector["tlen"])
+            assert computed_pt == pt
+            assert aesccm.encrypt(nonce, pt, adata, vector["tlen"]) == ct
+
+    def test_roundtrip(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"encrypt me"
+        ad = b"additional"
+        nonce = os.urandom(12)
+        ct = aesccm.encrypt(nonce, pt, ad, 16)
+        computed_pt = aesccm.decrypt(nonce, ct, ad, 16)
+        assert computed_pt == pt
+
+    def test_nonce_too_long(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"encrypt me" * 6600
+        # pt can be no more than 65536 bytes when nonce is 13 bytes
+        nonce = os.urandom(13)
+        with pytest.raises(ValueError):
+            aesccm.encrypt(nonce, pt, None, 16)
+
+    @pytest.mark.parametrize(
+        ("nonce", "data", "associated_data", "tag_length"),
+        [
+            [object(), b"data", b"", 16],
+            [b"0" * 12, object(), b"", 16],
+            [b"0" * 12, b"data", object(), 16],
+            [b"0" * 12, b"data", b"", object()]
+        ]
+    )
+    def test_params_not_bytes(self, nonce, data, associated_data, tag_length,
+                              backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        with pytest.raises(TypeError):
+            aesccm.encrypt(nonce, data, associated_data, tag_length)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESCCM(object())
+
+        with pytest.raises(ValueError):
+            AESCCM(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESCCM.generate_key(object())
+
+        with pytest.raises(ValueError):
+            AESCCM.generate_key(129)
+
+    def test_associated_data_none_equal_to_empty_bytestring(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        ct1 = aesccm.encrypt(nonce, b"some_data", None)
+        ct2 = aesccm.encrypt(nonce, b"some_data", b"")
+        assert ct1 == ct2
+        pt1 = aesccm.decrypt(nonce, ct1, None)
+        pt2 = aesccm.decrypt(nonce, ct2, b"")
+        assert pt1 == pt2
+
+    def test_decrypt_data_too_short(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        with pytest.raises(InvalidTag):
+            aesccm.decrypt(b"0" * 12, b"0", None)
