@@ -307,7 +307,6 @@ Modes
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
 
-
     GCM (Galois Counter Mode) is a mode of operation for block ciphers. An
     AEAD (authenticated encryption with additional data) mode is a type of
     block cipher mode that simultaneously encrypts the message as well as
