@@ -184,6 +184,9 @@ class TestAESCCM(object):
         with pytest.raises(ValueError):
             AESCCM(key, tag_length=2)
 
+        with pytest.raises(TypeError):
+            AESCCM(key, tag_length="notanint")
+
     def test_invalid_nonce_length(self, backend):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
@@ -243,19 +246,17 @@ class TestAESCCM(object):
             aesccm.encrypt(nonce, pt, None)
 
     @pytest.mark.parametrize(
-        ("nonce", "data", "associated_data", "tag_length"),
+        ("nonce", "data", "associated_data"),
         [
-            [object(), b"data", b"", 16],
-            [b"0" * 12, object(), b"", 16],
-            [b"0" * 12, b"data", object(), 16],
-            [b"0" * 12, b"data", b"", object()]
+            [object(), b"data", b""],
+            [b"0" * 12, object(), b""],
+            [b"0" * 12, b"data", object()],
         ]
     )
-    def test_params_not_bytes(self, nonce, data, associated_data, tag_length,
-                              backend):
+    def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
         with pytest.raises(TypeError):
-            aesccm = AESCCM(key, tag_length)
             aesccm.encrypt(nonce, data, associated_data)
 
     def test_bad_key(self, backend):
