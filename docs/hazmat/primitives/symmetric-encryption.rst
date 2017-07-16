@@ -294,6 +294,11 @@ Modes
 
     .. danger::
 
+        If you are encrypting data that can fit into memory you should strongly
+        consider using
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` instead
+        of this.
+
         When using this mode you **must** not use the decrypted data until
         the appropriate finalization method
         (:meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
@@ -301,6 +306,7 @@ Modes
         :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`)
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
+
 
     GCM (Galois Counter Mode) is a mode of operation for block ciphers. An
     AEAD (authenticated encryption with additional data) mode is a type of
