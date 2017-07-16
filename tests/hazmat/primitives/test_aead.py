@@ -178,14 +178,14 @@ class TestAESCCM(object):
 
     def test_invalid_tag_length(self, backend):
         key = AESCCM.generate_key(128)
-        aesccm = AESCCM(key)
-        pt = b"hello"
-        nonce = os.urandom(12)
         with pytest.raises(ValueError):
-            aesccm.encrypt(nonce, pt, None, tag_length=7)
+            AESCCM(key, tag_length=7)
 
         with pytest.raises(ValueError):
-            aesccm.encrypt(nonce, pt, None, tag_length=2)
+            AESCCM(key, tag_length=2)
+
+        with pytest.raises(TypeError):
+            AESCCM(key, tag_length="notanint")
 
     def test_invalid_nonce_length(self, backend):
         key = AESCCM.generate_key(128)
@@ -217,14 +217,14 @@ class TestAESCCM(object):
         adata = binascii.unhexlify(vector["adata"])[:vector["alen"]]
         ct = binascii.unhexlify(vector["ct"])
         pt = binascii.unhexlify(vector["payload"])[:vector["plen"]]
-        aesccm = AESCCM(key)
+        aesccm = AESCCM(key, vector["tlen"])
         if vector.get('fail'):
             with pytest.raises(InvalidTag):
-                aesccm.decrypt(nonce, ct, adata, vector["tlen"])
+                aesccm.decrypt(nonce, ct, adata)
         else:
-            computed_pt = aesccm.decrypt(nonce, ct, adata, vector["tlen"])
+            computed_pt = aesccm.decrypt(nonce, ct, adata)
             assert computed_pt == pt
-            assert aesccm.encrypt(nonce, pt, adata, vector["tlen"]) == ct
+            assert aesccm.encrypt(nonce, pt, adata) == ct
 
     def test_roundtrip(self, backend):
         key = AESCCM.generate_key(128)
@@ -232,8 +232,8 @@ class TestAESCCM(object):
         pt = b"encrypt me"
         ad = b"additional"
         nonce = os.urandom(12)
-        ct = aesccm.encrypt(nonce, pt, ad, 16)
-        computed_pt = aesccm.decrypt(nonce, ct, ad, 16)
+        ct = aesccm.encrypt(nonce, pt, ad)
+        computed_pt = aesccm.decrypt(nonce, ct, ad)
         assert computed_pt == pt
 
     def test_nonce_too_long(self, backend):
@@ -243,23 +243,21 @@ class TestAESCCM(object):
         # pt can be no more than 65536 bytes when nonce is 13 bytes
         nonce = os.urandom(13)
         with pytest.raises(ValueError):
-            aesccm.encrypt(nonce, pt, None, 16)
+            aesccm.encrypt(nonce, pt, None)
 
     @pytest.mark.parametrize(
-        ("nonce", "data", "associated_data", "tag_length"),
+        ("nonce", "data", "associated_data"),
         [
-            [object(), b"data", b"", 16],
-            [b"0" * 12, object(), b"", 16],
-            [b"0" * 12, b"data", object(), 16],
-            [b"0" * 12, b"data", b"", object()]
+            [object(), b"data", b""],
+            [b"0" * 12, object(), b""],
+            [b"0" * 12, b"data", object()],
         ]
     )
-    def test_params_not_bytes(self, nonce, data, associated_data, tag_length,
-                              backend):
+    def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
         with pytest.raises(TypeError):
-            aesccm.encrypt(nonce, data, associated_data, tag_length)
+            aesccm.encrypt(nonce, data, associated_data)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
