@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0 - 2017-07-07
+2.0 - 2017-07-17
 ~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
