@@ -1,10 +1,8 @@
 Changelog
 =========
 
-2.0 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.0 - 2017-07-17
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
 * We now ship ``manylinux1`` wheels linked against OpenSSL 1.1.0f. These wheels
