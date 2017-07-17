@@ -87,8 +87,8 @@ class DHParameterNumbers(object):
         if q is not None and not isinstance(q, six.integer_types):
             raise TypeError("q must be integer or None")
 
-        if q is None and g not in (2, 5):
-            raise ValueError("DH generator must be 2 or 5")
+        if g < 2:
+            raise ValueError("DH generator must be 2 or greater")
 
         self._p = p
         self._g = g
