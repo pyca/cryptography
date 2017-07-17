@@ -278,7 +278,7 @@ Numbers
 
         :type: int
 
-        The generator value. Must be 2 or 5 (Unless q is given).
+        The generator value. Must be 2 or greater.
 
     .. attribute:: q
 
