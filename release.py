@@ -133,7 +133,7 @@ def release(version):
     response.raise_for_status()
     wait_for_build_completed(session)
     paths = download_artifacts(session)
-    run("twine", "upload", " ".join(paths))
+    run("twine", "upload", *paths)
 
 
 if __name__ == "__main__":
