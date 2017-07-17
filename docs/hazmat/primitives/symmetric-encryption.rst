@@ -294,6 +294,11 @@ Modes
 
     .. danger::
 
+        If you are encrypting data that can fit into memory you should strongly
+        consider using
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` instead
+        of this.
+
         When using this mode you **must** not use the decrypted data until
         the appropriate finalization method
         (:meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`

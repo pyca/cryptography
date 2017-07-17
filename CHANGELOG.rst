@@ -29,6 +29,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`.
+* Added
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`, a "one shot"
+  API for AES GCM encryption.
 * Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
 * Added support for serializing and deserializing Diffie-Hellman parameters
   with

@@ -12,7 +12,7 @@ import pytest
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import (
-    AESCCM, ChaCha20Poly1305
+    AESCCM, AESGCM, ChaCha20Poly1305
 )
 
 from .utils import _load_all_params
@@ -289,3 +289,83 @@ class TestAESCCM(object):
         aesccm = AESCCM(key)
         with pytest.raises(InvalidTag):
             aesccm.decrypt(b"0" * 12, b"0", None)
+
+
+def _load_gcm_vectors():
+    vectors = _load_all_params(
+        os.path.join("ciphers", "AES", "GCM"),
+        [
+            "gcmDecrypt128.rsp",
+            "gcmDecrypt192.rsp",
+            "gcmDecrypt256.rsp",
+            "gcmEncryptExtIV128.rsp",
+            "gcmEncryptExtIV192.rsp",
+            "gcmEncryptExtIV256.rsp",
+        ],
+        load_nist_vectors
+    )
+    return [x for x in vectors if len(x["tag"]) == 32]
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+class TestAESGCM(object):
+    @pytest.mark.parametrize("vector", _load_gcm_vectors())
+    def test_vectors(self, vector):
+        key = binascii.unhexlify(vector["key"])
+        nonce = binascii.unhexlify(vector["iv"])
+        aad = binascii.unhexlify(vector["aad"])
+        ct = binascii.unhexlify(vector["ct"])
+        pt = binascii.unhexlify(vector.get("pt", b""))
+        tag = binascii.unhexlify(vector["tag"])
+        aesgcm = AESGCM(key)
+        if vector.get("fail") is True:
+            with pytest.raises(InvalidTag):
+                aesgcm.decrypt(nonce, ct + tag, aad)
+        else:
+            computed_ct = aesgcm.encrypt(nonce, pt, aad)
+            assert computed_ct[:-16] == ct
+            assert computed_ct[-16:] == tag
+            computed_pt = aesgcm.decrypt(nonce, ct + tag, aad)
+            assert computed_pt == pt
+
+    @pytest.mark.parametrize(
+        ("nonce", "data", "associated_data"),
+        [
+            [object(), b"data", b""],
+            [b"0" * 12, object(), b""],
+            [b"0" * 12, b"data", object()]
+        ]
+    )
+    def test_params_not_bytes(self, nonce, data, associated_data, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        with pytest.raises(TypeError):
+            aesgcm.encrypt(nonce, data, associated_data)
+
+        with pytest.raises(TypeError):
+            aesgcm.decrypt(nonce, data, associated_data)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESGCM(object())
+
+        with pytest.raises(ValueError):
+            AESGCM(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESGCM.generate_key(object())
+
+        with pytest.raises(ValueError):
+            AESGCM.generate_key(129)
+
+    def test_associated_data_none_equal_to_empty_bytestring(self, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        ct1 = aesgcm.encrypt(nonce, b"some_data", None)
+        ct2 = aesgcm.encrypt(nonce, b"some_data", b"")
+        assert ct1 == ct2
+        pt1 = aesgcm.decrypt(nonce, ct1, None)
+        pt2 = aesgcm.decrypt(nonce, ct2, b"")
+        assert pt1 == pt2
