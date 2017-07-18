@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography import utils
 from cryptography.x509 import certificate_transparency
 from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
