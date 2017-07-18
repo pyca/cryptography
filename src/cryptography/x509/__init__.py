@@ -25,7 +25,7 @@ from cryptography.x509.extensions import (
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
     PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
     SubjectAlternativeName, SubjectKeyIdentifier, UnrecognizedExtension,
-    UnsupportedExtension, UserNotice
+    UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -110,13 +110,6 @@ OID_INVALIDITY_DATE = CRLEntryExtensionOID.INVALIDITY_DATE
 OID_CA_ISSUERS = AuthorityInformationAccessOID.CA_ISSUERS
 OID_OCSP = AuthorityInformationAccessOID.OCSP
 
-UnsupportedExtension = utils.deprecated(
-    UnsupportedExtension,
-    __name__,
-    "UnsupportedExtension is no longer necessary, it is never raised",
-    utils.DeprecatedIn19
-)
-
 __all__ = [
     "certificate_transparency",
     "load_pem_x509_certificate",
@@ -128,7 +121,6 @@ __all__ = [
     "random_serial_number",
     "InvalidVersion",
     "DuplicateExtension",
-    "UnsupportedExtension",
     "ExtensionNotFound",
     "UnsupportedGeneralNameType",
     "NameAttribute",

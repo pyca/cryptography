@@ -143,36 +143,6 @@ class SHA512(object):
 
 
 @utils.register_interface(HashAlgorithm)
-class RIPEMD160(object):
-    name = "ripemd160"
-    digest_size = 20
-    block_size = 64
-
-
-RIPEMD160 = utils.deprecated(
-    RIPEMD160,
-    __name__,
-    "The RIPEMD160 hash was deprecated in version 1.9.",
-    utils.DeprecatedIn19
-)
-
-
-@utils.register_interface(HashAlgorithm)
-class Whirlpool(object):
-    name = "whirlpool"
-    digest_size = 64
-    block_size = 64
-
-
-Whirlpool = utils.deprecated(
-    Whirlpool,
-    __name__,
-    "The Whirlpool hash was deprecated in version 1.9.",
-    utils.DeprecatedIn19
-)
-
-
-@utils.register_interface(HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16
