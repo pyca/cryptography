@@ -237,7 +237,6 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
 
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
                             @set LIB="${opensslPaths[label]['lib']}";%LIB%
-                            python -m pip install -U pip setuptools virtualenv
                             tox -r
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
@@ -254,7 +253,6 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 export PATH="/usr/local/bin:\${PATH}"
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 cd cryptography
-                                pip install -U pip setuptools virtualenv
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
                                     CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
