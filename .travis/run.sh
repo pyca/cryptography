@@ -34,9 +34,8 @@ else
         export LDFLAGS="-L$HOME/$OPENSSL_DIR/lib -Wl,-rpath=$HOME/$OPENSSL_DIR/lib"
     fi
 fi
-source ~/.venv/bin/activate
 ulimit -c unlimited
-tox || lldb -c /cores/$(ls /cores) -s <(echo bt; echo exit)
+~/.venv/bin/tox || lldb -c /cores/$(ls /cores) -s <(echo bt; echo exit)
 # Output information about linking of the OpenSSL library on OS X
 if [[ "$(uname -s)" == "Darwin" ]]; then
     otool -L $(find .tox -name "_openssl*.so")
