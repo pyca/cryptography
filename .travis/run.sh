@@ -36,7 +36,7 @@ else
 fi
 source ~/.venv/bin/activate
 ulimit -c unlimited
-tox || ls /cores
+tox || lldb -c $(ls /cores) -s <(echo bt; echo exit)
 # Output information about linking of the OpenSSL library on OS X
 if [[ "$(uname -s)" == "Darwin" ]]; then
     otool -L $(find .tox -name "_openssl*.so")
