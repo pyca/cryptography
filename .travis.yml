@@ -18,73 +18,9 @@ branches:
 
 matrix:
     include:
-        # these are just to make travis's UI a bit prettier
-        - python: 2.6
-          env: TOXENV=py26
-        - python: 2.7
-          env: TOXENV=py27
-        - python: 3.4
-          env: TOXENV=py34
-        - python: 3.5
-          env: TOXENV=py35
-        - python: 3.6
-          env: TOXENV=py36
-        - env: TOXENV=pypy PYPY_VERSION=pypy2-5.3
-        - env: TOXENV=pypy PYPY_VERSION=pypy2.7-5.8.0
-        - env: TOXENV=pypy-nocoverage PYPY_VERSION=pypy3.5-5.8.0
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0f
-        - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0f
-        - python: 2.7
-          env: TOXENV=docs OPENSSL=1.1.0f
-          addons:
-              apt:
-                  packages:
-                      - libenchant-dev
-        - python: 2.7
-          env: TOXENV=pep8
-        - python: 3.4
-          env: TOXENV=py3pep8
         - language: generic
           os: osx
-          # 8.3 is macOS 10.12.x
-          # see: https://docs.travis-ci.com/user/osx-ci-environment/
-          osx_image: xcode8.3
-          env: TOXENV=py27 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
-          env: TOXENV=py34 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
-          env: TOXENV=py35 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
-          env: TOXENV=py36 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
-          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 PYPY_VERSION=pypy2.7-5.8.0
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
-          env: TOXENV=py27 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=0
-        - language: generic
-          os: osx
-          # 7.3 is OS X 10.11.x
-          osx_image: xcode7.3
-          env: TOXENV=py27 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          # 6.4 is OS X 10.10.x
-          osx_image: xcode6.4
-          env: TOXENV=py27 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
-        - language: generic
-          os: osx
-          osx_image: xcode8.3
+          osx_image: xcode9
           env: TOXENV=docs CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
 
 install:
