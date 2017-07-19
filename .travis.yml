@@ -20,7 +20,7 @@ matrix:
     include:
         - language: generic
           os: osx
-          osx_image: xcode8.3
+          osx_image: xcode9
           env: TOXENV=docs CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1
 
 install:
