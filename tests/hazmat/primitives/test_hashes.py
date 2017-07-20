@@ -110,32 +110,6 @@ class TestSHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160()),
-    skip_message="Does not support RIPEMD160",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestRIPEMD160(object):
-    test_RIPEMD160 = generate_base_hash_test(
-        hashes.RIPEMD160(),
-        digest_size=20,
-        block_size=64,
-    )
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool()),
-    skip_message="Does not support Whirlpool",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestWhirlpool(object):
-    test_Whirlpool = generate_base_hash_test(
-        hashes.Whirlpool(),
-        digest_size=64,
-        block_size=64,
-    )
-
-
-@pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )

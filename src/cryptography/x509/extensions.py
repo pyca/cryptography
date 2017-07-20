@@ -54,10 +54,6 @@ class DuplicateExtension(Exception):
         self.oid = oid
 
 
-class UnsupportedExtension(Exception):
-    pass
-
-
 class ExtensionNotFound(Exception):
     def __init__(self, msg, oid):
         super(ExtensionNotFound, self).__init__(msg)

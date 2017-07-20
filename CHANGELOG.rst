@@ -6,6 +6,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
+  ``UnsupportedExtension`` have been removed in accordance with our
+  :doc:`/api-stability` policy.
+
 2.0 - 2017-07-17
 ~~~~~~~~~~~~~~~~
 

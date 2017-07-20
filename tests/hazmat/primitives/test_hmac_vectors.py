@@ -107,19 +107,3 @@ class TestHMACSHA512(object):
         ],
         hashes.SHA512(),
     )
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.RIPEMD160()),
-    skip_message="Does not support RIPEMD160",
-)
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHMACRIPEMD160(object):
-    test_hmac_ripemd160 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-2286-ripemd160.txt",
-        ],
-        hashes.RIPEMD160(),
-    )

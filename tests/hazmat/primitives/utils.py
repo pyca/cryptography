@@ -189,18 +189,6 @@ def base_hash_test(backend, algorithm, digest_size, block_size):
     assert copy.finalize() == m.finalize()
 
 
-def generate_long_string_hash_test(hash_factory, md):
-    def test_long_string_hash(self, backend):
-        long_string_hash_test(backend, hash_factory, md)
-    return test_long_string_hash
-
-
-def long_string_hash_test(backend, algorithm, md):
-    m = hashes.Hash(algorithm, backend=backend)
-    m.update(b"a" * 1000000)
-    assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
-
-
 def generate_base_hmac_test(hash_cls):
     def test_base_hmac(self, backend):
         base_hmac_test(backend, hash_cls)
