@@ -278,7 +278,7 @@ Numbers
 
         :type: int
 
-        The generator value. Must be 2 or 5 (Unless q is given).
+        The generator value. Must be 2 or greater.
 
     .. attribute:: q
 
@@ -287,6 +287,15 @@ Numbers
         :type: int
 
         p subgroup order value.
+
+    .. method:: parameters(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHParameters`.
 
 .. class:: DHPrivateNumbers(x, public_numbers)
 
@@ -307,6 +316,15 @@ Numbers
 
         The private value.
 
+    .. method:: private_key(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHPrivateKey`.
+
 
 .. class:: DHPublicNumbers(y, parameter_numbers)
 
@@ -325,6 +343,15 @@ Numbers
         :type: int
 
         The public value.
+
+    .. method:: public_key(backend)
+
+        .. versionadded:: 1.7
+
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
+
+        :returns: A new instance of :class:`DHPublicKey`.
 
 
 .. _`Diffie-Hellman key exchange`: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange

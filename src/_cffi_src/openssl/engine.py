@@ -9,8 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_ENGINE_CRYPTODEV;
-
 typedef ... ENGINE;
 typedef ... RSA_METHOD;
 typedef ... DSA_METHOD;
@@ -129,15 +127,7 @@ void ENGINE_add_conf_module(void);
 void ENGINE_load_openssl(void);
 void ENGINE_load_dynamic(void);
 void ENGINE_cleanup(void);
-
-void ENGINE_load_cryptodev(void);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_ENGINE_CRYPTODEV = 0;
-void (*ENGINE_load_cryptodev)(void) = NULL;
-#else
-static const long Cryptography_HAS_ENGINE_CRYPTODEV = 1;
-#endif
 """

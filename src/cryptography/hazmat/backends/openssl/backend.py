@@ -20,7 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
-from cryptography.hazmat.backends.openssl import chacha20poly1305
+from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
@@ -1776,8 +1776,21 @@ class Backend(object):
         res = self._lib.Cryptography_DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
-        if codes[0] != 0:
-            raise ValueError("DH private numbers did not pass safety checks.")
+        # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
+        # equal 11 when the generator is 2 (a quadratic nonresidue).
+        # We want to ignore that error because p % 24 == 23 is also fine.
+        # Specifically, g is then a quadratic residue. Within the context of
+        # Diffie-Hellman this means it can only generate half the possible
+        # values. That sounds bad, but quadratic nonresidues leak a bit of
+        # the key to the attacker in exchange for having the full key space
+        # available. See: https://crypto.stackexchange.com/questions/12961
+        if codes[0] != 0 and not (
+            parameter_numbers.g == 2 and
+            codes[0] ^ self._lib.DH_NOT_SUITABLE_GENERATOR == 0
+        ):
+            raise ValueError(
+                "DH private numbers did not pass safety checks."
+            )
 
         evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
 
@@ -1924,20 +1937,10 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def chacha20poly1305_encrypt(self, key, nonce, data, associated_data):
-        return chacha20poly1305.encrypt(
-            self, key, nonce, data, associated_data
-        )
-
-    def chacha20poly1305_decrypt(self, key, nonce, data, associated_data):
-        return chacha20poly1305.decrypt(
-            self, key, nonce, data, associated_data
-        )
-
-    def chacha20poly1305_supported(self):
+    def aead_cipher_supported(self, cipher):
+        cipher_name = aead._aead_cipher_name(cipher)
         return (
-            self._lib.EVP_get_cipherbyname(b"chacha20-poly1305") !=
-            self._ffi.NULL
+            self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
 
 

@@ -40,12 +40,17 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-sid',
+        imageName: 'pyca/cryptography-runner-stretch',
         toxenvs: ['py27', 'py35'],
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-stretch',
+        imageName: 'pyca/cryptography-runner-buster',
+        toxenvs: ['py27', 'py35'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-sid',
         toxenvs: ['py27', 'py35'],
     ],
     [
@@ -61,7 +66,7 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35', 'pep8', 'py3pep8', 'randomorder'],
+        toxenvs: ['py27', 'py35', 'randomorder'],
     ],
     [
         label: 'docker',
@@ -73,7 +78,7 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-fedora',
-        toxenvs: ['py27', 'py35'],
+        toxenvs: ['py27', 'py36'],
     ],
     [
         label: 'docker',
@@ -104,8 +109,7 @@ def downstreams = [
             virtualenv .venv
             source .venv/bin/activate
             pip install ../cryptography
-            pip install -e .
-            pip install pytest pretend
+            pip install -e .[test]
             pytest tests
         """
     ],
@@ -307,7 +311,9 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        docker.image(imageName).inside {
+                        def buildImage = docker.image(imageName)
+                        buildImage.pull()
+                        buildImage.inside {
                             build(toxenv, label, imageName, artifacts, artifactExcludes)
                         }
                     }

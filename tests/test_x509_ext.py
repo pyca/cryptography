@@ -3668,10 +3668,6 @@ class TestInhibitAnyPolicyExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-@pytest.mark.supported(
-    only_if=lambda backend: backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER,
-    skip_message="Requires OpenSSL 1.1.0f+",
-)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
@@ -3682,6 +3678,11 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             "<PrecertificateSignedCertificateTimestamps([])>"
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER),
+        skip_message="Requires OpenSSL 1.1.0f+",
+    )
     def test_simple(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
@@ -3706,6 +3707,28 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             sct.entry_type ==
             x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER),
+        skip_message="Requires OpenSSL < 1.1.0",
+    )
+    def test_skips_scts_if_unsupported(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert len(cert.extensions) == 10
+        with pytest.raises(x509.ExtensionNotFound):
+            cert.extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+        )
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

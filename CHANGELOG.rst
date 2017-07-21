@@ -1,10 +1,17 @@
 Changelog
 =========
 
-2.0 - `master`_
-~~~~~~~~~~~~~~~
+2.1 - - `master`_
+~~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
+  ``UnsupportedExtension`` have been removed in accordance with our
+  :doc:`/api-stability` policy.
+
+2.0 - 2017-07-17
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
 * We now ship ``manylinux1`` wheels linked against OpenSSL 1.1.0f. These wheels
@@ -27,6 +34,11 @@ Changelog
   objects from X.509 certificate extensions.
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`.
+* Added
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`, a "one shot"
+  API for AES GCM encryption.
 * Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
 * Added support for serializing and deserializing Diffie-Hellman parameters
   with
@@ -35,6 +47,13 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters.parameter_bytes`
   .
+* The ``extensions`` attribute on :class:`~cryptography.x509.Certificate`,
+  :class:`~cryptography.x509.CertificateSigningRequest`,
+  :class:`~cryptography.x509.CertificateRevocationList`, and
+  :class:`~cryptography.x509.RevokedCertificate` now caches the computed
+  ``Extensions`` object. There should be no performance change, just a
+  performance improvement for programs accessing the ``extensions`` attribute
+  multiple times.
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
