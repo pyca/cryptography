@@ -40,10 +40,8 @@ requirements = [
 ]
 setup_requirements = []
 
-if sys.version_info < (3, 4):
+if sys.version_info < (3,):
     requirements.append("enum34")
-
-if sys.version_info < (3, 3):
     requirements.append("ipaddress")
 
 if platform.python_implementation() == "PyPy":
