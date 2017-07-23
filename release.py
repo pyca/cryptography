@@ -123,7 +123,7 @@ def release(version):
 
     token = getpass.getpass("Input the Jenkins token: ")
     response = session.get(
-        "{0}/build".format(JENKINS_URL),
+        "{0}/buildWithParameters".format(JENKINS_URL),
         params={
             "token": token,
             "BUILD_VERSION": version,
