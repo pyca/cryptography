@@ -10,5 +10,5 @@ your bug report:
 
 * Versions of Python, ``cryptography``, ``cffi``, ``pip``, and ``setuptools``
   you're using
-* How did you install ``cryptography``
+* How you installed ``cryptography``
 * Clear steps for reproducing your bug
