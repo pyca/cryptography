@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import getpass
+import glob
 import io
 import os
 import subprocess
@@ -106,10 +107,11 @@ def release(version):
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    run(
-        "twine", "upload", "-s", "dist/cryptography-{0}*".format(version),
-        "vectors/dist/cryptography_vectors-{0}*".format(version), shell=True
+    packages = (
+        glob.glob("dist/cryptography-{0}*".format(version)) +
+        glob.glob("vectors/dist/cryptography_vectors-{0}*".format(version))
     )
+    run("twine", "upload", "-s", *packages)
 
     session = requests.Session()
 
