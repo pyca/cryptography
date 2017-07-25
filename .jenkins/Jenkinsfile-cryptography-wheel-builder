@@ -138,8 +138,7 @@ def build(version, label, imageName) {
                     LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
                         CFLAGS="-I/opt/pyca/cryptography/openssl/include" \
                         $linux32 /opt/python/$version/bin/pip wheel cryptography==$BUILD_VERSION -w tmpwheelhouse/ --no-binary cryptography --no-deps
-                    LD_LIBRARY_PATH="/opt/pyca/cryptography/openssl/lib" \
-                        $linux32 auditwheel repair tmpwheelhouse/cryptography*.whl -w wheelhouse/
+                    $linux32 auditwheel repair tmpwheelhouse/cryptography*.whl -w wheelhouse/
                     $linux32 /opt/python/$version/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
                     $linux32 /opt/python/$version/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
                 """
