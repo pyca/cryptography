@@ -223,8 +223,10 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     int res;
 
     switch(getentropy_works) {
+#if defined(__APPLE__)
     case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK:
         return dev_urandom_read(buffer, size);
+#endif
     case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
         while (size > 0) {
             /* OpenBSD and macOS restrict maximum buffer size to 256. */
