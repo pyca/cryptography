@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.0.1 - 2017-07-26
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a compilation bug affecting OpenBSD.
+* Altered the ``manylinux1`` wheels to statically link OpenSSL instead of
+  dynamically linking and bundling the shared object. This should resolve
+  crashes seen when using ``uwsgi`` or other binaries that link against
+  OpenSSL independently.
+* Fixed the stack level for the ``signer`` and ``verifier`` warnings.
+
 2.0 - 2017-07-17
 ~~~~~~~~~~~~~~~~
 
