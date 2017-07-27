@@ -136,7 +136,7 @@ def build(version, label, imageName) {
 
                     $linux32 /opt/python/$version/bin/pip install cffi six idna asn1crypto ipaddress enum34
                     LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
-                        CFLAGS="-I/opt/pyca/cryptography/openssl/include" \
+                        CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
                         $linux32 /opt/python/$version/bin/pip wheel cryptography==$BUILD_VERSION -w tmpwheelhouse/ --no-binary cryptography --no-deps
                     $linux32 auditwheel repair tmpwheelhouse/cryptography*.whl -w wheelhouse/
                     $linux32 /opt/python/$version/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
