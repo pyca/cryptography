@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.0.2 - 2017-07-27
+~~~~~~~~~~~~~~~~~~
+
+* Marked all symbols as hidden in the ``manylinux1`` wheel to avoid a
+  bug with symbol resolution in certain scenarios.
+
 2.0.1 - 2017-07-26
 ~~~~~~~~~~~~~~~~~~
 
