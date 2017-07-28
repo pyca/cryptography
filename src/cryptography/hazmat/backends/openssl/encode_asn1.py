@@ -93,7 +93,7 @@ def _encode_name(backend, name):
                 name_entry, backend._lib.X509_NAME_ENTRY_free
             )
             res = backend._lib.X509_NAME_add_entry(
-                    subject, name_entry, -1, set_flag)
+                subject, name_entry, -1, set_flag)
             backend.openssl_assert(res == 1)
             set_flag = -1
     return subject
