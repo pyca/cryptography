@@ -1242,9 +1242,15 @@ General Name Classes
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
-    .. attribute:: value
+    .. attribute:: bytes_value
 
         :type: :term:`bytes`
+
+    .. attribute:: value
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
+
+        :type: :term:`text`
 
 .. class:: DirectoryName(value)
 
