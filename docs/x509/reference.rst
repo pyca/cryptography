@@ -1244,7 +1244,7 @@ General Name Classes
 
     .. attribute:: bytes_value
 
-        :type: :term:`bytes`
+        :type: bytes
 
     .. attribute:: value
 
