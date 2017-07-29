@@ -2257,8 +2257,12 @@ class TestRSASubjectAlternativeNameExtension(object):
             SubjectAlternativeName(list(map(DNSName, sans))), True)
 
         cert = builder.sign(private_key, hashes.SHA1(), backend)
-        result = [x.bytes_value for x in cert.extensions.get_extension_for_class(
-            SubjectAlternativeName).value]
+        result = [
+            x.bytes_value
+            for x in cert.extensions.get_extension_for_class(
+                SubjectAlternativeName
+            ).value
+        ]
         assert result == sans
 
 
