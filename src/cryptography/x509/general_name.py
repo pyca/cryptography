@@ -158,7 +158,7 @@ class DNSName(object):
         return decoded
 
     def __repr__(self):
-        return "<DNSName(bytes_value={0})>".format(self.bytes_value)
+        return "<DNSName(bytes_value={0!r})>".format(self.bytes_value)
 
     def __eq__(self, other):
         if not isinstance(other, DNSName):

@@ -185,10 +185,16 @@ class TestCertificateIssuer(object):
 
     def test_repr(self):
         ci = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
-        assert repr(ci) == (
-            "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
-            "cryptography.io)>])>)>"
-        )
+        if six.PY3:
+            assert repr(ci) == (
+                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
+                "b'cryptography.io')>])>)>"
+            )
+        else:
+            assert repr(ci) == (
+                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
+                "'cryptography.io')>])>)>"
+            )
 
     def test_get_values_for_type(self):
         ci = x509.CertificateIssuer(
@@ -1732,9 +1738,14 @@ class TestGeneralNames(object):
                 x509.DNSName(b"cryptography.io")
             ]
         )
-        assert repr(gns) == (
-            "<GeneralNames([<DNSName(bytes_value=cryptography.io)>])>"
-        )
+        if six.PY3:
+            assert repr(gns) == (
+                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>"
+            )
+        else:
+            assert repr(gns) == (
+                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>"
+            )
 
     def test_eq(self):
         gns = x509.GeneralNames(
@@ -1798,10 +1809,16 @@ class TestIssuerAlternativeName(object):
                 x509.DNSName(b"cryptography.io")
             ]
         )
-        assert repr(san) == (
-            "<IssuerAlternativeName("
-            "<GeneralNames([<DNSName(bytes_value=cryptography.io)>])>)>"
-        )
+        if six.PY3:
+            assert repr(san) == (
+                "<IssuerAlternativeName("
+                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+            )
+        else:
+            assert repr(san) == (
+                "<IssuerAlternativeName("
+                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+            )
 
     def test_eq(self):
         san = x509.IssuerAlternativeName(
@@ -1908,10 +1925,16 @@ class TestSubjectAlternativeName(object):
                 x509.DNSName(b"cryptography.io")
             ]
         )
-        assert repr(san) == (
-            "<SubjectAlternativeName("
-            "<GeneralNames([<DNSName(bytes_value=cryptography.io)>])>)>"
-        )
+        if six.PY3:
+            assert repr(san) == (
+                "<SubjectAlternativeName("
+                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+            )
+        else:
+            assert repr(san) == (
+                "<SubjectAlternativeName("
+                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+            )
 
     def test_eq(self):
         san = x509.SubjectAlternativeName(
@@ -2832,10 +2855,18 @@ class TestNameConstraints(object):
             permitted_subtrees=permitted,
             excluded_subtrees=None
         )
-        assert repr(nc) == (
-            "<NameConstraints(permitted_subtrees=[<DNSName("
-            "bytes_value=name.local)>, <DNSName(bytes_value=name2.local)>], " "excluded_subtrees=None)>"
-        )
+        if six.PY3:
+            assert repr(nc) == (
+                "<NameConstraints(permitted_subtrees=[<DNSName("
+                "bytes_value=b'name.local')>, <DNSName(bytes_value="
+                "b'name2.local')>], excluded_subtrees=None)>"
+            )
+        else:
+            assert repr(nc) == (
+                "<NameConstraints(permitted_subtrees=[<DNSName("
+                "bytes_value='name.local')>, <DNSName(bytes_value="
+                "'name2.local')>], excluded_subtrees=None)>"
+            )
 
     def test_eq(self):
         nc = x509.NameConstraints(
