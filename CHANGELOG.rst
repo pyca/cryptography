@@ -9,6 +9,12 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
+* Deprecated passing unicode to the :class:`~cryptography.x509.DNSName`
+  constructor. Instead, users should pass DNS names as ``bytes``, with ``idna``
+  encoding if necessary. In addition, the
+  :attr:`~cryptography.x509.DNSName.value` attribute was deprecated, users
+  should use :attr:`~cryptography.x509.DNSName.bytes_value` to access the
+  raw DNS name.
 
 2.0.2 - 2017-07-27
 ~~~~~~~~~~~~~~~~~~

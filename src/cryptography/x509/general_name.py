@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import ipaddress
+import warnings
 from email.utils import parseaddr
 
 import idna
@@ -89,24 +90,81 @@ class RFC822Name(object):
         return hash(self.value)
 
 
+def _idna_encode(value):
+    # Retain prefixes '*.' for common/alt names and '.' for name constraints
+    for prefix in ['*.', '.']:
+        if value.startswith(prefix):
+            value = value[len(prefix):]
+            return prefix.encode('ascii') + idna.encode(value)
+    return idna.encode(value)
+
+
 @utils.register_interface(GeneralName)
 class DNSName(object):
     def __init__(self, value):
-        if not isinstance(value, six.text_type):
-            raise TypeError("value must be a unicode string")
+        if isinstance(value, six.text_type):
+            try:
+                value = value.encode("ascii")
+            except UnicodeEncodeError:
+                value = _idna_encode(value)
+                warnings.warn(
+                    "DNSName values should be passed as idna-encoded bytes, "
+                    "not strings. Support for passing unicode strings will be "
+                    "removed in a future version.",
+                    utils.DeprecatedIn21,
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    "DNSName values should be passed as bytes, not strings. "
+                    "Support for passing unicode strings will be removed in a "
+                    "future version.",
+                    utils.DeprecatedIn21,
+                    stacklevel=2,
+                )
+        elif not isinstance(value, bytes):
+            raise TypeError("value must be bytes")
 
-        self._value = value
+        self._bytes_value = value
 
-    value = utils.read_only_property("_value")
+    bytes_value = utils.read_only_property("_bytes_value")
+
+    @property
+    def value(self):
+        warnings.warn(
+            "DNSName.bytes_value should be used instead of DNSName.value; it "
+            "contains the DNS name as raw bytes, instead of as an idna-decoded"
+            " unicode string. DNSName.value will be removed in a future "
+            "version.",
+            utils.DeprecatedIn21,
+            stacklevel=2
+        )
+        data = self._bytes_value
+        if not data:
+            decoded = u""
+        elif data.startswith(b"*."):
+            # This is a wildcard name. We need to remove the leading wildcard,
+            # IDNA decode, then re-add the wildcard. Wildcard characters should
+            # always be left-most (RFC 2595 section 2.4).
+            decoded = u"*." + idna.decode(data[2:])
+        else:
+            # Not a wildcard, decode away. If the string has a * in it anywhere
+            # invalid this will raise an InvalidCodePoint
+            decoded = idna.decode(data)
+            if data.startswith(b"."):
+                # idna strips leading periods. Name constraints can have that
+                # so we need to re-add it. Sigh.
+                decoded = u"." + decoded
+        return decoded
 
     def __repr__(self):
-        return "<DNSName(value={0})>".format(self.value)
+        return "<DNSName(bytes_value={0!r})>".format(self.bytes_value)
 
     def __eq__(self, other):
         if not isinstance(other, DNSName):
             return NotImplemented
 
-        return self.value == other.value
+        return self.bytes_value == other.bytes_value
 
     def __ne__(self, other):
         return not self == other

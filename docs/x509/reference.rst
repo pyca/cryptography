@@ -599,7 +599,7 @@ X.509 Certificate Builder
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.SubjectAlternativeName(
-        ...         [x509.DNSName(u'cryptography.io')]
+        ...         [x509.DNSName(b'cryptography.io')]
         ...     ),
         ...     critical=False
         ... )
@@ -1242,7 +1242,13 @@ General Name Classes
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
+    .. attribute:: bytes_value
+
+        :type: bytes
+
     .. attribute:: value
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
