@@ -14,7 +14,7 @@ Changelog
   encoding if necessary. In addition, the
   :attr:`~cryptography.x509.DNSName.value` attribute was deprecated, users
   should use :attr:`~cryptography.x509.DNSName.bytes_value` to access the
-  un-encoded DNS name.
+  raw DNS name.
 
 2.0.2 - 2017-07-27
 ~~~~~~~~~~~~~~~~~~
