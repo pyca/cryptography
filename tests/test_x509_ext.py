@@ -2275,7 +2275,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert othernames == [expected]
 
     def test_certbuilder(self, backend):
-        sans = [b'*.example.org', b'*.\xf5\xe4\xf6\xfc.example.com',
+        sans = [b'*.example.org', b'*.xn--4ca7aey.example.com',
                 b'foobar.example.net']
         private_key = RSA_KEY_2048.private_key(backend)
         builder = _make_certbuilder(private_key)
