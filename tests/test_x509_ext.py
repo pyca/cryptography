@@ -13,7 +13,7 @@ import pytest
 
 import six
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
@@ -1465,6 +1465,27 @@ class TestTextGeneralNames(object):
         gn2 = name(u"string2")
         assert gn != gn2
         assert gn != object()
+
+
+class TestDNSName(object):
+    def test_init(self):
+        with pytest.warns(utils.DeprecatedIn21):
+            name = x509.DNSName(u"*.\xf5\xe4\xf6\xfc.example.com")
+        assert name.bytes_value == b"*.xn--4ca7aey.example.com"
+
+        with pytest.warns(utils.DeprecatedIn21):
+            name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
+        assert name.bytes_value == b".xn--4ca7aey.example.com"
+
+        with pytest.raises(TypeError):
+            x509.DNSName(1.3)
+
+    def test_ne(self):
+        n1 = x509.DNSName(b"test1")
+        n2 = x509.DNSName(b"test2")
+        n3 = x509.DNSName(b"test2")
+        assert n1 != n2
+        assert not (n2 != n3)
 
 
 class TestDirectoryName(object):
