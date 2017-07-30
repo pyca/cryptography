@@ -1476,6 +1476,11 @@ class TestDNSName(object):
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
         assert name.bytes_value == b".xn--4ca7aey.example.com"
+        assert name.value == u".\xf5\xe4\xf6\xfc.example.com"
+
+        with pytest.warns(utils.DeprecatedIn21):
+            name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
+        assert name.bytes_value == b"xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
             x509.DNSName(1.3)
