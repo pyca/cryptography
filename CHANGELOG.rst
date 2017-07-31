@@ -10,6 +10,28 @@ Changelog
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
 * Installing ``cryptography`` now requires ``pip`` 6 or newer.
+* Deprecated passing unicode to the :class:`~cryptography.x509.DNSName`
+  constructor. Instead, users should pass DNS names as ``bytes``, with ``idna``
+  encoding if necessary. In addition, the
+  :attr:`~cryptography.x509.DNSName.value` attribute was deprecated, users
+  should use :attr:`~cryptography.x509.DNSName.bytes_value` to access the
+  raw DNS name.
+
+2.0.2 - 2017-07-27
+~~~~~~~~~~~~~~~~~~
+
+* Marked all symbols as hidden in the ``manylinux1`` wheel to avoid a
+  bug with symbol resolution in certain scenarios.
+
+2.0.1 - 2017-07-26
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a compilation bug affecting OpenBSD.
+* Altered the ``manylinux1`` wheels to statically link OpenSSL instead of
+  dynamically linking and bundling the shared object. This should resolve
+  crashes seen when using ``uwsgi`` or other binaries that link against
+  OpenSSL independently.
+* Fixed the stack level for the ``signer`` and ``verifier`` warnings.
 
 2.0 - 2017-07-17
 ~~~~~~~~~~~~~~~~

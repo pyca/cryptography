@@ -1,3 +1,4 @@
+accessor
 affine
 Authenticator
 backend
@@ -43,6 +44,7 @@ Google
 hazmat
 Homebrew
 hostname
+idna
 indistinguishability
 initialisms
 interoperable
