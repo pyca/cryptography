@@ -9,6 +9,7 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
+* Installing ``cryptography`` now requires ``pip`` 6 or newer.
 
 2.0 - 2017-07-17
 ~~~~~~~~~~~~~~~~
