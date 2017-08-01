@@ -1267,12 +1267,13 @@ General Name Classes
     .. versionadded:: 0.9
 
     This corresponds to a uniform resource identifier.  For example,
-    ``https://cryptography.io``. The URI is parsed and IDNA decoded (see
-    :rfc:`5895`).
+    ``https://cryptography.io``.
 
-    .. note::
+    ..note::
 
-        URIs that do not contain ``://`` in them will not be decoded.
+        Starting with version 2.1 unicode input is deprecated. If passing an
+        internationalized domain name (IDN) you should first IDNA encode the
+        hostname and then pass the resulting bytes.
 
     .. attribute:: bytes_value
 

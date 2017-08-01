@@ -180,16 +180,18 @@ class UniformResourceIdentifier(object):
                 value = self._idna_encode(value)
                 warnings.warn(
                     "UniformResourceIdentifier values should be passed as "
-                    "idna-encoded bytes, not strings. Support for passing "
-                    "unicode strings will be removed in a future version.",
+                    "bytes with the hostname idna encoded, not strings. "
+                    "Support for passing unicode strings will be removed in a "
+                    "future version.",
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
             else:
                 warnings.warn(
                     "UniformResourceIdentifier values should be passed as "
-                    "idna-encoded bytes, not strings. Support for passing "
-                    "unicode strings will be removed in a future version.",
+                    "bytes with the hostname idna encoded, not strings. "
+                    "Support for passing unicode strings will be removed in a "
+                    "future version.",
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
@@ -224,7 +226,7 @@ class UniformResourceIdentifier(object):
     def value(self):
         warnings.warn(
             "UniformResourceIdentifier.bytes_value should be used instead of "
-            "UniformResourceIdentifier.value; it contains the DNS name as raw "
+            "UniformResourceIdentifier.value; it contains the name as raw "
             "bytes, instead of as an idna-decoded unicode string. "
             "UniformResourceIdentifier.value will be removed in a future "
             "version.",
