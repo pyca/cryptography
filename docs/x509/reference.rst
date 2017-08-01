@@ -1244,9 +1244,13 @@ General Name Classes
 
     .. attribute:: bytes_value
 
+        .. versionadded:: 2.1
+
         :type: bytes
 
     .. attribute:: value
+
+        .. deprecated:: 2.1
 
         Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
