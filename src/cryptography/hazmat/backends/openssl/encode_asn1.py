@@ -449,7 +449,7 @@ def _encode_general_name(backend, name):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         asn1_str = _encode_asn1_str(
-            backend, name._encoded, len(name._encoded)
+            backend, name.bytes_value, len(name.bytes_value)
         )
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str

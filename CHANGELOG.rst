@@ -15,6 +15,14 @@ Changelog
   :attr:`~cryptography.x509.DNSName.value` attribute was deprecated, users
   should use :attr:`~cryptography.x509.DNSName.bytes_value` to access the
   raw DNS name.
+* Deprecated passing unicode to the
+  :class:`~cryptography.x509.UniformResourceIdentifier` constructor. Instead,
+  users should pass URIs as ``bytes``, with ``idna`` encoding if
+  necessary. In addition, the
+  :attr:`~cryptography.x509.UniformResourceIdentifier.value` attribute was
+  deprecated, users should use
+  :attr:`~cryptography.x509.UniformResourceIdentifier.bytes_value` to access the
+  raw value.
 
 2.0.2 - 2017-07-27
 ~~~~~~~~~~~~~~~~~~
