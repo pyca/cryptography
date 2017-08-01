@@ -3367,9 +3367,9 @@ class TestCRLDistributionPoints(object):
         else:
             assert repr(cdp) == (
                 "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value='ftp://domain')>], relative_name="
-                "None, reasons=frozenset([<ReasonFlags.key_compromise: 'keyCo"
-                "mpromise'>]), crl_issuer=None)>])>"
+                "rmResourceIdentifier(bytes_value='ftp://domain')>], relative"
+                "_name=None, reasons=frozenset([<ReasonFlags.key_compromise: "
+                "'keyCompromise'>]), crl_issuer=None)>])>"
             )
 
     def test_eq(self):
