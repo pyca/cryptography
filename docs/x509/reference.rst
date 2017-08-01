@@ -1232,7 +1232,23 @@ General Name Classes
 
     This corresponds to an email address. For example, ``user@example.com``.
 
+    ..note::
+
+        Starting with version 2.1 unicode input is deprecated. If passing an
+        internationalized domain name (IDN) you should first IDNA encode the
+        hostname and then pass the resulting bytes.
+
+    .. attribute:: bytes_value
+
+        .. versionadded:: 2.1
+
+        :type: bytes
+
     .. attribute:: value
+
+        .. deprecated:: 2.1
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
