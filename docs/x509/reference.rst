@@ -1274,7 +1274,17 @@ General Name Classes
 
         URIs that do not contain ``://`` in them will not be decoded.
 
+    .. attribute:: bytes_value
+
+        .. versionadded:: 2.1
+
+        :type: bytes
+
     .. attribute:: value
+
+        .. deprecated:: 2.1
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
