@@ -21,8 +21,8 @@ Changelog
   necessary. In addition, the
   :attr:`~cryptography.x509.UniformResourceIdentifier.value` attribute was
   deprecated, users should use
-  :attr:`~cryptography.x509.UniformResourceIdentifier.bytes_value` to access the
-  raw value.
+  :attr:`~cryptography.x509.UniformResourceIdentifier.bytes_value` to access
+  the raw value.
 * Deprecated passing unicode to the :class:`~cryptography.x509.RFC822Name`
   constructor. Instead, users should pass email addresses as ``bytes``, with
   ``idna`` encoding of the hostname if necessary. In addition, the
