@@ -167,7 +167,7 @@ class TestCertificateIssuer(object):
             x509.DNSName(b"crypto.local"),
             x509.DNSName(b"another.local"),
             x509.RFC822Name(u"email@another.local"),
-            x509.UniformResourceIdentifier(u"http://another.local"),
+            x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert ci[-1] == ci[4]
         assert ci[2:6:2] == [ci[2], ci[4]]
@@ -1437,36 +1437,6 @@ class TestKeyUsageExtension(object):
         assert ku.crl_sign is True
 
 
-@pytest.mark.parametrize(
-    "name", [
-        x509.RFC822Name,
-        x509.UniformResourceIdentifier
-    ]
-)
-class TestTextGeneralNames(object):
-    def test_not_text(self, name):
-        with pytest.raises(TypeError):
-            name(b"notaunicodestring")
-
-        with pytest.raises(TypeError):
-            name(1.3)
-
-    def test_repr(self, name):
-        gn = name(u"string")
-        assert repr(gn) == "<{0}(value=string)>".format(name.__name__)
-
-    def test_eq(self, name):
-        gn = name(u"string")
-        gn2 = name(u"string")
-        assert gn == gn2
-
-    def test_ne(self, name):
-        gn = name(u"string")
-        gn2 = name(u"string2")
-        assert gn != gn2
-        assert gn != object()
-
-
 class TestDNSName(object):
     def test_init(self):
         with pytest.warns(utils.DeprecatedIn21):
@@ -1540,6 +1510,25 @@ class TestDirectoryName(object):
 
 
 class TestRFC822Name(object):
+    def test_repr(self):
+        gn = x509.RFC822Name(u"string")
+        assert repr(gn) == "<RFC822Name(value=string)>"
+
+    def test_equality(self):
+        gn = x509.RFC822Name(u"string")
+        gn2 = x509.RFC822Name(u"string2")
+        gn3 = x509.RFC822Name(u"string")
+        assert gn != gn2
+        assert gn != object()
+        assert gn == gn3
+
+    def test_not_text(self):
+        with pytest.raises(TypeError):
+            x509.RFC822Name(b"notaunicodestring")
+
+        with pytest.raises(TypeError):
+            x509.RFC822Name(1.3)
+
     def test_invalid_email(self):
         with pytest.raises(ValueError):
             x509.RFC822Name(u"Name <email>")
@@ -1566,43 +1555,74 @@ class TestRFC822Name(object):
 
 
 class TestUniformResourceIdentifier(object):
+    def test_equality(self):
+        gn = x509.UniformResourceIdentifier(b"string")
+        gn2 = x509.UniformResourceIdentifier(b"string2")
+        gn3 = x509.UniformResourceIdentifier(b"string")
+        assert gn != gn2
+        assert gn != object()
+        assert gn == gn3
+
+    def test_not_text_or_bytes(self):
+        with pytest.raises(TypeError):
+            x509.UniformResourceIdentifier(1.3)
+
     def test_no_parsed_hostname(self):
-        gn = x509.UniformResourceIdentifier(u"singlelabel")
-        assert gn.value == u"singlelabel"
+        gn = x509.UniformResourceIdentifier(b"singlelabel")
+        assert gn.bytes_value == b"singlelabel"
 
     def test_with_port(self):
-        gn = x509.UniformResourceIdentifier(u"singlelabel:443/test")
-        assert gn.value == u"singlelabel:443/test"
+        gn = x509.UniformResourceIdentifier(b"singlelabel:443/test")
+        assert gn.bytes_value == b"singlelabel:443/test"
 
     def test_idna_no_port(self):
-        gn = x509.UniformResourceIdentifier(
-            u"http://\u043f\u044b\u043a\u0430.cryptography"
-        )
-        assert gn.value == u"http://\u043f\u044b\u043a\u0430.cryptography"
-        assert gn._encoded == b"http://xn--80ato2c.cryptography"
+        with pytest.warns(utils.DeprecatedIn21):
+            gn = x509.UniformResourceIdentifier(
+                u"http://\u043f\u044b\u043a\u0430.cryptography"
+            )
+        with pytest.warns(utils.DeprecatedIn21):
+            assert gn.value == u"http://\u043f\u044b\u043a\u0430.cryptography"
+        assert gn.bytes_value == b"http://xn--80ato2c.cryptography"
 
     def test_idna_with_port(self):
-        gn = x509.UniformResourceIdentifier(
-            u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
+        with pytest.warns(utils.DeprecatedIn21):
+            gn = x509.UniformResourceIdentifier(
+                u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
+            )
+        with pytest.warns(utils.DeprecatedIn21):
+            assert gn.value == (
+                u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
+            )
+        assert gn.bytes_value == (
+            b"gopher://xn--80ato2c.cryptography:70/some/path"
         )
-        assert gn.value == (
-            u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
-        )
-        assert gn._encoded == b"gopher://xn--80ato2c.cryptography:70/some/path"
 
     def test_query_and_fragment(self):
         gn = x509.UniformResourceIdentifier(
-            u"ldap://cryptography:90/path?query=true#somedata"
+            b"ldap://cryptography:90/path?query=true#somedata"
         )
-        assert gn.value == u"ldap://cryptography:90/path?query=true#somedata"
+        assert gn.bytes_value == (
+            b"ldap://cryptography:90/path?query=true#somedata"
+        )
 
     def test_hash(self):
-        g1 = x509.UniformResourceIdentifier(u"http://host.com")
-        g2 = x509.UniformResourceIdentifier(u"http://host.com")
-        g3 = x509.UniformResourceIdentifier(u"http://other.com")
+        g1 = x509.UniformResourceIdentifier(b"http://host.com")
+        g2 = x509.UniformResourceIdentifier(b"http://host.com")
+        g3 = x509.UniformResourceIdentifier(b"http://other.com")
 
         assert hash(g1) == hash(g2)
         assert hash(g1) != hash(g3)
+
+    def test_repr(self):
+        gn = x509.UniformResourceIdentifier(b"string")
+        if six.PY3:
+            assert repr(gn) == (
+                "<UniformResourceIdentifier(bytes_value=b'string')>"
+            )
+        else:
+            assert repr(gn) == (
+                "<UniformResourceIdentifier(bytes_value='string')>"
+            )
 
 
 class TestRegisteredID(object):
@@ -1747,7 +1767,7 @@ class TestGeneralNames(object):
             x509.DNSName(b"crypto.local"),
             x509.DNSName(b"another.local"),
             x509.RFC822Name(u"email@another.local"),
-            x509.UniformResourceIdentifier(u"http://another.local"),
+            x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert gn[-1] == gn[4]
         assert gn[2:6:2] == [gn[2], gn[4]]
@@ -1818,7 +1838,7 @@ class TestIssuerAlternativeName(object):
             x509.DNSName(b"crypto.local"),
             x509.DNSName(b"another.local"),
             x509.RFC822Name(u"email@another.local"),
-            x509.UniformResourceIdentifier(u"http://another.local"),
+            x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert ian[-1] == ian[4]
         assert ian[2:6:2] == [ian[2], ian[4]]
@@ -1879,7 +1899,7 @@ class TestRSAIssuerAlternativeNameExtension(object):
             ExtensionOID.ISSUER_ALTERNATIVE_NAME
         )
         assert list(ext.value) == [
-            x509.UniformResourceIdentifier(u"http://path.to.root/root.crt"),
+            x509.UniformResourceIdentifier(b"http://path.to.root/root.crt"),
         ]
 
 
@@ -1934,7 +1954,7 @@ class TestSubjectAlternativeName(object):
             x509.DNSName(b"crypto.local"),
             x509.DNSName(b"another.local"),
             x509.RFC822Name(u"email@another.local"),
-            x509.UniformResourceIdentifier(u"http://another.local"),
+            x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert san[-1] == san[4]
         assert san[2:6:2] == [san[2], san[4]]
@@ -2335,44 +2355,51 @@ class TestAccessDescription(object):
     def test_valid_nonstandard_method(self):
         ad = x509.AccessDescription(
             ObjectIdentifier("2.999.1"),
-            x509.UniformResourceIdentifier(u"http://example.com")
+            x509.UniformResourceIdentifier(b"http://example.com")
         )
         assert ad is not None
 
     def test_repr(self):
         ad = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
-        assert repr(ad) == (
-            "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6.1.5."
-            "5.7.48.1, name=OCSP)>, access_location=<UniformResourceIdentifier"
-            "(value=http://ocsp.domain.com)>)>"
-        )
+        if six.PY3:
+            assert repr(ad) == (
+                "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
+                ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
+                "Identifier(bytes_value=b'http://ocsp.domain.com')>)>"
+            )
+        else:
+            assert repr(ad) == (
+                "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
+                ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
+                "Identifier(bytes_value='http://ocsp.domain.com')>)>"
+            )
 
     def test_eq(self):
         ad = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         ad2 = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         assert ad == ad2
 
     def test_ne(self):
         ad = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         ad2 = x509.AccessDescription(
             AuthorityInformationAccessOID.CA_ISSUERS,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         ad3 = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://notthesame")
+            x509.UniformResourceIdentifier(b"http://notthesame")
         )
         assert ad != ad2
         assert ad != ad3
@@ -2381,15 +2408,15 @@ class TestAccessDescription(object):
     def test_hash(self):
         ad = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         ad2 = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         ad3 = x509.AccessDescription(
             AuthorityInformationAccessOID.CA_ISSUERS,
-            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
         )
         assert hash(ad) == hash(ad2)
         assert hash(ad) != hash(ad3)
@@ -2472,22 +2499,22 @@ class TestAuthorityInformationAccess(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ])
         assert len(aia) == 2
         assert list(aia) == [
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ]
 
@@ -2495,7 +2522,7 @@ class TestAuthorityInformationAccess(object):
         desc = [
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             )
         ]
         aia = x509.AuthorityInformationAccess(iter(desc))
@@ -2505,41 +2532,53 @@ class TestAuthorityInformationAccess(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ])
-        assert repr(aia) == (
-            "<AuthorityInformationAccess([<AccessDescription(access_method=<Ob"
-            "jectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, access_locati"
-            "on=<UniformResourceIdentifier(value=http://ocsp.domain.com)>)>, <"
-            "AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6.1.5.5"
-            ".7.48.2, name=caIssuers)>, access_location=<UniformResourceIdenti"
-            "fier(value=http://domain.com/ca.crt)>)>])>"
-        )
+        if six.PY3:
+            assert repr(aia) == (
+                "<AuthorityInformationAccess([<AccessDescription(access_method"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
+                "s_location=<UniformResourceIdentifier(bytes_value=b'http://oc"
+                "sp.domain.com')>)>, <AccessDescription(access_method=<ObjectI"
+                "dentifier(oid=1.3.6.1.5.5.7.48.2, name=caIssuers)>, access_lo"
+                "cation=<UniformResourceIdentifier(bytes_value=b'http://domain"
+                ".com/ca.crt')>)>])>"
+            )
+        else:
+            assert repr(aia) == (
+                "<AuthorityInformationAccess([<AccessDescription(access_method"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
+                "s_location=<UniformResourceIdentifier(bytes_value='http://oc"
+                "sp.domain.com')>)>, <AccessDescription(access_method=<ObjectI"
+                "dentifier(oid=1.3.6.1.5.5.7.48.2, name=caIssuers)>, access_lo"
+                "cation=<UniformResourceIdentifier(bytes_value='http://domain"
+                ".com/ca.crt')>)>])>"
+            )
 
     def test_eq(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ])
         aia2 = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ])
         assert aia == aia2
@@ -2548,17 +2587,17 @@ class TestAuthorityInformationAccess(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             )
         ])
         aia2 = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
         ])
 
@@ -2569,23 +2608,23 @@ class TestAuthorityInformationAccess(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp2.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp2.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp3.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp3.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp4.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp4.domain.com")
             ),
         ])
         assert aia[-1] == aia[4]
@@ -2610,11 +2649,11 @@ class TestAuthorityInformationAccessExtension(object):
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://gv.symcd.com")
+                x509.UniformResourceIdentifier(b"http://gv.symcd.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(u"http://gv.symcb.com/gv.crt")
+                x509.UniformResourceIdentifier(b"http://gv.symcb.com/gv.crt")
             ),
         ])
 
@@ -2633,11 +2672,11 @@ class TestAuthorityInformationAccessExtension(object):
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp2.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp2.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
@@ -2664,7 +2703,7 @@ class TestAuthorityInformationAccessExtension(object):
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
             ),
         ])
 
@@ -2985,7 +3024,7 @@ class TestNameConstraintsExtension(object):
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
                 x509.DNSName(b".cryptography.io"),
-                x509.UniformResourceIdentifier(u"ftp://cryptography.test")
+                x509.UniformResourceIdentifier(b"ftp://cryptography.test")
             ],
             excluded_subtrees=None
         )
@@ -3005,7 +3044,7 @@ class TestNameConstraintsExtension(object):
             permitted_subtrees=None,
             excluded_subtrees=[
                 x509.DNSName(b".cryptography.io"),
-                x509.UniformResourceIdentifier(u"gopher://cryptography.test")
+                x509.UniformResourceIdentifier(b"gopher://cryptography.test")
             ]
         )
 
@@ -3027,7 +3066,7 @@ class TestNameConstraintsExtension(object):
             ],
             excluded_subtrees=[
                 x509.DNSName(b".domain.com"),
-                x509.UniformResourceIdentifier(u"http://test.local"),
+                x509.UniformResourceIdentifier(b"http://test.local"),
             ]
         )
 
@@ -3102,7 +3141,7 @@ class TestDistributionPoint(object):
     def test_reason_not_reasonflags(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
                 None,
                 frozenset(["notreasonflags"]),
                 None
@@ -3111,7 +3150,7 @@ class TestDistributionPoint(object):
     def test_reason_not_frozenset(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
                 None,
                 [x509.ReasonFlags.ca_compromise],
                 None
@@ -3120,7 +3159,7 @@ class TestDistributionPoint(object):
     def test_disallowed_reasons(self):
         with pytest.raises(ValueError):
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
                 None,
                 frozenset([x509.ReasonFlags.unspecified]),
                 None
@@ -3128,7 +3167,7 @@ class TestDistributionPoint(object):
 
         with pytest.raises(ValueError):
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
                 None,
                 frozenset([x509.ReasonFlags.remove_from_crl]),
                 None
@@ -3145,7 +3184,7 @@ class TestDistributionPoint(object):
 
     def test_eq(self):
         dp = x509.DistributionPoint(
-            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
             None,
             frozenset([x509.ReasonFlags.superseded]),
             [
@@ -3159,7 +3198,7 @@ class TestDistributionPoint(object):
             ],
         )
         dp2 = x509.DistributionPoint(
-            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
             None,
             frozenset([x509.ReasonFlags.superseded]),
             [
@@ -3176,7 +3215,7 @@ class TestDistributionPoint(object):
 
     def test_ne(self):
         dp = x509.DistributionPoint(
-            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
             None,
             frozenset([x509.ReasonFlags.superseded]),
             [
@@ -3190,7 +3229,7 @@ class TestDistributionPoint(object):
             ],
         )
         dp2 = x509.DistributionPoint(
-            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
             None,
             None,
             None
@@ -3199,7 +3238,7 @@ class TestDistributionPoint(object):
         assert dp != object()
 
     def test_iter_input(self):
-        name = [x509.UniformResourceIdentifier(u"http://crypt.og/crl")]
+        name = [x509.UniformResourceIdentifier(b"http://crypt.og/crl")]
         issuer = [
             x509.DirectoryName(
                 x509.Name([
@@ -3263,13 +3302,13 @@ class TestCRLDistributionPoints(object):
     def test_iter_len(self):
         cdp = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://domain")],
+                [x509.UniformResourceIdentifier(b"http://domain")],
                 None,
                 None,
                 None
             ),
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
@@ -3281,13 +3320,13 @@ class TestCRLDistributionPoints(object):
         assert len(cdp) == 2
         assert list(cdp) == [
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://domain")],
+                [x509.UniformResourceIdentifier(b"http://domain")],
                 None,
                 None,
                 None
             ),
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
@@ -3300,7 +3339,7 @@ class TestCRLDistributionPoints(object):
     def test_iter_input(self):
         points = [
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"http://domain")],
+                [x509.UniformResourceIdentifier(b"http://domain")],
                 None,
                 None,
                 None
@@ -3312,7 +3351,7 @@ class TestCRLDistributionPoints(object):
     def test_repr(self):
         cdp = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([x509.ReasonFlags.key_compromise]),
                 None
@@ -3321,39 +3360,39 @@ class TestCRLDistributionPoints(object):
         if six.PY3:
             assert repr(cdp) == (
                 "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
-                "ne, reasons=frozenset({<ReasonFlags.key_compromise: 'keyComp"
-                "romise'>}), crl_issuer=None)>])>"
+                "rmResourceIdentifier(bytes_value=b'ftp://domain')>], relative"
+                "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
+                "'keyCompromise'>}), crl_issuer=None)>])>"
             )
         else:
             assert repr(cdp) == (
                 "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
-                "ne, reasons=frozenset([<ReasonFlags.key_compromise: 'keyComp"
-                "romise'>]), crl_issuer=None)>])>"
+                "rmResourceIdentifier(bytes_value='ftp://domain')>], relative"
+                "_name=None, reasons=frozenset([<ReasonFlags.key_compromise: "
+                "'keyCompromise'>]), crl_issuer=None)>])>"
             )
 
     def test_eq(self):
         cdp = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
                 ]),
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
         ])
         cdp2 = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
                 ]),
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
         ])
         assert cdp == cdp2
@@ -3361,43 +3400,43 @@ class TestCRLDistributionPoints(object):
     def test_ne(self):
         cdp = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
                 ]),
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
         ])
         cdp2 = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain2")],
+                [x509.UniformResourceIdentifier(b"ftp://domain2")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
                 ]),
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
         ])
         cdp3 = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([x509.ReasonFlags.key_compromise]),
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
         ])
         cdp4 = x509.CRLDistributionPoints([
             x509.DistributionPoint(
-                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
                 None,
                 frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
                 ]),
-                [x509.UniformResourceIdentifier(u"uri://thing2")],
+                [x509.UniformResourceIdentifier(b"uri://thing2")],
             ),
         ])
         assert cdp != cdp2
@@ -3409,23 +3448,23 @@ class TestCRLDistributionPoints(object):
         ci = x509.CRLDistributionPoints([
             x509.DistributionPoint(
                 None, None, None,
-                [x509.UniformResourceIdentifier(u"uri://thing")],
+                [x509.UniformResourceIdentifier(b"uri://thing")],
             ),
             x509.DistributionPoint(
                 None, None, None,
-                [x509.UniformResourceIdentifier(u"uri://thing2")],
+                [x509.UniformResourceIdentifier(b"uri://thing2")],
             ),
             x509.DistributionPoint(
                 None, None, None,
-                [x509.UniformResourceIdentifier(u"uri://thing3")],
+                [x509.UniformResourceIdentifier(b"uri://thing3")],
             ),
             x509.DistributionPoint(
                 None, None, None,
-                [x509.UniformResourceIdentifier(u"uri://thing4")],
+                [x509.UniformResourceIdentifier(b"uri://thing4")],
             ),
             x509.DistributionPoint(
                 None, None, None,
-                [x509.UniformResourceIdentifier(u"uri://thing5")],
+                [x509.UniformResourceIdentifier(b"uri://thing5")],
             ),
         ])
         assert ci[-1] == ci[4]

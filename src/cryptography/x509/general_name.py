@@ -173,13 +173,36 @@ class DNSName(object):
 @utils.register_interface(GeneralName)
 class UniformResourceIdentifier(object):
     def __init__(self, value):
-        if not isinstance(value, six.text_type):
-            raise TypeError("value must be a unicode string")
+        if isinstance(value, six.text_type):
+            try:
+                value = value.encode("ascii")
+            except UnicodeEncodeError:
+                value = self._idna_encode(value)
+                warnings.warn(
+                    "UniformResourceIdentifier values should be passed as "
+                    "bytes with the hostname idna encoded, not strings. "
+                    "Support for passing unicode strings will be removed in a "
+                    "future version.",
+                    utils.DeprecatedIn21,
+                    stacklevel=2,
+                )
+            else:
+                warnings.warn(
+                    "UniformResourceIdentifier values should be passed as "
+                    "bytes with the hostname idna encoded, not strings. "
+                    "Support for passing unicode strings will be removed in a "
+                    "future version.",
+                    utils.DeprecatedIn21,
+                    stacklevel=2,
+                )
+        elif not isinstance(value, bytes):
+            raise TypeError("value must be bytes")
 
+        self._bytes_value = value
+
+    def _idna_encode(self, value):
         parsed = urllib_parse.urlparse(value)
-        if not parsed.hostname:
-            netloc = ""
-        elif parsed.port:
+        if parsed.port:
             netloc = (
                 idna.encode(parsed.hostname) +
                 ":{0}".format(parsed.port).encode("ascii")
@@ -190,7 +213,7 @@ class UniformResourceIdentifier(object):
         # Note that building a URL in this fashion means it should be
         # semantically indistinguishable from the original but is not
         # guaranteed to be exactly the same.
-        uri = urllib_parse.urlunparse((
+        return urllib_parse.urlunparse((
             parsed.scheme,
             netloc,
             parsed.path,
@@ -199,13 +222,43 @@ class UniformResourceIdentifier(object):
             parsed.fragment
         )).encode("ascii")
 
-        self._value = value
-        self._encoded = uri
+    @property
+    def value(self):
+        warnings.warn(
+            "UniformResourceIdentifier.bytes_value should be used instead of "
+            "UniformResourceIdentifier.value; it contains the name as raw "
+            "bytes, instead of as an idna-decoded unicode string. "
+            "UniformResourceIdentifier.value will be removed in a future "
+            "version.",
+            utils.DeprecatedIn21,
+            stacklevel=2
+        )
+        parsed = urllib_parse.urlparse(self.bytes_value)
+        if not parsed.hostname:
+            netloc = ""
+        elif parsed.port:
+            netloc = idna.decode(parsed.hostname) + ":{0}".format(parsed.port)
+        else:
+            netloc = idna.decode(parsed.hostname)
 
-    value = utils.read_only_property("_value")
+        # Note that building a URL in this fashion means it should be
+        # semantically indistinguishable from the original but is not
+        # guaranteed to be exactly the same.
+        return urllib_parse.urlunparse((
+            parsed.scheme.decode('utf8'),
+            netloc,
+            parsed.path.decode('utf8'),
+            parsed.params.decode('utf8'),
+            parsed.query.decode('utf8'),
+            parsed.fragment.decode('utf8')
+        ))
+
+    bytes_value = utils.read_only_property("_bytes_value")
 
     def __repr__(self):
-        return "<UniformResourceIdentifier(value={0})>".format(self.value)
+        return "<UniformResourceIdentifier(bytes_value={0!r})>".format(
+            self.bytes_value
+        )
 
     def __eq__(self, other):
         if not isinstance(other, UniformResourceIdentifier):
