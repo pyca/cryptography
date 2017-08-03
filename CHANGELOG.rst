@@ -34,6 +34,15 @@ Changelog
   raw value.
 
 
+.. _v2-0-3:
+
+2.0.3 - 2017-08-03
+~~~~~~~~~~~~~~~~~~
+
+* Fixed an issue with weak linking symbols when compiling on macOS
+  versions older than 10.12.
+
+
 .. _v2-0-2:
 
 2.0.2 - 2017-07-27
