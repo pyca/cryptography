@@ -250,6 +250,12 @@ class CertificateRevocationList(object):
         Checks not equal.
         """
 
+    @abc.abstractmethod
+    def is_signature_valid(self, public_key):
+        """
+        Verifies signature of revocation list against given public key.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):

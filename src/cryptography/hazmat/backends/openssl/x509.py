@@ -17,6 +17,7 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
 )
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
 @utils.register_interface(x509.Certificate)
@@ -337,6 +338,21 @@ class _CertificateRevocationList(object):
     @utils.cached_property
     def extensions(self):
         return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
+
+    def is_signature_valid(self, public_key):
+        if not isinstance(public_key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
+                                       ec.EllipticCurvePublicKey)):
+            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
+                            ' or EllipticCurvePublicKey.')
+        res = self._backend._lib.X509_CRL_verify(
+            self._x509_crl, public_key._evp_pkey
+        )
+
+        if res != 1:
+            self._backend._consume_errors()
+            return False
+
+        return True
 
 
 @utils.register_interface(x509.CertificateSigningRequest)

@@ -563,6 +563,12 @@ X.509 CRL (Certificate Revocation List) Object
             over the network and used as part of a certificate verification
             process.
 
+    .. method:: is_signature_valid(public_key)
+
+        .. versionadded:: 2.1
+
+        Returns True if the CRL signature is correct for given public key,
+        False otherwise.
 
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
