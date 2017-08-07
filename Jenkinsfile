@@ -107,7 +107,7 @@ def downstreams = [
     [
         downstreamName: 'pyOpenSSL',
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        imageName: 'pyca/cryptography-runner-sid',
         script: """#!/bin/bash -xe
             git clone --depth=1 https://github.com/pyca/pyopenssl
             cd pyopenssl
