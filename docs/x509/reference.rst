@@ -567,6 +567,12 @@ X.509 CRL (Certificate Revocation List) Object
 
         .. versionadded:: 2.1
 
+        .. warning::
+
+            Checking the validity of the signature on the CRL is insufficient
+            to know if the CRL should be trusted. More details are available
+            in :rfc:`5280`.
+
         Returns True if the CRL signature is correct for given public key,
         False otherwise.
 
