@@ -341,9 +341,6 @@ class BasicConstraints(object):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
-        if path_length is not None and not ca:
-            raise ValueError("path_length must be None when ca is False")
-
         if (
             path_length is not None and
             (not isinstance(path_length, six.integer_types) or path_length < 0)
@@ -373,6 +370,10 @@ class BasicConstraints(object):
 
     def __hash__(self):
         return hash((self.ca, self.path_length))
+
+    def _validate(self):
+        if self.path_length is not None and not self.ca:
+            raise ValueError("path_length must be None when ca is False")
 
 
 @utils.register_interface(ExtensionType)
@@ -1140,6 +1141,13 @@ class Extension(object):
     oid = utils.read_only_property("_oid")
     critical = utils.read_only_property("_critical")
     value = utils.read_only_property("_value")
+
+    def _validate(self):
+        # Validate the extension if it has a _validate method. Not using
+        # a try/except here to avoid shadowing AttributeErrors that might
+        # occur when calling _validate
+        if getattr(self.value, "_validate", None) is not None:
+            self.value._validate()
 
     def __repr__(self):
         return ("<Extension(oid={0.oid}, critical={0.critical}, "

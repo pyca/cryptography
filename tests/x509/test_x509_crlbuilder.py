@@ -41,6 +41,26 @@ class TestCertificateRevocationListBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_calls_validators(self, backend):
+        builder = x509.CertificateRevocationListBuilder()
+        with pytest.raises(ValueError):
+            builder.issuer_name(x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'United States'),
+            ]))
+
+        with pytest.raises(ValueError):
+            builder.issuer_name(x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u''),
+            ]))
+
+        with pytest.raises(ValueError):
+            builder.add_extension(
+                x509.BasicConstraints(ca=False, path_length=1), True,
+            )
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_aware_last_update(self, backend):
         last_time = datetime.datetime(2012, 1, 16, 22, 43)
         tz = pytz.timezone("US/Pacific")

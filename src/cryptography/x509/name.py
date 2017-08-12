@@ -85,16 +85,10 @@ class NameAttribute(object):
             )
 
         if (
-            oid == NameOID.COUNTRY_NAME or
-            oid == NameOID.JURISDICTION_COUNTRY_NAME
+            oid in (NameOID.COUNTRY_NAME, NameOID.JURISDICTION_COUNTRY_NAME)
+            and _type == _SENTINEL
         ):
-            if len(value.encode("utf8")) != 2:
-                raise ValueError(
-                    "Country name must be a 2 character country code"
-                )
-
-        if len(value) == 0:
-            raise ValueError("Value cannot be an empty string")
+            _type = _ASN1Type.PrintableString
 
         # The appropriate ASN1 string type varies by OID and is defined across
         # multiple RFCs including 2459, 3280, and 5280. In general UTF8String
@@ -124,6 +118,21 @@ class NameAttribute(object):
         """
         key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
         return '%s=%s' % (key, _escape_dn_value(self.value))
+
+    def _validate(self):
+        if len(self.value) == 0:
+            raise ValueError(
+                "Value cannot be an empty string. OID: "
+                "{0}".format(self.oid)
+            )
+
+        if (
+            self.oid == NameOID.COUNTRY_NAME and
+            len(self.value.encode("utf8")) != 2
+        ):
+            raise ValueError(
+                "Country name must be a 2 character country code"
+            )
 
     def __eq__(self, other):
         if not isinstance(other, NameAttribute):
@@ -229,6 +238,11 @@ class Name(object):
 
     def public_bytes(self, backend):
         return backend.x509_name_bytes(self)
+
+    def _validate(self):
+        for rdn in self._attributes:
+            for name_attribute in rdn:
+                name_attribute._validate()
 
     def __eq__(self, other):
         if not isinstance(other, Name):

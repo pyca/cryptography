@@ -1191,8 +1191,9 @@ class TestBasicConstraints(object):
             x509.BasicConstraints(ca="notbool", path_length=None)
 
     def test_path_length_not_ca(self):
+        bc = x509.BasicConstraints(ca=False, path_length=0)
         with pytest.raises(ValueError):
-            x509.BasicConstraints(ca=False, path_length=0)
+            bc._validate()
 
     def test_path_length_not_int(self):
         with pytest.raises(TypeError):
