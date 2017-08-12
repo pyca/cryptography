@@ -369,6 +369,11 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_ian_aia_aki.pem`` - Contains a CRL with ``IssuerAlternativeName``,
   ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
   extensions.
+* ``valid_signature.pem`` - Contains a CRL with the public key which was used
+  to generate it.
+* ``invalid_signature.pem`` - Contains a CRL with the last signature byte
+  incremented by 1 to produce an invalid signature, and the public key which
+  was used to generate it.
 
 Hashes
 ~~~~~~
