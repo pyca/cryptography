@@ -32,7 +32,7 @@ Changelog
   :attr:`~cryptography.x509.RFC822Name.value` attribute was deprecated, users
   should use :attr:`~cryptography.x509.RFC822Name.bytes_value` to access the
   raw value.
-* Added :attr:`~cryptography.x509.CertificateRevocationList.is_signature_valid`
+* Added :meth:`~cryptography.x509.CertificateRevocationList.is_signature_valid`
   to :class:`~cryptography.x509.CertificateRevocationList`.
 
 
