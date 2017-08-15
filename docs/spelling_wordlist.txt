@@ -97,4 +97,5 @@ verifier
 Verifier
 Verisign
 wildcard
+WoSign
 Xcode
