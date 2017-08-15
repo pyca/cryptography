@@ -54,18 +54,6 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv rehash
     python -m pip install --user virtualenv
 else
-    # temporary pyenv installation to get latest pypy until the travis
-    # container infra is upgraded
-    if [[ "${TOXENV}" = pypy* ]]; then
-        rm -rf ~/.pyenv
-        git clone https://github.com/pyenv/pyenv ~/.pyenv
-        PYENV_ROOT="$HOME/.pyenv"
-        PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        pyenv install "$PYPY_VERSION"
-        pyenv global "$PYPY_VERSION"
-    fi
-
     # download, compile, and install if it's not already present via travis
     # cache
     if [ -n "${OPENSSL}" ]; then
