@@ -18,6 +18,8 @@ import pytz
 
 import six
 
+from six.moves import urllib_parse
+
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
@@ -3072,7 +3074,7 @@ class TestCertificateSigningRequestBuilder(object):
     def test_subject_alt_names(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
-        san = x509.SubjectAlternativeName([
+        name_list = [
             x509.DNSName(b"example.com"),
             x509.DNSName(b"*.example.com"),
             x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
@@ -3097,7 +3099,19 @@ class TestCertificateSigningRequestBuilder(object):
             x509.UniformResourceIdentifier(
                 u"gopher://cryptography:70/some/path"
             ),
-        ])
+            x509.UniformResourceIdentifier(b"http://127.0.0.1:443"),
+        ]
+        try:
+            urllib_parse.urlparse('http://[::1]:443').port
+        except ValueError:
+            # Lack of IPv6 parsing support in urlparse (Python 2.6)
+            pass
+        else:
+            name_list.extend([
+                x509.UniformResourceIdentifier(b"http://[::1]:443"),
+                x509.UniformResourceIdentifier(b"http://[::127.0.0.1]:443"),
+            ])
+        san = x509.SubjectAlternativeName(name_list)
 
         csr = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
@@ -3115,6 +3129,10 @@ class TestCertificateSigningRequestBuilder(object):
         assert not ext.critical
         assert ext.oid == ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         assert ext.value == san
+        assert csr == x509.load_pem_x509_csr(
+            csr.public_bytes(encoding=serialization.Encoding.PEM),
+            backend,
+        )
 
     def test_invalid_asn1_othername(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
