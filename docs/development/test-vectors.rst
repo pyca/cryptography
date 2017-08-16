@@ -163,6 +163,9 @@ X.509
 * ``bigoid.pem`` - A certificate with a rather long OID in the
   Certificate Policies extension.  We need to make sure we can parse
   long OIDs.
+* ``wosign-bc-invalid.pem`` - A certificate issued by WoSign that contains
+  a basic constraints extension with CA set to false and a path length of zero
+  in violation of :rfc:`5280`.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
