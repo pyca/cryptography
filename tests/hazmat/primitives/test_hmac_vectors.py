@@ -123,7 +123,7 @@ class TestHMACBLAKE2(object):
         h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64), backend)
         h.update(b"test")
         digest = h.finalize()
-        digest == binascii.unhexlify(
+        assert digest == binascii.unhexlify(
             b"b5319122f8a24ba134a0c9851922448104e25be5d1b91265c0c68b22722f0f29"
             b"87dba4aeaa69e6bed7edc44f48d6b1be493a3ce583f9c737c53d6bacc09e2f32"
         )
@@ -132,6 +132,6 @@ class TestHMACBLAKE2(object):
         h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32), backend)
         h.update(b"test")
         digest = h.finalize()
-        digest == binascii.unhexlify(
+        assert digest == binascii.unhexlify(
             b"51477cc5bdf1faf952cf97bb934ee936de1f4d5d7448a84eeb6f98d23b392166"
         )
