@@ -214,8 +214,8 @@ void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2beta2+ verification parameters and error codes */
-#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER
+/* OpenSSL 1.0.2+ verification parameters and error codes */
+#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
