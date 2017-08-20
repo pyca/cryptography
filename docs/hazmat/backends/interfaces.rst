@@ -266,7 +266,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: load_rsa_public_numbers(numbers)
 
         :param numbers: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
 
         :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
