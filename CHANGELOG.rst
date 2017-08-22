@@ -34,6 +34,9 @@ Changelog
   raw value.
 * Added :meth:`~cryptography.x509.CertificateRevocationList.is_signature_valid`
   to :class:`~cryptography.x509.CertificateRevocationList`.
+* Support :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
+  :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` with
+  :class:`~cryptography.hazmat.primitives.hmac.HMAC`.
 
 
 .. _v2-0-3:
