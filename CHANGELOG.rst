@@ -12,6 +12,7 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
+* Installing ``cryptography`` now requires ``pip`` 6 or newer.
 * Deprecated passing unicode to the :class:`~cryptography.x509.DNSName`
   constructor. Instead, users should pass DNS names as ``bytes``, with ``idna``
   encoding if necessary. In addition, the

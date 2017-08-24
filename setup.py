@@ -33,16 +33,7 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
-requirements = [
-    "idna>=2.1",
-    "asn1crypto>=0.21.0",
-    "six>=1.4.1",
-]
 setup_requirements = []
-
-if sys.version_info < (3,):
-    requirements.append("enum34")
-    requirements.append("ipaddress")
 
 if platform.python_implementation() == "PyPy":
     if sys.pypy_version_info < (5, 3):
@@ -51,7 +42,6 @@ if platform.python_implementation() == "PyPy":
             "upgrade PyPy to use this library."
         )
 else:
-    requirements.append("cffi>=1.7")
     setup_requirements.append("cffi>=1.7")
 
 test_requirements = [
@@ -285,9 +275,16 @@ setup(
     packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
 
-    install_requires=requirements,
+    install_requires=[
+        "idna >= 2.1",
+        "asn1crypto >= 0.21.0",
+        "six >= 1.4.1",
+    ],
     tests_require=test_requirements,
     extras_require={
+        ":python_version < '3'": ["enum34", "ipaddress"],
+        ":python_implementation != 'PyPy'": ["cffi >= 1.7"],
+
         "test": test_requirements,
         "docstest": [
             "doc8",
