@@ -240,7 +240,6 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                             @set PYTHON="${pythonPath[toxenv]}"
 
-                            python -m pip install -U pip setuptools virtualenv
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
                             @set LIB="${opensslPaths[label]['lib']}";%LIB%
                             tox -r
