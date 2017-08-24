@@ -29,9 +29,12 @@ matrix:
           env: TOXENV=py35
         - python: 3.6
           env: TOXENV=py36
-        - env: TOXENV=pypy PYPY_VERSION=pypy2-5.3
-        - env: TOXENV=pypy PYPY_VERSION=pypy2.7-5.8.0
-        - env: TOXENV=pypy-nocoverage PYPY_VERSION=pypy3.5-5.8.0
+        - python: pypy-5.3
+          env: TOXENV=pypy
+        - python: pypy2.7-5.8.0
+          env: TOXENV=pypy
+        - python: pypy3.5-5.8.0
+          env: TOXENV=pypy3-nocoverage
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0f
         - python: 3.5

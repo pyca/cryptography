@@ -163,6 +163,9 @@ X.509
 * ``bigoid.pem`` - A certificate with a rather long OID in the
   Certificate Policies extension.  We need to make sure we can parse
   long OIDs.
+* ``wosign-bc-invalid.pem`` - A certificate issued by WoSign that contains
+  a basic constraints extension with CA set to false and a path length of zero
+  in violation of :rfc:`5280`.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -369,6 +372,11 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_ian_aia_aki.pem`` - Contains a CRL with ``IssuerAlternativeName``,
   ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
   extensions.
+* ``valid_signature.pem`` - Contains a CRL with the public key which was used
+  to generate it.
+* ``invalid_signature.pem`` - Contains a CRL with the last signature byte
+  incremented by 1 to produce an invalid signature, and the public key which
+  was used to generate it.
 
 Hashes
 ~~~~~~

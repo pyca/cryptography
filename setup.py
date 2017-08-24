@@ -33,16 +33,6 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
-requirements = [
-    "idna>=2.1",
-    "asn1crypto>=0.21.0",
-    "six>=1.4.1",
-
-    "enum34 ; python_version < '3'",
-    "ipaddress ; python_version < '3'",
-
-    "cffi>=1.7 ; python_implementation != 'PyPy'",
-]
 setup_requirements = [
     "cffi>=1.7 ; python_implementation != 'PyPy'",
 ]
@@ -55,7 +45,7 @@ if platform.python_implementation() == "PyPy":
         )
 
 test_requirements = [
-    "pytest>=2.9.0",
+    "pytest>=3.2.1",
     "pretend",
     "iso8601",
     "pytz",
@@ -284,7 +274,16 @@ setup(
     packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
 
-    install_requires=requirements,
+    install_requires=[
+        "idna >= 2.1",
+        "asn1crypto >= 0.21.0",
+        "six >= 1.4.1",
+
+        "enum34; python_version < '3'",
+        "ipaddress; python_version < '3'",
+      
+        "cffi >= 1.7; python_implementation != 'PyPy'",
+    ],
     tests_require=test_requirements,
     extras_require={
         "test": test_requirements,

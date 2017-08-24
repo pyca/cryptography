@@ -563,6 +563,18 @@ X.509 CRL (Certificate Revocation List) Object
             over the network and used as part of a certificate verification
             process.
 
+    .. method:: is_signature_valid(public_key)
+
+        .. versionadded:: 2.1
+
+        .. warning::
+
+            Checking the validity of the signature on the CRL is insufficient
+            to know if the CRL should be trusted. More details are available
+            in :rfc:`5280`.
+
+        Returns True if the CRL signature is correct for given public key,
+        False otherwise.
 
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -599,7 +611,7 @@ X.509 Certificate Builder
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.SubjectAlternativeName(
-        ...         [x509.DNSName(u'cryptography.io')]
+        ...         [x509.DNSName(b'cryptography.io')]
         ...     ),
         ...     critical=False
         ... )
@@ -1232,7 +1244,23 @@ General Name Classes
 
     This corresponds to an email address. For example, ``user@example.com``.
 
+    ..note::
+
+        Starting with version 2.1 unicode input is deprecated. If passing an
+        internationalized domain name (IDN) you should first IDNA encode the
+        hostname and then pass the resulting bytes.
+
+    .. attribute:: bytes_value
+
+        .. versionadded:: 2.1
+
+        :type: bytes
+
     .. attribute:: value
+
+        .. deprecated:: 2.1
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
@@ -1242,7 +1270,17 @@ General Name Classes
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
+    .. attribute:: bytes_value
+
+        .. versionadded:: 2.1
+
+        :type: bytes
+
     .. attribute:: value
+
+        .. deprecated:: 2.1
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
@@ -1261,14 +1299,25 @@ General Name Classes
     .. versionadded:: 0.9
 
     This corresponds to a uniform resource identifier.  For example,
-    ``https://cryptography.io``. The URI is parsed and IDNA decoded (see
-    :rfc:`5895`).
+    ``https://cryptography.io``.
 
-    .. note::
+    ..note::
 
-        URIs that do not contain ``://`` in them will not be decoded.
+        Starting with version 2.1 unicode input is deprecated. If passing an
+        internationalized domain name (IDN) you should first IDNA encode the
+        hostname and then pass the resulting bytes.
+
+    .. attribute:: bytes_value
+
+        .. versionadded:: 2.1
+
+        :type: bytes
 
     .. attribute:: value
+
+        .. deprecated:: 2.1
+
+        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
