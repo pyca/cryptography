@@ -279,9 +279,9 @@ setup(
         "asn1crypto >= 0.21.0",
         "six >= 1.4.1",
 
-        "enum34; python_version < '3'",
-        "ipaddress; python_version < '3'",
-      
+        "enum34 ; python_version < '3'",
+        "ipaddress ; python_version < '3'",
+
         "cffi >= 1.7; python_implementation != 'PyPy'",
     ],
     tests_require=test_requirements,
