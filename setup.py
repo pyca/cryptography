@@ -127,7 +127,7 @@ setup(
         "src/_cffi_src/build_openssl.py:ffi",
         "src/_cffi_src/build_constant_time.py:ffi",
         "src/_cffi_src/build_padding.py:ffi",
-    ]
+    ],
 
     setup_requires=setup_requirements,
     install_requires=[
