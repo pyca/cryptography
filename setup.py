@@ -123,7 +123,7 @@ setup(
     packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
 
-    cffi_modules = [
+    cffi_modules=[
         "src/_cffi_src/build_openssl.py:ffi",
         "src/_cffi_src/build_constant_time.py:ffi",
         "src/_cffi_src/build_padding.py:ffi",
