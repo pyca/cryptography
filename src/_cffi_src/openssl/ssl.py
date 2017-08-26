@@ -420,6 +420,10 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
 size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
+int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
+                                const char *label, size_t llen,
+                                const unsigned char *context,
+                                size_t contextlen, int use_context);
 
 long SSL_CTX_sess_number(SSL_CTX *);
 long SSL_CTX_sess_connect(SSL_CTX *);
