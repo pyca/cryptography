@@ -27,6 +27,7 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
+static const long Cryptography_HAS_KEYING_EXPORT;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -420,10 +421,7 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
 size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
-int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
-                                const char *label, size_t llen,
-                                const unsigned char *context,
-                                size_t contextlen, int use_context);
+int SSL_export_keying_material(SSL *, unsigned char *, size_t, const char *, size_t, const unsigned char *, size_t, int);
 
 long SSL_CTX_sess_number(SSL_CTX *);
 long SSL_CTX_sess_connect(SSL_CTX *);
@@ -451,6 +449,10 @@ CUSTOMIZATIONS = """
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
 }
+static const long Cryptography_HAS_KEYING_EXPORT = 0;
+int (*SSL_export_keying_material)(SSL *, unsigned char *, size_t, const char *, size_t, const unsigned char *, size_t, int) = NULL;
+#else
+static const long Cryptography_HAS_KEYING_EXPORT = 1;
 #endif
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
