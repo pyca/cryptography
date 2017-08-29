@@ -27,7 +27,6 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
-static const long Cryptography_HAS_KEYING_EXPORT;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -523,7 +522,6 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
-static const long Cryptography_HAS_KEYING_EXPORT = 1;
 
 /* ALPN was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
