@@ -449,10 +449,14 @@ CUSTOMIZATIONS = """
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
 }
+#endif
+
+/* RFC 5705 support added in 1.0.1 */
+#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
+static const long Cryptography_HAS_KEYING_EXPORT = 1;
+#else
 static const long Cryptography_HAS_KEYING_EXPORT = 0;
 int (*SSL_export_keying_material)(SSL *, unsigned char *, size_t, const char *, size_t, const unsigned char *, size_t, int) = NULL;
-#else
-static const long Cryptography_HAS_KEYING_EXPORT = 1;
 #endif
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
