@@ -452,16 +452,6 @@ const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
 }
 #endif
 
-/* RFC 5705 support added in 1.0.1 */
-#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
-static const long Cryptography_HAS_KEYING_EXPORT = 1;
-#else
-static const long Cryptography_HAS_KEYING_EXPORT = 0;
-int (*SSL_export_keying_material)(SSL *, unsigned char *, size_t, const char *,
-                                  size_t, const unsigned char *, size_t,
-                                  int) = NULL;
-#endif
-
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
    OpenSSLs. Such is our burden. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
@@ -533,6 +523,7 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
+static const long Cryptography_HAS_KEYING_EXPORT = 1;
 
 /* ALPN was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
