@@ -421,7 +421,8 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
 size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
-int SSL_export_keying_material(SSL *, unsigned char *, size_t, const char *, size_t, const unsigned char *, size_t, int);
+int SSL_export_keying_material(SSL *, unsigned char *, size_t, const char *,
+                               size_t, const unsigned char *, size_t, int);
 
 long SSL_CTX_sess_number(SSL_CTX *);
 long SSL_CTX_sess_connect(SSL_CTX *);
@@ -456,7 +457,9 @@ const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
 static const long Cryptography_HAS_KEYING_EXPORT = 1;
 #else
 static const long Cryptography_HAS_KEYING_EXPORT = 0;
-int (*SSL_export_keying_material)(SSL *, unsigned char *, size_t, const char *, size_t, const unsigned char *, size_t, int) = NULL;
+int (*SSL_export_keying_material)(SSL *, unsigned char *, size_t, const char *,
+                                  size_t, const unsigned char *, size_t,
+                                  int) = NULL;
 #endif
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
