@@ -9,8 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_ENGINE_CRYPTODEV;
-
 typedef ... ENGINE;
 typedef ... RSA_METHOD;
 typedef ... DSA_METHOD;
@@ -51,7 +49,6 @@ ENGINE *ENGINE_by_id(const char *);
 int ENGINE_init(ENGINE *);
 int ENGINE_finish(ENGINE *);
 void ENGINE_load_builtin_engines(void);
-void ENGINE_cleanup(void);
 ENGINE *ENGINE_get_default_RSA(void);
 ENGINE *ENGINE_get_default_DSA(void);
 ENGINE *ENGINE_get_default_DH(void);
@@ -126,21 +123,11 @@ const ENGINE_CMD_DEFN *ENGINE_get_cmd_defns(const ENGINE *);
 EVP_PKEY *ENGINE_load_private_key(ENGINE *, const char *, UI_METHOD *, void *);
 EVP_PKEY *ENGINE_load_public_key(ENGINE *, const char *, UI_METHOD *, void *);
 void ENGINE_add_conf_module(void);
-"""
-
-MACROS = """
 /* these became macros in 1.1.0 */
 void ENGINE_load_openssl(void);
 void ENGINE_load_dynamic(void);
-
-void ENGINE_load_cryptodev(void);
+void ENGINE_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
-#if defined(LIBRESSL_VERSION_NUMBER)
-static const long Cryptography_HAS_ENGINE_CRYPTODEV = 0;
-void (*ENGINE_load_cryptodev)(void) = NULL;
-#else
-static const long Cryptography_HAS_ENGINE_CRYPTODEV = 1;
-#endif
 """

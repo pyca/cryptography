@@ -11,7 +11,7 @@ import pytest
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
-from .utils import generate_hash_test, generate_long_string_hash_test
+from .utils import generate_hash_test
 from ...utils import load_hash_vectors
 
 
@@ -101,50 +101,6 @@ class TestSHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160()),
-    skip_message="Does not support RIPEMD160",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestRIPEMD160(object):
-    test_RIPEMD160 = generate_hash_test(
-        load_hash_vectors,
-        os.path.join("hashes", "ripemd160"),
-        [
-            "ripevectors.txt",
-        ],
-        hashes.RIPEMD160(),
-    )
-
-    test_RIPEMD160_long_string = generate_long_string_hash_test(
-        hashes.RIPEMD160(),
-        "52783243c1697bdbe16d37f97f68f08325dc1528",
-    )
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool()),
-    skip_message="Does not support Whirlpool",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestWhirlpool(object):
-    test_whirlpool = generate_hash_test(
-        load_hash_vectors,
-        os.path.join("hashes", "whirlpool"),
-        [
-            "iso-test-vectors.txt",
-        ],
-        hashes.Whirlpool(),
-    )
-
-    test_whirlpool_long_string = generate_long_string_hash_test(
-        hashes.Whirlpool(),
-        ("0c99005beb57eff50a7cf005560ddf5d29057fd86b2"
-         "0bfd62deca0f1ccea4af51fc15490eddc47af32bb2b"
-         "66c34ff9ad8c6008ad677f77126953b226e4ed8b01"),
-    )
-
-
-@pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
@@ -157,4 +113,38 @@ class TestMD5(object):
             "rfc-1321.txt",
         ],
         hashes.MD5(),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2b(digest_size=64)),
+    skip_message="Does not support BLAKE2b",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2b(object):
+    test_b2b = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "blake2"),
+        [
+            "blake2b.txt",
+        ],
+        hashes.BLAKE2b(digest_size=64),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2s(digest_size=32)),
+    skip_message="Does not support BLAKE2s",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2s256(object):
+    test_b2s = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "blake2"),
+        [
+            "blake2s.txt",
+        ],
+        hashes.BLAKE2s(digest_size=32),
     )

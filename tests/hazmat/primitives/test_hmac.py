@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import (
@@ -15,7 +13,6 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
-from ..backends.test_multibackend import DummyHMACBackend
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
@@ -37,14 +34,6 @@ class TestHMAC(object):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             h.update(u"\u00FC")
-
-    def test_copy_backend_object(self):
-        backend = DummyHMACBackend([hashes.SHA1])
-        copied_ctx = pretend.stub()
-        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend, ctx=pretend_ctx)
-        assert h._backend is backend
-        assert h.copy()._backend is backend
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):

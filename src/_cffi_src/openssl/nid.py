@@ -9,7 +9,7 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_ECDSA_SHA2_NIDS;
+static const int Cryptography_HAS_X25519;
 
 static const int NID_undef;
 static const int NID_dsa;
@@ -91,6 +91,7 @@ static const int NID_sect409k1;
 static const int NID_sect409r1;
 static const int NID_sect571k1;
 static const int NID_sect571r1;
+static const int NID_X25519;
 static const int NID_wap_wsg_idm_ecid_wtls1;
 static const int NID_wap_wsg_idm_ecid_wtls3;
 static const int NID_wap_wsg_idm_ecid_wtls4;
@@ -217,23 +218,19 @@ static const int NID_dnQualifier;
 static const int NID_pseudonym;
 static const int NID_domainComponent;
 static const int NID_pkcs9_emailAddress;
+
+static const int NID_ad_OCSP;
+static const int NID_ad_ca_issuers;
 """
 
 FUNCTIONS = """
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
-/* OpenSSL 0.9.8g+ */
-#if OPENSSL_VERSION_NUMBER >= 0x0090807fL
-static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 1;
+#ifndef NID_X25519
+static const long Cryptography_HAS_X25519 = 0;
+static const int NID_X25519 = 0;
 #else
-static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 0;
-static const int NID_ecdsa_with_SHA224 = 0;
-static const int NID_ecdsa_with_SHA256 = 0;
-static const int NID_ecdsa_with_SHA384 = 0;
-static const int NID_ecdsa_with_SHA512 = 0;
+static const long Cryptography_HAS_X25519 = 1;
 #endif
 """

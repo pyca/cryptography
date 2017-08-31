@@ -91,7 +91,7 @@ class HKDFExpand(object):
         output = [b""]
         counter = 1
 
-        while (self._algorithm.digest_size // 8) * len(output) < self._length:
+        while self._algorithm.digest_size * (len(output) - 1) < self._length:
             h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
             h.update(output[-1])
             h.update(self._info)

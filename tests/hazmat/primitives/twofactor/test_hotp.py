@@ -35,6 +35,10 @@ class TestHOTP(object):
         with pytest.raises(ValueError):
             HOTP(secret, 6, SHA1(), backend)
 
+    def test_unenforced_invalid_kwy_length(self, backend):
+        secret = os.urandom(10)
+        HOTP(secret, 6, SHA1(), backend, enforce_key_length=False)
+
     def test_invalid_hotp_length(self, backend):
         secret = os.urandom(16)
 

@@ -1,9 +1,24 @@
-Welcome to ``cryptography``
-===========================
+Welcome to ``pyca/cryptography``
+================================
 
-``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives. Our goal is for it to be your "cryptographic standard library". If
-you are interested in learning more about the field of cryptography, we
+``cryptography`` includes both high level recipes and low level interfaces to
+common cryptographic algorithms such as symmetric ciphers, message digests, and
+key derivation functions. For example, to encrypt something with
+``cryptography``'s high level symmetric encryption recipe:
+
+.. code-block:: pycon
+
+    >>> from cryptography.fernet import Fernet
+    >>> # Put this somewhere safe!
+    >>> key = Fernet.generate_key()
+    >>> f = Fernet(key)
+    >>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+    >>> token
+    '...'
+    >>> f.decrypt(token)
+    'A really secret message. Not for prying eyes.'
+
+If you are interested in learning more about the field of cryptography, we
 recommend `Crypto 101, by Laurens Van Houtven`_.
 
 Installation
@@ -16,34 +31,15 @@ You can install ``cryptography`` with ``pip``:
 
 See :doc:`Installation <installation>` for more information.
 
-Why a new crypto library for Python?
-------------------------------------
-
-If you've done cryptographic work in Python before, you've probably seen some
-other libraries in Python, such as *M2Crypto*, *PyCrypto*, or *PyOpenSSL*. In
-building ``cryptography`` we wanted to address a few issues we observed in the
-existing libraries:
-
-* Lack of PyPy and Python 3 support.
-* Lack of maintenance.
-* Use of poor implementations of algorithms (i.e. ones with known side-channel
-  attacks).
-* Lack of high level, "Cryptography for humans", APIs.
-* Absence of algorithms such as
-  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
-* Poor introspectability, and thus poor testability.
-* Extremely error prone APIs, and bad defaults.
-
-
 .. _cryptography-layout:
+
 
 Layout
 ------
 
 ``cryptography`` is broadly divided into two levels. One with safe
-cryptographic recipes, "cryptography for humans" if you will. These are safe
-and easy to use and don't require developers to make many decisions.
+cryptographic recipes that require little to no configuration choices. These
+are safe and easy to use and don't require developers to make many decisions.
 
 The other level is low-level cryptographic primitives. These are often
 dangerous and can be used incorrectly. They require making decisions and having
@@ -56,43 +52,37 @@ admonition at the top.
 We recommend using the recipes layer whenever possible, and falling back to the
 hazmat layer only when necessary.
 
-The recipes layer
-~~~~~~~~~~~~~~~~~
-
 .. toctree::
     :maxdepth: 2
+    :caption: The recipes layer
 
     fernet
     x509/index
-    random-numbers
-    exceptions
-    faq
-    glossary
-
-The hazardous materials layer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 2
+    :caption: The hazardous materials layer
 
     hazmat/primitives/index
+    exceptions
+    random-numbers
     hazmat/backends/index
     hazmat/bindings/index
 
-The ``cryptography`` open source project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. toctree::
     :maxdepth: 2
+    :caption: The cryptography open source project
 
     installation
+    changelog
+    faq
     development/index
     security
     limitations
     api-stability
     doing-a-release
-    changelog
     community
+    glossary
 
 
 .. note::

@@ -37,6 +37,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
     .. method:: encrypt(data)
 
+        Encrypts data passed. The result of this encryption is known as a
+        "Fernet token" and has strong privacy and authenticity guarantees.
+
         :param bytes data: The message you would like to encrypt.
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
@@ -51,6 +54,11 @@ has support for implementing key rotation via :class:`MultiFernet`.
             therefore be visible to a possible attacker.
 
     .. method:: decrypt(token, ttl=None)
+
+        Decrypts a Fernet token. If successfully decrypted you will receive the
+        original plaintext as the result, otherwise an exception will be
+        raised. It is safe to use this data immediately as Fernet verifies
+        that the data has not been tampered with prior to returning it.
 
         :param bytes token: The Fernet token. This is the result of calling
                             :meth:`encrypt`.
@@ -113,7 +121,7 @@ Using passwords with Fernet
 It is possible to use passwords with Fernet. To do this, you need to run the
 password through a key derivation function such as
 :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`, bcrypt or
-scrypt.
+:class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`.
 
 .. doctest::
 
@@ -145,7 +153,7 @@ to derive the same key from the password in the future.
 
 The iteration count used should be adjusted to be as high as your server can
 tolerate. A good default is at least 100,000 iterations which is what Django
-`recommends`_ in 2014.
+recommended in 2014.
 
 Implementation
 --------------
@@ -163,7 +171,13 @@ Specifically it uses:
 
 For complete details consult the `specification`_.
 
+Limitations
+-----------
+
+Fernet is ideal for encrypting data that easily fits in memory. As a design
+feature it does not expose unauthenticated bytes. Unfortunately, this makes it
+generally unsuitable for very large files at this time.
+
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
-.. _`recommends`: https://github.com/django/django/blob/master/django/utils/crypto.py#L148

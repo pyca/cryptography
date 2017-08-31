@@ -11,16 +11,14 @@ from distutils.dist import Distribution
 from cffi import FFI
 
 
-def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
-                          post_include="", libraries=[], extra_compile_args=[],
-                          extra_link_args=[]):
+def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
+                          extra_compile_args=[], extra_link_args=[]):
     """
     Modules listed in ``modules`` should have the following attributes:
 
     * ``INCLUDES``: A string containing C includes.
     * ``TYPES``: A string containing C declarations for types.
-    * ``FUNCTIONS``: A string containing C declarations for functions.
-    * ``MACROS``: A string containing C declarations for any macros.
+    * ``FUNCTIONS``: A string containing C declarations for functions & macros.
     * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
         can be used to do things like test for a define and provide an
         alternate implementation based on that.
@@ -28,36 +26,23 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
     types = []
     includes = []
     functions = []
-    macros = []
     customizations = []
     for name in modules:
         __import__(module_prefix + name)
         module = sys.modules[module_prefix + name]
 
         types.append(module.TYPES)
-        macros.append(module.MACROS)
         functions.append(module.FUNCTIONS)
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
 
-    # We include functions here so that if we got any of their definitions
-    # wrong, the underlying C compiler will explode. In C you are allowed
-    # to re-declare a function if it has the same signature. That is:
-    #   int foo(int);
-    #   int foo(int);
-    # is legal, but the following will fail to compile:
-    #   int foo(int);
-    #   int foo(short);
     verify_source = "\n".join(
-        [pre_include] +
         includes +
-        [post_include] +
-        functions +
         customizations
     )
     ffi = build_ffi(
         module_name,
-        cdef_source="\n".join(types + functions + macros),
+        cdef_source="\n".join(types + functions),
         verify_source=verify_source,
         libraries=libraries,
         extra_compile_args=extra_compile_args,
@@ -93,7 +78,7 @@ def extra_link_args(compiler_type):
 def compiler_type():
     """
     Gets the compiler type from distutils. On Windows with MSVC it will be
-    "msvc". On OS X and linux it is "unix".
+    "msvc". On macOS and linux it is "unix".
     """
     dist = Distribution()
     dist.parse_config_files()

@@ -6,24 +6,29 @@ Doing a release of ``cryptography`` requires a few steps.
 Verifying and upgrading OpenSSL version
 ---------------------------------------
 
-The release process uses a static build for Windows and OS X wheels. Check that
-the Windows and OS X Jenkins builders have the latest version of OpenSSL
-installed before performing the release. If they do not:
+The release process creates wheels bundling OpenSSL for Windows, macOS, and
+Linux. Check that the Windows and macOS Jenkins builders have the latest
+version of OpenSSL installed and verify that the latest version is present in
+the ``pyca/cryptography-manylinux1`` docker containers. If anything is out
+of date:
 
 Upgrading Windows
 ~~~~~~~~~~~~~~~~~
 
-Run the ``openssl-release`` Jenkins job, then copy the resulting artifacts to
-the Windows builders and unzip them in the root of the file system.
+Run the ``openssl-release-1.1`` Jenkins job, then copy the resulting artifacts
+to the Windows builders and unzip them in the root of the file system.
 
-Upgrading OS X
-~~~~~~~~~~~~~~
+Upgrading macOS
+~~~~~~~~~~~~~~~
 
-``brew update`` and then ``brew upgrade openssl --universal --build-bottle`` to
-build a universal library (32-bit and 64-bit) compatible with all Intel Macs.
-This can be confirmed by using
-``lipo -info /usr/local/opt/openssl/lib/libssl.dylib`` to see the available
-architectures.
+Run the ``update-brew-openssl`` Jenkins job.
+
+Upgrading ``manylinux1`` docker containers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Send a pull request to the ``pyca/infra`` project updating the version and
+file hash in ``cryptography-manylinux1/install_openssl.sh``. Once this is
+merged the updated image will be available to the wheel builder.
 
 Bumping the version number
 --------------------------
@@ -45,7 +50,7 @@ The commit that merged the version number bump is now the official release
 commit for this release. You will need to have ``gpg`` installed and a ``gpg``
 key in order to do a release. Once this has happened:
 
-* Run ``invoke release {version}``.
+* Run ``python release.py {version}``.
 
 The release should now be available on PyPI and a tag should be available in
 the repository.
@@ -74,8 +79,9 @@ Post-release tasks
 ------------------
 
 * Update the version number to the next major (e.g. ``0.5.dev1``) in
-  ``cryptography/__about__.py`` and
+  ``src/cryptography/__about__.py`` and
   ``vectors/cryptography_vectors/__about__.py``.
+* Close the `milestone`_ for the previous release on GitHub.
 * Add new :doc:`/changelog` entry with next version and note that it is under
   active development
 * Send a pull request with these items
@@ -85,5 +91,6 @@ Post-release tasks
 * Send an email to the `mailing list`_ and `python-announce`_ announcing the
   release.
 
+.. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`python-announce`: https://mail.python.org/mailman/listinfo/python-announce-list

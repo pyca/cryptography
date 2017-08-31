@@ -53,7 +53,6 @@ void ASN1_OBJECT_free(ASN1_OBJECT *);
 
 /*  ASN1 OBJECT IDENTIFIER */
 ASN1_OBJECT *d2i_ASN1_OBJECT(ASN1_OBJECT **, const unsigned char **, long);
-int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
 
 /*  ASN1 STRING */
 ASN1_STRING *ASN1_STRING_new(void);
@@ -61,8 +60,6 @@ ASN1_STRING *ASN1_STRING_type_new(int);
 void ASN1_STRING_free(ASN1_STRING *);
 unsigned char *ASN1_STRING_data(ASN1_STRING *);
 int ASN1_STRING_set(ASN1_STRING *, const void *, int);
-int ASN1_STRING_type(ASN1_STRING *);
-int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
 
 /*  ASN1 OCTET STRING */
 ASN1_OCTET_STRING *ASN1_OCTET_STRING_new(void);
@@ -76,14 +73,12 @@ ASN1_IA5STRING *ASN1_IA5STRING_new(void);
 ASN1_INTEGER *ASN1_INTEGER_new(void);
 void ASN1_INTEGER_free(ASN1_INTEGER *);
 int ASN1_INTEGER_set(ASN1_INTEGER *, long);
-int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
 
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
 void ASN1_TIME_free(ASN1_TIME *);
-ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
-                                                   ASN1_GENERALIZEDTIME **);
 ASN1_TIME *ASN1_TIME_set(ASN1_TIME *, time_t);
+int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
 /*  ASN1 UTCTIME */
 ASN1_UTCTIME *ASN1_UTCTIME_new(void);
@@ -101,15 +96,22 @@ int i2d_ASN1_GENERALIZEDTIME(ASN1_GENERALIZEDTIME *, unsigned char **);
 ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
 void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
 int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
-long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
 int i2d_ASN1_ENUMERATED(ASN1_ENUMERATED *, unsigned char **);
 
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);
 int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
-"""
+/* These became const ASN1_* in 1.1.0 */
+int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
+int ASN1_STRING_type(ASN1_STRING *);
+int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
+long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
+int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
 
-MACROS = """
+/* This became const ASN1_TIME in 1.1.0f */
+ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
+                                                   ASN1_GENERALIZEDTIME **);
+
 ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
@@ -120,7 +122,6 @@ int i2d_ASN1_OCTET_STRING(ASN1_OCTET_STRING *, unsigned char **);
 int i2d_ASN1_INTEGER(ASN1_INTEGER *, unsigned char **);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
-ASN1_TIME *M_ASN1_TIME_dup(void *);
 const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
@@ -144,6 +145,7 @@ ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 /* These isn't a macro the arg is const on openssl 1.0.2+ */
 int ASN1_GENERALIZEDTIME_check(ASN1_GENERALIZEDTIME *);
 int ASN1_UTCTIME_check(ASN1_UTCTIME *);
+int ASN1_TIME_check(ASN1_TIME *);
 
 /* Not a macro, const on openssl 1.0 */
 int ASN1_STRING_set_default_mask_asc(char *);
@@ -153,10 +155,4 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
-/* This macro is removed in 1.1.0. We re-add it if required to support
-   pyOpenSSL versions older than whatever resolves
-   https://github.com/pyca/pyopenssl/issues/431 */
-#if !defined(M_ASN1_TIME_dup)
-#define M_ASN1_TIME_dup(a) (ASN1_TIME *)ASN1_STRING_dup((const ASN1_STRING *)a)
-#endif
 """

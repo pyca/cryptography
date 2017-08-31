@@ -18,78 +18,23 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 import cryptography_vectors
 
 from .utils import (
-    check_backend_support, load_cryptrec_vectors,
+    check_backend_support, load_cryptrec_vectors, load_ed25519_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_hash_vectors, load_kasvs_dh_vectors,
-    load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, raises_unsupported_algorithm, select_backends,
-    skip_if_empty
+    load_kasvs_ecdh_vectors, load_nist_ccm_vectors, load_nist_kbkdf_vectors,
+    load_nist_vectors, load_pkcs1_vectors, load_rsa_nist_vectors,
+    load_vectors_from_file, load_x963_vectors, raises_unsupported_algorithm
 )
-
-
-class FakeInterface(object):
-    pass
-
-
-def test_select_one_backend():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "b2"
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 1
-    assert selected_backends[0] == b2
-
-
-def test_select_no_backend():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "back!"
-    with pytest.raises(ValueError):
-        select_backends(name, backends)
-
-
-def test_select_backends_none():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = None
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 3
-
-
-def test_select_two_backends():
-    b1 = pretend.stub(name="b1")
-    b2 = pretend.stub(name="b2")
-    b3 = pretend.stub(name="b3")
-    backends = [b1, b2, b3]
-    name = "b2 ,b1 "
-    selected_backends = select_backends(name, backends)
-    assert len(selected_backends) == 2
-    assert selected_backends == [b1, b2]
-
-
-def test_skip_if_empty():
-    with pytest.raises(pytest.skip.Exception):
-        skip_if_empty([], [FakeInterface])
-
-    skip_if_empty(["notempty"], [FakeInterface])
 
 
 def test_check_backend_support_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]},
-                        funcargs={"backend": True})
+    item = pretend.stub(keywords={"supported": [supported]})
     with pytest.raises(pytest.skip.Exception) as exc_info:
-        check_backend_support(item)
+        check_backend_support(True, item)
     assert exc_info.value.args[0] == "Nope (True)"
 
 
@@ -97,19 +42,8 @@ def test_check_backend_support_no_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: True, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]},
-                        funcargs={"backend": True})
-    assert check_backend_support(item) is None
-
-
-def test_check_backend_support_no_backend():
-    supported = pretend.stub(
-        kwargs={"only_if": "notalambda", "skip_message": "Nope"}
-    )
-    item = pretend.stub(keywords={"supported": supported},
-                        funcargs={})
-    with pytest.raises(ValueError):
-        check_backend_support(item)
+    item = pretend.stub(keywords={"supported": [supported]})
+    assert check_backend_support(None, item) is None
 
 
 def test_load_nist_vectors():
@@ -193,6 +127,98 @@ def test_load_nist_vectors_with_null_chars():
         },
         {
             "key": b"00000000000000000000000000000000",
+        },
+    ]
+
+
+def test_load_ed25519_vectors():
+    vector_data = (
+        "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a9"
+        "80182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a:d75a98018"
+        "2b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a::e5564300c360"
+        "ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc"
+        "61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b:\n"
+        "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb3d401"
+        "7c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c:3d4017c3e"
+        "843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c:72:92a009a9f0"
+        "d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996"
+        "e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c0072:\n"
+        "c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b4458f7fc51c"
+        "d8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025:fc51cd8e6"
+        "218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025:af82:6291d657"
+        "deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f"
+        "290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40aaf82:\n"
+        "0d4a05b07352a5436e180356da0ae6efa0345ff7fb1572575772e8005ed978e9e61a1"
+        "85bcef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57057:e61a185bc"
+        "ef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57057:cbc77b:d9868d"
+        "52c2bebce5f3fa5a79891970f309cb6591e3e1702a70276fa97c24b3a8e58606c38c9"
+        "758529da50ee31b8219cba45271c689afa60b0ea26c99db19b00ccbc77b:\n"
+    ).splitlines()
+
+    assert load_ed25519_vectors(vector_data) == [
+        {
+            "secret_key": (
+                "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7"
+                "f60"
+            ),
+            "public_key": (
+                "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f7075"
+                "11a"
+            ),
+            "message": "",
+            "signature": (
+                "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490"
+                "1555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e"
+                "7a100b"
+            )
+        },
+        {
+            "secret_key": (
+                "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a"
+                "6fb"
+            ),
+            "public_key": (
+                "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af46"
+                "60c"
+            ),
+            "message": "72",
+            "signature": (
+                "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb6"
+                "9da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612"
+                "bb0c00"
+            )
+        },
+        {
+            "secret_key": (
+                "c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b445"
+                "8f7"
+            ),
+            "public_key": (
+                "fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908"
+                "025"
+            ),
+            "message": "af82",
+            "signature": (
+                "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac"
+                "3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea"
+                "1ec40a"
+            )
+        },
+        {
+            "secret_key": (
+                "0d4a05b07352a5436e180356da0ae6efa0345ff7fb1572575772e8005ed97"
+                "8e9"
+            ),
+            "public_key": (
+                "e61a185bcef2613a6c7cb79763ce945d3b245d76114dd440bcf5f2dc1aa57"
+                "057"
+            ),
+            "message": "cbc77b",
+            "signature": (
+                "d9868d52c2bebce5f3fa5a79891970f309cb6591e3e1702a70276fa97c24b"
+                "3a8e58606c38c9758529da50ee31b8219cba45271c689afa60b0ea26c99db"
+                "19b00c"
+            )
         },
     ]
 
@@ -3581,6 +3607,190 @@ aa1b91eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7',
          'instring': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91\
 eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701',
          'ko': b'b8894c6133a46701909b5c8a84322dec'}
+    ]
+
+
+def test_load_nist_ccm_vectors_dvpt():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  "CCM-DVPT" information
+    #  AES Keylen: 128
+    #  Generated on Tue Mar 15 08:09:25 2011
+
+
+    [Alen = 0, Plen = 0, Nlen = 7, Tlen = 4]
+
+    Key = 4ae701103c63deca5b5a3939d7d05992
+
+    Count = 0
+    Nonce = 5a8aa485c316e9
+    Adata = 00
+    CT = 02209f55
+    Result = Pass
+    Payload = 00
+
+    Count = 1
+    Nonce = 3796cf51b87266
+    Adata = 00
+    CT = 9a04c241
+    Result = Fail
+
+    [Alen = 0, Plen = 0, Nlen = 7, Tlen = 16]
+
+    Key = 4bb3c4a4f893ad8c9bdc833c325d62b3
+
+    Count = 15
+    Nonce = 5a8aa485c316e9
+    Adata = 00
+    CT = 75d582db43ce9b13ab4b6f7f14341330
+    Result = Pass
+    Payload = 00
+
+    Count = 16
+    Nonce = 3796cf51b87266
+    Adata = 00
+    CT = 3a65e03af37b81d05acc7ec1bc39deb0
+    Result = Fail
+    """).splitlines()
+    assert load_nist_ccm_vectors(vector_data) == [
+        {
+            'key': b'4ae701103c63deca5b5a3939d7d05992',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 4,
+            'nonce': b'5a8aa485c316e9',
+            'adata': b'00',
+            'ct': b'02209f55',
+            'fail': False,
+            'payload': b'00'
+        },
+        {
+            'key': b'4ae701103c63deca5b5a3939d7d05992',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 4,
+            'nonce': b'3796cf51b87266',
+            'adata': b'00',
+            'ct': b'9a04c241',
+            'fail': True,
+            'payload': b'00'
+        },
+        {
+            'key': b'4bb3c4a4f893ad8c9bdc833c325d62b3',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 16,
+            'nonce': b'5a8aa485c316e9',
+            'adata': b'00',
+            'ct': b'75d582db43ce9b13ab4b6f7f14341330',
+            'fail': False,
+            'payload': b'00'
+        },
+        {
+            'key': b'4bb3c4a4f893ad8c9bdc833c325d62b3',
+            'alen': 0,
+            'plen': 0,
+            'nlen': 7,
+            'tlen': 16,
+            'nonce': b'3796cf51b87266',
+            'adata': b'00',
+            'ct': b'3a65e03af37b81d05acc7ec1bc39deb0',
+            'fail': True,
+            'payload': b'00'
+        }
+    ]
+
+
+def test_load_nist_ccm_vectors_vadt():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  "CCM-VADT" information
+    #  AES Keylen: 128
+    #  Generated on Tue Mar 15 08:09:24 2011
+
+    Plen = 24
+    Nlen = 13
+    Tlen = 16
+
+    [Alen = 0]
+
+    Key = d24a3d3dde8c84830280cb87abad0bb3
+    Nonce = f1100035bb24a8d26004e0e24b
+
+    Count = 0
+    Adata = 00
+    Payload = 7c86135ed9c2a515aaae0e9a208133897269220f30870006
+    CT = 1faeb0ee2ca2cd52f0aa3966578344f24e69b742c4ab37ab11233
+
+    Count = 1
+    Adata = 00
+    Payload = 48df73208cdc63d716752df7794807b1b2a80794a2433455
+    CT = 2bf7d09079bc0b904c711a0b0e4a70ca8ea892d9566f03f8b77a1
+    CT = 642145210f947bc4a0b1e678fd8c990c2c1d89d4110a95c954d61
+
+    [Alen = 1]
+
+    Key = 08b0da255d2083808a1b4d367090bacc
+    Nonce = 777828b13679a9e2ca89568233
+
+    Count = 10
+    Adata = dd
+    Payload = 1b156d7e2bf7c9a25ad91cff7b0b02161cb78ff9162286b0
+    CT = e8b80af4960d5417c15726406e345c5c46831192b03432eed16b6
+
+    Count = 11
+    Adata = c5
+    Payload = 032fee9dbffccc751e6a1ee6d07bb218b3a7ec6bf5740ead
+    CT = f0828917020651c085e42459c544ec52e99372005362baf308ebe
+    """).splitlines()
+    assert load_nist_ccm_vectors(vector_data) == [
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 0,
+            'key': b'd24a3d3dde8c84830280cb87abad0bb3',
+            'nonce': b'f1100035bb24a8d26004e0e24b',
+            'adata': b'00',
+            'payload': b'7c86135ed9c2a515aaae0e9a208133897269220f30870006',
+            'ct': b'1faeb0ee2ca2cd52f0aa3966578344f24e69b742c4ab37ab11233'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 0,
+            'key': b'd24a3d3dde8c84830280cb87abad0bb3',
+            'nonce': b'f1100035bb24a8d26004e0e24b',
+            'adata': b'00',
+            'payload': b'48df73208cdc63d716752df7794807b1b2a80794a2433455',
+            'ct': b'642145210f947bc4a0b1e678fd8c990c2c1d89d4110a95c954d61'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 1,
+            'key': b'08b0da255d2083808a1b4d367090bacc',
+            'nonce': b'777828b13679a9e2ca89568233',
+            'adata': b'dd',
+            'payload': b'1b156d7e2bf7c9a25ad91cff7b0b02161cb78ff9162286b0',
+            'ct': b'e8b80af4960d5417c15726406e345c5c46831192b03432eed16b6'
+        },
+        {
+            'plen': 24,
+            'nlen': 13,
+            'tlen': 16,
+            'alen': 1,
+            'key': b'08b0da255d2083808a1b4d367090bacc',
+            'nonce': b'777828b13679a9e2ca89568233',
+            'adata': b'c5',
+            'payload': b'032fee9dbffccc751e6a1ee6d07bb218b3a7ec6bf5740ead',
+            'ct': b'f0828917020651c085e42459c544ec52e99372005362baf308ebe'
+        }
     ]
 
 

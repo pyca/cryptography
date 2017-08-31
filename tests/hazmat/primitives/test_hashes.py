@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
@@ -13,7 +11,6 @@ from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test
-from ..backends.test_multibackend import DummyHashBackend
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
@@ -24,14 +21,6 @@ class TestHashContext(object):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             m.update(u"\u00FC")
-
-    def test_copy_backend_object(self):
-        backend = DummyHashBackend([hashes.SHA1])
-        copied_ctx = pretend.stub()
-        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hashes.Hash(hashes.SHA1(), backend=backend, ctx=pretend_ctx)
-        assert h._backend is backend
-        assert h.copy()._backend is h._backend
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
@@ -121,32 +110,6 @@ class TestSHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160()),
-    skip_message="Does not support RIPEMD160",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestRIPEMD160(object):
-    test_RIPEMD160 = generate_base_hash_test(
-        hashes.RIPEMD160(),
-        digest_size=20,
-        block_size=64,
-    )
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool()),
-    skip_message="Does not support Whirlpool",
-)
-@pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestWhirlpool(object):
-    test_Whirlpool = generate_base_hash_test(
-        hashes.Whirlpool(),
-        digest_size=64,
-        block_size=64,
-    )
-
-
-@pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
@@ -157,6 +120,54 @@ class TestMD5(object):
         digest_size=16,
         block_size=64,
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2b(digest_size=64)),
+    skip_message="Does not support BLAKE2b",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2b(object):
+    test_BLAKE2b = generate_base_hash_test(
+        hashes.BLAKE2b(digest_size=64),
+        digest_size=64,
+        block_size=128,
+    )
+
+    def test_invalid_digest_size(self, backend):
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=65)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=0)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2b(digest_size=-1)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(
+        hashes.BLAKE2s(digest_size=32)),
+    skip_message="Does not support BLAKE2s",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestBLAKE2s(object):
+    test_BLAKE2s = generate_base_hash_test(
+        hashes.BLAKE2s(digest_size=32),
+        digest_size=32,
+        block_size=64,
+    )
+
+    def test_invalid_digest_size(self, backend):
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=33)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=0)
+
+        with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=-1)
 
 
 def test_invalid_backend():

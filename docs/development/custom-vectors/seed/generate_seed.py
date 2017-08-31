@@ -51,6 +51,7 @@ def write_file(data, filename):
     with open(filename, "w") as f:
         f.write(data)
 
+
 OFB_PATH = "vectors/cryptography_vectors/ciphers/AES/OFB/OFBMMT128.rsp"
 write_file(build_vectors(modes.OFB, OFB_PATH), "seed-ofb.txt")
 CFB_PATH = "vectors/cryptography_vectors/ciphers/AES/CFB/CFB128MMT128.rsp"

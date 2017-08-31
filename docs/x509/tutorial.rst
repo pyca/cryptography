@@ -70,9 +70,9 @@ a few details:
     ... ])).add_extension(
     ...     x509.SubjectAlternativeName([
     ...         # Describe what sites we want this certificate for.
-    ...         x509.DNSName(u"mysite.com"),
-    ...         x509.DNSName(u"www.mysite.com"),
-    ...         x509.DNSName(u"subdomain.mysite.com"),
+    ...         x509.DNSName(b"mysite.com"),
+    ...         x509.DNSName(b"www.mysite.com"),
+    ...         x509.DNSName(b"subdomain.mysite.com"),
     ...     ]),
     ...     critical=False,
     ... # Sign the CSR with our private key.
@@ -133,20 +133,39 @@ Then we generate the certificate itself:
     ... ).issuer_name(
     ...     issuer
     ... ).public_key(
-    ...     private_key.public_key()
+    ...     key.public_key()
+    ... ).serial_number(
+    ...     x509.random_serial_number()
     ... ).not_valid_before(
     ...     datetime.datetime.utcnow()
     ... ).not_valid_after(
     ...     # Our certificate will be valid for 10 days
     ...     datetime.datetime.utcnow() + datetime.timedelta(days=10)
     ... ).add_extension(
-    ...     x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
+    ...     x509.SubjectAlternativeName([x509.DNSName(b"localhost")]),
     ...     critical=False,
     ... # Sign our certificate with our private key
-    ... ).sign(private_key, hashes.SHA256(), default_backend())
+    ... ).sign(key, hashes.SHA256(), default_backend())
     >>> # Write our certificate out to disk.
     >>> with open("path/to/certificate.pem", "wb") as f:
     ...     f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 And now we have a private key and certificate that can be used for local
 testing.
+
+Determining Certificate or Certificate Signing Request Key Type
+---------------------------------------------------------------
+
+Certificates and certificate signing requests can be issued with multiple
+key types. You can determine what the key type is by using ``isinstance``
+checks:
+
+.. code-block:: pycon
+
+    >>> public_key = cert.public_key()
+    >>> if isinstance(public_key, rsa.RSAPublicKey):
+    ...     # Do something RSA specific
+    ... elif isinstance(public_key, ec.EllipticCurvePublicKey):
+    ...     # Do something EC specific
+    ... else:
+    ...     # Remember to handle this case

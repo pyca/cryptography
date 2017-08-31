@@ -74,6 +74,7 @@ def write_file(lines, dest):
         print(line)
         print(line, file=dest)
 
+
 source_path = os.path.join("asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt")
 dest_path = os.path.join("asymmetric", "ECDSA", "SECP256K1", "SigGen.txt")
 

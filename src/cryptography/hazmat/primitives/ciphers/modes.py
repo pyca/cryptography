@@ -161,21 +161,19 @@ class GCM(object):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
         # to actually construct a bytes object that large, so we don't check
         # for it
-        if min_tag_length < 4:
-            raise ValueError("min_tag_length must be >= 4")
-        if tag is not None and len(tag) < min_tag_length:
-            raise ValueError(
-                "Authentication tag must be {0} bytes or longer.".format(
-                    min_tag_length)
-            )
-
         if not isinstance(initialization_vector, bytes):
             raise TypeError("initialization_vector must be bytes")
-
-        if tag is not None and not isinstance(tag, bytes):
-            raise TypeError("tag must be bytes or None")
-
         self._initialization_vector = initialization_vector
+        if tag is not None:
+            if not isinstance(tag, bytes):
+                raise TypeError("tag must be bytes or None")
+            if min_tag_length < 4:
+                raise ValueError("min_tag_length must be >= 4")
+            if len(tag) < min_tag_length:
+                raise ValueError(
+                    "Authentication tag must be {0} bytes or longer.".format(
+                        min_tag_length)
+                )
         self._tag = tag
 
     tag = utils.read_only_property("_tag")

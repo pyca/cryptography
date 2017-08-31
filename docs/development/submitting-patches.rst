@@ -48,7 +48,7 @@ API considerations
 Most projects' APIs are designed with a philosophy of "make easy things easy,
 and make hard things possible". One of the perils of writing cryptographic code
 is that secure code looks just like insecure code, and its results are almost
-always indistinguishable. As a result ``cryptography`` has, as a design
+always indistinguishable. As a result, ``cryptography`` has, as a design
 philosophy: "make it hard to do insecure things". Here are a few strategies for
 API design that should be both followed, and should inspire other API choices:
 
@@ -126,6 +126,11 @@ should begin with the "Hazardous Materials" warning:
 
     .. hazmat::
 
+Always prefer terminology that is most broadly accepted. For example:
+
+* When referring to class instances use "an instance of ``Foo``"
+  instead of "a ``Foo`` provider".
+
 When referring to a hypothetical individual (such as "a person receiving an
 encrypted message") use gender neutral pronouns (they/them/their).
 
@@ -149,7 +154,7 @@ So, specifically:
 * Use Sphinx parameter/attribute documentation `syntax`_.
 
 
-.. _`Write comments as complete sentences.`: http://nedbatchelder.com/blog/201401/comments_should_be_sentences.html
+.. _`Write comments as complete sentences.`: https://nedbatchelder.com/blog/201401/comments_should_be_sentences.html
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
 .. _`Studies have shown`: https://smartbear.com/SmartBear/media/pdfs/11_Best_Practices_for_Peer_Code_Review.pdf
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev

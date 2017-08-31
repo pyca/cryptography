@@ -22,18 +22,17 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: cipher_supported(cipher, mode)
 
         Check if a ``cipher`` and ``mode`` combination is supported by
         this backend.
 
-        :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
-            provider.
-        :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
+        :param cipher: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`.
+
+        :param mode: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`.
 
         :returns: ``True`` if the specified ``cipher`` and ``mode`` combination
             is supported by this backend, otherwise ``False``
@@ -46,11 +45,11 @@ A specific ``backend`` may provide one or more of these interfaces.
         can be used for encrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
-        :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
-            provider.
-        :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
+        :param cipher: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`.
+
+        :param mode: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
@@ -65,11 +64,11 @@ A specific ``backend`` may provide one or more of these interfaces.
         can be used for decrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
-        :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
-            provider.
-        :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
+        :param cipher: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`.
+
+        :param mode: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
@@ -84,15 +83,13 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hash_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
@@ -104,9 +101,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :class:`~cryptography.hazmat.primitives.hashes.HashContext` that
         uses the specified ``algorithm`` to calculate a message digest.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.hashes.HashContext`
@@ -120,15 +116,13 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hmac_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns: ``True`` if the specified ``algorithm`` is supported for HMAC
             by this backend, otherwise ``False``.
@@ -142,9 +136,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param bytes key: Secret key as ``bytes``.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.hashes.HashContext`
@@ -158,23 +151,22 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: cmac_algorithm_supported(algorithm)
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
+
         :return: Returns True if the block cipher is supported for CMAC by this backend
 
     .. method:: create_cmac_ctx(algorithm)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.MACContext` that
+        :class:`~cryptography.hazmat.primitives.mac.MACContext` that
         uses the specified ``algorithm`` to calculate a message authentication code.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.MACContext`
+            :class:`~cryptography.hazmat.primitives.mac.MACContext`
 
 
 .. class:: PBKDF2HMACBackend
@@ -186,24 +178,21 @@ A specific ``backend`` may provide one or more of these interfaces.
     The following backends implement this interface:
 
     * :doc:`/hazmat/backends/openssl`
-    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: pbkdf2_hmac_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns: ``True`` if the specified ``algorithm`` is supported for
             PBKDF2 HMAC by this backend, otherwise ``False``.
 
     .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations, key_material)
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :param int length: The desired length of the derived key. Maximum is
             (2\ :sup:`32` - 1) * ``algorithm.digest_size``
@@ -235,9 +224,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param int key_size: The length in bits of the modulus. Should be
             at least 2048.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
         :raises ValueError: If the public_exponent is not valid.
 
@@ -245,9 +233,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         Check if the specified ``padding`` is supported by the backend.
 
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :returns: ``True`` if the specified ``padding`` is supported by this
             backend, otherwise ``False``.
@@ -266,7 +253,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
 
-        :returns: A provider of
+        :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
         :raises ValueError: This is raised when the values of ``p``, ``q``,
@@ -279,9 +266,9 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: load_rsa_public_numbers(numbers)
 
         :param numbers: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
 
-        :returns: A provider of
+        :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
         :raises ValueError: This is raised when the values of
@@ -307,24 +294,19 @@ A specific ``backend`` may provide one or more of these interfaces.
             support for larger key sizes specified in FIPS 186-3 and are still
             restricted to only the 1024-bit keys specified in FIPS 186-2.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
     .. method:: generate_dsa_private_key(parameters)
 
-        :param parameters: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
-            provider.
+        :param parameters: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
         :raises ValueError: This is raised if the key size is not one of 1024,
-            2048, or 3072. It is also raised when OpenSSL is older than version
-            1.0.0 and the key size is larger than 1024; older OpenSSL versions
-            do not support keys larger than 1024 bits.
+            2048, or 3072.
 
     .. method:: generate_dsa_private_key_and_parameters(key_size)
 
@@ -335,18 +317,16 @@ A specific ``backend`` may provide one or more of these interfaces.
             support for larger key sizes specified in FIPS 186-3 and are still
             restricted to only the 1024-bit keys specified in FIPS 186-2.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
         :raises ValueError: This is raised if the key size is not supported
             by the backend.
 
     .. method:: dsa_hash_supported(algorithm)
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
@@ -367,7 +347,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`.
 
-        :returns: A provider of
+        :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
@@ -378,7 +358,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`.
 
-        :returns: A provider of
+        :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
@@ -389,7 +369,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`.
 
-        :returns: A provider of
+        :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
@@ -402,49 +382,51 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: elliptic_curve_supported(curve)
 
-        :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
-            provider.
+        :param curve: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
         :returns: True if the elliptic curve is supported by this backend.
 
     .. method:: elliptic_curve_signature_algorithm_supported(signature_algorithm, curve)
 
-        :param signature_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`
-            provider.
+        :param signature_algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`.
 
-        :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
-            provider.
+        :param curve: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
         :returns: True if the signature algorithm and curve are supported by this backend.
 
     .. method:: generate_elliptic_curve_private_key(curve)
 
-        :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
-            provider.
+        :param curve: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
     .. method:: load_elliptic_curve_private_numbers(numbers)
 
-        :param numbers: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
-            provider.
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`.
 
-        :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-            provider.
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`.
 
     .. method:: load_elliptic_curve_public_numbers(numbers)
 
-        :param numbers: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
-            provider.
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`.
 
-        :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-            provider.
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+
+    .. method:: derive_elliptic_curve_private_key(private_value, curve)
+
+        :param private_value: A secret scalar value.
+
+        :param curve: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
+
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`.
 
 .. class:: PEMSerializationBackend
 
@@ -470,6 +452,15 @@ A specific ``backend`` may provide one or more of these interfaces.
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
+    .. method:: load_pem_parameters(data)
+
+        .. versionadded:: 2.0
+
+        :param bytes data: PEM data to load.
+        :return: A new instance of the appropriate type of asymmetric
+            parameters the serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 .. class:: DERSerializationBackend
 
     .. versionadded:: 0.8
@@ -493,6 +484,16 @@ A specific ``backend`` may provide one or more of these interfaces.
         :return: A new instance of the appropriate type of public key
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
+
+    .. method:: load_der_parameters(data)
+
+        .. versionadded:: 2.0
+
+        :param bytes data: DER data to load.
+        :return: A new instance of the appropriate type of asymmetric
+            parameters the serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 
 .. class:: X509Backend
 
@@ -600,39 +601,47 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A new instance of
             :class:`~cryptography.x509.RevokedCertificate`.
 
+    .. method:: x509_name_bytes(name)
+
+        .. versionadded:: 1.6
+
+        :param name: An instance of :class:`~cryptography.x509.Name`.
+
+        :return bytes: The DER encoded bytes.
+
 .. class:: DHBackend
 
     .. versionadded:: 0.9
 
     A backend with methods for doing Diffie-Hellman key exchange.
 
-    .. method:: generate_dh_parameters(key_size)
+    .. method:: generate_dh_parameters(generator, key_size)
+
+        :param int generator: The generator to use. Often 2 or 5.
 
         :param int key_size: The bit length of the prime modulus to generate.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
         :raises ValueError: If ``key_size`` is not at least 512.
 
     .. method:: generate_dh_private_key(parameters)
 
-        :param parameters: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
-            provider.
+        :param parameters: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
-    .. method:: generate_dh_private_key_and_parameters(self, key_size)
+    .. method:: generate_dh_private_key_and_parameters(generator, key_size)
+
+        :param int generator: The generator to use. Often 2 or 5.
 
         :param int key_size: The bit length of the prime modulus to generate.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
         :raises ValueError: If ``key_size`` is not at least 512.
 
@@ -642,9 +651,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`
             instance.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
@@ -655,9 +663,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
             instance.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
@@ -668,18 +675,56 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`
             instance.
 
-        :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
-            provider.
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
 
-    .. method:: dh_parameters_supported(p, g)
+    .. method:: dh_parameters_supported(p, g, q=None)
 
         :param int p: The p value of the DH key.
 
         :param int g: The g value of the DH key.
 
-        :returns: ``True`` if the given values of ``p`` and ``g`` are supported
-            by this backend, otherwise ``False``.
+        :param int q: The q value of the DH key.
+
+        :returns: ``True`` if the given values of ``p``, ``g`` and ``q``
+            are supported by this backend, otherwise ``False``.
+
+    .. versionadded:: 1.8
+
+    .. method:: dh_x942_serialization_supported()
+
+        :returns: True if serialization of DH objects with
+            subgroup order (q) is supported by this backend.
+
+
+.. class:: ScryptBackend
+
+    .. versionadded:: 1.6
+
+    A backend with methods for using Scrypt.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+
+    .. method:: derive_scrypt(self, key_material, salt, length, n, r, p)
+
+        :param bytes key_material: The key material to use as a basis for
+            the derived key. This is typically a password.
+
+        :param bytes salt: A salt.
+
+        :param int length: The desired length of the derived key.
+
+        :param int n: CPU/Memory cost parameter. It must be larger than 1 and be a
+            power of 2.
+
+        :param int r: Block size parameter.
+
+        :param int p: Parallelization parameter.
+
+        :return bytes: Derived key.
+

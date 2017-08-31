@@ -4,12 +4,14 @@ set -e
 set -x
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
+    sw_vers
     brew update || brew update
 
     brew outdated openssl || brew upgrade openssl
+    brew install openssl@1.1
 
     # install pyenv
-    git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+    git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
     PYENV_ROOT="$HOME/.pyenv"
     PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
@@ -24,22 +26,27 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.3.6
             ;;
         py34)
-            pyenv install 3.4.4
-            pyenv global 3.4.4
+            pyenv install 3.4.6
+            pyenv global 3.4.6
             ;;
         py35)
-            pyenv install 3.5.1
-            pyenv global 3.5.1
+            pyenv install 3.5.3
+            pyenv global 3.5.3
+            ;;
+        py36)
+            pyenv install 3.6.1
+            pyenv global 3.6.1
             ;;
         pypy*)
-            pyenv install pypy-4.0.1
-            pyenv global pypy-4.0.1
+            pyenv install "$PYPY_VERSION"
+            pyenv global "$PYPY_VERSION"
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
             pyenv global pypy3-2.4.0
             ;;
         docs)
+            brew install enchant
             curl -O https://bootstrap.pypa.io/get-pip.py
             python get-pip.py --user
             ;;
@@ -47,37 +54,18 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv rehash
     python -m pip install --user virtualenv
 else
-    # temporary pyenv installation to get latest pypy until the travis
-    # container infra is upgraded
-    if [[ "${TOXENV}" = pypy* ]]; then
-        git clone https://github.com/yyuu/pyenv.git ~/.pyenv
-        PYENV_ROOT="$HOME/.pyenv"
-        PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        pyenv install pypy-4.0.1
-        pyenv global pypy-4.0.1
-    fi
-    if [[ "${OPENSSL}" == "0.9.8" ]]; then
-        # We use 0.9.8l rather than zh because we have some branches for
-        # handling < 0.9.8m that won't be exercised with a newer OpenSSL.
-        # (RHEL5 is 0.9.8e with patches, but while that's in jenkins we don't
-        # get coverage data from it).
-        OPENSSL_VERSION_NUMBER="0.9.8l"
-        OPENSSL_DIR="ossl-098l"
-    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
-        OPENSSL_VERSION_NUMBER="1.0.0t"
-        OPENSSL_DIR="ossl-100t"
-    fi
     # download, compile, and install if it's not already present via travis
     # cache
-    if [ -n "$OPENSSL_DIR" ]; then
+    if [ -n "${OPENSSL}" ]; then
+        OPENSSL_DIR="ossl-1/${OPENSSL}"
         if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
-            curl -O https://www.openssl.org/source/openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
-            cd openssl-$OPENSSL_VERSION_NUMBER
-            ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
+            curl -O https://www.openssl.org/source/openssl-$OPENSSL.tar.gz
+            tar zxf openssl-$OPENSSL.tar.gz
+            cd openssl-$OPENSSL
+            ./config shared no-asm no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             # modify the shlib version to a unique one to make sure the dynamic
-            # linker doesn't load the system one.
+            # linker doesn't load the system one. This isn't required for 1.1.0 at the
+            # moment since our Travis builders have a diff shlib version, but it doesn't hurt
             sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
             sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
             sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
@@ -90,4 +78,4 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox codecov
+pip install tox codecov coverage==4.3.4

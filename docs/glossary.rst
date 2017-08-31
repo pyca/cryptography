@@ -72,3 +72,12 @@ Glossary
         or pseudo-random number (see :doc:`Random number generation
         </random-numbers>`). Since a nonce does not have to be unpredictable,
         it can also take a form of a counter.
+
+    opaque key
+        An opaque key is a type of key that allows you to perform cryptographic
+        operations such as encryption, decryption, signing, and verification,
+        but does not allow access to the key itself. Typically an opaque key is
+        loaded from a `hardware security module`_ (HSM).
+
+
+.. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module

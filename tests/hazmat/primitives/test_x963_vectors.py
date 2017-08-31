@@ -62,4 +62,5 @@ class TestX963(object):
         xkdf.verify(key, key_data)
 
     def test_unsupported_hash(self, backend):
-        _skip_hashfn_unsupported(backend, DummyHashAlgorithm())
+        with pytest.raises(pytest.skip.Exception):
+            _skip_hashfn_unsupported(backend, DummyHashAlgorithm())

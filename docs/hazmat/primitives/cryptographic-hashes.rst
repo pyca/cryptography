@@ -1,7 +1,7 @@
 .. hazmat::
 
-Message digests
-===============
+Message digests (Hashing)
+=========================
 
 .. module:: cryptography.hazmat.primitives.hashes
 
@@ -40,11 +40,11 @@ Message digests
 
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider such as those described in
+        instance such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -79,19 +79,6 @@ Message digests
 
 .. _cryptographic-hash-algorithms:
 
-SHA-1
-~~~~~
-
-.. attention::
-
-    NIST has deprecated SHA-1 in favor of the SHA-2 variants. New applications
-    are strongly suggested to use SHA-2 over SHA-1.
-
-.. class:: SHA1()
-
-    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
-    160-bit message digest.
-
 SHA-2 family
 ~~~~~~~~~~~~
 
@@ -115,21 +102,53 @@ SHA-2 family
     SHA-512 is a cryptographic hash function from the SHA-2 family and is
     standardized by NIST. It produces a 512-bit message digest.
 
-RIPEMD160
-~~~~~~~~~
+BLAKE2
+~~~~~~
 
-.. class:: RIPEMD160()
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. BLAKE2's
+design makes it immune to `length-extension attacks`_, an advantage over the
+SHA-family of hashes.
 
-    RIPEMD160 is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 160-bit message digest.
+.. note::
 
-Whirlpool
-~~~~~~~~~
+    While the RFC specifies keying, personalization, and salting features,
+    these are not supported at this time due to limitations in OpenSSL 1.1.0.
 
-.. class:: Whirlpool()
+.. class:: BLAKE2b(digest_size)
 
-    Whirlpool is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 512-bit message digest.
+    BLAKE2b is optimized for 64-bit platforms and produces an 1 to 64-byte
+    message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``64`` is supported at this time.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
+
+.. class:: BLAKE2s(digest_size)
+
+    BLAKE2s is optimized for 8 to 32-bit platforms and produces a
+    1 to 32-byte message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes. Only
+        ``32`` is supported at this time.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
+
+SHA-1
+~~~~~
+
+.. warning::
+
+    SHA-1 is a deprecated hash algorithm that has practical known collision
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
+
+.. class:: SHA1()
+
+    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
+    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
+    vulnerable to practical collision attacks, and collisions have been
+    demonstrated.
 
 MD5
 ~~~
@@ -190,4 +209,6 @@ Interfaces
         :return: A :class:`HashContext` that is a copy of the current context.
 
 
-.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`Lifetimes of cryptographic hash functions`: https://valerieaurora.org/hash.html
+.. _`BLAKE2`: https://blake2.net
+.. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack

@@ -1,0 +1,86 @@
+def configs = [
+    [
+        label: "windows2012-openssl", arch: "x86", "vsversion": 2010
+    ],
+    [
+        label: "windows2012-openssl", arch: "x86_64", "vsversion": 2010
+    ],
+    [
+        label: "windows2012-openssl", arch: "x86", "vsversion": 2015
+    ],
+    [
+        label: "windows2012-openssl", arch: "x86_64", "vsversion": 2015
+    ],
+]
+
+script = """
+    wmic qfe
+    powershell "[Net.ServicePointManager]::SecurityProtocol = 'tls12'; wget 'https://www.openssl.org/source/openssl-1.1.0-latest.tar.gz' -OutFile 'openssl-latest.tar.gz'"
+    REM Next decompress the tarball using winrar. INUL disables error msgs, which are GUI prompts and therefore undesirable
+    "C:\\Program Files\\WinRAR\\WinRAR.exe" -INUL x openssl-latest.tar.gz
+    cd openssl-1*
+    REM The next line determines the name of the current directory. Batch is great.
+    FOR %%I IN (.) DO @SET CURRENTDIR=%%~nI%%~xI
+    if "%BUILDARCH%" == "x86" (
+        @SET BUILDARCHFLAG=x86
+        @SET OPENSSLARCHFLAG="VC-WIN32"
+    ) else (
+        @SET BUILDARCHFLAG=amd64
+        @SET OPENSSLARCHFLAG="VC-WIN64A"
+    )
+    if "%BUILDVSVERSION%" == "2010" (
+        call "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\vcvarsall.bat" %BUILDARCHFLAG%
+        echo "Building with VS 2010"
+    ) else (
+        call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" %BUILDARCHFLAG%
+        echo "Building with VS 2015"
+    )
+    SET
+    perl Configure no-comp no-shared %OPENSSLARCHFLAG%
+    nmake
+    nmake test
+
+    if "%BUILDARCH%" == "x86" (
+        @SET FINALDIR="openssl-win32-%BUILDVSVERSION%"
+    ) else (
+        @SET FINALDIR="openssl-win64-%BUILDVSVERSION%"
+    )
+    mkdir %FINALDIR%
+    mkdir %FINALDIR%\\lib
+    move include %FINALDIR%\\include
+    move libcrypto.lib %FINALDIR%\\lib\\
+    move libssl.lib %FINALDIR%\\lib\\
+    "C:\\Program Files\\WinRAR\\WinRAR.exe" -INUL a %CURRENTDIR%-%BUILDVSVERSION%-%BUILDARCH%.zip %FINALDIR%\\include %FINALDIR%\\lib\\libcrypto.lib %FINALDIR%\\lib\\libssl.lib
+"""
+
+def build(label, vsversion, arch) {
+    node(label) {
+        try {
+            timeout(time: 30, unit: 'MINUTES') {
+                stage("Compile") {
+                    withEnv(["BUILDARCH=$arch", "BUILDVSVERSION=$vsversion"]) {
+                        bat script
+                    }
+                }
+                stage("Archive") {
+                    archiveArtifacts artifacts: "**/openssl-*.zip"
+                }
+            }
+        } finally {
+            deleteDir()
+        }
+    }
+}
+
+def builders = [:]
+
+for (config in configs) {
+    def vsversion = config["vsversion"]
+    def arch = config["arch"]
+    def label = config["label"]
+    builders["${vsversion}-${arch}"] = {
+        build(label, vsversion, arch)
+    }
+}
+
+parallel builders
