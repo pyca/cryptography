@@ -156,3 +156,19 @@ class TestMultiFernet(object):
     def test_non_iterable_argument(self, backend):
         with pytest.raises(TypeError):
             MultiFernet(None)
+
+    def test_rotate(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+        mf1 = MultiFernet([f1])
+        mf2 = MultiFernet([f2, f1])
+
+        plaintext = b"abc"
+        mf1_ciphertext = mf1.encrypt(plaintext)
+
+        assert mf2.decrypt(mf1_ciphertext) == plaintext
+
+        rotated = mf2.rotate([mf1.encrypt(plaintext)])
+
+        assert rotated[0] != mf1_ciphertext
+        assert mf2.decrypt(rotated[0]) == plaintext
