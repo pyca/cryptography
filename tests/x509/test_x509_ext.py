@@ -25,8 +25,8 @@ from cryptography.x509.oid import (
     NameOID, ObjectIdentifier
 )
 
-from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
-from .hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048
+from ..hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
 
 

@@ -33,11 +33,11 @@ from cryptography.x509.oid import (
     NameOID, SignatureAlgorithmOID
 )
 
-from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
-from .hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
-from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
-from .hazmat.primitives.test_ec import _skip_curve_unsupported
-from .utils import load_vectors_from_file
+from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
+from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
+from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..utils import load_vectors_from_file
 
 
 @utils.register_interface(x509.ExtensionType)
