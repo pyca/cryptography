@@ -248,7 +248,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             call .codecov/Scripts/activate
                             pip install coverage==4.3.4
                             pip install codecov
-                            codecov -e JOB_BASE_NAME,LABEL
+                            codecov -e JOB_BASE_NAME,LABEL,TOXENV
                         """
                     } else if (label.contains("sierra") || label.contains("yosemite")) {
                         ansiColor {
@@ -265,7 +265,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 pip install coverage==4.3.4
-                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
+                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
                             """
                         }
                     } else {
@@ -284,7 +284,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 pip install coverage==4.3.4
-                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
+                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV,IMAGE_NAME
                             """
                         }
                         if (artifacts) {
