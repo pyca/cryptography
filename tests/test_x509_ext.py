@@ -1571,6 +1571,11 @@ class TestUniformResourceIdentifier(object):
         assert gn != gn2
         assert gn != object()
         assert gn == gn3
+        # Also deprecated value property
+        with pytest.warns(utils.DeprecatedIn21):
+            assert gn.value != gn2.value
+            assert gn.value != object()
+            assert gn.value == gn3.value
 
     def test_not_text_or_bytes(self):
         with pytest.raises(TypeError):

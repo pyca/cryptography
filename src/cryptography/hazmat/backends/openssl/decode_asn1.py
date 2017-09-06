@@ -93,7 +93,15 @@ def _decode_general_name(backend, gn):
         data = _asn1_string_to_ascii(backend, gn.d.uniformResourceIdentifier)
         parsed = urllib_parse.urlparse(data)
         if parsed.hostname:
-            hostname = idna.decode(parsed.hostname)
+            if parsed.netloc[0] == u'[' and u']' in parsed.netloc:
+                hostname = u'[' + parsed.hostname + u']'
+            else:
+                try:
+                    ipaddress.IPv4Address(six.text_type(parsed.hostname))
+                except ValueError:
+                    hostname = idna.decode(parsed.hostname)
+                else:
+                    hostname = parsed.hostname
         else:
             hostname = ""
         if parsed.port:
