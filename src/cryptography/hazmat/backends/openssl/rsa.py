@@ -57,8 +57,15 @@ def _enc_dec_rsa(backend, key, data, padding):
                 _Reasons.UNSUPPORTED_PADDING
             )
 
-        if padding._label is not None and padding._label != b"":
-            raise ValueError("This backend does not support OAEP labels.")
+        if (
+            padding._label is not None and
+            padding._label != b"" and not
+            backend._lib.Cryptography_HAS_RSA_OAEP_LABEL
+        ):
+            raise ValueError(
+                "The version of OpenSSL cryptography is compiled against "
+                "does not support OAEP labels."
+            )
 
     else:
         raise UnsupportedAlgorithm(
@@ -105,6 +112,21 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
         backend.openssl_assert(oaep_md != backend._ffi.NULL)
         res = backend._lib.EVP_PKEY_CTX_set_rsa_oaep_md(pkey_ctx, oaep_md)
         backend.openssl_assert(res > 0)
+
+    if (
+        isinstance(padding, OAEP) and
+        padding._label is not None and
+        len(padding._label) > 0
+    ):
+        # set0_rsa_oaep_label takes ownership of the char * so we need to
+        # copy it into some new memory
+        labelptr = backend._lib.OPENSSL_malloc(len(padding._label))
+        backend.openssl_assert(labelptr != backend._ffi.NULL)
+        backend._ffi.memmove(labelptr, padding._label, len(padding._label))
+        res = backend._lib.EVP_PKEY_CTX_set0_rsa_oaep_label(
+            pkey_ctx, labelptr, len(padding._label)
+        )
+        backend.openssl_assert(res == 1)
 
     outlen = backend._ffi.new("size_t *", buf_size)
     buf = backend._ffi.new("unsigned char[]", buf_size)
