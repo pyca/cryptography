@@ -57,16 +57,6 @@ def _enc_dec_rsa(backend, key, data, padding):
                 _Reasons.UNSUPPORTED_PADDING
             )
 
-        if (
-            padding._label is not None and
-            len(padding._label) > 0 and
-            not backend._lib.Cryptography_HAS_RSA_OAEP_LABEL
-        ):
-            raise ValueError(
-                "The version of OpenSSL cryptography is compiled against "
-                "does not support OAEP labels."
-            )
-
     else:
         raise UnsupportedAlgorithm(
             "{0} is not supported by this backend.".format(

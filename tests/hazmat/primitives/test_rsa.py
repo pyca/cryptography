@@ -335,7 +335,7 @@ class TestRSA(object):
     )
     def test_unsupported_oaep_label_decrypt(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(ValueError):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
