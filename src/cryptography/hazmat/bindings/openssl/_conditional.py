@@ -75,6 +75,12 @@ def cryptography_has_rsa_oaep_md():
     ]
 
 
+def cryptography_has_rsa_oaep_label():
+    return [
+        "EVP_PKEY_CTX_set0_rsa_oaep_label",
+    ]
+
+
 def cryptography_has_ssl3_method():
     return [
         "SSLv3_method",
@@ -251,6 +257,7 @@ CONDITIONAL_NAMES = {
         cryptography_has_rsa_r_pkcs_decoding_error
     ),
     "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
+    "Cryptography_HAS_RSA_OAEP_LABEL": cryptography_has_rsa_oaep_label,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
     "Cryptography_HAS_ALPN": cryptography_has_alpn,
     "Cryptography_HAS_COMPRESSION": cryptography_has_compression,
