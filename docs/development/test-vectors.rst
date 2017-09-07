@@ -36,6 +36,7 @@ Asymmetric ciphers
 * `asymmetric/public/PKCS1/dsa.pub.pem`_ is a PKCS1 DSA public key from the
   Ruby test suite.
 * X25519 test vectors from :rfc:`7748`.
+* RSA OAEP with custom label from the `BoringSSL evp tests`_.
 
 
 Custom asymmetric vectors
@@ -497,6 +498,7 @@ header format (substituting the correct information):
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`OpenSSL's evpciph.txt`: https://github.com/openssl/openssl/blob/5a7bc0be97dee9ac715897fe8180a08e211bc6ea/test/evpciph.txt#L2362
 .. _`BoringSSL ChaCha20Poly1305 tests`: https://boringssl.googlesource.com/boringssl/+/2e2a226ac9201ac411a84b5e79ac3a7333d8e1c9/crypto/cipher_extra/test/chacha20_poly1305_tests.txt
+.. _`BoringSSL evp tests`: https://boringssl.googlesource.com/boringssl/+/ce3773f9fe25c3b54390bc51d72572f251c7d7e6/crypto/evp/evp_tests.txt
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
