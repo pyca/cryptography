@@ -11,6 +11,7 @@ from asn1crypto.core import Integer, SequenceOf
 
 from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
+from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
@@ -51,8 +52,9 @@ def _decode_x509_name_entry(backend, x509_name_entry):
     backend.openssl_assert(data != backend._ffi.NULL)
     value = _asn1_string_to_utf8(backend, data)
     oid = _obj2txt(backend, obj)
+    type = _ASN1_TYPE_TO_ENUM[data.type]
 
-    return x509.NameAttribute(x509.ObjectIdentifier(oid), value)
+    return x509.NameAttribute(x509.ObjectIdentifier(oid), value, type)
 
 
 def _decode_x509_name(backend, x509_name):

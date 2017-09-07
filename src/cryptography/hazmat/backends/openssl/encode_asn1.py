@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
 )
-from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID, NameOID
+from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID
 
 
 def _encode_asn1_int(backend, x):
@@ -118,17 +118,9 @@ def _encode_sk_name_entry(backend, attributes):
 def _encode_name_entry(backend, attribute):
     value = attribute.value.encode('utf8')
     obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
-    if attribute.oid in [
-        NameOID.COUNTRY_NAME, NameOID.JURISDICTION_COUNTRY_NAME
-    ]:
-        # Per RFC5280 Appendix A.1 countryName should be encoded as
-        # PrintableString, not UTF8String. EV Guidelines section 9.2.5 says
-        # jurisdictionCountryName follows the same rules as countryName.
-        type = backend._lib.MBSTRING_ASC
-    else:
-        type = backend._lib.MBSTRING_UTF8
+
     name_entry = backend._lib.X509_NAME_ENTRY_create_by_OBJ(
-        backend._ffi.NULL, obj, type, value, -1
+        backend._ffi.NULL, obj, attribute._type.value, value, -1
     )
     return name_entry
 
