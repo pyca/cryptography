@@ -1,4 +1,5 @@
 # Vector from https://boringssl.googlesource.com/boringssl/+/ce3773f9fe25c3b54390bc51d72572f251c7d7e6/crypto/evp/evp_tests.txt
+COUNT = 1
 Decrypt = RSA-2048
 RSAPadding = OAEP
 OAEPDigest = SHA512
