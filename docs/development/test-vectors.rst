@@ -378,6 +378,11 @@ Custom X.509 Certificate Revocation List Vectors
   incremented by 1 to produce an invalid signature, and the public key which
   was used to generate it.
 
+Custom X.509 OCSP Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``x509/ocsp/req-sha1.der`` - An OCSP request containing a single request and
+  using SHA1 as the hash algorithm.
+
 Hashes
 ~~~~~~
 
