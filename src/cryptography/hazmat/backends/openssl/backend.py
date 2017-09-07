@@ -547,7 +547,11 @@ class Backend(object):
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
             return (
                 self._oaep_hash_supported(padding._mgf._algorithm) and
-                self._oaep_hash_supported(padding._algorithm)
+                self._oaep_hash_supported(padding._algorithm) and
+                (
+                    (padding._label is None or len(padding._label) == 0) or
+                    self._lib.Cryptography_HAS_RSA_OAEP_LABEL == 1
+                )
             )
         else:
             return False

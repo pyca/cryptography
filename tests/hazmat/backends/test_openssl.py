@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
 import itertools
 import os
 import subprocess
@@ -422,75 +421,6 @@ class TestOpenSSLRSA(object):
                     label=None
                 )
             )
-
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_LABEL == 1,
-        reason="Requires OpenSSL without OAEP label support (< 1.0.2)")
-    def test_unsupported_oaep_label_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(ValueError):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=b"label"
-                )
-            )
-
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join("asymmetric", "RSA", "oaep-label.txt"),
-            load_nist_vectors)
-    )
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_LABEL != 1,
-        reason="Requires OpenSSL with OAEP label support (>= 1.0.2)")
-    def test_oaep_label_decrypt(self, vector):
-        private_key = serialization.load_der_private_key(
-            binascii.unhexlify(vector["key"]), None, backend
-        )
-        assert vector["oaepdigest"] == b"SHA512"
-        decrypted = private_key.decrypt(
-            binascii.unhexlify(vector["input"]),
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA512()),
-                algorithm=hashes.SHA512(),
-                label=binascii.unhexlify(vector["oaeplabel"])
-            )
-        )
-        assert vector["output"].replace(b'"', b'') == decrypted
-
-    @pytest.mark.parametrize(
-        ("msg", "label"),
-        [
-            (b"amazing encrypted msg", b"some label"),
-            (b"amazing encrypted msg", b""),
-        ]
-    )
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_LABEL != 1,
-        reason="Requires OpenSSL without OAEP label support (>= 1.0.2)")
-    def test_oaep_label_roundtrip(self, msg, label):
-        private_key = RSA_KEY_2048.private_key(backend)
-        ct = private_key.public_key().encrypt(
-            msg,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=label
-            )
-        )
-        pt = private_key.decrypt(
-            ct,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=label
-            )
-        )
-        assert pt == msg
 
 
 class TestOpenSSLCMAC(object):
