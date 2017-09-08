@@ -484,8 +484,8 @@ Modes
         encryption in XTS mode you need a 256-bit key. Similarly, AES 256
         requires passing a 512-bit key.
 
-    _`XTS` (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
-    of operation for the AES block cipher that is used for disk encryption.
+    XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
+    of operation for the AES block cipher that is used for _`disk encryption`.
 
     **This mode does not require padding.**
 
@@ -803,4 +803,4 @@ Exceptions
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: http://openpgp.org
-.. _`XTS`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS
+.. _`disk encryption`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS

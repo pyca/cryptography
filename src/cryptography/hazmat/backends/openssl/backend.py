@@ -1966,4 +1966,5 @@ def _get_xts_cipher(backend, cipher, mode):
     cipher_name = "aes-{0}-xts".format(cipher.key_size // 2)
     return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
+
 backend = Backend()
