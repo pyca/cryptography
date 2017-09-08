@@ -733,6 +733,33 @@ class OCSPNoCheck(object):
 
 
 @utils.register_interface(ExtensionType)
+class TLSFeature(object):
+    oid = ExtensionOID.TLS_FEATURE
+
+    def __init__(self, features):
+        features = list(features)
+        if not all(isinstance(x, TLSFeatureType) for x in features):
+            raise TypeError(
+                "features must be a list of elements from the TLSFeatureType "
+                "enum"
+            )
+
+        if len(features) > 1:
+            raise ValueError("Only one feature is allowed.")
+
+        self._features = features
+
+    def __repr__(self):
+        return "<TLSFeature(features={0.features})>".format(self)
+
+    features = utils.read_only_property("_features")
+
+
+class TLSFeatureType(Enum):
+    status_request = 5
+
+
+@utils.register_interface(ExtensionType)
 class InhibitAnyPolicy(object):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 

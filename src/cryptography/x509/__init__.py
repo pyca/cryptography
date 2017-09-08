@@ -23,8 +23,8 @@ from cryptography.x509.extensions import (
     InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
     PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
-    SubjectAlternativeName, SubjectKeyIdentifier, UnrecognizedExtension,
-    UserNotice
+    SubjectAlternativeName, SubjectKeyIdentifier, TLSFeatureType, TLSFeature,
+    UnrecognizedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -59,6 +59,7 @@ OID_SUBJECT_ALTERNATIVE_NAME = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 OID_SUBJECT_DIRECTORY_ATTRIBUTES = ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES
 OID_SUBJECT_INFORMATION_ACCESS = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 OID_SUBJECT_KEY_IDENTIFIER = ExtensionOID.SUBJECT_KEY_IDENTIFIER
+OID_TLS_FEATURE = ExtensionOID.TLS_FEATURE
 
 OID_DSA_WITH_SHA1 = SignatureAlgorithmOID.DSA_WITH_SHA1
 OID_DSA_WITH_SHA224 = SignatureAlgorithmOID.DSA_WITH_SHA224
@@ -130,6 +131,8 @@ __all__ = [
     "Extensions",
     "Extension",
     "ExtendedKeyUsage",
+    "TLSFeature",
+    "TLSFeatureType",
     "OCSPNoCheck",
     "BasicConstraints",
     "CRLNumber",

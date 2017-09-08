@@ -943,18 +943,21 @@ class Backend(object):
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 
+    def _create_raw_x509_extension(self, extension, value):
+        obj = _txt2obj_gc(self, extension.oid.dotted_string)
+        return self._lib.X509_EXTENSION_create_by_OBJ(
+            self._ffi.NULL, obj, 1 if extension.critical else 0, value
+        )
+
     def _create_x509_extension(self, handlers, extension):
         if isinstance(extension.value, x509.UnrecognizedExtension):
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
             value = _encode_asn1_str_gc(
                 self, extension.value.value, len(extension.value.value)
             )
-            return self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                value
-            )
+            return self._create_raw_x509_extension(extension, value)
+        elif isinstance(extension.value, x509.TLSFeature):
+            value = _encode_asn1_str_gc(self, b"\x30\x03\x02\x01\x05", 5)
+            return self._create_raw_x509_extension(extension, value)
         else:
             try:
                 encode = handlers[extension.oid]

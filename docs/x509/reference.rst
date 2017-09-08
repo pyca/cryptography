@@ -1606,6 +1606,38 @@ X.509 Extensions
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.OCSP_NO_CHECK`.
 
+
+.. class:: TLSFeature(features)
+
+    .. versionadded:: 2.1
+
+    The TLS Feature extension is defined in :rfc:`7633` and is used in
+    certificates for OCSP Must-Staple.
+
+    :param list features: A list of features to enable from the
+        :class:`~cryptography.x509.TLSFeatureType` enum. At this time only
+        ``status_request`` is allowed.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.TLS_FEATURE`.
+
+.. class:: TLSFeatureType
+
+    .. versionadded:: 2.1
+
+    An enumeration of TLS Feature types.
+
+    .. attribute:: status_request
+
+        This feature type is defined in :rfc:`6066` and, when embedded in
+        an X.509 certificate, signals to the client that it should require
+        a stapled OCSP response in the TLS handshake. Commonly known as OCSP
+        Must-Staple in certificates.
+
+
 .. class:: NameConstraints(permitted_subtrees, excluded_subtrees)
 
     .. versionadded:: 1.0
@@ -2671,6 +2703,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.5"``. The
         identifier for the :class:`~cryptography.x509.OCSPNoCheck` extension
+        type.
+
+    .. attribute:: TLS_FEATURE
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.24"``. The
+        identifier for the :class:`~cryptography.x509.TLSFeature` extension
         type.
 
     .. attribute:: CRL_NUMBER
