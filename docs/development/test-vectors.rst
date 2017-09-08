@@ -167,6 +167,9 @@ X.509
 * ``wosign-bc-invalid.pem`` - A certificate issued by WoSign that contains
   a basic constraints extension with CA set to false and a path length of zero
   in violation of :rfc:`5280`.
+* ``tls-feature-ocsp-staple.pem`` - A certificate issued by Let's Encrypt that
+  contains a TLS Feature extension with the ``status_request`` feature (commonly
+  known as OCSP Must-Staple).
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
