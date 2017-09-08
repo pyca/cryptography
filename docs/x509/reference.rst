@@ -1616,7 +1616,7 @@ X.509 Extensions
 
     :param list features: A list of features to enable from the
         :class:`~cryptography.x509.TLSFeatureType` enum. At this time only
-        ``status_request`` is allowed.
+        ``status_request`` or ``status_request_v2`` are allowed.
 
     .. attribute:: oid
 
@@ -1636,6 +1636,15 @@ X.509 Extensions
         an X.509 certificate, signals to the client that it should require
         a stapled OCSP response in the TLS handshake. Commonly known as OCSP
         Must-Staple in certificates.
+
+    .. attribute:: status_request_v2
+
+        This feature type is defined in :rfc:`6961` and, when embedded in
+        an X.509 certificate, signals to the client that it should require
+        a stapled OCSP response in the TLS handshake and that the client
+        must also support multiple status requests. This value is not
+        commonly used and if you want to enable OCSP Must-Staple you should
+        use ``status_request``.
 
 
 .. class:: NameConstraints(permitted_subtrees, excluded_subtrees)

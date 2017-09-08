@@ -23,6 +23,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+from cryptography.hazmat.backends.openssl.decode_asn1 import _Integers
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey,
     _dh_params_dup
@@ -956,7 +957,10 @@ class Backend(object):
             )
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.TLSFeature):
-            value = _encode_asn1_str_gc(self, b"\x30\x03\x02\x01\x05", 5)
+            asn1 = _Integers(
+                [x.value for x in extension.value.features]
+            ).dump()
+            value = _encode_asn1_str_gc(self, asn1, len(asn1))
             return self._create_raw_x509_extension(extension, value)
         else:
             try:

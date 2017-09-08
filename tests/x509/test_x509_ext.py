@@ -97,13 +97,6 @@ class TestTLSFeature(object):
         with pytest.raises(TypeError):
             x509.TLSFeature([3])
 
-    def test_too_many_elements(self):
-        with pytest.raises(ValueError):
-            x509.TLSFeature([
-                x509.TLSFeatureType.status_request,
-                x509.TLSFeatureType.status_request
-            ])
-
     def test_repr(self):
         ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
         assert repr(ext1) == (

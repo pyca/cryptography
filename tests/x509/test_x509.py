@@ -2610,7 +2610,18 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_tls_feature(self, backend):
+    @pytest.mark.parametrize(
+        "add_ext",
+        [
+            x509.TLSFeature([x509.TLSFeatureType.status_request]),
+            x509.TLSFeature([x509.TLSFeatureType.status_request_v2]),
+            x509.TLSFeature([
+                x509.TLSFeatureType.status_request,
+                x509.TLSFeatureType.status_request_v2
+            ])
+        ]
+    )
+    def test_tls_feature(self, add_ext, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
@@ -2630,13 +2641,12 @@ class TestCertificateBuilder(object):
         ).serial_number(
             123
         ).add_extension(
-            x509.TLSFeature([x509.TLSFeatureType.status_request]),
-            critical=False
+            add_ext, critical=False
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
         assert ext.critical is False
-        assert ext.value.features == [x509.TLSFeatureType.status_request]
+        assert ext.value.features == add_ext.features
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

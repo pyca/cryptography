@@ -744,9 +744,6 @@ class TLSFeature(object):
                 "enum"
             )
 
-        if len(features) > 1:
-            raise ValueError("Only one feature is allowed.")
-
         self._features = features
 
     def __repr__(self):
@@ -757,6 +754,10 @@ class TLSFeature(object):
 
 class TLSFeatureType(Enum):
     status_request = 5
+    status_request_v2 = 17
+
+
+_TLS_FEATURE_TYPE_TO_ENUM = dict((x.value, x) for x in TLSFeatureType)
 
 
 @utils.register_interface(ExtensionType)

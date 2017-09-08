@@ -9,6 +9,8 @@ import ipaddress
 
 from email.utils import parseaddr
 
+from asn1crypto.core import Integer, SequenceOf
+
 import idna
 
 import six
@@ -16,9 +18,14 @@ import six
 from six.moves import urllib_parse
 
 from cryptography import x509
+from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
+
+
+class _Integers(SequenceOf):
+    _child_spec = Integer
 
 
 def _obj2txt(backend, obj):
@@ -216,11 +223,10 @@ class _X509ExtensionParser(object):
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
                 data = backend._lib.X509_EXTENSION_get_data(ext)
-                backend.openssl_assert(
-                    _asn1_string_to_bytes(backend, data) == (
-                        b"\x30\x03\x02\x01\x05")
+                parsed = _Integers.load(_asn1_string_to_bytes(backend, data))
+                value = x509.TLSFeature(
+                    [_TLS_FEATURE_TYPE_TO_ENUM[x.native] for x in parsed]
                 )
-                value = x509.TLSFeature([x509.TLSFeatureType.status_request])
                 extensions.append(x509.Extension(oid, critical, value))
                 seen_oids.add(oid)
                 continue
