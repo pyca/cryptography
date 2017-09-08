@@ -422,18 +422,6 @@ class TestOpenSSLRSA(object):
                 )
             )
 
-    def test_unsupported_oaep_label_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(ValueError):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=b"label"
-                )
-            )
-
 
 class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):

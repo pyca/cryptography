@@ -38,6 +38,10 @@ Changelog
 * Support :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` with
   :class:`~cryptography.hazmat.primitives.hmac.HMAC`.
+* Added support for using labels with
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
+  OpenSSL 1.0.2 or greater.
+
 
 
 .. _v2-0-3:
