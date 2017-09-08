@@ -23,7 +23,7 @@ from cryptography.x509.extensions import (
     InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
     PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
-    SubjectAlternativeName, SubjectKeyIdentifier, TLSFeatureType, TLSFeature,
+    SubjectAlternativeName, SubjectKeyIdentifier, TLSFeature, TLSFeatureType,
     UnrecognizedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
