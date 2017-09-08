@@ -469,6 +469,29 @@ Modes
 
         a secret message!
 
+.. class:: XTS(tweak)
+
+    .. versionadded:: 2.1
+
+    .. warning::
+
+        XTS mode is meant for disk encryption and should not be used in other
+        contexts.
+
+    .. note::
+
+        AES XTS keys are double length. This means that to do AES 128
+        encryption in XTS mode you need a 256-bit key. Similarly, AES 256
+        requires passing a 512-bit key.
+
+    _`XTS` (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
+    of operation for the AES block cipher that is used for disk encryption.
+
+    **This mode does not require padding.**
+
+    :param bytes tweak: The tweak is a 16 byte value typically derived from
+        something like the disk sector number.
+
 
 Insecure modes
 --------------
@@ -744,6 +767,20 @@ Interfaces used by the symmetric cipher modes described in
         Exact requirements of the tag are described by the documentation of
         individual modes.
 
+
+.. class:: ModeWithTweak
+
+    .. versionadded:: 2.1
+
+    A cipher mode with a tweak.
+
+    .. attribute:: tweak
+
+        :type: bytes
+
+        Exact requirements of the tweak are described by the documentation of
+        individual modes.
+
 Exceptions
 ~~~~~~~~~~
 
@@ -766,3 +803,4 @@ Exceptions
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: http://openpgp.org
+.. _`XTS`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS

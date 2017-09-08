@@ -37,6 +37,30 @@ class TestAES(object):
             AES(binascii.unhexlify(b"0" * 12))
 
 
+class TestAESXTS(object):
+    @pytest.mark.requires_backend_interface(interface=CipherBackend)
+    @pytest.mark.parametrize(
+        "mode",
+        (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
+    )
+    def test_invalid_key_size_with_mode(self, mode, backend):
+        with pytest.raises(ValueError):
+            ciphers.Cipher(AES(b"0" * 64), mode(b"0" * 16), backend)
+
+    def test_xts_tweak_not_bytes(self):
+        with pytest.raises(TypeError):
+            modes.XTS(32)
+
+    def test_xts_tweak_too_small(self):
+        with pytest.raises(ValueError):
+            modes.XTS(b"0")
+
+    @pytest.mark.requires_backend_interface(interface=CipherBackend)
+    def test_xts_wrong_key_size(self, backend):
+        with pytest.raises(ValueError):
+            ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
+
+
 class TestCamellia(object):
     @pytest.mark.parametrize(("key", "keysize"), [
         (b"0" * 32, 128),
