@@ -749,6 +749,18 @@ class TLSFeature(object):
     def __repr__(self):
         return "<TLSFeature(features={0.features})>".format(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, TLSFeature):
+            return NotImplemented
+
+        return self.features == other.features
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(tuple(self.features))
+
     features = utils.read_only_property("_features")
 
 

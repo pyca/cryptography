@@ -1092,6 +1092,18 @@ class TestRSACertificate(object):
                 "graphy.io')>])>, ...)>"
             )
 
+    def test_parse_tls_feature_extension(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "tls-feature-ocsp-staple.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
+        assert ext.critical is False
+        assert ext.value == x509.TLSFeature(
+            [x509.TLSFeatureType.status_request]
+        )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

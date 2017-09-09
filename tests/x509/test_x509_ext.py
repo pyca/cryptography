@@ -103,6 +103,32 @@ class TestTLSFeature(object):
             "<TLSFeature(features=[<TLSFeatureType.status_request: 5>])>"
         )
 
+    def test_eq(self):
+        ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        ext2 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        assert ext1 == ext2
+
+    def test_ne(self):
+        ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        ext2 = x509.TLSFeature([x509.TLSFeatureType.status_request_v2])
+        ext3 = x509.TLSFeature([
+            x509.TLSFeatureType.status_request,
+            x509.TLSFeatureType.status_request_v2
+        ])
+        assert ext1 != ext2
+        assert ext1 != ext3
+        assert ext1 != object()
+
+    def test_hash(self):
+        ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        ext2 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        ext3 = x509.TLSFeature([
+            x509.TLSFeatureType.status_request,
+            x509.TLSFeatureType.status_request_v2
+        ])
+        assert hash(ext1) == hash(ext2)
+        assert hash(ext1) != hash(ext3)
+
 
 class TestUnrecognizedExtension(object):
     def test_invalid_oid(self):
