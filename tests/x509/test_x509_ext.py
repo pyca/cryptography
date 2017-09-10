@@ -97,6 +97,10 @@ class TestTLSFeature(object):
         with pytest.raises(TypeError):
             x509.TLSFeature([3])
 
+    def test_empty_list(self):
+        with pytest.raises(TypeError):
+            x509.TLSFeature([])
+
     def test_repr(self):
         ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
         assert repr(ext1) == (
@@ -128,6 +132,27 @@ class TestTLSFeature(object):
         ])
         assert hash(ext1) == hash(ext2)
         assert hash(ext1) != hash(ext3)
+
+    def test_iter(self):
+        ext1_features = [x509.TLSFeatureType.status_request]
+        ext1 = x509.TLSFeature(ext1_features)
+        assert len(ext1) == 1
+        assert list(ext1) == ext1_features
+        ext2_features = [
+            x509.TLSFeatureType.status_request,
+            x509.TLSFeatureType.status_request_v2,
+        ]
+        ext2 = x509.TLSFeature(ext2_features)
+        assert len(ext2) == 2
+        assert list(ext2) == ext2_features
+
+    def test_indexing(self):
+        ext = x509.TLSFeature([
+            x509.TLSFeatureType.status_request,
+            x509.TLSFeatureType.status_request_v2,
+        ])
+        assert ext[-1] == ext[1]
+        assert ext[0] == x509.TLSFeatureType.status_request
 
 
 class TestUnrecognizedExtension(object):

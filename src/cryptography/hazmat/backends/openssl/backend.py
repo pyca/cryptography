@@ -957,9 +957,7 @@ class Backend(object):
             )
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.TLSFeature):
-            asn1 = _Integers(
-                [x.value for x in extension.value.features]
-            ).dump()
+            asn1 = _Integers([x.value for x in extension.value]).dump()
             value = _encode_asn1_str_gc(self, asn1, len(asn1))
             return self._create_raw_x509_extension(extension, value)
         else:

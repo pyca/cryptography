@@ -2658,7 +2658,7 @@ class TestCertificateBuilder(object):
 
         ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
         assert ext.critical is False
-        assert ext.value.features == add_ext.features
+        assert ext.value == add_ext
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

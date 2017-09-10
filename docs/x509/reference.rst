@@ -1612,7 +1612,8 @@ X.509 Extensions
     .. versionadded:: 2.1
 
     The TLS Feature extension is defined in :rfc:`7633` and is used in
-    certificates for OCSP Must-Staple.
+    certificates for OCSP Must-Staple. The object is iterable to get every
+    element.
 
     :param list features: A list of features to enable from the
         :class:`~cryptography.x509.TLSFeatureType` enum. At this time only
