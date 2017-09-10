@@ -485,7 +485,7 @@ Modes
         requires passing a 512-bit key.
 
     XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
-    of operation for the AES block cipher that is used for _`disk encryption`.
+    of operation for the AES block cipher that is used for `disk encryption`_.
 
     **This mode does not require padding.**
 
