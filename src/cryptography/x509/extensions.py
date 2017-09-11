@@ -733,6 +733,62 @@ class OCSPNoCheck(object):
 
 
 @utils.register_interface(ExtensionType)
+class TLSFeature(object):
+    oid = ExtensionOID.TLS_FEATURE
+
+    def __init__(self, features):
+        features = list(features)
+        if (
+            not all(isinstance(x, TLSFeatureType) for x in features) or
+            len(features) == 0
+        ):
+            raise TypeError(
+                "features must be a list of elements from the TLSFeatureType "
+                "enum"
+            )
+
+        self._features = features
+
+    def __iter__(self):
+        return iter(self._features)
+
+    def __len__(self):
+        return len(self._features)
+
+    def __repr__(self):
+        return "<TLSFeature(features={0._features})>".format(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, TLSFeature):
+            return NotImplemented
+
+        return self._features == other._features
+
+    def __getitem__(self, idx):
+        return self._features[idx]
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(tuple(self._features))
+
+
+class TLSFeatureType(Enum):
+    # status_request is defined in RFC 6066 and is used for what is commonly
+    # called OCSP Must-Staple when present in the TLS Feature extension in an
+    # X.509 certificate.
+    status_request = 5
+    # status_request_v2 is defined in RFC 6961 and allows multiple OCSP
+    # responses to be provided. It is not currently in use by clients or
+    # servers.
+    status_request_v2 = 17
+
+
+_TLS_FEATURE_TYPE_TO_ENUM = dict((x.value, x) for x in TLSFeatureType)
+
+
+@utils.register_interface(ExtensionType)
 class InhibitAnyPolicy(object):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 

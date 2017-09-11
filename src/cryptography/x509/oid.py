@@ -85,6 +85,7 @@ class ExtensionOID(object):
     AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
     SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
+    TLS_FEATURE = ObjectIdentifier("1.3.6.1.5.5.7.1.24")
     CRL_NUMBER = ObjectIdentifier("2.5.29.20")
     PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
         ObjectIdentifier("1.3.6.1.4.1.11129.2.4.2")
@@ -255,6 +256,7 @@ _OID_NAMES = {
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
     ExtensionOID.CRL_NUMBER: "cRLNumber",
+    ExtensionOID.TLS_FEATURE: "TLSFeature",
     AuthorityInformationAccessOID.OCSP: "OCSP",
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",

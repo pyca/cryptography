@@ -1092,6 +1092,18 @@ class TestRSACertificate(object):
                 "graphy.io')>])>, ...)>"
             )
 
+    def test_parse_tls_feature_extension(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "tls-feature-ocsp-staple.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
+        assert ext.critical is False
+        assert ext.value == x509.TLSFeature(
+            [x509.TLSFeatureType.status_request]
+        )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2607,6 +2619,46 @@ class TestCertificateBuilder(object):
             ExtensionOID.NAME_CONSTRAINTS
         )
         assert ext.value == nc
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.parametrize(
+        "add_ext",
+        [
+            x509.TLSFeature([x509.TLSFeatureType.status_request]),
+            x509.TLSFeature([x509.TLSFeatureType.status_request_v2]),
+            x509.TLSFeature([
+                x509.TLSFeatureType.status_request,
+                x509.TLSFeatureType.status_request_v2
+            ])
+        ]
+    )
+    def test_tls_feature(self, add_ext, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            add_ext, critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
+        assert ext.critical is False
+        assert ext.value == add_ext
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

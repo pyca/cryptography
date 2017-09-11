@@ -23,6 +23,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+from cryptography.hazmat.backends.openssl.decode_asn1 import _Integers
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey,
     _dh_params_dup
@@ -943,18 +944,22 @@ class Backend(object):
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 
+    def _create_raw_x509_extension(self, extension, value):
+        obj = _txt2obj_gc(self, extension.oid.dotted_string)
+        return self._lib.X509_EXTENSION_create_by_OBJ(
+            self._ffi.NULL, obj, 1 if extension.critical else 0, value
+        )
+
     def _create_x509_extension(self, handlers, extension):
         if isinstance(extension.value, x509.UnrecognizedExtension):
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
             value = _encode_asn1_str_gc(
                 self, extension.value.value, len(extension.value.value)
             )
-            return self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                value
-            )
+            return self._create_raw_x509_extension(extension, value)
+        elif isinstance(extension.value, x509.TLSFeature):
+            asn1 = _Integers([x.value for x in extension.value]).dump()
+            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            return self._create_raw_x509_extension(extension, value)
         else:
             try:
                 encode = handlers[extension.oid]
