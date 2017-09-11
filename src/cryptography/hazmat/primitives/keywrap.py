@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers.modes import ECB
 from cryptography.hazmat.primitives.constant_time import bytes_eq
 
 
-def _wrap_core(wrapping_key, key_to_wrap, a, r, backend):
+def _wrap_core(wrapping_key, a, r, backend):
     # RFC 3394 Key Wrap - 2.2.1 (index method)
     encryptor = Cipher(AES(wrapping_key), ECB(), backend).encryptor()
     n = len(r)
@@ -45,7 +45,7 @@ def aes_key_wrap(wrapping_key, key_to_wrap, backend):
 
     a = b"\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6"
     r = [key_to_wrap[i:i + 8] for i in range(0, len(key_to_wrap), 8)]
-    return _wrap_core(wrapping_key, key_to_wrap, a, r, backend)
+    return _wrap_core(wrapping_key, a, r, backend)
 
 
 def _unwrap_core(wrapping_key, a, r, backend):
