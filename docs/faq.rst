@@ -75,6 +75,15 @@ Installing ``cryptography`` fails with ``ImportError: No module named setuptools
 
 Your ``cffi`` package is out of date. ``pip install -U cffi`` to update it.
 
+error: ``-Werror=sign-conversion``: No option ``-Wsign-conversion`` during installation
+---------------------------------------------------------------------------------------
+
+The compiler you are using is too old and not supported by ``cryptography``.
+Please upgrade to a more recent version. If you are running OpenBSD 6.1 or
+earlier the default compiler is extremely old. Use ``pkg_add`` to install a
+newer ``gcc`` and then install ``cryptography`` using
+``CC=/path/to/newer/gcc pip install cryptography``.
+
 Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
 ---------------------------------------------------------
 
