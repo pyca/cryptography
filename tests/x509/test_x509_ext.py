@@ -1669,6 +1669,11 @@ class TestUniformResourceIdentifier(object):
             b"gopher://xn--80ato2c.cryptography:70/some/path"
         )
 
+    def test_empty_string(self):
+        gn = x509.UniformResourceIdentifier(b"")
+        with pytest.warns(utils.DeprecatedIn21):
+            assert gn.value == u""
+
     def test_query_and_fragment(self):
         gn = x509.UniformResourceIdentifier(
             b"ldap://cryptography:90/path?query=true#somedata"

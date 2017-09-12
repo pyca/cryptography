@@ -117,7 +117,7 @@ class RFC822Name(object):
         if not isinstance(other, RFC822Name):
             return NotImplemented
 
-        return self.value == other.value
+        return self.bytes_value == other.bytes_value
 
     def __ne__(self, other):
         return not self == other
@@ -300,7 +300,7 @@ class UniformResourceIdentifier(object):
         if not isinstance(other, UniformResourceIdentifier):
             return NotImplemented
 
-        return self.value == other.value
+        return self.bytes_value == other.bytes_value
 
     def __ne__(self, other):
         return not self == other
