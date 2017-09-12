@@ -1525,6 +1525,13 @@ class TestDNSName(object):
         assert n1 != n2
         assert not (n2 != n3)
 
+    def test_hash(self):
+        n1 = x509.DNSName(b"test1")
+        n2 = x509.DNSName(b"test2")
+        n3 = x509.DNSName(b"test2")
+        assert hash(n1) != hash(n2)
+        assert hash(n2) == hash(n3)
+
 
 class TestDirectoryName(object):
     def test_not_name(self):
@@ -1570,6 +1577,19 @@ class TestDirectoryName(object):
         gn2 = x509.DirectoryName(name2)
         assert gn != gn2
         assert gn != object()
+
+    def test_hash(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+        ])
+        name2 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
+        ])
+        gn = x509.DirectoryName(name)
+        gn2 = x509.DirectoryName(name)
+        gn3 = x509.DirectoryName(name2)
+        assert hash(gn) == hash(gn2)
+        assert hash(gn) != hash(gn3)
 
 
 class TestRFC822Name(object):
@@ -1728,6 +1748,13 @@ class TestRegisteredID(object):
         assert gn != gn2
         assert gn != object()
 
+    def test_hash(self):
+        gn = x509.RegisteredID(NameOID.COMMON_NAME)
+        gn2 = x509.RegisteredID(NameOID.COMMON_NAME)
+        gn3 = x509.RegisteredID(ExtensionOID.BASIC_CONSTRAINTS)
+        assert hash(gn) == hash(gn2)
+        assert hash(gn) != hash(gn3)
+
 
 class TestIPAddress(object):
     def test_not_ipaddress(self):
@@ -1760,6 +1787,13 @@ class TestIPAddress(object):
         gn2 = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.2"))
         assert gn != gn2
         assert gn != object()
+
+    def test_hash(self):
+        gn = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+        gn2 = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+        gn3 = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.2"))
+        assert hash(gn) == hash(gn2)
+        assert hash(gn) != hash(gn3)
 
 
 class TestOtherName(object):
@@ -1809,6 +1843,13 @@ class TestOtherName(object):
 
         gn2 = x509.OtherName(x509.ObjectIdentifier("1.2.3.5"), b"derdata")
         assert gn != gn2
+
+    def test_hash(self):
+        gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        gn2 = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        gn3 = x509.OtherName(x509.ObjectIdentifier("1.2.3.5"), b"derdata")
+        assert hash(gn) == hash(gn2)
+        assert hash(gn) != hash(gn3)
 
 
 class TestGeneralNames(object):
