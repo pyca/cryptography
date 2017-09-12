@@ -7,15 +7,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import ipaddress
 
-from email.utils import parseaddr
-
 from asn1crypto.core import Integer, SequenceOf
-
-import idna
-
-import six
-
-from six.moves import urllib_parse
 
 from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
@@ -97,30 +89,8 @@ def _decode_general_name(backend, gn):
         data = _asn1_string_to_bytes(backend, gn.d.dNSName)
         return x509.DNSName(data)
     elif gn.type == backend._lib.GEN_URI:
-        data = _asn1_string_to_ascii(backend, gn.d.uniformResourceIdentifier)
-        parsed = urllib_parse.urlparse(data)
-        if parsed.hostname:
-            hostname = idna.decode(parsed.hostname)
-        else:
-            # There's no IDNA so we can immediately return
-            return x509.UniformResourceIdentifier(data)
-        if parsed.port:
-            netloc = hostname + u":" + six.text_type(parsed.port)
-        else:
-            netloc = hostname
-
-        # Note that building a URL in this fashion means it should be
-        # semantically indistinguishable from the original but is not
-        # guaranteed to be exactly the same.
-        uri = urllib_parse.urlunparse((
-            parsed.scheme,
-            netloc,
-            parsed.path,
-            parsed.params,
-            parsed.query,
-            parsed.fragment
-        ))
-        return x509.UniformResourceIdentifier(uri)
+        data = _asn1_string_to_bytes(backend, gn.d.uniformResourceIdentifier)
+        return x509.UniformResourceIdentifier(data)
     elif gn.type == backend._lib.GEN_RID:
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
@@ -156,23 +126,8 @@ def _decode_general_name(backend, gn):
             _decode_x509_name(backend, gn.d.directoryName)
         )
     elif gn.type == backend._lib.GEN_EMAIL:
-        data = _asn1_string_to_ascii(backend, gn.d.rfc822Name)
-        name, address = parseaddr(data)
-        parts = address.split(u"@")
-        if name or not address:
-            # parseaddr has found a name (e.g. Name <email>) or the entire
-            # value is an empty string.
-            raise ValueError("Invalid rfc822name value")
-        elif len(parts) == 1:
-            # Single label email name. This is valid for local delivery. No
-            # IDNA decoding can be done since there is no domain component.
-            return x509.RFC822Name(address)
-        else:
-            # A normal email of the form user@domain.com. Let's attempt to
-            # decode the domain component and return the entire address.
-            return x509.RFC822Name(
-                parts[0] + u"@" + idna.decode(parts[1])
-            )
+        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name)
+        return x509.RFC822Name(data)
     elif gn.type == backend._lib.GEN_OTHERNAME:
         type_id = _obj2txt(backend, gn.d.otherName.type_id)
         value = _asn1_to_der(backend, gn.d.otherName.value)
