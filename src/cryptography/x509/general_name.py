@@ -123,7 +123,7 @@ class RFC822Name(object):
         return not self == other
 
     def __hash__(self):
-        return hash(self.value)
+        return hash(self.bytes_value)
 
 
 def _idna_encode(value):
@@ -204,6 +204,9 @@ class DNSName(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(self.bytes_value)
 
 
 @utils.register_interface(GeneralName)
@@ -306,7 +309,7 @@ class UniformResourceIdentifier(object):
         return not self == other
 
     def __hash__(self):
-        return hash(self.value)
+        return hash(self.bytes_value)
 
 
 @utils.register_interface(GeneralName)
@@ -331,6 +334,9 @@ class DirectoryName(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 @utils.register_interface(GeneralName)
 class RegisteredID(object):
@@ -353,6 +359,9 @@ class RegisteredID(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 @utils.register_interface(GeneralName)
@@ -389,6 +398,9 @@ class IPAddress(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 @utils.register_interface(GeneralName)
 class OtherName(object):
@@ -416,3 +428,6 @@ class OtherName(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.type_id, self.value))
