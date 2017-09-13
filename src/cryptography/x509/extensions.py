@@ -214,10 +214,12 @@ class AuthorityKeyIdentifier(object):
         return not self == other
 
     def __hash__(self):
+        if self.authority_cert_issuer is None:
+            aci = None
+        else:
+            aci = tuple(self.authority_cert_issuer)
         return hash((
-            self.key_identifier,
-            str(self.authority_cert_issuer),
-            self.authority_cert_serial_number
+            self.key_identifier, aci, self.authority_cert_serial_number
         ))
 
     key_identifier = utils.read_only_property("_key_identifier")
