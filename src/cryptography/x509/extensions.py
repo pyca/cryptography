@@ -585,6 +585,9 @@ class CertificatePolicies(object):
     def __getitem__(self, idx):
         return self._policies[idx]
 
+    def __hash__(self):
+        return hash(tuple(self._policies))
+
 
 class PolicyInformation(object):
     def __init__(self, policy_identifier, policy_qualifiers):
@@ -624,6 +627,14 @@ class PolicyInformation(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        if self.policy_qualifiers is not None:
+            pq = tuple(self.policy_qualifiers)
+        else:
+            pq = None
+
+        return hash((self.policy_identifier, pq))
+
     policy_identifier = utils.read_only_property("_policy_identifier")
     policy_qualifiers = utils.read_only_property("_policy_qualifiers")
 
@@ -658,6 +669,9 @@ class UserNotice(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.notice_reference, self.explicit_text))
+
     notice_reference = utils.read_only_property("_notice_reference")
     explicit_text = utils.read_only_property("_explicit_text")
 
@@ -690,6 +704,9 @@ class NoticeReference(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.organization, tuple(self.notice_numbers)))
 
     organization = utils.read_only_property("_organization")
     notice_numbers = utils.read_only_property("_notice_numbers")

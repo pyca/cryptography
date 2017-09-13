@@ -369,6 +369,13 @@ class TestNoticeReference(object):
         assert nr != nr3
         assert nr != object()
 
+    def test_hash(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1, 2])
+        nr3 = x509.NoticeReference(None, [1, 2])
+        assert hash(nr) == hash(nr2)
+        assert hash(nr) != hash(nr3)
+
 
 class TestUserNotice(object):
     def test_notice_reference_invalid(self):
@@ -409,6 +416,15 @@ class TestUserNotice(object):
         assert un != un2
         assert un != un3
         assert un != object()
+
+    def test_hash(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1, 2])
+        un = x509.UserNotice(nr, "text")
+        un2 = x509.UserNotice(nr2, "text")
+        un3 = x509.UserNotice(None, "text")
+        assert hash(un) == hash(un2)
+        assert hash(un) != hash(un3)
 
 
 class TestPolicyInformation(object):
@@ -476,6 +492,19 @@ class TestPolicyInformation(object):
         assert pi != pi2
         assert pi != pi3
         assert pi != object()
+
+    def test_hash(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"),
+            [u"string", x509.UserNotice(None, u"hi")]
+        )
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"),
+            [u"string", x509.UserNotice(None, u"hi")]
+        )
+        pi3 = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), None)
+        assert hash(pi) == hash(pi2)
+        assert hash(pi) != hash(pi3)
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -570,6 +599,22 @@ class TestCertificatePolicies(object):
         )
 
         assert ext.value[0].policy_identifier == oid
+
+    def test_hash(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        cp = x509.CertificatePolicies([pi])
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        cp2 = x509.CertificatePolicies([pi2])
+        pi3 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [x509.UserNotice(None, b"text")]
+        )
+        cp3 = x509.CertificatePolicies([pi3])
+        assert hash(cp) == hash(cp2)
+        assert hash(cp) != hash(cp3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
