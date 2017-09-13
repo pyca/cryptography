@@ -912,8 +912,8 @@ class KeyUsage(object):
             self.digital_signature, self.content_commitment,
             self.key_encipherment, self.data_encipherment,
             self.key_agreement, self.key_cert_sign,
-            self.crl_sign, self.encipher_only,
-            self.decipher_only
+            self.crl_sign, self._encipher_only,
+            self._decipher_only
         ))
 
 

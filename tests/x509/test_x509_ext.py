@@ -879,11 +879,11 @@ class TestKeyUsage(object):
             content_commitment=True,
             key_encipherment=False,
             data_encipherment=False,
-            key_agreement=True,
+            key_agreement=False,
             key_cert_sign=False,
             crl_sign=False,
             encipher_only=False,
-            decipher_only=True
+            decipher_only=False
         )
         assert hash(ku) == hash(ku2)
         assert hash(ku) != hash(ku3)
