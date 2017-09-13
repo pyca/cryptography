@@ -3119,6 +3119,27 @@ class TestNameConstraints(object):
         assert nc != nc3
         assert nc != object()
 
+    def test_hash(self):
+        nc = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(b"name.local")],
+            excluded_subtrees=[x509.DNSName(b"name2.local")]
+        )
+        nc2 = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(b"name.local")],
+            excluded_subtrees=[x509.DNSName(b"name2.local")]
+        )
+        nc3 = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(b"name.local")],
+            excluded_subtrees=None
+        )
+        nc4 = x509.NameConstraints(
+            permitted_subtrees=None,
+            excluded_subtrees=[x509.DNSName(b"name.local")]
+        )
+        assert hash(nc) == hash(nc2)
+        assert hash(nc) != hash(nc3)
+        assert hash(nc3) != hash(nc4)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

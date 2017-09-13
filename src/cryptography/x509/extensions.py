@@ -973,6 +973,19 @@ class NameConstraints(object):
             u"excluded_subtrees={0.excluded_subtrees})>".format(self)
         )
 
+    def __hash__(self):
+        if self.permitted_subtrees is not None:
+            ps = tuple(self.permitted_subtrees)
+        else:
+            ps = None
+
+        if self.excluded_subtrees is not None:
+            es = tuple(self.excluded_subtrees)
+        else:
+            es = None
+
+        return hash((ps, es))
+
     permitted_subtrees = utils.read_only_property("_permitted_subtrees")
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
 
