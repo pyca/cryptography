@@ -907,7 +907,6 @@ class TestSubjectKeyIdentifier(object):
         ski3 = x509.SubjectKeyIdentifier(
             binascii.unhexlify(b"aa8098456f6ff7ff3ac9092384932230498bc980")
         )
-
         assert hash(ski1) == hash(ski2)
         assert hash(ski1) != hash(ski3)
 
@@ -1024,6 +1023,16 @@ class TestAuthorityKeyIdentifier(object):
         assert aki != aki4
         assert aki != aki5
         assert aki != object()
+
+    def test_hash(self):
+        dirname = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
+        )
+        aki1 = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
+        aki2 = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
+        aki3 = x509.AuthorityKeyIdentifier(b"digest", None, None)
+        assert hash(aki1) == hash(aki2)
+        assert hash(aki1) != hash(aki3)
 
 
 class TestBasicConstraints(object):
