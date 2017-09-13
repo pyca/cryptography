@@ -284,6 +284,9 @@ class AuthorityInformationAccess(object):
     def __getitem__(self, idx):
         return self._descriptions[idx]
 
+    def __hash__(self):
+        return hash(tuple(self._descriptions))
+
 
 class AccessDescription(object):
     def __init__(self, access_method, access_location):

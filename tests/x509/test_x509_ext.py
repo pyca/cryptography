@@ -2749,6 +2749,40 @@ class TestAuthorityInformationAccess(object):
         assert aia[-1] == aia[4]
         assert aia[2:6:2] == [aia[2], aia[4]]
 
+    def test_hash(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
+            )
+        ])
+        aia2 = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
+            )
+        ])
+        aia3 = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(b"http://ocsp.other.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
+            )
+        ])
+        assert hash(aia) == hash(aia2)
+        assert hash(aia) != hash(aia3)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
