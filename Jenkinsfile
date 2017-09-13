@@ -246,6 +246,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
                             call .codecov/Scripts/activate
+                            REM this pin must be kept in sync with tox.ini
                             pip install coverage==4.3.4
                             pip install codecov
                             codecov -e JOB_BASE_NAME,LABEL,TOXENV
@@ -264,6 +265,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                     tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
+                                # This pin must be kept in sync with tox.ini
                                 pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
                             """
@@ -283,6 +285,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 fi
                                 virtualenv .venv
                                 source .venv/bin/activate
+                                # This pin must be kept in sync with tox.ini
                                 pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV,IMAGE_NAME
                             """
