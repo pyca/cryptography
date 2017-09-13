@@ -1689,10 +1689,11 @@ class TestUniformResourceIdentifier(object):
             b"gopher://xn--80ato2c.cryptography:70/some/path"
         )
 
-    def test_empty_string(self):
-        gn = x509.UniformResourceIdentifier(b"")
+    def test_empty_hostname(self):
+        gn = x509.UniformResourceIdentifier(b"ldap:///some-nonsense")
+        assert gn.bytes_value == b"ldap:///some-nonsense"
         with pytest.warns(utils.DeprecatedIn21):
-            assert gn.value == u""
+            assert gn.value == "ldap:///some-nonsense"
 
     def test_query_and_fragment(self):
         gn = x509.UniformResourceIdentifier(
@@ -3819,7 +3820,7 @@ class TestCRLDistributionPointsExtension(object):
         assert cdps == x509.CRLDistributionPoints([
             x509.DistributionPoint(
                 full_name=[x509.UniformResourceIdentifier(
-                    u"ldap:/CN=A,OU=B,dc=C,DC=D?E?F?G?H=I"
+                    b"ldap:///CN=A,OU=B,dc=C,DC=D?E?F?G?H=I"
                 )],
                 relative_name=None,
                 reasons=None,

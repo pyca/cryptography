@@ -102,7 +102,8 @@ def _decode_general_name(backend, gn):
         if parsed.hostname:
             hostname = idna.decode(parsed.hostname)
         else:
-            hostname = ""
+            # There's no IDNA so we can immediately return
+            return x509.UniformResourceIdentifier(data)
         if parsed.port:
             netloc = hostname + u":" + six.text_type(parsed.port)
         else:

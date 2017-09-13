@@ -274,7 +274,8 @@ class UniformResourceIdentifier(object):
         )
         parsed = urllib_parse.urlparse(self.bytes_value)
         if not parsed.hostname:
-            netloc = ""
+            # There's no idna here so we can immediately return
+            return self.bytes_value.decode("utf-8")
         elif parsed.port:
             netloc = idna.decode(parsed.hostname) + ":{0}".format(parsed.port)
         else:
