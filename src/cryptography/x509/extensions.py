@@ -726,6 +726,9 @@ class ExtendedKeyUsage(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(tuple(self._usages))
+
 
 @utils.register_interface(ExtensionType)
 class OCSPNoCheck(object):
@@ -903,6 +906,15 @@ class KeyUsage(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((
+            self.digital_signature, self.content_commitment,
+            self.key_encipherment, self.data_encipherment,
+            self.key_agreement, self.key_cert_sign,
+            self.crl_sign, self.encipher_only,
+            self.decipher_only
+        ))
 
 
 @utils.register_interface(ExtensionType)
