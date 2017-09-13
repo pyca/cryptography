@@ -78,4 +78,5 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
+# This coverage pin must be kept in sync with tox.ini
 pip install tox codecov coverage==4.3.4
