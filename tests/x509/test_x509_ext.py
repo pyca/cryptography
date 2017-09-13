@@ -896,6 +896,43 @@ class TestKeyUsage(object):
         assert ku != ku2
         assert ku != object()
 
+    def test_hash(self):
+        ku = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=True,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=True
+        )
+        ku2 = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=True,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=True
+        )
+        ku3 = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+        assert hash(ku) == hash(ku2)
+        assert hash(ku) != hash(ku3)
+
 
 class TestSubjectKeyIdentifier(object):
     def test_properties(self):
@@ -1176,6 +1213,17 @@ class TestExtendedKeyUsage(object):
         eku2 = x509.ExtendedKeyUsage([x509.ObjectIdentifier("1.3.6.1")])
         assert eku != eku2
         assert eku != object()
+
+    def test_hash(self):
+        eku = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6"), x509.ObjectIdentifier("1.3.7")
+        ])
+        eku2 = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6"), x509.ObjectIdentifier("1.3.7")
+        ])
+        eku3 = x509.ExtendedKeyUsage([x509.ObjectIdentifier("1.3.6")])
+        assert hash(eku) == hash(eku2)
+        assert hash(eku) != hash(eku3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
