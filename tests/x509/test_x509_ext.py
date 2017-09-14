@@ -3629,6 +3629,46 @@ class TestDistributionPoint(object):
                 ">)>])>"
             )
 
+    def test_hash(self):
+        dp = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
+            None,
+            frozenset([x509.ReasonFlags.superseded]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, u"Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        dp2 = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(b"http://crypt.og/crl")],
+            None,
+            frozenset([x509.ReasonFlags.superseded]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, u"Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        dp3 = x509.DistributionPoint(
+            None,
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"myCN")
+            ]),
+            None,
+            None,
+        )
+        assert hash(dp) == hash(dp2)
+        assert hash(dp) != hash(dp3)
+
 
 class TestCRLDistributionPoints(object):
     def test_invalid_distribution_points(self):
@@ -3779,6 +3819,40 @@ class TestCRLDistributionPoints(object):
         assert cdp != cdp3
         assert cdp != cdp4
         assert cdp != object()
+
+    def test_hash(self):
+        cdp = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        cdp2 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        cdp3 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        assert hash(cdp) == hash(cdp2)
+        assert hash(cdp) != hash(cdp3)
 
     def test_indexing(self):
         ci = x509.CRLDistributionPoints([

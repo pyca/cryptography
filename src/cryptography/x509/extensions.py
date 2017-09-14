@@ -412,6 +412,9 @@ class CRLDistributionPoints(object):
     def __getitem__(self, idx):
         return self._distribution_points[idx]
 
+    def __hash__(self):
+        return hash(tuple(self._distribution_points))
+
 
 class DistributionPoint(object):
     def __init__(self, full_name, relative_name, reasons, crl_issuer):
@@ -486,6 +489,19 @@ class DistributionPoint(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        if self.full_name is not None:
+            fn = tuple(self.full_name)
+        else:
+            fn = None
+
+        if self.crl_issuer is not None:
+            crl_issuer = tuple(self.crl_issuer)
+        else:
+            crl_issuer = None
+
+        return hash((fn, self.relative_name, self.reasons, crl_issuer))
 
     full_name = utils.read_only_property("_full_name")
     relative_name = utils.read_only_property("_relative_name")
