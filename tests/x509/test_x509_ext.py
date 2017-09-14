@@ -91,6 +91,25 @@ class TestExtension(object):
         assert ext1 != ext4
         assert ext1 != object()
 
+    def test_hash(self):
+        ext1 = x509.Extension(
+            ExtensionOID.BASIC_CONSTRAINTS,
+            False,
+            x509.BasicConstraints(ca=False, path_length=None)
+        )
+        ext2 = x509.Extension(
+            ExtensionOID.BASIC_CONSTRAINTS,
+            False,
+            x509.BasicConstraints(ca=False, path_length=None)
+        )
+        ext3 = x509.Extension(
+            ExtensionOID.BASIC_CONSTRAINTS,
+            False,
+            x509.BasicConstraints(ca=True, path_length=None)
+        )
+        assert hash(ext1) == hash(ext2)
+        assert hash(ext1) != hash(ext3)
+
 
 class TestTLSFeature(object):
     def test_not_enum_type(self):
@@ -2676,6 +2695,13 @@ class TestPolicyConstraints(object):
         assert pc != pc2
         assert pc != pc3
         assert pc != object()
+
+    def test_hash(self):
+        pc = x509.PolicyConstraints(2, 1)
+        pc2 = x509.PolicyConstraints(2, 1)
+        pc3 = x509.PolicyConstraints(2, None)
+        assert hash(pc) == hash(pc2)
+        assert hash(pc) != hash(pc3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
