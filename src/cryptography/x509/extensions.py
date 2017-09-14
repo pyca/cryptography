@@ -554,6 +554,11 @@ class PolicyConstraints(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(
+            (self.require_explicit_policy, self.inhibit_policy_mapping)
+        )
+
     require_explicit_policy = utils.read_only_property(
         "_require_explicit_policy"
     )
@@ -1062,6 +1067,9 @@ class Extension(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.oid, self.critical, self.value))
 
 
 class GeneralNames(object):
