@@ -285,6 +285,15 @@ class TestCertificateIssuer(object):
         names = ci.get_values_for_type(x509.DNSName)
         assert names == [u"cryptography.io"]
 
+    def test_hash(self):
+        ci1 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
+        ci3 = x509.CertificateIssuer(
+            [x509.UniformResourceIdentifier(b"http://something")]
+        )
+        assert hash(ci1) == hash(ci2)
+        assert hash(ci1) != hash(ci3)
+
 
 class TestCRLReason(object):
     def test_invalid_reason_flags(self):
@@ -2052,6 +2061,13 @@ class TestGeneralNames(object):
         assert gns != gns2
         assert gns != object()
 
+    def test_hash(self):
+        gns = x509.GeneralNames([x509.DNSName(b"cryptography.io")])
+        gns2 = x509.GeneralNames([x509.DNSName(b"cryptography.io")])
+        gns3 = x509.GeneralNames([x509.RFC822Name(b"admin@cryptography.io")])
+        assert hash(gns) == hash(gns2)
+        assert hash(gns) != hash(gns3)
+
 
 class TestIssuerAlternativeName(object):
     def test_get_values_for_type(self):
@@ -2124,6 +2140,15 @@ class TestIssuerAlternativeName(object):
         )
         assert san != san2
         assert san != object()
+
+    def test_hash(self):
+        ian = x509.IssuerAlternativeName([x509.DNSName(b"cryptography.io")])
+        ian2 = x509.IssuerAlternativeName([x509.DNSName(b"cryptography.io")])
+        ian3 = x509.IssuerAlternativeName(
+            [x509.RFC822Name(b"admin@cryptography.io")]
+        )
+        assert hash(ian) == hash(ian2)
+        assert hash(ian) != hash(ian3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -2240,6 +2265,15 @@ class TestSubjectAlternativeName(object):
         )
         assert san != san2
         assert san != object()
+
+    def test_hash(self):
+        san = x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")])
+        san2 = x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")])
+        san3 = x509.SubjectAlternativeName(
+            [x509.RFC822Name(b"admin@cryptography.io")]
+        )
+        assert hash(san) == hash(san2)
+        assert hash(san) != hash(san3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
