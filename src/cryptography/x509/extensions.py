@@ -1105,6 +1105,9 @@ class GeneralNames(object):
     def __getitem__(self, idx):
         return self._general_names[idx]
 
+    def __hash__(self):
+        return hash(tuple(self._general_names))
+
 
 @utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
@@ -1136,6 +1139,9 @@ class SubjectAlternativeName(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(self._general_names)
 
 
 @utils.register_interface(ExtensionType)
@@ -1169,6 +1175,9 @@ class IssuerAlternativeName(object):
     def __getitem__(self, idx):
         return self._general_names[idx]
 
+    def __hash__(self):
+        return hash(self._general_names)
+
 
 @utils.register_interface(ExtensionType)
 class CertificateIssuer(object):
@@ -1200,6 +1209,9 @@ class CertificateIssuer(object):
 
     def __getitem__(self, idx):
         return self._general_names[idx]
+
+    def __hash__(self):
+        return hash(self._general_names)
 
 
 @utils.register_interface(ExtensionType)
