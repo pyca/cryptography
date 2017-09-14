@@ -138,3 +138,23 @@ class SEED(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+@utils.register_interface(CipherAlgorithm)
+class ChaCha20(object):
+    name = "ChaCha20"
+    key_sizes = frozenset([256])
+
+    def __init__(self, key, nonce):
+        self.key = _verify_key_size(self, key)
+        if not isinstance(nonce, bytes):
+            raise TypeError("nonce must be bytes")
+
+        if len(nonce) != 16:
+            raise ValueError("nonce must be 128-bits (16 bytes)")
+
+        self.nonce = nonce
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
