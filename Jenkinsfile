@@ -60,7 +60,7 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.6.0',
+        imageName: 'pyca/cryptography-runner-jessie-libressl:2.6.1',
         toxenvs: ['py27'],
     ],
     [
