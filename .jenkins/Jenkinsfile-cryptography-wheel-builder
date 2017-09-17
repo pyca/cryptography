@@ -8,15 +8,15 @@ properties([
 def configs = [
     [
         label: 'windows',
-        versions: ['py26', 'py27', 'py34', 'py35', 'py36'],
+        versions: ['py27', 'py34', 'py35', 'py36'],
     ],
     [
         label: 'windows64',
-        versions: ['py26', 'py27', 'py34', 'py35', 'py36'],
+        versions: ['py27', 'py34', 'py35', 'py36'],
     ],
     [
         label: 'sierra',
-        versions: ['py26', 'py27', 'py34', 'py35', 'py36'],
+        versions: ['py27', 'py34', 'py35', 'py36'],
     ],
     [
         label: 'docker',
@@ -44,7 +44,6 @@ def build(version, label, imageName) {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
                 def pythonPath = [
-                    py26: "C:\\Python26\\python.exe",
                     py27: "C:\\Python27\\python.exe",
                     py34: "C:\\Python34\\python.exe",
                     py35: "C:\\Python35\\python.exe",
@@ -89,7 +88,6 @@ def build(version, label, imageName) {
                 """
             } else if (label.contains("sierra")) {
                 def pythonPath = [
-                    py26: "python2.6",
                     py27: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7",
                     py34: "/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4",
                     py35: "/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5",
