@@ -482,7 +482,7 @@ Modes
 
         AES XTS keys are double length. This means that to do AES 128
         encryption in XTS mode you need a 256-bit key. Similarly, AES 256
-        requires passing a 512-bit key.
+        requires passing a 512-bit key. AES 192 is not supported in XTS mode.
 
     XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
     of operation for the AES block cipher that is used for `disk encryption`_.
