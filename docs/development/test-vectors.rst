@@ -520,7 +520,7 @@ header format (substituting the correct information):
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
 .. _`Ed25519 website`: https://ed25519.cr.yp.to/software.html
 .. _`NIST SP-800-38B`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38b.pdf
-.. _`NIST PKI Testing`: http://csrc.nist.gov/groups/ST/crypto_apps_infra/pki/pkitesting.html
+.. _`NIST PKI Testing`: https://csrc.nist.gov/Projects/PKI-Testing
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
