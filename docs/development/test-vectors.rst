@@ -495,7 +495,7 @@ header format (substituting the correct information):
 
 .. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
-.. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
+.. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
