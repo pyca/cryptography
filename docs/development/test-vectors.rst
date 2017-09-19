@@ -170,6 +170,8 @@ X.509
 * ``tls-feature-ocsp-staple.pem`` - A certificate issued by Let's Encrypt that
   contains a TLS Feature extension with the ``status_request`` feature (commonly
   known as OCSP Must-Staple).
+* ``unique-identifier.pem`` - A certificate containing
+  a distinguished name with an ``x500UniqueIdentifier``.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
