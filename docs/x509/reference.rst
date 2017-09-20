@@ -2319,8 +2319,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
     valid inside :class:`~cryptography.x509.RevokedCertificate` objects. It
     identifies a reason for the certificate revocation.
 
-    :param reason: A value from the
-        :class:`~cryptography.x509.oid.CRLEntryExtensionOID` enum.
+    :param reason: An element from :class:`~cryptography.x509.ReasonFlags`.
 
     .. attribute:: oid
 
