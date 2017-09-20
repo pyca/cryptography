@@ -2027,6 +2027,24 @@ X.509 Extensions
 
         Where to access the information defined by the access method.
 
+.. class:: FreshestCRL(distribution_points)
+
+    .. versionadded:: 2.1
+
+    The freshest CRL extension (also known as Delta CRL Distribution Point)
+    identifies how delta CRL information is obtained. It is an iterable,
+    containing one or more :class:`DistributionPoint` instances.
+
+    :param list distribution_points: A list of :class:`DistributionPoint`
+        instances.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.FRESHEST_CRL`.
+
 .. class:: CRLDistributionPoints(distribution_points)
 
     .. versionadded:: 0.9
@@ -2791,6 +2809,11 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
         :class:`~cryptography.x509.PolicyConstraints` extension type.
+
+    .. attribute:: FRESHEST_CRL
+
+        Corresponds to the dotted string ``"2.5.29.46"``. The identifier for the
+        :class:`~cryptography.x509.FreshestCRL` extension type.
 
 
 .. class:: CRLEntryExtensionOID

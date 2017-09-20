@@ -444,6 +444,47 @@ class CRLDistributionPoints(object):
         return hash(tuple(self._distribution_points))
 
 
+@utils.register_interface(ExtensionType)
+class FreshestCRL(object):
+    oid = ExtensionOID.FRESHEST_CRL
+
+    def __init__(self, distribution_points):
+        distribution_points = list(distribution_points)
+        if not all(
+            isinstance(x, DistributionPoint) for x in distribution_points
+        ):
+            raise TypeError(
+                "distribution_points must be a list of DistributionPoint "
+                "objects"
+            )
+
+        self._distribution_points = distribution_points
+
+    def __iter__(self):
+        return iter(self._distribution_points)
+
+    def __len__(self):
+        return len(self._distribution_points)
+
+    def __repr__(self):
+        return "<FreshestCRL({0})>".format(self._distribution_points)
+
+    def __eq__(self, other):
+        if not isinstance(other, FreshestCRL):
+            return NotImplemented
+
+        return self._distribution_points == other._distribution_points
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __getitem__(self, idx):
+        return self._distribution_points[idx]
+
+    def __hash__(self):
+        return hash(tuple(self._distribution_points))
+
+
 class DistributionPoint(object):
     def __init__(self, full_name, relative_name, reasons, crl_issuer):
         if full_name and relative_name:
