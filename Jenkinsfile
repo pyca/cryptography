@@ -17,7 +17,7 @@ def configs = [
     ],
     [
         label: 'sierra',
-        toxenvs: ['py27'],
+        toxenvs: ['py27', 'py36'],
     ],
     [
         label: 'yosemite',
