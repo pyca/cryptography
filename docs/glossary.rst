@@ -79,5 +79,11 @@ Glossary
         but does not allow access to the key itself. Typically an opaque key is
         loaded from a `hardware security module`_ (HSM).
 
+    A-label
+        The ASCII compatible encoded (ACE) representation of an
+        internationalized (unicode) domain name. A-labels begin with the
+        prefix ``xn--``. To create an A-label from a unicode domain string use
+        a library like `idna`_.
 
 .. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
+.. _`idna`: https://pypi.org/project/idna/

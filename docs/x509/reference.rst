@@ -1242,19 +1242,27 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    This corresponds to an email address. For example, ``user@example.com``.
-
     ..note::
 
         Starting with version 2.1 unicode input is deprecated. If passing an
-        internationalized domain name (IDN) you should first IDNA encode the
-        hostname and then pass the resulting bytes.
+        email address containing an internationalized domain name (IDN) you
+        should first IDNA encode the hostname and then pass the resulting
+        bytes.
+
+    This corresponds to an email address. For example, ``user@example.com``.
+
+    :param bytes value: The email address. If the address contains an
+        internationalized domain name then it must be encoded to an
+        :term:`A-label` before being passed.
 
     .. attribute:: bytes_value
 
         .. versionadded:: 2.1
 
         :type: bytes
+
+        The value as a byte string. This will contain an :term:`A-label` if
+        the domain in the address is an internationalized domain name.
 
     .. attribute:: value
 
@@ -1268,13 +1276,25 @@ General Name Classes
 
     .. versionadded:: 0.9
 
+    ..note::
+
+        Starting with version 2.1 unicode input is deprecated. If passing an
+        internationalized domain name (IDN) you should first IDNA encode the
+        hostname and then pass the resulting bytes.
+
     This corresponds to a domain name. For example, ``cryptography.io``.
+
+    :param bytes value: The domain name. If it is an internationalized domain
+        name then it must be encoded to an :term:`A-label` before being passed.
 
     .. attribute:: bytes_value
 
         .. versionadded:: 2.1
 
         :type: bytes
+
+        The value as a byte string. This will contain an :term:`A-label` if
+        it is an internationalized domain name.
 
     .. attribute:: value
 
@@ -1298,20 +1318,26 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    This corresponds to a uniform resource identifier.  For example,
-    ``https://cryptography.io``.
-
     ..note::
 
         Starting with version 2.1 unicode input is deprecated. If passing an
-        internationalized domain name (IDN) you should first IDNA encode the
-        hostname and then pass the resulting bytes.
+        internationalized domain name (IDN) within the URI you should first
+        IDNA encode the hostname and then pass the resulting bytes.
+
+    This corresponds to a uniform resource identifier.  For example,
+    ``https://cryptography.io``.
+
+    :param bytes value: The URI. If it contains an internationalized domain
+        name then it must be encoded to an :term:`A-label` before being passed.
 
     .. attribute:: bytes_value
 
         .. versionadded:: 2.1
 
         :type: bytes
+
+        The value as a byte string. This will contain an :term:`A-label` if
+        the URI contains an internationalized domain name.
 
     .. attribute:: value
 
