@@ -152,6 +152,12 @@ def _decode_crl_number(backend, ext):
     return x509.CRLNumber(_asn1_integer_to_int(backend, asn1_int))
 
 
+def _decode_delta_crl_indicator(backend, ext):
+    asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
+    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
+    return x509.DeltaCRLIndicator(_asn1_integer_to_int(backend, asn1_int))
+
+
 class _X509ExtensionParser(object):
     def __init__(self, ext_count, get_ext, handlers):
         self.ext_count = ext_count
@@ -742,6 +748,7 @@ _REVOKED_EXTENSION_HANDLERS = {
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.CRL_NUMBER: _decode_crl_number,
+    ExtensionOID.DELTA_CRL_INDICATOR: _decode_delta_crl_indicator,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (

@@ -209,6 +209,7 @@ class TestCertificateRevocationListBuilder(object):
         "extension",
         [
             x509.CRLNumber(13),
+            x509.DeltaCRLIndicator(12345678901234567890),
             x509.AuthorityKeyIdentifier(
                 b"\xc3\x9c\xf3\xfc\xd3F\x084\xbb\xceF\x7f\xa0|[\xf3\xe2\x08"
                 b"\xcbY",

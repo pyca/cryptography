@@ -232,6 +232,19 @@ class TestCertificateRevocationList(object):
             x509.UniformResourceIdentifier(b"https://cryptography.io"),
         ])
 
+    def test_delta_crl_indicator(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_delta_crl_indicator.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        dci = crl.extensions.get_extension_for_oid(
+            ExtensionOID.DELTA_CRL_INDICATOR
+        )
+        assert dci.value == x509.DeltaCRLIndicator(12345678901234567890)
+        assert dci.critical is False
+
     def test_signature(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),

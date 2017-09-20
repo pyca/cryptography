@@ -1954,6 +1954,30 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
 
 
+.. class:: DeltaCRLIndicator(crl_number)
+
+    .. versionadded:: 2.1
+
+    The delta CRL indicator is a CRL extension that identifies a CRL as being
+    a delta CRL. Delta CRLs contain updates to revocation information
+    previously distributed, rather than all the information that would appear
+    in a complete CRL.
+
+    :param int crl_number: The CRL number of the complete CRL that the
+        delta CRL is updating.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.DELTA_CRL_INDICATOR`.
+
+    .. attribute:: crl_number
+
+        :type: int
+
+
 .. class:: AuthorityInformationAccess(descriptions)
 
     .. versionadded:: 0.9
@@ -2748,6 +2772,14 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
+
+    .. attribute:: DELTA_CRL_INDICATOR
+
+        .. versionadded:: 2.1
+
+        Corresponds to the dotted string ``"2.5.29.27"``. The identifier for
+        the ``DeltaCRLIndicator`` extension type. This extension only has
+        meaning for certificate revocation lists.
 
     .. attribute:: PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 
