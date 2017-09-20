@@ -324,6 +324,8 @@ Custom X.509 Vectors
   is an unknown OID (``1.3.6.1.4.1.8432.1.1.2``).
 * ``policy_constraints_explicit.pem`` - A self-signed certificate containing
   a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
+* ``freshestcrl.pem`` - A self-signed certificate containing a ``freshestCRL``
+  extension.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -383,6 +385,8 @@ Custom X.509 Certificate Revocation List Vectors
 * ``invalid_signature.pem`` - Contains a CRL with the last signature byte
   incremented by 1 to produce an invalid signature, and the public key which
   was used to generate it.
+* ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
+  ``DeltaCRLIndicator`` extension.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
