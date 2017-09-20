@@ -59,3 +59,7 @@ def setup(app):
         latex=(latex_visit_hazmat_node, depart_hazmat_node),
     )
     app.add_directive("hazmat", HazmatDirective)
+
+    return {
+        "parallel_read_safe": True,
+    }
