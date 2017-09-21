@@ -3700,6 +3700,193 @@ class TestDistributionPoint(object):
         assert hash(dp) != hash(dp3)
 
 
+class TestFreshestCRL(object):
+    def test_invalid_distribution_points(self):
+        with pytest.raises(TypeError):
+            x509.FreshestCRL(["notadistributionpoint"])
+
+    def test_iter_len(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"http://domain")],
+                None, None, None
+            ),
+        ])
+        assert len(fcrl) == 1
+        assert list(fcrl) == [
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"http://domain")],
+                None, None, None
+            ),
+        ]
+
+    def test_iter_input(self):
+        points = [
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"http://domain")],
+                None, None, None
+            ),
+        ]
+        fcrl = x509.FreshestCRL(iter(points))
+        assert list(fcrl) == points
+
+    def test_repr(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                None
+            ),
+        ])
+        if six.PY3:
+            assert repr(fcrl) == (
+                "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(bytes_value=b'ftp://domain')>], relative"
+                "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
+                "'keyCompromise'>}), crl_issuer=None)>])>"
+            )
+        else:
+            assert repr(fcrl) == (
+                "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(bytes_value='ftp://domain')>], relative"
+                "_name=None, reasons=frozenset([<ReasonFlags.key_compromise: "
+                "'keyCompromise'>]), crl_issuer=None)>])>"
+            )
+
+    def test_eq(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl2 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        assert fcrl == fcrl2
+
+    def test_ne(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl2 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain2")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl3 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl4 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing2")],
+            ),
+        ])
+        assert fcrl != fcrl2
+        assert fcrl != fcrl3
+        assert fcrl != fcrl4
+        assert fcrl != object()
+
+    def test_hash(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl2 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        fcrl3 = x509.FreshestCRL([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(b"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+        ])
+        assert hash(fcrl) == hash(fcrl2)
+        assert hash(fcrl) != hash(fcrl3)
+
+    def test_indexing(self):
+        fcrl = x509.FreshestCRL([
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(b"uri://thing")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(b"uri://thing2")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(b"uri://thing3")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(b"uri://thing4")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(b"uri://thing5")],
+            ),
+        ])
+        assert fcrl[-1] == fcrl[4]
+        assert fcrl[2:6:2] == [fcrl[2], fcrl[4]]
+
+
 class TestCRLDistributionPoints(object):
     def test_invalid_distribution_points(self):
         with pytest.raises(TypeError):
@@ -4146,6 +4333,46 @@ class TestCRLDistributionPointsExtension(object):
                 relative_name=None,
                 reasons=None,
                 crl_issuer=None
+            )
+        ])
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestFreshestCRLExtension(object):
+    def test_vector(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "freshestcrl.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        fcrl = cert.extensions.get_extension_for_class(x509.FreshestCRL).value
+        assert fcrl == x509.FreshestCRL([
+            x509.DistributionPoint(
+                full_name=[
+                    x509.UniformResourceIdentifier(
+                        b'http://myhost.com/myca.crl'
+                    ),
+                    x509.UniformResourceIdentifier(
+                        b'http://backup.myhost.com/myca.crl'
+                    )
+                ],
+                relative_name=None,
+                reasons=frozenset([
+                    x509.ReasonFlags.ca_compromise,
+                    x509.ReasonFlags.key_compromise
+                ]),
+                crl_issuer=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, u"cryptography CA"
+                        ),
+                    ])
+                )]
             )
         ])
 
