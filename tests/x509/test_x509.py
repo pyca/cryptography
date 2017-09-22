@@ -2051,154 +2051,6 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.MD5(), backend)
 
-    @pytest.mark.parametrize(
-        "cdp",
-        [
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=None,
-                    relative_name=x509.RelativeDistinguishedName([
-                        x509.NameAttribute(
-                            NameOID.COMMON_NAME,
-                            u"indirect CRL for indirectCRL CA3"
-                        ),
-                    ]),
-                    reasons=None,
-                    crl_issuer=[x509.DirectoryName(
-                        x509.Name([
-                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
-                            x509.NameAttribute(
-                                NameOID.ORGANIZATION_NAME,
-                                u"Test Certificates 2011"
-                            ),
-                            x509.NameAttribute(
-                                NameOID.ORGANIZATIONAL_UNIT_NAME,
-                                u"indirectCRL CA3 cRLIssuer"
-                            ),
-                        ])
-                    )],
-                )
-            ]),
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[x509.DirectoryName(
-                        x509.Name([
-                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
-                        ])
-                    )],
-                    relative_name=None,
-                    reasons=None,
-                    crl_issuer=[x509.DirectoryName(
-                        x509.Name([
-                            x509.NameAttribute(
-                                NameOID.ORGANIZATION_NAME,
-                                u"cryptography Testing"
-                            ),
-                        ])
-                    )],
-                )
-            ]),
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[
-                        x509.UniformResourceIdentifier(
-                            u"http://myhost.com/myca.crl"
-                        ),
-                        x509.UniformResourceIdentifier(
-                            u"http://backup.myhost.com/myca.crl"
-                        )
-                    ],
-                    relative_name=None,
-                    reasons=frozenset([
-                        x509.ReasonFlags.key_compromise,
-                        x509.ReasonFlags.ca_compromise
-                    ]),
-                    crl_issuer=[x509.DirectoryName(
-                        x509.Name([
-                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
-                            x509.NameAttribute(
-                                NameOID.COMMON_NAME, u"cryptography CA"
-                            ),
-                        ])
-                    )],
-                )
-            ]),
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[x509.UniformResourceIdentifier(
-                        u"http://domain.com/some.crl"
-                    )],
-                    relative_name=None,
-                    reasons=frozenset([
-                        x509.ReasonFlags.key_compromise,
-                        x509.ReasonFlags.ca_compromise,
-                        x509.ReasonFlags.affiliation_changed,
-                        x509.ReasonFlags.superseded,
-                        x509.ReasonFlags.privilege_withdrawn,
-                        x509.ReasonFlags.cessation_of_operation,
-                        x509.ReasonFlags.aa_compromise,
-                        x509.ReasonFlags.certificate_hold,
-                    ]),
-                    crl_issuer=None
-                )
-            ]),
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=None,
-                    relative_name=None,
-                    reasons=None,
-                    crl_issuer=[x509.DirectoryName(
-                        x509.Name([
-                            x509.NameAttribute(
-                                NameOID.COMMON_NAME, u"cryptography CA"
-                            ),
-                        ])
-                    )],
-                )
-            ]),
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[x509.UniformResourceIdentifier(
-                        u"http://domain.com/some.crl"
-                    )],
-                    relative_name=None,
-                    reasons=frozenset([x509.ReasonFlags.aa_compromise]),
-                    crl_issuer=None
-                )
-            ])
-        ]
-    )
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_crl_distribution_points(self, backend, cdp):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        builder = x509.CertificateBuilder().serial_number(
-            4444444
-        ).issuer_name(x509.Name([
-            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
-        ])).subject_name(x509.Name([
-            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
-        ])).public_key(
-            subject_private_key.public_key()
-        ).add_extension(
-            cdp,
-            critical=False,
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2030, 12, 31, 8, 30)
-        )
-
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
-
-        ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.CRL_DISTRIBUTION_POINTS
-        )
-        assert ext.critical is False
-        assert ext.value == cdp
-
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_dsa_private_key(self, backend):
@@ -2316,8 +2168,10 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(issuer_private_key, hashes.SHA512(), backend)
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     @pytest.mark.parametrize(
-        "cp",
+        "add_ext",
         [
             x509.CertificatePolicies([
                 x509.PolicyInformation(
@@ -2372,198 +2226,23 @@ class TestCertificateBuilder(object):
                         )
                     ]
                 )
-            ])
-        ]
-    )
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_certificate_policies(self, cp, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
-            cp, critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        ext = cert.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_POLICIES
-        )
-        assert ext.value == cp
-
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_issuer_alt_name(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
+            ]),
             x509.IssuerAlternativeName([
                 x509.DNSName(b"myissuer"),
                 x509.RFC822Name(u"email@domain.com"),
-            ]), critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.ISSUER_ALTERNATIVE_NAME
-        )
-        assert ext.critical is False
-        assert ext.value == x509.IssuerAlternativeName([
-            x509.DNSName(b"myissuer"),
-            x509.RFC822Name(u"email@domain.com"),
-        ])
-
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_extended_key_usage(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
+            ]),
             x509.ExtendedKeyUsage([
                 ExtendedKeyUsageOID.CLIENT_AUTH,
                 ExtendedKeyUsageOID.SERVER_AUTH,
                 ExtendedKeyUsageOID.CODE_SIGNING,
-            ]), critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        eku = cert.extensions.get_extension_for_oid(
-            ExtensionOID.EXTENDED_KEY_USAGE
-        )
-        assert eku.critical is False
-        assert eku.value == x509.ExtendedKeyUsage([
-            ExtendedKeyUsageOID.CLIENT_AUTH,
-            ExtendedKeyUsageOID.SERVER_AUTH,
-            ExtendedKeyUsageOID.CODE_SIGNING,
-        ])
-
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_inhibit_any_policy(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
-            x509.InhibitAnyPolicy(3), critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.INHIBIT_ANY_POLICY
-        )
-        assert ext.value == x509.InhibitAnyPolicy(3)
-
-    @pytest.mark.parametrize(
-        "pc",
-        [
-            x509.PolicyConstraints(
-                require_explicit_policy=None,
-                inhibit_policy_mapping=1
-            ),
-            x509.PolicyConstraints(
-                require_explicit_policy=3,
-                inhibit_policy_mapping=1
-            ),
-            x509.PolicyConstraints(
-                require_explicit_policy=0,
-                inhibit_policy_mapping=None
-            ),
-        ]
-    )
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_policy_constraints(self, backend, pc):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
-            pc, critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        ext = cert.extensions.get_extension_for_class(
-            x509.PolicyConstraints
-        )
-        assert ext.critical is False
-        assert ext.value == pc
-
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    @pytest.mark.parametrize(
-        "nc",
-        [
+            ]),
+            x509.InhibitAnyPolicy(3),
+            x509.TLSFeature([x509.TLSFeatureType.status_request]),
+            x509.TLSFeature([x509.TLSFeatureType.status_request_v2]),
+            x509.TLSFeature([
+                x509.TLSFeatureType.status_request,
+                x509.TLSFeatureType.status_request_v2
+            ]),
             x509.NameConstraints(
                 permitted_subtrees=[
                     x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24")),
@@ -2590,50 +2269,133 @@ class TestCertificateBuilder(object):
                 permitted_subtrees=None,
                 excluded_subtrees=[x509.DNSName(b"name.local")]
             ),
+            x509.PolicyConstraints(
+                require_explicit_policy=None,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=3,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=0,
+                inhibit_policy_mapping=None
+            ),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME,
+                            u"indirect CRL for indirectCRL CA3"
+                        ),
+                    ]),
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(
+                                NameOID.ORGANIZATION_NAME,
+                                u"Test Certificates 2011"
+                            ),
+                            x509.NameAttribute(
+                                NameOID.ORGANIZATIONAL_UNIT_NAME,
+                                u"indirectCRL CA3 cRLIssuer"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+                        ])
+                    )],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                NameOID.ORGANIZATION_NAME,
+                                u"cryptography Testing"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl"
+                        ),
+                        x509.UniformResourceIdentifier(
+                            u"http://backup.myhost.com/myca.crl"
+                        )
+                    ],
+                    relative_name=None,
+                    reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise
+                    ]),
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(
+                                NameOID.COMMON_NAME, u"cryptography CA"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://domain.com/some.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise,
+                        x509.ReasonFlags.affiliation_changed,
+                        x509.ReasonFlags.superseded,
+                        x509.ReasonFlags.privilege_withdrawn,
+                        x509.ReasonFlags.cessation_of_operation,
+                        x509.ReasonFlags.aa_compromise,
+                        x509.ReasonFlags.certificate_hold,
+                    ]),
+                    crl_issuer=None
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                NameOID.COMMON_NAME, u"cryptography CA"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://domain.com/some.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([x509.ReasonFlags.aa_compromise]),
+                    crl_issuer=None
+                )
+            ]),
         ]
     )
-    def test_name_constraints(self, nc, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
-
-        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
-        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
-
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).not_valid_before(
-            not_valid_before
-        ).not_valid_after(
-            not_valid_after
-        ).public_key(
-            subject_private_key.public_key()
-        ).serial_number(
-            123
-        ).add_extension(
-            nc, critical=False
-        ).sign(issuer_private_key, hashes.SHA256(), backend)
-
-        ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.NAME_CONSTRAINTS
-        )
-        assert ext.value == nc
-
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    @pytest.mark.parametrize(
-        "add_ext",
-        [
-            x509.TLSFeature([x509.TLSFeatureType.status_request]),
-            x509.TLSFeature([x509.TLSFeatureType.status_request_v2]),
-            x509.TLSFeature([
-                x509.TLSFeatureType.status_request,
-                x509.TLSFeatureType.status_request_v2
-            ])
-        ]
-    )
-    def test_tls_feature(self, add_ext, backend):
+    def test_ext(self, add_ext, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
@@ -2656,7 +2418,7 @@ class TestCertificateBuilder(object):
             add_ext, critical=False
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
-        ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
+        ext = cert.extensions.get_extension_for_class(type(add_ext))
         assert ext.critical is False
         assert ext.value == add_ext
 
