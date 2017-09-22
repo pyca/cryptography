@@ -2406,6 +2406,38 @@ class TestCertificateBuilder(object):
                     crl_issuer=None
                 )
             ]),
+            x509.FreshestCRL([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://domain.com/some.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise,
+                        x509.ReasonFlags.affiliation_changed,
+                        x509.ReasonFlags.superseded,
+                        x509.ReasonFlags.privilege_withdrawn,
+                        x509.ReasonFlags.cessation_of_operation,
+                        x509.ReasonFlags.aa_compromise,
+                        x509.ReasonFlags.certificate_hold,
+                    ]),
+                    crl_issuer=None
+                )
+            ]),
+            x509.FreshestCRL([
+                x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME,
+                            u"indirect CRL for indirectCRL CA3"
+                        ),
+                    ]),
+                    reasons=None,
+                    crl_issuer=None,
+                )
+            ]),
         ]
     )
     def test_ext(self, add_ext, backend):
