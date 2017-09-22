@@ -326,6 +326,36 @@ class TestCRLReason(object):
         )
 
 
+class TestDeltaCRLIndicator(object):
+    def test_not_int(self):
+        with pytest.raises(TypeError):
+            x509.DeltaCRLIndicator("notanint")
+
+    def test_eq(self):
+        delta1 = x509.DeltaCRLIndicator(1)
+        delta2 = x509.DeltaCRLIndicator(1)
+        assert delta1 == delta2
+
+    def test_ne(self):
+        delta1 = x509.DeltaCRLIndicator(1)
+        delta2 = x509.DeltaCRLIndicator(2)
+        assert delta1 != delta2
+        assert delta1 != object()
+
+    def test_repr(self):
+        delta1 = x509.DeltaCRLIndicator(2)
+        assert repr(delta1) == (
+            "<DeltaCRLIndicator(crl_number=2)>"
+        )
+
+    def test_hash(self):
+        delta1 = x509.DeltaCRLIndicator(1)
+        delta2 = x509.DeltaCRLIndicator(1)
+        delta3 = x509.DeltaCRLIndicator(2)
+        assert hash(delta1) == hash(delta2)
+        assert hash(delta1) != hash(delta3)
+
+
 class TestInvalidityDate(object):
     def test_invalid_invalidity_date(self):
         with pytest.raises(TypeError):

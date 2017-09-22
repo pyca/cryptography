@@ -133,8 +133,8 @@ def _encode_name_entry(backend, attribute):
     return name_entry
 
 
-def _encode_crl_number(backend, crl_number):
-    return _encode_asn1_int_gc(backend, crl_number.crl_number)
+def _encode_crl_number_delta_crl_indicator(backend, ext):
+    return _encode_asn1_int_gc(backend, ext.crl_number)
 
 
 def _encode_crl_reason(backend, crl_reason):
@@ -598,7 +598,8 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
-    ExtensionOID.CRL_NUMBER: _encode_crl_number,
+    ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
+    ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
 }
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {

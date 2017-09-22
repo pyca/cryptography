@@ -376,6 +376,34 @@ class BasicConstraints(object):
 
 
 @utils.register_interface(ExtensionType)
+class DeltaCRLIndicator(object):
+    oid = ExtensionOID.DELTA_CRL_INDICATOR
+
+    def __init__(self, crl_number):
+        if not isinstance(crl_number, six.integer_types):
+            raise TypeError("crl_number must be an integer")
+
+        self._crl_number = crl_number
+
+    crl_number = utils.read_only_property("_crl_number")
+
+    def __eq__(self, other):
+        if not isinstance(other, DeltaCRLIndicator):
+            return NotImplemented
+
+        return self.crl_number == other.crl_number
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.crl_number)
+
+    def __repr__(self):
+        return "<DeltaCRLIndicator(crl_number={0.crl_number})>".format(self)
+
+
+@utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 

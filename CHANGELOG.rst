@@ -41,6 +41,7 @@ Changelog
 * Added support for using labels with
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
   OpenSSL 1.0.2 or greater.
+* Add support for the :class:`~cryptography.x509.DeltaCRLIndicator` extension.
 * Add support for the :class:`~cryptography.x509.TLSFeature`
   extension. This is commonly used for enabling ``OCSP Must-Staple`` in
   certificates.
