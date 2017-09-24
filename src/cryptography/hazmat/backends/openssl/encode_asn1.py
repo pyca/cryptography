@@ -484,10 +484,10 @@ _CRLREASONFLAGS = {
 }
 
 
-def _encode_crl_distribution_points(backend, crl_distribution_points):
+def _encode_cdps_freshest_crl(backend, cdps):
     cdp = backend._lib.sk_DIST_POINT_new_null()
     cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
-    for point in crl_distribution_points:
+    for point in cdps:
         dp = backend._lib.DIST_POINT_new()
         backend.openssl_assert(dp != backend._ffi.NULL)
 
@@ -585,7 +585,8 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
-    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
+    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,

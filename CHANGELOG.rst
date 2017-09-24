@@ -45,6 +45,7 @@ Changelog
 * Add support for the :class:`~cryptography.x509.TLSFeature`
   extension. This is commonly used for enabling ``OCSP Must-Staple`` in
   certificates.
+* Add support for the :class:`~cryptography.x509.FreshestCRL` extension.
 
 
 .. _v2-0-3:

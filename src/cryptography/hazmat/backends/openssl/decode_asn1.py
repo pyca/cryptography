@@ -463,7 +463,7 @@ _DISTPOINT_TYPE_FULLNAME = 0
 _DISTPOINT_TYPE_RELATIVENAME = 1
 
 
-def _decode_crl_distribution_points(backend, cdps):
+def _decode_dist_points(backend, cdps):
     cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
     cdps = backend._ffi.gc(cdps, backend._lib.CRL_DIST_POINTS_free)
 
@@ -554,7 +554,17 @@ def _decode_crl_distribution_points(backend, cdps):
             )
         )
 
+    return dist_points
+
+
+def _decode_crl_distribution_points(backend, cdps):
+    dist_points = _decode_dist_points(backend, cdps)
     return x509.CRLDistributionPoints(dist_points)
+
+
+def _decode_freshest_crl(backend, cdps):
+    dist_points = _decode_dist_points(backend, cdps)
+    return x509.FreshestCRL(dist_points)
 
 
 def _decode_inhibit_any_policy(backend, asn1_int):
@@ -728,6 +738,7 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ),
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
+    ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
     ExtensionOID.OCSP_NO_CHECK: _decode_ocsp_no_check,
     ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
