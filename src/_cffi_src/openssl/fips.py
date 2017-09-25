@@ -14,7 +14,6 @@ TYPES = """
 FUNCTIONS = """
 int FIPS_mode_set(int);
 int FIPS_mode(void);
-void FIPS_selftest_check(void);
 """
 
 CUSTOMIZATIONS = """
