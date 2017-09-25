@@ -76,6 +76,7 @@ ffi = build_ffi_for_binding(
         "engine",
         "err",
         "evp",
+        "fips",
         "hmac",
         "nid",
         "objects",
