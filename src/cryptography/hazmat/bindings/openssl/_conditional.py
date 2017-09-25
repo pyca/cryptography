@@ -243,14 +243,6 @@ def cryptography_has_evp_pkey_get_set_tls_encodedpoint():
     ]
 
 
-def cryptography_has_fips():
-    return [
-        "FIPS_set_mode",
-        "FIPS_mode",
-        "FIPS_selftest_check",
-    ]
-
-
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -300,5 +292,4 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": (
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
-    "Cryptography_HAS_FIPS": cryptography_has_fips,
 }

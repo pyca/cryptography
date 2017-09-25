@@ -9,7 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_FIPS;
 """
 
 FUNCTIONS = """
@@ -19,12 +18,4 @@ void FIPS_selftest_check(void);
 """
 
 CUSTOMIZATIONS = """
-#ifdef OPENSSL_FIPS
-static const long Cryptography_HAS_FIPS = 1;
-# else
-static const long Cryptography_HAS_FIPS = 0;
-int (*FIPS_mode_set)(int) = NULL;
-int (*FIPS_mode)(void) = NULL;
-void (*FIPS_selftest_check)(void) = NULL;
-#endif
 """
