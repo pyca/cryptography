@@ -31,10 +31,10 @@ from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )
-from ...test_x509 import _load_cert
 from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
+from ...x509.test_x509 import _load_cert
 
 
 def skip_if_libre_ssl(openssl_version):
@@ -419,18 +419,6 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
                     algorithm=hashes.MD5(),
                     label=None
-                )
-            )
-
-    def test_unsupported_oaep_label_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(ValueError):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=b"label"
                 )
             )
 

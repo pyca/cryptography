@@ -7,8 +7,6 @@ from __future__ import absolute_import, division, print_function
 import calendar
 import ipaddress
 
-import idna
-
 import six
 
 from cryptography import utils, x509
@@ -93,7 +91,7 @@ def _encode_name(backend, name):
                 name_entry, backend._lib.X509_NAME_ENTRY_free
             )
             res = backend._lib.X509_NAME_add_entry(
-                    subject, name_entry, -1, set_flag)
+                subject, name_entry, -1, set_flag)
             backend.openssl_assert(res == 1)
             set_flag = -1
     return subject
@@ -135,8 +133,8 @@ def _encode_name_entry(backend, attribute):
     return name_entry
 
 
-def _encode_crl_number(backend, crl_number):
-    return _encode_asn1_int_gc(backend, crl_number.crl_number)
+def _encode_crl_number_delta_crl_indicator(backend, ext):
+    return _encode_asn1_int_gc(backend, ext.crl_number)
 
 
 def _encode_crl_reason(backend, crl_reason):
@@ -370,15 +368,6 @@ def _encode_subject_key_identifier(backend, ski):
     return _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
 
 
-def _idna_encode(value):
-    # Retain prefixes '*.' for common/alt names and '.' for name constraints
-    for prefix in ['*.', '.']:
-        if value.startswith(prefix):
-            value = value[len(prefix):]
-            return prefix.encode('ascii') + idna.encode(value)
-    return idna.encode(value)
-
-
 def _encode_general_name(backend, name):
     if isinstance(name, x509.DNSName):
         gn = backend._lib.GENERAL_NAME_new()
@@ -387,7 +376,7 @@ def _encode_general_name(backend, name):
 
         ia5 = backend._lib.ASN1_IA5STRING_new()
         backend.openssl_assert(ia5 != backend._ffi.NULL)
-        value = _idna_encode(name.value)
+        value = name.bytes_value
 
         res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
         backend.openssl_assert(res == 1)
@@ -452,7 +441,7 @@ def _encode_general_name(backend, name):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         asn1_str = _encode_asn1_str(
-            backend, name._encoded, len(name._encoded)
+            backend, name.bytes_value, len(name.bytes_value)
         )
         gn.type = backend._lib.GEN_EMAIL
         gn.d.rfc822Name = asn1_str
@@ -460,7 +449,7 @@ def _encode_general_name(backend, name):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         asn1_str = _encode_asn1_str(
-            backend, name._encoded, len(name._encoded)
+            backend, name.bytes_value, len(name.bytes_value)
         )
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
@@ -495,10 +484,10 @@ _CRLREASONFLAGS = {
 }
 
 
-def _encode_crl_distribution_points(backend, crl_distribution_points):
+def _encode_cdps_freshest_crl(backend, cdps):
     cdp = backend._lib.sk_DIST_POINT_new_null()
     cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
-    for point in crl_distribution_points:
+    for point in cdps:
         dp = backend._lib.DIST_POINT_new()
         backend.openssl_assert(dp != backend._ffi.NULL)
 
@@ -596,7 +585,8 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
-    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
+    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
@@ -609,7 +599,8 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
-    ExtensionOID.CRL_NUMBER: _encode_crl_number,
+    ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
+    ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
 }
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {

@@ -17,7 +17,7 @@ def configs = [
     ],
     [
         label: 'sierra',
-        toxenvs: ['py27'],
+        toxenvs: ['py27', 'py36'],
     ],
     [
         label: 'yosemite',
@@ -56,6 +56,11 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-jessie-libressl:2.6.1',
         toxenvs: ['py27'],
     ],
     [
@@ -241,9 +246,10 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
                             call .codecov/Scripts/activate
+                            REM this pin must be kept in sync with tox.ini
                             pip install coverage==4.3.4
                             pip install codecov
-                            codecov -e JOB_BASE_NAME,LABEL
+                            codecov -e JOB_BASE_NAME,LABEL,TOXENV
                         """
                     } else if (label.contains("sierra") || label.contains("yosemite")) {
                         ansiColor {
@@ -259,8 +265,9 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                     tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
+                                # This pin must be kept in sync with tox.ini
                                 pip install coverage==4.3.4
-                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
+                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
                             """
                         }
                     } else {
@@ -278,8 +285,9 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 fi
                                 virtualenv .venv
                                 source .venv/bin/activate
+                                # This pin must be kept in sync with tox.ini
                                 pip install coverage==4.3.4
-                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
+                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV,IMAGE_NAME
                             """
                         }
                         if (artifacts) {

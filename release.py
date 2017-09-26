@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import getpass
+import glob
 import io
 import os
 import subprocess
@@ -24,13 +25,8 @@ JENKINS_URL = (
 
 
 def run(*args, **kwargs):
-    kwargs.setdefault("stderr", subprocess.STDOUT)
-    try:
-        subprocess.check_output(list(args), **kwargs)
-    except subprocess.CalledProcessError as e:
-        # Reraise this with a different type so that str(e) is something with
-        # stdout in it.
-        raise Exception(e.cmd, e.returncode, e.output)
+    print("[running] {0}".format(list(args)))
+    subprocess.check_call(list(args), **kwargs)
 
 
 def wait_for_build_completed(session):
@@ -106,10 +102,11 @@ def release(version):
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    run(
-        "twine", "upload", "-s", "dist/cryptography-{0}*".format(version),
-        "vectors/dist/cryptography_vectors-{0}*".format(version), shell=True
+    packages = (
+        glob.glob("dist/cryptography-{0}*".format(version)) +
+        glob.glob("vectors/dist/cryptography_vectors-{0}*".format(version))
     )
+    run("twine", "upload", "-s", *packages)
 
     session = requests.Session()
 
@@ -123,7 +120,7 @@ def release(version):
 
     token = getpass.getpass("Input the Jenkins token: ")
     response = session.get(
-        "{0}/build".format(JENKINS_URL),
+        "{0}/buildWithParameters".format(JENKINS_URL),
         params={
             "token": token,
             "BUILD_VERSION": version,

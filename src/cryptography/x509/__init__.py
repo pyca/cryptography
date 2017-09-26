@@ -18,13 +18,13 @@ from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
     AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
     CRLNumber, CRLReason, CertificateIssuer, CertificatePolicies,
-    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
-    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
-    InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
-    NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
+    DeltaCRLIndicator, DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
+    Extension, ExtensionNotFound, ExtensionType, Extensions, FreshestCRL,
+    GeneralNames, InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName,
+    KeyUsage, NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
     PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
-    SubjectAlternativeName, SubjectKeyIdentifier, UnrecognizedExtension,
-    UserNotice
+    SubjectAlternativeName, SubjectKeyIdentifier, TLSFeature, TLSFeatureType,
+    UnrecognizedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -119,6 +119,7 @@ __all__ = [
     "load_der_x509_crl",
     "random_serial_number",
     "InvalidVersion",
+    "DeltaCRLIndicator",
     "DuplicateExtension",
     "ExtensionNotFound",
     "UnsupportedGeneralNameType",
@@ -130,6 +131,9 @@ __all__ = [
     "Extensions",
     "Extension",
     "ExtendedKeyUsage",
+    "FreshestCRL",
+    "TLSFeature",
+    "TLSFeatureType",
     "OCSPNoCheck",
     "BasicConstraints",
     "CRLNumber",

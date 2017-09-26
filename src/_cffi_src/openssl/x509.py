@@ -356,9 +356,9 @@ int X509_get_signature_nid(const X509 *x)
 
 #endif
 
-/* Added in 1.0.2beta3 but we need it in all versions now due to the great
+/* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102BETA3
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {

@@ -702,7 +702,7 @@ Key interfaces
         :param algorithm: An instance of
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
             :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
-            if the ``data`` you want to sign has already been hashed.
+            if the ``data`` you want to verify has already been hashed.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.

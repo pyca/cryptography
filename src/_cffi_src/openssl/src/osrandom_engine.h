@@ -13,6 +13,9 @@
 
   #ifdef __APPLE__
     #include <sys/random.h>
+    /* To support weak linking we need to declare this as a weak import even if
+     * it's not present in sys/random (e.g. macOS < 10.12). */
+    extern int getentropy(void *buffer, size_t size) __attribute((weak_import));
   #endif
 
   #ifdef __linux__

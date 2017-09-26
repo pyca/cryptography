@@ -7,18 +7,17 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import ipaddress
 
-from email.utils import parseaddr
-
-import idna
-
-import six
-
-from six.moves import urllib_parse
+from asn1crypto.core import Integer, SequenceOf
 
 from cryptography import x509
+from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
+
+
+class _Integers(SequenceOf):
+    _child_spec = Integer
 
 
 def _obj2txt(backend, obj):
@@ -88,47 +87,10 @@ def _decode_general_names(backend, gns):
 def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = _asn1_string_to_bytes(backend, gn.d.dNSName)
-        if not data:
-            decoded = u""
-        elif data.startswith(b"*."):
-            # This is a wildcard name. We need to remove the leading wildcard,
-            # IDNA decode, then re-add the wildcard. Wildcard characters should
-            # always be left-most (RFC 2595 section 2.4).
-            decoded = u"*." + idna.decode(data[2:])
-        else:
-            # Not a wildcard, decode away. If the string has a * in it anywhere
-            # invalid this will raise an InvalidCodePoint
-            decoded = idna.decode(data)
-            if data.startswith(b"."):
-                # idna strips leading periods. Name constraints can have that
-                # so we need to re-add it. Sigh.
-                decoded = u"." + decoded
-
-        return x509.DNSName(decoded)
+        return x509.DNSName(data)
     elif gn.type == backend._lib.GEN_URI:
-        data = _asn1_string_to_ascii(backend, gn.d.uniformResourceIdentifier)
-        parsed = urllib_parse.urlparse(data)
-        if parsed.hostname:
-            hostname = idna.decode(parsed.hostname)
-        else:
-            hostname = ""
-        if parsed.port:
-            netloc = hostname + u":" + six.text_type(parsed.port)
-        else:
-            netloc = hostname
-
-        # Note that building a URL in this fashion means it should be
-        # semantically indistinguishable from the original but is not
-        # guaranteed to be exactly the same.
-        uri = urllib_parse.urlunparse((
-            parsed.scheme,
-            netloc,
-            parsed.path,
-            parsed.params,
-            parsed.query,
-            parsed.fragment
-        ))
-        return x509.UniformResourceIdentifier(uri)
+        data = _asn1_string_to_bytes(backend, gn.d.uniformResourceIdentifier)
+        return x509.UniformResourceIdentifier(data)
     elif gn.type == backend._lib.GEN_RID:
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
@@ -164,23 +126,8 @@ def _decode_general_name(backend, gn):
             _decode_x509_name(backend, gn.d.directoryName)
         )
     elif gn.type == backend._lib.GEN_EMAIL:
-        data = _asn1_string_to_ascii(backend, gn.d.rfc822Name)
-        name, address = parseaddr(data)
-        parts = address.split(u"@")
-        if name or not address:
-            # parseaddr has found a name (e.g. Name <email>) or the entire
-            # value is an empty string.
-            raise ValueError("Invalid rfc822name value")
-        elif len(parts) == 1:
-            # Single label email name. This is valid for local delivery. No
-            # IDNA decoding can be done since there is no domain component.
-            return x509.RFC822Name(address)
-        else:
-            # A normal email of the form user@domain.com. Let's attempt to
-            # decode the domain component and return the entire address.
-            return x509.RFC822Name(
-                parts[0] + u"@" + idna.decode(parts[1])
-            )
+        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name)
+        return x509.RFC822Name(data)
     elif gn.type == backend._lib.GEN_OTHERNAME:
         type_id = _obj2txt(backend, gn.d.otherName.type_id)
         value = _asn1_to_der(backend, gn.d.otherName.value)
@@ -205,6 +152,12 @@ def _decode_crl_number(backend, ext):
     return x509.CRLNumber(_asn1_integer_to_int(backend, asn1_int))
 
 
+def _decode_delta_crl_indicator(backend, ext):
+    asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
+    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
+    return x509.DeltaCRLIndicator(_asn1_integer_to_int(backend, asn1_int))
+
+
 class _X509ExtensionParser(object):
     def __init__(self, ext_count, get_ext, handlers):
         self.ext_count = ext_count
@@ -226,6 +179,20 @@ class _X509ExtensionParser(object):
                 raise x509.DuplicateExtension(
                     "Duplicate {0} extension found".format(oid), oid
                 )
+
+            # This OID is only supported in OpenSSL 1.1.0+ but we want
+            # to support it in all versions of OpenSSL so we decode it
+            # ourselves.
+            if oid == ExtensionOID.TLS_FEATURE:
+                data = backend._lib.X509_EXTENSION_get_data(ext)
+                parsed = _Integers.load(_asn1_string_to_bytes(backend, data))
+                value = x509.TLSFeature(
+                    [_TLS_FEATURE_TYPE_TO_ENUM[x.native] for x in parsed]
+                )
+                extensions.append(x509.Extension(oid, critical, value))
+                seen_oids.add(oid)
+                continue
+
             try:
                 handler = self.handlers[oid]
             except KeyError:
@@ -496,7 +463,7 @@ _DISTPOINT_TYPE_FULLNAME = 0
 _DISTPOINT_TYPE_RELATIVENAME = 1
 
 
-def _decode_crl_distribution_points(backend, cdps):
+def _decode_dist_points(backend, cdps):
     cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
     cdps = backend._ffi.gc(cdps, backend._lib.CRL_DIST_POINTS_free)
 
@@ -587,7 +554,17 @@ def _decode_crl_distribution_points(backend, cdps):
             )
         )
 
+    return dist_points
+
+
+def _decode_crl_distribution_points(backend, cdps):
+    dist_points = _decode_dist_points(backend, cdps)
     return x509.CRLDistributionPoints(dist_points)
+
+
+def _decode_freshest_crl(backend, cdps):
+    dist_points = _decode_dist_points(backend, cdps)
+    return x509.FreshestCRL(dist_points)
 
 
 def _decode_inhibit_any_policy(backend, asn1_int):
@@ -761,6 +738,7 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ),
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
+    ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
     ExtensionOID.OCSP_NO_CHECK: _decode_ocsp_no_check,
     ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
@@ -781,6 +759,7 @@ _REVOKED_EXTENSION_HANDLERS = {
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.CRL_NUMBER: _decode_crl_number,
+    ExtensionOID.DELTA_CRL_INDICATOR: _decode_delta_crl_indicator,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
