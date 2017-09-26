@@ -8,6 +8,7 @@ from cryptography import utils
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm
 )
+from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
 def _verify_key_size(algorithm, key):
@@ -141,6 +142,7 @@ class SEED(object):
 
 
 @utils.register_interface(CipherAlgorithm)
+@utils.register_interface(ModeWithNonce)
 class ChaCha20(object):
     name = "ChaCha20"
     key_sizes = frozenset([256])
@@ -153,7 +155,9 @@ class ChaCha20(object):
         if len(nonce) != 16:
             raise ValueError("nonce must be 128-bits (16 bytes)")
 
-        self.nonce = nonce
+        self._nonce = nonce
+
+    nonce = utils.read_only_property("_nonce")
 
     @property
     def key_size(self):

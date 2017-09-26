@@ -112,13 +112,16 @@ Algorithms
 
         In most cases users should use
         :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
-        instead of this class.
+        instead of this class. `ChaCha20` alone does not provide integrity
+        so it must be combined with a MAC to be secure.
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        does this for you.
 
     ChaCha20 is a stream cipher used in several IETF protocols. It is
     standardized in :rfc:`7539`.
 
     :param bytes key: The secret key. This must be kept secret. ``256`` bits
-        in length.
+        (16 bytes) in length.
 
     :param bytes nonce: Should be unique, a :term:`nonce`. It is
         critical to never reuse a ``nonce`` with a given key.  Any reuse of a
@@ -142,7 +145,7 @@ Algorithms
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> nonce = os.urandom(16)
-        >>> algorithm = algorithms.ChaCha20(key,nonce)
+        >>> algorithm = algorithms.ChaCha20(key, nonce)
         >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
