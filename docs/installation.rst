@@ -15,7 +15,7 @@ PyPy 5.3+ on these operating systems.
 
 * x86-64 CentOS 7.x
 * x86-64 FreeBSD 11
-* macOS 10.12 Sierra, 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks
+* macOS 10.12 Sierra, 10.11 El Capitan
 * x86-64 Ubuntu 14.04, 16.04, and rolling
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
 * x86-64 Alpine (latest)
