@@ -28,6 +28,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature
 )
+from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
     NameOID, SignatureAlgorithmOID
@@ -1495,6 +1496,43 @@ class TestRSACertificateRequest(object):
         assert list(subject_alternative_name.value) == [
             x509.DNSName(b"cryptography.io"),
         ]
+
+    def test_build_cert_private_type_encoding(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+        name = x509.Name([
+            x509.NameAttribute(
+                NameOID.STATE_OR_PROVINCE_NAME, u'Texas',
+                _ASN1Type.PrintableString),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(
+                NameOID.COMMON_NAME, u'cryptography.io', _ASN1Type.IA5String),
+        ])
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(
+            name
+        ).subject_name(
+            name
+        ).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(not_valid_after)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        for dn in (cert.subject, cert.issuer):
+            assert dn.get_attributes_for_oid(
+                NameOID.STATE_OR_PROVINCE_NAME
+            )[0]._type == _ASN1Type.PrintableString
+            assert dn.get_attributes_for_oid(
+                NameOID.STATE_OR_PROVINCE_NAME
+            )[0]._type == _ASN1Type.PrintableString
+            assert dn.get_attributes_for_oid(
+                NameOID.LOCALITY_NAME
+            )[0]._type == _ASN1Type.UTF8String
 
     def test_build_cert_printable_string_country_name(self, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
@@ -3627,6 +3665,26 @@ class TestNameAttribute(object):
     def test_init_empty_value(self):
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'')
+
+    def test_country_name_type(self):
+        na = x509.NameAttribute(NameOID.COUNTRY_NAME, u"US")
+        assert na._type == _ASN1Type.PrintableString
+        na2 = x509.NameAttribute(
+            NameOID.COUNTRY_NAME, u"US", _ASN1Type.IA5String
+        )
+        assert na2._type == _ASN1Type.IA5String
+
+    def test_types(self):
+        na = x509.NameAttribute(NameOID.COMMON_NAME, u"common")
+        assert na._type == _ASN1Type.UTF8String
+        na2 = x509.NameAttribute(
+            NameOID.COMMON_NAME, u"common", _ASN1Type.IA5String
+        )
+        assert na2._type == _ASN1Type.IA5String
+
+    def test_invalid_type(self):
+        with pytest.raises(TypeError):
+            x509.NameAttribute(NameOID.COMMON_NAME, u"common", "notanenum")
 
     def test_eq(self):
         assert x509.NameAttribute(
