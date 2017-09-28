@@ -33,6 +33,11 @@ Changelog
   :attr:`~cryptography.x509.RFC822Name.value` attribute was deprecated, users
   should use :attr:`~cryptography.x509.RFC822Name.bytes_value` to access the
   raw value.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`. In
+  most cases users should choose
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+  rather than using this unauthenticated form.
 * Added :meth:`~cryptography.x509.CertificateRevocationList.is_signature_valid`
   to :class:`~cryptography.x509.CertificateRevocationList`.
 * Support :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and

@@ -59,6 +59,8 @@ class _CipherContext(object):
             iv_nonce = mode.initialization_vector
         elif isinstance(mode, modes.ModeWithNonce):
             iv_nonce = mode.nonce
+        elif isinstance(cipher, modes.ModeWithNonce):
+            iv_nonce = cipher.nonce
         else:
             iv_nonce = self._backend._ffi.NULL
         # begin init with cipher and operation type

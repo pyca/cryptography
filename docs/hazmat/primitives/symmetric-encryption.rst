@@ -104,6 +104,55 @@ Algorithms
     :param bytes key: The secret key. This must be kept secret. Either ``128``,
         ``192``, or ``256`` bits long.
 
+.. class:: ChaCha20(key)
+
+    .. versionadded:: 2.1
+
+    .. note::
+
+        In most cases users should use
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        instead of this class. `ChaCha20` alone does not provide integrity
+        so it must be combined with a MAC to be secure.
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        does this for you.
+
+    ChaCha20 is a stream cipher used in several IETF protocols. It is
+    standardized in :rfc:`7539`.
+
+    :param bytes key: The secret key. This must be kept secret. ``256`` bits
+        (32 bytes) in length.
+
+    :param bytes nonce: Should be unique, a :term:`nonce`. It is
+        critical to never reuse a ``nonce`` with a given key.  Any reuse of a
+        nonce with the same key compromises the security of every message
+        encrypted with that key. The nonce does not need to be kept secret
+        and may be included with the ciphertext. This must be ``128`` bits in
+        length.
+
+        .. note::
+
+            In :rfc:`7539` the nonce is defined as a 96-bit value that is later
+            concatenated with a block counter (encoded as a 32-bit
+            little-endian). If you have a separate nonce and block counter
+            you will need to concatenate it yourself before passing it. For
+            example if you have an initial block counter of 2 and a 96-bit
+            nonce the concatenated nonce would be
+            ``struct.pack("<i", 2) + nonce``.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> nonce = os.urandom(16)
+        >>> algorithm = algorithms.ChaCha20(key, nonce)
+        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        'a secret message'
+
 .. class:: TripleDES(key)
 
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
