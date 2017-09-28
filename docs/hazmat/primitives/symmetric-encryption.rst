@@ -121,7 +121,7 @@ Algorithms
     standardized in :rfc:`7539`.
 
     :param bytes key: The secret key. This must be kept secret. ``256`` bits
-        (16 bytes) in length.
+        (32 bytes) in length.
 
     :param bytes nonce: Should be unique, a :term:`nonce`. It is
         critical to never reuse a ``nonce`` with a given key.  Any reuse of a
