@@ -2016,10 +2016,12 @@ class TestOtherName(object):
 class TestGeneralNames(object):
     def test_get_values_for_type(self):
         gns = x509.GeneralNames(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(b"cryptography.io")],
         )
-        names = gns.get_values_for_type(x509.DNSName)
+        names = gns.get_values_for_type(x509.DNSName, False)
         assert names == [u"cryptography.io"]
+        names2 = gns.get_values_for_type(x509.DNSName, True)
+        assert names2 == [b"cryptography.io"]
 
     def test_iter_names(self):
         gns = x509.GeneralNames([
