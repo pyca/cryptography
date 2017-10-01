@@ -476,12 +476,13 @@ Modes
     .. warning::
 
         XTS mode is meant for disk encryption and should not be used in other
-        contexts.
+        contexts. ``cryptography`` only supports XTS mode with
+        :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`.
 
     .. note::
 
-        AES XTS keys are double length. This means that to do AES 128
-        encryption in XTS mode you need a 256-bit key. Similarly, AES 256
+        AES XTS keys are double length. This means that to do AES-128
+        encryption in XTS mode you need a 256-bit key. Similarly, AES-256
         requires passing a 512-bit key. AES 192 is not supported in XTS mode.
 
     XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
@@ -490,7 +491,9 @@ Modes
     **This mode does not require padding.**
 
     :param bytes tweak: The tweak is a 16 byte value typically derived from
-        something like the disk sector number.
+        something like the disk sector number. A given ``(tweak, key)`` pair
+        should not be reused, although doing so is less catastrophic than
+        in CTR mode.
 
 
 Insecure modes
