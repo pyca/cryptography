@@ -9,6 +9,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **FINAL DEPRECATION** Python 2.6 support is deprecated, and will be removed
+  in the next release of ``cryptography``.
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
