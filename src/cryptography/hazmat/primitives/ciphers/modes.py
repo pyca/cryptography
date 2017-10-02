@@ -125,8 +125,7 @@ class XTS(object):
 class ECB(object):
     name = "ECB"
 
-    def validate_for_algorithm(self, algorithm):
-        pass
+    validate_for_algorithm = _check_aes_key_length
 
 
 @utils.register_interface(Mode)
