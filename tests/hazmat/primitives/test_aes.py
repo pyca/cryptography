@@ -27,7 +27,9 @@ class TestAESModeXTS(object):
     @pytest.mark.parametrize(
         "vector",
         # This list comprehension excludes any vector that does not have a
-        # data unit length that is divisible by 8
+        # data unit length that is divisible by 8. The NIST vectors include
+        # tests for implementations that support encryption of data that is
+        # not divisible modulo 8, but OpenSSL is not such an implementation.
         [x for x in _load_all_params(
             os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
             ["XTSGenAES128.rsp", "XTSGenAES256.rsp"],
