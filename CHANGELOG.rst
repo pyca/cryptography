@@ -45,6 +45,9 @@ Changelog
 * Support :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b` and
   :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s` with
   :class:`~cryptography.hazmat.primitives.hmac.HMAC`.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.XTS` mode for
+  AES.
 * Added support for using labels with
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
   OpenSSL 1.0.2 or greater.
@@ -55,7 +58,6 @@ Changelog
   extension. This is commonly used for enabling ``OCSP Must-Staple`` in
   certificates.
 * Add support for the :class:`~cryptography.x509.FreshestCRL` extension.
-
 
 .. _v2-0-3:
 

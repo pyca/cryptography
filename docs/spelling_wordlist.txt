@@ -11,6 +11,7 @@ Botan
 Capitan
 Changelog
 ciphertext
+codebook
 committer
 committers
 conda
@@ -99,3 +100,4 @@ Verisign
 wildcard
 WoSign
 Xcode
+XEX

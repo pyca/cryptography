@@ -57,6 +57,8 @@ class _CipherContext(object):
 
         if isinstance(mode, modes.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
+        elif isinstance(mode, modes.ModeWithTweak):
+            iv_nonce = mode.tweak
         elif isinstance(mode, modes.ModeWithNonce):
             iv_nonce = mode.nonce
         elif isinstance(cipher, modes.ModeWithNonce):

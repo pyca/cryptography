@@ -12,8 +12,42 @@ import pytest
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
-from .utils import generate_aead_test, generate_encrypt_test
+from .utils import _load_all_params, generate_aead_test, generate_encrypt_test
 from ...utils import load_nist_vectors
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 32), modes.XTS(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES XTS",
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+class TestAESModeXTS(object):
+    @pytest.mark.parametrize(
+        "vector",
+        # This list comprehension excludes any vector that does not have a
+        # data unit length that is divisible by 8. The NIST vectors include
+        # tests for implementations that support encryption of data that is
+        # not divisible modulo 8, but OpenSSL is not such an implementation.
+        [x for x in _load_all_params(
+            os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
+            ["XTSGenAES128.rsp", "XTSGenAES256.rsp"],
+            load_nist_vectors
+        ) if int(x["dataunitlen"]) / 8.0 == int(x["dataunitlen"]) // 8]
+    )
+    def test_xts_vectors(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        tweak = binascii.unhexlify(vector["i"])
+        pt = binascii.unhexlify(vector["pt"])
+        ct = binascii.unhexlify(vector["ct"])
+        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak), backend)
+        enc = cipher.encryptor()
+        computed_ct = enc.update(pt) + enc.finalize()
+        assert computed_ct == ct
+        dec = cipher.decryptor()
+        computed_pt = dec.update(ct) + dec.finalize()
+        assert computed_pt == pt
 
 
 @pytest.mark.supported(

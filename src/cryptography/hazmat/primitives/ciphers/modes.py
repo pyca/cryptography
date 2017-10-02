@@ -37,6 +37,15 @@ class ModeWithInitializationVector(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class ModeWithTweak(object):
+    @abc.abstractproperty
+    def tweak(self):
+        """
+        The value of the tweak for this mode as bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class ModeWithNonce(object):
     @abc.abstractproperty
     def nonce(self):
@@ -54,11 +63,23 @@ class ModeWithAuthenticationTag(object):
         """
 
 
+def _check_aes_key_length(self, algorithm):
+    if algorithm.key_size > 256 and algorithm.name == "AES":
+        raise ValueError(
+            "Only 128, 192, and 256 bit keys are allowed for this AES mode"
+        )
+
+
 def _check_iv_length(self, algorithm):
     if len(self.initialization_vector) * 8 != algorithm.block_size:
         raise ValueError("Invalid IV size ({0}) for {1}.".format(
             len(self.initialization_vector), self.name
         ))
+
+
+def _check_iv_and_key_length(self, algorithm):
+    _check_aes_key_length(self, algorithm)
+    _check_iv_length(self, algorithm)
 
 
 @utils.register_interface(Mode)
@@ -73,15 +94,38 @@ class CBC(object):
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
-    validate_for_algorithm = _check_iv_length
+    validate_for_algorithm = _check_iv_and_key_length
+
+
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithTweak)
+class XTS(object):
+    name = "XTS"
+
+    def __init__(self, tweak):
+        if not isinstance(tweak, bytes):
+            raise TypeError("tweak must be bytes")
+
+        if len(tweak) != 16:
+            raise ValueError("tweak must be 128-bits (16 bytes)")
+
+        self._tweak = tweak
+
+    tweak = utils.read_only_property("_tweak")
+
+    def validate_for_algorithm(self, algorithm):
+        if algorithm.key_size not in (256, 512):
+            raise ValueError(
+                "The XTS specification requires a 256-bit key for AES-128-XTS"
+                " and 512-bit key for AES-256-XTS"
+            )
 
 
 @utils.register_interface(Mode)
 class ECB(object):
     name = "ECB"
 
-    def validate_for_algorithm(self, algorithm):
-        pass
+    validate_for_algorithm = _check_aes_key_length
 
 
 @utils.register_interface(Mode)
@@ -96,7 +140,7 @@ class OFB(object):
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
-    validate_for_algorithm = _check_iv_length
+    validate_for_algorithm = _check_iv_and_key_length
 
 
 @utils.register_interface(Mode)
@@ -111,7 +155,7 @@ class CFB(object):
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
-    validate_for_algorithm = _check_iv_length
+    validate_for_algorithm = _check_iv_and_key_length
 
 
 @utils.register_interface(Mode)
@@ -126,7 +170,7 @@ class CFB8(object):
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
-    validate_for_algorithm = _check_iv_length
+    validate_for_algorithm = _check_iv_and_key_length
 
 
 @utils.register_interface(Mode)
@@ -143,6 +187,7 @@ class CTR(object):
     nonce = utils.read_only_property("_nonce")
 
     def validate_for_algorithm(self, algorithm):
+        _check_aes_key_length(self, algorithm)
         if len(self.nonce) * 8 != algorithm.block_size:
             raise ValueError("Invalid nonce size ({0}) for {1}.".format(
                 len(self.nonce), self.name
@@ -180,4 +225,4 @@ class GCM(object):
     initialization_vector = utils.read_only_property("_initialization_vector")
 
     def validate_for_algorithm(self, algorithm):
-        pass
+        _check_aes_key_length(self, algorithm)
