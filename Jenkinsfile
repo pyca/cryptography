@@ -363,15 +363,12 @@ builders["setup.py-test"] = {
     }
 }
 
-parallel builders
-
-def downstreamBuilders = [:]
 for (downstream in downstreams) {
     def downstreamName = downstream["downstreamName"]
     def imageName = downstream["imageName"]
     def label = downstream["label"]
     def script = downstream["script"]
-    downstreamBuilders[downstreamName] = {
+    builders[downstreamName] = {
         node(label) {
             docker.image(imageName).inside {
                 try {
@@ -387,6 +384,5 @@ for (downstream in downstreams) {
     }
 }
 
-stage("Downstreams") {
-    parallel downstreamBuilders
-}
+parallel builders
+
