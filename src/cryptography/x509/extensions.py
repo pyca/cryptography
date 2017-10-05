@@ -21,7 +21,10 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.certificate_transparency import (
     SignedCertificateTimestamp
 )
-from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
+from cryptography.x509.general_name import (
+    DNSName, GeneralName, IPAddress, OtherName, RFC822Name,
+    UniformResourceIdentifier
+)
 from cryptography.x509.name import RelativeDistinguishedName
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
@@ -1158,6 +1161,8 @@ class Extension(object):
 
 
 class GeneralNames(object):
+    _BYTES_VALUE_TYPES = (DNSName, UniformResourceIdentifier, RFC822Name)
+
     def __init__(self, general_names):
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
@@ -1174,12 +1179,14 @@ class GeneralNames(object):
     def __len__(self):
         return len(self._general_names)
 
-    def get_values_for_type(self, type):
+    def get_values_for_type(self, type, a_label):
         # Return the value of each GeneralName, except for OtherName instances
         # which we return directly because it has two important properties not
         # just one value.
         objs = (i for i in self if isinstance(i, type))
-        if type != OtherName:
+        if type in self._BYTES_VALUE_TYPES and a_label:
+            objs = (i.bytes_value for i in objs)
+        elif type != OtherName:
             objs = (i.value for i in objs)
         return list(objs)
 
@@ -1215,8 +1222,8 @@ class SubjectAlternativeName(object):
     def __len__(self):
         return len(self._general_names)
 
-    def get_values_for_type(self, type):
-        return self._general_names.get_values_for_type(type)
+    def get_values_for_type(self, type, a_label=False):
+        return self._general_names.get_values_for_type(type, a_label)
 
     def __repr__(self):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
@@ -1250,8 +1257,8 @@ class IssuerAlternativeName(object):
     def __len__(self):
         return len(self._general_names)
 
-    def get_values_for_type(self, type):
-        return self._general_names.get_values_for_type(type)
+    def get_values_for_type(self, type, a_label=False):
+        return self._general_names.get_values_for_type(type, a_label)
 
     def __repr__(self):
         return "<IssuerAlternativeName({0})>".format(self._general_names)
@@ -1285,8 +1292,8 @@ class CertificateIssuer(object):
     def __len__(self):
         return len(self._general_names)
 
-    def get_values_for_type(self, type):
-        return self._general_names.get_values_for_type(type)
+    def get_values_for_type(self, type, a_label=False):
+        return self._general_names.get_values_for_type(type, a_label)
 
     def __repr__(self):
         return "<CertificateIssuer({0})>".format(self._general_names)
