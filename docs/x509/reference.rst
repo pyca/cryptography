@@ -415,13 +415,17 @@ X.509 Certificate Object
         certificate validation is a complex problem that involves much more
         than just signature checks.
 
-    .. method:: public_bytes(encoding)
+    .. method:: public_bytes(encoding, format)
 
         .. versionadded:: 1.0
 
         :param encoding: The
             :class:`~cryptography.hazmat.primitives.serialization.Encoding`
             that will be used to serialize the certificate.
+
+        :param format: The
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat`
+            that will be used to format the certificate.
 
         :return bytes: The data that can be written to a file or sent
             over the network to be verified by clients.
