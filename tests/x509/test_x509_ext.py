@@ -269,13 +269,13 @@ class TestCertificateIssuer(object):
         ci = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
         if six.PY3:
             assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
-                "b'cryptography.io')>])>)>"
+                "<CertificateIssuer(<GeneralNames([<DNSName(value="
+                "'cryptography.io')>])>)>"
             )
         else:
             assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
-                "'cryptography.io')>])>)>"
+                "<CertificateIssuer(<GeneralNames([<DNSName(value="
+                "u'cryptography.io')>])>)>"
             )
 
     def test_get_values_for_type(self):
@@ -1662,33 +1662,32 @@ class TestKeyUsageExtension(object):
 
 class TestDNSName(object):
     def test_init(self):
-        with pytest.warns(utils.DeprecatedIn21):
-            name = x509.DNSName(u"*.\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b"*.xn--4ca7aey.example.com"
+        name = x509.DNSName(u".xn--4ca7aey.example.com")
+        assert name.value == u".xn--4ca7aey.example.com"
 
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b".xn--4ca7aey.example.com"
-        assert name.value == u".\xf5\xe4\xf6\xfc.example.com"
+        assert name.value == u".xn--4ca7aey.example.com"
 
-        with pytest.warns(utils.DeprecatedIn21):
-            name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b"xn--4ca7aey.example.com"
+        name = x509.DNSName(
+            u"\xf5\xe4\xf6\xfc.example.com".encode("utf8")
+        )
+        assert name.value == u"\xf5\xe4\xf6\xfc.example.com"
 
         with pytest.raises(TypeError):
             x509.DNSName(1.3)
 
     def test_ne(self):
-        n1 = x509.DNSName(b"test1")
-        n2 = x509.DNSName(b"test2")
-        n3 = x509.DNSName(b"test2")
+        n1 = x509.DNSName(u"test1")
+        n2 = x509.DNSName(u"test2")
+        n3 = x509.DNSName(u"test2")
         assert n1 != n2
         assert not (n2 != n3)
 
     def test_hash(self):
-        n1 = x509.DNSName(b"test1")
-        n2 = x509.DNSName(b"test2")
-        n3 = x509.DNSName(b"test2")
+        n1 = x509.DNSName(u"test1")
+        n2 = x509.DNSName(u"test2")
+        n3 = x509.DNSName(u"test2")
         assert hash(n1) != hash(n2)
         assert hash(n2) == hash(n3)
 
@@ -2065,11 +2064,11 @@ class TestGeneralNames(object):
         )
         if six.PY3:
             assert repr(gns) == (
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>"
             )
         else:
             assert repr(gns) == (
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>"
             )
 
     def test_eq(self):
@@ -2144,12 +2143,12 @@ class TestIssuerAlternativeName(object):
         if six.PY3:
             assert repr(san) == (
                 "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
             )
         else:
             assert repr(san) == (
                 "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
             )
 
     def test_eq(self):
@@ -2269,12 +2268,12 @@ class TestSubjectAlternativeName(object):
         if six.PY3:
             assert repr(san) == (
                 "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
             )
         else:
             assert repr(san) == (
                 "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
             )
 
     def test_eq(self):
@@ -2370,7 +2369,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         )
 
         dns = ext.value.get_values_for_type(x509.DNSName)
-        assert dns == [u'*.\u043f\u044b\u043a\u0430.cryptography']
+        assert dns == [u'*.xn--80ato2c.cryptography']
 
     def test_unsupported_gn(self, backend):
         cert = _load_cert(
@@ -2502,9 +2501,7 @@ class TestRSASubjectAlternativeNameExtension(object):
 
         assert len(san) == 1
         [name] = san
-        assert name.bytes_value == b"xn--k4h.ws"
-        with pytest.raises(UnicodeError):
-            name.value
+        assert name.value == u"xn--k4h.ws"
 
     def test_unicode_rfc822_name_dns_name_uri(self, backend):
         cert = _load_cert(
@@ -2522,7 +2519,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         dns_name = ext.value.get_values_for_type(x509.DNSName)
         uri = ext.value.get_values_for_type(x509.UniformResourceIdentifier)
         assert rfc822_name == [u"email@\u043f\u044b\u043a\u0430.cryptography"]
-        assert dns_name == [u"\u043f\u044b\u043a\u0430.cryptography"]
+        assert dns_name == [u"xn--80ato2c.cryptography"]
         assert uri == [u"https://www.\u043f\u044b\u043a\u0430.cryptography"]
 
     def test_rfc822name_dnsname_ipaddress_directoryname_uri(self, backend):
@@ -2599,8 +2596,8 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert othernames == [expected]
 
     def test_certbuilder(self, backend):
-        sans = [b'*.example.org', b'*.xn--4ca7aey.example.com',
-                b'foobar.example.net']
+        sans = [u'*.example.org', u'*.xn--4ca7aey.example.com',
+                u'foobar.example.net']
         private_key = RSA_KEY_2048.private_key(backend)
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
@@ -2608,7 +2605,7 @@ class TestRSASubjectAlternativeNameExtension(object):
 
         cert = builder.sign(private_key, hashes.SHA1(), backend)
         result = [
-            x.bytes_value
+            x.value
             for x in cert.extensions.get_extension_for_class(
                 SubjectAlternativeName
             ).value
@@ -3272,24 +3269,24 @@ class TestNameConstraints(object):
         if six.PY3:
             assert repr(nc) == (
                 "<NameConstraints(permitted_subtrees=[<DNSName("
-                "bytes_value=b'name.local')>, <DNSName(bytes_value="
-                "b'name2.local')>], excluded_subtrees=None)>"
+                "value='name.local')>, <DNSName(value="
+                "'name2.local')>], excluded_subtrees=None)>"
             )
         else:
             assert repr(nc) == (
                 "<NameConstraints(permitted_subtrees=[<DNSName("
-                "bytes_value='name.local')>, <DNSName(bytes_value="
-                "'name2.local')>], excluded_subtrees=None)>"
+                "value=u'name.local')>, <DNSName(value="
+                "u'name2.local')>], excluded_subtrees=None)>"
             )
 
     def test_eq(self):
         nc = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         nc2 = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         assert nc == nc2
 
@@ -3469,8 +3466,8 @@ class TestNameConstraintsExtension(object):
             )
 
     def test_certbuilder(self, backend):
-        permitted = [b'.example.org', b'.xn--4ca7aey.example.com',
-                     b'foobar.example.net']
+        permitted = [u'.example.org', u'.xn--4ca7aey.example.com',
+                     u'foobar.example.net']
         private_key = RSA_KEY_2048.private_key(backend)
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
@@ -3479,7 +3476,7 @@ class TestNameConstraintsExtension(object):
 
         cert = builder.sign(private_key, hashes.SHA1(), backend)
         result = [
-            x.bytes_value
+            x.value
             for x in cert.extensions.get_extension_for_class(
                 NameConstraints
             ).value.permitted_subtrees
