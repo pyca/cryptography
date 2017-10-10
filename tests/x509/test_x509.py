@@ -777,6 +777,24 @@ class TestRSACertificate(object):
             )
         ]
 
+    def test_non_ascii_dns_name(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "utf8-dnsname.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        san = cert.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        ).value
+
+        names = san.get_values_for_type(x509.DNSName)
+
+        assert names == [
+            u'partner.biztositas.hu', u'biztositas.hu', u'*.biztositas.hu',
+            u'biztos\xedt\xe1s.hu', u'*.biztos\xedt\xe1s.hu',
+            u'xn--biztosts-fza2j.hu', u'*.xn--biztosts-fza2j.hu'
+        ]
+
     def test_all_subject_name_types(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -2224,6 +2242,9 @@ class TestCertificateBuilder(object):
     @pytest.mark.parametrize(
         "add_ext",
         [
+            x509.SubjectAlternativeName(
+                [x509.DNSName._init_without_validation(u'a\xedt\xe1s.test')]
+            ),
             x509.CertificatePolicies([
                 x509.PolicyInformation(
                     x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
