@@ -151,14 +151,18 @@ class DNSName(object):
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
-        elif isinstance(value, six.binary_type):
-            value = value.decode("utf8")
         else:
-            raise TypeError("value must be string or bytes")
+            raise TypeError("value must be string")
 
         self._value = value
 
     value = utils.read_only_property("_value")
+
+    @classmethod
+    def _init_without_validation(cls, value):
+        instance = cls.__new__(cls)
+        instance._value = value
+        return instance
 
     def __repr__(self):
         return "<DNSName(value={0!r})>".format(self.value)

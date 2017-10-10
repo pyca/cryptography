@@ -88,8 +88,11 @@ def _decode_general_names(backend, gns):
 
 def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
-        data = _asn1_string_to_bytes(backend, gn.d.dNSName)
-        return x509.DNSName(data)
+        data = _asn1_string_to_utf8(backend, gn.d.dNSName)
+        # We don't use the constructor for DNSName so we can bypass validation
+        # This allows us to create DNSName objects that have unicode chars
+        # when a certificate (against the RFC) contains them.
+        return x509.DNSName._init_without_validation(data)
     elif gn.type == backend._lib.GEN_URI:
         data = _asn1_string_to_bytes(backend, gn.d.uniformResourceIdentifier)
         return x509.UniformResourceIdentifier(data)
