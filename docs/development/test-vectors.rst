@@ -172,6 +172,8 @@ X.509
   (commonly known as OCSP Must-Staple).
 * ``unique-identifier.pem`` - A certificate containing
   a distinguished name with an ``x500UniqueIdentifier``.
+* ``utf8-dnsname.pem`` - A certificate containing non-ASCII characters in the
+  DNS name entries of the SAN extension.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
