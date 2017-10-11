@@ -795,10 +795,6 @@ class TestRSACertificate(object):
             u'xn--biztosts-fza2j.hu', u'*.xn--biztosts-fza2j.hu'
         ]
 
-    def test_non_ascii_rfc822name(self, backend):
-        # TODO
-        pass
-
     def test_all_subject_name_types(self, backend):
         cert = _load_cert(
             os.path.join(
