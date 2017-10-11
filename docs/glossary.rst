@@ -97,7 +97,7 @@ Glossary
     U-label
         The presentational unicode form of an internationalized domain
         name. U-labels use unicode characters outside the ASCII range and
-        are encoded into A-labels in certificates.
+        are encoded as A-labels when stored in certificates.
 
 .. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
 .. _`idna`: https://pypi.org/project/idna/
