@@ -100,12 +100,8 @@ def verify_interface(iface, klass):
             )
 
 
-if sys.version_info >= (2, 7):
-    def bit_length(x):
-        return x.bit_length()
-else:
-    def bit_length(x):
-        return len(bin(x)) - (2 + (x <= 0))
+def bit_length(x):
+    return x.bit_length()
 
 
 class _DeprecatedValue(object):
