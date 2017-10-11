@@ -19,9 +19,9 @@ mathematical properties`_.
     .. versionadded:: 0.5
 
     Generates a new RSA private key using the provided ``backend``.
-    ``key_size`` describes how many bits long the key should be, larger keys
-    provide more security, currently ``1024`` and below are considered
-    breakable, and ``2048`` or ``4096`` are reasonable default key sizes for
+    ``key_size`` describes how many :term:`bits` long the key should be. Larger
+    keys provide more security; currently ``1024`` and below are considered
+    breakable while ``2048`` or ``4096`` are reasonable default key sizes for
     new keys. The ``public_exponent`` indicates what one mathematical property
     of the key generation will be. Unless you have a specific reason to do
     otherwise, you should always `use 65537`_.
@@ -40,7 +40,7 @@ mathematical properties`_.
         Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
         doubt you should `use 65537`_.
 
-    :param int key_size: The length of the modulus in bits. For keys
+    :param int key_size: The length of the modulus in :term:`bits`. For keys
         generated in 2015 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.

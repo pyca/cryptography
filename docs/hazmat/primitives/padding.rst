@@ -36,8 +36,8 @@ multiple of the block size.
         >>> data + unpadder.finalize()
         '11111111111111112222222222'
 
-    :param block_size: The size of the block in bits that the data is being
-                       padded to.
+    :param block_size: The size of the block in :term:`bits` that the data is
+        being padded to.
     :raises ValueError: Raised if block size is not a multiple of 8 or is not
         between 0 and 2040 inclusive.
 
@@ -79,8 +79,8 @@ multiple of the block size.
         >>> data + unpadder.finalize()
         '11111111111111112222222222'
 
-    :param block_size: The size of the block in bits that the data is being
-        padded to.
+    :param block_size: The size of the block in :term:`bits` that the data is
+        being padded to.
     :raises ValueError: Raised if block size is not a multiple of 8 or is not
         between 0 and 2040 inclusive.
 

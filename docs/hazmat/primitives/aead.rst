@@ -122,7 +122,7 @@ also support providing integrity for associated data which is not encrypted.
         passed directly to the ``decrypt`` method.
 
         :param bytes nonce: NIST `recommends a 96-bit IV length`_ for best
-            performance but it can be up to 2\ :sup:`64` - 1 bits.
+            performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
         :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
@@ -136,7 +136,7 @@ also support providing integrity for associated data which is not encrypted.
         ``associated_data`` in decrypt or the integrity check will fail.
 
         :param bytes nonce: NIST `recommends a 96-bit IV length`_ for best
-            performance but it can be up to 2\ :sup:`64` - 1 bits.
+            performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
         :param bytes data: The data to decrypt (with tag appended).
         :param bytes associated_data: Additional data to authenticate. Can be
