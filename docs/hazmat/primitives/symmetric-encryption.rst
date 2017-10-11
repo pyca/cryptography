@@ -93,7 +93,7 @@ Algorithms
     choice for encryption.
 
     :param bytes key: The secret key. This must be kept secret. Either ``128``,
-        ``192``, or ``256`` bits long.
+        ``192``, or ``256`` :term:`bits` long.
 
 .. class:: Camellia(key)
 
@@ -102,7 +102,7 @@ Algorithms
     is not as widely studied or deployed.
 
     :param bytes key: The secret key. This must be kept secret. Either ``128``,
-        ``192``, or ``256`` bits long.
+        ``192``, or ``256`` :term:`bits` long.
 
 .. class:: ChaCha20(key)
 
@@ -120,15 +120,15 @@ Algorithms
     ChaCha20 is a stream cipher used in several IETF protocols. It is
     standardized in :rfc:`7539`.
 
-    :param bytes key: The secret key. This must be kept secret. ``256`` bits
-        (32 bytes) in length.
+    :param bytes key: The secret key. This must be kept secret. ``256``
+        :term:`bits` (32 bytes) in length.
 
     :param bytes nonce: Should be unique, a :term:`nonce`. It is
         critical to never reuse a ``nonce`` with a given key.  Any reuse of a
         nonce with the same key compromises the security of every message
         encrypted with that key. The nonce does not need to be kept secret
-        and may be included with the ciphertext. This must be ``128`` bits in
-        length.
+        and may be included with the ciphertext. This must be ``128``
+        :term:`bits` in length.
 
         .. note::
 
@@ -162,10 +162,11 @@ Algorithms
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key. This must be kept secret. Either ``64``,
-        ``128``, or ``192`` bits long. DES only uses ``56``, ``112``, or ``168``
-        bits of the key as there is a parity byte in each component of the key.
-        Some writing refers to there being up to three separate keys that are each
-        ``56`` bits long, they can simply be concatenated to produce the full key.
+        ``128``, or ``192`` :term:`bits` long. DES only uses ``56``, ``112``,
+        or ``168`` bits of the key as there is a parity byte in each component
+        of the key.  Some writing refers to there being up to three separate
+        keys that are each ``56`` bits long, they can simply be concatenated
+        to produce the full key.
 
 .. class:: CAST5(key)
 
@@ -173,10 +174,11 @@ Algorithms
 
     CAST5 (also known as CAST-128) is a block cipher approved for use in the
     Canadian government by the `Communications Security Establishment`_. It is
-    a variable key length cipher and supports keys from 40-128 bits in length.
+    a variable key length cipher and supports keys from 40-128 :term:`bits` in
+    length.
 
-    :param bytes key: The secret key, This must be kept secret. 40 to 128 bits
-        in length in increments of 8 bits.
+    :param bytes key: The secret key, This must be kept secret. 40 to 128
+        :term:`bits` in length in increments of 8 bits.
 
 .. class:: SEED(key)
 
@@ -186,8 +188,8 @@ Algorithms
     (KISA). It is defined in :rfc:`4269` and is used broadly throughout South
     Korean industry, but rarely found elsewhere.
 
-    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
-        length.
+    :param bytes key: The secret key. This must be kept secret. ``128``
+        :term:`bits` in length.
 
 Weak ciphers
 ------------
@@ -204,8 +206,8 @@ Weak ciphers
     susceptible to attacks when using weak keys. The author has recommended
     that users of Blowfish move to newer algorithms such as :class:`AES`.
 
-    :param bytes key: The secret key. This must be kept secret. 32 to 448 bits
-        in length in increments of 8 bits.
+    :param bytes key: The secret key. This must be kept secret. 32 to 448
+        :term:`bits` in length in increments of 8 bits.
 
 .. class:: ARC4(key)
 
@@ -214,7 +216,8 @@ Weak ciphers
     mode constructions.
 
     :param bytes key: The secret key. This must be kept secret. Either ``40``,
-        ``56``, ``64``, ``80``, ``128``, ``192``, or ``256`` bits in length.
+        ``56``, ``64``, ``80``, ``128``, ``192``, or ``256`` :term:`bits` in
+        length.
 
     .. doctest::
 
@@ -235,8 +238,8 @@ Weak ciphers
     is susceptible to attacks when using weak keys. It is recommended that you
     do not use this cipher for new applications.
 
-    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
-        length.
+    :param bytes key: The secret key. This must be kept secret. ``128``
+        :term:`bits` in length.
 
 
 .. _symmetric-encryption-modes:
@@ -284,7 +287,7 @@ Modes
     .. warning::
 
         Counter mode is not recommended for use with block ciphers that have a
-        block size of less than 128-bits.
+        block size of less than 128-:term:`bits`.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
     cryptographically strong. It transforms a block cipher into a stream
@@ -369,15 +372,16 @@ Modes
         They do not need to be kept secret and they can be included in a
         transmitted message. NIST `recommends a 96-bit IV length`_ for
         performance critical situations but it can be up to 2\ :sup:`64` - 1
-        bits. Do not reuse an ``initialization_vector`` with a given ``key``.
+        :term:`bits`. Do not reuse an ``initialization_vector`` with a given
+        ``key``.
 
     .. note::
 
         Cryptography will generate a 128-bit tag when finalizing encryption.
         You can shorten a tag by truncating it to the desired length but this
         is **not recommended** as it lowers the security margins of the
-        authentication (`NIST SP-800-38D`_ recommends 96-bits or greater).
-        Applications wishing to allow truncation must pass the
+        authentication (`NIST SP-800-38D`_ recommends 96-:term:`bits` or
+        greater).  Applications wishing to allow truncation must pass the
         ``min_tag_length`` parameter.
 
         .. versionchanged:: 0.5
@@ -689,7 +693,7 @@ Interfaces
 
         :type: int
 
-        The number of bits in the key being used.
+        The number of :term:`bits` in the key being used.
 
 
 .. class:: BlockCipherAlgorithm
@@ -700,7 +704,7 @@ Interfaces
 
         :type: int
 
-        The number of bits in a block.
+        The number of :term:`bits` in a block.
 
 Interfaces used by the symmetric cipher modes described in
 :ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.
