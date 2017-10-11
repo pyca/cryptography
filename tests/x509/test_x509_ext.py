@@ -248,7 +248,7 @@ class TestCertificateIssuer(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
             x509.DNSName(u"another.local"),
-            x509.RFC822Name(b"email@another.local"),
+            x509.RFC822Name(u"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert ci[-1] == ci[4]
@@ -1755,53 +1755,51 @@ class TestDirectoryName(object):
 
 class TestRFC822Name(object):
     def test_repr(self):
-        gn = x509.RFC822Name(b"string")
+        gn = x509.RFC822Name(u"string")
         if six.PY3:
-            assert repr(gn) == "<RFC822Name(bytes_value=b'string')>"
+            assert repr(gn) == "<RFC822Name(value='string')>"
         else:
-            assert repr(gn) == "<RFC822Name(bytes_value='string')>"
+            assert repr(gn) == "<RFC822Name(value=u'string')>"
 
     def test_equality(self):
-        gn = x509.RFC822Name(b"string")
-        gn2 = x509.RFC822Name(b"string2")
-        gn3 = x509.RFC822Name(b"string")
+        gn = x509.RFC822Name(u"string")
+        gn2 = x509.RFC822Name(u"string2")
+        gn3 = x509.RFC822Name(u"string")
         assert gn != gn2
         assert gn != object()
         assert gn == gn3
 
-    def test_not_text_or_bytes(self):
+    def test_not_text(self):
         with pytest.raises(TypeError):
             x509.RFC822Name(1.3)
+
+        with pytest.raises(TypeError):
+            x509.RFC822Name(b"bytes")
 
     def test_invalid_email(self):
         with pytest.raises(ValueError):
             x509.RFC822Name(u"Name <email>")
-        with pytest.raises(ValueError):
-            x509.RFC822Name(b"Name <email>")
 
         with pytest.raises(ValueError):
-            x509.RFC822Name(b"")
+            x509.RFC822Name(u"")
 
     def test_single_label(self):
-        gn = x509.RFC822Name(b"administrator")
-        with pytest.warns(utils.DeprecatedIn21):
-            assert gn.value == u"administrator"
-
-        assert gn.bytes_value == b"administrator"
+        gn = x509.RFC822Name(u"administrator")
+        assert gn.value == u"administrator"
 
     def test_idna(self):
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.RFC822Name(u"email@em\xe5\xefl.com")
 
-        with pytest.warns(utils.DeprecatedIn21):
-            assert gn.value == u"email@em\xe5\xefl.com"
+        assert gn.value == u"email@xn--eml-vla4c.com"
 
-        assert gn.bytes_value == b"email@xn--eml-vla4c.com"
+        gn2 = x509.RFC822Name(u"email@xn--eml-vla4c.com")
+        assert gn2.value == u"email@xn--eml-vla4c.com"
 
     def test_hash(self):
-        g1 = x509.RFC822Name(b"email@host.com")
-        g2 = x509.RFC822Name(b"email@host.com")
-        g3 = x509.RFC822Name(b"admin@host.com")
+        g1 = x509.RFC822Name(u"email@host.com")
+        g2 = x509.RFC822Name(u"email@host.com")
+        g3 = x509.RFC822Name(u"admin@host.com")
 
         assert hash(g1) == hash(g2)
         assert hash(g1) != hash(g3)
@@ -2046,7 +2044,7 @@ class TestGeneralNames(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
             x509.DNSName(u"another.local"),
-            x509.RFC822Name(b"email@another.local"),
+            x509.RFC822Name(u"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert gn[-1] == gn[4]
@@ -2087,7 +2085,7 @@ class TestGeneralNames(object):
             [x509.DNSName(u"cryptography.io")]
         )
         gns2 = x509.GeneralNames(
-            [x509.RFC822Name(b"admin@cryptography.io")]
+            [x509.RFC822Name(u"admin@cryptography.io")]
         )
         assert gns != gns2
         assert gns != object()
@@ -2095,7 +2093,7 @@ class TestGeneralNames(object):
     def test_hash(self):
         gns = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
         gns2 = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
-        gns3 = x509.GeneralNames([x509.RFC822Name(b"admin@cryptography.io")])
+        gns3 = x509.GeneralNames([x509.RFC822Name(u"admin@cryptography.io")])
         assert hash(gns) == hash(gns2)
         assert hash(gns) != hash(gns3)
 
@@ -2124,7 +2122,7 @@ class TestIssuerAlternativeName(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
             x509.DNSName(u"another.local"),
-            x509.RFC822Name(b"email@another.local"),
+            x509.RFC822Name(u"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert ian[-1] == ian[4]
@@ -2167,7 +2165,7 @@ class TestIssuerAlternativeName(object):
             [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.IssuerAlternativeName(
-            [x509.RFC822Name(b"admin@cryptography.io")]
+            [x509.RFC822Name(u"admin@cryptography.io")]
         )
         assert san != san2
         assert san != object()
@@ -2176,7 +2174,7 @@ class TestIssuerAlternativeName(object):
         ian = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
         ian2 = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
         ian3 = x509.IssuerAlternativeName(
-            [x509.RFC822Name(b"admin@cryptography.io")]
+            [x509.RFC822Name(u"admin@cryptography.io")]
         )
         assert hash(ian) == hash(ian2)
         assert hash(ian) != hash(ian3)
@@ -2249,7 +2247,7 @@ class TestSubjectAlternativeName(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
             x509.DNSName(u"another.local"),
-            x509.RFC822Name(b"email@another.local"),
+            x509.RFC822Name(u"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
         assert san[-1] == san[4]
@@ -2292,7 +2290,7 @@ class TestSubjectAlternativeName(object):
             [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.SubjectAlternativeName(
-            [x509.RFC822Name(b"admin@cryptography.io")]
+            [x509.RFC822Name(u"admin@cryptography.io")]
         )
         assert san != san2
         assert san != object()
@@ -2301,7 +2299,7 @@ class TestSubjectAlternativeName(object):
         san = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
         san2 = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
         san3 = x509.SubjectAlternativeName(
-            [x509.RFC822Name(b"admin@cryptography.io")]
+            [x509.RFC822Name(u"admin@cryptography.io")]
         )
         assert hash(san) == hash(san2)
         assert hash(san) != hash(san3)
@@ -2487,7 +2485,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         san = ext.value
 
         rfc822name = san.get_values_for_type(x509.RFC822Name)
-        assert [u"email@em\xe5\xefl.com"] == rfc822name
+        assert [u"email@xn--eml-vla4c.com"] == rfc822name
 
     def test_idna2003_invalid(self, backend):
         cert = _load_cert(
@@ -2520,7 +2518,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         rfc822_name = ext.value.get_values_for_type(x509.RFC822Name)
         dns_name = ext.value.get_values_for_type(x509.DNSName)
         uri = ext.value.get_values_for_type(x509.UniformResourceIdentifier)
-        assert rfc822_name == [u"email@\u043f\u044b\u043a\u0430.cryptography"]
+        assert rfc822_name == [u"email@xn--80ato2c.cryptography"]
         assert dns_name == [u"xn--80ato2c.cryptography"]
         assert uri == [u"https://www.\u043f\u044b\u043a\u0430.cryptography"]
 
@@ -2569,10 +2567,14 @@ class TestRSASubjectAlternativeNameExtension(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        with pytest.raises(ValueError) as exc:
-            cert.extensions
-
-        assert 'Invalid rfc822name value' in str(exc.value)
+        san = cert.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        ).value
+        values = san.get_values_for_type(x509.RFC822Name)
+        assert values == [
+            u'email', u'email <email>', u'email <email@email>',
+            u'email <email@xn--eml-vla4c.com>', u'myemail:'
+        ]
 
     def test_other_name(self, backend):
         cert = _load_cert(
