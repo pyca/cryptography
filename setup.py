@@ -49,9 +49,8 @@ test_requirements = [
     "pretend",
     "iso8601",
     "pytz",
+    "hypothesis>=1.11.4",
 ]
-if sys.version_info[:2] > (2, 6):
-    test_requirements.append("hypothesis>=1.11.4")
 
 
 # If there's no vectors locally that probably means we are in a tarball and
@@ -260,7 +259,6 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",

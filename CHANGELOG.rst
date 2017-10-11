@@ -8,6 +8,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
 
 .. _v2-1:
 

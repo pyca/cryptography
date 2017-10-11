@@ -22,18 +22,16 @@ def configs = [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:i686',
         versions: [
-            'cp26-cp26m', 'cp26-cp26mu', 'cp27-cp27m',
-            'cp27-cp27mu', 'cp34-cp34m', 'cp35-cp35m',
-            'cp36-cp36m'
+            'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
+            'cp35-cp35m', 'cp36-cp36m'
         ],
     ],
     [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:x86_64',
         versions: [
-            'cp26-cp26m', 'cp26-cp26mu', 'cp27-cp27m',
-            'cp27-cp27mu', 'cp34-cp34m', 'cp35-cp35m',
-            'cp36-cp36m'
+            'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
+            'cp35-cp35m', 'cp36-cp36m'
         ],
     ],
 ]
