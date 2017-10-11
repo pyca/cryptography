@@ -94,5 +94,10 @@ Glossary
         bit key, you can calculate the number of bytes by dividing by 8. 128
         divided by 8 is 16, so a 128 bit key is a 16 byte key.
 
+    U-label
+        The presentational unicode form of an internationalized domain
+        name. U-labels use unicode characters outside the ASCII range and
+        are encoded as A-labels when stored in certificates.
+
 .. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
 .. _`idna`: https://pypi.org/project/idna/

@@ -14,27 +14,21 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
+* **BACKWARDS INCOMPATIBLE:** :attr:`~cryptography.x509.DNSName.value`,
+  :attr:`~cryptography.x509.RFC822Name.value`, and
+  :attr:`~cryptography.x509.UniformResourceIdentifier.value` will now return
+  an :term:`A-label` string when parsing a certificate containing an
+  internationalized domain name (IDN) or if the caller passed a :term:`U-label`
+  to the constructor. See below for additional deprecations related to this
+  change.
 * Installing ``cryptography`` now requires ``pip`` 6 or newer.
-* Deprecated passing unicode to the :class:`~cryptography.x509.DNSName`
-  constructor. Instead, users should pass DNS names as ``bytes``, with ``idna``
-  encoding if necessary. In addition, the
-  :attr:`~cryptography.x509.DNSName.value` attribute was deprecated, users
-  should use :attr:`~cryptography.x509.DNSName.bytes_value` to access the
-  raw DNS name.
-* Deprecated passing unicode to the
-  :class:`~cryptography.x509.UniformResourceIdentifier` constructor. Instead,
-  users should pass URIs as ``bytes``, with ``idna`` encoding if
-  necessary. In addition, the
-  :attr:`~cryptography.x509.UniformResourceIdentifier.value` attribute was
-  deprecated, users should use
-  :attr:`~cryptography.x509.UniformResourceIdentifier.bytes_value` to access
-  the raw value.
-* Deprecated passing unicode to the :class:`~cryptography.x509.RFC822Name`
-  constructor. Instead, users should pass email addresses as ``bytes``, with
-  ``idna`` encoding of the hostname if necessary. In addition, the
-  :attr:`~cryptography.x509.RFC822Name.value` attribute was deprecated, users
-  should use :attr:`~cryptography.x509.RFC822Name.bytes_value` to access the
-  raw value.
+* Deprecated passing :term:`U-label` strings to the
+  :class:`~cryptography.x509.DNSName`,
+  :class:`~cryptography.x509.UniformResourceIdentifier`, and
+  :class:`~cryptography.x509.RFC822Name` constructors. Instead, users should
+  pass values as :term:`A-label` strings with ``idna`` encoding if necessary.
+  This change will not affect anyone who is not processing internationalized
+  domains.
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`. In
   most cases users should choose

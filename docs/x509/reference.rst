@@ -1242,33 +1242,25 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    ..note::
+    .. versionchanged:: 2.1
 
-        Starting with version 2.1 unicode input is deprecated. If passing an
-        email address containing an internationalized domain name (IDN) you
-        should first IDNA encode the hostname and then pass the resulting
-        bytes.
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
+
 
     This corresponds to an email address. For example, ``user@example.com``.
 
-    :param bytes value: The email address. If the address contains an
+    :param value: The email address. If the address contains an
         internationalized domain name then it must be encoded to an
-        :term:`A-label` before being passed.
-
-    .. attribute:: bytes_value
-
-        .. versionadded:: 2.1
-
-        :type: bytes
-
-        The value as a byte string. This will contain an :term:`A-label` if
-        the domain in the address is an internationalized domain name.
+        :term:`A-label` string before being passed.
 
     .. attribute:: value
-
-        .. deprecated:: 2.1
-
-        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
@@ -1276,31 +1268,26 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    ..note::
+    .. versionchanged:: 2.1
 
-        Starting with version 2.1 unicode input is deprecated. If passing an
-        internationalized domain name (IDN) you should first IDNA encode the
-        hostname and then pass the resulting bytes.
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
-    :param bytes value: The domain name. If it is an internationalized domain
-        name then it must be encoded to an :term:`A-label` before being passed.
+    :param value: The domain name. If it is an internationalized domain
+        name then it must be encoded to an :term:`A-label` string before being
+        passed.
 
-    .. attribute:: bytes_value
-
-        .. versionadded:: 2.1
-
-        :type: bytes
-
-        The value as a byte string. This will contain an :term:`A-label` if
-        it is an internationalized domain name.
+        :type: :term:`text`
 
     .. attribute:: value
-
-        .. deprecated:: 2.1
-
-        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 
@@ -1318,32 +1305,25 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    ..note::
+    .. versionchanged:: 2.1
 
-        Starting with version 2.1 unicode input is deprecated. If passing an
-        internationalized domain name (IDN) within the URI you should first
-        IDNA encode the hostname and then pass the resulting bytes.
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
 
     This corresponds to a uniform resource identifier.  For example,
     ``https://cryptography.io``.
 
-    :param bytes value: The URI. If it contains an internationalized domain
-        name then it must be encoded to an :term:`A-label` before being passed.
-
-    .. attribute:: bytes_value
-
-        .. versionadded:: 2.1
-
-        :type: bytes
-
-        The value as a byte string. This will contain an :term:`A-label` if
-        the URI contains an internationalized domain name.
+    :param value: The URI. If it contains an internationalized domain
+        name then it must be encoded to an :term:`A-label` string before
+        being passed.
 
     .. attribute:: value
-
-        .. deprecated:: 2.1
-
-        Deprecated accessor for the idna-decoded value of :attr:`bytes_value`
 
         :type: :term:`text`
 

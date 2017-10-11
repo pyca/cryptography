@@ -24,6 +24,7 @@ decrypt
 Decrypts
 decrypted
 decrypting
+deprecations
 DER
 deserialize
 deserialized
@@ -74,6 +75,7 @@ plaintext
 pre
 preprocessor
 preprocessors
+presentational
 pseudorandom
 pyOpenSSL
 relicensed
