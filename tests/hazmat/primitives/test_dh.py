@@ -13,7 +13,7 @@ from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DHBackend, PEMSerializationBackend)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
-from cryptography.utils import bit_length, int_from_bytes
+from cryptography.utils import int_from_bytes
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file

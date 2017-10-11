@@ -14,7 +14,7 @@ from pkg_resources import parse_version
 
 import pytest
 
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
