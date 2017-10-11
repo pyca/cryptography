@@ -15,8 +15,7 @@ import warnings
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
 PersistentlyDeprecated = DeprecationWarning
-DeprecatedIn19 = DeprecationWarning
-DeprecatedIn21 = PendingDeprecationWarning
+DeprecatedIn21 = DeprecationWarning
 
 
 def _check_bytes(name, value):
