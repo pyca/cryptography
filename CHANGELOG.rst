@@ -4,10 +4,8 @@ Changelog
 
 .. _v2-1:
 
-2.1 - `master`_
-~~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.1 - 2017-10-11
+~~~~~~~~~~~~~~~~
 
 * **FINAL DEPRECATION** Python 2.6 support is deprecated, and will be removed
   in the next release of ``cryptography``.
