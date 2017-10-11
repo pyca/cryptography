@@ -19,6 +19,8 @@ branches:
 matrix:
     include:
         # these are just to make travis's UI a bit prettier
+        - python: 2.7
+          env: TOXENV=py27
         - python: 3.4
           env: TOXENV=py34
         - python: 3.5
