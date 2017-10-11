@@ -443,9 +443,10 @@ def _encode_general_name(backend, name):
     elif isinstance(name, x509.UniformResourceIdentifier):
         gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
-        asn1_str = _encode_asn1_str(
-            backend, name.bytes_value, len(name.bytes_value)
-        )
+        # ia5strings are supposed to be ITU T.50 but to allow round-tripping
+        # of broken certs that encode utf8 we'll encode utf8 here too.
+        data = name.value.encode("utf8")
+        asn1_str = _encode_asn1_str(backend, data, len(data))
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
     else:

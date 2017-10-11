@@ -230,7 +230,7 @@ class TestCertificateRevocationList(object):
             )
         ])
         assert ian.value == x509.IssuerAlternativeName([
-            x509.UniformResourceIdentifier(b"https://cryptography.io"),
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
         ])
 
     def test_delta_crl_indicator(self, backend):
@@ -1628,7 +1628,7 @@ class TestCertificateBuilder(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 x509.ObjectIdentifier("2.999.7"),
-                x509.UniformResourceIdentifier(b"http://example.com")
+                x509.UniformResourceIdentifier(u"http://example.com")
             ),
         ])
 
@@ -2249,6 +2249,9 @@ class TestCertificateBuilder(object):
                     x509.DNSName._init_without_validation(u'a\xedt\xe1s.test'),
                     x509.RFC822Name._init_without_validation(
                         u'test@a\xedt\xe1s.test'
+                    ),
+                    x509.UniformResourceIdentifier._init_without_validation(
+                        u'http://a\xedt\xe1s.test'
                     ),
                 ]
             ),
@@ -3120,11 +3123,11 @@ class TestCertificateSigningRequestBuilder(object):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.OCSP,
-                x509.UniformResourceIdentifier(b"http://ocsp.domain.com")
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.UniformResourceIdentifier(b"http://domain.com/ca.crt")
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
 
