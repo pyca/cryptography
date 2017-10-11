@@ -262,7 +262,7 @@ class TestDH(object):
         assert isinstance(parameters, dh.DHParametersWithSerialization)
         parameter_numbers = parameters.parameter_numbers()
         assert isinstance(parameter_numbers, dh.DHParameterNumbers)
-        assert bit_length(parameter_numbers.p) == key_size
+        assert parameter_numbers.p.bit_length() == key_size
 
         assert isinstance(public, dh.DHPublicKeyWithSerialization)
         assert isinstance(public.public_numbers(), dh.DHPublicNumbers)

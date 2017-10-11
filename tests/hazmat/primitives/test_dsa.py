@@ -82,7 +82,7 @@ class TestDSA(object):
         assert skey_parameters.p == vector['p']
         assert skey_parameters.q == vector['q']
         assert skey_parameters.g == vector['g']
-        assert skey.key_size == bit_length(vector['p'])
+        assert skey.key_size == vector['p'].bit_length()
         assert pkey.key_size == skey.key_size
         public_numbers = pkey.public_numbers()
         assert numbers.public_numbers.y == public_numbers.y
