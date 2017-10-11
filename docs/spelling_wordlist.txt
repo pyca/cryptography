@@ -24,6 +24,7 @@ decrypt
 Decrypts
 decrypted
 decrypting
+deprecations
 DER
 deserialize
 deserialized
