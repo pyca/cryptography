@@ -97,8 +97,16 @@ def _decode_general_name(backend, gn):
         # when a certificate (against the RFC) contains them.
         return x509.DNSName._init_without_validation(data)
     elif gn.type == backend._lib.GEN_URI:
-        data = _asn1_string_to_bytes(backend, gn.d.uniformResourceIdentifier)
-        return x509.UniformResourceIdentifier(data)
+        # Convert to bytes and then decode to utf8. We don't use
+        # asn1_string_to_utf8 here because it doesn't properly convert
+        # utf8 from ia5strings.
+        data = _asn1_string_to_bytes(
+            backend, gn.d.uniformResourceIdentifier
+        ).decode("utf8")
+        # We don't use the constructor for URI so we can bypass validation
+        # This allows us to create URI objects that have unicode chars
+        # when a certificate (against the RFC) contains them.
+        return x509.UniformResourceIdentifier._init_without_validation(data)
     elif gn.type == backend._lib.GEN_RID:
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
