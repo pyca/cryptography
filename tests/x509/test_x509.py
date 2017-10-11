@@ -2243,7 +2243,14 @@ class TestCertificateBuilder(object):
         "add_ext",
         [
             x509.SubjectAlternativeName(
-                [x509.DNSName._init_without_validation(u'a\xedt\xe1s.test')]
+                [
+                    # These examples exist to verify compatibility with
+                    # certificates that have utf8 encoded data in the ia5string
+                    x509.DNSName._init_without_validation(u'a\xedt\xe1s.test'),
+                    x509.RFC822Name._init_without_validation(
+                        u'test@a\xedt\xe1s.test'
+                    ),
+                ]
             ),
             x509.CertificatePolicies([
                 x509.PolicyInformation(

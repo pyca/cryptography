@@ -134,8 +134,14 @@ def _decode_general_name(backend, gn):
             _decode_x509_name(backend, gn.d.directoryName)
         )
     elif gn.type == backend._lib.GEN_EMAIL:
-        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name)
-        return x509.RFC822Name(data)
+        # Convert to bytes and then decode to utf8. We don't use
+        # asn1_string_to_utf8 here because it doesn't properly convert
+        # utf8 from ia5strings.
+        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name).decode("utf8")
+        # We don't use the constructor for RFC822Name so we can bypass
+        # validation. This allows us to create RFC822Name objects that have
+        # unicode chars when a certificate (against the RFC) contains them.
+        return x509.RFC822Name._init_without_validation(data)
     elif gn.type == backend._lib.GEN_OTHERNAME:
         type_id = _obj2txt(backend, gn.d.otherName.type_id)
         value = _asn1_to_der(backend, gn.d.otherName.value)

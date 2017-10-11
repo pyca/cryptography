@@ -53,77 +53,55 @@ class RFC822Name(object):
     def __init__(self, value):
         if isinstance(value, six.text_type):
             try:
-                value = value.encode("ascii")
+                value.encode("ascii")
             except UnicodeEncodeError:
                 value = self._idna_encode(value)
                 warnings.warn(
-                    "RFC822Name values should be passed as bytes, not strings."
-                    " Support for passing unicode strings will be removed in a"
-                    " future version.",
+                    "RFC822Name values should be passed as an A-label string. "
+                    "This means unicode characters should be encoded via "
+                    "idna. Support for passing unicode strings (aka U-label) "
+                    " will be removed in a future version.",
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
-            else:
-                warnings.warn(
-                    "RFC822Name values should be passed as bytes, not strings."
-                    " Support for passing unicode strings will be removed in a"
-                    " future version.",
-                    utils.DeprecatedIn21,
-                    stacklevel=2,
-                )
-        elif not isinstance(value, bytes):
-            raise TypeError("value must be bytes")
+        else:
+            raise TypeError("value must be string")
 
-        name, address = parseaddr(value.decode("ascii"))
+        name, address = parseaddr(value)
         if name or not address:
             # parseaddr has found a name (e.g. Name <email>) or the entire
             # value is an empty string.
             raise ValueError("Invalid rfc822name value")
 
-        self._bytes_value = value
+        self._value = value
 
-    bytes_value = utils.read_only_property("_bytes_value")
+    value = utils.read_only_property("_value")
+
+    @classmethod
+    def _init_without_validation(cls, value):
+        instance = cls.__new__(cls)
+        instance._value = value
+        return instance
 
     def _idna_encode(self, value):
         _, address = parseaddr(value)
         parts = address.split(u"@")
-        return parts[0].encode("ascii") + b"@" + idna.encode(parts[1])
-
-    @property
-    def value(self):
-        warnings.warn(
-            "RFC822Name.bytes_value should be used instead of RFC822Name.value"
-            "; it contains the name as raw bytes, instead of as an idna-"
-            "decoded unicode string. RFC822Name.value will be removed in a "
-            "future version.",
-            utils.DeprecatedIn21,
-            stacklevel=2
-        )
-        _, address = parseaddr(self.bytes_value.decode("ascii"))
-        parts = address.split(u"@")
-        if len(parts) == 1:
-            # Single label email name. This is valid for local delivery.
-            # No IDNA decoding needed since there is no domain component.
-            return address
-        else:
-            # A normal email of the form user@domain.com. Let's attempt to
-            # encode the domain component and reconstruct the address.
-            return parts[0] + u"@" + idna.decode(parts[1])
+        return parts[0] + "@" + idna.encode(parts[1]).decode("ascii")
 
     def __repr__(self):
-        return "<RFC822Name(bytes_value={0!r})>".format(self.bytes_value)
+        return "<RFC822Name(value={0!r})>".format(self.value)
 
     def __eq__(self, other):
         if not isinstance(other, RFC822Name):
             return NotImplemented
 
-        return self.bytes_value == other.bytes_value
+        return self.value == other.value
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash(self.bytes_value)
+        return hash(self.value)
 
 
 def _idna_encode(value):
