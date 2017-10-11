@@ -234,20 +234,20 @@ class TestUnrecognizedExtension(object):
 class TestCertificateIssuer(object):
     def test_iter_names(self):
         ci = x509.CertificateIssuer([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ])
         assert len(ci) == 2
         assert list(ci) == [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
 
     def test_indexing(self):
         ci = x509.CertificateIssuer([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
-            x509.DNSName(b"another.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
             x509.RFC822Name(b"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
@@ -255,39 +255,39 @@ class TestCertificateIssuer(object):
         assert ci[2:6:2] == [ci[2], ci[4]]
 
     def test_eq(self):
-        ci1 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
-        ci2 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
+        ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
         assert ci1 == ci2
 
     def test_ne(self):
-        ci1 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
-        ci2 = x509.CertificateIssuer([x509.DNSName(b"somethingelse.tld")])
+        ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(u"somethingelse.tld")])
         assert ci1 != ci2
         assert ci1 != object()
 
     def test_repr(self):
-        ci = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
+        ci = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
         if six.PY3:
             assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
-                "b'cryptography.io')>])>)>"
+                "<CertificateIssuer(<GeneralNames([<DNSName(value="
+                "'cryptography.io')>])>)>"
             )
         else:
             assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(bytes_value="
-                "'cryptography.io')>])>)>"
+                "<CertificateIssuer(<GeneralNames([<DNSName(value="
+                "u'cryptography.io')>])>)>"
             )
 
     def test_get_values_for_type(self):
         ci = x509.CertificateIssuer(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         names = ci.get_values_for_type(x509.DNSName)
         assert names == [u"cryptography.io"]
 
     def test_hash(self):
-        ci1 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
-        ci2 = x509.CertificateIssuer([x509.DNSName(b"cryptography.io")])
+        ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
         ci3 = x509.CertificateIssuer(
             [x509.UniformResourceIdentifier(b"http://something")]
         )
@@ -1099,7 +1099,7 @@ class TestAuthorityKeyIdentifier(object):
         assert aki.authority_cert_serial_number is None
 
     def test_authority_cert_serial_zero(self):
-        dns = x509.DNSName(b"SomeIssuer")
+        dns = x509.DNSName(u"SomeIssuer")
         aki = x509.AuthorityKeyIdentifier(b"id", [dns], 0)
         assert aki.key_identifier == b"id"
         assert aki.authority_cert_issuer == [dns]
@@ -1662,33 +1662,34 @@ class TestKeyUsageExtension(object):
 
 class TestDNSName(object):
     def test_init(self):
-        with pytest.warns(utils.DeprecatedIn21):
-            name = x509.DNSName(u"*.\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b"*.xn--4ca7aey.example.com"
+        name = x509.DNSName(u"*.xn--4ca7aey.example.com")
+        assert name.value == u"*.xn--4ca7aey.example.com"
 
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b".xn--4ca7aey.example.com"
-        assert name.value == u".\xf5\xe4\xf6\xfc.example.com"
+        assert name.value == u".xn--4ca7aey.example.com"
 
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
-        assert name.bytes_value == b"xn--4ca7aey.example.com"
+        assert name.value == u"xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
             x509.DNSName(1.3)
 
+        with pytest.raises(TypeError):
+            x509.DNSName(b"bytes not allowed")
+
     def test_ne(self):
-        n1 = x509.DNSName(b"test1")
-        n2 = x509.DNSName(b"test2")
-        n3 = x509.DNSName(b"test2")
+        n1 = x509.DNSName(u"test1")
+        n2 = x509.DNSName(u"test2")
+        n3 = x509.DNSName(u"test2")
         assert n1 != n2
         assert not (n2 != n3)
 
     def test_hash(self):
-        n1 = x509.DNSName(b"test1")
-        n2 = x509.DNSName(b"test2")
-        n3 = x509.DNSName(b"test2")
+        n1 = x509.DNSName(u"test1")
+        n2 = x509.DNSName(u"test2")
+        n3 = x509.DNSName(u"test2")
         assert hash(n1) != hash(n2)
         assert hash(n2) == hash(n3)
 
@@ -2016,35 +2017,35 @@ class TestOtherName(object):
 class TestGeneralNames(object):
     def test_get_values_for_type(self):
         gns = x509.GeneralNames(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         names = gns.get_values_for_type(x509.DNSName)
         assert names == [u"cryptography.io"]
 
     def test_iter_names(self):
         gns = x509.GeneralNames([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ])
         assert len(gns) == 2
         assert list(gns) == [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
 
     def test_iter_input(self):
         names = [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
         gns = x509.GeneralNames(iter(names))
         assert list(gns) == names
 
     def test_indexing(self):
         gn = x509.GeneralNames([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
-            x509.DNSName(b"another.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
             x509.RFC822Name(b"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
@@ -2054,36 +2055,36 @@ class TestGeneralNames(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.GeneralNames(
-                [x509.DNSName(b"cryptography.io"), "invalid"]
+                [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
     def test_repr(self):
         gns = x509.GeneralNames(
             [
-                x509.DNSName(b"cryptography.io")
+                x509.DNSName(u"cryptography.io")
             ]
         )
         if six.PY3:
             assert repr(gns) == (
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>"
             )
         else:
             assert repr(gns) == (
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>"
             )
 
     def test_eq(self):
         gns = x509.GeneralNames(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         gns2 = x509.GeneralNames(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         assert gns == gns2
 
     def test_ne(self):
         gns = x509.GeneralNames(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         gns2 = x509.GeneralNames(
             [x509.RFC822Name(b"admin@cryptography.io")]
@@ -2092,8 +2093,8 @@ class TestGeneralNames(object):
         assert gns != object()
 
     def test_hash(self):
-        gns = x509.GeneralNames([x509.DNSName(b"cryptography.io")])
-        gns2 = x509.GeneralNames([x509.DNSName(b"cryptography.io")])
+        gns = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
+        gns2 = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
         gns3 = x509.GeneralNames([x509.RFC822Name(b"admin@cryptography.io")])
         assert hash(gns) == hash(gns2)
         assert hash(gns) != hash(gns3)
@@ -2102,27 +2103,27 @@ class TestGeneralNames(object):
 class TestIssuerAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.IssuerAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         names = san.get_values_for_type(x509.DNSName)
         assert names == [u"cryptography.io"]
 
     def test_iter_names(self):
         san = x509.IssuerAlternativeName([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ])
         assert len(san) == 2
         assert list(san) == [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
 
     def test_indexing(self):
         ian = x509.IssuerAlternativeName([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
-            x509.DNSName(b"another.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
             x509.RFC822Name(b"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
@@ -2132,38 +2133,38 @@ class TestIssuerAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.IssuerAlternativeName(
-                [x509.DNSName(b"cryptography.io"), "invalid"]
+                [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
     def test_repr(self):
         san = x509.IssuerAlternativeName(
             [
-                x509.DNSName(b"cryptography.io")
+                x509.DNSName(u"cryptography.io")
             ]
         )
         if six.PY3:
             assert repr(san) == (
                 "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
             )
         else:
             assert repr(san) == (
                 "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
             )
 
     def test_eq(self):
         san = x509.IssuerAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.IssuerAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         assert san == san2
 
     def test_ne(self):
         san = x509.IssuerAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.IssuerAlternativeName(
             [x509.RFC822Name(b"admin@cryptography.io")]
@@ -2172,8 +2173,8 @@ class TestIssuerAlternativeName(object):
         assert san != object()
 
     def test_hash(self):
-        ian = x509.IssuerAlternativeName([x509.DNSName(b"cryptography.io")])
-        ian2 = x509.IssuerAlternativeName([x509.DNSName(b"cryptography.io")])
+        ian = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
+        ian2 = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
         ian3 = x509.IssuerAlternativeName(
             [x509.RFC822Name(b"admin@cryptography.io")]
         )
@@ -2227,27 +2228,27 @@ class TestCRLNumber(object):
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         names = san.get_values_for_type(x509.DNSName)
         assert names == [u"cryptography.io"]
 
     def test_iter_names(self):
         san = x509.SubjectAlternativeName([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ])
         assert len(san) == 2
         assert list(san) == [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
 
     def test_indexing(self):
         san = x509.SubjectAlternativeName([
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"crypto.local"),
-            x509.DNSName(b"another.local"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
             x509.RFC822Name(b"email@another.local"),
             x509.UniformResourceIdentifier(b"http://another.local"),
         ])
@@ -2257,38 +2258,38 @@ class TestSubjectAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.SubjectAlternativeName(
-                [x509.DNSName(b"cryptography.io"), "invalid"]
+                [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
     def test_repr(self):
         san = x509.SubjectAlternativeName(
             [
-                x509.DNSName(b"cryptography.io")
+                x509.DNSName(u"cryptography.io")
             ]
         )
         if six.PY3:
             assert repr(san) == (
                 "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value=b'cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
             )
         else:
             assert repr(san) == (
                 "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(bytes_value='cryptography.io')>])>)>"
+                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
             )
 
     def test_eq(self):
         san = x509.SubjectAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.SubjectAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         assert san == san2
 
     def test_ne(self):
         san = x509.SubjectAlternativeName(
-            [x509.DNSName(b"cryptography.io")]
+            [x509.DNSName(u"cryptography.io")]
         )
         san2 = x509.SubjectAlternativeName(
             [x509.RFC822Name(b"admin@cryptography.io")]
@@ -2297,8 +2298,8 @@ class TestSubjectAlternativeName(object):
         assert san != object()
 
     def test_hash(self):
-        san = x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")])
-        san2 = x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")])
+        san = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
+        san2 = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
         san3 = x509.SubjectAlternativeName(
             [x509.RFC822Name(b"admin@cryptography.io")]
         )
@@ -2370,7 +2371,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         )
 
         dns = ext.value.get_values_for_type(x509.DNSName)
-        assert dns == [u'*.\u043f\u044b\u043a\u0430.cryptography']
+        assert dns == [u'*.xn--80ato2c.cryptography']
 
     def test_unsupported_gn(self, backend):
         cert = _load_cert(
@@ -2502,9 +2503,7 @@ class TestRSASubjectAlternativeNameExtension(object):
 
         assert len(san) == 1
         [name] = san
-        assert name.bytes_value == b"xn--k4h.ws"
-        with pytest.raises(UnicodeError):
-            name.value
+        assert name.value == u"xn--k4h.ws"
 
     def test_unicode_rfc822_name_dns_name_uri(self, backend):
         cert = _load_cert(
@@ -2522,7 +2521,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         dns_name = ext.value.get_values_for_type(x509.DNSName)
         uri = ext.value.get_values_for_type(x509.UniformResourceIdentifier)
         assert rfc822_name == [u"email@\u043f\u044b\u043a\u0430.cryptography"]
-        assert dns_name == [u"\u043f\u044b\u043a\u0430.cryptography"]
+        assert dns_name == [u"xn--80ato2c.cryptography"]
         assert uri == [u"https://www.\u043f\u044b\u043a\u0430.cryptography"]
 
     def test_rfc822name_dnsname_ipaddress_directoryname_uri(self, backend):
@@ -2599,8 +2598,8 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert othernames == [expected]
 
     def test_certbuilder(self, backend):
-        sans = [b'*.example.org', b'*.xn--4ca7aey.example.com',
-                b'foobar.example.net']
+        sans = [u'*.example.org', u'*.xn--4ca7aey.example.com',
+                u'foobar.example.net']
         private_key = RSA_KEY_2048.private_key(backend)
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
@@ -2608,7 +2607,7 @@ class TestRSASubjectAlternativeNameExtension(object):
 
         cert = builder.sign(private_key, hashes.SHA1(), backend)
         result = [
-            x.bytes_value
+            x.value
             for x in cert.extensions.get_extension_for_class(
                 SubjectAlternativeName
             ).value
@@ -2648,7 +2647,7 @@ class TestExtendedKeyUsageExtension(object):
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
         with pytest.raises(TypeError):
-            x509.AccessDescription("notanoid", x509.DNSName(b"test"))
+            x509.AccessDescription("notanoid", x509.DNSName(u"test"))
 
     def test_invalid_access_location(self):
         with pytest.raises(TypeError):
@@ -3242,7 +3241,7 @@ class TestNameConstraints(object):
             x509.NameConstraints(None, None)
 
     def test_permitted_none(self):
-        excluded = [x509.DNSName(b"name.local")]
+        excluded = [x509.DNSName(u"name.local")]
         nc = x509.NameConstraints(
             permitted_subtrees=None, excluded_subtrees=excluded
         )
@@ -3250,7 +3249,7 @@ class TestNameConstraints(object):
         assert nc.excluded_subtrees is not None
 
     def test_excluded_none(self):
-        permitted = [x509.DNSName(b"name.local")]
+        permitted = [x509.DNSName(u"name.local")]
         nc = x509.NameConstraints(
             permitted_subtrees=permitted, excluded_subtrees=None
         )
@@ -3264,7 +3263,7 @@ class TestNameConstraints(object):
         assert list(nc.excluded_subtrees) == subtrees
 
     def test_repr(self):
-        permitted = [x509.DNSName(b"name.local"), x509.DNSName(b"name2.local")]
+        permitted = [x509.DNSName(u"name.local"), x509.DNSName(u"name2.local")]
         nc = x509.NameConstraints(
             permitted_subtrees=permitted,
             excluded_subtrees=None
@@ -3272,39 +3271,39 @@ class TestNameConstraints(object):
         if six.PY3:
             assert repr(nc) == (
                 "<NameConstraints(permitted_subtrees=[<DNSName("
-                "bytes_value=b'name.local')>, <DNSName(bytes_value="
-                "b'name2.local')>], excluded_subtrees=None)>"
+                "value='name.local')>, <DNSName(value="
+                "'name2.local')>], excluded_subtrees=None)>"
             )
         else:
             assert repr(nc) == (
                 "<NameConstraints(permitted_subtrees=[<DNSName("
-                "bytes_value='name.local')>, <DNSName(bytes_value="
-                "'name2.local')>], excluded_subtrees=None)>"
+                "value=u'name.local')>, <DNSName(value="
+                "u'name2.local')>], excluded_subtrees=None)>"
             )
 
     def test_eq(self):
         nc = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         nc2 = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         assert nc == nc2
 
     def test_ne(self):
         nc = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         nc2 = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
+            permitted_subtrees=[x509.DNSName(u"name.local")],
             excluded_subtrees=None
         )
         nc3 = x509.NameConstraints(
             permitted_subtrees=None,
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
 
         assert nc != nc2
@@ -3313,20 +3312,20 @@ class TestNameConstraints(object):
 
     def test_hash(self):
         nc = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         nc2 = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
-            excluded_subtrees=[x509.DNSName(b"name2.local")]
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
         )
         nc3 = x509.NameConstraints(
-            permitted_subtrees=[x509.DNSName(b"name.local")],
+            permitted_subtrees=[x509.DNSName(u"name.local")],
             excluded_subtrees=None
         )
         nc4 = x509.NameConstraints(
             permitted_subtrees=None,
-            excluded_subtrees=[x509.DNSName(b"name.local")]
+            excluded_subtrees=[x509.DNSName(u"name.local")]
         )
         assert hash(nc) == hash(nc2)
         assert hash(nc) != hash(nc3)
@@ -3349,7 +3348,7 @@ class TestNameConstraintsExtension(object):
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
-                x509.DNSName(b"zombo.local"),
+                x509.DNSName(u"zombo.local"),
             ],
             excluded_subtrees=[
                 x509.DirectoryName(x509.Name([
@@ -3371,7 +3370,7 @@ class TestNameConstraintsExtension(object):
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
-                x509.DNSName(b"zombo.local"),
+                x509.DNSName(u"zombo.local"),
             ],
             excluded_subtrees=None
         )
@@ -3389,7 +3388,7 @@ class TestNameConstraintsExtension(object):
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
-                x509.DNSName(b".cryptography.io"),
+                x509.DNSName(u".cryptography.io"),
                 x509.UniformResourceIdentifier(b"ftp://cryptography.test")
             ],
             excluded_subtrees=None
@@ -3409,7 +3408,7 @@ class TestNameConstraintsExtension(object):
         assert nc == x509.NameConstraints(
             permitted_subtrees=None,
             excluded_subtrees=[
-                x509.DNSName(b".cryptography.io"),
+                x509.DNSName(u".cryptography.io"),
                 x509.UniformResourceIdentifier(b"gopher://cryptography.test")
             ]
         )
@@ -3431,7 +3430,7 @@ class TestNameConstraintsExtension(object):
                 x509.IPAddress(ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/96")),
             ],
             excluded_subtrees=[
-                x509.DNSName(b".domain.com"),
+                x509.DNSName(u".domain.com"),
                 x509.UniformResourceIdentifier(b"http://test.local"),
             ]
         )
@@ -3469,8 +3468,8 @@ class TestNameConstraintsExtension(object):
             )
 
     def test_certbuilder(self, backend):
-        permitted = [b'.example.org', b'.xn--4ca7aey.example.com',
-                     b'foobar.example.net']
+        permitted = [u'.example.org', u'.xn--4ca7aey.example.com',
+                     u'foobar.example.net']
         private_key = RSA_KEY_2048.private_key(backend)
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
@@ -3479,7 +3478,7 @@ class TestNameConstraintsExtension(object):
 
         cert = builder.sign(private_key, hashes.SHA1(), backend)
         result = [
-            x.bytes_value
+            x.value
             for x in cert.extensions.get_extension_for_class(
                 NameConstraints
             ).value.permitted_subtrees

@@ -611,7 +611,7 @@ X.509 Certificate Builder
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.SubjectAlternativeName(
-        ...         [x509.DNSName(b'cryptography.io')]
+        ...         [x509.DNSName(u'cryptography.io')]
         ...     ),
         ...     critical=False
         ... )

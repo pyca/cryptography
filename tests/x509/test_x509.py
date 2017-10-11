@@ -226,7 +226,7 @@ class TestCertificateRevocationList(object):
         assert aia.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                x509.DNSName(b"cryptography.io")
+                x509.DNSName(u"cryptography.io")
             )
         ])
         assert ian.value == x509.IssuerAlternativeName([
@@ -777,6 +777,24 @@ class TestRSACertificate(object):
             )
         ]
 
+    def test_non_ascii_dns_name(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "utf8-dnsname.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        san = cert.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        ).value
+
+        names = san.get_values_for_type(x509.DNSName)
+
+        assert names == [
+            u'partner.biztositas.hu', u'biztositas.hu', u'*.biztositas.hu',
+            u'biztos\xedt\xe1s.hu', u'*.biztos\xedt\xe1s.hu',
+            u'xn--biztosts-fza2j.hu', u'*.xn--biztosts-fza2j.hu'
+        ]
+
     def test_all_subject_name_types(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -1243,8 +1261,8 @@ class TestRSACertificateRequest(object):
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(ext.value) == [
-            x509.DNSName(b"cryptography.io"),
-            x509.DNSName(b"sub.cryptography.io"),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"sub.cryptography.io"),
         ]
 
     def test_public_bytes_pem(self, backend):
@@ -1472,7 +1490,7 @@ class TestRSACertificateRequest(object):
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), True,
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")]),
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).not_valid_before(
             not_valid_before
@@ -1494,7 +1512,7 @@ class TestRSACertificateRequest(object):
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
-            x509.DNSName(b"cryptography.io"),
+            x509.DNSName(u"cryptography.io"),
         ]
 
     def test_build_cert_private_type_encoding(self, backend):
@@ -2122,7 +2140,7 @@ class TestCertificateBuilder(object):
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), True,
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")]),
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).not_valid_before(
             not_valid_before
@@ -2144,7 +2162,7 @@ class TestCertificateBuilder(object):
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
-            x509.DNSName(b"cryptography.io"),
+            x509.DNSName(u"cryptography.io"),
         ]
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
@@ -2168,7 +2186,7 @@ class TestCertificateBuilder(object):
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), True,
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")]),
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).not_valid_before(
             not_valid_before
@@ -2190,7 +2208,7 @@ class TestCertificateBuilder(object):
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
-            x509.DNSName(b"cryptography.io"),
+            x509.DNSName(u"cryptography.io"),
         ]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -2224,6 +2242,9 @@ class TestCertificateBuilder(object):
     @pytest.mark.parametrize(
         "add_ext",
         [
+            x509.SubjectAlternativeName(
+                [x509.DNSName._init_without_validation(u'a\xedt\xe1s.test')]
+            ),
             x509.CertificatePolicies([
                 x509.PolicyInformation(
                     x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
@@ -2279,7 +2300,7 @@ class TestCertificateBuilder(object):
                 )
             ]),
             x509.IssuerAlternativeName([
-                x509.DNSName(b"myissuer"),
+                x509.DNSName(u"myissuer"),
                 x509.RFC822Name(u"email@domain.com"),
             ]),
             x509.ExtendedKeyUsage([
@@ -2308,7 +2329,7 @@ class TestCertificateBuilder(object):
                         ipaddress.IPv6Network(u"FF:FF:0:0:0:0:0:0/128")
                     ),
                 ],
-                excluded_subtrees=[x509.DNSName(b"name.local")]
+                excluded_subtrees=[x509.DNSName(u"name.local")]
             ),
             x509.NameConstraints(
                 permitted_subtrees=[
@@ -2318,7 +2339,7 @@ class TestCertificateBuilder(object):
             ),
             x509.NameConstraints(
                 permitted_subtrees=None,
-                excluded_subtrees=[x509.DNSName(b"name.local")]
+                excluded_subtrees=[x509.DNSName(u"name.local")]
             ),
             x509.PolicyConstraints(
                 require_explicit_policy=None,
@@ -2847,7 +2868,7 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")]),
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).add_extension(
             DummyExtension(), False
@@ -2933,7 +2954,7 @@ class TestCertificateSigningRequestBuilder(object):
         request = builder.subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(b"cryptography.io")]),
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
@@ -2950,7 +2971,7 @@ class TestCertificateSigningRequestBuilder(object):
         ext = request.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
-        assert list(ext.value) == [x509.DNSName(b"cryptography.io")]
+        assert list(ext.value) == [x509.DNSName(u"cryptography.io")]
 
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
@@ -2970,8 +2991,8 @@ class TestCertificateSigningRequestBuilder(object):
         private_key = RSA_KEY_2048.private_key(backend)
 
         san = x509.SubjectAlternativeName([
-            x509.DNSName(b"example.com"),
-            x509.DNSName(b"*.example.com"),
+            x509.DNSName(u"example.com"),
+            x509.DNSName(u"*.example.com"),
             x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
             x509.DirectoryName(x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, u'PyCA'),

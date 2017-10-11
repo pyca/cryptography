@@ -368,7 +368,9 @@ def _encode_general_name(backend, name):
 
         ia5 = backend._lib.ASN1_IA5STRING_new()
         backend.openssl_assert(ia5 != backend._ffi.NULL)
-        value = name.bytes_value
+        # ia5strings are supposed to be ITU T.50 but to allow round-tripping
+        # of broken certs that encode utf8 we'll encode utf8 here too.
+        value = name.value.encode("utf8")
 
         res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
         backend.openssl_assert(res == 1)
