@@ -281,7 +281,7 @@ setup(
     tests_require=test_requirements,
     extras_require={
         ":python_version < '3'": ["enum34", "ipaddress"],
-        ":python_implementation != 'PyPy'": ["cffi >= 1.7"],
+        ":platform_python_implementation != 'PyPy'": ["cffi >= 1.7"],
 
         "test": test_requirements,
         "docstest": [
