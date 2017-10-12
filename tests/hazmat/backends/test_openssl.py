@@ -14,7 +14,7 @@ from pkg_resources import parse_version
 
 import pytest
 
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
@@ -141,10 +141,10 @@ class TestOpenSSL(object):
     def test_large_key_size_on_new_openssl(self):
         parameters = dsa.generate_parameters(2048, backend)
         param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 2048
+        assert param_num.p.bit_length() == 2048
         parameters = dsa.generate_parameters(3072, backend)
         param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 3072
+        assert param_num.p.bit_length() == 3072
 
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242

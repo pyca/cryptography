@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, encode_dss_signature
 )
-from cryptography.utils import bit_length
 
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
@@ -82,7 +81,7 @@ class TestDSA(object):
         assert skey_parameters.p == vector['p']
         assert skey_parameters.q == vector['q']
         assert skey_parameters.g == vector['g']
-        assert skey.key_size == bit_length(vector['p'])
+        assert skey.key_size == vector['p'].bit_length()
         assert pkey.key_size == skey.key_size
         public_numbers = pkey.public_numbers()
         assert numbers.public_numbers.y == public_numbers.y

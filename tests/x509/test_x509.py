@@ -3981,4 +3981,4 @@ def test_random_serial_number(monkeypatch):
     assert (
         serial_number == utils.int_from_bytes(sample_data, "big") >> 1
     )
-    assert utils.bit_length(serial_number) < 160
+    assert serial_number.bit_length() < 160

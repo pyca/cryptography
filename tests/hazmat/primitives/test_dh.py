@@ -13,7 +13,7 @@ from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DHBackend, PEMSerializationBackend)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
-from cryptography.utils import bit_length, int_from_bytes
+from cryptography.utils import int_from_bytes
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
@@ -262,7 +262,7 @@ class TestDH(object):
         assert isinstance(parameters, dh.DHParametersWithSerialization)
         parameter_numbers = parameters.parameter_numbers()
         assert isinstance(parameter_numbers, dh.DHParameterNumbers)
-        assert bit_length(parameter_numbers.p) == key_size
+        assert parameter_numbers.p.bit_length() == key_size
 
         assert isinstance(public, dh.DHPublicKeyWithSerialization)
         assert isinstance(public.public_numbers(), dh.DHPublicNumbers)
