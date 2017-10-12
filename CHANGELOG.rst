@@ -4,10 +4,10 @@ Changelog
 
 .. _v2-1-1:
 
-2.1.1 - 2017-10-11
+2.1.1 - 2017-10-12
 ~~~~~~~~~~~~~~~~~~
 
-* Fixed support for installing with ``pip`` 8.1.1.
+* Fixed support for install with the system ``pip`` on Ubuntu 16.04.
 
 .. _v2-1:
 
