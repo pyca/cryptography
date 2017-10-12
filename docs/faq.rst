@@ -84,6 +84,13 @@ earlier the default compiler is extremely old. Use ``pkg_add`` to install a
 newer ``gcc`` and then install ``cryptography`` using
 ``CC=/path/to/newer/gcc pip install cryptography``.
 
+Installing ``cryptography`` fails with ``Invalid environment marker: python_version < '3'``
+-------------------------------------------------------------------------------------------
+
+Your ``pip`` and/or ``setuptools`` are outdated. Please upgrade to the latest
+versions with ``pip install -U pip setuptools`` (or on Windows
+``python -m pip install -U pip setuptools``).
+
 Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
 ---------------------------------------------------------
 
