@@ -10,6 +10,13 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
 
+.. _v2-1-1:
+
+2.1.1 - 2017-10-12
+~~~~~~~~~~~~~~~~~~
+
+* Fixed support for install with the system ``pip`` on Ubuntu 16.04.
+
 .. _v2-1:
 
 2.1 - 2017-10-11
