@@ -1,5 +1,19 @@
 if (env.BRANCH_NAME == "master") {
     properties([pipelineTriggers([cron('@daily')])])
+} else {
+    /* Cancel any previous running jobs if this is not the master branch.
+     * This allows us to auto-cancel jobs when a new commit is pushed to
+     * a pull request. */
+    def job = Jenkins.instance.getItemByFullName(env.JOB_NAME)
+     for (build in job.builds) {
+         if (!build.isBuilding()) {
+            continue
+        }
+         if (env.BUILD_NUMBER.toInteger() == build.getNumber().toInteger()) {
+            continue
+        }
+        build.doStop()
+    }
 }
 
 def configs = [
