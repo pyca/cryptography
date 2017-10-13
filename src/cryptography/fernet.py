@@ -134,8 +134,8 @@ class MultiFernet(object):
     def encrypt(self, msg):
         return self._fernets[0].encrypt(msg)
 
-    def rotate(self, msgs, ttl=None):
-        return [self.encrypt(self.decrypt(m, ttl)) for m in msgs]
+    def rotate(self, msg, ttl=None):
+        return self.encrypt(self.decrypt(msg, ttl))
 
     def decrypt(self, msg, ttl=None):
         for f in self._fernets:

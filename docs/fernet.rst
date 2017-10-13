@@ -102,7 +102,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         'Secret message!'
         >>> key3 = Fernet(Fernet.generate_key())
         >>> f2 = MultiFernet([key3, key1, key2])
-        >>> rotated = f2.rotate([token])[0]
+        >>> rotated = f2.rotate(token)
         >>> f2.decrypt(rotated)
         'Secret message!'
 
@@ -115,16 +115,13 @@ has support for implementing key rotation via :class:`MultiFernet`.
     the front of the list to start encrypting new messages, and remove old keys
     as they are no longer needed.
 
-    .. method:: rotate(msgs, ttl=None)
+    .. method:: rotate(msg, ttl=None)
 
-        Re-encrypts the provided fernet tokens. If all tokens have successfully
-        been re-encrypted, then the list of re-encrypted tokens will be
-        returned. In the event of re-encryption failing, an exception will be
-        raised for the first token to fail.
+        Re-encrypts the provided fernet token. If the token has successfully
+        been re-encrypted, then the re-encrypted token will be returned. This
+        will raise an exception if re-encryption fails.
 
-        :param list(bytes) msgs: The Fernet tokens to re-encrypt. Each token is the
-                                result of calling :meth:`Fernet.encrypt` with a given
-                                message.
+        :param bytes msg: The token to re-encrypt.
         :param int ttl: Optionally, the number of seconds old a message may be
                         for it to be valid. If the message is older than
                         ``ttl`` seconds (from the time it was originally
@@ -132,9 +129,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
                         provided (or is ``None``), the age of the message is
                         not considered. If any token is older than the ``ttl``
                         then an exception will be raised.
-        :returns list(bytes): A list of secure messages that cannot be read or
-                        altered without the key. Each is URL-safe base64-encoded.
-                        Each is referred to as a "Fernet token".
+        :returns bytes: A secure message that cannot be read or altered without
+                        the key. This is URL-safe base64-encoded. This is
+                        referred to as a "Fernet token".
         :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
                                                   way invalid, this exception
                                                   is raised. A token may be
@@ -143,7 +140,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
                                                   ``ttl``, it is malformed, or
                                                   it does not have a valid
                                                   signature.
-        :raises TypeError: This exception is raised if any of the ```msgs`` are not
+        :raises TypeError: This exception is raised if the ```msg`` is not
                            ``bytes``.
 
 

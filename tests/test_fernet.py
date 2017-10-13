@@ -170,7 +170,7 @@ class TestMultiFernet(object):
 
         assert mf2.decrypt(mf1_ciphertext) == plaintext
 
-        rotated = mf2.rotate([mf1_ciphertext])[0]
+        rotated = mf2.rotate(mf1_ciphertext)
 
         assert rotated != mf1_ciphertext
         assert mf2.decrypt(rotated) == plaintext
@@ -190,7 +190,7 @@ class TestMultiFernet(object):
         monkeypatch.setattr(time, "time", lambda: later_time)
 
         with pytest.raises(InvalidToken):
-            mf2.rotate([mf1_ciphertext], ttl=10)
+            mf2.rotate(mf1_ciphertext, ttl=10)
 
     def test_rotate_decrypt_no_shared_keys(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -200,4 +200,4 @@ class TestMultiFernet(object):
         mf2 = MultiFernet([f2])
 
         with pytest.raises(InvalidToken):
-            mf2.rotate([mf1.encrypt(b"abc")])
+            mf2.rotate(mf1.encrypt(b"abc"))
