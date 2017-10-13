@@ -118,6 +118,23 @@ has support for implementing key rotation via :class:`MultiFernet`.
         been re-encrypted, then the re-encrypted token will be returned. This
         will raise an exception if re-encryption fails.
 
+        .. doctest::
+
+           >>> from cryptography.fernet import Fernet, MultiFernet
+           >>> key1 = Fernet(Fernet.generate_key())
+           >>> key2 = Fernet(Fernet.generate_key())
+           >>> f = MultiFernet([key1, key2])
+           >>> token = f.encrypt(b"Secret message!")
+           >>> token
+           '...'
+           >>> f.decrypt(token)
+           'Secret message!'
+           >>> key3 = Fernet(Fernet.generate_key())
+           >>> f2 = MultiFernet([key3, key1, key2])
+           >>> rotated = f2.rotate(token)
+           >>> f2.decrypt(rotated)
+           'Secret message!'
+
         :param bytes msg: The token to re-encrypt.
         :param int ttl: Optionally, the number of seconds old a message may be
                         for it to be valid. If the message is older than
