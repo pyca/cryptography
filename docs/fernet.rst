@@ -100,11 +100,6 @@ has support for implementing key rotation via :class:`MultiFernet`.
         '...'
         >>> f.decrypt(token)
         'Secret message!'
-        >>> key3 = Fernet(Fernet.generate_key())
-        >>> f2 = MultiFernet([key3, key1, key2])
-        >>> rotated = f2.rotate(token)
-        >>> f2.decrypt(rotated)
-        'Secret message!'
 
     MultiFernet performs all encryption options using the *first* key in the
     ``list`` provided. MultiFernet attempts to decrypt tokens with each key in
@@ -116,6 +111,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
     as they are no longer needed.
 
     .. method:: rotate(msg, ttl=None)
+
+        .. versionadded:: 2.2
 
         Re-encrypts the provided fernet token. If the token has successfully
         been re-encrypted, then the re-encrypted token will be returned. This
