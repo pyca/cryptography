@@ -86,7 +86,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
     .. versionadded:: 0.7
 
     This class implements key rotation for Fernet. It takes a ``list`` of
-    :class:`Fernet` instances, and implements the same API:
+    :class:`Fernet` instances, and implements the same API with the exception
+    of one additional method: :meth:`MultiFernet.rotate`:
 
     .. doctest::
 
@@ -99,6 +100,11 @@ has support for implementing key rotation via :class:`MultiFernet`.
         '...'
         >>> f.decrypt(token)
         'Secret message!'
+        >>> key3 = Fernet(Fernet.generate_key())
+        >>> f2 = MultiFernet([key3, key1, key2])
+        >>> rotated = f2.rotate([token])[0]
+        >>> f2.decrypt(rotated)
+        'Secret message!'
 
     MultiFernet performs all encryption options using the *first* key in the
     ``list`` provided. MultiFernet attempts to decrypt tokens with each key in
@@ -108,6 +114,37 @@ has support for implementing key rotation via :class:`MultiFernet`.
     Key rotation makes it easy to replace old keys. You can add your new key at
     the front of the list to start encrypting new messages, and remove old keys
     as they are no longer needed.
+
+    .. method:: rotate(msgs, ttl=None)
+
+        Re-encrypts the provided fernet tokens. If all tokens have successfully
+        been re-encrypted, then the list of re-encrypted tokens will be
+        returned. In the event of re-encryption failing, an exception will be
+        raised for the first token to fail.
+
+        :param list(bytes) msgs: The Fernet tokens to re-encrypt. Each token is the
+                                result of calling :meth:`Fernet.encrypt` with a given
+                                message.
+        :param int ttl: Optionally, the number of seconds old a message may be
+                        for it to be valid. If the message is older than
+                        ``ttl`` seconds (from the time it was originally
+                        created) an exception will be raised. If ``ttl`` is not
+                        provided (or is ``None``), the age of the message is
+                        not considered. If any token is older than the ``ttl``
+                        then an exception will be raised.
+        :returns list(bytes): A list of secure messages that cannot be read or
+                        altered without the key. Each is URL-safe base64-encoded.
+                        Each is referred to as a "Fernet token".
+        :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
+                                                  way invalid, this exception
+                                                  is raised. A token may be
+                                                  invalid for a number of
+                                                  reasons: it is older than the
+                                                  ``ttl``, it is malformed, or
+                                                  it does not have a valid
+                                                  signature.
+        :raises TypeError: This exception is raised if any of the ```msgs`` are not
+                           ``bytes``.
 
 
 .. class:: InvalidToken

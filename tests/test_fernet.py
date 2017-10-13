@@ -170,7 +170,7 @@ class TestMultiFernet(object):
 
         assert mf2.decrypt(mf1_ciphertext) == plaintext
 
-        rotated = mf2.rotate([mf1.encrypt(plaintext)])[0]
+        rotated = mf2.rotate([mf1_ciphertext])[0]
 
         assert rotated != mf1_ciphertext
         assert mf2.decrypt(rotated) == plaintext
