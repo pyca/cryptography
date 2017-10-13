@@ -137,25 +137,20 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
         :param bytes msg: The token to re-encrypt.
         :param int ttl: Optionally, the number of seconds old a message may be
-                        for it to be valid. If the message is older than
-                        ``ttl`` seconds (from the time it was originally
-                        created) an exception will be raised. If ``ttl`` is not
-                        provided (or is ``None``), the age of the message is
-                        not considered. If any token is older than the ``ttl``
-                        then an exception will be raised.
+           for it to be valid. If the message is older than ``ttl`` seconds
+           (from the time it was originally created) an exception will be
+           raised. If ``ttl`` is not provided (or is ``None``), the age of the
+           message is not considered. If any token is older than the ``ttl``
+           then an exception will be raised.
         :returns bytes: A secure message that cannot be read or altered without
-                        the key. This is URL-safe base64-encoded. This is
-                        referred to as a "Fernet token".
+           the key. This is URL-safe base64-encoded. This is referred to as a
+           "Fernet token".
         :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
-                                                  way invalid, this exception
-                                                  is raised. A token may be
-                                                  invalid for a number of
-                                                  reasons: it is older than the
-                                                  ``ttl``, it is malformed, or
-                                                  it does not have a valid
-                                                  signature.
-        :raises TypeError: This exception is raised if the ```msg`` is not
-                           ``bytes``.
+           way invalid, this exception is raised. A token may be invalid for a
+           number of reasons: it is older than the ``ttl``, it is malformed, or
+           it does not have a valid signature.
+        :raises TypeError: This exception is raised if the ``msg`` is not
+           ``bytes``.
 
 
 .. class:: InvalidToken
