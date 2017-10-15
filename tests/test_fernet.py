@@ -175,6 +175,9 @@ class TestMultiFernet(object):
         assert rotated != mf1_ciphertext
         assert mf2.decrypt(rotated) == plaintext
 
+        with pytest.raises(InvalidToken):
+            mf1.decrypt(rotated)
+
     def test_rotate_ttl_failure(self, backend, monkeypatch):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)

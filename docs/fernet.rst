@@ -114,9 +114,14 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
         .. versionadded:: 2.2
 
-        Re-encrypts the provided fernet token. If the token has successfully
-        been re-encrypted, then the re-encrypted token will be returned. This
-        will raise an exception if re-encryption fails.
+        Rotating tokens is necessary when any of the fernet keys of a
+        :class:`MultiFernet` instance have been compromised. This method
+        re-encrypts the token, `msg`, under the new primary key. Once all tokens
+        have been successfully rotated under the new primary key, the
+        compromised key can be removed from the :class`MultiFernet` instance. If
+        the token has successfully been re-encrypted, then the re-encrypted
+        token will be returned. This will raise an exception if re-encryption
+        fails.
 
         .. doctest::
 
