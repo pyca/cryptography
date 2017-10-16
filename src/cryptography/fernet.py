@@ -141,8 +141,19 @@ class MultiFernet(object):
     def encrypt(self, msg):
         return self._fernets[0].encrypt(msg)
 
-    def rotate(self, msg, ttl=None):
-        return self.encrypt(self.decrypt(msg, ttl))
+    def rotate(self, msg):
+        timestamp, data = self._fernets[0]._get_token_data(msg)
+        for f in self._fernets:
+            try:
+                p = f._decrypt_data(data, timestamp, None)
+                break
+            except InvalidToken:
+                pass
+        else:
+            raise InvalidToken
+
+        iv = os.urandom(16)
+        return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
     def decrypt(self, msg, ttl=None):
         for f in self._fernets:
