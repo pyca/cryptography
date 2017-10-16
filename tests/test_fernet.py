@@ -178,7 +178,7 @@ class TestMultiFernet(object):
         with pytest.raises(InvalidToken):
             mf1.decrypt(rotated)
 
-    def test_rotate_ttl_failure(self, backend, monkeypatch):
+    def test_rotate_preserves_timestamp(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
 
@@ -188,12 +188,10 @@ class TestMultiFernet(object):
         plaintext = b"abc"
         mf1_ciphertext = mf1.encrypt(plaintext)
 
-        later = datetime.datetime.now() + datetime.timedelta(seconds=11)
-        later_time = time.mktime(later.timetuple())
-        monkeypatch.setattr(time, "time", lambda: later_time)
+        original_time, _ = Fernet._get_token_data(mf1_ciphertext)
+        rotated_time, _ =  Fernet._get_token_data(mf2.rotate(mf1_ciphertext))
 
-        with pytest.raises(InvalidToken):
-            mf2.rotate(mf1_ciphertext, ttl=10)
+        assert original_time == rotated_time
 
     def test_rotate_decrypt_no_shared_keys(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
