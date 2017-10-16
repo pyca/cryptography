@@ -187,8 +187,10 @@ class TestMultiFernet(object):
         plaintext = b"abc"
         mf1_ciphertext = mf1.encrypt(plaintext)
 
-        original_time, _ = Fernet._get_token_data(mf1_ciphertext)
-        rotated_time, _ = Fernet._get_token_data(mf2.rotate(mf1_ciphertext))
+        original_time, _ = Fernet._get_unverified_token_data(mf1_ciphertext)
+        rotated_time, _ = Fernet._get_unverified_token_data(
+            mf2.rotate(mf1_ciphertext)
+        )
 
         assert original_time == rotated_time
 
