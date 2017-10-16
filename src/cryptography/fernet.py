@@ -71,7 +71,7 @@ class Fernet(object):
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
     def decrypt(self, token, ttl=None):
-        timestamp, data = self._get_unverified_token_data(token)
+        timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl)
 
     @staticmethod
@@ -142,7 +142,7 @@ class MultiFernet(object):
         return self._fernets[0].encrypt(msg)
 
     def rotate(self, msg):
-        timestamp, data = self._fernets[0]._get_unverified_token_data(msg)
+        timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
                 p = f._decrypt_data(data, timestamp, None)
