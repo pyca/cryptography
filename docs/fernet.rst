@@ -110,14 +110,15 @@ has support for implementing key rotation via :class:`MultiFernet`.
     the front of the list to start encrypting new messages, and remove old keys
     as they are no longer needed.
 
-    .. method:: rotate(msg, ttl=None)
+    .. method:: rotate(msg)
 
         .. versionadded:: 2.2
 
         Rotating tokens is necessary when any of the fernet keys of a
         :class:`MultiFernet` instance have been compromised. This decrypts the
         token `msg` using any of the keys attached to the :class:`MultiFernet`
-        instance and then re-encrypts the token using the primary key.
+        instance and then re-encrypts the token using the primary key. This
+        preserves the timestamp that was originally saved with the message.
 
         If a token has successfully been rotated, then the rotated token will be
         returned. If rotation fails, this will raise an exception.
@@ -140,19 +141,13 @@ has support for implementing key rotation via :class:`MultiFernet`.
            'Secret message!'
 
         :param bytes msg: The token to re-encrypt.
-        :param int ttl: Optionally, the number of seconds old a message may be
-           for it to be valid. If the message is older than ``ttl`` seconds
-           (from the time it was originally created) an exception will be
-           raised. If ``ttl`` is not provided (or is ``None``), the age of the
-           message is not considered. If any token is older than the ``ttl``
-           then an exception will be raised.
         :returns bytes: A secure message that cannot be read or altered without
            the key. This is URL-safe base64-encoded. This is referred to as a
            "Fernet token".
         :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
            way invalid, this exception is raised. A token may be invalid for a
-           number of reasons: it is older than the ``ttl``, it is malformed, or
-           it does not have a valid signature.
+           number of reasons: it is malformed, or it does not have a valid
+           signature.
         :raises TypeError: This exception is raised if the ``msg`` is not
            ``bytes``.
 
