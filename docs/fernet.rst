@@ -86,7 +86,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
     .. versionadded:: 0.7
 
     This class implements key rotation for Fernet. It takes a ``list`` of
-    :class:`Fernet` instances, and implements the same API with the exception
+    :class:`Fernet` instances and implements the same API with the exception
     of one additional method: :meth:`MultiFernet.rotate`:
 
     .. doctest::
@@ -114,14 +114,18 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
         .. versionadded:: 2.2
 
-        Rotating tokens is necessary when any of the fernet keys of a
-        :class:`MultiFernet` instance have been compromised. This decrypts the
-        token `msg` using any of the keys attached to the :class:`MultiFernet`
-        instance and then re-encrypts the token using the primary key. This
-        preserves the timestamp that was originally saved with the token.
+        Rotates a token by re-encrypting it under the :class:`MultiFernet`
+        instance's primary key. This preserves the timestamp that was originally
+        saved with the token. If a token has successfully been rotated then the
+        rotated token will be returned. If rotation fails this will raise an
+        exception.
 
-        If a token has successfully been rotated, then the rotated token will be
-        returned. If rotation fails, this will raise an exception.
+        Token rotation is a best practice and manner of cryptographic hygiene
+        designed to limit damage in the event of an undetected event and to
+        increase the difficulty of attacks. For example, it would be necessary
+        to rotate all fernet tokens in the event of an employee leaving who
+        previously had access to the fernet key used to encrypt/decrypt fernet
+        tokens.
 
         .. doctest::
 
@@ -145,9 +149,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
            the key. This is URL-safe base64-encoded. This is referred to as a
            "Fernet token".
         :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
-           way invalid, this exception is raised. A token may be invalid for a
-           number of reasons: it is malformed, or it does not have a valid
-           signature.
+           way invalid this exception is raised.
         :raises TypeError: This exception is raised if the ``msg`` is not
            ``bytes``.
 
