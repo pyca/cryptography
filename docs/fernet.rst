@@ -110,6 +110,13 @@ has support for implementing key rotation via :class:`MultiFernet`.
     the front of the list to start encrypting new messages, and remove old keys
     as they are no longer needed.
 
+    Token rotation as offered by :meth:`MultiFernet.rotate` is a best practice
+    and manner of cryptographic hygiene designed to limit damage in the event of
+    an undetected event and to increase the difficulty of attacks. For example,
+    it would be necessary to rotate all fernet tokens in the event of an
+    employee leaving who previously had access to the fernet key used to
+    encrypt/decrypt fernet tokens.
+
     .. method:: rotate(msg)
 
         .. versionadded:: 2.2
@@ -119,13 +126,6 @@ has support for implementing key rotation via :class:`MultiFernet`.
         saved with the token. If a token has successfully been rotated then the
         rotated token will be returned. If rotation fails this will raise an
         exception.
-
-        Token rotation is a best practice and manner of cryptographic hygiene
-        designed to limit damage in the event of an undetected event and to
-        increase the difficulty of attacks. For example, it would be necessary
-        to rotate all fernet tokens in the event of an employee leaving who
-        previously had access to the fernet key used to encrypt/decrypt fernet
-        tokens.
 
         .. doctest::
 
