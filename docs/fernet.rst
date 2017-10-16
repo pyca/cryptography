@@ -118,7 +118,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         :class:`MultiFernet` instance have been compromised. This decrypts the
         token `msg` using any of the keys attached to the :class:`MultiFernet`
         instance and then re-encrypts the token using the primary key. This
-        preserves the timestamp that was originally saved with the message.
+        preserves the timestamp that was originally saved with the token.
 
         If a token has successfully been rotated, then the rotated token will be
         returned. If rotation fails, this will raise an exception.
