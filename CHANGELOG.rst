@@ -27,13 +27,15 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** ``Whirlpool``, ``RIPEMD160``, and
   ``UnsupportedExtension`` have been removed in accordance with our
   :doc:`/api-stability` policy.
-* **BACKWARDS INCOMPATIBLE:** :attr:`~cryptography.x509.DNSName.value`,
-  :attr:`~cryptography.x509.RFC822Name.value`, and
-  :attr:`~cryptography.x509.UniformResourceIdentifier.value` will now return
-  an :term:`A-label` string when parsing a certificate containing an
-  internationalized domain name (IDN) or if the caller passed a :term:`U-label`
-  to the constructor. See below for additional deprecations related to this
-  change.
+* **BACKWARDS INCOMPATIBLE:**
+  :attr:`DNSName.value <cryptography.x509.DNSName.value>`,
+  :attr:`RFC822Name.value <cryptography.x509.RFC822Name.value>`, and
+  :attr:`UniformResourceIdentifier.value
+  <cryptography.x509.UniformResourceIdentifier.value>`
+  will now return an :term:`A-label` string when parsing a certificate
+  containing an internationalized domain name (IDN) or if the caller passed
+  a :term:`U-label` to the constructor. See below for additional deprecations
+  related to this change.
 * Installing ``cryptography`` now requires ``pip`` 6 or newer.
 * Deprecated passing :term:`U-label` strings to the
   :class:`~cryptography.x509.DNSName`,
