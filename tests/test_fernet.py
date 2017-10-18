@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import calendar
+import datetime
 import json
 import os
 import time
@@ -156,3 +157,55 @@ class TestMultiFernet(object):
     def test_non_iterable_argument(self, backend):
         with pytest.raises(TypeError):
             MultiFernet(None)
+
+    def test_rotate(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+
+        mf1 = MultiFernet([f1])
+        mf2 = MultiFernet([f2, f1])
+
+        plaintext = b"abc"
+        mf1_ciphertext = mf1.encrypt(plaintext)
+
+        assert mf2.decrypt(mf1_ciphertext) == plaintext
+
+        rotated = mf2.rotate(mf1_ciphertext)
+
+        assert rotated != mf1_ciphertext
+        assert mf2.decrypt(rotated) == plaintext
+
+        with pytest.raises(InvalidToken):
+            mf1.decrypt(rotated)
+
+    def test_rotate_preserves_timestamp(self, backend, monkeypatch):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+
+        mf1 = MultiFernet([f1])
+        mf2 = MultiFernet([f2, f1])
+
+        plaintext = b"abc"
+        mf1_ciphertext = mf1.encrypt(plaintext)
+
+        later = datetime.datetime.now() + datetime.timedelta(minutes=5)
+        later_time = time.mktime(later.timetuple())
+        monkeypatch.setattr(time, "time", lambda: later_time)
+
+        original_time, _ = Fernet._get_unverified_token_data(mf1_ciphertext)
+        rotated_time, _ = Fernet._get_unverified_token_data(
+            mf2.rotate(mf1_ciphertext)
+        )
+
+        assert later_time != rotated_time
+        assert original_time == rotated_time
+
+    def test_rotate_decrypt_no_shared_keys(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+
+        mf1 = MultiFernet([f1])
+        mf2 = MultiFernet([f2])
+
+        with pytest.raises(InvalidToken):
+            mf2.rotate(mf1.encrypt(b"abc"))

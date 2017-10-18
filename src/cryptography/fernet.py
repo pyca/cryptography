@@ -71,10 +71,13 @@ class Fernet(object):
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
     def decrypt(self, token, ttl=None):
+        timestamp, data = Fernet._get_unverified_token_data(token)
+        return self._decrypt_data(data, timestamp, ttl)
+
+    @staticmethod
+    def _get_unverified_token_data(token):
         if not isinstance(token, bytes):
             raise TypeError("token must be bytes.")
-
-        current_time = int(time.time())
 
         try:
             data = base64.urlsafe_b64decode(token)
@@ -88,6 +91,10 @@ class Fernet(object):
             timestamp, = struct.unpack(">Q", data[1:9])
         except struct.error:
             raise InvalidToken
+        return timestamp, data
+
+    def _decrypt_data(self, data, timestamp, ttl):
+        current_time = int(time.time())
         if ttl is not None:
             if timestamp + ttl < current_time:
                 raise InvalidToken
@@ -133,6 +140,20 @@ class MultiFernet(object):
 
     def encrypt(self, msg):
         return self._fernets[0].encrypt(msg)
+
+    def rotate(self, msg):
+        timestamp, data = Fernet._get_unverified_token_data(msg)
+        for f in self._fernets:
+            try:
+                p = f._decrypt_data(data, timestamp, None)
+                break
+            except InvalidToken:
+                pass
+        else:
+            raise InvalidToken
+
+        iv = os.urandom(16)
+        return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
     def decrypt(self, msg, ttl=None):
         for f in self._fernets:

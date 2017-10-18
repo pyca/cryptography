@@ -9,6 +9,8 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
+* Added token rotation support to :doc:`Fernet </fernet>` with
+  :meth:`~cryptography.fernet.MultiFernet.rotate`.
 
 .. _v2-1-1:
 
