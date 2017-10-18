@@ -182,29 +182,22 @@ class TestMultiFernet(object):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
 
-        earlier = datetime.datetime.now() - datetime.timedelta(minutes=1)
-        later = datetime.datetime.now() + datetime.timedelta(minutes=1)
-
-        t1 = time.mktime(earlier.timetuple())
-        t2 = time.mktime(later.timetuple())
-
-        assert t1 < t2
-
         mf1 = MultiFernet([f1])
         mf2 = MultiFernet([f2, f1])
 
         plaintext = b"abc"
-
-        monkeypatch.setattr(time, "time", lambda: t1)
         mf1_ciphertext = mf1.encrypt(plaintext)
 
-        monkeypatch.setattr(time, "time", lambda: t2)
+        later = datetime.datetime.now() + datetime.timedelta(minutes=5)
+        later_time = time.mktime(later.timetuple())
+        monkeypatch.setattr(time, "time", lambda: later_time)
+
         original_time, _ = Fernet._get_unverified_token_data(mf1_ciphertext)
         rotated_time, _ = Fernet._get_unverified_token_data(
             mf2.rotate(mf1_ciphertext)
         )
 
-        assert original_time == t1
+        assert later_time != rotated_time
         assert original_time == rotated_time
 
     def test_rotate_decrypt_no_shared_keys(self, backend):
