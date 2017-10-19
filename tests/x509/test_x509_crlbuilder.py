@@ -205,6 +205,23 @@ class TestCertificateRevocationListBuilder(object):
         assert crl.last_update == last_update
         assert crl.next_update == next_update
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_no_backend(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(last_update).next_update(next_update)
+
+        crl = builder.sign(private_key, hashes.SHA256())
+        assert len(crl) == 0
+        assert crl.last_update == last_update
+        assert crl.next_update == next_update
+
     @pytest.mark.parametrize(
         "extension",
         [

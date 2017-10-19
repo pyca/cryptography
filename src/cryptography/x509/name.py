@@ -156,7 +156,8 @@ class Name(object):
     def rdns(self):
         return self._attributes
 
-    def public_bytes(self, backend):
+    def public_bytes(self, backend=None):
+        backend = utils._get_backend(backend)
         return backend.x509_name_bytes(self)
 
     def __eq__(self, other):

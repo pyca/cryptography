@@ -39,27 +39,33 @@ class Version(Enum):
     v3 = 2
 
 
-def load_pem_x509_certificate(data, backend):
+def load_pem_x509_certificate(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_pem_x509_certificate(data)
 
 
-def load_der_x509_certificate(data, backend):
+def load_der_x509_certificate(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_der_x509_certificate(data)
 
 
-def load_pem_x509_csr(data, backend):
+def load_pem_x509_csr(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_pem_x509_csr(data)
 
 
-def load_der_x509_csr(data, backend):
+def load_der_x509_csr(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_der_x509_csr(data)
 
 
-def load_pem_x509_crl(data, backend):
+def load_pem_x509_crl(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_pem_x509_crl(data)
 
 
-def load_der_x509_crl(data, backend):
+def load_der_x509_crl(data, backend=None):
+    backend = utils._get_backend(backend)
     return backend.load_der_x509_crl(data)
 
 
@@ -390,12 +396,13 @@ class CertificateSigningRequestBuilder(object):
             self._subject_name, self._extensions + [extension]
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
         """
         Signs the request using the requestor's private key.
         """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
+        backend = utils._get_backend(backend)
         return backend.create_x509_csr(self, private_key, algorithm)
 
 
@@ -545,7 +552,7 @@ class CertificateBuilder(object):
             self._not_valid_after, self._extensions + [extension]
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
         """
         Signs the certificate using the CA's private key.
         """
@@ -567,6 +574,7 @@ class CertificateBuilder(object):
         if self._public_key is None:
             raise ValueError("A certificate must have a public key")
 
+        backend = utils._get_backend(backend)
         return backend.create_x509_certificate(self, private_key, algorithm)
 
 
@@ -656,7 +664,7 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates + [revoked_certificate]
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
 
@@ -666,6 +674,7 @@ class CertificateRevocationListBuilder(object):
         if self._next_update is None:
             raise ValueError("A CRL must have a next update time")
 
+        backend = utils._get_backend(backend)
         return backend.create_x509_crl(self, private_key, algorithm)
 
 
@@ -721,7 +730,7 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension]
         )
 
-    def build(self, backend):
+    def build(self, backend=None):
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")
         if self._revocation_date is None:
@@ -729,6 +738,7 @@ class RevokedCertificateBuilder(object):
                 "A revoked certificate must have a revocation date"
             )
 
+        backend = utils._get_backend(backend)
         return backend.create_x509_revoked_certificate(self)
 
 

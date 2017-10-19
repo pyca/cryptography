@@ -63,6 +63,44 @@ def _load_cert(filename, loader, backend):
     return cert
 
 
+class TestNoBackend(object):
+    @pytest.mark.parametrize(
+        ("path", "func"),
+        [
+            [
+                os.path.join("x509", "custom", "crl_all_reasons.pem"),
+                x509.load_pem_x509_crl,
+            ],
+            [
+                os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+                x509.load_der_x509_crl,
+            ],
+            [
+                os.path.join("x509", "custom", "valid_signature.pem"),
+                x509.load_pem_x509_certificate,
+            ],
+            [
+                os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+                x509.load_der_x509_certificate,
+            ],
+            [
+                os.path.join("x509", "requests", "rsa_sha1.pem"),
+                x509.load_pem_x509_csr,
+            ],
+            [
+                os.path.join("x509", "requests", "rsa_sha1.der"),
+                x509.load_der_x509_csr
+            ],
+        ]
+    )
+    def test_load_no_backend(self, path, func):
+        load_vectors_from_file(
+            filename=path,
+            loader=lambda pemfile: func(pemfile.read()),
+            mode="rb"
+        )
+
+
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateRevocationList(object):
     def test_load_pem_crl(self, backend):
@@ -1461,7 +1499,11 @@ class TestRSACertificateRequest(object):
         assert hash(request1) == hash(request2)
         assert hash(request1) != hash(request3)
 
-    def test_build_cert(self, backend):
+    @pytest.mark.parametrize(
+        "use_backend_arg",
+        [True, False]
+    )
+    def test_build_cert(self, backend, use_backend_arg):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
@@ -1495,7 +1537,10 @@ class TestRSACertificateRequest(object):
             not_valid_after
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        if use_backend_arg:
+            cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        else:
+            cert = builder.sign(issuer_private_key, hashes.SHA1())
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -2750,16 +2795,25 @@ class TestCertificateSigningRequestBuilder(object):
             builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
-    def test_build_ca_request_with_rsa(self, backend):
+    @pytest.mark.parametrize(
+        "use_backend_arg",
+        [True, False]
+    )
+    def test_build_ca_request_with_rsa(self, backend, use_backend_arg):
         private_key = RSA_KEY_2048.private_key(backend)
 
-        request = x509.CertificateSigningRequestBuilder().subject_name(
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).sign(private_key, hashes.SHA1(), backend)
+        )
+
+        if use_backend_arg:
+            request = builder.sign(private_key, hashes.SHA1(), backend)
+        else:
+            request = builder.sign(private_key, hashes.SHA1())
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()

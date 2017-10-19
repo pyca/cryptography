@@ -24,6 +24,15 @@ PersistentlyDeprecated = CryptographyDeprecationWarning
 DeprecatedIn21 = CryptographyDeprecationWarning
 
 
+def _get_backend(backend):
+    if backend is None:
+        from cryptography.hazmat.backends.openssl.backend import backend
+        return backend
+    else:
+        # This path will raise a deprecation warning in a future release.
+        return backend
+
+
 def _check_bytes(name, value):
     if not isinstance(value, bytes):
         raise TypeError("{0} must be bytes".format(name))
