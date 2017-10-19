@@ -70,9 +70,9 @@ a few details:
     ... ])).add_extension(
     ...     x509.SubjectAlternativeName([
     ...         # Describe what sites we want this certificate for.
-    ...         x509.DNSName(b"mysite.com"),
-    ...         x509.DNSName(b"www.mysite.com"),
-    ...         x509.DNSName(b"subdomain.mysite.com"),
+    ...         x509.DNSName(u"mysite.com"),
+    ...         x509.DNSName(u"www.mysite.com"),
+    ...         x509.DNSName(u"subdomain.mysite.com"),
     ...     ]),
     ...     critical=False,
     ... # Sign the CSR with our private key.
@@ -142,7 +142,7 @@ Then we generate the certificate itself:
     ...     # Our certificate will be valid for 10 days
     ...     datetime.datetime.utcnow() + datetime.timedelta(days=10)
     ... ).add_extension(
-    ...     x509.SubjectAlternativeName([x509.DNSName(b"localhost")]),
+    ...     x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
     ...     critical=False,
     ... # Sign our certificate with our private key
     ... ).sign(key, hashes.SHA256(), default_backend())
