@@ -280,7 +280,7 @@ setup(
     ],
     tests_require=test_requirements,
     extras_require={
-        ":python_version < '3'": ["enum34", "ipaddress"],
+        ":python_version < '3'": ["enum34>=0.9.12", "ipaddress"],
         ":platform_python_implementation != 'PyPy'": ["cffi >= 1.7"],
 
         "test": test_requirements,
