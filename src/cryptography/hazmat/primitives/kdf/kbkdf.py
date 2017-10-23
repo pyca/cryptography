@@ -139,9 +139,9 @@ class KBKDFHMAC(object):
         if self._fixed_data and isinstance(self._fixed_data, bytes):
             return self._fixed_data
 
-        l = utils.int_to_bytes(self._length * 8, self._llen)
+        l_val = utils.int_to_bytes(self._length * 8, self._llen)
 
-        return b"".join([self._label, b"\x00", self._context, l])
+        return b"".join([self._label, b"\x00", self._context, l_val])
 
     def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
