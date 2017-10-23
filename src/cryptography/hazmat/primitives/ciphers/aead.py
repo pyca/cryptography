@@ -108,8 +108,8 @@ class AESCCM(object):
     def _validate_lengths(self, nonce, data_len):
         # For information about computing this, see
         # https://tools.ietf.org/html/rfc3610#section-2.1
-        l = 15 - len(nonce)
-        if 2 ** (8 * l) < data_len:
+        l_val = 15 - len(nonce)
+        if 2 ** (8 * l_val) < data_len:
             raise ValueError("Nonce too long for data")
 
     def _check_params(self, nonce, data, associated_data):
