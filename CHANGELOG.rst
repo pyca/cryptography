@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+.. _v2-1-2:
+
+2.1.2 - 2017-10-24
+~~~~~~~~~~~~~~~~~~
+
+* Corrected a bug with the ``manylinux1`` wheels where OpenSSL's stack was
+  marked executable.
+
 .. _v2-1-1:
 
 2.1.1 - 2017-10-12
