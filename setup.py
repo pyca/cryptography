@@ -21,8 +21,8 @@ from setuptools.command.test import test
 
 
 if (
-    pkg_resources.SetuptoolsVersion(setuptools.__version__) <
-    pkg_resources.SetuptoolsVersion("18.5")
+    pkg_resources.parse_version(setuptools.__version__) <
+    pkg_resources.parse_version("18.5")
 ):
     raise RuntimeError(
         "cryptography requires setuptools 18.5 or newer, please upgrade to a "
