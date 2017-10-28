@@ -14,10 +14,20 @@ from distutils.command.build import build
 
 import pkg_resources
 
+import setuptools
 from setuptools import find_packages, setup
 from setuptools.command.install import install
 from setuptools.command.test import test
 
+
+if (
+    pkg_resources.parse_version(setuptools.__version__) <
+    pkg_resources.parse_version("18.5")
+):
+    raise RuntimeError(
+        "cryptography requires setuptools 18.5 or newer, please upgrade to a "
+        "newer version of setuptools"
+    )
 
 base_dir = os.path.dirname(__file__)
 src_dir = os.path.join(base_dir, "src")
