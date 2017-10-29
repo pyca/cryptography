@@ -57,8 +57,15 @@ We maintain a `cryptography-dev`_ mailing list for development discussion.
 You can also join ``#cryptography-dev`` on Freenode to ask questions or get
 involved.
 
+Security
+~~~~~~~~
+
+Need to report a security issue? Please consult our `security reporting`_
+documentation.
+
 
 .. _`documentation`: https://cryptography.io/
 .. _`the installation documentation`: https://cryptography.io/en/latest/installation/
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
+.. _`security reporting`: https://cryptography.io/en/latest/security/
