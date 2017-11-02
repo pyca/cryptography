@@ -12,7 +12,6 @@ from email.utils import parseaddr
 import idna
 
 import six
-
 from six.moves import urllib_parse
 
 from cryptography import utils
