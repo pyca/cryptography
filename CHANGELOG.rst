@@ -12,6 +12,14 @@ Changelog
 * Added token rotation support to :doc:`Fernet </fernet>` with
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
 
+.. _v2-1-3:
+
+2.1.3 - 2017-11-02
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.0g.
+
 .. _v2-1-2:
 
 2.1.2 - 2017-10-24
