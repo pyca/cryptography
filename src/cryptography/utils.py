@@ -14,8 +14,8 @@ import warnings
 # Several APIs were deprecated with no specific end-of-life date because of the
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
-PersistentlyDeprecated = DeprecationWarning
-DeprecatedIn21 = DeprecationWarning
+PersistentlyDeprecated = UserWarning
+DeprecatedIn21 = UserWarning
 
 
 def _check_bytes(name, value):
