@@ -3,5 +3,4 @@ found in LICENSE.APACHE or LICENSE.BSD. Contributions to cryptography are made
 under the terms of *both* these licenses.
 
 The code used in the OpenSSL locking callback and OS random engine is derived
-from the same in CPython itself, and is licensed under the terms of the PSF
-License Agreement.
+from CPython, and is licensed under the terms of the PSF License Agreement.
