@@ -59,7 +59,7 @@ class RFC822Name(object):
                     "RFC822Name values should be passed as an A-label string. "
                     "This means unicode characters should be encoded via "
                     "idna. Support for passing unicode strings (aka U-label) "
-                    " will be removed in a future version.",
+                    "will be removed in a future version.",
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
@@ -124,7 +124,7 @@ class DNSName(object):
                     "DNSName values should be passed as an A-label string. "
                     "This means unicode characters should be encoded via "
                     "idna. Support for passing unicode strings (aka U-label) "
-                    " will be removed in a future version.",
+                    "will be removed in a future version.",
                     utils.DeprecatedIn21,
                     stacklevel=2,
                 )
