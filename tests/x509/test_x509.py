@@ -577,7 +577,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        with pytest.deprecated_call():
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             assert cert.serial == 2
             assert cert.serial_number == 2
 
@@ -588,7 +588,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        with pytest.deprecated_call():
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             cert.serial
 
     def test_load_der_cert(self, backend):

@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, encode_dss_signature
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
@@ -574,9 +575,8 @@ class TestDSAVerification(object):
             y=vector['y']
         ).public_key(backend)
         sig = encode_dss_signature(vector['r'], vector['s'])
-        verifier = pytest.deprecated_call(
-            public_key.verifier, sig, algorithm()
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            verifier = public_key.verifier(sig, algorithm())
 
         verifier.update(vector['msg'])
         if vector['result'] == "F":
@@ -687,7 +687,8 @@ class TestDSASignature(object):
             ),
             x=vector['x']
         ).private_key(backend)
-        signer = pytest.deprecated_call(private_key.signer, algorithm())
+        with pytest.warns(CryptographyDeprecationWarning):
+            signer = private_key.signer(algorithm())
         signer.update(vector['msg'])
         signature = signer.finalize()
         assert signature

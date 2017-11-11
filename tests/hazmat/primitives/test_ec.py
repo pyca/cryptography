@@ -20,6 +20,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, encode_dss_signature
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_ec import EC_KEY_SECP384R1
 from ...doubles import DummyKeySerializationEncryption
@@ -350,13 +351,13 @@ class TestECDSAVectors(object):
         pkey = key.public_key()
         assert pkey
 
-        signer = pytest.deprecated_call(key.signer, ec.ECDSA(hash_type()))
+        with pytest.warns(CryptographyDeprecationWarning):
+            signer = key.signer(ec.ECDSA(hash_type()))
         signer.update(b"YELLOW SUBMARINE")
         signature = signer.finalize()
 
-        verifier = pytest.deprecated_call(
-            pkey.verifier, signature, ec.ECDSA(hash_type())
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            verifier = pkey.verifier(signature, ec.ECDSA(hash_type()))
         verifier.update(b"YELLOW SUBMARINE")
         verifier.verify()
 

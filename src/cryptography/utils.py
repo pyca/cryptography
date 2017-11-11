@@ -11,11 +11,17 @@ import sys
 import warnings
 
 
+# We use a UserWarning subclass, instead of DeprecationWarning, because CPython
+# decided deprecation warnings should be invisble be default.
+class CryptographyDeprecationWarning(UserWarning):
+    pass
+
+
 # Several APIs were deprecated with no specific end-of-life date because of the
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
-PersistentlyDeprecated = DeprecationWarning
-DeprecatedIn21 = DeprecationWarning
+PersistentlyDeprecated = CryptographyDeprecationWarning
+DeprecatedIn21 = CryptographyDeprecationWarning
 
 
 def _check_bytes(name, value):

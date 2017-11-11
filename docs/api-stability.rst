@@ -42,9 +42,9 @@ entirely. In that case, here's how the process will work:
 
 * In ``cryptography X.Y`` the feature exists.
 * In ``cryptography X.Y+1`` using that feature will emit a
-  ``PendingDeprecationWarning``.
+  ``UserWarning``.
 * In ``cryptography X.Y+2`` using that feature will emit a
-  ``DeprecationWarning``.
+  ``UserWarning``.
 * In ``cryptography X.Y+3`` the feature will be removed or changed.
 
 In short, code that runs without warnings will always continue to work for a
