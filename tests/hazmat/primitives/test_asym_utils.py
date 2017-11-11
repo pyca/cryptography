@@ -10,13 +10,14 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, decode_dss_signature, decode_rfc6979_signature,
     encode_dss_signature, encode_rfc6979_signature,
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 
 def test_deprecated_rfc6979_signature():
-    with pytest.warns(UserWarning):
+    with pytest.warns(CryptographyDeprecationWarning):
         sig = encode_rfc6979_signature(1, 1)
     assert sig == b"0\x06\x02\x01\x01\x02\x01\x01"
-    with pytest.warns(UserWarning):
+    with pytest.warns(CryptographyDeprecationWarning):
         decoded = decode_rfc6979_signature(sig)
     assert decoded == (1, 1)
 

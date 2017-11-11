@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -383,7 +384,7 @@ class TestRSASignature(object):
                 n=private["modulus"]
             )
         ).private_key(backend)
-        with pytest.warns(UserWarning):
+        with pytest.warns(CryptographyDeprecationWarning):
             signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
@@ -711,7 +712,7 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        with pytest.warns(UserWarning):
+        with pytest.warns(CryptographyDeprecationWarning):
             verifier = public_key.verifier(
                 binascii.unhexlify(example["signature"]),
                 padding.PKCS1v15(),
