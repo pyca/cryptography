@@ -55,7 +55,7 @@ else:
     setup_requirements.append("cffi>=1.7")
 
 test_requirements = [
-    "pytest>=3.2.1",
+    "pytest>=3.2.1,!=3.3.0",
     "pretend",
     "iso8601",
     "pytz",
