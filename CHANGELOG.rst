@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+.. _v2-1-4:
+
+2.1.4 - 2017-11-29
+~~~~~~~~~~~~~~~~~~
+
+* Added ``X509_up_ref`` for an upcoming ``pyOpenSSL`` release.
+
 .. _v2-1-3:
 
 2.1.3 - 2017-11-02
