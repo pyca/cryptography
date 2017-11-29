@@ -83,6 +83,7 @@ X509 *X509_new(void);
 void X509_free(X509 *);
 X509 *X509_dup(X509 *);
 int X509_cmp(const X509 *, const X509 *);
+int X509_up_ref(X509 *);
 
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
@@ -381,6 +382,10 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+
+int X509_up_ref(X509 *x) {
+   return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+}
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 {
