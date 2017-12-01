@@ -21,7 +21,7 @@ from ...utils import raises_unsupported_algorithm
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDF(object):
     def test_length_limit(self, backend):
-        big_length = 255 * (hashes.SHA256().digest_size // 8) + 1
+        big_length = 255 * hashes.SHA256().digest_size + 1
 
         with pytest.raises(ValueError):
             HKDF(
