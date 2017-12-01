@@ -1698,10 +1698,10 @@ class TestCertificateBuilder(object):
         ).sign(private_key, hashes.SHA256(), backend)
 
         for dn in (cert.subject, cert.issuer):
-            for pair in TestNameAttribute.EXPECTED_TYPES:
+            for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
                 assert dn.get_attributes_for_oid(
-                    pair[0]
-                )[0]._type == pair[1]
+                    oid
+                )[0]._type == asn1_type
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Requires windows")
     @pytest.mark.parametrize(
@@ -2836,10 +2836,10 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(NameOID.POSTAL_CODE, u"value"),
             ])
         ).sign(private_key, hashes.SHA256(), backend)
-        for pair in TestNameAttribute.EXPECTED_TYPES:
+        for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
             assert request.subject.get_attributes_for_oid(
-                pair[0]
-            )[0]._type == pair[1]
+                oid
+            )[0]._type == asn1_type
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_ca_request_with_multivalue_rdns(self, backend):
@@ -3793,9 +3793,9 @@ class TestNameAttribute(object):
     ]
 
     def test_default_types(self):
-        for pair in TestNameAttribute.EXPECTED_TYPES:
-            na = x509.NameAttribute(pair[0], u"US")
-            assert na._type == pair[1]
+        for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
+            na = x509.NameAttribute(oid, u"US")
+            assert na._type == asn1_type
 
     def test_alternate_type(self):
         na2 = x509.NameAttribute(

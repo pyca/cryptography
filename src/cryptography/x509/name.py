@@ -68,10 +68,7 @@ class NameAttribute(object):
         # to look up whether the OID has a non-UTF8 type. If it does, set it
         # to that. Otherwise, UTF8!
         if _type == _SENTINEL:
-            try:
-                _type = _NAMEOID_DEFAULT_TYPE[oid]
-            except KeyError:
-                _type = _ASN1Type.UTF8String
+            _type = _NAMEOID_DEFAULT_TYPE.get(oid, _ASN1Type.UTF8String)
 
         if not isinstance(_type, _ASN1Type):
             raise TypeError("_type must be from the _ASN1Type enum")
