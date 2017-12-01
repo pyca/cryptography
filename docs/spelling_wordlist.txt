@@ -100,6 +100,7 @@ unpadding
 verifier
 Verifier
 Verisign
+versioning
 wildcard
 WoSign
 Xcode
