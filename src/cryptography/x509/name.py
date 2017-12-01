@@ -27,6 +27,14 @@ class _ASN1Type(Enum):
 
 _ASN1_TYPE_TO_ENUM = dict((i.value, i) for i in _ASN1Type)
 _SENTINEL = object()
+_NAMEOID_DEFAULT_TYPE = {
+    NameOID.COUNTRY_NAME: _ASN1Type.PrintableString,
+    NameOID.JURISDICTION_COUNTRY_NAME: _ASN1Type.PrintableString,
+    NameOID.SERIAL_NUMBER: _ASN1Type.PrintableString,
+    NameOID.DN_QUALIFIER: _ASN1Type.PrintableString,
+    NameOID.EMAIL_ADDRESS: _ASN1Type.IA5String,
+    NameOID.DOMAIN_COMPONENT: _ASN1Type.IA5String,
+}
 
 
 class NameAttribute(object):
@@ -50,17 +58,17 @@ class NameAttribute(object):
                     "Country name must be a 2 character country code"
                 )
 
-            if _type == _SENTINEL:
-                _type = _ASN1Type.PrintableString
-
         if len(value) == 0:
             raise ValueError("Value cannot be an empty string")
 
-        # Set the default string type for encoding ASN1 strings to UTF8. This
-        # is the default for newer OpenSSLs for several years (1.0.1h+) and is
-        # recommended in RFC 2459.
+        # The appropriate ASN1 string type varies by OID and is defined across
+        # multiple RFCs including 2459, 3280, and 5280. In general UTF8String
+        # is preferred (2459), but 3280 and 5280 specify several OIDs with
+        # alternate types. This means when we see the sentinel value we need
+        # to look up whether the OID has a non-UTF8 type. If it does, set it
+        # to that. Otherwise, UTF8!
         if _type == _SENTINEL:
-            _type = _ASN1Type.UTF8String
+            _type = _NAMEOID_DEFAULT_TYPE.get(oid, _ASN1Type.UTF8String)
 
         if not isinstance(_type, _ASN1Type):
             raise TypeError("_type must be from the _ASN1Type enum")

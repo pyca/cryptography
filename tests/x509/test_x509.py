@@ -1650,6 +1650,59 @@ class TestCertificateBuilder(object):
 
         builder.sign(private_key, hashes.SHA256(), backend)
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_subject_dn_asn1_types(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        name = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u"value"),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"value"),
+            x509.NameAttribute(NameOID.STREET_ADDRESS, u"value"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"value"),
+            x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"value"),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, u"value"),
+            x509.NameAttribute(NameOID.SURNAME, u"value"),
+            x509.NameAttribute(NameOID.GIVEN_NAME, u"value"),
+            x509.NameAttribute(NameOID.TITLE, u"value"),
+            x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u"value"),
+            x509.NameAttribute(NameOID.X500_UNIQUE_IDENTIFIER, u"value"),
+            x509.NameAttribute(NameOID.DN_QUALIFIER, u"value"),
+            x509.NameAttribute(NameOID.PSEUDONYM, u"value"),
+            x509.NameAttribute(NameOID.USER_ID, u"value"),
+            x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u"value"),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"value"),
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u"US"),
+            x509.NameAttribute(NameOID.JURISDICTION_LOCALITY_NAME, u"value"),
+            x509.NameAttribute(
+                NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME, u"value"
+            ),
+            x509.NameAttribute(NameOID.BUSINESS_CATEGORY, u"value"),
+            x509.NameAttribute(NameOID.POSTAL_ADDRESS, u"value"),
+            x509.NameAttribute(NameOID.POSTAL_CODE, u"value"),
+        ])
+        cert = x509.CertificateBuilder().subject_name(
+            name
+        ).issuer_name(
+            name
+        ).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        for dn in (cert.subject, cert.issuer):
+            for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
+                assert dn.get_attributes_for_oid(
+                    oid
+                )[0]._type == asn1_type
+
     @pytest.mark.skipif(sys.platform != "win32", reason="Requires windows")
     @pytest.mark.parametrize(
         ("not_valid_before", "not_valid_after"),
@@ -2748,6 +2801,47 @@ class TestCertificateSigningRequestBuilder(object):
         ]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_subject_dn_asn1_types(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+                x509.NameAttribute(NameOID.LOCALITY_NAME, u"value"),
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"value"),
+                x509.NameAttribute(NameOID.STREET_ADDRESS, u"value"),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"value"),
+                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"value"),
+                x509.NameAttribute(NameOID.SERIAL_NUMBER, u"value"),
+                x509.NameAttribute(NameOID.SURNAME, u"value"),
+                x509.NameAttribute(NameOID.GIVEN_NAME, u"value"),
+                x509.NameAttribute(NameOID.TITLE, u"value"),
+                x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u"value"),
+                x509.NameAttribute(NameOID.X500_UNIQUE_IDENTIFIER, u"value"),
+                x509.NameAttribute(NameOID.DN_QUALIFIER, u"value"),
+                x509.NameAttribute(NameOID.PSEUDONYM, u"value"),
+                x509.NameAttribute(NameOID.USER_ID, u"value"),
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u"value"),
+                x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"value"),
+                x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u"US"),
+                x509.NameAttribute(
+                    NameOID.JURISDICTION_LOCALITY_NAME, u"value"
+                ),
+                x509.NameAttribute(
+                    NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME, u"value"
+                ),
+                x509.NameAttribute(NameOID.BUSINESS_CATEGORY, u"value"),
+                x509.NameAttribute(NameOID.POSTAL_ADDRESS, u"value"),
+                x509.NameAttribute(NameOID.POSTAL_CODE, u"value"),
+            ])
+        ).sign(private_key, hashes.SHA256(), backend)
+        for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
+            assert request.subject.get_attributes_for_oid(
+                oid
+            )[0]._type == asn1_type
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_ca_request_with_multivalue_rdns(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         subject = x509.Name([
@@ -3668,6 +3762,47 @@ class TestOtherCertificate(object):
 
 
 class TestNameAttribute(object):
+    EXPECTED_TYPES = [
+        (NameOID.COMMON_NAME, _ASN1Type.UTF8String),
+        (NameOID.COUNTRY_NAME, _ASN1Type.PrintableString),
+        (NameOID.LOCALITY_NAME, _ASN1Type.UTF8String),
+        (NameOID.STATE_OR_PROVINCE_NAME, _ASN1Type.UTF8String),
+        (NameOID.STREET_ADDRESS, _ASN1Type.UTF8String),
+        (NameOID.ORGANIZATION_NAME, _ASN1Type.UTF8String),
+        (NameOID.ORGANIZATIONAL_UNIT_NAME, _ASN1Type.UTF8String),
+        (NameOID.SERIAL_NUMBER, _ASN1Type.PrintableString),
+        (NameOID.SURNAME, _ASN1Type.UTF8String),
+        (NameOID.GIVEN_NAME, _ASN1Type.UTF8String),
+        (NameOID.TITLE, _ASN1Type.UTF8String),
+        (NameOID.GENERATION_QUALIFIER, _ASN1Type.UTF8String),
+        (NameOID.X500_UNIQUE_IDENTIFIER, _ASN1Type.UTF8String),
+        (NameOID.DN_QUALIFIER, _ASN1Type.PrintableString),
+        (NameOID.PSEUDONYM, _ASN1Type.UTF8String),
+        (NameOID.USER_ID, _ASN1Type.UTF8String),
+        (NameOID.DOMAIN_COMPONENT, _ASN1Type.IA5String),
+        (NameOID.EMAIL_ADDRESS, _ASN1Type.IA5String),
+        (NameOID.JURISDICTION_COUNTRY_NAME, _ASN1Type.PrintableString),
+        (NameOID.JURISDICTION_LOCALITY_NAME, _ASN1Type.UTF8String),
+        (
+            NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME,
+            _ASN1Type.UTF8String
+        ),
+        (NameOID.BUSINESS_CATEGORY, _ASN1Type.UTF8String),
+        (NameOID.POSTAL_ADDRESS, _ASN1Type.UTF8String),
+        (NameOID.POSTAL_CODE, _ASN1Type.UTF8String),
+    ]
+
+    def test_default_types(self):
+        for oid, asn1_type in TestNameAttribute.EXPECTED_TYPES:
+            na = x509.NameAttribute(oid, u"US")
+            assert na._type == asn1_type
+
+    def test_alternate_type(self):
+        na2 = x509.NameAttribute(
+            NameOID.COMMON_NAME, u"common", _ASN1Type.IA5String
+        )
+        assert na2._type == _ASN1Type.IA5String
+
     def test_init_bad_oid(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(None, u'value')
@@ -3696,22 +3831,6 @@ class TestNameAttribute(object):
     def test_init_empty_value(self):
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'')
-
-    def test_country_name_type(self):
-        na = x509.NameAttribute(NameOID.COUNTRY_NAME, u"US")
-        assert na._type == _ASN1Type.PrintableString
-        na2 = x509.NameAttribute(
-            NameOID.COUNTRY_NAME, u"US", _ASN1Type.IA5String
-        )
-        assert na2._type == _ASN1Type.IA5String
-
-    def test_types(self):
-        na = x509.NameAttribute(NameOID.COMMON_NAME, u"common")
-        assert na._type == _ASN1Type.UTF8String
-        na2 = x509.NameAttribute(
-            NameOID.COMMON_NAME, u"common", _ASN1Type.IA5String
-        )
-        assert na2._type == _ASN1Type.IA5String
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
