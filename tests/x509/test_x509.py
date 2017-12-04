@@ -278,11 +278,10 @@ class TestCertificateRevocationList(object):
             backend
         )
 
-        verifier = ca_cert.public_key().verifier(
-            crl.signature, padding.PKCS1v15(), crl.signature_hash_algorithm
+        ca_cert.public_key().verify(
+            crl.signature, crl.tbs_certlist_bytes,
+            padding.PKCS1v15(), crl.signature_hash_algorithm
         )
-        verifier.update(crl.tbs_certlist_bytes)
-        verifier.verify()
 
     def test_public_bytes_pem(self, backend):
         crl = _load_cert(
@@ -654,11 +653,10 @@ class TestRSACertificate(object):
             b"03550403130848656c6c6f204341820900a06cb4b955f7f4db300c0603551d1"
             b"3040530030101ff"
         )
-        verifier = cert.public_key().verifier(
-            cert.signature, padding.PKCS1v15(), cert.signature_hash_algorithm
+        cert.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes,
+            padding.PKCS1v15(), cert.signature_hash_algorithm
         )
-        verifier.update(cert.tbs_certificate_bytes)
-        verifier.verify()
 
     def test_issuer(self, backend):
         cert = _load_cert(
@@ -1357,13 +1355,12 @@ class TestRSACertificateRequest(object):
             b"db048d51921e50766a37b1b130ee6b11f507d20a834001e8de16a92c14f2e964"
             b"a30203010001a000"
         )
-        verifier = request.public_key().verifier(
+        request.public_key().verify(
             request.signature,
+            request.tbs_certrequest_bytes,
             padding.PKCS1v15(),
             request.signature_hash_algorithm
         )
-        verifier.update(request.tbs_certrequest_bytes)
-        verifier.verify()
 
     def test_public_bytes_invalid_encoding(self, backend):
         request = _load_cert(
@@ -3505,11 +3502,10 @@ class TestDSACertificate(object):
             b"4c7464311430120603550403130b5079434120445341204341820900a37352e"
             b"0b2142f86300c0603551d13040530030101ff"
         )
-        verifier = cert.public_key().verifier(
-            cert.signature, cert.signature_hash_algorithm
+        cert.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes,
+            cert.signature_hash_algorithm
         )
-        verifier.update(cert.tbs_certificate_bytes)
-        verifier.verify()
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
@@ -3579,12 +3575,11 @@ class TestDSACertificateRequest(object):
             b"04a697bc8fd965b952f9f7e850edf13c8acdb5d753b6d10e59e0b5732e3c82ba"
             b"fa140342bc4a3bba16bd0681c8a6a2dbbb7efe6ce2b8463b170ba000"
         )
-        verifier = request.public_key().verifier(
+        request.public_key().verify(
             request.signature,
+            request.tbs_certrequest_bytes,
             request.signature_hash_algorithm
         )
-        verifier.update(request.tbs_certrequest_bytes)
-        verifier.verify()
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
@@ -3659,11 +3654,10 @@ class TestECDSACertificate(object):
             b"f300e0603551d0f0101ff040403020186301d0603551d0e04160414b3db48a4"
             b"f9a1c5d8ae3641cc1163696229bc4bc6"
         )
-        verifier = cert.public_key().verifier(
-            cert.signature, ec.ECDSA(cert.signature_hash_algorithm)
+        cert.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes,
+            ec.ECDSA(cert.signature_hash_algorithm)
         )
-        verifier.update(cert.tbs_certificate_bytes)
-        verifier.verify()
 
     def test_load_ecdsa_no_named_curve(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -3738,12 +3732,10 @@ class TestECDSACertificateRequest(object):
             b"04d8b32a551038d09086803a6d3fb91a1a1167ec02158b00efad39c9396462f"
             b"accff0ffaf7155812909d3726bd59fde001cff4bb9b2f5af8cbaa000"
         )
-        verifier = request.public_key().verifier(
-            request.signature,
+        request.public_key().verify(
+            request.signature, request.tbs_certrequest_bytes,
             ec.ECDSA(request.signature_hash_algorithm)
         )
-        verifier.update(request.tbs_certrequest_bytes)
-        verifier.verify()
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
