@@ -34,11 +34,11 @@ matrix:
         - python: pypy3.5-5.8.0
           env: TOXENV=pypy3-nocoverage
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0f
+          env: TOXENV=py27 OPENSSL=1.1.0g
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0f
+          env: TOXENV=py35 OPENSSL=1.1.0g
         - python: 2.7
-          env: TOXENV=docs OPENSSL=1.1.0f
+          env: TOXENV=docs OPENSSL=1.1.0g
           addons:
               apt:
                   packages:
