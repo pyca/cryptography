@@ -447,7 +447,7 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
     else:
         public_key.verify(
             signature,
-            message,
+            msg,
             pad,
             hash_alg
         )
