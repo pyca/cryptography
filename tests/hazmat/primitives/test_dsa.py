@@ -687,16 +687,10 @@ class TestDSASignature(object):
             ),
             x=vector['x']
         ).private_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            signer = private_key.signer(algorithm())
-        signer.update(vector['msg'])
-        signature = signer.finalize()
+        signature = private_key.sign(vector['msg'], algorithm())
         assert signature
 
-        public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, algorithm())
-        verifier.update(vector['msg'])
-        verifier.verify()
+        private_key.public_key().verify(signature, vector['msg'], algorithm())
 
     def test_use_after_finalize(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
