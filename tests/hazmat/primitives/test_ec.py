@@ -514,12 +514,11 @@ class TestECDSAVectors(object):
 
         signature = encode_dss_signature(vector['r'], vector['s'])
 
-        verifier = key.verifier(
+        key.verify(
             signature,
+            vector['message'],
             ec.ECDSA(hash_type())
         )
-        verifier.update(vector['message'])
-        verifier.verify()
 
     @pytest.mark.parametrize(
         "vector",
@@ -543,17 +542,19 @@ class TestECDSAVectors(object):
 
         signature = encode_dss_signature(vector['r'], vector['s'])
 
-        verifier = key.verifier(
-            signature,
-            ec.ECDSA(hash_type())
-        )
-        verifier.update(vector['message'])
-
         if vector["fail"] is True:
             with pytest.raises(exceptions.InvalidSignature):
-                verifier.verify()
+                key.verify(
+                    signature,
+                    vector['message'],
+                    ec.ECDSA(hash_type())
+                )
         else:
-            verifier.verify()
+            key.verify(
+                signature,
+                vector['message'],
+                ec.ECDSA(hash_type())
+            )
 
     def test_sign(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
