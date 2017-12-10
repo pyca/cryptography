@@ -785,7 +785,7 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        public_key.verifier(
+        public_key.verify(
             binascii.unhexlify(example["signature"]),
             binascii.unhexlify(example["message"]),
             padding.PSS(
