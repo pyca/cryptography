@@ -434,17 +434,23 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
     )
     public_key = public_numbers.public_key(backend)
     pad = pad_factory(params, hash_alg)
-    verifier = public_key.verifier(
-        binascii.unhexlify(params["s"]),
-        pad,
-        hash_alg
-    )
-    verifier.update(binascii.unhexlify(params["msg"]))
+    signature = binascii.unhexlify(params["s"])
+    msg = binascii.unhexlify(params["msg"])
     if params["fail"]:
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                msg,
+                pad,
+                hash_alg
+            )
     else:
-        verifier.verify()
+        public_key.verify(
+            signature,
+            msg,
+            pad,
+            hash_alg
+        )
 
 
 def _check_rsa_private_numbers(skey):
