@@ -175,7 +175,7 @@ Interfaces
         :type: str
 
         The standard name for the hash algorithm, for example: ``"sha256"`` or
-        ``"whirlpool"``.
+        ``"blake2b"``.
 
     .. attribute:: digest_size
 
