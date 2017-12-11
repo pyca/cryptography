@@ -402,7 +402,6 @@ Hashes
 * RIPEMD160 from the `RIPEMD website`_.
 * SHA1 from `NIST CAVP`_.
 * SHA2 (224, 256, 384, 512) from `NIST CAVP`_.
-* Whirlpool from the `Whirlpool website`_.
 * Blake2s and Blake2b from OpenSSL `test/evptests.txt`_.
 
 HMAC
@@ -512,7 +511,6 @@ header format (substituting the correct information):
 .. _`BoringSSL ChaCha20Poly1305 tests`: https://boringssl.googlesource.com/boringssl/+/2e2a226ac9201ac411a84b5e79ac3a7333d8e1c9/crypto/cipher_extra/test/chacha20_poly1305_tests.txt
 .. _`BoringSSL evp tests`: https://boringssl.googlesource.com/boringssl/+/ce3773f9fe25c3b54390bc51d72572f251c7d7e6/crypto/evp/evp_tests.txt
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
-.. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
