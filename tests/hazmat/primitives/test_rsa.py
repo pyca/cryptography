@@ -425,29 +425,27 @@ class TestRSASignature(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        signer = private_key.signer(
+        signature = private_key.sign(
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA1()
         )
-        signer.update(binascii.unhexlify(example["message"]))
-        signature = signer.finalize()
         assert len(signature) == math.ceil(private_key.key_size / 8.0)
         # PSS signatures contain randomness so we can't do an exact
         # signature check. Instead we'll verify that the signature created
         # successfully verifies.
-        verifier = public_key.verifier(
+        public_key.verify(
             signature,
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA1(),
         )
-        verifier.update(binascii.unhexlify(example["message"]))
-        verifier.verify()
 
     @pytest.mark.parametrize(
         "hash_alg",
@@ -787,16 +785,15 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        verifier = public_key.verifier(
+        public_key.verify(
             binascii.unhexlify(example["signature"]),
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=20
             ),
             hashes.SHA1()
         )
-        verifier.update(binascii.unhexlify(example["message"]))
-        verifier.verify()
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
