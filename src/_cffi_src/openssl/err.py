@@ -231,7 +231,6 @@ static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
 
 FUNCTIONS = """
-char *ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
 const char *ERR_lib_error_string(unsigned long);
 const char *ERR_func_error_string(unsigned long);
