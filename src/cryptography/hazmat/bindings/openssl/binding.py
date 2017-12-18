@@ -55,9 +55,10 @@ def _openssl_assert(lib, ok):
         errors = _consume_errors(lib)
         errors_with_text = []
         for err in errors:
-            err_text_reason = ffi.string(
-                lib.ERR_error_string(err.code, ffi.NULL)
-            )
+            buf = ffi.new("char[]", 256)
+            lib.ERR_error_string_n(err.code, buf, len(buf))
+            err_text_reason = ffi.string(buf)
+
             errors_with_text.append(
                 _OpenSSLErrorWithText(
                     err.code, err.lib, err.func, err.reason, err_text_reason

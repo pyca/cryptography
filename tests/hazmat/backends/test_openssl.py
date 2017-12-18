@@ -125,9 +125,9 @@ class TestOpenSSL(object):
         assert cipher != backend._ffi.NULL
 
     def test_error_strings_loaded(self):
-        # returns a value in a static buffer
-        err = backend._lib.ERR_error_string(101183626, backend._ffi.NULL)
-        assert b"data not multiple of block length" in backend._ffi.string(err)
+        buf = backend._ffi.new("char[]", 256)
+        backend._lib.ERR_error_string_n(101183626, buf, len(buf))
+        assert b"data not multiple of block length" in backend._ffi.string(buf)
 
     def test_unknown_error_in_cipher_finalize(self):
         cipher = Cipher(AES(b"\0" * 16), CBC(b"\0" * 16), backend=backend)
