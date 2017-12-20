@@ -63,6 +63,7 @@ the distinctive ``-----BEGIN {format}-----`` and ``-----END {format}-----``
 markers), you can load it:
 
 .. code-block:: pycon
+
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
 
