@@ -64,6 +64,7 @@ markers), you can load it:
 
 .. code-block:: pycon
 
+    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
 
     >>> with open("path/to/key.pem", "rb") as key_file:
