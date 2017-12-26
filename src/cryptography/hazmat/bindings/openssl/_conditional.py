@@ -252,7 +252,7 @@ def cryptography_has_fips():
 
 def cryptography_has_ssl_sigalgs():
     return [
-        "SSL_CTX_set1_sigalgs_list","
+        "SSL_CTX_set1_sigalgs_list",
         "SSL_get_sigalgs",
     ]
 
