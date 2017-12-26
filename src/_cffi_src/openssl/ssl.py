@@ -27,6 +27,7 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
+static const long Cryptography_HAS_SIGALGS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -186,6 +187,9 @@ int SSL_use_PrivateKey_ASN1(int, SSL *, const unsigned char *, long);
 int SSL_use_PrivateKey_file(SSL *, const char *, int);
 int SSL_check_private_key(const SSL *);
 
+int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
+                    unsigned char *);
+
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
@@ -232,6 +236,8 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
+
+long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
@@ -623,4 +629,13 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
 
     return r;
 }
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+static const long Cryptography_HAS_SIGALGS = 0;
+const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
+                             unsigned char *) = NULL;
+const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
+#else
+static const long Cryptography_HAS_SIGALGS = 1;
+#endif
 """
