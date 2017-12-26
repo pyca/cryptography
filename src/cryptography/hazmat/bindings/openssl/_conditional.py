@@ -250,6 +250,13 @@ def cryptography_has_fips():
     ]
 
 
+def cryptography_has_ssl_sigalgs():
+    return [
+        "SSL_CTX_set1_sigalgs_list",
+        "SSL_get_sigalgs",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -300,4 +307,5 @@ CONDITIONAL_NAMES = {
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
+    "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
 }
