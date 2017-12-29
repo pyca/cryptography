@@ -136,7 +136,7 @@ Algorithms
             concatenated with a block counter (encoded as a 32-bit
             little-endian). If you have a separate nonce and block counter
             you will need to concatenate it yourself before passing it. For
-            example if you have an initial block counter of 2 and a 96-bit
+            example, if you have an initial block counter of 2 and a 96-bit
             nonce the concatenated nonce would be
             ``struct.pack("<i", 2) + nonce``.
 
