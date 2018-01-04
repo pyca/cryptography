@@ -68,7 +68,7 @@ Group parameters
 
 .. function:: generate_parameters(generator, key_size, backend)
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     Generate a new DH parameter group for use with ``backend``.
 
@@ -89,12 +89,10 @@ Group parameters
 
 .. class:: DHParameters
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
 
     .. method:: generate_private_key()
-
-        .. versionadded:: 0.9
 
         Generate a DH private key. This method can be used to generate many
         new private keys from a single set of parameters.
@@ -130,7 +128,7 @@ Group parameters
 
 .. class:: DHParametersWithSerialization
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     Alias for :class:`DHParameters`.
 
@@ -140,7 +138,7 @@ Key interfaces
 
 .. class:: DHPrivateKey
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     A DH private key that is not an :term:`opaque key` also implements
     :class:`DHPrivateKeyWithSerialization` to provide serialization methods.
@@ -173,7 +171,7 @@ Key interfaces
 
 .. class:: DHPrivateKeyWithSerialization
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     This interface contains additional methods relating to serialization.
     Any object with this interface also has all the methods from
@@ -215,7 +213,7 @@ Key interfaces
 
 .. class:: DHPublicKey
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     .. attribute:: key_size
 
@@ -254,7 +252,7 @@ Key interfaces
 
 .. class:: DHPublicKeyWithSerialization
 
-    .. versionadded:: 0.9
+    .. versionadded:: 1.7
 
     Alias for :class:`DHPublicKey`.
 
