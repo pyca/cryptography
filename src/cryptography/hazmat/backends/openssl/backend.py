@@ -353,7 +353,7 @@ class Backend(object):
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
 
         bn = self._int_to_bn(public_exponent)
-        bn = self._ffi.gc(bn, self._lib.BN_clear_free)
+        bn = self._ffi.gc(bn, self._lib.BN_free)
 
         res = self._lib.RSA_generate_key_ex(
             rsa_cdata, key_size, bn, self._ffi.NULL
@@ -1499,8 +1499,8 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_clear_free)
-        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_clear_free)
+        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
+        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
         res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
         if res != 1:
             self._consume_errors()

@@ -695,7 +695,7 @@ def _asn1_to_der(backend, asn1_type):
 def _asn1_integer_to_int(backend, asn1_int):
     bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
     backend.openssl_assert(bn != backend._ffi.NULL)
-    bn = backend._ffi.gc(bn, backend._lib.BN_clear_free)
+    bn = backend._ffi.gc(bn, backend._lib.BN_free)
     return backend._bn_to_int(bn)
 
 

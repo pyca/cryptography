@@ -29,7 +29,7 @@ def _encode_asn1_int(backend, x):
     # machine's native integer limits (note: `int_to_bn` doesn't automatically
     # GC).
     i = backend._int_to_bn(x)
-    i = backend._ffi.gc(i, backend._lib.BN_clear_free)
+    i = backend._ffi.gc(i, backend._lib.BN_free)
 
     # Wrap in an ASN.1 integer.  Don't GC -- as documented.
     i = backend._lib.BN_to_ASN1_INTEGER(i, backend._ffi.NULL)
