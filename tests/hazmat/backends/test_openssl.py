@@ -150,7 +150,7 @@ class TestOpenSSL(object):
         value = (2 ** 4242) - 4242
         bn = backend._int_to_bn(value)
         assert bn != backend._ffi.NULL
-        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+        bn = backend._ffi.gc(bn, backend._lib.BN_clear_free)
 
         assert bn
         assert backend._bn_to_int(bn) == value

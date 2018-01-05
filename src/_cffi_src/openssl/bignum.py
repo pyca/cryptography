@@ -17,6 +17,7 @@ typedef int... BN_ULONG;
 FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
+void BN_clear_free(BIGNUM *);
 
 BN_CTX *BN_CTX_new(void);
 void BN_CTX_free(BN_CTX *);
