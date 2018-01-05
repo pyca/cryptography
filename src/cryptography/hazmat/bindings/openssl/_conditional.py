@@ -232,6 +232,7 @@ def cryptography_has_x509_store_ctx_get_issuer():
 
 def cryptography_has_x25519():
     return [
+        "EVP_PKEY_X25519",
         "NID_X25519",
     ]
 

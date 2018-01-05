@@ -21,6 +21,7 @@ static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
+static const int EVP_PKEY_X25519;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
@@ -240,5 +241,13 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
 #endif
 #if !defined(EVP_CTRL_AEAD_SET_TAG)
 # define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
+#endif
+
+/* This is tied to X25519 support so we reuse the Cryptography_HAS_X25519
+   conditional to remove it. OpenSSL 1.1.0 didn't have this define, but
+   1.1.1 will when it is released. We can remove this in the distant
+   future when we drop 1.1.0 support. */
+#ifndef EVP_PKEY_X25519
+#define EVP_PKEY_X25519 NID_X25519
 #endif
 """
