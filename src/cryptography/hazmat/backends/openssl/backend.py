@@ -353,7 +353,7 @@ class Backend(object):
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
 
         bn = self._int_to_bn(public_exponent)
-        bn = self._ffi.gc(bn, self._lib.BN_free)
+        bn = self._ffi.gc(bn, self._lib.BN_clear_free)
 
         res = self._lib.RSA_generate_key_ex(
             rsa_cdata, key_size, bn, self._ffi.NULL
@@ -1359,7 +1359,7 @@ class Backend(object):
             ec_cdata, public.x, public.y)
 
         private_value = self._ffi.gc(
-            self._int_to_bn(numbers.private_value), self._lib.BN_free
+            self._int_to_bn(numbers.private_value), self._lib.BN_clear_free
         )
         res = self._lib.EC_KEY_set_private_key(ec_cdata, private_value)
         self.openssl_assert(res == 1)
@@ -1394,7 +1394,7 @@ class Backend(object):
         point = self._ffi.gc(point, self._lib.EC_POINT_free)
 
         value = self._int_to_bn(private_value)
-        value = self._ffi.gc(value, self._lib.BN_free)
+        value = self._ffi.gc(value, self._lib.BN_clear_free)
 
         with self._tmp_bn_ctx() as bn_ctx:
             res = self._lib.EC_POINT_mul(group, point, value, self._ffi.NULL,
@@ -1499,8 +1499,8 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
-        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
+        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_clear_free)
+        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_clear_free)
         res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
         if res != 1:
             self._consume_errors()
