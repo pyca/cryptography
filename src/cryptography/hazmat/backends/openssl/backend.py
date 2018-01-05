@@ -1914,6 +1914,7 @@ class Backend(object):
         evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        assert self._lib.EVP_PKEY_id(evp_pkey) == self._lib.EVP_PKEY_X25519
         return _X25519PrivateKey(self, evp_pkey)
 
     def x25519_generate_key(self):
