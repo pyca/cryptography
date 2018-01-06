@@ -64,5 +64,6 @@ func main() {
 		fmt.Println("HKDF OK.")
 	} else {
 		fmt.Println("HKDF failed.")
+		os.Exit(1)
 	}
 }
