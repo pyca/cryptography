@@ -476,8 +476,8 @@ Creating test vectors
 When official vectors are unavailable ``cryptography`` may choose to build
 its own using existing vectors as source material.
 
-Custom Symmetric Vectors
-~~~~~~~~~~~~~~~~~~~~~~~~
+Created Vectors
+~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 1
@@ -486,6 +486,8 @@ Custom Symmetric Vectors
     custom-vectors/cast5
     custom-vectors/idea
     custom-vectors/seed
+    custom-vectors/hkdf
+
 
 If official test vectors appear in the future the custom generated vectors
 should be discarded.
