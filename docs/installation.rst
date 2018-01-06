@@ -273,33 +273,10 @@ You can also build cryptography statically:
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
-Building cryptography with conda
---------------------------------
-
-Because of a bug in conda, attempting to install cryptography out of the box
-will result in an error. This can be resolved by setting the library path
-environment variable for your platform.
-
-On macOS:
-
-.. code-block:: console
-
-    $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
-
-and on Linux:
-
-.. code-block:: console
-
-    $ env LD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
-
-You will need to set this variable every time you start Python. For more
-information, consult `Greg Wilson's blog post`_ on the subject.
-
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/
-.. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
