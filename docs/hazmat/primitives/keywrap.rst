@@ -52,7 +52,7 @@ protections offered by key wrapping are also offered by using authenticated
 
 .. function:: aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend)
 
-    .. versionadded:: 2.1
+    .. versionadded:: 2.2
 
     This function performs AES key wrap with padding as specified in
     :rfc:`5649`.
@@ -70,7 +70,7 @@ protections offered by key wrapping are also offered by using authenticated
 
 .. function:: aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend)
 
-    .. versionadded:: 2.1
+    .. versionadded:: 2.2
 
     This function performs AES key unwrap with padding as specified in
     :rfc:`5649`.
