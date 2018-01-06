@@ -13,7 +13,7 @@ The following Python script was run to generate the vector files.
 .. literalinclude:: /development/custom-vectors/hkdf/generate_hkdf.py
 
 Download link: :download:`generate_hkdf.py
-</development/custom-vectors/arc4/generate_hkdf.py>`
+</development/custom-vectors/hkdf/generate_hkdf.py>`
 
 
 Verification
