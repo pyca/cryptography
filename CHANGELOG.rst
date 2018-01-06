@@ -9,6 +9,7 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
+* Resolved a bug in ``HKDF`` that incorrectly constrained output size.
 * Added token rotation support to :doc:`Fernet </fernet>` with
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
 

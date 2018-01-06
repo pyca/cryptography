@@ -67,7 +67,7 @@ class HKDFExpand(object):
 
         self._backend = backend
 
-        max_length = 255 * (algorithm.digest_size // 8)
+        max_length = 255 * algorithm.digest_size
 
         if length > max_length:
             raise ValueError(
