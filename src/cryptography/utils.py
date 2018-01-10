@@ -56,7 +56,7 @@ else:
     def int_from_bytes(data, byteorder, signed=False):
         assert byteorder == 'big'
         assert not signed
-        
+
         return int(binascii.hexlify(data), 16)
 
 
