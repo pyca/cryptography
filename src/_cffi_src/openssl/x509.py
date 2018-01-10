@@ -376,7 +376,11 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
    IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
    it available on all OpenSSLs. */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
     return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
+#else
+    return X509_REVOKED_dup(rev);
+#endif
 }
 
 /* Added in 1.1.0 but we need it in all versions now due to the great
