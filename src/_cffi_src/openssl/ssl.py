@@ -65,6 +65,8 @@ static const long SSL_OP_NO_SSLv3;
 static const long SSL_OP_NO_TLSv1;
 static const long SSL_OP_NO_TLSv1_1;
 static const long SSL_OP_NO_TLSv1_2;
+static const long SSL_OP_NO_DTLSv1;
+static const long SSL_OP_NO_DTLSv1_2;
 static const long SSL_OP_NO_COMPRESSION;
 static const long SSL_OP_SINGLE_DH_USE;
 static const long SSL_OP_EPHEMERAL_RSA;
