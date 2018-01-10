@@ -56,9 +56,8 @@ else:
     def int_from_bytes(data, byteorder, signed=False):
         assert byteorder == 'big'
         assert not signed
-
-        # call bytes() on data to allow the use of bytearrays
-        return int(bytes(data).encode('hex'), 16)
+        
+        return int(binascii.hexlify(data), 16)
 
 
 if hasattr(int, "to_bytes"):
