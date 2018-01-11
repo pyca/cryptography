@@ -223,8 +223,27 @@ int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
-                                      int (*)(X509_STORE_CTX *,void *),
+                                      int (*)(X509_STORE_CTX *, void *),
                                       void *);
+
+int SSL_CTX_use_psk_identity_hint(SSL_CTX *, const char *);
+void SSL_CTX_set_psk_server_callback(SSL_CTX *,
+                                     unsigned int (*)(
+                                         SSL *,
+                                         const char *,
+                                         unsigned char *,
+                                         int
+                                     ));
+void SSL_CTX_set_psk_client_callback(SSL_CTX *,
+                                     unsigned int (*)(
+                                         SSL *,
+                                         const char *,
+                                         char *,
+                                         unsigned int,
+                                         unsigned char *,
+                                         unsigned int
+                                     ));
+
 int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
                                    unsigned int);
 
