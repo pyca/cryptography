@@ -52,7 +52,7 @@ if platform.python_implementation() == "PyPy":
             "upgrade PyPy to use this library."
         )
 else:
-    setup_requirements.append("cffi>=1.7")
+    setup_requirements.append("cffi>=1.7,!=1.11.3")
 
 test_requirements = [
     "pytest>=3.2.1,!=3.3.0",
