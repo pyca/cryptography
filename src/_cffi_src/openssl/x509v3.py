@@ -41,12 +41,6 @@ typedef struct {
 
 typedef void * (*X509V3_EXT_D2I)(void *, const unsigned char **, long);
 
-typedef struct {
-    ASN1_ITEM_EXP *it;
-    X509V3_EXT_D2I d2i;
-    ...;
-} X509V3_EXT_METHOD;
-
 static const int GEN_OTHERNAME;
 static const int GEN_EMAIL;
 static const int GEN_X400;
@@ -233,10 +227,6 @@ void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
 
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
-
-/* These aren't macros these functions are all const X on openssl > 1.0.x */
-const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
-const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
 Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
