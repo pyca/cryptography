@@ -195,6 +195,8 @@ def cryptography_has_generic_dtls_method():
         "DTLS_method",
         "DTLS_server_method",
         "DTLS_client_method",
+        "SSL_OP_NO_DTLSv1",
+        "SSL_OP_NO_DTLSv1_2",
     ]
 
 

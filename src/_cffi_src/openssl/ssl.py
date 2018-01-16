@@ -65,6 +65,8 @@ static const long SSL_OP_NO_SSLv3;
 static const long SSL_OP_NO_TLSv1;
 static const long SSL_OP_NO_TLSv1_1;
 static const long SSL_OP_NO_TLSv1_2;
+static const long SSL_OP_NO_DTLSv1;
+static const long SSL_OP_NO_DTLSv1_2;
 static const long SSL_OP_NO_COMPRESSION;
 static const long SSL_OP_SINGLE_DH_USE;
 static const long SSL_OP_EPHEMERAL_RSA;
@@ -606,6 +608,8 @@ static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
+static const long SSL_OP_NO_DTLSv1 = NULL;
+static const long SSL_OP_NO_DTLSv1_2 = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif

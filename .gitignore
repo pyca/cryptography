@@ -10,5 +10,5 @@ htmlcov/
 *.egg-info/
 *.egg
 .eggs/
-*.py[co]
+*.py[cdo]
 .hypothesis/
