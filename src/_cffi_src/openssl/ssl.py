@@ -28,6 +28,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
 static const long Cryptography_HAS_SIGALGS;
+static const long Cryptography_HAS_PSK;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -656,5 +657,28 @@ const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
 const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
 #else
 static const long Cryptography_HAS_SIGALGS = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_PSK = 0;
+int (*SSL_CTX_use_psk_identity_hint)(SSL_CTX *, const char *) = NULL;
+void (*SSL_CTX_set_psk_server_callback)(SSL_CTX *,
+                                        unsigned int (*)(
+                                            SSL *,
+                                            const char *,
+                                            unsigned char *,
+                                            int
+                                        )) = NULL;
+void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
+                                        unsigned int (*)(
+                                            SSL *,
+                                            const char *,
+                                            char *,
+                                            unsigned int,
+                                            unsigned char *,
+                                            unsigned int
+                                        )) = NULL;
+#else
+static const long Cryptography_HAS_PSK = 1;
 #endif
 """
