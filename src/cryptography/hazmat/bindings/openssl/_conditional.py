@@ -260,6 +260,14 @@ def cryptography_has_ssl_sigalgs():
     ]
 
 
+def cryptography_has_psk():
+    return [
+        "SSL_CTX_use_psk_identity_hint",
+        "SSL_CTX_set_psk_server_callback",
+        "SSL_CTX_set_psk_client_callback",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -311,4 +319,5 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
+    "Cryptography_HAS_PSK": cryptography_has_psk,
 }

@@ -28,6 +28,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
 static const long Cryptography_HAS_SIGALGS;
+static const long Cryptography_HAS_PSK;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -225,8 +226,27 @@ int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
-                                      int (*)(X509_STORE_CTX *,void *),
+                                      int (*)(X509_STORE_CTX *, void *),
                                       void *);
+
+int SSL_CTX_use_psk_identity_hint(SSL_CTX *, const char *);
+void SSL_CTX_set_psk_server_callback(SSL_CTX *,
+                                     unsigned int (*)(
+                                         SSL *,
+                                         const char *,
+                                         unsigned char *,
+                                         int
+                                     ));
+void SSL_CTX_set_psk_client_callback(SSL_CTX *,
+                                     unsigned int (*)(
+                                         SSL *,
+                                         const char *,
+                                         char *,
+                                         unsigned int,
+                                         unsigned char *,
+                                         unsigned int
+                                     ));
+
 int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
                                    unsigned int);
 
@@ -641,5 +661,28 @@ const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
 const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
 #else
 static const long Cryptography_HAS_SIGALGS = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_PSK = 0;
+int (*SSL_CTX_use_psk_identity_hint)(SSL_CTX *, const char *) = NULL;
+void (*SSL_CTX_set_psk_server_callback)(SSL_CTX *,
+                                        unsigned int (*)(
+                                            SSL *,
+                                            const char *,
+                                            unsigned char *,
+                                            int
+                                        )) = NULL;
+void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
+                                        unsigned int (*)(
+                                            SSL *,
+                                            const char *,
+                                            char *,
+                                            unsigned int,
+                                            unsigned char *,
+                                            unsigned int
+                                        )) = NULL;
+#else
+static const long Cryptography_HAS_PSK = 1;
 #endif
 """
