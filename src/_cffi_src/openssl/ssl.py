@@ -647,6 +647,8 @@ const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
 static const long SSL_OP_NO_DTLSv1 = NULL;
 static const long SSL_OP_NO_DTLSv1_2 = NULL;
+long *(*DTLS_set_link_mtu)(SSL *, long) = NULL;
+long *(*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif
