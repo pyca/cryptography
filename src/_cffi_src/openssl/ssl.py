@@ -136,11 +136,6 @@ static const long TLS_ST_OK;
 
 static const long OPENSSL_NPN_NEGOTIATED;
 
-static const long DTLS_CTRL_SET_LINK_MTU;
-static const long DTLS_CTRL_GET_LINK_MIN_MTU;
-static const long DTLS_CTRL_GET_TIMEOUT;
-static const long DTLS_CTRL_HANDLE_TIMEOUT;
-
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
@@ -206,7 +201,6 @@ int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
-long SSL_ctrl(SSL *, int, long, void *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
@@ -486,6 +480,8 @@ long SSL_CTX_sess_cache_full(SSL_CTX *);
 /* DTLS support */
 long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
+long DTLS_set_link_mtu(SSL *, long);
+long DTLS_get_link_min_mtu(SSL *);
 """
 
 CUSTOMIZATIONS = """
