@@ -53,8 +53,6 @@ static const int BIO_CTRL_DGRAM_MTU_EXCEEDED;
 static const int BIO_CTRL_DGRAM_GET_PEER;
 static const int BIO_CTRL_DGRAM_SET_PEER;
 static const int BIO_CTRL_DGRAM_SET_NEXT_TIMEOUT;
-static const int BIO_CTRL_DGRAM_SET_DONT_FRAG;
-static const int BIO_CTRL_DGRAM_GET_MTU_OVERHEAD;
 static const int BIO_C_FILE_SEEK;
 static const int BIO_C_FILE_TELL;
 static const int BIO_TYPE_NONE;
