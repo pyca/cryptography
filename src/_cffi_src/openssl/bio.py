@@ -36,6 +36,9 @@ static const int BIO_CTRL_INFO;
 static const int BIO_CTRL_GET;
 static const int BIO_CTRL_PENDING;
 static const int BIO_CTRL_WPENDING;
+static const int BIO_CTRL_DGRAM_SET_RECV_TIMEOUT;
+static const int BIO_CTRL_DGRAM_SET_SEND_TIMEOUT;
+static const int BIO_CTRL_DGRAM_MTU_DISCOVER;
 static const int BIO_C_FILE_SEEK;
 static const int BIO_C_FILE_TELL;
 static const int BIO_TYPE_NONE;
@@ -68,6 +71,7 @@ BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
 BIO *BIO_new_fd(int, int);
 BIO *BIO_new_socket(int, int);
+BIO *BIO_new_dgram(int, int);
 long BIO_ctrl(BIO *, int, long, void *);
 long BIO_callback_ctrl(
     BIO *,

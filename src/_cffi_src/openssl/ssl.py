@@ -136,6 +136,11 @@ static const long TLS_ST_OK;
 
 static const long OPENSSL_NPN_NEGOTIATED;
 
+static const long DTLS_CTRL_SET_LINK_MTU;
+static const long DTLS_CTRL_GET_LINK_MIN_MTU;
+static const long DTLS_CTRL_GET_TIMEOUT;
+static const long DTLS_CTRL_HANDLE_TIMEOUT;
+
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
@@ -201,6 +206,7 @@ int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
+long SSL_ctrl(SSL *, int, long, void *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
@@ -228,6 +234,19 @@ int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
                                       int (*)(X509_STORE_CTX *, void *),
                                       void *);
+
+void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
+                                    int (*)(
+                                        SSL *,
+                                        unsigned char *,
+                                        unsigned int *
+                                    ));
+void SSL_CTX_set_cookie_verify_cb(SSL_CTX *ctx,
+                                  int (*)(
+                                      SSL *,
+                                      const unsigned char *,
+                                      unsigned int
+                                  ));
 
 int SSL_CTX_use_psk_identity_hint(SSL_CTX *, const char *);
 void SSL_CTX_set_psk_server_callback(SSL_CTX *,
