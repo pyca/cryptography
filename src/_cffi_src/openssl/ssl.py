@@ -229,6 +229,21 @@ void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
                                       int (*)(X509_STORE_CTX *, void *),
                                       void *);
 
+void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
+                                    int (*)(
+                                        SSL *,
+                                        unsigned char *,
+                                        unsigned int *
+                                    ));
+void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
+                                  int (*)(
+                                      SSL *,
+                                      const unsigned char *,
+                                      unsigned int
+                                  ));
+long SSL_CTX_get_read_ahead(SSL_CTX *);
+long SSL_CTX_set_read_ahead(SSL_CTX *, long);
+
 int SSL_CTX_use_psk_identity_hint(SSL_CTX *, const char *);
 void SSL_CTX_set_psk_server_callback(SSL_CTX *,
                                      unsigned int (*)(
@@ -467,6 +482,8 @@ long SSL_CTX_sess_cache_full(SSL_CTX *);
 /* DTLS support */
 long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
+long DTLS_set_link_mtu(SSL *, long);
+long DTLS_get_link_min_mtu(SSL *);
 """
 
 CUSTOMIZATIONS = """
@@ -630,6 +647,8 @@ const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
 static const long SSL_OP_NO_DTLSv1 = NULL;
 static const long SSL_OP_NO_DTLSv1_2 = NULL;
+long *(*DTLS_set_link_mtu)(SSL *, long) = NULL;
+long *(*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif

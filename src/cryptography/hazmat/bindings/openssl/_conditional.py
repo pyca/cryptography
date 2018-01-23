@@ -197,6 +197,8 @@ def cryptography_has_generic_dtls_method():
         "DTLS_client_method",
         "SSL_OP_NO_DTLSv1",
         "SSL_OP_NO_DTLSv1_2",
+        "DTLS_set_link_mtu",
+        "DTLS_get_link_min_mtu",
     ]
 
 
