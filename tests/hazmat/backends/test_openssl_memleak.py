@@ -219,6 +219,6 @@ class TestOpenSSLMemoryLeaks(object):
         assert_no_memory_leaks(textwrap.dedent("""
         def func():
             from cryptography.hazmat.backends.openssl import backend
-            from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1, derive_private_key
-            derive_private_key(1, SECP256R1(), backend)
+            from cryptography.hazmat.primitives.asymmetric import ec
+            ec.derive_private_key(1, ec.SECP256R1(), backend)
         """))
