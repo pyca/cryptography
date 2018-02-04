@@ -1409,8 +1409,9 @@ class Backend(object):
 
         res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
         self.openssl_assert(res == 1)
-        res = self._lib.EC_KEY_set_private_key(
-            ec_cdata, self._int_to_bn(private_value))
+        private = self._int_to_bn(private_value)
+        private = self._ffi.gc(private, self._lib.BN_clear_free)
+        res = self._lib.EC_KEY_set_private_key(ec_cdata, private)
         self.openssl_assert(res == 1)
 
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
