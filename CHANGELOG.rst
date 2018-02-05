@@ -12,6 +12,8 @@ Changelog
 * Resolved a bug in ``HKDF`` that incorrectly constrained output size.
 * Added token rotation support to :doc:`Fernet </fernet>` with
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
+* Fixed a memory leak in
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
 
 .. _v2-1-4:
 
