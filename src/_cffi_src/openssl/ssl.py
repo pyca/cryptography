@@ -405,6 +405,9 @@ long SSL_set_tlsext_status_type(SSL *, long);
 long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
 long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
+int SSL_CTX_set_tlsext_use_srtp(SSL_CTX *, const char *);
+int SSL_set_tlsext_use_srtp(SSL *, const char *);
+
 long SSL_session_reused(SSL *);
 
 void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
