@@ -5,8 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from docutils import nodes
-
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 
 
 DANGER_MESSAGE = """
