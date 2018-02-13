@@ -148,6 +148,21 @@ def downstreams = [
             inv test
         """
     ],
+    [
+        downstreamName: 'aws-encryption-sdk',
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/awslabs/aws-encryption-sdk-python
+            cd aws-encryption-sdk-python
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install pytest pytest-mock mock
+            pip install -e .
+            AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID="arn:aws:kms:us-west-2:nonsense" pytest -m local -l
+        """
+    ],
 ]
 
 def checkout_git(label) {
