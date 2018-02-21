@@ -48,6 +48,8 @@ matrix:
         - python: 3.6
           env: TOXENV=py36 LIBRESSL=2.7.4
         - python: 3.6
+          env: TOXENV=py36 OPENSSL=1.1.1-pre7
+        - python: 3.6
           env: TOXENV=docs OPENSSL=1.1.0h
           addons:
               apt:
