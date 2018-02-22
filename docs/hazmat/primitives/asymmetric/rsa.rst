@@ -247,8 +247,8 @@ options. Here's an example using a secure padding and hash function:
     >>> ciphertext = public_key.encrypt(
     ...     message,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-    ...         algorithm=hashes.SHA1(),
+    ...         mgf=padding.MGF1(algorithm=hashes.SHA256()),
+    ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
     ... )
@@ -270,8 +270,8 @@ Once you have an encrypted message, it can be decrypted using the private key:
     >>> plaintext = private_key.decrypt(
     ...     ciphertext,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-    ...         algorithm=hashes.SHA1(),
+    ...         mgf=padding.MGF1(algorithm=hashes.SHA256()),
+    ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
     ... )
