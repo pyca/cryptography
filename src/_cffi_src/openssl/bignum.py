@@ -19,6 +19,9 @@ BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 void BN_clear_free(BIGNUM *);
 
+int BN_rand(BIGNUM *, int, int, int);
+int BN_rand_range(BIGNUM *, BIGNUM *);
+
 BN_CTX *BN_CTX_new(void);
 void BN_CTX_free(BN_CTX *);
 
