@@ -163,6 +163,22 @@ def downstreams = [
             AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID="arn:aws:kms:us-west-2:nonsense" pytest -m local -l
         """
     ],
+    [
+        downstreamName: 'certbot',
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/certbot/certbot
+            cd certbot
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install pytest pytest-mock mock
+            pip install -e acme
+            pip install -e .
+            pytest certbot/tests
+        """
+    ],
 ]
 
 def checkout_git(label) {
