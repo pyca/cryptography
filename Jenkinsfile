@@ -177,6 +177,21 @@ def downstreams = [
             pip install -e acme
             pip install -e .
             pytest certbot/tests
+            pytest acme
+        """
+    ],
+    [
+        downstreamName: 'certbot-josepy',
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth=1 https://github.com/certbot/josepy
+            cd josepy
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install -e .[tests]
+            pytest src
         """
     ],
 ]
