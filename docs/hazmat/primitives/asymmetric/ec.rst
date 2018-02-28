@@ -226,12 +226,16 @@ Elliptic Curve Key Exchange algorithm
     in NIST publication `800-56A`_, and later in `800-56Ar2`_.
 
     For most applications the ``shared_key`` should be passed to a key
-    derivation function.
+    derivation function. This allows mixing of additional information into the
+    key, derivation of multiple keys, and destroys any structure that may be
+    present.
 
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
         >>> # Generate a private key for use in the exchange.
         >>> private_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
@@ -243,6 +247,14 @@ Elliptic Curve Key Exchange algorithm
         ...     ec.SECP384R1(), default_backend()
         ... ).public_key()
         >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
+        >>> # Perform key derivation.
+        >>> derived_key = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=None,
+        ...     info=b'handshake data',
+        ...     backend=default_backend()
+        ... ).derive(shared_key)
         >>> # For the next handshake we MUST generate another private key.
         >>> private_key_2 = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
@@ -251,6 +263,13 @@ Elliptic Curve Key Exchange algorithm
         ...     ec.SECP384R1(), default_backend()
         ... ).public_key()
         >>> shared_key_2 = private_key_2.exchange(ec.ECDH(), peer_public_key_2)
+        >>> derived_key_2 = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=None,
+        ...     info=b'handshake data',
+        ...     backend=default_backend()
+        ... ).derive(shared_key_2)
 
     ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
     preferred** over simple ECDH and provides `forward secrecy`_ when used.
@@ -453,8 +472,10 @@ Key Interfaces
         Performs a key exchange operation using the provided algorithm with
         the peer's public key.
 
-        For most applications the result should be passed to a key derivation
-        function.
+        For most applications the ``shared_key`` should be passed to a key
+        derivation function. This allows mixing of additional information into the
+        key, derivation of multiple keys, and destroys any structure that may be
+        present.
 
         :param algorithm: The key exchange algorithm, currently only
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` is
