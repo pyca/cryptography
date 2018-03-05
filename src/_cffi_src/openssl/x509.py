@@ -144,6 +144,7 @@ X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
 X509_CRL *X509_CRL_new(void);
+X509_CRL *X509_CRL_dup(X509_CRL *);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
