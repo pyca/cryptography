@@ -87,9 +87,8 @@ void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 
-/* These aren't macros these arguments are all const X on openssl > 1.0.x */
-
 int ASN1_STRING_length(ASN1_STRING *);
+int ASN1_STRING_set_default_mask_asc(char *);
 
 BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
 ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
