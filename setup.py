@@ -297,13 +297,13 @@ setup(
 
         "test": test_requirements,
         "docs": [
-            "readme_renderer >= 16.0",
             "sphinx >= 1.6.5",
             "sphinx_rtd_theme",
         ],
         "docstest": [
             "doc8",
             "pyenchant >= 1.6.11",
+            "readme_renderer >= 16.0",
             "sphinxcontrib-spelling >= 4.0.1",
         ],
         "pep8test": [
