@@ -229,50 +229,20 @@ class SECP192R1(object):
 
 
 @utils.register_interface(EllipticCurve)
-class BRAINPOOLP256R1(object):
+class BrainpoolP256R1(object):
     name = "brainpoolP256r1"
     key_size = 256
 
 
 @utils.register_interface(EllipticCurve)
-class BRAINPOOLP256T1(object):
-    name = "brainpoolP256t1"
-    key_size = 256
-
-
-@utils.register_interface(EllipticCurve)
-class BRAINPOOLP320R1(object):
-    name = "brainpoolP320r1"
-    key_size = 320
-
-
-@utils.register_interface(EllipticCurve)
-class BRAINPOOLP320T1(object):
-    name = "brainpoolP320t1"
-    key_size = 320
-
-
-@utils.register_interface(EllipticCurve)
-class BRAINPOOLP384R1(object):
+class BrainpoolP384R1(object):
     name = "brainpoolP384r1"
     key_size = 384
 
 
 @utils.register_interface(EllipticCurve)
-class BRAINPOOLP384T1(object):
-    name = "brainpoolP384t1"
-    key_size = 384
-
-
-@utils.register_interface(EllipticCurve)
-class BRAINPOOLP512R1(object):
+class BrainpoolP512R1(object):
     name = "brainpoolP512r1"
-    key_size = 512
-
-
-@utils.register_interface(EllipticCurve)
-class BRAINPOOLP512T1(object):
-    name = "brainpoolP512t1"
     key_size = 512
 
 
@@ -299,14 +269,9 @@ _CURVE_TYPES = {
     "sect409r1": SECT409R1,
     "sect571r1": SECT571R1,
 
-    "brainpoolP256r1": BRAINPOOLP256R1,
-    "brainpoolP256t1": BRAINPOOLP256T1,
-    "brainpoolP320r1": BRAINPOOLP320R1,
-    "brainpoolP320t1": BRAINPOOLP320T1,
-    "brainpoolP384r1": BRAINPOOLP384R1,
-    "brainpoolP384t1": BRAINPOOLP384T1,
-    "brainpoolP512r1": BRAINPOOLP512R1,
-    "brainpoolP512t1": BRAINPOOLP512T1,
+    "brainpoolP256r1": BrainpoolP256R1,
+    "brainpoolP384r1": BrainpoolP384R1,
+    "brainpoolP512r1": BrainpoolP512R1,
 }
 
 
