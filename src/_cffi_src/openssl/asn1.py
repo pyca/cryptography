@@ -32,6 +32,8 @@ typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
 
 static const int V_ASN1_GENERALIZEDTIME;
+
+static const int MBSTRING_UTF8;
 """
 
 FUNCTIONS = """
