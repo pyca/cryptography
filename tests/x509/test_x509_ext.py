@@ -2219,6 +2219,12 @@ class TestCRLNumber(object):
         assert hash(c1) != hash(c3)
 
 
+class TestGeneralNames(object):
+    def test_does_not_allow_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.GeneralNames([])
+
+
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(
