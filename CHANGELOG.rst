@@ -10,9 +10,9 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
 * Resolved a bug in ``HKDF`` that incorrectly constrained output size.
-* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainPoolP256R1`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainPoolP384R1`, and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainPoolP512R1` to
+* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP256R1`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP384R1`, and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP512R1` to
   support inter-operating with systems like German smart meters.
 * Added token rotation support to :doc:`Fernet </fernet>` with
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
