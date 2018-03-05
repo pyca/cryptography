@@ -2052,6 +2052,10 @@ class TestGeneralNames(object):
                 [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
+    def test_does_not_allow_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.GeneralNames([])
+
     def test_repr(self):
         gns = x509.GeneralNames(
             [
@@ -2217,12 +2221,6 @@ class TestCRLNumber(object):
         c3 = x509.CRLNumber(2)
         assert hash(c1) == hash(c2)
         assert hash(c1) != hash(c3)
-
-
-class TestGeneralNames(object):
-    def test_does_not_allow_empty_list(self):
-        with pytest.raises(ValueError):
-            x509.GeneralNames([])
 
 
 class TestSubjectAlternativeName(object):
