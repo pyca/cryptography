@@ -296,12 +296,14 @@ setup(
         ":platform_python_implementation != 'PyPy'": ["cffi >= 1.7"],
 
         "test": test_requirements,
-        "docstest": [
-            "doc8",
-            "pyenchant >= 1.6.11",
+        "docs": [
             "readme_renderer >= 16.0",
             "sphinx >= 1.6.5",
             "sphinx_rtd_theme",
+        ],
+        "docstest": [
+            "doc8",
+            "pyenchant >= 1.6.11",
             "sphinxcontrib-spelling >= 4.0.1",
         ],
         "pep8test": [
