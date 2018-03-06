@@ -110,7 +110,10 @@ def build(version, label, imageName) {
                         if [[ "${version}" == "py34" ]]; then
                             PY_LIMITED_API='--py-limited-api=cp34'
                         fi
-                        CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" python setup.py bdist_wheel --dist-dir=../wheelhouse \$PY_LIMITED_API
+                        CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
+                            LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
+                            CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
+                            python setup.py bdist_wheel --dist-dir=../wheelhouse \$PY_LIMITED_API
                         cd ..
                         pip install -f wheelhouse cryptography --no-index
                         python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
