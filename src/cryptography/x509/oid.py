@@ -174,6 +174,7 @@ class ExtendedKeyUsageOID(object):
     TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
     OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
     ANY_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37.0")
+    SCARD_LOGON = ObjectIdentifier("1.3.6.1.4.1.311.20.2.2")
 
 
 class AuthorityInformationAccessOID(object):
