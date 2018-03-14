@@ -8,6 +8,7 @@ bcrypt
 Blowfish
 boolean
 Botan
+Brainpool
 Capitan
 Changelog
 ciphertext
