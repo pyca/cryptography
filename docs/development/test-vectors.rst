@@ -129,6 +129,9 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
   are the above parameters and keys in DER format.
 
+* ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool`` contains Brainpool
+  vectors from `OpenSSL's evppkey.txt`_.
+
 
 X.509
 ~~~~~
@@ -510,6 +513,7 @@ header format (substituting the correct information):
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`OpenSSL's evpciph.txt`: https://github.com/openssl/openssl/blob/5a7bc0be97dee9ac715897fe8180a08e211bc6ea/test/evpciph.txt#L2362
+.. _`OpenSSL's evppkey.txt`: https://github.com/openssl/openssl/blob/346149c164605cf0e1b930d3f42a1f28f3babcae/test/recipes/30-test_evp_data/evppkey.txt#L4981
 .. _`BoringSSL ChaCha20Poly1305 tests`: https://boringssl.googlesource.com/boringssl/+/2e2a226ac9201ac411a84b5e79ac3a7333d8e1c9/crypto/cipher_extra/test/chacha20_poly1305_tests.txt
 .. _`BoringSSL evp tests`: https://boringssl.googlesource.com/boringssl/+/ce3773f9fe25c3b54390bc51d72572f251c7d7e6/crypto/evp/evp_tests.txt
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
