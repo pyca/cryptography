@@ -1104,35 +1104,27 @@ class TestECDH(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDH", "brainpool", "ecdh.txt"),
+            os.path.join("asymmetric", "ECDH", "brainpool.txt"),
             load_nist_vectors
         )
     )
     def test_brainpool_kex(self, backend, vector):
-        _skip_exchange_algorithm_unsupported(
-            backend, ec.ECDH(), ec._CURVE_TYPES[vector['curve']]
-        )
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDH", "brainpool",
-                vector["derive"].decode("ascii")
-            ),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+        curve = ec._CURVE_TYPES[vector['curve'].decode('ascii')]
+        _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
+        key = ec.EllipticCurvePrivateNumbers(
+            int(vector['da'], 16),
+            ec.EllipticCurvePublicNumbers(
+                int(vector['x_qa'], 16), int(vector['y_qa'], 16), curve()
             )
-        )
-        peer = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDH", "brainpool",
-                vector["peerkey"].decode("ascii")
-            ),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+        ).private_key(backend)
+        peer = ec.EllipticCurvePrivateNumbers(
+            int(vector['db'], 16),
+            ec.EllipticCurvePublicNumbers(
+                int(vector['x_qb'], 16), int(vector['y_qb'], 16), curve()
             )
-        )
+        ).private_key(backend)
         shared_secret = key.exchange(ec.ECDH(), peer.public_key())
-        assert shared_secret == binascii.unhexlify(vector["sharedsecret"])
+        assert shared_secret == binascii.unhexlify(vector["x_z"])
 
     def test_exchange_unsupported_algorithm(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
