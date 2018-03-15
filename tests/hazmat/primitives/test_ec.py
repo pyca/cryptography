@@ -26,7 +26,7 @@ from .fixtures_ec import EC_KEY_SECP384R1
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_kasvs_ecdh_vectors, load_vectors_from_file,
+    load_kasvs_ecdh_vectors, load_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
 )
 
@@ -1100,6 +1100,33 @@ class TestECDH(object):
             assert z != vector['Z']
         else:
             assert z == vector['Z']
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "ECDH", "brainpool.txt"),
+            load_nist_vectors
+        )
+    )
+    def test_brainpool_kex(self, backend, vector):
+        curve = ec._CURVE_TYPES[vector['curve'].decode('ascii')]
+        _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
+        key = ec.EllipticCurvePrivateNumbers(
+            int(vector['da'], 16),
+            ec.EllipticCurvePublicNumbers(
+                int(vector['x_qa'], 16), int(vector['y_qa'], 16), curve()
+            )
+        ).private_key(backend)
+        peer = ec.EllipticCurvePrivateNumbers(
+            int(vector['db'], 16),
+            ec.EllipticCurvePublicNumbers(
+                int(vector['x_qb'], 16), int(vector['y_qb'], 16), curve()
+            )
+        ).private_key(backend)
+        shared_secret = key.exchange(ec.ECDH(), peer.public_key())
+        assert shared_secret == binascii.unhexlify(vector["x_z"])
+        shared_secret_2 = peer.exchange(ec.ECDH(), key.public_key())
+        assert shared_secret_2 == binascii.unhexlify(vector["x_z"])
 
     def test_exchange_unsupported_algorithm(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())

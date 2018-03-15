@@ -228,6 +228,24 @@ class SECP192R1(object):
     key_size = 192
 
 
+@utils.register_interface(EllipticCurve)
+class BrainpoolP256R1(object):
+    name = "brainpoolP256r1"
+    key_size = 256
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP384R1(object):
+    name = "brainpoolP384r1"
+    key_size = 384
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP512R1(object):
+    name = "brainpoolP512r1"
+    key_size = 512
+
+
 _CURVE_TYPES = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
@@ -250,6 +268,10 @@ _CURVE_TYPES = {
     "sect283r1": SECT283R1,
     "sect409r1": SECT409R1,
     "sect571r1": SECT571R1,
+
+    "brainpoolP256r1": BrainpoolP256R1,
+    "brainpoolP384r1": BrainpoolP384R1,
+    "brainpoolP512r1": BrainpoolP512R1,
 }
 
 

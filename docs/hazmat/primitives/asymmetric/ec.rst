@@ -414,6 +414,28 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp256k1``.
 
 
+.. class:: BrainpoolP256R1
+
+    .. versionadded:: 2.2
+
+    Brainpool curve specified in :rfc:`5639`. These curves are discouraged
+    for new systems.
+
+.. class:: BrainpoolP384R1
+
+    .. versionadded:: 2.2
+
+    Brainpool curve specified in :rfc:`5639`. These curves are discouraged
+    for new systems.
+
+.. class:: BrainpoolP512R1
+
+    .. versionadded:: 2.2
+
+    Brainpool curve specified in :rfc:`5639`. These curves are discouraged
+    for new systems.
+
+
 Key Interfaces
 ~~~~~~~~~~~~~~
 
