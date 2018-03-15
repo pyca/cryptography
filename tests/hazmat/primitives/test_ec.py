@@ -1125,6 +1125,8 @@ class TestECDH(object):
         ).private_key(backend)
         shared_secret = key.exchange(ec.ECDH(), peer.public_key())
         assert shared_secret == binascii.unhexlify(vector["x_z"])
+        shared_secret_2 = peer.exchange(ec.ECDH(), key.public_key())
+        assert shared_secret_2 == binascii.unhexlify(vector["x_z"])
 
     def test_exchange_unsupported_algorithm(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
