@@ -165,7 +165,7 @@ class TestAESKeyWrapWithPadding(object):
 
     def test_unwrap_invalid_wrapped_key_length(self, backend):
         # Keys to unwrap must be at least 16 bytes
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match='Must be at least 16 bytes'):
             keywrap.aes_key_unwrap_with_padding(
                 b"sixteen_byte_key", b"\x00" * 15, backend
             )
