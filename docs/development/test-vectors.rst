@@ -129,6 +129,8 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
   are the above parameters and keys in DER format.
 
+* ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
+  Brainpool vectors from :rfc:`7027`.
 
 X.509
 ~~~~~
