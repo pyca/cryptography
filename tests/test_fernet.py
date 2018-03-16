@@ -9,6 +9,7 @@ import calendar
 import datetime
 import json
 import os
+import struct
 import time
 
 import iso8601
@@ -121,6 +122,51 @@ class TestFernet(object):
     def test_bad_key(self, backend):
         with pytest.raises(ValueError):
             Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+    def test_timestamp_ttl_overdue(self, monkeypatch, backend):
+        ts = "1985-10-26T01:20:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+
+        issued_ts = struct.pack('>Q', calendar.timegm(
+            datetime.datetime(1985, 10, 26, 1, 19, 1).utctimetuple()))
+
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            token = base64.urlsafe_b64encode(b"\x80" + issued_ts)
+            f.decrypt(token, ttl=59)
+
+    def test_timestamp_ttl(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        # Create the token some time in the past.
+        ts = "1985-10-26T01:20:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        token = f.encrypt(b'encrypt me')
+
+        # Check the TTL 10 seconds later.
+        ts = "1985-10-26T01:20:11"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.ttl(token, ttl=60) == 50
+
+        # Check the TTL 59 seconds later.
+        ts = "1985-10-26T01:21:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.ttl(token, ttl=60) == 1
+
+        # Check the TTL two minutes later. We're a minute over due in this
+        # case.
+        ts = "1985-10-26T01:21:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.ttl(token, ttl=60) == 1
+
+        ts = "1985-10-26T01:22:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.ttl(token, ttl=60) == -59
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)

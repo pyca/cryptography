@@ -74,6 +74,13 @@ class Fernet(object):
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl)
 
+    def ttl(self, token, ttl):
+        current_time = int(time.time())
+        timestamp, data = Fernet._get_unverified_token_data(token)
+        # Verify the token was not tampered with, but do not fail on expiry.
+        self._decrypt_data(data, timestamp, None)
+        return ttl - (current_time - timestamp)
+
     @staticmethod
     def _get_unverified_token_data(token):
         if not isinstance(token, bytes):
