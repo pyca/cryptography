@@ -124,49 +124,42 @@ class TestFernet(object):
             Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
 
     def test_timestamp_ttl_overdue(self, monkeypatch, backend):
-        ts = "1985-10-26T01:20:01"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
-
-        issued_ts = struct.pack('>Q', calendar.timegm(
-            datetime.datetime(1985, 10, 26, 1, 19, 1).utctimetuple()))
-
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        with pytest.raises(InvalidToken):
-            token = base64.urlsafe_b64encode(b"\x80" + issued_ts)
-            f.decrypt(token, ttl=59)
-
-    def test_timestamp_ttl(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         # Create the token some time in the past.
         ts = "1985-10-26T01:20:01"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         token = f.encrypt(b'encrypt me')
+        # A minute later we check, but we declare the TTL to be 59 seconds so
+        # the token has expired.
+        ts = "1985-10-26T01:21:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        with pytest.raises(InvalidToken):
+            f.decrypt(token, ttl=59)
 
-        # Check the TTL 10 seconds later.
+    def test_timestamp_age(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        # Create the token some time in the past.
+        ts = "1985-10-26T01:20:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        token = f.encrypt(b'encrypt me')
+        # Check the age 10 seconds later.
         ts = "1985-10-26T01:20:11"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
-        assert f.ttl(token, ttl=60) == 50
-
-        # Check the TTL 59 seconds later.
+        assert f.age(token) == 10
+        # Check the age 59 seconds later.
         ts = "1985-10-26T01:21:00"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
-        assert f.ttl(token, ttl=60) == 1
-
-        # Check the TTL two minutes later. We're a minute over due in this
-        # case.
-        ts = "1985-10-26T01:21:00"
+        assert f.age(token) == 59
+        # Check the age two minutes later.
+        ts = "1985-10-26T01:22:01"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
-        assert f.ttl(token, ttl=60) == 1
-
-        ts = "1985-10-26T01:22:00"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
-        assert f.ttl(token, ttl=60) == -59
+        assert f.age(token) == 120
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
