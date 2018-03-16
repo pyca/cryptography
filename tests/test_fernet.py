@@ -9,7 +9,6 @@ import calendar
 import datetime
 import json
 import os
-import struct
 import time
 
 import iso8601
