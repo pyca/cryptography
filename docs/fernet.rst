@@ -89,8 +89,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
                             :meth:`encrypt`.
         :returns int: The token's age in seconds.
         :raises cryptography.fernet.InvalidToken: If the ``token``'s signature
-                                                  is way invalid, this
-                                                  exception is raised.
+                                                  is invalid, this exception
+                                                  is raised.
         :raises TypeError: This exception is raised if ``data`` is not
                            ``bytes``.
 
