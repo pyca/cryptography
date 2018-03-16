@@ -149,6 +149,16 @@ class MD5(object):
     block_size = 64
 
 
+MD5 = utils.deprecated(
+    MD5,
+    __name__,
+    "The security of the MD5 hash function is severely compromised, it "
+    "suffers from practical collision attacks which make it unsuitable "
+    "for cryptographic use.",
+    utils.DeprecatedIn22
+)
+
+
 @utils.register_interface(HashAlgorithm)
 class BLAKE2b(object):
     name = "blake2b"

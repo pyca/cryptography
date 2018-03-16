@@ -18,6 +18,8 @@ Changelog
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
 * Fixed a memory leak in
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
+* Deprecated :class:`~cryptography.hazmat.primitives.hashes.MD5`, the MD5
+  hash is unsuitable for cryptographic use.
 
 .. _v2-1-4:
 
