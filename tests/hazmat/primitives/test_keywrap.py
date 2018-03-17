@@ -171,11 +171,11 @@ class TestAESKeyWrapWithPadding(object):
             )
 
     def test_wrap_invalid_key_length(self, backend):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match='must be a valid AES key length'):
             keywrap.aes_key_wrap_with_padding(b"badkey", b"\x00", backend)
 
     def test_unwrap_invalid_key_length(self, backend):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match='must be a valid AES key length'):
             keywrap.aes_key_unwrap_with_padding(
                 b"badkey", b"\x00" * 16, backend
             )
