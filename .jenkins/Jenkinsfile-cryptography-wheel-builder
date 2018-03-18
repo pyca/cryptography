@@ -16,15 +16,15 @@ def configs = [
     ],
     [
         label: 'sierra',
-        # The py3x version listed here corresponds to the minimum ABI version
-        # the wheels will support. e.g. py34 supports py34+
+        // The py3x version listed here corresponds to the minimum ABI version
+        // the wheels will support. e.g. py34 supports py34+
         versions: ['py27', 'py34'],
     ],
     [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:i686',
-        # The py3x version listed here corresponds to the minimum ABI version
-        # the wheels will support. e.g. cp34-cp34m supports py34+
+        // The py3x version listed here corresponds to the minimum ABI version
+        // the wheels will support. e.g. cp34-cp34m supports py34+
         versions: [
             'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
         ],
@@ -32,8 +32,8 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:x86_64',
-        # The py3x version listed here corresponds to the minimum ABI version
-        # the wheels will support. e.g. cp34-cp34m supports py34+
+        // The py3x version listed here corresponds to the minimum ABI version
+        // the wheels will support. e.g. cp34-cp34m supports py34+
         versions: [
             'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
         ],
@@ -113,9 +113,9 @@ def build(version, label, imageName) {
                         pip download cryptography==$BUILD_VERSION --no-binary cryptography --no-deps
                         tar zxf cryptography*
                         pushd cryptography*
-                        REGEX="cp3([0-9])*"
-                        if [[ "${version}" =~ $REGEX ]]; then
-                            PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
+                        REGEX="py3([0-9])*"
+                        if [[ "${version}" =~ \$REGEX ]]; then
+                            PY_LIMITED_API="--py-limited-api=cp3\${BASH_REMATCH[1]}"
                         fi
                         CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
                             LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
@@ -149,8 +149,8 @@ def build(version, label, imageName) {
 
                     pushd cryptography*
                     REGEX="cp3([0-9])*"
-                    if [[ "${version}" =~ $REGEX ]]; then
-                        PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
+                    if [[ "${version}" =~ \$REGEX ]]; then
+                        PY_LIMITED_API="--py-limited-api=cp3\${BASH_REMATCH[1]}"
                     fi
                     LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
                         CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
