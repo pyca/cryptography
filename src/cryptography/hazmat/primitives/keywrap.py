@@ -76,14 +76,14 @@ def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend):
     # pad the key to wrap if necessary
     pad = (8 - (len(key_to_wrap) % 8)) % 8
     key_to_wrap = key_to_wrap + b"\x00" * pad
-    r = [key_to_wrap[i:i + 8] for i in range(0, len(key_to_wrap), 8)]
-    if len(r) == 1:
+    if len(key_to_wrap) == 8:
         # RFC 5649 - 4.1 - exactly 8 octets after padding
         encryptor = Cipher(AES(wrapping_key), ECB(), backend).encryptor()
-        b = encryptor.update(aiv + r[0])
+        b = encryptor.update(aiv + key_to_wrap)
         assert encryptor.finalize() == b""
         return b
     else:
+        r = [key_to_wrap[i:i + 8] for i in range(0, len(key_to_wrap), 8)]
         return _wrap_core(wrapping_key, aiv, r, backend)
 
 
@@ -94,17 +94,18 @@ def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
 
-    r = [wrapped_key[i:i + 8] for i in range(0, len(wrapped_key), 8)]
-    encrypted_aiv = r.pop(0)
-    n = len(r)
-    if n == 1:
+    if len(wrapped_key) == 16:
         # RFC 5649 - 4.2 - exactly two 64-bit blocks
         decryptor = Cipher(AES(wrapping_key), ECB(), backend).decryptor()
-        b = decryptor.update(encrypted_aiv + r[0])
+        b = decryptor.update(wrapped_key)
         assert decryptor.finalize() == b""
         a = b[:8]
         data = b[8:]
+        n = 1
     else:
+        r = [wrapped_key[i:i + 8] for i in range(0, len(wrapped_key), 8)]
+        encrypted_aiv = r.pop(0)
+        n = len(r)
         a, r = _unwrap_core(wrapping_key, encrypted_aiv, r, backend)
         data = b"".join(r)
 
@@ -113,7 +114,7 @@ def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
     #    MLI = LSB(32,A).
     # 3) Let b = (8*n)-MLI, and then check that the rightmost b octets of
     #    the output data are zero.
-    mli = struct.unpack(">I", a[4:])[0]
+    (mli,) = struct.unpack(">I", a[4:])
     b = (8 * n) - mli
     if (
         not bytes_eq(a[:4], b"\xa6\x59\x59\xa6") or not
