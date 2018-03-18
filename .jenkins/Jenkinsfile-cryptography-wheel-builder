@@ -16,11 +16,15 @@ def configs = [
     ],
     [
         label: 'sierra',
+        # The py3x version listed here corresponds to the minimum ABI version
+        # the wheels will support. e.g. py34 supports py34+
         versions: ['py27', 'py34'],
     ],
     [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:i686',
+        # The py3x version listed here corresponds to the minimum ABI version
+        # the wheels will support. e.g. cp34-cp34m supports py34+
         versions: [
             'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
         ],
@@ -28,6 +32,8 @@ def configs = [
     [
         label: 'docker',
         imageName: 'pyca/cryptography-manylinux1:x86_64',
+        # The py3x version listed here corresponds to the minimum ABI version
+        # the wheels will support. e.g. cp34-cp34m supports py34+
         versions: [
             'cp27-cp27m', 'cp27-cp27mu', 'cp34-cp34m',
         ],
@@ -106,15 +112,16 @@ def build(version, label, imageName) {
                         pip install cffi six idna asn1crypto ipaddress enum34
                         pip download cryptography==$BUILD_VERSION --no-binary cryptography --no-deps
                         tar zxf cryptography*
-                        cd cryptography*
-                        if [[ "${version}" == "py34" ]]; then
-                            PY_LIMITED_API='--py-limited-api=cp34'
+                        pushd cryptography*
+                        REGEX="cp3([0-9])*"
+                        if [[ "${version}" =~ $REGEX ]]; then
+                            PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
                         fi
                         CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
                             LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
                             CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
                             python setup.py bdist_wheel --dist-dir=../wheelhouse \$PY_LIMITED_API
-                        cd ..
+                        popd
                         pip install -f wheelhouse cryptography --no-index
                         python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
                         otool -L `find .venv -name '_openssl*.so'`
@@ -140,14 +147,15 @@ def build(version, label, imageName) {
                     chmod -R 777 tmpwheelhouse
                     chmod -R 777 wheelhouse
 
-                    cd cryptography*
-                    if [[ "${version}" == "cp34-cp34m" ]]; then
-                        PY_LIMITED_API='--py-limited-api=cp34'
+                    pushd cryptography*
+                    REGEX="cp3([0-9])*"
+                    if [[ "${version}" =~ $REGEX ]]; then
+                        PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
                     fi
                     LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
                         CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
                         $linux32 /opt/python/$version/bin/python setup.py bdist_wheel --dist-dir=../tmpwheelhouse \$PY_LIMITED_API
-                    cd ..
+                    popd
                     chmod -R 777 cryptography*
                     $linux32 auditwheel repair tmpwheelhouse/cryptography*.whl -w wheelhouse/
                     unzip wheelhouse/*.whl -d execstack.check
