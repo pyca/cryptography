@@ -73,10 +73,10 @@ def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend):
         raise ValueError("The wrapping key must be a valid AES key length")
 
     aiv = b"\xA6\x59\x59\xA6" + struct.pack(">i", len(key_to_wrap))
+    # pad the key to wrap if necessary
+    pad = (8 - (len(key_to_wrap) % 8)) % 8
+    key_to_wrap = key_to_wrap + b"\x00" * pad
     r = [key_to_wrap[i:i + 8] for i in range(0, len(key_to_wrap), 8)]
-    pad = (8 - (len(r[-1]) % 8)) % 8
-    # Pad the last block if necessary
-    r[-1] = r[-1] + b"\x00" * pad
     if len(r) == 1:
         # RFC 5649 - 4.1 - exactly 8 octets after padding
         encryptor = Cipher(AES(wrapping_key), ECB(), backend).encryptor()
