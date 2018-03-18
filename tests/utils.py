@@ -353,43 +353,28 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     Loads data out of the FIPS DSA KeyPair vector files.
     """
     vectors = []
-    # When reading_key_data is set to True it tells the loader to continue
-    # constructing dictionaries. We set reading_key_data to False during the
-    # blocks of the vectors of N=224 because we don't support it.
-    reading_key_data = True
     for line in vector_data:
         line = line.strip()
 
-        if not line or line.startswith("#"):
-            continue
-        elif line.startswith("[mod = L=1024"):
-            continue
-        elif line.startswith("[mod = L=2048, N=224"):
-            reading_key_data = False
-            continue
-        elif line.startswith("[mod = L=2048, N=256"):
-            reading_key_data = True
-            continue
-        elif line.startswith("[mod = L=3072"):
+        if not line or line.startswith("#") or line.startswith("[mod"):
             continue
 
-        if reading_key_data:
-            if line.startswith("P"):
-                vectors.append({'p': int(line.split("=")[1], 16)})
-            elif line.startswith("Q"):
-                vectors[-1]['q'] = int(line.split("=")[1], 16)
-            elif line.startswith("G"):
-                vectors[-1]['g'] = int(line.split("=")[1], 16)
-            elif line.startswith("X") and 'x' not in vectors[-1]:
-                vectors[-1]['x'] = int(line.split("=")[1], 16)
-            elif line.startswith("X") and 'x' in vectors[-1]:
-                vectors.append({'p': vectors[-1]['p'],
-                                'q': vectors[-1]['q'],
-                                'g': vectors[-1]['g'],
-                                'x': int(line.split("=")[1], 16)
-                                })
-            elif line.startswith("Y"):
-                vectors[-1]['y'] = int(line.split("=")[1], 16)
+        if line.startswith("P"):
+            vectors.append({'p': int(line.split("=")[1], 16)})
+        elif line.startswith("Q"):
+            vectors[-1]['q'] = int(line.split("=")[1], 16)
+        elif line.startswith("G"):
+            vectors[-1]['g'] = int(line.split("=")[1], 16)
+        elif line.startswith("X") and 'x' not in vectors[-1]:
+            vectors[-1]['x'] = int(line.split("=")[1], 16)
+        elif line.startswith("X") and 'x' in vectors[-1]:
+            vectors.append({'p': vectors[-1]['p'],
+                            'q': vectors[-1]['q'],
+                            'g': vectors[-1]['g'],
+                            'x': int(line.split("=")[1], 16)
+                            })
+        elif line.startswith("Y"):
+            vectors[-1]['y'] = int(line.split("=")[1], 16)
 
     return vectors
 
@@ -402,10 +387,6 @@ def load_fips_dsa_sig_vectors(vector_data):
     sha_regex = re.compile(
         r"\[mod = L=...., N=..., SHA-(?P<sha>1|224|256|384|512)\]"
     )
-    # When reading_key_data is set to True it tells the loader to continue
-    # constructing dictionaries. We set reading_key_data to False during the
-    # blocks of the vectors of N=224 because we don't support it.
-    reading_key_data = True
 
     for line in vector_data:
         line = line.strip()
@@ -417,14 +398,7 @@ def load_fips_dsa_sig_vectors(vector_data):
         if sha_match:
             digest_algorithm = "SHA-{0}".format(sha_match.group("sha"))
 
-        if line.startswith("[mod = L=2048, N=224"):
-            reading_key_data = False
-            continue
-        elif line.startswith("[mod = L=2048, N=256"):
-            reading_key_data = True
-            continue
-
-        if not reading_key_data or line.startswith("[mod"):
+        if line.startswith("[mod"):
             continue
 
         name, value = [c.strip() for c in line.split("=")]
