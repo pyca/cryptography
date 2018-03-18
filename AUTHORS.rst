@@ -39,3 +39,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Aviv Palivoda <palaviv@gmail.com>
 * Chris Wolfe <chriswwolfe@gmail.com>
 * Jeremy Lainé <jeremy.laine@m4x.org>
+* Denis Gladkikh <denis@gladkikh.email>
