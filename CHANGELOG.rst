@@ -18,6 +18,11 @@ Changelog
   :meth:`~cryptography.fernet.MultiFernet.rotate`.
 * Fixed a memory leak in
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key`.
+* Added support for AES key wrapping with padding via
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap_with_padding`
+  and
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
+  .
 
 .. _v2-1-4:
 
