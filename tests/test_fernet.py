@@ -122,21 +122,6 @@ class TestFernet(object):
         with pytest.raises(ValueError):
             Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
 
-    def test_timestamp_ttl_overdue(self, monkeypatch, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        # Create the token some time in the past.
-        ts = "1985-10-26T01:20:01"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
-        token = f.encrypt(b'encrypt me')
-        # A minute later we check, but we declare the TTL to be 59 seconds so
-        # the token has expired.
-        ts = "1985-10-26T01:21:01"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
-        with pytest.raises(InvalidToken):
-            f.decrypt(token, ttl=59)
-
     def test_timestamp_age(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         # Create the token some time in the past.
