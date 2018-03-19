@@ -91,7 +91,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         :raises cryptography.fernet.InvalidToken: If the ``token``'s signature
                                                   is invalid, this exception
                                                   is raised.
-        :raises TypeError: This exception is raised if ``data`` is not
+        :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
 
 
