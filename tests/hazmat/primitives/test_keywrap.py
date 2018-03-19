@@ -163,6 +163,18 @@ class TestAESKeyWrapWithPadding(object):
             )
             assert params["p"] == binascii.hexlify(unwrapped_key)
 
+    @pytest.mark.parametrize(
+        "params",
+        _load_all_params("keywrap", ["kwp_botan.txt"], load_nist_vectors)
+    )
+    def test_unwrap_additional_vectors(self, backend, params):
+        wrapping_key = binascii.unhexlify(params["key"])
+        wrapped_key = binascii.unhexlify(params["output"])
+        unwrapped_key = keywrap.aes_key_unwrap_with_padding(
+            wrapping_key, wrapped_key, backend
+        )
+        assert unwrapped_key == binascii.unhexlify(params["input"])
+
     def test_unwrap_invalid_wrapped_key_length(self, backend):
         # Keys to unwrap must be at least 16 bytes
         with pytest.raises(ValueError, match='Must be at least 16 bytes'):
