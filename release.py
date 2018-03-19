@@ -100,7 +100,7 @@ def release(version):
     run("git", "push", "--tags")
 
     run("python", "setup.py", "sdist")
-    run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
+    run("python", "setup.py", "sdist", cwd="vectors/")
 
     packages = (
         glob.glob("dist/cryptography-{0}*".format(version)) +
