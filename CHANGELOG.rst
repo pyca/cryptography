@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-2:
 
-2.2 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.2 - 2018-03-19
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2.6 has been dropped.
 * Resolved a bug in ``HKDF`` that incorrectly constrained output size.
@@ -23,6 +21,7 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
   .
+* Allow loading DSA keys with 224 bit ``q``.
 
 .. _v2-1-4:
 
