@@ -143,6 +143,18 @@ class TestAESKeyWrapWithPadding(object):
 
     @pytest.mark.parametrize(
         "params",
+        _load_all_params("keywrap", ["kwp_botan.txt"], load_nist_vectors)
+    )
+    def test_wrap_additional_vectors(self, backend, params):
+        wrapping_key = binascii.unhexlify(params["key"])
+        key_to_wrap = binascii.unhexlify(params["input"])
+        wrapped_key = keywrap.aes_key_wrap_with_padding(
+            wrapping_key, key_to_wrap, backend
+        )
+        assert wrapped_key == binascii.unhexlify(params["output"])
+
+    @pytest.mark.parametrize(
+        "params",
         _load_all_params(
             os.path.join("keywrap", "kwtestvectors"),
             ["KWP_AD_128.txt", "KWP_AD_192.txt", "KWP_AD_256.txt"],
