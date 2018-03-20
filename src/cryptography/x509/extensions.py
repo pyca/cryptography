@@ -1160,9 +1160,6 @@ class Extension(object):
 class GeneralNames(object):
     def __init__(self, general_names):
         general_names = list(general_names)
-        if len(general_names) == 0:
-            raise ValueError("Must supply at least one general name")
-
         if not all(isinstance(x, GeneralName) for x in general_names):
             raise TypeError(
                 "Every item in the general_names list must be an "
