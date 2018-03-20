@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-2-1:
+
+2.2.1 - 2018-03-20
+~~~~~~~~~~~~~~~~~~
+
+* Reverted a change to :class:`~cryptography.x509.extensions.GeneralNames`
+  which prohibited having zero elements, due to breakages.
+
 .. _v2-2:
 
 2.2 - 2018-03-19
