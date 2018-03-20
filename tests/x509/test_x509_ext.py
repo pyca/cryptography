@@ -2052,10 +2052,6 @@ class TestGeneralNames(object):
                 [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
-    def test_does_not_allow_empty_list(self):
-        with pytest.raises(ValueError):
-            x509.GeneralNames([])
-
     def test_repr(self):
         gns = x509.GeneralNames(
             [
