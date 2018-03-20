@@ -8,6 +8,10 @@ Changelog
 
 * Reverted a change to ``GeneralNames`` which prohibited having zero elements,
   due to breakages.
+* Fixed a bug in
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
+  that caused it to raise ``InvalidUnwrap`` when key length modulo 8 was
+  zero.
 
 .. _v2-2:
 
