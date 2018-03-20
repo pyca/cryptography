@@ -428,6 +428,7 @@ Key wrapping
 ~~~~~~~~~~~~
 
 * AES key wrap (AESKW) and 3DES key wrap test vectors from `NIST CAVP`_.
+* AES key wrap with padding vectors from `Botan's key wrap vectors`_.
 
 Recipes
 ~~~~~~~
@@ -541,3 +542,4 @@ header format (substituting the correct information):
 .. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966
 .. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec
 .. _`DHKE`: https://sandilands.info/sgordon/diffie-hellman-secret-key-exchange-with-openssl
+.. _`Botan's key wrap vectors`: https://github.com/randombit/botan/blob/737f33c09a18500e044dca3e2ae13bd2c08bafdd/src/tests/data/keywrap/nist_key_wrap.vec
