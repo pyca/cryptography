@@ -199,7 +199,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth 1 https://github.com/shazow/urllib3.git
+            git clone --depth 1 https://github.com/shazow/urllib3
             cd urllib3
             virtualenv .venv
             source .venv/bin/activate
