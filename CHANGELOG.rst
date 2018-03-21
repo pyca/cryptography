@@ -8,6 +8,19 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+.. _v2-2-1:
+
+2.2.1 - 2018-03-20
+~~~~~~~~~~~~~~~~~~
+
+* Reverted a change to ``GeneralNames`` which prohibited having zero elements,
+  due to breakages.
+* Fixed a bug in
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
+  that caused it to raise ``InvalidUnwrap`` when key length modulo 8 was
+  zero.
+
+
 .. _v2-2:
 
 2.2 - 2018-03-19
