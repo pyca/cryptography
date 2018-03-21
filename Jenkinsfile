@@ -194,6 +194,21 @@ def downstreams = [
             pytest src
         """
     ],
+    [
+        downstreamName: 'urllib3',
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        script: """#!/bin/bash -xe
+            git clone --depth 1 https://github.com/shazow/urllib3
+            cd urllib3
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install ../cryptography
+            pip install -r ./dev-requirements.txt
+            pip install -e .[socks]
+            pytest test
+        """
+    ],
 ]
 
 def checkout_git(label) {
