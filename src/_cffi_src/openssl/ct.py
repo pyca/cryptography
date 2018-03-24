@@ -55,7 +55,7 @@ void SCT_LIST_free(Cryptography_STACK_OF_SCT *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SCT = 1;
 #else
 static const long Cryptography_HAS_SCT = 0;
