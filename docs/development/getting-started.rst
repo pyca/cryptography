@@ -30,8 +30,8 @@ to check spelling in the documentation.
 
 You are now ready to run the tests and build the documentation.
 
-OpenSSL on OS X
-~~~~~~~~~~~~~~~
+OpenSSL on macOS
+~~~~~~~~~~~~~~~~
 
 You must have installed `OpenSSL`_ via `Homebrew`_ or `MacPorts`_ and must set
 ``CFLAGS`` and ``LDFLAGS`` environment variables before installing the
@@ -41,12 +41,12 @@ For example, with `Homebrew`_:
 
 .. code-block:: console
 
-    $ env LDFLAGS="-L$(brew --prefix openssl)/lib" \
-        CFLAGS="-I$(brew --prefix openssl)/include" \
+    $ env LDFLAGS="-L$(brew --prefix openssl@1.1)/lib" \
+        CFLAGS="-I$(brew --prefix openssl@1.1)/include" \
         pip install --requirement ./dev-requirements.txt
 
 Alternatively for a static build you can specify
-``CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the
+``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the
 absolute path for the `OpenSSL`_ libraries before calling pip.
 
 .. tip::
@@ -75,30 +75,15 @@ each supported Python version and run the tests. For example:
 
     $ tox
     ...
-    ERROR:   py26: InterpreterNotFound: python2.6
      py27: commands succeeded
     ERROR:   pypy: InterpreterNotFound: pypy
-     py33: commands succeeded
+     py34: commands succeeded
      docs: commands succeeded
      pep8: commands succeeded
 
 You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
 
-
-Explicit backend selection
---------------------------
-
-While testing you may want to run tests against a subset of the backends that
-cryptography supports. Explicit backend selection can be done via the
-``--backend`` flag. This flag should be passed to ``py.test`` with a comma
-delimited list of backend names.
-
-
-.. code-block:: console
-
-    $ tox -- --backend=openssl
-    $ py.test --backend=openssl,commoncrypto
 
 Building documentation
 ----------------------
@@ -118,7 +103,7 @@ Use `tox`_ to build the documentation. For example:
 The HTML documentation index can now be found at
 ``docs/_build/html/index.html``.
 
-.. _`Homebrew`: http://brew.sh
+.. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`OpenSSL`: https://www.openssl.org
 .. _`pytest`: https://pypi.python.org/pypi/pytest

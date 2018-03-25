@@ -20,18 +20,15 @@ symmetric encryption. Someone with the public key is able to encrypt a message,
 providing confidentiality, and then only the person in possession of the
 private key is able to decrypt it.
 
-Cryptography supports three different sets of asymmetric algorithms: RSA, DSA,
-and Elliptic Curve.
-
 .. toctree::
     :maxdepth: 1
 
-    dsa
+    x25519
     ec
     rsa
     dh
+    dsa
     serialization
-    interfaces
     utils
 
 

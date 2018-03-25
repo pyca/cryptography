@@ -10,12 +10,15 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, decode_dss_signature, decode_rfc6979_signature,
     encode_dss_signature, encode_rfc6979_signature,
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 
 def test_deprecated_rfc6979_signature():
-    sig = pytest.deprecated_call(encode_rfc6979_signature, 1, 1)
+    with pytest.warns(CryptographyDeprecationWarning):
+        sig = encode_rfc6979_signature(1, 1)
     assert sig == b"0\x06\x02\x01\x01\x02\x01\x01"
-    decoded = pytest.deprecated_call(decode_rfc6979_signature, sig)
+    with pytest.warns(CryptographyDeprecationWarning):
+        decoded = decode_rfc6979_signature(sig)
     assert decoded == (1, 1)
 
 
@@ -73,8 +76,7 @@ def test_decode_dss_invalid_asn1():
         decode_dss_signature(b"0\x07\x02\x01\x01\x02\x02\x01")
 
     with pytest.raises(ValueError):
-        # This is the BER "end-of-contents octets," which older versions of
-        # pyasn1 are wrongly willing to return from top-level DER decoding.
+        # This is the BER "end-of-contents octets".
         decode_dss_signature(b"\x00\x00")
 
 

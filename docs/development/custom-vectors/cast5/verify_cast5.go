@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"code.google.com/p/go.crypto/cast5"
+	"golang.org/x/crypto/cast5"
 	"crypto/cipher"
 	"encoding/hex"
 	"fmt"

@@ -20,8 +20,8 @@ static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
 
 static const int Cryptography_HAS_PSS_PADDING;
-static const int Cryptography_HAS_MGF1_MD;
 static const int Cryptography_HAS_RSA_OAEP_MD;
+static const int Cryptography_HAS_RSA_OAEP_LABEL;
 """
 
 FUNCTIONS = """
@@ -60,12 +60,10 @@ void RSA_get0_key(const RSA *, const BIGNUM **, const BIGNUM **,
 void RSA_get0_factors(const RSA *, const BIGNUM **, const BIGNUM **);
 void RSA_get0_crt_params(const RSA *, const BIGNUM **, const BIGNUM **,
                          const BIGNUM **);
-"""
-
-MACROS = """
 int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
 int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
 int EVP_PKEY_CTX_set_rsa_mgf1_md(EVP_PKEY_CTX *, EVP_MD *);
+int EVP_PKEY_CTX_set0_rsa_oaep_label(EVP_PKEY_CTX *, unsigned char *, int);
 
 int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
@@ -73,12 +71,6 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_PSS_PADDING = 1;
 
-#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
-static const long Cryptography_HAS_MGF1_MD = 1;
-#else
-static const long Cryptography_HAS_MGF1_MD = 0;
-int (*EVP_PKEY_CTX_set_rsa_mgf1_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
-#endif
 #if defined(EVP_PKEY_CTX_set_rsa_oaep_md)
 static const long Cryptography_HAS_RSA_OAEP_MD = 1;
 #else
@@ -86,8 +78,16 @@ static const long Cryptography_HAS_RSA_OAEP_MD = 0;
 int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
 #endif
 
+#if defined(EVP_PKEY_CTX_set0_rsa_oaep_label)
+static const long Cryptography_HAS_RSA_OAEP_LABEL = 1;
+#else
+static const long Cryptography_HAS_RSA_OAEP_LABEL = 0;
+int (*EVP_PKEY_CTX_set0_rsa_oaep_label)(EVP_PKEY_CTX *, unsigned char *,
+                                        int) = NULL;
+#endif
+
 /* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
 int RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d)
 {
     /* If the fields n and e in r are NULL, the corresponding input

@@ -72,3 +72,32 @@ Glossary
         or pseudo-random number (see :doc:`Random number generation
         </random-numbers>`). Since a nonce does not have to be unpredictable,
         it can also take a form of a counter.
+
+    opaque key
+        An opaque key is a type of key that allows you to perform cryptographic
+        operations such as encryption, decryption, signing, and verification,
+        but does not allow access to the key itself. Typically an opaque key is
+        loaded from a `hardware security module`_ (HSM).
+
+    A-label
+        The ASCII compatible encoded (ACE) representation of an
+        internationalized (unicode) domain name. A-labels begin with the
+        prefix ``xn--``. To create an A-label from a unicode domain string use
+        a library like `idna`_.
+
+    bits
+        A bit is binary value -- a value that has only two possible states.
+        Typically binary values are represented visually as 0 or 1, but
+        remember that their actual value is not a printable character. A byte
+        on modern computers is 8 bits and represents 256 possible values. In
+        cryptographic applications when you see something say it requires a 128
+        bit key, you can calculate the number of bytes by dividing by 8. 128
+        divided by 8 is 16, so a 128 bit key is a 16 byte key.
+
+    U-label
+        The presentational unicode form of an internationalized domain
+        name. U-labels use unicode characters outside the ASCII range and
+        are encoded as A-labels when stored in certificates.
+
+.. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
+.. _`idna`: https://pypi.org/project/idna/

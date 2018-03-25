@@ -12,8 +12,42 @@ import pytest
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
-from .utils import generate_aead_test, generate_encrypt_test
+from .utils import _load_all_params, generate_aead_test, generate_encrypt_test
 from ...utils import load_nist_vectors
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 32), modes.XTS(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES XTS",
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+class TestAESModeXTS(object):
+    @pytest.mark.parametrize(
+        "vector",
+        # This list comprehension excludes any vector that does not have a
+        # data unit length that is divisible by 8. The NIST vectors include
+        # tests for implementations that support encryption of data that is
+        # not divisible modulo 8, but OpenSSL is not such an implementation.
+        [x for x in _load_all_params(
+            os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
+            ["XTSGenAES128.rsp", "XTSGenAES256.rsp"],
+            load_nist_vectors
+        ) if int(x["dataunitlen"]) / 8.0 == int(x["dataunitlen"]) // 8]
+    )
+    def test_xts_vectors(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        tweak = binascii.unhexlify(vector["i"])
+        pt = binascii.unhexlify(vector["pt"])
+        ct = binascii.unhexlify(vector["ct"])
+        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak), backend)
+        enc = cipher.encryptor()
+        computed_ct = enc.update(pt) + enc.finalize()
+        assert computed_ct == ct
+        dec = cipher.decryptor()
+        computed_pt = dec.update(ct) + dec.finalize()
+        assert computed_pt == pt
 
 
 @pytest.mark.supported(
@@ -303,3 +337,105 @@ class TestAESModeGCM(object):
         assert encryptor._aad_bytes_processed == 8
         encryptor.authenticate_additional_data(b"0" * 18)
         assert encryptor._aad_bytes_processed == 26
+
+    def test_gcm_tag_decrypt_none(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+
+        if (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            with pytest.raises(NotImplementedError):
+                decryptor = base.Cipher(
+                    algorithms.AES(key),
+                    modes.GCM(iv),
+                    backend=backend
+                ).decryptor()
+        else:
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv),
+                backend=backend
+            ).decryptor()
+            decryptor.authenticate_additional_data(aad)
+            with pytest.raises(ValueError):
+                decryptor.finalize()
+
+    def test_gcm_tag_decrypt_mode(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+        tag = encryptor.tag
+
+        decryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv, tag),
+            backend=backend
+        ).decryptor()
+        decryptor.authenticate_additional_data(aad)
+        decryptor.finalize()
+
+    def test_gcm_tag_decrypt_finalize(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+
+        encryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+        tag = encryptor.tag
+
+        if (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            with pytest.raises(NotImplementedError):
+                decryptor = base.Cipher(
+                    algorithms.AES(key),
+                    modes.GCM(iv),
+                    backend=backend
+                ).decryptor()
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv, tag=encryptor.tag),
+                backend=backend
+            ).decryptor()
+        else:
+            decryptor = base.Cipher(
+                algorithms.AES(key),
+                modes.GCM(iv),
+                backend=backend
+            ).decryptor()
+        decryptor.authenticate_additional_data(aad)
+
+        if (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            with pytest.raises(NotImplementedError):
+                decryptor.finalize_with_tag(tag)
+            decryptor.finalize()
+        else:
+            decryptor.finalize_with_tag(tag)

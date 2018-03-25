@@ -13,18 +13,22 @@ from _cffi_src.utils import (
 
 
 def _get_openssl_libraries(platform):
+    if os.environ.get("CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS", None):
+        return []
     # OpenSSL goes by a different library name on different operating systems.
-    if platform == "darwin":
-        return _osx_libraries(
-            os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
+    if platform == "win32" and compiler_type() == "msvc":
+        windows_link_legacy_openssl = os.environ.get(
+            "CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL", None
         )
-    elif platform == "win32":
-        if compiler_type() == "msvc":
-            libs = ["libeay32", "ssleay32"]
+        if windows_link_legacy_openssl is None:
+            # Link against the 1.1.0 names
+            libs = ["libssl", "libcrypto"]
         else:
-            libs = ["ssl", "crypto"]
+            # Link against the 1.0.2 and lower names
+            libs = ["libeay32", "ssleay32"]
         return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
+        # darwin, linux, mingw all use this path
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
         # libssl must come before libcrypto
@@ -32,12 +36,20 @@ def _get_openssl_libraries(platform):
         return ["ssl", "crypto"]
 
 
-def _osx_libraries(build_static):
-    # For building statically we don't want to pass the -lssl or -lcrypto flags
-    if build_static == "1":
-        return []
+def _extra_compile_args(platform):
+    """
+    We set -Wconversion args here so that we only do Wconversion checks on the
+    code we're compiling and not on cffi itself (as passing -Wconversion in
+    CFLAGS would do). We set no error on sign conversion because some
+    function signatures in OpenSSL have changed from long -> unsigned long
+    in the past. Since that isn't a precision issue we don't care.
+    When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+    revisit this.
+    """
+    if platform != "win32":
+        return ["-Wconversion", "-Wno-error=sign-conversion"]
     else:
-        return ["ssl", "crypto"]
+        return []
 
 
 ffi = build_ffi_for_binding(
@@ -52,9 +64,9 @@ ffi = build_ffi_for_binding(
         "bignum",
         "bio",
         "cmac",
-        "cms",
         "conf",
         "crypto",
+        "ct",
         "dh",
         "dsa",
         "ec",
@@ -63,6 +75,7 @@ ffi = build_ffi_for_binding(
         "engine",
         "err",
         "evp",
+        "fips",
         "hmac",
         "nid",
         "objects",
@@ -82,5 +95,13 @@ ffi = build_ffi_for_binding(
         "callbacks",
     ],
     libraries=_get_openssl_libraries(sys.platform),
+    # These args are passed here so that we only do Wconversion checks on the
+    # code we're compiling and not on cffi itself (as passing -Wconversion in
+    # CFLAGS would do). We set no error on sign convesrion because some
+    # function signatures in OpenSSL have changed from long -> unsigned long
+    # in the past. Since that isn't a precision issue we don't care.
+    # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+    # revisit this.
+    extra_compile_args=_extra_compile_args(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )

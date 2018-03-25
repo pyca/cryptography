@@ -63,6 +63,20 @@ Key Serialization
     def sign_with_dsa_key(key, message):
         return b""
 
+    parameters_pem_data = b"""
+    -----BEGIN DH PARAMETERS-----
+    MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx
+    +ccNs+InANszcuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQ
+    XrX/McKw+hS6GPVQnw6tZhgGo9apdNdYgeLQeQded8Bum8jqzP3rAgEC
+    -----END DH PARAMETERS-----
+    """.strip()
+
+    parameters_der_data = base64.b64decode(
+        b"MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx+ccNs+In"
+        b"ANsz\ncuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQXrX/McKw+hS6GP"
+        b"VQnw6tZhgG\no9apdNdYgeLQeQded8Bum8jqzP3rAgEC"
+    )
+
 There are several common schemes for serializing asymmetric private and public
 keys to bytes. They generally support encryption of private keys and additional
 key metadata.
@@ -90,7 +104,7 @@ Key dumping
 
 The ``serialization`` module contains functions for loading keys from
 ``bytes``. To dump a ``key`` object to ``bytes``, you must call the appropriate
-bytes on the key object. Documentation for these methods in found in the
+method on the key object. Documentation for these methods in found in the
 :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`,
 :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
 :mod:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
@@ -130,6 +144,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -169,6 +184,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -177,6 +193,37 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         successfully.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        is of a type that is not supported by the backend.
+
+.. function:: load_pem_parameters(data, backend)
+
+    .. versionadded:: 2.0
+
+    Deserialize parameters from PEM encoded data to one of the supported
+    asymmetric parameters types.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.serialization import load_pem_parameters
+        >>> from cryptography.hazmat.primitives.asymmetric import dh
+        >>> parameters = load_pem_parameters(parameters_pem_data, backend=default_backend())
+        >>> isinstance(parameters, dh.DHParameters)
+        True
+
+    :param bytes data: The PEM encoded parameters data.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
+
+
+    :returns: Currently only
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        supported.
+
+    :raises ValueError: If the PEM data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized parameters
         is of a type that is not supported by the backend.
 
 DER
@@ -205,6 +252,7 @@ the rest.
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -245,6 +293,7 @@ the rest.
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -262,6 +311,37 @@ the rest.
         >>> from cryptography.hazmat.primitives.serialization import load_der_public_key
         >>> key = load_der_public_key(public_der_data, backend=default_backend())
         >>> isinstance(key, rsa.RSAPublicKey)
+        True
+
+.. function:: load_der_parameters(data, backend)
+
+    .. versionadded:: 2.0
+
+    Deserialize parameters from DER encoded data to one of the supported
+    asymmetric parameters types.
+
+    :param bytes data: The DER encoded parameters data.
+
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
+
+    :returns: Currently only
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        supported.
+
+    :raises ValueError: If the DER data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import dh
+        >>> from cryptography.hazmat.primitives.serialization import load_der_parameters
+        >>> parameters = load_der_parameters(parameters_der_data, backend=default_backend())
+        >>> isinstance(parameters, dh.DHParameters)
         True
 
 
@@ -329,6 +409,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
 
@@ -352,6 +433,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
     , and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 
@@ -373,6 +455,18 @@ Serialization Formats
         The public key format used by OpenSSH (e.g. as found in
         ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
 
+.. class:: ParameterFormat
+
+    .. versionadded:: 2.0
+
+    An enumeration for parameters formats. Used with the ``parameter_bytes``
+    method available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization`.
+
+    .. attribute:: PKCS3
+
+        ASN1 DH parameters sequence as defined in `PKCS3`_.
+
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -383,10 +477,12 @@ Serialization Encodings
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
     as well as ``public_bytes`` on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 
@@ -419,6 +515,7 @@ Serialization Encryption Types
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
     All other classes in this section represent the available choices for
@@ -436,3 +533,6 @@ Serialization Encryption Types
 .. class:: NoEncryption
 
     Do not encrypt.
+
+
+.. _`PKCS3`: https://www.emc.com/emc-plus/rsa-labs/standards-initiatives/pkcs-3-diffie-hellman-key-agreement-standar.htm

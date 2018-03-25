@@ -41,12 +41,6 @@ typedef struct {
 
 typedef void * (*X509V3_EXT_D2I)(void *, const unsigned char **, long);
 
-typedef struct {
-    ASN1_ITEM_EXP *it;
-    X509V3_EXT_D2I d2i;
-    ...;
-} X509V3_EXT_METHOD;
-
 static const int GEN_OTHERNAME;
 static const int GEN_EMAIL;
 static const int GEN_X400;
@@ -172,6 +166,8 @@ typedef struct {
 } POLICYINFO;
 
 typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
+typedef void (*sk_DIST_POINT_freefunc)(DIST_POINT *);
+typedef void (*sk_POLICYINFO_freefunc)(POLICYINFO *);
 """
 
 
@@ -183,9 +179,6 @@ GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 int X509_check_ca(X509 *);
-"""
-
-MACROS = """
 /* X509 became a const arg in 1.1.0 */
 void *X509_get_ext_d2i(X509 *, int, int *, int *);
 /* The last two char * args became const char * in 1.1.0 */
@@ -235,21 +228,23 @@ void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
 
-/* These aren't macros these functions are all const X on openssl > 1.0.x */
-const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
-const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
-
 Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
 DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
 int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
+void sk_DIST_POINT_pop_free(Cryptography_STACK_OF_DIST_POINT *,
+                            sk_DIST_POINT_freefunc);
+void CRL_DIST_POINTS_free(Cryptography_STACK_OF_DIST_POINT *);
 
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
 POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
 int sk_POLICYINFO_push(Cryptography_STACK_OF_POLICYINFO *, POLICYINFO *);
 Cryptography_STACK_OF_POLICYINFO *sk_POLICYINFO_new_null(void);
+void sk_POLICYINFO_pop_free(Cryptography_STACK_OF_POLICYINFO *,
+                            sk_POLICYINFO_freefunc);
+void CERTIFICATEPOLICIES_free(Cryptography_STACK_OF_POLICYINFO *);
 
 POLICYINFO *POLICYINFO_new(void);
 void POLICYINFO_free(POLICYINFO *);

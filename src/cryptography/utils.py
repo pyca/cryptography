@@ -11,12 +11,22 @@ import sys
 import warnings
 
 
-# the functions deprecated in 1.0 and 1.4 are on an arbitrarily extended
-# deprecation cycle and should not be removed until we agree on when that cycle
-# ends.
-DeprecatedIn10 = DeprecationWarning
-DeprecatedIn14 = DeprecationWarning
-DeprecatedIn16 = DeprecationWarning
+# We use a UserWarning subclass, instead of DeprecationWarning, because CPython
+# decided deprecation warnings should be invisble by default.
+class CryptographyDeprecationWarning(UserWarning):
+    pass
+
+
+# Several APIs were deprecated with no specific end-of-life date because of the
+# ubiquity of their use. They should not be removed until we agree on when that
+# cycle ends.
+PersistentlyDeprecated = CryptographyDeprecationWarning
+DeprecatedIn21 = CryptographyDeprecationWarning
+
+
+def _check_bytes(name, value):
+    if not isinstance(value, bytes):
+        raise TypeError("{0} must be bytes".format(name))
 
 
 def read_only_property(name):
@@ -47,17 +57,22 @@ else:
         assert byteorder == 'big'
         assert not signed
 
-        # call bytes() on data to allow the use of bytearrays
-        return int(bytes(data).encode('hex'), 16)
+        return int(binascii.hexlify(data), 16)
 
 
-def int_to_bytes(integer, length=None):
-    hex_string = '%x' % integer
-    if length is None:
-        n = len(hex_string)
-    else:
-        n = length * 2
-    return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
+if hasattr(int, "to_bytes"):
+    def int_to_bytes(integer, length=None):
+        return integer.to_bytes(
+            length or (integer.bit_length() + 7) // 8 or 1, 'big'
+        )
+else:
+    def int_to_bytes(integer, length=None):
+        hex_string = '%x' % integer
+        if length is None:
+            n = len(hex_string)
+        else:
+            n = length * 2
+        return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
 
 
 class InterfaceNotImplemented(Exception):
@@ -90,12 +105,10 @@ def verify_interface(iface, klass):
             )
 
 
-if sys.version_info >= (2, 7):
-    def bit_length(x):
-        return x.bit_length()
-else:
-    def bit_length(x):
-        return len(bin(x)) - (2 + (x <= 0))
+# No longer needed as of 2.2, but retained because we have external consumers
+# who use it.
+def bit_length(x):
+    return x.bit_length()
 
 
 class _DeprecatedValue(object):
@@ -133,5 +146,19 @@ class _ModuleWithDeprecations(object):
 def deprecated(value, module_name, message, warning_class):
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):
-        sys.modules[module_name] = module = _ModuleWithDeprecations(module)
+        sys.modules[module_name] = _ModuleWithDeprecations(module)
     return _DeprecatedValue(value, message, warning_class)
+
+
+def cached_property(func):
+    cached_name = "_cached_{0}".format(func)
+    sentinel = object()
+
+    def inner(instance):
+        cache = getattr(instance, cached_name, sentinel)
+        if cache is not sentinel:
+            return cache
+        result = func(instance)
+        setattr(instance, cached_name, result)
+        return result
+    return property(inner)

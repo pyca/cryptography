@@ -6,13 +6,13 @@ Primitives
 .. toctree::
     :maxdepth: 1
 
-    cryptographic-hashes
-    mac/index
-    symmetric-encryption
-    padding
-    key-derivation-functions
-    keywrap
+    aead
     asymmetric/index
     constant-time
-    interfaces
+    key-derivation-functions
+    keywrap
+    mac/index
+    cryptographic-hashes
+    symmetric-encryption
+    padding
     twofactor

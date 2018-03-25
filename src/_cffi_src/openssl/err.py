@@ -57,6 +57,7 @@ static const int ASN1_F_B64_READ_ASN1;
 static const int ASN1_F_B64_WRITE_ASN1;
 static const int ASN1_F_SMIME_READ_ASN1;
 static const int ASN1_F_SMIME_TEXT;
+static const int ASN1_F_ASN1_CHECK_TLEN;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
@@ -230,7 +231,6 @@ static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
 
 FUNCTIONS = """
-char *ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
 const char *ERR_lib_error_string(unsigned long);
 const char *ERR_func_error_string(unsigned long);
@@ -254,9 +254,6 @@ void ERR_put_error(int, int, int, const char *, int);
 void ERR_add_error_data(int, ...);
 int ERR_get_next_error_library(void);
 ERR_STATE *ERR_get_state(void);
-"""
-
-MACROS = """
 /* ERR_free_strings became a macro in 1.1.0 */
 void ERR_free_strings(void);
 
@@ -268,14 +265,7 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL without EC. e.g. RHEL
-#ifndef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC_CODES = 1;
-#else
-static const long Cryptography_HAS_EC_CODES = 0;
-static const int EC_R_UNKNOWN_GROUP = 0;
-static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
-#endif
 
 #ifdef RSA_R_PKCS_DECODING_ERROR
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;

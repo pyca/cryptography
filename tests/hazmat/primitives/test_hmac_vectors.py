@@ -4,10 +4,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
+
 import pytest
 
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_hmac_test
 from ...utils import load_hash_vectors
@@ -110,16 +112,26 @@ class TestHMACSHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.RIPEMD160()),
-    skip_message="Does not support RIPEMD160",
+    only_if=lambda backend: backend.hmac_supported(hashes.BLAKE2b(
+        digest_size=64
+    )),
+    skip_message="Does not support BLAKE2",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHMACRIPEMD160(object):
-    test_hmac_ripemd160 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-2286-ripemd160.txt",
-        ],
-        hashes.RIPEMD160(),
-    )
+class TestHMACBLAKE2(object):
+    def test_blake2b(self, backend):
+        h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64), backend)
+        h.update(b"test")
+        digest = h.finalize()
+        assert digest == binascii.unhexlify(
+            b"b5319122f8a24ba134a0c9851922448104e25be5d1b91265c0c68b22722f0f29"
+            b"87dba4aeaa69e6bed7edc44f48d6b1be493a3ce583f9c737c53d6bacc09e2f32"
+        )
+
+    def test_blake2s(self, backend):
+        h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32), backend)
+        h.update(b"test")
+        digest = h.finalize()
+        assert digest == binascii.unhexlify(
+            b"51477cc5bdf1faf952cf97bb934ee936de1f4d5d7448a84eeb6f98d23b392166"
+        )

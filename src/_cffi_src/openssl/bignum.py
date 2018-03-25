@@ -17,6 +17,10 @@ typedef int... BN_ULONG;
 FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
+void BN_clear_free(BIGNUM *);
+
+int BN_rand(BIGNUM *, int, int, int);
+int BN_rand_range(BIGNUM *, BIGNUM *);
 
 BN_CTX *BN_CTX_new(void);
 void BN_CTX_free(BN_CTX *);
@@ -68,9 +72,7 @@ int BN_clear_bit(BIGNUM *, int);
 int BN_is_bit_set(const BIGNUM *, int);
 
 int BN_mask_bits(BIGNUM *, int);
-"""
 
-MACROS = """
 int BN_num_bytes(const BIGNUM *);
 
 int BN_zero(BIGNUM *);

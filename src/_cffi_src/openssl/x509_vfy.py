@@ -23,6 +23,7 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 typedef ... Cryptography_STACK_OF_X509_OBJECT;
@@ -31,6 +32,8 @@ typedef ... X509_OBJECT;
 typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
 typedef ... X509_STORE_CTX;
+
+typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **, X509_STORE_CTX *, X509 *);
 
 /* While these are defined in the source as ints, they're tagged here
    as longs, just in case they ever grow to large, such as what we saw
@@ -140,7 +143,6 @@ int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
 void X509_STORE_free(X509_STORE *);
 
-
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
 void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
@@ -164,6 +166,7 @@ int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
+int X509_STORE_CTX_get1_issuer(X509 **, X509_STORE_CTX *, X509 *);
 
 /* X509_VERIFY_PARAM */
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
@@ -179,9 +182,6 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
-"""
-
-MACROS = """
 /* this CRYPTO_EX_DATA function became a macro in 1.1.0 */
 int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
                                     CRYPTO_EX_dup *, CRYPTO_EX_free *);
@@ -206,32 +206,40 @@ X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
 int X509_OBJECT_get_type(const X509_OBJECT *);
+
+/* added in 1.1.0 */
+X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
+X509_STORE_CTX_get_issuer_fn X509_STORE_get_get_issuer(X509_STORE *);
+void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2beta2+ verification error codes */
-#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
-    !defined(LIBRESSL_VERSION_NUMBER)
+/* OpenSSL 1.0.2+ verification parameters and error codes */
+#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
+static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
+static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
+
 static const long X509_V_ERR_SUITE_B_INVALID_VERSION = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED = 0;
 static const long X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 = 0;
+/* These 3 defines are unavailable in LibreSSL 2.5.x, but may be added
+   in the future... */
+#ifndef X509_V_ERR_HOSTNAME_MISMATCH
 static const long X509_V_ERR_HOSTNAME_MISMATCH = 0;
+#endif
+#ifndef X509_V_ERR_EMAIL_MISMATCH
 static const long X509_V_ERR_EMAIL_MISMATCH = 0;
+#endif
+#ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
-/* OpenSSL 1.0.2beta2+ verification parameters */
-#if CRYPTOGRAPHY_OPENSSL_102BETA2_OR_GREATER && \
-    !defined(LIBRESSL_VERSION_NUMBER)
-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
-#else
-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
 /* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
    below because it shows up in some earlier 3rd party OpenSSL packages. */
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
@@ -265,7 +273,7 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
     return ctx->objs;
 }
@@ -277,9 +285,25 @@ int X509_OBJECT_get_type(const X509_OBJECT *x) {
 }
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
+/* from x509/x509_vfy.c */
+X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
+{
+    return ctx->cert;
+}
+
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
     return x->data.x509;
 }
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
+typedef void *X509_STORE_CTX_get_issuer_fn;
+X509_STORE_CTX_get_issuer_fn (*X509_STORE_get_get_issuer)(X509_STORE *) = NULL;
+void (*X509_STORE_set_get_issuer)(X509_STORE *,
+                                  X509_STORE_CTX_get_issuer_fn) = NULL;
+#else
+static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
 #endif
 """

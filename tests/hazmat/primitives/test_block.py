@@ -70,6 +70,19 @@ class TestCipherContext(object):
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
 
+    def test_use_update_into_after_finalize(self, backend):
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.update(b"a" * 16)
+        encryptor.finalize()
+        with pytest.raises(AlreadyFinalized):
+            buf = bytearray(31)
+            encryptor.update_into(b"b" * 16, buf)
+
     def test_unaligned_block_encryption(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),

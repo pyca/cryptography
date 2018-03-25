@@ -25,43 +25,14 @@ KeyedHashVector = collections.namedtuple(
 )
 
 
-def select_backends(names, backend_list):
-    if names is None:
-        return backend_list
-    split_names = [x.strip() for x in names.split(',')]
-    selected_backends = []
-    for backend in backend_list:
-        if backend.name in split_names:
-            selected_backends.append(backend)
-
-    if len(selected_backends) > 0:
-        return selected_backends
-    else:
-        raise ValueError(
-            "No backend selected. Tried to select: {0}".format(split_names)
-        )
-
-
-def skip_if_empty(backend_list, required_interfaces):
-    if not backend_list:
-        pytest.skip(
-            "No backends provided supply the interface: {0}".format(
-                ", ".join(iface.__name__ for iface in required_interfaces)
-            )
-        )
-
-
-def check_backend_support(item):
+def check_backend_support(backend, item):
     supported = item.keywords.get("supported")
-    if supported and "backend" in item.funcargs:
+    if supported:
         for mark in supported:
-            if not mark.kwargs["only_if"](item.funcargs["backend"]):
+            if not mark.kwargs["only_if"](backend):
                 pytest.skip("{0} ({1})".format(
-                    mark.kwargs["skip_message"], item.funcargs["backend"]
+                    mark.kwargs["skip_message"], backend
                 ))
-    elif supported:
-        raise ValueError("This mark is only available on methods that take a "
-                         "backend")
 
 
 @contextmanager
@@ -277,6 +248,9 @@ def load_pkcs1_vectors(vector_data):
             attr = None
 
         if private_key_vector is None or public_key_vector is None:
+            # Random garbage to defeat CPython's peephole optimizer so that
+            # coverage records correctly: https://bugs.python.org/issue2506
+            1 + 1
             continue
 
         if line.startswith("# Private key"):
@@ -379,43 +353,28 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     Loads data out of the FIPS DSA KeyPair vector files.
     """
     vectors = []
-    # When reading_key_data is set to True it tells the loader to continue
-    # constructing dictionaries. We set reading_key_data to False during the
-    # blocks of the vectors of N=224 because we don't support it.
-    reading_key_data = True
     for line in vector_data:
         line = line.strip()
 
-        if not line or line.startswith("#"):
-            continue
-        elif line.startswith("[mod = L=1024"):
-            continue
-        elif line.startswith("[mod = L=2048, N=224"):
-            reading_key_data = False
-            continue
-        elif line.startswith("[mod = L=2048, N=256"):
-            reading_key_data = True
-            continue
-        elif line.startswith("[mod = L=3072"):
+        if not line or line.startswith("#") or line.startswith("[mod"):
             continue
 
-        if reading_key_data:
-            if line.startswith("P"):
-                vectors.append({'p': int(line.split("=")[1], 16)})
-            elif line.startswith("Q"):
-                vectors[-1]['q'] = int(line.split("=")[1], 16)
-            elif line.startswith("G"):
-                vectors[-1]['g'] = int(line.split("=")[1], 16)
-            elif line.startswith("X") and 'x' not in vectors[-1]:
-                vectors[-1]['x'] = int(line.split("=")[1], 16)
-            elif line.startswith("X") and 'x' in vectors[-1]:
-                vectors.append({'p': vectors[-1]['p'],
-                                'q': vectors[-1]['q'],
-                                'g': vectors[-1]['g'],
-                                'x': int(line.split("=")[1], 16)
-                                })
-            elif line.startswith("Y"):
-                vectors[-1]['y'] = int(line.split("=")[1], 16)
+        if line.startswith("P"):
+            vectors.append({'p': int(line.split("=")[1], 16)})
+        elif line.startswith("Q"):
+            vectors[-1]['q'] = int(line.split("=")[1], 16)
+        elif line.startswith("G"):
+            vectors[-1]['g'] = int(line.split("=")[1], 16)
+        elif line.startswith("X") and 'x' not in vectors[-1]:
+            vectors[-1]['x'] = int(line.split("=")[1], 16)
+        elif line.startswith("X") and 'x' in vectors[-1]:
+            vectors.append({'p': vectors[-1]['p'],
+                            'q': vectors[-1]['q'],
+                            'g': vectors[-1]['g'],
+                            'x': int(line.split("=")[1], 16)
+                            })
+        elif line.startswith("Y"):
+            vectors[-1]['y'] = int(line.split("=")[1], 16)
 
     return vectors
 
@@ -428,10 +387,6 @@ def load_fips_dsa_sig_vectors(vector_data):
     sha_regex = re.compile(
         r"\[mod = L=...., N=..., SHA-(?P<sha>1|224|256|384|512)\]"
     )
-    # When reading_key_data is set to True it tells the loader to continue
-    # constructing dictionaries. We set reading_key_data to False during the
-    # blocks of the vectors of N=224 because we don't support it.
-    reading_key_data = True
 
     for line in vector_data:
         line = line.strip()
@@ -443,14 +398,7 @@ def load_fips_dsa_sig_vectors(vector_data):
         if sha_match:
             digest_algorithm = "SHA-{0}".format(sha_match.group("sha"))
 
-        if line.startswith("[mod = L=2048, N=224"):
-            reading_key_data = False
-            continue
-        elif line.startswith("[mod = L=2048, N=256"):
-            reading_key_data = True
-            continue
-
-        if not reading_key_data or line.startswith("[mod"):
+        if line.startswith("[mod"):
             continue
 
         name, value = [c.strip() for c in line.split("=")]
@@ -846,3 +794,93 @@ def load_nist_kbkdf_vectors(vector_data):
             test_data[name.lower()] = value.encode("ascii")
 
     return vectors
+
+
+def load_ed25519_vectors(vector_data):
+    data = []
+    for line in vector_data:
+        secret_key, public_key, message, signature, _ = line.split(':')
+        # In the vectors the first element is secret key + public key
+        secret_key = secret_key[0:64]
+        # In the vectors the signature section is signature + message
+        signature = signature[0:128]
+        data.append({
+            "secret_key": secret_key,
+            "public_key": public_key,
+            "message": message,
+            "signature": signature
+        })
+    return data
+
+
+def load_nist_ccm_vectors(vector_data):
+    test_data = None
+    section_data = None
+    global_data = {}
+    new_section = False
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and comments should be ignored
+        if not line or line.startswith("#"):
+            continue
+
+        # Some of the CCM vectors have global values for this. They are always
+        # at the top before the first section header (see: VADT, VNT, VPT)
+        if line.startswith(("Alen", "Plen", "Nlen", "Tlen")):
+            name, value = [c.strip() for c in line.split("=")]
+            global_data[name.lower()] = int(value)
+            continue
+
+        # section headers contain length data we might care about
+        if line.startswith("["):
+            new_section = True
+            section_data = {}
+            section = line[1:-1]
+            items = [c.strip() for c in section.split(",")]
+            for item in items:
+                name, value = [c.strip() for c in item.split("=")]
+                section_data[name.lower()] = int(value)
+            continue
+
+        name, value = [c.strip() for c in line.split("=")]
+
+        if name.lower() in ("key", "nonce") and new_section:
+            section_data[name.lower()] = value.encode("ascii")
+            continue
+
+        new_section = False
+
+        # Payload is sometimes special because these vectors are absurd. Each
+        # example may or may not have a payload. If it does not then the
+        # previous example's payload should be used. We accomplish this by
+        # writing it into the section_data. Because we update each example
+        # with the section data it will be overwritten if a new payload value
+        # is present. NIST should be ashamed of their vector creation.
+        if name.lower() == "payload":
+            section_data[name.lower()] = value.encode("ascii")
+
+        # Result is a special token telling us if the test should pass/fail.
+        # This is only present in the DVPT CCM tests
+        if name.lower() == "result":
+            if value.lower() == "pass":
+                test_data["fail"] = False
+            else:
+                test_data["fail"] = True
+            continue
+
+        # COUNT is a special token that indicates a new block of data
+        if name.lower() == "count":
+            test_data = {}
+            test_data.update(global_data)
+            test_data.update(section_data)
+            data.append(test_data)
+            continue
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data

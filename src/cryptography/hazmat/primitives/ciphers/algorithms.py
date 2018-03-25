@@ -8,6 +8,7 @@ from cryptography import utils
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm
 )
+from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
 def _verify_key_size(algorithm, key):
@@ -24,7 +25,8 @@ def _verify_key_size(algorithm, key):
 class AES(object):
     name = "AES"
     block_size = 128
-    key_sizes = frozenset([128, 192, 256])
+    # 512 added to support AES-256-XTS, which uses 512-bit keys
+    key_sizes = frozenset([128, 192, 256, 512])
 
     def __init__(self, key):
         self.key = _verify_key_size(self, key)
@@ -134,6 +136,29 @@ class SEED(object):
 
     def __init__(self, key):
         self.key = _verify_key_size(self, key)
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
+
+
+@utils.register_interface(CipherAlgorithm)
+@utils.register_interface(ModeWithNonce)
+class ChaCha20(object):
+    name = "ChaCha20"
+    key_sizes = frozenset([256])
+
+    def __init__(self, key, nonce):
+        self.key = _verify_key_size(self, key)
+        if not isinstance(nonce, bytes):
+            raise TypeError("nonce must be bytes")
+
+        if len(nonce) != 16:
+            raise ValueError("nonce must be 128-bits (16 bytes)")
+
+        self._nonce = nonce
+
+    nonce = utils.read_only_property("_nonce")
 
     @property
     def key_size(self):

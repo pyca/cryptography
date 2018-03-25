@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
 )
+from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -38,8 +39,8 @@ from ...doubles import (
     DummyAsymmetricPadding, DummyHashAlgorithm, DummyKeySerializationEncryption
 )
 from ...utils import (
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
+    load_nist_vectors, load_pkcs1_vectors, load_rsa_nist_vectors,
+    load_vectors_from_file, raises_unsupported_algorithm
 )
 
 
@@ -218,6 +219,133 @@ class TestRSA(object):
         assert public_num.n == public_num2.n
         assert public_num.e == public_num2.e
 
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "RSA", "oaep-label.txt"),
+            load_nist_vectors)
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=b"label"
+            )
+        ),
+        skip_message="Does not support RSA OAEP labels"
+    )
+    def test_oaep_label_decrypt(self, vector, backend):
+        private_key = serialization.load_der_private_key(
+            binascii.unhexlify(vector["key"]), None, backend
+        )
+        assert vector["oaepdigest"] == b"SHA512"
+        decrypted = private_key.decrypt(
+            binascii.unhexlify(vector["input"]),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA512()),
+                algorithm=hashes.SHA512(),
+                label=binascii.unhexlify(vector["oaeplabel"])
+            )
+        )
+        assert vector["output"][1:-1] == decrypted
+
+    @pytest.mark.parametrize(
+        ("msg", "label"),
+        [
+            (b"amazing encrypted msg", b"some label"),
+            (b"amazing encrypted msg", b""),
+        ]
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=b"label"
+            )
+        ),
+        skip_message="Does not support RSA OAEP labels"
+    )
+    def test_oaep_label_roundtrip(self, msg, label, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        ct = private_key.public_key().encrypt(
+            msg,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=label
+            )
+        )
+        pt = private_key.decrypt(
+            ct,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=label
+            )
+        )
+        assert pt == msg
+
+    @pytest.mark.parametrize(
+        ("enclabel", "declabel"),
+        [
+            (b"label1", b"label2"),
+            (b"label3", b""),
+            (b"", b"label4"),
+        ]
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=b"label"
+            )
+        ),
+        skip_message="Does not support RSA OAEP labels"
+    )
+    def test_oaep_wrong_label(self, enclabel, declabel, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        msg = b"test"
+        ct = private_key.public_key().encrypt(
+            msg, padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=enclabel
+            )
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                ct, padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=declabel
+                )
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: not backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=b"label"
+            )
+        ),
+        skip_message="Requires backend without RSA OAEP label support"
+    )
+    def test_unsupported_oaep_label_decrypt(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            private_key.decrypt(
+                b"0" * 64,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=b"label"
+                )
+            )
+
 
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()
@@ -256,7 +384,8 @@ class TestRSASignature(object):
                 n=private["modulus"]
             )
         ).private_key(backend)
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
+        with pytest.warns(CryptographyDeprecationWarning):
+            signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -296,29 +425,27 @@ class TestRSASignature(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        signer = private_key.signer(
+        signature = private_key.sign(
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA1()
         )
-        signer.update(binascii.unhexlify(example["message"]))
-        signature = signer.finalize()
         assert len(signature) == math.ceil(private_key.key_size / 8.0)
         # PSS signatures contain randomness so we can't do an exact
         # signature check. Instead we'll verify that the signature created
         # successfully verifies.
-        verifier = public_key.verifier(
+        public_key.verify(
             signature,
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA1(),
         )
-        verifier.update(binascii.unhexlify(example["message"]))
-        verifier.verify()
 
     @pytest.mark.parametrize(
         "hash_alg",
@@ -531,6 +658,35 @@ class TestRSASignature(object):
         with pytest.raises(ValueError):
             private_key.sign(digest, pss, prehashed_alg)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5."
+    )
+    def test_prehashed_unsupported_in_signer_ctx(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        with pytest.raises(TypeError):
+            private_key.signer(
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1())
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5."
+    )
+    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
+        public_key = RSA_KEY_512.private_key(backend).public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(
+                b"0" * 64,
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1())
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
@@ -554,11 +710,12 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        verifier = public_key.verifier(
-            binascii.unhexlify(example["signature"]),
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            verifier = public_key.verifier(
+                binascii.unhexlify(example["signature"]),
+                padding.PKCS1v15(),
+                hashes.SHA1()
+            )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 
@@ -628,16 +785,15 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        verifier = public_key.verifier(
+        public_key.verify(
             binascii.unhexlify(example["signature"]),
+            binascii.unhexlify(example["message"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=20
             ),
             hashes.SHA1()
         )
-        verifier.update(binascii.unhexlify(example["message"]))
-        verifier.verify()
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(

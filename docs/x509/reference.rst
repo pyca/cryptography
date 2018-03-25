@@ -379,9 +379,6 @@ X.509 Certificate Object
         :raises cryptography.x509.DuplicateExtension: If more than one
             extension of the same type is found within the certificate.
 
-        :raises cryptography.x509.UnsupportedExtension: If the certificate
-            contains an extension that is not supported.
-
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
@@ -566,6 +563,18 @@ X.509 CRL (Certificate Revocation List) Object
             over the network and used as part of a certificate verification
             process.
 
+    .. method:: is_signature_valid(public_key)
+
+        .. versionadded:: 2.1
+
+        .. warning::
+
+            Checking the validity of the signature on the CRL is insufficient
+            to know if the CRL should be trusted. More details are available
+            in :rfc:`5280`.
+
+        Returns True if the CRL signature is correct for given public key,
+        False otherwise.
 
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -600,6 +609,12 @@ X.509 Certificate Builder
         >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
         >>> builder = builder.serial_number(x509.random_serial_number())
         >>> builder = builder.public_key(public_key)
+        >>> builder = builder.add_extension(
+        ...     x509.SubjectAlternativeName(
+        ...         [x509.DNSName(u'cryptography.io')]
+        ...     ),
+        ...     critical=False
+        ... )
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ... )
@@ -766,9 +781,6 @@ X.509 CSR (Certificate Signing Request) Object
 
         :raises cryptography.x509.DuplicateExtension: If more than one
             extension of the same type is found within the certificate signing request.
-
-        :raises cryptography.x509.UnsupportedExtension: If the certificate signing request
-            contains an extension that is not supported.
 
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
@@ -1230,7 +1242,23 @@ General Name Classes
 
     .. versionadded:: 0.9
 
+    .. versionchanged:: 2.1
+
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
+
+
     This corresponds to an email address. For example, ``user@example.com``.
+
+    :param value: The email address. If the address contains an
+        internationalized domain name then it must be encoded to an
+        :term:`A-label` string before being passed.
 
     .. attribute:: value
 
@@ -1240,7 +1268,24 @@ General Name Classes
 
     .. versionadded:: 0.9
 
+    .. versionchanged:: 2.1
+
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
+
     This corresponds to a domain name. For example, ``cryptography.io``.
+
+    :param value: The domain name. If it is an internationalized domain
+        name then it must be encoded to an :term:`A-label` string before being
+        passed.
+
+        :type: :term:`text`
 
     .. attribute:: value
 
@@ -1260,13 +1305,23 @@ General Name Classes
 
     .. versionadded:: 0.9
 
+    .. versionchanged:: 2.1
+
+    .. warning::
+
+        Starting with version 2.1 :term:`U-label` input is deprecated. If
+        passing an internationalized domain name (IDN) you should first IDNA
+        encode the value and then pass the result as a string. Accessing
+        ``value`` will return the :term:`A-label` encoded form even if you pass
+        a U-label. This breaks backwards compatibility, but only for
+        internationalized domain names.
+
     This corresponds to a uniform resource identifier.  For example,
-    ``https://cryptography.io``. The URI is parsed and IDNA decoded (see
-    :rfc:`5895`).
+    ``https://cryptography.io``.
 
-    .. note::
-
-        URIs that do not contain ``://`` in them will not be decoded.
+    :param value: The URI. If it contains an internationalized domain
+        name then it must be encoded to an :term:`A-label` string before
+        being passed.
 
     .. attribute:: value
 
@@ -1557,6 +1612,45 @@ X.509 Extensions
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.OCSP_NO_CHECK`.
 
+
+.. class:: TLSFeature(features)
+
+    .. versionadded:: 2.1
+
+    The TLS Feature extension is defined in :rfc:`7633` and is used in
+    certificates for OCSP Must-Staple. The object is iterable to get every
+    element.
+
+    :param list features: A list of features to enable from the
+        :class:`~cryptography.x509.TLSFeatureType` enum. At this time only
+        ``status_request`` or ``status_request_v2`` are allowed.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.TLS_FEATURE`.
+
+.. class:: TLSFeatureType
+
+    .. versionadded:: 2.1
+
+    An enumeration of TLS Feature types.
+
+    .. attribute:: status_request
+
+        This feature type is defined in :rfc:`6066` and, when embedded in
+        an X.509 certificate, signals to the client that it should require
+        a stapled OCSP response in the TLS handshake. Commonly known as OCSP
+        Must-Staple in certificates.
+
+    .. attribute:: status_request_v2
+
+        This feature type is defined in :rfc:`6961`. This value is not
+        commonly used and if you want to enable OCSP Must-Staple you should
+        use ``status_request``.
+
+
 .. class:: NameConstraints(permitted_subtrees, excluded_subtrees)
 
     .. versionadded:: 1.0
@@ -1814,6 +1908,56 @@ X.509 Extensions
         :returns: A list of values extracted from the matched general names.
 
 
+.. class:: PrecertificateSignedCertificateTimestamps(scts)
+
+    .. versionadded:: 2.0
+
+    This extension contains
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    instances which were issued for the pre-certificate corresponding to this
+    certificate. These can be used to verify that the certificate is included
+    in a public Certificate Transparency log.
+
+    It is an iterable containing one or more
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    objects.
+
+    :param list scts: A ``list`` of
+        :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+        objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
+
+
+.. class:: DeltaCRLIndicator(crl_number)
+
+    .. versionadded:: 2.1
+
+    The delta CRL indicator is a CRL extension that identifies a CRL as being
+    a delta CRL. Delta CRLs contain updates to revocation information
+    previously distributed, rather than all the information that would appear
+    in a complete CRL.
+
+    :param int crl_number: The CRL number of the complete CRL that the
+        delta CRL is updating.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.DELTA_CRL_INDICATOR`.
+
+    .. attribute:: crl_number
+
+        :type: int
+
+
 .. class:: AuthorityInformationAccess(descriptions)
 
     .. versionadded:: 0.9
@@ -1862,6 +2006,24 @@ X.509 Extensions
         :type: :class:`GeneralName`
 
         Where to access the information defined by the access method.
+
+.. class:: FreshestCRL(distribution_points)
+
+    .. versionadded:: 2.1
+
+    The freshest CRL extension (also known as Delta CRL Distribution Point)
+    identifies how delta CRL information is obtained. It is an iterable,
+    containing one or more :class:`DistributionPoint` instances.
+
+    :param list distribution_points: A list of :class:`DistributionPoint`
+        instances.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.FRESHEST_CRL`.
 
 .. class:: CRLDistributionPoints(distribution_points)
 
@@ -2061,10 +2223,8 @@ X.509 Extensions
 
     .. versionadded:: 1.2
 
-    A generic extension class used to hold the raw value of **non-critical**
-    extensions that ``cryptography`` does not know how to parse. Extensions
-    marked critical will raise
-    :class:`~cryptography.x509.UnsupportedExtension`.
+    A generic extension class used to hold the raw value of extensions that
+    ``cryptography`` does not know how to parse.
 
     .. attribute:: oid
 
@@ -2207,8 +2367,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
     valid inside :class:`~cryptography.x509.RevokedCertificate` objects. It
     identifies a reason for the certificate revocation.
 
-    :param reason: A value from the
-        :class:`~cryptography.x509.oid.CRLEntryExtensionOID` enum.
+    :param reason: An element from :class:`~cryptography.x509.ReasonFlags`.
 
     .. attribute:: oid
 
@@ -2487,6 +2646,13 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.9"``. This is used
         to denote that a certificate may be used for signing OCSP responses.
 
+    .. attribute:: ANY_EXTENDED_KEY_USAGE
+
+        .. versionadded:: 2.0
+
+        Corresponds to the dotted string ``"2.5.29.37.0"``. This is used to
+        denote that a certificate may be used for _any_ purposes.
+
 
 .. class:: AuthorityInformationAccessOID
 
@@ -2593,16 +2759,41 @@ instances. The following common OIDs are available as constants.
         identifier for the :class:`~cryptography.x509.OCSPNoCheck` extension
         type.
 
+    .. attribute:: TLS_FEATURE
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.24"``. The
+        identifier for the :class:`~cryptography.x509.TLSFeature` extension
+        type.
+
     .. attribute:: CRL_NUMBER
 
         Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
 
+    .. attribute:: DELTA_CRL_INDICATOR
+
+        .. versionadded:: 2.1
+
+        Corresponds to the dotted string ``"2.5.29.27"``. The identifier for
+        the ``DeltaCRLIndicator`` extension type. This extension only has
+        meaning for certificate revocation lists.
+
+    .. attribute:: PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+
+        .. versionadded:: 1.9
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.2"``.
+
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
         :class:`~cryptography.x509.PolicyConstraints` extension type.
+
+    .. attribute:: FRESHEST_CRL
+
+        Corresponds to the dotted string ``"2.5.29.46"``. The identifier for the
+        :class:`~cryptography.x509.FreshestCRL` extension type.
 
 
 .. class:: CRLEntryExtensionOID
@@ -2650,17 +2841,6 @@ Exceptions
 
     This is raised when more than one X.509 extension of the same type is
     found within a certificate.
-
-    .. attribute:: oid
-
-        :type: :class:`ObjectIdentifier`
-
-        Returns the OID.
-
-.. class:: UnsupportedExtension
-
-    This is raised when a certificate contains an unsupported extension type
-    that is marked ``critical``.
 
     .. attribute:: oid
 

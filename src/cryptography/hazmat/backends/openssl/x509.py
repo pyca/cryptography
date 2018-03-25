@@ -4,18 +4,20 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import operator
 import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CERTIFICATE_EXTENSION_PARSER, _CRL_EXTENSION_PARSER,
-    _CSR_EXTENSION_PARSER, _REVOKED_CERTIFICATE_EXTENSION_PARSER,
-    _asn1_integer_to_int, _asn1_string_to_bytes, _decode_x509_name, _obj2txt,
-    _parse_asn1_time
+    _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
+    _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
+    _REVOKED_CERTIFICATE_EXTENSION_PARSER, _asn1_integer_to_int,
+    _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
 )
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
 @utils.register_interface(x509.Certificate)
@@ -61,7 +63,7 @@ class _Certificate(object):
     def serial(self):
         warnings.warn(
             "Certificate serial is deprecated, use serial_number instead.",
-            utils.DeprecatedIn14,
+            utils.PersistentlyDeprecated,
             stacklevel=2
         )
         return self.serial_number
@@ -125,9 +127,16 @@ class _Certificate(object):
         oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
-    @property
+    @utils.cached_property
     def extensions(self):
-        return _CERTIFICATE_EXTENSION_PARSER.parse(self._backend, self._x509)
+        if self._backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+            return _CERTIFICATE_EXTENSION_PARSER.parse(
+                self._backend, self._x509
+            )
+        else:
+            return _CERTIFICATE_EXTENSION_PARSER_NO_SCT.parse(
+                self._backend, self._x509
+            )
 
     @property
     def signature(self):
@@ -192,7 +201,7 @@ class _RevokedCertificate(object):
             )
         )
 
-    @property
+    @utils.cached_property
     def extensions(self):
         return _REVOKED_CERTIFICATE_EXTENSION_PARSER.parse(
             self._backend, self._x509_revoked
@@ -326,9 +335,24 @@ class _CertificateRevocationList(object):
         else:
             return self._backend._lib.sk_X509_REVOKED_num(revoked)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
+
+    def is_signature_valid(self, public_key):
+        if not isinstance(public_key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
+                                       ec.EllipticCurvePublicKey)):
+            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
+                            ' or EllipticCurvePublicKey.')
+        res = self._backend._lib.X509_CRL_verify(
+            self._x509_crl, public_key._evp_pkey
+        )
+
+        if res != 1:
+            self._backend._consume_errors()
+            return False
+
+        return True
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
@@ -383,7 +407,7 @@ class _CertificateSigningRequest(object):
         oid = _obj2txt(self._backend, alg[0].algorithm)
         return x509.ObjectIdentifier(oid)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
         return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
@@ -433,3 +457,43 @@ class _CertificateSigningRequest(object):
             return False
 
         return True
+
+
+@utils.register_interface(
+    x509.certificate_transparency.SignedCertificateTimestamp
+)
+class _SignedCertificateTimestamp(object):
+    def __init__(self, backend, sct_list, sct):
+        self._backend = backend
+        # Keep the SCT_LIST that this SCT came from alive.
+        self._sct_list = sct_list
+        self._sct = sct
+
+    @property
+    def version(self):
+        version = self._backend._lib.SCT_get_version(self._sct)
+        assert version == self._backend._lib.SCT_VERSION_V1
+        return x509.certificate_transparency.Version.v1
+
+    @property
+    def log_id(self):
+        out = self._backend._ffi.new("unsigned char **")
+        log_id_length = self._backend._lib.SCT_get0_log_id(self._sct, out)
+        assert log_id_length >= 0
+        return self._backend._ffi.buffer(out[0], log_id_length)[:]
+
+    @property
+    def timestamp(self):
+        timestamp = self._backend._lib.SCT_get_timestamp(self._sct)
+        milliseconds = timestamp % 1000
+        return datetime.datetime.utcfromtimestamp(
+            timestamp // 1000
+        ).replace(microsecond=milliseconds * 1000)
+
+    @property
+    def entry_type(self):
+        entry_type = self._backend._lib.SCT_get_log_entry_type(self._sct)
+        # We currently only support loading SCTs from the X.509 extension, so
+        # we only have precerts.
+        assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
+        return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE

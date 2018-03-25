@@ -19,11 +19,12 @@ mathematical properties`_.
     .. versionadded:: 0.5
 
     Generates a new RSA private key using the provided ``backend``.
-    ``key_size`` describes how many bits long the key should be, larger keys
-    provide more security, currently ``1024`` and below are considered
-    breakable, and ``2048`` or ``4096`` are reasonable default key sizes for
+    ``key_size`` describes how many :term:`bits` long the key should be. Larger
+    keys provide more security; currently ``1024`` and below are considered
+    breakable while ``2048`` or ``4096`` are reasonable default key sizes for
     new keys. The ``public_exponent`` indicates what one mathematical property
-    of the key generation will be, ``65537`` should almost always be used.
+    of the key generation will be. Unless you have a specific reason to do
+    otherwise, you should always `use 65537`_.
 
     .. doctest::
 
@@ -39,7 +40,7 @@ mathematical properties`_.
         Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
         doubt you should `use 65537`_.
 
-    :param int key_size: The length of the modulus in bits. For keys
+    :param int key_size: The length of the modulus in :term:`bits`. For keys
         generated in 2015 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
@@ -63,6 +64,7 @@ markers), you can load it:
 
 .. code-block:: pycon
 
+    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
 
     >>> with open("path/to/key.pem", "rb") as key_file:
@@ -141,22 +143,6 @@ secure hash function and padding:
 
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric import padding
-
-    >>> signer = private_key.signer(
-    ...     padding.PSS(
-    ...         mgf=padding.MGF1(hashes.SHA256()),
-    ...         salt_length=padding.PSS.MAX_LENGTH
-    ...     ),
-    ...     hashes.SHA256()
-    ... )
-    >>> message = b"A message I want to sign"
-    >>> signer.update(message)
-    >>> signature = signer.finalize()
-
-There is a shortcut to sign sufficiently short messages directly:
-
-.. doctest::
-
     >>> message = b"A message I want to sign"
     >>> signature = private_key.sign(
     ...     message,
@@ -172,6 +158,27 @@ Valid paddings for signatures are
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
 is the recommended choice for any new protocols or applications, ``PKCS1v15``
 should only be used to support legacy protocols.
+
+If your data is too large to be passed in a single call, you can hash it
+separately and pass that value using
+:class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+.. doctest::
+
+    >>> from cryptography.hazmat.primitives.asymmetric import utils
+    >>> chosen_hash = hashes.SHA256()
+    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher.update(b"data & ")
+    >>> hasher.update(b"more data")
+    >>> digest = hasher.finalize()
+    >>> sig = private_key.sign(
+    ...     digest,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     utils.Prehashed(chosen_hash)
+    ... )
 
 Verification
 ~~~~~~~~~~~~
@@ -190,24 +197,6 @@ a public key to use in verification using
 .. doctest::
 
     >>> public_key = private_key.public_key()
-    >>> verifier = public_key.verifier(
-    ...     signature,
-    ...     padding.PSS(
-    ...         mgf=padding.MGF1(hashes.SHA256()),
-    ...         salt_length=padding.PSS.MAX_LENGTH
-    ...     ),
-    ...     hashes.SHA256()
-    ... )
-    >>> verifier.update(message)
-    >>> verifier.verify()
-
-If the signature does not match, ``verify()`` will raise an
-:class:`~cryptography.exceptions.InvalidSignature` exception.
-
-There is a shortcut to verify sufficiently short messages directly:
-
-.. doctest::
-
     >>> public_key.verify(
     ...     signature,
     ...     message,
@@ -216,6 +205,30 @@ There is a shortcut to verify sufficiently short messages directly:
     ...         salt_length=padding.PSS.MAX_LENGTH
     ...     ),
     ...     hashes.SHA256()
+    ... )
+
+If the signature does not match, ``verify()`` will raise an
+:class:`~cryptography.exceptions.InvalidSignature` exception.
+
+If your data is too large to be passed in a single call, you can hash it
+separately and pass that value using
+:class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`.
+
+.. doctest::
+
+    >>> chosen_hash = hashes.SHA256()
+    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher.update(b"data & ")
+    >>> hasher.update(b"more data")
+    >>> digest = hasher.finalize()
+    >>> public_key.verify(
+    ...     sig,
+    ...     digest,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     utils.Prehashed(chosen_hash)
     ... )
 
 Encryption
@@ -234,8 +247,8 @@ options. Here's an example using a secure padding and hash function:
     >>> ciphertext = public_key.encrypt(
     ...     message,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-    ...         algorithm=hashes.SHA1(),
+    ...         mgf=padding.MGF1(algorithm=hashes.SHA256()),
+    ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
     ... )
@@ -257,8 +270,8 @@ Once you have an encrypted message, it can be decrypted using the private key:
     >>> plaintext = private_key.decrypt(
     ...     ciphertext,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-    ...         algorithm=hashes.SHA1(),
+    ...         mgf=padding.MGF1(algorithm=hashes.SHA256()),
+    ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
     ... )
@@ -518,23 +531,9 @@ Key interfaces
 
     .. versionadded:: 0.2
 
-    An `RSA`_ private key.
-
-    .. method:: signer(padding, algorithm)
-
-        .. versionadded:: 0.3
-
-        Get signer to sign data which can be verified later by others using
-        the public key.
-
-        :param padding: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
-
-        :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
+    An `RSA`_ private key. An RSA private key that is not an
+    :term:`opaque key` also implements :class:`RSAPrivateKeyWithSerialization`
+    to provide serialization methods.
 
     .. method:: decrypt(ciphertext, padding)
 
@@ -588,7 +587,9 @@ Key interfaces
 
     .. versionadded:: 0.8
 
-    Extends :class:`RSAPrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`RSAPrivateKey`.
 
     .. method:: private_numbers()
 
@@ -633,24 +634,6 @@ Key interfaces
     .. versionadded:: 0.2
 
     An `RSA`_ public key.
-
-    .. method:: verifier(signature, padding, algorithm)
-
-        .. versionadded:: 0.3
-
-        Get verifier to verify data was signed by the private key associated
-        with this public key.
-
-        :param bytes signature: The signature to verify.
-
-        :param padding: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
-
-        :param algorithm: An instance of
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
     .. method:: encrypt(plaintext, padding)
 
@@ -720,7 +703,7 @@ Key interfaces
         :param algorithm: An instance of
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` or
             :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
-            if the ``data`` you want to sign has already been hashed.
+            if the ``data`` you want to verify has already been hashed.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.

@@ -6,7 +6,7 @@ OpenSSL binding
 .. currentmodule:: cryptography.hazmat.bindings.openssl.binding
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library. Cryptography supports
-OpenSSL version ``1.0.0`` and greater.
+OpenSSL version 1.0.1 and greater.
 
 .. class:: cryptography.hazmat.bindings.openssl.binding.Binding()
 

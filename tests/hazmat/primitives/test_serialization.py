@@ -18,8 +18,9 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.serialization import (
-    BestAvailableEncryption, load_der_private_key, load_der_public_key,
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
+    BestAvailableEncryption, load_der_parameters, load_der_private_key,
+    load_der_public_key, load_pem_parameters, load_pem_private_key,
+    load_pem_public_key, load_ssh_public_key
 )
 
 
@@ -76,6 +77,26 @@ class TestDERSerialization(object):
         assert key
         assert isinstance(key, dsa.DSAPrivateKey)
         _check_dsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["DER_Serialization", "enc-rsa-pkcs8.der"],
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_password_not_bytes(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = u"this password is not bytes"
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_private_key(
+                    derfile.read(), password, backend
+                ),
+                mode="rb"
+            )
 
     @pytest.mark.parametrize(
         ("key_path", "password"),
@@ -290,6 +311,14 @@ class TestDERSerialization(object):
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
+    def test_wrong_parameters_format(self, backend):
+        param_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_der_parameters(
+                param_data, backend
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPEMSerialization(object):
@@ -499,6 +528,25 @@ class TestPEMSerialization(object):
             ["PKCS8", "enc-rsa-pkcs8.pem"]
         ]
     )
+    def test_password_not_bytes(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = u"this password is not bytes"
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda pemfile: load_pem_private_key(
+                    pemfile.read().encode(), password, backend
+                )
+            )
+
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+            ["PKCS8", "enc-rsa-pkcs8.pem"]
+        ]
+    )
     def test_wrong_password(self, key_path, backend):
         key_file = os.path.join("asymmetric", *key_path)
         password = b"this password is wrong"
@@ -551,6 +599,12 @@ class TestPEMSerialization(object):
 
         with pytest.raises(ValueError):
             load_pem_public_key(key_data, backend)
+
+    def test_wrong_parameters_format(self, backend):
+        param_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_pem_parameters(param_data, backend)
 
     def test_corrupt_traditional_format(self, backend):
         # privkey.pem with a bunch of data missing.
@@ -806,9 +860,7 @@ class TestPEMSerialization(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
+        with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),

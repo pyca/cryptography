@@ -250,6 +250,12 @@ class CertificateRevocationList(object):
         Checks not equal.
         """
 
+    @abc.abstractmethod
+    def is_signature_valid(self, public_key):
+        """
+        Verifies signature of revocation list against given public key.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
@@ -463,7 +469,7 @@ class CertificateBuilder(object):
 
         # ASN.1 integers are always signed, so most significant bit must be
         # zero.
-        if utils.bit_length(number) >= 160:  # As defined in RFC 5280
+        if number.bit_length() >= 160:  # As defined in RFC 5280
             raise ValueError('The serial number should not be more than 159 '
                              'bits.')
         return CertificateBuilder(
@@ -680,7 +686,7 @@ class RevokedCertificateBuilder(object):
 
         # ASN.1 integers are always signed, so most significant bit must be
         # zero.
-        if utils.bit_length(number) >= 160:  # As defined in RFC 5280
+        if number.bit_length() >= 160:  # As defined in RFC 5280
             raise ValueError('The serial number should not be more than 159 '
                              'bits.')
         return RevokedCertificateBuilder(

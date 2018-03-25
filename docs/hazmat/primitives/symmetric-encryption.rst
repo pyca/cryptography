@@ -16,6 +16,9 @@ decrypt them.
 For this reason it is **strongly** recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`,
 in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
+``cryptography`` includes a recipe named :doc:`/fernet` that does this for you.
+**To minimize the risk of security issues you should evaluate Fernet to see if
+it fits your needs before implementing anything using this module.**
 
 .. class:: Cipher(algorithm, mode, backend)
 
@@ -90,7 +93,7 @@ Algorithms
     choice for encryption.
 
     :param bytes key: The secret key. This must be kept secret. Either ``128``,
-        ``192``, or ``256`` bits long.
+        ``192``, or ``256`` :term:`bits` long.
 
 .. class:: Camellia(key)
 
@@ -99,7 +102,56 @@ Algorithms
     is not as widely studied or deployed.
 
     :param bytes key: The secret key. This must be kept secret. Either ``128``,
-        ``192``, or ``256`` bits long.
+        ``192``, or ``256`` :term:`bits` long.
+
+.. class:: ChaCha20(key)
+
+    .. versionadded:: 2.1
+
+    .. note::
+
+        In most cases users should use
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        instead of this class. `ChaCha20` alone does not provide integrity
+        so it must be combined with a MAC to be secure.
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        does this for you.
+
+    ChaCha20 is a stream cipher used in several IETF protocols. It is
+    standardized in :rfc:`7539`.
+
+    :param bytes key: The secret key. This must be kept secret. ``256``
+        :term:`bits` (32 bytes) in length.
+
+    :param bytes nonce: Should be unique, a :term:`nonce`. It is
+        critical to never reuse a ``nonce`` with a given key.  Any reuse of a
+        nonce with the same key compromises the security of every message
+        encrypted with that key. The nonce does not need to be kept secret
+        and may be included with the ciphertext. This must be ``128``
+        :term:`bits` in length.
+
+        .. note::
+
+            In :rfc:`7539` the nonce is defined as a 96-bit value that is later
+            concatenated with a block counter (encoded as a 32-bit
+            little-endian). If you have a separate nonce and block counter
+            you will need to concatenate it yourself before passing it. For
+            example, if you have an initial block counter of 2 and a 96-bit
+            nonce the concatenated nonce would be
+            ``struct.pack("<i", 2) + nonce``.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> nonce = os.urandom(16)
+        >>> algorithm = algorithms.ChaCha20(key, nonce)
+        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        'a secret message'
 
 .. class:: TripleDES(key)
 
@@ -110,10 +162,11 @@ Algorithms
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key. This must be kept secret. Either ``64``,
-        ``128``, or ``192`` bits long. DES only uses ``56``, ``112``, or ``168``
-        bits of the key as there is a parity byte in each component of the key.
-        Some writing refers to there being up to three separate keys that are each
-        ``56`` bits long, they can simply be concatenated to produce the full key.
+        ``128``, or ``192`` :term:`bits` long. DES only uses ``56``, ``112``,
+        or ``168`` bits of the key as there is a parity byte in each component
+        of the key.  Some writing refers to there being up to three separate
+        keys that are each ``56`` bits long, they can simply be concatenated
+        to produce the full key.
 
 .. class:: CAST5(key)
 
@@ -121,10 +174,11 @@ Algorithms
 
     CAST5 (also known as CAST-128) is a block cipher approved for use in the
     Canadian government by the `Communications Security Establishment`_. It is
-    a variable key length cipher and supports keys from 40-128 bits in length.
+    a variable key length cipher and supports keys from 40-128 :term:`bits` in
+    length.
 
-    :param bytes key: The secret key, This must be kept secret. 40 to 128 bits
-        in length in increments of 8 bits.
+    :param bytes key: The secret key, This must be kept secret. 40 to 128
+        :term:`bits` in length in increments of 8 bits.
 
 .. class:: SEED(key)
 
@@ -134,8 +188,8 @@ Algorithms
     (KISA). It is defined in :rfc:`4269` and is used broadly throughout South
     Korean industry, but rarely found elsewhere.
 
-    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
-        length.
+    :param bytes key: The secret key. This must be kept secret. ``128``
+        :term:`bits` in length.
 
 Weak ciphers
 ------------
@@ -152,8 +206,8 @@ Weak ciphers
     susceptible to attacks when using weak keys. The author has recommended
     that users of Blowfish move to newer algorithms such as :class:`AES`.
 
-    :param bytes key: The secret key. This must be kept secret. 32 to 448 bits
-        in length in increments of 8 bits.
+    :param bytes key: The secret key. This must be kept secret. 32 to 448
+        :term:`bits` in length in increments of 8 bits.
 
 .. class:: ARC4(key)
 
@@ -162,7 +216,8 @@ Weak ciphers
     mode constructions.
 
     :param bytes key: The secret key. This must be kept secret. Either ``40``,
-        ``56``, ``64``, ``80``, ``128``, ``192``, or ``256`` bits in length.
+        ``56``, ``64``, ``80``, ``128``, ``192``, or ``256`` :term:`bits` in
+        length.
 
     .. doctest::
 
@@ -183,8 +238,8 @@ Weak ciphers
     is susceptible to attacks when using weak keys. It is recommended that you
     do not use this cipher for new applications.
 
-    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
-        length.
+    :param bytes key: The secret key. This must be kept secret. ``128``
+        :term:`bits` in length.
 
 
 .. _symmetric-encryption-modes:
@@ -232,7 +287,7 @@ Modes
     .. warning::
 
         Counter mode is not recommended for use with block ciphers that have a
-        block size of less than 128-bits.
+        block size of less than 128-:term:`bits`.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
     cryptographically strong. It transforms a block cipher into a stream
@@ -291,8 +346,16 @@ Modes
 
     .. danger::
 
+        If you are encrypting data that can fit into memory you should strongly
+        consider using
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` instead
+        of this.
+
         When using this mode you **must** not use the decrypted data until
-        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
+        the appropriate finalization method
+        (:meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
+        or
+        :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`)
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
 
@@ -309,15 +372,16 @@ Modes
         They do not need to be kept secret and they can be included in a
         transmitted message. NIST `recommends a 96-bit IV length`_ for
         performance critical situations but it can be up to 2\ :sup:`64` - 1
-        bits. Do not reuse an ``initialization_vector`` with a given ``key``.
+        :term:`bits`. Do not reuse an ``initialization_vector`` with a given
+        ``key``.
 
     .. note::
 
         Cryptography will generate a 128-bit tag when finalizing encryption.
         You can shorten a tag by truncating it to the desired length but this
         is **not recommended** as it lowers the security margins of the
-        authentication (`NIST SP-800-38D`_ recommends 96-bits or greater).
-        Applications wishing to allow truncation must pass the
+        authentication (`NIST SP-800-38D`_ recommends 96-:term:`bits` or
+        greater).  Applications wishing to allow truncation must pass the
         ``min_tag_length`` parameter.
 
         .. versionchanged:: 0.5
@@ -326,13 +390,19 @@ Modes
             truncation down to ``4`` bytes was always allowed.
 
     :param bytes tag: The tag bytes to verify during decryption. When
-        encrypting this must be ``None``.
+        encrypting this must be ``None``. When decrypting, it may be ``None``
+        if the tag is supplied on finalization using
+        :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
+        Otherwise, the tag is mandatory.
 
     :param bytes min_tag_length: The minimum length ``tag`` must be. By default
         this is ``16``, meaning tag truncation is not allowed. Allowing tag
         truncation is strongly discouraged for most applications.
 
     :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
+
+    :raises NotImplementedError: This is raised if the version of the OpenSSL
+        backend used is 1.0.1 or earlier.
 
     An example of securely encrypting and decrypting data with ``AES`` in the
     ``GCM`` mode looks like:
@@ -341,6 +411,7 @@ Modes
 
         import os
 
+        from cryptography.hazmat.backends import default_backend
         from cryptography.hazmat.primitives.ciphers import (
             Cipher, algorithms, modes
         )
@@ -402,6 +473,32 @@ Modes
 
         a secret message!
 
+.. class:: XTS(tweak)
+
+    .. versionadded:: 2.1
+
+    .. warning::
+
+        XTS mode is meant for disk encryption and should not be used in other
+        contexts. ``cryptography`` only supports XTS mode with
+        :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`.
+
+    .. note::
+
+        AES XTS keys are double length. This means that to do AES-128
+        encryption in XTS mode you need a 256-bit key. Similarly, AES-256
+        requires passing a 512-bit key. AES 192 is not supported in XTS mode.
+
+    XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode
+    of operation for the AES block cipher that is used for `disk encryption`_.
+
+    **This mode does not require padding.**
+
+    :param bytes tweak: The tweak is a 16 byte value typically derived from
+        something like the disk sector number. A given ``(tweak, key)`` pair
+        should not be reused, although doing so is less catastrophic than
+        in CTR mode.
+
 
 Insecure modes
 --------------
@@ -422,7 +519,7 @@ Insecure modes
     **Padding is required when using this mode.**
 
 Interfaces
-----------
+~~~~~~~~~~
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
 
@@ -456,6 +553,49 @@ Interfaces
         return bytes immediately, however in other modes it will return chunks
         whose size is determined by the cipher's block size.
 
+    .. method:: update_into(data, buf)
+
+        .. versionadded:: 1.8
+
+        .. warning::
+
+            This method allows you to avoid a memory copy by passing a writable
+            buffer and reading the resulting data. You are responsible for
+            correctly sizing the buffer and properly handling the data. This
+            method should only be used when extremely high performance is a
+            requirement and you will be making many small calls to
+            ``update_into``.
+
+        :param bytes data: The data you wish to pass into the context.
+        :param buf: A writable Python buffer that the data will be written
+            into. This buffer should be ``len(data) + n - 1`` bytes where ``n``
+            is the block size (in bytes) of the cipher and mode combination.
+        :return int: Number of bytes written.
+        :raises NotImplementedError: This is raised if the version of ``cffi``
+            used is too old (this can happen on older PyPy releases).
+        :raises ValueError: This is raised if the supplied buffer is too small.
+
+        .. doctest::
+
+            >>> import os
+            >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> backend = default_backend()
+            >>> key = os.urandom(32)
+            >>> iv = os.urandom(16)
+            >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+            >>> encryptor = cipher.encryptor()
+            >>> # the buffer needs to be at least len(data) + n - 1 where n is cipher/mode block size in bytes
+            >>> buf = bytearray(31)
+            >>> len_encrypted = encryptor.update_into(b"a secret message", buf)
+            >>> # get the ciphertext from the buffer reading only the bytes written to it (len_encrypted)
+            >>> ct = bytes(buf[:len_encrypted]) + encryptor.finalize()
+            >>> decryptor = cipher.decryptor()
+            >>> len_decrypted = decryptor.update_into(ct, buf)
+            >>> # get the plaintext from the buffer reading only the bytes written (len_decrypted)
+            >>> bytes(buf[:len_decrypted]) + decryptor.finalize()
+            'a secret message'
+
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
@@ -472,12 +612,12 @@ Interfaces
     with an AEAD mode (e.g.
     :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) the result will
     conform to the ``AEADCipherContext`` and ``CipherContext`` interfaces. If
-    it is an encryption context it will additionally be an
-    ``AEADEncryptionContext`` instance. ``AEADCipherContext`` contains an
-    additional method :meth:`authenticate_additional_data` for adding
-    additional authenticated but unencrypted data (see note below). You should
-    call this before calls to ``update``. When you are done call ``finalize``
-    to finish the operation.
+    it is an encryption or decryption context it will additionally be an
+    ``AEADEncryptionContext`` or ``AEADDecryptionContext`` instance,
+    respectively. ``AEADCipherContext`` contains an additional method
+    :meth:`authenticate_additional_data` for adding additional authenticated
+    but unencrypted data (see note below). You should call this before calls to
+    ``update``. When you are done call ``finalize`` to finish the operation.
 
     .. note::
 
@@ -507,6 +647,37 @@ Interfaces
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
             before the context is finalized.
 
+.. class:: AEADDecryptionContext
+
+    .. versionadded:: 1.9
+
+    When creating an encryption context using ``decryptor`` on a ``Cipher``
+    object with an AEAD mode such as
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` an object
+    conforming to both the ``AEADDecryptionContext`` and ``AEADCipherContext``
+    interfaces will be returned.  This interface provides one additional method
+    :meth:`finalize_with_tag` that allows passing the authentication tag for
+    validation after the ciphertext has been decrypted.
+
+    .. method:: finalize_with_tag(tag)
+
+        .. note::
+
+            This method is not supported when compiled against OpenSSL 1.0.1.
+
+        :param bytes tag: The tag bytes to verify after decryption.
+        :return bytes: Returns the remainder of the data.
+        :raises ValueError: This is raised when the data provided isn't
+            a multiple of the algorithm's block size, if ``min_tag_length`` is
+            less than 4, or if ``len(tag) < min_tag_length``.
+        :raises NotImplementedError: This is raised if the version of the
+            OpenSSL backend used is 1.0.1 or earlier.
+
+        If the authentication tag was not already supplied to the constructor
+        of the :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` mode
+        object, this method must be used instead of
+        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`.
+
 .. class:: CipherAlgorithm
 
     A named symmetric encryption algorithm.
@@ -522,7 +693,7 @@ Interfaces
 
         :type: int
 
-        The number of bits in the key being used.
+        The number of :term:`bits` in the key being used.
 
 
 .. class:: BlockCipherAlgorithm
@@ -533,7 +704,7 @@ Interfaces
 
         :type: int
 
-        The number of bits in a block.
+        The number of :term:`bits` in a block.
 
 Interfaces used by the symmetric cipher modes described in
 :ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.
@@ -604,13 +775,39 @@ Interfaces used by the symmetric cipher modes described in
         individual modes.
 
 
+.. class:: ModeWithTweak
+
+    .. versionadded:: 2.1
+
+    A cipher mode with a tweak.
+
+    .. attribute:: tweak
+
+        :type: bytes
+
+        Exact requirements of the tweak are described by the documentation of
+        individual modes.
+
+Exceptions
+~~~~~~~~~~
+
+.. currentmodule:: cryptography.exceptions
+
+
+.. class:: InvalidTag
+
+    This is raised if an authenticated encryption tag fails to verify during
+    decryption.
+
+
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
-.. _`recommends a 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
-.. _`NIST SP-800-38D`: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
+.. _`recommends a 96-bit IV length`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+.. _`NIST SP-800-38D`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 .. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
 .. _`encrypt`: https://ssd.eff.org/en/module/what-encryption
 .. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: http://openpgp.org
+.. _`disk encryption`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS

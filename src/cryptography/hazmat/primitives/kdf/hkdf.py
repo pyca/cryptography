@@ -30,7 +30,7 @@ class HKDF(object):
             raise TypeError("salt must be bytes.")
 
         if salt is None:
-            salt = b"\x00" * (self._algorithm.digest_size // 8)
+            salt = b"\x00" * self._algorithm.digest_size
 
         self._salt = salt
 
@@ -67,7 +67,7 @@ class HKDFExpand(object):
 
         self._backend = backend
 
-        max_length = 255 * (algorithm.digest_size // 8)
+        max_length = 255 * algorithm.digest_size
 
         if length > max_length:
             raise ValueError(

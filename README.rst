@@ -1,5 +1,5 @@
-Cryptography
-============
+pyca/cryptography
+=================
 
 .. image:: https://img.shields.io/pypi/v/cryptography.svg
     :target: https://pypi.python.org/pypi/cryptography/
@@ -18,10 +18,10 @@ Cryptography
 
 ``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers.  Our goal is for it to be your "cryptographic
-standard library". It supports Python 2.6-2.7, Python 3.3+, and PyPy 2.6+.
+standard library". It supports Python 2.7, Python 3.4+, and PyPy 5.3+.
 
-``cryptography`` includes both high level recipes, and low level interfaces to
-common cryptographic algorithms such as symmetric ciphers, message digests and
+``cryptography`` includes both high level recipes and low level interfaces to
+common cryptographic algorithms such as symmetric ciphers, message digests, and
 key derivation functions. For example, to encrypt something with
 ``cryptography``'s high level symmetric encryption recipe:
 
@@ -57,8 +57,15 @@ We maintain a `cryptography-dev`_ mailing list for development discussion.
 You can also join ``#cryptography-dev`` on Freenode to ask questions or get
 involved.
 
+Security
+~~~~~~~~
+
+Need to report a security issue? Please consult our `security reporting`_
+documentation.
+
 
 .. _`documentation`: https://cryptography.io/
 .. _`the installation documentation`: https://cryptography.io/en/latest/installation/
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
+.. _`security reporting`: https://cryptography.io/en/latest/security/

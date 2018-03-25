@@ -37,6 +37,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
     .. method:: encrypt(data)
 
+        Encrypts data passed. The result of this encryption is known as a
+        "Fernet token" and has strong privacy and authenticity guarantees.
+
         :param bytes data: The message you would like to encrypt.
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
@@ -51,6 +54,11 @@ has support for implementing key rotation via :class:`MultiFernet`.
             therefore be visible to a possible attacker.
 
     .. method:: decrypt(token, ttl=None)
+
+        Decrypts a Fernet token. If successfully decrypted you will receive the
+        original plaintext as the result, otherwise an exception will be
+        raised. It is safe to use this data immediately as Fernet verifies
+        that the data has not been tampered with prior to returning it.
 
         :param bytes token: The Fernet token. This is the result of calling
                             :meth:`encrypt`.
@@ -78,7 +86,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
     .. versionadded:: 0.7
 
     This class implements key rotation for Fernet. It takes a ``list`` of
-    :class:`Fernet` instances, and implements the same API:
+    :class:`Fernet` instances and implements the same API with the exception
+    of one additional method: :meth:`MultiFernet.rotate`:
 
     .. doctest::
 
@@ -101,6 +110,50 @@ has support for implementing key rotation via :class:`MultiFernet`.
     the front of the list to start encrypting new messages, and remove old keys
     as they are no longer needed.
 
+    Token rotation as offered by :meth:`MultiFernet.rotate` is a best practice
+    and manner of cryptographic hygiene designed to limit damage in the event of
+    an undetected event and to increase the difficulty of attacks. For example,
+    if an employee who had access to your company's fernet keys leaves, you'll
+    want to generate new fernet key, rotate all of the tokens currently deployed
+    using that new key, and then retire the old fernet key(s) to which the
+    employee had access.
+
+    .. method:: rotate(msg)
+
+        .. versionadded:: 2.2
+
+        Rotates a token by re-encrypting it under the :class:`MultiFernet`
+        instance's primary key. This preserves the timestamp that was originally
+        saved with the token. If a token has successfully been rotated then the
+        rotated token will be returned. If rotation fails this will raise an
+        exception.
+
+        .. doctest::
+
+           >>> from cryptography.fernet import Fernet, MultiFernet
+           >>> key1 = Fernet(Fernet.generate_key())
+           >>> key2 = Fernet(Fernet.generate_key())
+           >>> f = MultiFernet([key1, key2])
+           >>> token = f.encrypt(b"Secret message!")
+           >>> token
+           '...'
+           >>> f.decrypt(token)
+           'Secret message!'
+           >>> key3 = Fernet(Fernet.generate_key())
+           >>> f2 = MultiFernet([key3, key1, key2])
+           >>> rotated = f2.rotate(token)
+           >>> f2.decrypt(rotated)
+           'Secret message!'
+
+        :param bytes msg: The token to re-encrypt.
+        :returns bytes: A secure message that cannot be read or altered without
+           the key. This is URL-safe base64-encoded. This is referred to as a
+           "Fernet token".
+        :raises cryptography.fernet.InvalidToken: If a ``token`` is in any
+           way invalid this exception is raised.
+        :raises TypeError: This exception is raised if the ``msg`` is not
+           ``bytes``.
+
 
 .. class:: InvalidToken
 
@@ -113,7 +166,7 @@ Using passwords with Fernet
 It is possible to use passwords with Fernet. To do this, you need to run the
 password through a key derivation function such as
 :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`, bcrypt or
-scrypt.
+:class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`.
 
 .. doctest::
 
@@ -145,7 +198,7 @@ to derive the same key from the password in the future.
 
 The iteration count used should be adjusted to be as high as your server can
 tolerate. A good default is at least 100,000 iterations which is what Django
-`recommends`_ in 2014.
+recommended in 2014.
 
 Implementation
 --------------
@@ -163,7 +216,13 @@ Specifically it uses:
 
 For complete details consult the `specification`_.
 
+Limitations
+-----------
+
+Fernet is ideal for encrypting data that easily fits in memory. As a design
+feature it does not expose unauthenticated bytes. Unfortunately, this makes it
+generally unsuitable for very large files at this time.
+
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
-.. _`recommends`: https://github.com/django/django/blob/master/django/utils/crypto.py#L148

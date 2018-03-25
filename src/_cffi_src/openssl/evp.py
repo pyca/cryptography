@@ -19,16 +19,20 @@ typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
+static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
+static const int EVP_PKEY_X25519;
 static const int EVP_MAX_MD_SIZE;
-static const int EVP_CTRL_GCM_SET_IVLEN;
-static const int EVP_CTRL_GCM_GET_TAG;
-static const int EVP_CTRL_GCM_SET_TAG;
+static const int EVP_CTRL_AEAD_SET_IVLEN;
+static const int EVP_CTRL_AEAD_GET_TAG;
+static const int EVP_CTRL_AEAD_SET_TAG;
 
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
+static const int Cryptography_HAS_EVP_PKEY_DHX;
+static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 """
 
 FUNCTIONS = """
@@ -128,6 +132,13 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
+int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
+int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
+int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
+int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
+int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
+int EVP_PKEY_set_type(EVP_PKEY *, int);
+
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
@@ -136,9 +147,11 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
    without worrying about what OpenSSL we're running against. */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
-"""
+/* Added in 1.1.0 */
+size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
+int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
+                                   size_t);
 
-MACROS = """
 /* PKCS8_PRIV_KEY_INFO * became const in 1.1.0 */
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 
@@ -171,22 +184,16 @@ int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
 """
 
 CUSTOMIZATIONS = """
-#ifdef EVP_CTRL_GCM_SET_TAG
 const long Cryptography_HAS_GCM = 1;
-#else
-const long Cryptography_HAS_GCM = 0;
-const long EVP_CTRL_GCM_GET_TAG = -1;
-const long EVP_CTRL_GCM_SET_TAG = -1;
-const long EVP_CTRL_GCM_SET_IVLEN = -1;
-#endif
 
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
 const long Cryptography_HAS_PKEY_CTX = 1;
 
-#ifdef OPENSSL_NO_EC
-int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
-EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
-int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
+#ifdef EVP_PKEY_DHX
+const long Cryptography_HAS_EVP_PKEY_DHX = 1;
+#else
+const long Cryptography_HAS_EVP_PKEY_DHX = 0;
+const long EVP_PKEY_DHX = -1;
 #endif
 
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
@@ -194,26 +201,53 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
 }
 
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
     return EVP_MD_CTX_create();
 #else
     return EVP_MD_CTX_new();
 #endif
 }
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
     EVP_MD_CTX_destroy(ctx);
 #else
     EVP_MD_CTX_free(ctx);
 #endif
 }
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER) \
-    || defined(OPENSSL_NO_SCRYPT)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 0;
 int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
                       size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
+#else
+static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
+size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
+int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
+                                      size_t) = NULL;
+#endif
+
+/* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
+#if !defined(EVP_CTRL_AEAD_SET_IVLEN)
+# define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
+#endif
+#if !defined(EVP_CTRL_AEAD_GET_TAG)
+# define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
+#endif
+#if !defined(EVP_CTRL_AEAD_SET_TAG)
+# define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
+#endif
+
+/* This is tied to X25519 support so we reuse the Cryptography_HAS_X25519
+   conditional to remove it. OpenSSL 1.1.0 didn't have this define, but
+   1.1.1 will when it is released. We can remove this in the distant
+   future when we drop 1.1.0 support. */
+#ifndef EVP_PKEY_X25519
+#define EVP_PKEY_X25519 NID_X25519
 #endif
 """

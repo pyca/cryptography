@@ -22,12 +22,9 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void);
 void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
     return HMAC_CTX_new();
 #else
     /* This uses OPENSSL_zalloc in 1.1.0, which is malloc + memset */
@@ -39,7 +36,7 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
 
 
 void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx) {
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
     return HMAC_CTX_free(ctx);
 #else
     if (ctx != NULL) {

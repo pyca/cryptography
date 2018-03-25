@@ -1,7 +1,7 @@
 .. hazmat::
 
-Cipher-based message authentication code
-========================================
+Cipher-based message authentication code (CMAC)
+===============================================
 
 .. currentmodule:: cryptography.hazmat.primitives.cmac
 

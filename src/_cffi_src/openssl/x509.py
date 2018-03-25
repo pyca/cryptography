@@ -83,6 +83,7 @@ X509 *X509_new(void);
 void X509_free(X509 *);
 X509 *X509_dup(X509 *);
 int X509_cmp(const X509 *, const X509 *);
+int X509_up_ref(X509 *);
 
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
@@ -143,6 +144,7 @@ X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
 X509_CRL *X509_CRL_new(void);
+X509_CRL *X509_CRL_dup(X509_CRL *);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
@@ -212,9 +214,6 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
                                                  PKCS8_PRIV_KEY_INFO **);
 void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
-"""
-
-MACROS = """
 /* These became const X509 in 1.1.0 */
 int X509_get_ext_count(X509 *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
@@ -296,7 +295,7 @@ int i2d_RSAPrivateKey(RSA *, unsigned char **);
 int i2d_DSAPublicKey(DSA *, unsigned char **);
 int i2d_DSAPrivateKey(DSA *, unsigned char **);
 
-int X509_CRL_get_version(X509_CRL *);
+long X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
@@ -341,7 +340,7 @@ void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
 CUSTOMIZATIONS = """
 /* Added in 1.0.2 beta but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
 /* from x509/x_x509.c version 1.0.2 */
 void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
                          const X509 *x)
@@ -359,9 +358,9 @@ int X509_get_signature_nid(const X509 *x)
 
 #endif
 
-/* Added in 1.0.2beta3 but we need it in all versions now due to the great
+/* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102BETA3 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
@@ -374,30 +373,24 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 }
 #endif
 
-#ifdef OPENSSL_NO_EC
-int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
-EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;
-EC_KEY *(*d2i_EC_PUBKEY_bio)(BIO *, EC_KEY **) = NULL;
-int (*i2d_EC_PUBKEY_bio)(BIO *, EC_KEY *) = NULL;
-EC_KEY *(*d2i_ECPrivateKey)(EC_KEY **, const unsigned char **, long) = NULL;
-EC_KEY *(*d2i_ECPrivateKey_bio)(BIO *, EC_KEY **) = NULL;
-int (*i2d_ECPrivateKey)(EC_KEY *, unsigned char **) = NULL;
-int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
-
-EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
-int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
-#endif
-
 /* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
    IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
    it available on all OpenSSLs. */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
     return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
+#else
+    return X509_REVOKED_dup(rev);
+#endif
 }
 
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+
+int X509_up_ref(X509 *x) {
+   return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+}
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 {

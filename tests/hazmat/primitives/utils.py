@@ -47,10 +47,9 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
 
 
 def encrypt_test(backend, cipher_factory, mode_factory, params):
-    if not backend.cipher_supported(
+    assert backend.cipher_supported(
         cipher_factory(**params), mode_factory(**params)
-    ):
-        pytest.skip("cipher/mode combo is unsupported by this backend")
+    )
 
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
@@ -190,18 +189,6 @@ def base_hash_test(backend, algorithm, digest_size, block_size):
     assert copy.finalize() == m.finalize()
 
 
-def generate_long_string_hash_test(hash_factory, md):
-    def test_long_string_hash(self, backend):
-        long_string_hash_test(backend, hash_factory, md)
-    return test_long_string_hash
-
-
-def long_string_hash_test(backend, algorithm, md):
-    m = hashes.Hash(algorithm, backend=backend)
-    m.update(b"a" * 1000000)
-    assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
-
-
 def generate_base_hmac_test(hash_cls):
     def test_base_hmac(self, backend):
         base_hmac_test(backend, hash_cls)
@@ -304,8 +291,6 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         mode_factory(binascii.unhexlify(b"0" * 24)),
         backend
     )
-    with pytest.raises(ValueError):
-        cipher.decryptor()
 
     with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")
@@ -449,17 +434,23 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
     )
     public_key = public_numbers.public_key(backend)
     pad = pad_factory(params, hash_alg)
-    verifier = public_key.verifier(
-        binascii.unhexlify(params["s"]),
-        pad,
-        hash_alg
-    )
-    verifier.update(binascii.unhexlify(params["msg"]))
+    signature = binascii.unhexlify(params["s"])
+    msg = binascii.unhexlify(params["msg"])
     if params["fail"]:
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                msg,
+                pad,
+                hash_alg
+            )
     else:
-        verifier.verify()
+        public_key.verify(
+            signature,
+            msg,
+            pad,
+            hash_alg
+        )
 
 
 def _check_rsa_private_numbers(skey):

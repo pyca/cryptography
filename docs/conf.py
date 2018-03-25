@@ -71,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Cryptography'
-copyright = '2013-2016, Individual Contributors'
+copyright = '2013-2017, Individual Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -176,4 +176,9 @@ epub_theme = 'epub'
 
 # Retry requests in the linkcheck builder so that we're resillient against
 # transient network errors.
-linkcheck_retries = 2
+linkcheck_retries = 5
+
+linkcheck_ignore = [
+    # Certificate is issued by a Japanese CA that isn't publicly trusted
+    "https://www.cryptrec.go.jp",
+]

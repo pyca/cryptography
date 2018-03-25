@@ -4,14 +4,41 @@
 
 from __future__ import absolute_import, division, print_function
 
+from enum import Enum
+
 import six
 
 from cryptography import utils
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
+class _ASN1Type(Enum):
+    UTF8String = 12
+    NumericString = 18
+    PrintableString = 19
+    T61String = 20
+    IA5String = 22
+    UTCTime = 23
+    GeneralizedTime = 24
+    VisibleString = 26
+    UniversalString = 28
+    BMPString = 30
+
+
+_ASN1_TYPE_TO_ENUM = dict((i.value, i) for i in _ASN1Type)
+_SENTINEL = object()
+_NAMEOID_DEFAULT_TYPE = {
+    NameOID.COUNTRY_NAME: _ASN1Type.PrintableString,
+    NameOID.JURISDICTION_COUNTRY_NAME: _ASN1Type.PrintableString,
+    NameOID.SERIAL_NUMBER: _ASN1Type.PrintableString,
+    NameOID.DN_QUALIFIER: _ASN1Type.PrintableString,
+    NameOID.EMAIL_ADDRESS: _ASN1Type.IA5String,
+    NameOID.DOMAIN_COMPONENT: _ASN1Type.IA5String,
+}
+
+
 class NameAttribute(object):
-    def __init__(self, oid, value):
+    def __init__(self, oid, value, _type=_SENTINEL):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
@@ -22,13 +49,33 @@ class NameAttribute(object):
                 "value argument must be a text type."
             )
 
-        if oid == NameOID.COUNTRY_NAME and len(value.encode("utf8")) != 2:
-            raise ValueError(
-                "Country name must be a 2 character country code"
-            )
+        if (
+            oid == NameOID.COUNTRY_NAME or
+            oid == NameOID.JURISDICTION_COUNTRY_NAME
+        ):
+            if len(value.encode("utf8")) != 2:
+                raise ValueError(
+                    "Country name must be a 2 character country code"
+                )
+
+        if len(value) == 0:
+            raise ValueError("Value cannot be an empty string")
+
+        # The appropriate ASN1 string type varies by OID and is defined across
+        # multiple RFCs including 2459, 3280, and 5280. In general UTF8String
+        # is preferred (2459), but 3280 and 5280 specify several OIDs with
+        # alternate types. This means when we see the sentinel value we need
+        # to look up whether the OID has a non-UTF8 type. If it does, set it
+        # to that. Otherwise, UTF8!
+        if _type == _SENTINEL:
+            _type = _NAMEOID_DEFAULT_TYPE.get(oid, _ASN1Type.UTF8String)
+
+        if not isinstance(_type, _ASN1Type):
+            raise TypeError("_type must be from the _ASN1Type enum")
 
         self._oid = oid
         self._value = value
+        self._type = _type
 
     oid = utils.read_only_property("_oid")
     value = utils.read_only_property("_value")

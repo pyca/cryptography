@@ -143,20 +143,6 @@ class SHA512(object):
 
 
 @utils.register_interface(HashAlgorithm)
-class RIPEMD160(object):
-    name = "ripemd160"
-    digest_size = 20
-    block_size = 64
-
-
-@utils.register_interface(HashAlgorithm)
-class Whirlpool(object):
-    name = "whirlpool"
-    digest_size = 64
-    block_size = 64
-
-
-@utils.register_interface(HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16

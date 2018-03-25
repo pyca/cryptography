@@ -29,16 +29,13 @@ void DSA_get0_pqg(const DSA *, const BIGNUM **, const BIGNUM **,
 int DSA_set0_pqg(DSA *, BIGNUM *, BIGNUM *, BIGNUM *);
 void DSA_get0_key(const DSA *, const BIGNUM **, const BIGNUM **);
 int DSA_set0_key(DSA *, BIGNUM *, BIGNUM *);
-"""
-
-MACROS = """
 int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
                                int *, unsigned long *, BN_GENCB *);
 """
 
 CUSTOMIZATIONS = """
 /* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
 void DSA_get0_pqg(const DSA *d,
                   const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
 {

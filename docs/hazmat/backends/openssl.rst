@@ -3,7 +3,7 @@
 OpenSSL backend
 ===============
 
-The `OpenSSL`_ C library. Cryptography supports OpenSSL version ``1.0.0`` and
+The `OpenSSL`_ C library. Cryptography supports OpenSSL version 1.0.1 and
 greater.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
@@ -35,6 +35,20 @@ greater.
     .. attribute:: name
 
         The string name of this backend: ``"openssl"``
+
+    .. method:: openssl_version_text()
+
+        :return text: The friendly string name of the loaded OpenSSL library.
+            This is not necessarily the same version as it was compiled against.
+
+    .. method:: openssl_version_number()
+
+        .. versionadded:: 1.8
+
+        :return int: The integer version of the loaded OpenSSL library. This is
+            defined in ``opensslv.h`` as ``OPENSSL_VERSION_NUMBER`` and is
+            typically shown in hexadecimal (e.g. ``0x1010003f``). This is
+            not necessarily the same version as it was compiled against.
 
     .. method:: activate_osrandom_engine()
 
@@ -78,8 +92,9 @@ When importing only the binding it is added to the engine list but
 OS random sources
 -----------------
 
-On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
-utilizes the `Yarrow`_ algorithm.
+On macOS and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random``. The
+implementation on macOS uses the `Yarrow`_ algorithm. FreeBSD uses the
+`Fortuna`_ algorithm.
 
 On Windows the implementation of ``CryptGenRandom`` depends on which version of
 the operation system you are using. See the `Microsoft documentation`_ for more
@@ -106,5 +121,6 @@ seeded from the same pool as ``/dev/random``.
 
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_private_keys_.28Debian-specific.29
+.. _`Fortuna`: https://en.wikipedia.org/wiki/Fortuna_(PRNG)
 .. _`Yarrow`: https://en.wikipedia.org/wiki/Yarrow_algorithm
 .. _`Microsoft documentation`: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379942(v=vs.85).aspx

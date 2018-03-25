@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os
 
 import pytest
 
@@ -15,13 +16,15 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
-from ...utils import raises_unsupported_algorithm
+from ...utils import (
+    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+)
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDF(object):
     def test_length_limit(self, backend):
-        big_length = 255 * (hashes.SHA256().digest_size // 8) + 1
+        big_length = 255 * hashes.SHA256().digest_size + 1
 
         with pytest.raises(ValueError):
             HKDF(
@@ -152,6 +155,21 @@ class TestHKDF(object):
         )
 
         assert hkdf.derive(b"\x01" * 16) == b"gJ\xfb{"
+
+    def test_derive_long_output(self, backend):
+        vector = load_vectors_from_file(
+            os.path.join("KDF", "hkdf-generated.txt"), load_nist_vectors
+        )[0]
+        hkdf = HKDF(
+            hashes.SHA256(),
+            int(vector["l"]),
+            salt=vector["salt"],
+            info=vector["info"],
+            backend=backend
+        )
+        ikm = binascii.unhexlify(vector["ikm"])
+
+        assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)

@@ -5,8 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from docutils import nodes
-
-from sphinx.util.compat import Directive, make_admonition
+from docutils.parsers.rst import Directive
 
 
 DANGER_MESSAGE = """
@@ -29,20 +28,11 @@ class HazmatDirective(Directive):
         if self.content:
             message += DANGER_ALTERNATE.format(alternate=self.content[0])
 
-        ad = make_admonition(
-            Hazmat,
-            self.name,
-            [],
-            self.options,
-            nodes.paragraph("", message),
-            self.lineno,
-            self.content_offset,
-            self.block_text,
-            self.state,
-            self.state_machine
-        )
-        ad[0].line = self.lineno
-        return ad
+        content = nodes.paragraph("", message)
+        admonition_node = Hazmat("\n".join(content))
+        self.state.nested_parse(content, self.content_offset, admonition_node)
+        admonition_node.line = self.lineno
+        return [admonition_node]
 
 
 class Hazmat(nodes.Admonition, nodes.Element):
@@ -68,3 +58,7 @@ def setup(app):
         latex=(latex_visit_hazmat_node, depart_hazmat_node),
     )
     app.add_directive("hazmat", HazmatDirective)
+
+    return {
+        "parallel_read_safe": True,
+    }

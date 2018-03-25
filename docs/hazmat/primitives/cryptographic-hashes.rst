@@ -1,7 +1,7 @@
 .. hazmat::
 
-Message digests
-===============
+Message digests (Hashing)
+=========================
 
 .. module:: cryptography.hazmat.primitives.hashes
 
@@ -79,21 +79,6 @@ Message digests
 
 .. _cryptographic-hash-algorithms:
 
-SHA-1
-~~~~~
-
-.. attention::
-
-    NIST has deprecated SHA-1 in favor of the SHA-2 variants. New applications
-    are strongly suggested to use SHA-2 over SHA-1.
-
-.. class:: SHA1()
-
-    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
-    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
-    vulnerable to practical collision attacks, though no actual collisions are
-    publicly known.
-
 SHA-2 family
 ~~~~~~~~~~~~
 
@@ -149,21 +134,21 @@ SHA-family of hashes.
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
-RIPEMD160
-~~~~~~~~~
+SHA-1
+~~~~~
 
-.. class:: RIPEMD160()
+.. warning::
 
-    RIPEMD160 is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 160-bit message digest.
+    SHA-1 is a deprecated hash algorithm that has practical known collision
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
 
-Whirlpool
-~~~~~~~~~
+.. class:: SHA1()
 
-.. class:: Whirlpool()
-
-    Whirlpool is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It produces a 512-bit message digest.
+    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
+    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
+    vulnerable to practical collision attacks, and collisions have been
+    demonstrated.
 
 MD5
 ~~~
@@ -190,7 +175,7 @@ Interfaces
         :type: str
 
         The standard name for the hash algorithm, for example: ``"sha256"`` or
-        ``"whirlpool"``.
+        ``"blake2b"``.
 
     .. attribute:: digest_size
 
@@ -224,6 +209,6 @@ Interfaces
         :return: A :class:`HashContext` that is a copy of the current context.
 
 
-.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`Lifetimes of cryptographic hash functions`: https://valerieaurora.org/hash.html
 .. _`BLAKE2`: https://blake2.net
 .. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
