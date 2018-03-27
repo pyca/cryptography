@@ -8,6 +8,14 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+.. _v2-2-2:
+
+2.2.2 - 2018-03-27
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.0h.
+
 .. _v2-2-1:
 
 2.2.1 - 2018-03-20
