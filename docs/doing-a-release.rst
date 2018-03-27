@@ -7,28 +7,26 @@ Verifying and upgrading OpenSSL version
 ---------------------------------------
 
 The release process creates wheels bundling OpenSSL for Windows, macOS, and
-Linux. Check that the Windows and macOS Jenkins builders have the latest
-version of OpenSSL installed and verify that the latest version is present in
-the ``pyca/cryptography-manylinux1`` docker containers. If anything is out
-of date:
+Linux. If an OpenSSL version has been released follow these steps to upgrade
+the release environment.
 
-Upgrading Windows
-~~~~~~~~~~~~~~~~~
+* Windows builders
 
-Run the ``openssl-release-1.1`` Jenkins job, then copy the resulting artifacts
-to the Windows builders and unzip them in the root of the file system.
+  * Run the ``openssl-release-1.1`` Jenkins job.
 
-Upgrading macOS
-~~~~~~~~~~~~~~~
+  * Copy the resulting artifacts to the Windows builders and unzip them in
+    the root of the file system.
 
-Run the ``update-brew-openssl`` Jenkins job.
+* macOS builders
 
-Upgrading ``manylinux1`` docker containers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  * Send a pull request to ``homebrew`` updating the ``openssl@1.1`` formula.
 
-Send a pull request to the ``pyca/infra`` project updating the version and
-file hash in ``cryptography-manylinux1/install_openssl.sh``. Once this is
-merged the updated image will be available to the wheel builder.
+  * Run the ``update-brew-openssl`` Jenkins job.
+
+* ``manylinux1`` builders
+
+  * Send a pull request to the ``pyca/infra`` project updating the version and
+    file hash in ``cryptography-manylinux1/install_openssl.sh``.
 
 Bumping the version number
 --------------------------
