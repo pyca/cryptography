@@ -3,7 +3,7 @@ Changelog
 
 .. _v2-2-2:
 
-2.2.1 - 2018-03-27
+2.2.2 - 2018-03-27
 ~~~~~~~~~~~~~~~~~~
 
 * Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
