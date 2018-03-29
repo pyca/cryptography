@@ -105,7 +105,7 @@ def _encode_name_gc(backend, attributes):
 
 def _encode_sk_name_entry(backend, attributes):
     """
-    The sk_X50_NAME_ENTRY created will not be gc'd.
+    The sk_X509_NAME_ENTRY created will not be gc'd.
     """
     stack = backend._lib.sk_X509_NAME_ENTRY_new_null()
     for attribute in attributes:
