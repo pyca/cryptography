@@ -176,6 +176,8 @@ X.509
   a distinguished name with an ``x500UniqueIdentifier``.
 * ``utf8-dnsname.pem`` - A certificate containing non-ASCII characters in the
   DNS name entries of the SAN extension.
+* ``badasn1time.pem`` - A certificate containing an incorrectly specified
+  UTCTime in its validity->not_after.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
