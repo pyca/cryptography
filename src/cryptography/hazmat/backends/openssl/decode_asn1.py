@@ -736,10 +736,8 @@ def _parse_asn1_time(backend, asn1_time):
     )
     if generalized_time == backend._ffi.NULL:
         raise ValueError(
-            "Couldn't parse ASN.1 time as generalizedtime {}".format(
-                _asn1_string_to_bytes(
-                    backend, asn1_time
-                ).decode("utf8", "replace")
+            "Couldn't parse ASN.1 time as generalizedtime {!r}".format(
+                _asn1_string_to_bytes(backend, asn1_time)
             )
         )
 

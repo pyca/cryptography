@@ -3761,8 +3761,10 @@ class TestOtherCertificate(object):
             backend,
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as exc:
             cert.not_valid_after
+
+        assert exc.value.message.find('19020701025736Z') > -1
 
 
 class TestNameAttribute(object):
