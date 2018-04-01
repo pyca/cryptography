@@ -111,5 +111,5 @@ The HTML documentation index can now be found at
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
 .. _`pip`: https://pypi.python.org/pypi/pip
 .. _`sphinx`: https://pypi.python.org/pypi/Sphinx
-.. _`reStructured Text`: http://sphinx-doc.org/rest.html
+.. _`reStructured Text`: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 .. _`this Github issue`: https://github.com/rfk/pyenchant/issues/42
