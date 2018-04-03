@@ -3752,6 +3752,18 @@ class TestOtherCertificate(object):
         with pytest.raises(ValueError):
             cert.public_key()
 
+    def test_bad_time_in_validity(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "badasn1time.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        with pytest.raises(ValueError, match='19020701025736Z'):
+            cert.not_valid_after
+
 
 class TestNameAttribute(object):
     EXPECTED_TYPES = [

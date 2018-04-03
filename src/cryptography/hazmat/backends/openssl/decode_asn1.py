@@ -734,7 +734,13 @@ def _parse_asn1_time(backend, asn1_time):
     generalized_time = backend._lib.ASN1_TIME_to_generalizedtime(
         asn1_time, backend._ffi.NULL
     )
-    backend.openssl_assert(generalized_time != backend._ffi.NULL)
+    if generalized_time == backend._ffi.NULL:
+        raise ValueError(
+            "Couldn't parse ASN.1 time as generalizedtime {!r}".format(
+                _asn1_string_to_bytes(backend, asn1_time)
+            )
+        )
+
     generalized_time = backend._ffi.gc(
         generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
     )
