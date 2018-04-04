@@ -22,7 +22,10 @@ INCLUDES = """
 #include <openssl/e_os2.h>
 #endif
 #if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <Wincrypt.h>
+#include <Winsock2.h>
 #endif
 
 #define CRYPTOGRAPHY_OPENSSL_102_OR_GREATER \
