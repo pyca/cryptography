@@ -39,8 +39,6 @@ int Cryptography_X509_NAME_ENTRY_set(X509_NAME_ENTRY *);
 /* These became const X509_NAME * in 1.1.0 */
 int X509_NAME_entry_count(X509_NAME *);
 X509_NAME_ENTRY *X509_NAME_get_entry(X509_NAME *, int);
-/* manual for X509_NAME_PRINT_EX ``strongly discourages'' the use of
-   X509_NAME_oneline */
 char *X509_NAME_oneline(X509_NAME *, char *, int);
 int X509_NAME_print_ex(BIO *, X509_NAME *, int, unsigned long);
 
