@@ -158,9 +158,9 @@ def downstreams = [
             virtualenv .venv
             source .venv/bin/activate
             pip install ../cryptography
-            pip install pytest pytest-mock mock
+            pip install -r test/requirements.txt
             pip install -e .
-            AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID="arn:aws:kms:us-west-2:nonsense" pytest -m local -l
+            pytest -m local -l
         """
     ],
     [
