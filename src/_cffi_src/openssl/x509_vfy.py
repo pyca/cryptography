@@ -246,7 +246,7 @@ static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
 
-#ifndef CRYPTOGRAPHY_IS_LIBRESSL
+#if !defined(CRYPTOGRAPHY_IS_LIBRESSL) || LIBRESSL_VERSION_NUMBER < 0x2070200fL
 int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
                                    size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
