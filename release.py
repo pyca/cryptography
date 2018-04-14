@@ -117,6 +117,10 @@ def release(version):
         "PURGE", "https://pypi.python.org/simple/cryptography/"
     )
     response.raise_for_status()
+    response = session.request(
+        "PURGE", "https://pypi.org/simple/cryptography/"
+    )
+    response.raise_for_status()
 
     token = getpass.getpass("Input the Jenkins token: ")
     response = session.get(

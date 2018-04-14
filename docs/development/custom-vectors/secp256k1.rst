@@ -29,4 +29,4 @@ the following python script was run to generate the vector files.
 Download link: :download:`verify_secp256k1.py
 </development/custom-vectors/secp256k1/verify_secp256k1.py>`
 
-.. _`pure Python ecdsa`: https://pypi.python.org/pypi/ecdsa
+.. _`pure Python ecdsa`: https://pypi.org/project/ecdsa/
