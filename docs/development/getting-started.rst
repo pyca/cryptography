@@ -110,6 +110,6 @@ The HTML documentation index can now be found at
 .. _`tox`: https://pypi.org/project/tox/
 .. _`virtualenv`: https://pypi.org/project/virtualenv/
 .. _`pip`: https://pypi.org/project/pip/
-.. _`sphinx`: https://pypi.org/project/sphinx/
+.. _`sphinx`: https://pypi.org/project/Sphinx/
 .. _`reStructured Text`: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 .. _`this Github issue`: https://github.com/rfk/pyenchant/issues/42
