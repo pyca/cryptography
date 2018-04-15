@@ -2,7 +2,7 @@ pyca/cryptography
 =================
 
 .. image:: https://img.shields.io/pypi/v/cryptography.svg
-    :target: https://pypi.python.org/pypi/cryptography/
+    :target: https://pypi.org/project/cryptography/
     :alt: Latest Version
 
 .. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest

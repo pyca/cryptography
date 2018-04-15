@@ -106,10 +106,10 @@ The HTML documentation index can now be found at
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`OpenSSL`: https://www.openssl.org
-.. _`pytest`: https://pypi.python.org/pypi/pytest
-.. _`tox`: https://pypi.python.org/pypi/tox
-.. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
-.. _`pip`: https://pypi.python.org/pypi/pip
-.. _`sphinx`: https://pypi.python.org/pypi/Sphinx
+.. _`pytest`: https://pypi.org/project/pytest/
+.. _`tox`: https://pypi.org/project/tox/
+.. _`virtualenv`: https://pypi.org/project/virtualenv/
+.. _`pip`: https://pypi.org/project/pip/
+.. _`sphinx`: https://pypi.org/project/Sphinx/
 .. _`reStructured Text`: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 .. _`this Github issue`: https://github.com/rfk/pyenchant/issues/42
