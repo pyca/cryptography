@@ -110,18 +110,6 @@ def release(version):
 
     session = requests.Session()
 
-    # This tells the CDN to delete the cached response for the URL. We do this
-    # so that the Jenkins builders will see the new sdist immediately when they
-    # go to build the wheels.
-    response = session.request(
-        "PURGE", "https://pypi.python.org/simple/cryptography/"
-    )
-    response.raise_for_status()
-    response = session.request(
-        "PURGE", "https://pypi.org/simple/cryptography/"
-    )
-    response.raise_for_status()
-
     token = getpass.getpass("Input the Jenkins token: ")
     response = session.get(
         "{0}/buildWithParameters".format(JENKINS_URL),
