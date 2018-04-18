@@ -10,11 +10,17 @@ INCLUDES = """
 
 TYPES = """
 typedef ... BN_CTX;
+typedef ... BN_MONT_CTX;
 typedef ... BIGNUM;
 typedef int... BN_ULONG;
 """
 
 FUNCTIONS = """
+#define BN_FLG_CONSTTIME ...
+
+void BN_set_flags(BIGNUM *, int);
+int BN_get_flags(const BIGNUM *, int);
+
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 void BN_clear_free(BIGNUM *);
@@ -28,6 +34,10 @@ void BN_CTX_free(BN_CTX *);
 void BN_CTX_start(BN_CTX *);
 BIGNUM *BN_CTX_get(BN_CTX *);
 void BN_CTX_end(BN_CTX *);
+
+BN_MONT_CTX *BN_MONT_CTX_new(void);
+int BN_MONT_CTX_set(BN_MONT_CTX *, BIGNUM *, BN_CTX *);
+void BN_MONT_CTX_free(BN_MONT_CTX *);
 
 BIGNUM *BN_copy(BIGNUM *, const BIGNUM *);
 BIGNUM *BN_dup(const BIGNUM *);
@@ -63,6 +73,10 @@ int BN_mod_sqr(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 int BN_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 int BN_mod_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
                BN_CTX *);
+int BN_mod_exp_mont(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
+                    BN_CTX *, BN_MONT_CTX *);
+int BN_mod_exp_mont_consttime(BIGNUM *, const BIGNUM *, const BIGNUM *,
+                              const BIGNUM *, BN_CTX *, BN_MONT_CTX *);
 int BN_gcd(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 BIGNUM *BN_mod_inverse(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 
