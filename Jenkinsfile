@@ -346,9 +346,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
-                                # TODO: drop --no-cache-dir once pip fixes:
-                                # https://github.com/pypa/pip/issues/5231
-                                pip install --no-cache-dir coverage==4.3.4
+                                pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV,IMAGE_NAME
                             """
                         }
