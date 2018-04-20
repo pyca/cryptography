@@ -235,12 +235,14 @@ def cryptography_has_psk():
         "SSL_CTX_set_psk_client_callback",
     ]
 
+
 def cryptography_has_custom_ext():
     return [
         "SSL_CTX_add_client_custom_ext",
         "SSL_CTX_add_server_custom_ext",
         "SSL_extension_supported",
     ]
+
 
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
