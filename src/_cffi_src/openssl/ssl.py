@@ -48,6 +48,7 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
+static const long Cryptography_HAS_CUSTOM_EXT;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -488,6 +489,35 @@ long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
 long DTLS_set_link_mtu(SSL *, long);
 long DTLS_get_link_min_mtu(SSL *);
+
+/* Custom extensions. */
+typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
+                                 const unsigned char **,
+                                 size_t *, int *,
+                                 void *);
+
+typedef void (*custom_ext_free_cb)(SSL *, unsigned int,
+                                   const unsigned char *,
+                                   void *);
+
+typedef int (*custom_ext_parse_cb)(SSL *, unsigned int,
+                                   const unsigned char *,
+                                   size_t, int *,
+                                   void *);
+
+int SSL_CTX_add_client_custom_ext(SSL_CTX *, unsigned int,
+                                  custom_ext_add_cb,
+                                  custom_ext_free_cb, void *,
+                                  custom_ext_parse_cb,
+                                  void *);
+
+int SSL_CTX_add_server_custom_ext(SSL_CTX *, unsigned int,
+                                  custom_ext_add_cb,
+                                  custom_ext_free_cb, void *,
+                                  custom_ext_parse_cb,
+                                  void *);
+
+int SSL_extension_supported(unsigned int);
 """
 
 CUSTOMIZATIONS = """
@@ -707,5 +737,43 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
                                         )) = NULL;
 #else
 static const long Cryptography_HAS_PSK = 1;
+#endif
+
+/*
+ * Custom extensions were added in 1.0.2. 1.1.1 is adding a more general
+ * SSL_CTX_add_custom_ext function, but we're not binding that yet.
+ */
+#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
+static const long Cryptography_HAS_CUSTOM_EXT = 1;
+#else
+static const long Cryptography_HAS_CUSTOM_EXT = 0;
+
+typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
+                                 const unsigned char **,
+                                 size_t *, int *,
+                                 void *);
+
+typedef void (*custom_ext_free_cb)(SSL *, unsigned int,
+                                   const unsigned char *,
+                                   void *);
+
+typedef int (*custom_ext_parse_cb)(SSL *, unsigned int,
+                                   const unsigned char *,
+                                   size_t, int *,
+                                   void *);
+
+int (*SSL_CTX_add_client_custom_ext)(SSL_CTX *, unsigned int,
+                                     custom_ext_add_cb,
+                                     custom_ext_free_cb, void *,
+                                     custom_ext_parse_cb,
+                                     void *) = NULL;
+
+int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
+                                     custom_ext_add_cb,
+                                     custom_ext_free_cb, void *,
+                                     custom_ext_parse_cb,
+                                     void *) = NULL;
+
+int (*SSL_extension_supported)(unsigned int) = NULL;
 #endif
 """

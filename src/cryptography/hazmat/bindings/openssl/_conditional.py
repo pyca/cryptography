@@ -236,6 +236,14 @@ def cryptography_has_psk():
     ]
 
 
+def cryptography_has_custom_ext():
+    return [
+        "SSL_CTX_add_client_custom_ext",
+        "SSL_CTX_add_server_custom_ext",
+        "SSL_extension_supported",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -287,4 +295,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_FIPS": cryptography_has_fips,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
+    "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
 }
