@@ -287,11 +287,10 @@ setup(
         "idna >= 2.1",
         "asn1crypto >= 0.21.0",
         "six >= 1.4.1",
-    ],
+    ] + setup_requirements,
     tests_require=test_requirements,
     extras_require={
         ":python_version < '3'": ["enum34", "ipaddress"],
-        ":platform_python_implementation != 'PyPy'": ["cffi >= 1.7"],
 
         "test": test_requirements,
         "docs": [
