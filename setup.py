@@ -284,11 +284,10 @@ setup(
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
 
     install_requires=[
-        "cffi >= 1.7, != 1.11.3",
         "idna >= 2.1",
         "asn1crypto >= 0.21.0",
         "six >= 1.4.1",
-    ],
+    ] + setup_requirements,
     tests_require=test_requirements,
     extras_require={
         ":python_version < '3'": ["enum34", "ipaddress"],
