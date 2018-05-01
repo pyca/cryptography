@@ -148,6 +148,29 @@ SHA-family of hashes.
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
+SHA-3 family
+~~~~~~~~~~~~
+
+.. class:: SHA3_224()
+
+    SHA3/224 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 224-bit message digest.
+
+.. class:: SHA3_256()
+
+    SHA3/256 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 256-bit message digest.
+
+.. class:: SHA3_384()
+
+    SHA3/384 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 384-bit message digest.
+
+.. class:: SHA3_512()
+
+    SHA3/512 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 512-bit message digest.
+
 SHA-1
 ~~~~~
 

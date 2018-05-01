@@ -182,3 +182,71 @@ class TestBLAKE2s256(object):
         ],
         hashes.BLAKE2s(digest_size=32),
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_224()),
+    skip_message="Does not support SHA3_224",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSHA3224(object):
+    test_SHA3_224 = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "SHA3"),
+        [
+            "SHA3_224LongMsg.rsp",
+            "SHA3_224ShortMsg.rsp",
+        ],
+        hashes.SHA3_224(),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_256()),
+    skip_message="Does not support SHA3_256",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSHA3256(object):
+    test_SHA3_256 = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "SHA3"),
+        [
+            "SHA3_256LongMsg.rsp",
+            "SHA3_256ShortMsg.rsp",
+        ],
+        hashes.SHA3_256(),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_384()),
+    skip_message="Does not support SHA3_384",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSHA3384(object):
+    test_SHA3_384 = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "SHA3"),
+        [
+            "SHA3_384LongMsg.rsp",
+            "SHA3_384ShortMsg.rsp",
+        ],
+        hashes.SHA3_384(),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_512()),
+    skip_message="Does not support SHA3_512",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSHA3512(object):
+    test_SHA3_512 = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "SHA3"),
+        [
+            "SHA3_512LongMsg.rsp",
+            "SHA3_512ShortMsg.rsp",
+        ],
+        hashes.SHA3_512(),
+    )
