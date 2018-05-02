@@ -21,7 +21,7 @@ class _X448PublicKey(object):
         res = self._backend._lib.EVP_PKEY_get1_tls_encodedpoint(
             self._evp_pkey, ucharpp
         )
-        self._backend.openssl_assert(res == 32)
+        self._backend.openssl_assert(res == 56)
         self._backend.openssl_assert(ucharpp[0] != self._backend._ffi.NULL)
         data = self._backend._ffi.gc(
             ucharpp[0], self._backend._lib.OPENSSL_free

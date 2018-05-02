@@ -1954,19 +1954,19 @@ class Backend(object):
         return _X448PublicKey(self, evp_pkey)
 
     def x448_load_private_bytes(self, data):
+        import pdb; pdb.set_trace()
         # OpenSSL only has facilities for loading PKCS8 formatted private
         # keys using the algorithm identifiers specified in
         # https://tools.ietf.org/html/draft-ietf-curdle-pkix-03.
-        # This is the standard PKCS8 prefix for a 32 byte X448 key.
+        # This is the standard PKCS8 prefix for a 56 byte X448 key.
+        # XXX this was for x25519
         # The form is:
         #    0:d=0  hl=2 l=  46 cons: SEQUENCE
         #    2:d=1  hl=2 l=   1 prim: INTEGER           :00
         #    5:d=1  hl=2 l=   5 cons: SEQUENCE
         #    7:d=2  hl=2 l=   3 prim: OBJECT            :1.3.101.110
         #    12:d=1  hl=2 l=  34 prim: OCTET STRING      (the key)
-        # Of course there's a bit more complexity. In reality OCTET STRING
-        # contains an OCTET STRING of length 32! So the last two bytes here
-        # are \x04\x20, which is an OCTET STRING of length 32.
+        #
         pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
         bio = self._bytes_to_bio(pkcs8_prefix + data)
         evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
