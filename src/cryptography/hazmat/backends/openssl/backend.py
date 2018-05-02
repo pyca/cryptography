@@ -1899,7 +1899,7 @@ class Backend(object):
     def x25519_load_private_bytes(self, data):
         # OpenSSL only has facilities for loading PKCS8 formatted private
         # keys using the algorithm identifiers specified in
-        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-03.
+        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-09.
         # This is the standard PKCS8 prefix for a 32 byte X25519 key.
         # The form is:
         #    0:d=0  hl=2 l=  46 cons: SEQUENCE
