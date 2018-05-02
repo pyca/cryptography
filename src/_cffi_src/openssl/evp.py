@@ -23,7 +23,6 @@ static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
 static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_X448;
-
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
