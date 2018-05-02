@@ -1996,7 +1996,7 @@ class Backend(object):
         return _X448PrivateKey(self, evp_pkey)
 
     def x448_supported(self):
-        return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+        return self._lib.CRYPTOGRAPHY_OPENSSL_111_OR_GREATER
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
