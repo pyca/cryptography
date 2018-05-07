@@ -77,7 +77,7 @@ class TestX448Exchange(object):
         assert computed_shared_key == shared_key
 
     # These vectors are also from RFC 7748
-    # https://tools.ietf.org/html/rfc7748#section-6.1
+    # https://tools.ietf.org/html/rfc7748#section-6.2
     @pytest.mark.parametrize(
         ("private_bytes", "public_bytes"),
         [
