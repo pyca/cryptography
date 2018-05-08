@@ -7,13 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 def cryptography_has_ec2m():
     return [
-        "EC_GF2m_simple_method",
         "EC_POINT_set_affine_coordinates_GF2m",
         "EC_POINT_get_affine_coordinates_GF2m",
         "EC_POINT_set_compressed_coordinates_GF2m",
-        "EC_GROUP_set_curve_GF2m",
-        "EC_GROUP_get_curve_GF2m",
-        "EC_GROUP_new_curve_GF2m",
     ]
 
 
