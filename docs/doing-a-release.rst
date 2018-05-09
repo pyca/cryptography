@@ -3,32 +3,19 @@ Doing a release
 
 Doing a release of ``cryptography`` requires a few steps.
 
-Verifying and upgrading OpenSSL version
----------------------------------------
+Verifying OpenSSL version
+-------------------------
 
 The release process creates wheels bundling OpenSSL for Windows, macOS, and
 Linux. Check that the Windows and macOS Jenkins builders have the latest
 version of OpenSSL installed and verify that the latest version is present in
 the ``pyca/cryptography-manylinux1`` docker containers. If anything is out
-of date:
+of date follow the instructions for upgrading OpenSSL.
 
-Upgrading Windows
-~~~~~~~~~~~~~~~~~
+Upgrading OpenSSL
+-----------------
 
-Run the ``openssl-release-1.1`` Jenkins job, then copy the resulting artifacts
-to the Windows builders and unzip them in the root of the file system.
-
-Upgrading macOS
-~~~~~~~~~~~~~~~
-
-Run the ``update-brew-openssl`` Jenkins job.
-
-Upgrading ``manylinux1`` docker containers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Send a pull request to the ``pyca/infra`` project updating the version and
-file hash in ``cryptography-manylinux1/install_openssl.sh``. Once this is
-merged the updated image will be available to the wheel builder.
+Use the `upgrading OpenSSL issue template`_.
 
 Bumping the version number
 --------------------------
@@ -91,6 +78,7 @@ Post-release tasks
 * Send an email to the `mailing list`_ and `python-announce`_ announcing the
   release.
 
+.. _`upgrading OpenSSL issue template`: https://github.com/pyca/cryptography/issues/new?template=openssl-release.md
 .. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`python-announce`: https://mail.python.org/mailman/listinfo/python-announce-list
