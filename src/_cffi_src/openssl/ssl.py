@@ -738,7 +738,7 @@ void (*SSL_CTX_set_psk_server_callback)(SSL_CTX *,
                                             SSL *,
                                             const char *,
                                             unsigned char *,
-                                            int
+                                            unsigned int
                                         )) = NULL;
 void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
                                         unsigned int (*)(
