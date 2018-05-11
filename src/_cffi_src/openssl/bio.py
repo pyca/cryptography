@@ -16,11 +16,17 @@ typedef ... BIO_METHOD;
 FUNCTIONS = """
 int BIO_free(BIO *);
 BIO *BIO_new_file(const char *, const char *);
+BIO *BIO_new_dgram(int, int);
+size_t BIO_ctrl_pending(BIO *);
 int BIO_read(BIO *, void *, int);
+int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
+/* Added in 1.1.0 */
+int BIO_up_ref(BIO *);
 
 BIO *BIO_new(const BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
+BIO_METHOD *BIO_s_datagram(void);
 BIO *BIO_new_mem_buf(const void *, int);
 long BIO_set_mem_eof_return(BIO *, int);
 long BIO_get_mem_data(BIO *, char **);
@@ -29,7 +35,15 @@ int BIO_should_write(BIO *);
 int BIO_should_io_special(BIO *);
 int BIO_should_retry(BIO *);
 int BIO_reset(BIO *);
+void BIO_set_retry_read(BIO *);
+void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE4
+int BIO_up_ref(BIO *b) {
+    CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
+    return 1;
+}
+#endif
 """
