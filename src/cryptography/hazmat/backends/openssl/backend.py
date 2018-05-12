@@ -1296,9 +1296,9 @@ class Backend(object):
         except UnsupportedAlgorithm:
             curve_nid = self._lib.NID_undef
 
-        ctx = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
+        group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
 
-        if ctx == self._ffi.NULL:
+        if group == self._ffi.NULL:
             errors = self._consume_errors()
             self.openssl_assert(
                 curve_nid == self._lib.NID_undef or
@@ -1310,7 +1310,7 @@ class Backend(object):
             return False
         else:
             self.openssl_assert(curve_nid != self._lib.NID_undef)
-            self._lib.EC_GROUP_free(ctx)
+            self._lib.EC_GROUP_free(group)
             return True
 
     def elliptic_curve_signature_algorithm_supported(
