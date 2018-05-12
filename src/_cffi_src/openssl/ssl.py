@@ -252,7 +252,7 @@ void SSL_CTX_set_psk_server_callback(SSL_CTX *,
                                          SSL *,
                                          const char *,
                                          unsigned char *,
-                                         int
+                                         unsigned int
                                      ));
 void SSL_CTX_set_psk_client_callback(SSL_CTX *,
                                      unsigned int (*)(
@@ -401,7 +401,7 @@ void *SSL_get_ex_data(const SSL *, int);
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
-    int (*)(const SSL *, int *, void *));
+    int (*)(SSL *, int *, void *));
 void SSL_CTX_set_tlsext_servername_arg(
     SSL_CTX *, void *);
 
@@ -738,7 +738,7 @@ void (*SSL_CTX_set_psk_server_callback)(SSL_CTX *,
                                             SSL *,
                                             const char *,
                                             unsigned char *,
-                                            int
+                                            unsigned int
                                         )) = NULL;
 void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
                                         unsigned int (*)(
