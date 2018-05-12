@@ -26,7 +26,7 @@ Message digests (Hashing)
         >>> digest.update(b"abc")
         >>> digest.update(b"123")
         >>> digest.finalize()
-        'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
+        b'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
     If the backend doesn't support the requested ``algorithm`` an
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
