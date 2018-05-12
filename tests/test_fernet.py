@@ -124,8 +124,7 @@ class TestFernet(object):
 
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        ts = "1985-10-26T01:20:01"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        current_time = 1526138327
         monkeypatch.setattr(time, "time", lambda: current_time)
         token = f.encrypt(b'encrypt me')
         assert f.extract_timestamp(token) == current_time
