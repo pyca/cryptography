@@ -74,12 +74,11 @@ class Fernet(object):
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl)
 
-    def age(self, token):
-        current_time = int(time.time())
+    def extract_timestamp(self, token):
         timestamp, data = Fernet._get_unverified_token_data(token)
         # Verify the token was not tampered with.
         self._verify_signature(data)
-        return current_time - timestamp
+        return timestamp
 
     @staticmethod
     def _get_unverified_token_data(token):
