@@ -100,7 +100,7 @@ to serialize the key.
     ...    encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
     ... )
     >>> pem.splitlines()[0]
-    '-----BEGIN ENCRYPTED PRIVATE KEY-----'
+    b'-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
 It is also possible to serialize without encryption using
 :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
@@ -113,7 +113,7 @@ It is also possible to serialize without encryption using
     ...    encryption_algorithm=serialization.NoEncryption()
     ... )
     >>> pem.splitlines()[0]
-    '-----BEGIN RSA PRIVATE KEY-----'
+    b'-----BEGIN RSA PRIVATE KEY-----'
 
 For public keys you can use
 :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.public_bytes`
@@ -128,7 +128,7 @@ to serialize the key.
     ...    format=serialization.PublicFormat.SubjectPublicKeyInfo
     ... )
     >>> pem.splitlines()[0]
-    '-----BEGIN PUBLIC KEY-----'
+    b'-----BEGIN PUBLIC KEY-----'
 
 Signing
 ~~~~~~~

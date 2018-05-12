@@ -271,7 +271,7 @@ X.509 Certificate Object
 
             >>> from cryptography.hazmat.primitives import hashes
             >>> cert.fingerprint(hashes.SHA256())
-            '\x86\xd2\x187Gc\xfc\xe7}[+E9\x8d\xb4\x8f\x10\xe5S\xda\x18u\xbe}a\x03\x08[\xac\xa04?'
+            b'\x86\xd2\x187Gc\xfc\xe7}[+E9\x8d\xb4\x8f\x10\xe5S\xda\x18u\xbe}a\x03\x08[\xac\xa04?'
 
     .. attribute:: serial_number
 
@@ -389,8 +389,8 @@ X.509 Certificate Object
 
             >>> for ext in cert.extensions:
             ...     print(ext)
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.35, name=authorityKeyIdentifier)>, critical=False, value=<AuthorityKeyIdentifier(key_identifier='\xe4}_\xd1\\\x95\x86\x08,\x05\xae\xbeu\xb6e\xa7\xd9]\xa8f', authority_cert_issuer=None, authority_cert_serial_number=None)>)>
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(digest='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.35, name=authorityKeyIdentifier)>, critical=False, value=<AuthorityKeyIdentifier(key_identifier=b'\xe4}_\xd1\\\x95\x86\x08,\x05\xae\xbeu\xb6e\xa7\xd9]\xa8f', authority_cert_issuer=None, authority_cert_serial_number=None)>)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(digest=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.15, name=keyUsage)>, critical=True, value=<KeyUsage(digital_signature=False, content_commitment=False, key_encipherment=False, data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True, encipher_only=None, decipher_only=None)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
@@ -461,7 +461,7 @@ X.509 CRL (Certificate Revocation List) Object
 
             >>> from cryptography.hazmat.primitives import hashes
             >>> crl.fingerprint(hashes.SHA256())
-            'e\xcf.\xc4:\x83?1\xdc\xf3\xfc\x95\xd7\xb3\x87\xb3\x8e\xf8\xb93!\x87\x07\x9d\x1b\xb4!\xb9\xe4W\xf4\x1f'
+            b'e\xcf.\xc4:\x83?1\xdc\xf3\xfc\x95\xd7\xb3\x87\xb3\x8e\xf8\xb93!\x87\x07\x9d\x1b\xb4!\xb9\xe4W\xf4\x1f'
 
     .. attribute:: signature_hash_algorithm
 
@@ -501,7 +501,7 @@ X.509 CRL (Certificate Revocation List) Object
         .. doctest::
 
             >>> crl.issuer
-            <Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'cryptography.io')>])>
+            <Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value='US')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='cryptography.io')>])>
 
     .. attribute:: next_update
 
@@ -1132,9 +1132,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
         3
         >>> for attribute in cert.subject:
         ...     print(attribute)
-        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
-        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
-        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value='US')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value='Test Certificates 2011')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='Good CA')>
 
     .. attribute:: rdns
 
@@ -1152,7 +1152,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         .. doctest::
 
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-            [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
+            [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='Good CA')>]
 
     .. method:: public_bytes(backend)
 
@@ -1759,7 +1759,7 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
-            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+            <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
     .. classmethod:: from_issuer_subject_key_identifier(ski)
 
@@ -1790,7 +1790,7 @@ X.509 Extensions
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
             >>> ski = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
             >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski)
-            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+            <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
 .. class:: SubjectKeyIdentifier(digest)
 
@@ -1837,7 +1837,7 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
             >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
-            <SubjectKeyIdentifier(digest='\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
+            <SubjectKeyIdentifier(digest=b'\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
 
 .. class:: SubjectAlternativeName(general_names)
 
@@ -1877,7 +1877,7 @@ X.509 Extensions
             >>> ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
             >>> # Get the dNSName entries from the SAN extension
             >>> ext.value.get_values_for_type(x509.DNSName)
-            [u'www.cryptography.io', u'cryptography.io']
+            ['www.cryptography.io', 'cryptography.io']
 
 
 .. class:: IssuerAlternativeName(general_names)

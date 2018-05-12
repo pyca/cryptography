@@ -96,6 +96,7 @@ timestamp
 tunable
 Ubuntu
 unencrypted
+unicode
 unpadded
 unpadding
 verifier
