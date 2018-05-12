@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :meth:`~cryptography.fernet.Fernet.extract_timestamp` to get the
+  authenticated timestamp of a :doc:`Fernet </fernet>` token.
+
 .. _v2-2-2:
 
 2.2.2 - 2018-03-27

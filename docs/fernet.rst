@@ -80,6 +80,22 @@ has support for implementing key rotation via :class:`MultiFernet`.
         :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
 
+    .. method:: extract_timestamp(token)
+
+        .. versionadded:: 2.3
+
+        Returns the timestamp for the token. The caller can then decide if
+        the token is about to expire and, for example, issue a new token.
+
+        :param bytes token: The Fernet token. This is the result of calling
+                            :meth:`encrypt`.
+        :returns int: The UNIX timestamp of the token.
+        :raises cryptography.fernet.InvalidToken: If the ``token``'s signature
+                                                  is invalid this exception
+                                                  is raised.
+        :raises TypeError: This exception is raised if ``token`` is not
+                           ``bytes``.
+
 
 .. class:: MultiFernet(fernets)
 
