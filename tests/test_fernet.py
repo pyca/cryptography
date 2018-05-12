@@ -122,6 +122,29 @@ class TestFernet(object):
         with pytest.raises(ValueError):
             Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
 
+    def test_timestamp_age(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        # Create the token some time in the past.
+        ts = "1985-10-26T01:20:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        token = f.encrypt(b'encrypt me')
+        # Check the age 10 seconds later.
+        ts = "1985-10-26T01:20:11"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.age(token) == 10
+        # Check the age 59 seconds later.
+        ts = "1985-10-26T01:21:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.age(token) == 59
+        # Check the age two minutes later.
+        ts = "1985-10-26T01:22:01"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.age(token) == 120
+
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
