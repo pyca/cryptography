@@ -616,8 +616,8 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
 
-/* ALPN was added in OpenSSL 1.0.2 and LibreSSL 2.5.0. */
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_250 || !CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
+/* ALPN was added in OpenSSL 1.0.2 and LibreSSL 2.1.4. */
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_214 || !CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char *,
                                unsigned) = NULL;
