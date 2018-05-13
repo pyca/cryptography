@@ -758,7 +758,7 @@ static const long Cryptography_HAS_PSK = 1;
  * Custom extensions were added in 1.0.2. 1.1.1 is adding a more general
  * SSL_CTX_add_custom_ext function, but we're not binding that yet.
  */
-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER || !CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER && !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_CUSTOM_EXT = 1;
 #else
 static const long Cryptography_HAS_CUSTOM_EXT = 0;
