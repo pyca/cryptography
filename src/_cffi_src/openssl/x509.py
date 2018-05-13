@@ -360,7 +360,7 @@ int X509_get_signature_nid(const X509 *x)
 
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || CRYPTOGRAPHY_IS_LIBRESSL
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
@@ -386,12 +386,16 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
 
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* This function was also added in LibreSSL 2.5.1. */
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_251 || CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 
 int X509_up_ref(X509 *x) {
    return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
 }
+#endif
 
+/* These functions were also added in LibreSSL 2.7.0. */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 {
     return x->cert_info->signature;
@@ -406,16 +410,6 @@ void X509_REQ_get0_signature(const X509_REQ *req, const ASN1_BIT_STRING **psig,
     if (palg != NULL)
         *palg = req->sig_alg;
 }
-int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
-{
-    req->req_info->enc.modified = 1;
-    return i2d_X509_REQ_INFO(req->req_info, pp);
-}
-int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
-    crl->crl->enc.modified = 1;
-    return i2d_X509_CRL_INFO(crl->crl, pp);
-}
-
 void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
                              const X509_ALGOR **palg)
 {
@@ -432,5 +426,19 @@ const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
 {
     return x->serialNumber;
 }
+#endif
+
+/* These functions do not exist in LibreSSL. */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
+int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
+{
+    req->req_info->enc.modified = 1;
+    return i2d_X509_REQ_INFO(req->req_info, pp);
+}
+int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
+    crl->crl->enc.modified = 1;
+    return i2d_X509_CRL_INFO(crl->crl, pp);
+}
+
 #endif
 """

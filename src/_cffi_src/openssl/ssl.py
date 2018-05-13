@@ -526,8 +526,8 @@ int SSL_extension_supported(unsigned int);
 
 CUSTOMIZATIONS = """
 /* Added in 1.0.2 but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+   opaquing. LibreSSL does not have this function. */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || CRYPTOGRAPHY_IS_LIBRESSL
 /* from ssl/ssl_lib.c */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
@@ -616,8 +616,8 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
 
-/* ALPN was added in OpenSSL 1.0.2. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
+/* ALPN was added in OpenSSL 1.0.2 and LibreSSL 2.5.0. */
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_250 || !CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char *,
                                unsigned) = NULL;
@@ -639,7 +639,7 @@ static const long Cryptography_HAS_ALPN = 1;
 #endif
 
 /* SSL_CTX_set_cert_cb was added in OpenSSL 1.0.2. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || CRYPTOGRAPHY_IS_LIBRESSL
 void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
 void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
 static const long Cryptography_HAS_SET_CERT_CB = 0;
@@ -671,7 +671,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SSL_ST = 1;
 #else
 static const long Cryptography_HAS_SSL_ST = 0;
@@ -680,7 +680,7 @@ static const long SSL_ST_OK = 0;
 static const long SSL_ST_INIT = 0;
 static const long SSL_ST_RENEGOTIATE = 0;
 #endif
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_TLS_ST = 1;
 #else
 static const long Cryptography_HAS_TLS_ST = 0;
@@ -688,7 +688,8 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
-#if defined(OPENSSL_NO_DTLS) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if defined(OPENSSL_NO_DTLS) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || \
+    CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
@@ -721,7 +722,7 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
     return r;
 }
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SIGALGS = 0;
 const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
                              unsigned char *) = NULL;
@@ -757,7 +758,7 @@ static const long Cryptography_HAS_PSK = 1;
  * Custom extensions were added in 1.0.2. 1.1.1 is adding a more general
  * SSL_CTX_add_custom_ext function, but we're not binding that yet.
  */
-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER || !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_CUSTOM_EXT = 1;
 #else
 static const long Cryptography_HAS_CUSTOM_EXT = 0;
