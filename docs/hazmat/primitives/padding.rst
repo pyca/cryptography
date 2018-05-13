@@ -25,16 +25,16 @@ multiple of the block size.
         >>> padder = padding.PKCS7(128).padder()
         >>> padded_data = padder.update(b"11111111111111112222222222")
         >>> padded_data
-        '1111111111111111'
+        b'1111111111111111'
         >>> padded_data += padder.finalize()
         >>> padded_data
-        '11111111111111112222222222\x06\x06\x06\x06\x06\x06'
+        b'11111111111111112222222222\x06\x06\x06\x06\x06\x06'
         >>> unpadder = padding.PKCS7(128).unpadder()
         >>> data = unpadder.update(padded_data)
         >>> data
-        '1111111111111111'
+        b'1111111111111111'
         >>> data + unpadder.finalize()
-        '11111111111111112222222222'
+        b'11111111111111112222222222'
 
     :param block_size: The size of the block in :term:`bits` that the data is
         being padded to.
@@ -68,16 +68,16 @@ multiple of the block size.
         >>> padder = padding.ANSIX923(128).padder()
         >>> padded_data = padder.update(b"11111111111111112222222222")
         >>> padded_data
-        '1111111111111111'
+        b'1111111111111111'
         >>> padded_data += padder.finalize()
         >>> padded_data
-        '11111111111111112222222222\x00\x00\x00\x00\x00\x06'
+        b'11111111111111112222222222\x00\x00\x00\x00\x00\x06'
         >>> unpadder = padding.ANSIX923(128).unpadder()
         >>> data = unpadder.update(padded_data)
         >>> data
-        '1111111111111111'
+        b'1111111111111111'
         >>> data + unpadder.finalize()
-        '11111111111111112222222222'
+        b'11111111111111112222222222'
 
     :param block_size: The size of the block in :term:`bits` that the data is
         being padded to.

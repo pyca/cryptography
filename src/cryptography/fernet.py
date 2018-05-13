@@ -74,6 +74,12 @@ class Fernet(object):
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl)
 
+    def extract_timestamp(self, token):
+        timestamp, data = Fernet._get_unverified_token_data(token)
+        # Verify the token was not tampered with.
+        self._verify_signature(data)
+        return timestamp
+
     @staticmethod
     def _get_unverified_token_data(token):
         if not isinstance(token, bytes):
@@ -93,6 +99,14 @@ class Fernet(object):
             raise InvalidToken
         return timestamp, data
 
+    def _verify_signature(self, data):
+        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
+        h.update(data[:-32])
+        try:
+            h.verify(data[-32:])
+        except InvalidSignature:
+            raise InvalidToken
+
     def _decrypt_data(self, data, timestamp, ttl):
         current_time = int(time.time())
         if ttl is not None:
@@ -102,12 +116,7 @@ class Fernet(object):
             if current_time + _MAX_CLOCK_SKEW < timestamp:
                 raise InvalidToken
 
-        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
-        h.update(data[:-32])
-        try:
-            h.verify(data[-32:])
-        except InvalidSignature:
-            raise InvalidToken
+        self._verify_signature(data)
 
         iv = data[9:25]
         ciphertext = data[25:-32]

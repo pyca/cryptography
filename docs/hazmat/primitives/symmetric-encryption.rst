@@ -42,7 +42,7 @@ it fits your needs before implementing anything using this module.**
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
-        'a secret message'
+        b'a secret message'
 
     :param algorithms: A
         :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
@@ -151,7 +151,7 @@ Algorithms
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct)
-        'a secret message'
+        b'a secret message'
 
 .. class:: TripleDES(key)
 
@@ -229,7 +229,7 @@ Weak ciphers
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct)
-        'a secret message'
+        b'a secret message'
 
 .. class:: IDEA(key)
 
@@ -278,7 +278,7 @@ Modes
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
-        >>> iv = "a" * 16
+        >>> iv = b"a" * 16
         >>> mode = CBC(iv)
 
 
@@ -471,7 +471,7 @@ Modes
 
     .. testoutput::
 
-        a secret message!
+        b'a secret message!'
 
 .. class:: XTS(tweak)
 
@@ -594,7 +594,7 @@ Interfaces
             >>> len_decrypted = decryptor.update_into(ct, buf)
             >>> # get the plaintext from the buffer reading only the bytes written (len_decrypted)
             >>> bytes(buf[:len_decrypted]) + decryptor.finalize()
-            'a secret message'
+            b'a secret message'
 
     .. method:: finalize()
 

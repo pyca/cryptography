@@ -32,7 +32,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
         >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
         >>> c.update(b"message to authenticate")
         >>> c.finalize()
-        'CT\x1d\xc8\x0e\x15\xbe4e\xdb\xb6\x84\xca\xd9Xk'
+        b'CT\x1d\xc8\x0e\x15\xbe4e\xdb\xb6\x84\xca\xd9Xk'
 
     If the backend doesn't support the requested ``algorithm`` an
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be

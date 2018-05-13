@@ -34,7 +34,7 @@ also support providing integrity for associated data which is not encrypted.
         >>> nonce = os.urandom(12)
         >>> ct = chacha.encrypt(nonce, data, aad)
         >>> chacha.decrypt(nonce, ct, aad)
-        'a secret message'
+        b'a secret message'
 
     .. classmethod:: generate_key()
 
@@ -99,7 +99,7 @@ also support providing integrity for associated data which is not encrypted.
         >>> nonce = os.urandom(12)
         >>> ct = aesgcm.encrypt(nonce, data, aad)
         >>> aesgcm.decrypt(nonce, ct, aad)
-        'a secret message'
+        b'a secret message'
 
     .. classmethod:: generate_key(bit_length)
 
@@ -181,7 +181,7 @@ also support providing integrity for associated data which is not encrypted.
         >>> nonce = os.urandom(13)
         >>> ct = aesccm.encrypt(nonce, data, aad)
         >>> aesccm.decrypt(nonce, ct, aad)
-        'a secret message'
+        b'a secret message'
 
     .. classmethod:: generate_key(bit_length)
 

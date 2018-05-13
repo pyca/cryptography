@@ -19,9 +19,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> f = Fernet(key)
         >>> token = f.encrypt(b"my deep dark secret")
         >>> token
-        '...'
+        b'...'
         >>> f.decrypt(token)
-        'my deep dark secret'
+        b'my deep dark secret'
 
     :param bytes key: A URL-safe base64-encoded 32-byte key. This **must** be
                       kept secret. Anyone with this key is able to create and
@@ -80,6 +80,22 @@ has support for implementing key rotation via :class:`MultiFernet`.
         :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
 
+    .. method:: extract_timestamp(token)
+
+        .. versionadded:: 2.3
+
+        Returns the timestamp for the token. The caller can then decide if
+        the token is about to expire and, for example, issue a new token.
+
+        :param bytes token: The Fernet token. This is the result of calling
+                            :meth:`encrypt`.
+        :returns int: The UNIX timestamp of the token.
+        :raises cryptography.fernet.InvalidToken: If the ``token``'s signature
+                                                  is invalid this exception
+                                                  is raised.
+        :raises TypeError: This exception is raised if ``token`` is not
+                           ``bytes``.
+
 
 .. class:: MultiFernet(fernets)
 
@@ -97,9 +113,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> f = MultiFernet([key1, key2])
         >>> token = f.encrypt(b"Secret message!")
         >>> token
-        '...'
+        b'...'
         >>> f.decrypt(token)
-        'Secret message!'
+        b'Secret message!'
 
     MultiFernet performs all encryption options using the *first* key in the
     ``list`` provided. MultiFernet attempts to decrypt tokens with each key in
@@ -136,14 +152,14 @@ has support for implementing key rotation via :class:`MultiFernet`.
            >>> f = MultiFernet([key1, key2])
            >>> token = f.encrypt(b"Secret message!")
            >>> token
-           '...'
+           b'...'
            >>> f.decrypt(token)
-           'Secret message!'
+           b'Secret message!'
            >>> key3 = Fernet(Fernet.generate_key())
            >>> f2 = MultiFernet([key3, key1, key2])
            >>> rotated = f2.rotate(token)
            >>> f2.decrypt(rotated)
-           'Secret message!'
+           b'Secret message!'
 
         :param bytes msg: The token to re-encrypt.
         :returns bytes: A secure message that cannot be read or altered without
@@ -189,9 +205,9 @@ password through a key derivation function such as
     >>> f = Fernet(key)
     >>> token = f.encrypt(b"Secret message!")
     >>> token
-    '...'
+    b'...'
     >>> f.decrypt(token)
-    'Secret message!'
+    b'Secret message!'
 
 In this scheme, the salt has to be stored in a retrievable location in order
 to derive the same key from the password in the future.

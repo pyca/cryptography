@@ -36,10 +36,11 @@ class _CMACContext(object):
             self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
             ctx = self._backend._ffi.gc(ctx, self._backend._lib.CMAC_CTX_free)
 
-            self._backend._lib.CMAC_Init(
+            res = self._backend._lib.CMAC_Init(
                 ctx, self._key, len(self._key),
                 evp_cipher, self._backend._ffi.NULL
             )
+            self._backend.openssl_assert(res == 1)
 
         self._ctx = ctx
 

@@ -669,7 +669,7 @@ This sample demonstrates how to generate a private key and serialize it.
     ...     encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
     ... )
     >>> serialized_private.splitlines()[0]
-    '-----BEGIN ENCRYPTED PRIVATE KEY-----'
+    b'-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
 You can also serialize the key without a password, by relying on
 :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
@@ -685,7 +685,7 @@ The public key is serialized as follows:
     ...     format=serialization.PublicFormat.SubjectPublicKeyInfo
     ... )
     >>> serialized_public.splitlines()[0]
-    '-----BEGIN PUBLIC KEY-----'
+    b'-----BEGIN PUBLIC KEY-----'
 
 This is the part that you would normally share with the rest of the world.
 

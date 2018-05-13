@@ -282,7 +282,6 @@ Different KDFs are suitable for different tasks such as:
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-    :raises TypeError: This is raised if the provided ``info`` is a unicode object
     :raises TypeError: This exception is raised if ``info`` is not ``bytes``.
 
     .. method:: derive(key_material)
@@ -290,8 +289,6 @@ Different KDFs are suitable for different tasks such as:
         :param bytes key_material: The input key material.
         :return bytes: The derived key.
 
-        :raises TypeError: This is raised if the provided ``key_material`` is
-            a unicode object
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
 
@@ -314,7 +311,7 @@ Different KDFs are suitable for different tasks such as:
                                                           called more than
                                                           once.
         :raises TypeError: This is raised if the provided ``key_material`` is
-            a unicode object
+            a ``unicode`` object
 
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and
