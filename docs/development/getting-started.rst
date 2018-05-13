@@ -61,7 +61,7 @@ automatically, so all you have to do is:
 
 .. code-block:: console
 
-    $ py.test
+    $ pytest
     ...
     62746 passed in 220.43 seconds
 
