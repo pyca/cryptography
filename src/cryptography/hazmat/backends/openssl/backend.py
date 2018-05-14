@@ -298,14 +298,7 @@ class Backend(object):
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL
 
-        if six.PY2:
-            # Under Python 2 the best we can do is hex()
-            hex_cdata = self._lib.BN_bn2hex(bn)
-            self.openssl_assert(hex_cdata != self._ffi.NULL)
-            hex_str = self._ffi.string(hex_cdata)
-            self._lib.OPENSSL_free(hex_cdata)
-            return int(hex_str, 16)
-        else:
+        if not six.PY2:
             # Python 3 has constant time from_bytes, so use that.
             bn_num_bytes = self._lib.BN_num_bytes(bn)
             bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
@@ -313,6 +306,13 @@ class Backend(object):
             # A zero length means the BN has value 0
             self.openssl_assert(bin_len >= 0)
             return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+        else:
+            # Under Python 2 the best we can do is hex()
+            hex_cdata = self._lib.BN_bn2hex(bn)
+            self.openssl_assert(hex_cdata != self._ffi.NULL)
+            hex_str = self._ffi.string(hex_cdata)
+            self._lib.OPENSSL_free(hex_cdata)
+            return int(hex_str, 16)
 
     def _int_to_bn(self, num, bn=None):
         """
@@ -326,7 +326,15 @@ class Backend(object):
         if bn is None:
             bn = self._ffi.NULL
 
-        if six.PY2:
+        if not six.PY2:
+            # Python 3 has constant time to_bytes, so use that.
+
+            binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
+            bn_ptr = self._lib.BN_bin2bn(binary, len(binary), bn)
+            self.openssl_assert(bn_ptr != self._ffi.NULL)
+            return bn_ptr
+
+        else:
             # Under Python 2 the best we can do is hex(), [2:] removes the 0x
             # prefix.
             hex_num = hex(num).rstrip("L")[2:].encode("ascii")
@@ -336,14 +344,6 @@ class Backend(object):
             self.openssl_assert(res != 0)
             self.openssl_assert(bn_ptr[0] != self._ffi.NULL)
             return bn_ptr[0]
-
-        else:
-            # Python 3 has constant time to_bytes, so use that.
-
-            binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
-            bn_ptr = self._lib.BN_bin2bn(binary, len(binary), bn)
-            self.openssl_assert(bn_ptr != self._ffi.NULL)
-            return bn_ptr
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         rsa._verify_rsa_parameters(public_exponent, key_size)
