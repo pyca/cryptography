@@ -1097,19 +1097,7 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        if six.PY3:
-            assert repr(cert) == (
-                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
-                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value='GT487"
-                "42965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11, "
-                "name=organizationalUnitName)>, value='See www.rapidssl.com/re"
-                "sources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier(oi"
-                "d=2.5.4.11, name=organizationalUnitName)>, value='Domain Cont"
-                "rol Validated - RapidSSL(R)')>, <NameAttribute(oid=<ObjectIde"
-                "ntifier(oid=2.5.4.3, name=commonName)>, value='www.cryptograp"
-                "hy.io')>])>, ...)>"
-            )
-        else:
+        if six.PY2:
             assert repr(cert) == (
                 "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
                 "ier(oid=2.5.4.11, name=organizationalUnitName)>, value=u'GT48"
@@ -1120,6 +1108,18 @@ class TestRSACertificate(object):
                 "ontrol Validated - RapidSSL(R)')>, <NameAttribute(oid=<Object"
                 "Identifier(oid=2.5.4.3, name=commonName)>, value=u'www.crypto"
                 "graphy.io')>])>, ...)>"
+            )
+        else:
+            assert repr(cert) == (
+                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value='GT487"
+                "42965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11, "
+                "name=organizationalUnitName)>, value='See www.rapidssl.com/re"
+                "sources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier(oi"
+                "d=2.5.4.11, name=organizationalUnitName)>, value='Domain Cont"
+                "rol Validated - RapidSSL(R)')>, <NameAttribute(oid=<ObjectIde"
+                "ntifier(oid=2.5.4.3, name=commonName)>, value='www.cryptograp"
+                "hy.io')>])>, ...)>"
             )
 
     def test_parse_tls_feature_extension(self, backend):
@@ -3864,15 +3864,15 @@ class TestNameAttribute(object):
 
     def test_repr(self):
         na = x509.NameAttribute(x509.ObjectIdentifier('2.5.4.3'), u'value')
-        if six.PY3:
+        if six.PY2:
             assert repr(na) == (
                 "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
-                "nName)>, value='value')>"
+                "nName)>, value=u'value')>"
             )
         else:
             assert repr(na) == (
                 "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
-                "nName)>, value=u'value')>"
+                "nName)>, value='value')>"
             )
 
 
@@ -4059,19 +4059,19 @@ class TestName(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
 
-        if six.PY3:
-            assert repr(name) == (
-                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
-                "=commonName)>, value='cryptography.io')>, <NameAttribute(oid="
-                "<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, valu"
-                "e='PyCA')>])>"
-            )
-        else:
+        if six.PY2:
             assert repr(name) == (
                 "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
                 "=commonName)>, value=u'cryptography.io')>, <NameAttribute(oid"
                 "=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, val"
                 "ue=u'PyCA')>])>"
+            )
+        else:
+            assert repr(name) == (
+                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
+                "=commonName)>, value='cryptography.io')>, <NameAttribute(oid="
+                "<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, valu"
+                "e='PyCA')>])>"
             )
 
     def test_not_nameattribute(self):
