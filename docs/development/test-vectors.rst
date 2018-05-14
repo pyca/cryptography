@@ -405,7 +405,7 @@ Hashes
 * MD5 from :rfc:`1321`.
 * RIPEMD160 from the `RIPEMD website`_.
 * SHA1 from `NIST CAVP`_.
-* SHA2 (224, 256, 384, 512) from `NIST CAVP`_.
+* SHA2 (224, 256, 384, 512, 512/224, 512/256) from `NIST CAVP`_.
 * SHA3 (224, 256, 384, 512) from `NIST CAVP`_.
 * SHAKE (128, 256) from `NIST CAVP`_.
 * Blake2s and Blake2b from OpenSSL `test/evptests.txt`_.
