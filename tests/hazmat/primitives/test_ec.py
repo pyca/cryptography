@@ -1068,9 +1068,9 @@ class TestECDH(object):
                 ec._CURVE_TYPES[vector['curve']]()
             )
         )
-        # Errno 5 and 6 indicates a bad public key, this doesn't test the ECDH
-        # code at all
-        if vector['fail'] and vector['errno'] in [5, 6]:
+        # Errno 5-7 indicates a bad public or private key, this doesn't test
+        # the ECDH code at all
+        if vector['fail'] and vector['errno'] in [5, 6, 7]:
             with pytest.raises(ValueError):
                 private_numbers.private_key(backend)
             return
