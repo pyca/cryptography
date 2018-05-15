@@ -298,7 +298,7 @@ class Backend(object):
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL
 
-        if six.PY3:
+        if not six.PY2:
             # Python 3 has constant time from_bytes, so use that.
             bn_num_bytes = self._lib.BN_num_bytes(bn)
             bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
@@ -326,7 +326,7 @@ class Backend(object):
         if bn is None:
             bn = self._ffi.NULL
 
-        if six.PY3:
+        if not six.PY2:
             # Python 3 has constant time to_bytes, so use that.
 
             binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")

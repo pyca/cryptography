@@ -1097,7 +1097,7 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(cert) == (
                 "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
                 "ier(oid=2.5.4.11, name=organizationalUnitName)>, value='GT487"
@@ -3864,7 +3864,7 @@ class TestNameAttribute(object):
 
     def test_repr(self):
         na = x509.NameAttribute(x509.ObjectIdentifier('2.5.4.3'), u'value')
-        if six.PY3:
+        if not six.PY2:
             assert repr(na) == (
                 "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
                 "nName)>, value='value')>"
@@ -4059,7 +4059,7 @@ class TestName(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
 
-        if six.PY3:
+        if not six.PY2:
             assert repr(name) == (
                 "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
                 "=commonName)>, value='cryptography.io')>, <NameAttribute(oid="

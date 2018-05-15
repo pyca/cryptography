@@ -206,7 +206,7 @@ class TestUnrecognizedExtension(object):
         ext1 = x509.UnrecognizedExtension(
             x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(ext1) == (
                 "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
                 "name=Unknown OID)>, value=b'\\x03\\x02\\x01')>"
@@ -267,7 +267,7 @@ class TestCertificateIssuer(object):
 
     def test_repr(self):
         ci = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
-        if six.PY3:
+        if not six.PY2:
             assert repr(ci) == (
                 "<CertificateIssuer(<GeneralNames([<DNSName(value="
                 "'cryptography.io')>])>)>"
@@ -403,7 +403,7 @@ class TestNoticeReference(object):
     def test_repr(self):
         nr = x509.NoticeReference(u"org", [1, 3, 4])
 
-        if six.PY3:
+        if not six.PY2:
             assert repr(nr) == (
                 "<NoticeReference(organization='org', notice_numbers=[1, 3, 4"
                 "])>"
@@ -447,7 +447,7 @@ class TestUserNotice(object):
 
     def test_repr(self):
         un = x509.UserNotice(x509.NoticeReference(u"org", [1]), u"text")
-        if six.PY3:
+        if not six.PY2:
             assert repr(un) == (
                 "<UserNotice(notice_reference=<NoticeReference(organization='"
                 "org', notice_numbers=[1])>, explicit_text='text')>"
@@ -513,7 +513,7 @@ class TestPolicyInformation(object):
     def test_repr(self):
         pq = [u"string", x509.UserNotice(None, u"hi")]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
-        if six.PY3:
+        if not six.PY2:
             assert repr(pi) == (
                 "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
                 "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
@@ -592,7 +592,7 @@ class TestCertificatePolicies(object):
         pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         cp = x509.CertificatePolicies([pi])
-        if six.PY3:
+        if not six.PY2:
             assert repr(cp) == (
                 "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
                 "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
@@ -1003,7 +1003,7 @@ class TestSubjectKeyIdentifier(object):
             binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ext = x509.Extension(ExtensionOID.SUBJECT_KEY_IDENTIFIER, False, ski)
-        if six.PY3:
+        if not six.PY2:
             assert repr(ext) == (
                 "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
                 "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
@@ -1120,7 +1120,7 @@ class TestAuthorityKeyIdentifier(object):
         )
         aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
 
-        if six.PY3:
+        if not six.PY2:
             assert repr(aki) == (
                 "<AuthorityKeyIdentifier(key_identifier=b'digest', authority_"
                 "cert_issuer=[<DirectoryName(value=<Name([<NameAttribute(oid="
@@ -1705,7 +1705,7 @@ class TestDirectoryName(object):
     def test_repr(self):
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'value1')])
         gn = x509.DirectoryName(name)
-        if six.PY3:
+        if not six.PY2:
             assert repr(gn) == (
                 "<DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentif"
                 "ier(oid=2.5.4.3, name=commonName)>, value='value1')>])>)>"
@@ -1756,7 +1756,7 @@ class TestDirectoryName(object):
 class TestRFC822Name(object):
     def test_repr(self):
         gn = x509.RFC822Name(u"string")
-        if six.PY3:
+        if not six.PY2:
             assert repr(gn) == "<RFC822Name(value='string')>"
         else:
             assert repr(gn) == "<RFC822Name(value=u'string')>"
@@ -1868,7 +1868,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_repr(self):
         gn = x509.UniformResourceIdentifier(u"string")
-        if six.PY3:
+        if not six.PY2:
             assert repr(gn) == (
                 "<UniformResourceIdentifier(value='string')>"
             )
@@ -1962,7 +1962,7 @@ class TestOtherName(object):
 
     def test_repr(self):
         gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
-        if six.PY3:
+        if not six.PY2:
             assert repr(gn) == (
                 "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
                 "name=Unknown OID)>, value=b'derdata')>"
@@ -1974,7 +1974,7 @@ class TestOtherName(object):
             )
 
         gn = x509.OtherName(x509.ObjectIdentifier("2.5.4.65"), b"derdata")
-        if six.PY3:
+        if not six.PY2:
             assert repr(gn) == (
                 "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
                 "name=pseudonym)>, value=b'derdata')>"
@@ -2058,7 +2058,7 @@ class TestGeneralNames(object):
                 x509.DNSName(u"cryptography.io")
             ]
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(gns) == (
                 "<GeneralNames([<DNSName(value='cryptography.io')>])>"
             )
@@ -2136,7 +2136,7 @@ class TestIssuerAlternativeName(object):
                 x509.DNSName(u"cryptography.io")
             ]
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(san) == (
                 "<IssuerAlternativeName("
                 "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
@@ -2261,7 +2261,7 @@ class TestSubjectAlternativeName(object):
                 x509.DNSName(u"cryptography.io")
             ]
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(san) == (
                 "<SubjectAlternativeName("
                 "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
@@ -2665,7 +2665,7 @@ class TestAccessDescription(object):
             AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(ad) == (
                 "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
                 ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
@@ -2847,7 +2847,7 @@ class TestAuthorityInformationAccess(object):
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
-        if six.PY3:
+        if not six.PY2:
             assert repr(aia) == (
                 "<AuthorityInformationAccess([<AccessDescription(access_method"
                 "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
@@ -3266,7 +3266,7 @@ class TestNameConstraints(object):
             permitted_subtrees=permitted,
             excluded_subtrees=None
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(nc) == (
                 "<NameConstraints(permitted_subtrees=[<DNSName("
                 "value='name.local')>, <DNSName(value="
@@ -3635,7 +3635,7 @@ class TestDistributionPoint(object):
                 )
             ],
         )
-        if six.PY3:
+        if not six.PY2:
             assert repr(dp) == (
                 "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
                 "tinguishedName([<NameAttribute(oid=<ObjectIdentifier(oid=2.5."
@@ -3736,7 +3736,7 @@ class TestFreshestCRL(object):
                 None
             ),
         ])
-        if six.PY3:
+        if not six.PY2:
             assert repr(fcrl) == (
                 "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
                 "rmResourceIdentifier(value='ftp://domain')>], relative"
@@ -3947,7 +3947,7 @@ class TestCRLDistributionPoints(object):
                 None
             ),
         ])
-        if six.PY3:
+        if not six.PY2:
             assert repr(cdp) == (
                 "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
                 "rmResourceIdentifier(value='ftp://domain')>], relative"
