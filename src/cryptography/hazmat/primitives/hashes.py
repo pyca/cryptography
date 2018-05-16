@@ -29,12 +29,6 @@ class HashAlgorithm(object):
         The size of the resulting digest in bytes.
         """
 
-    @abc.abstractproperty
-    def block_size(self):
-        """
-        The internal block size of the hash algorithm in bytes.
-        """
-
 
 @six.add_metaclass(abc.ABCMeta)
 class HashContext(object):
