@@ -183,12 +183,6 @@ Interfaces
 
         The size of the resulting digest in bytes.
 
-    .. attribute:: block_size
-
-        :type: int
-
-        The internal block size of the hash algorithm in bytes.
-
 
 .. class:: HashContext
 
