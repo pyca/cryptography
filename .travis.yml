@@ -48,6 +48,21 @@ matrix:
         - python: 3.4
           env: TOXENV=py3pep8
 
+        - python: 2.7
+          env: DOWNSTREAM=pyopenssl
+        - python: 2.7
+          env: DOWNSTREAM=twisted
+        - python: 2.7
+          env: DOWNSTREAM=paramiko
+        - python: 2.7
+          env: DOWNSTREAM=aws-encryption-sdk
+        - python: 2.7
+          env: DOWNSTREAM=certbot
+        - python: 2.7
+          env: DOWNSTREAM=certbot-josepy
+        - python: 2.7
+          env: DOWNSTREAM=urllib3
+
 install:
     - ./.travis/install.sh
 
