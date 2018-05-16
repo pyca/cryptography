@@ -32,7 +32,7 @@ else
             pytest tests
             ;;
         twisted)
-            git clone --branch=i-like-big-buffers-and-i-cannot-lie --depth=1 https://github.com/alex/twisted
+            git clone --depth=1 https://github.com/twisted/twisted
             cd twisted
             pip install -e .[tls,conch,http2]
             python -m twisted.trial src/twisted
