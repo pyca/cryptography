@@ -620,3 +620,57 @@ class TestOpenSSLDHSerialization(object):
         )
         with pytest.raises(ValueError):
             loader_func(key_bytes, backend)
+
+    def test_segfault_from_wrong_curve(self):
+        """
+        In pyUmbral, we're getting a strange segfault.
+
+        We have a test in which when we show that using a curve to generate a point,
+        and then a different curve for EC_GROUP_new_by_curve_name properly borks.
+
+        However, instead of our higher-level error message, we get a segfault.
+
+        Here's what we're doing:
+        """
+        from cryptography.hazmat.backends.openssl import backend
+        # We make new params...
+        group = backend._lib.EC_GROUP_new_by_curve_name(715)
+        backend.openssl_assert(group != backend._ffi.NULL)
+        generator = backend._lib.EC_GROUP_get0_generator(group)
+        backend.openssl_assert(generator != backend._ffi.NULL)
+
+        order = backend._lib.BN_new()
+
+        with backend._tmp_bn_ctx() as bn_ctx:
+            res = backend._lib.EC_GROUP_get_order(group, order, bn_ctx)
+            backend.openssl_assert(res == 1)
+
+        # Then make a BigNum, as if for a private key.
+        random_bn = backend._lib.BN_new()
+        backend.openssl_assert(random_bn != backend._ffi.NULL)
+
+        res = backend._lib.BN_rand_range(random_bn, order)
+        backend.openssl_assert(res == 1)
+
+        # Then a point.
+        new_point = backend._lib.EC_POINT_new(group)
+        backend.openssl_assert(new_point != backend._ffi.NULL)
+        new_point = backend._ffi.gc(new_point, backend._lib.EC_POINT_clear_free)
+
+        # We multiple the private key by the curve generator, as if to
+        # get the public key.
+        with backend._tmp_bn_ctx() as bn_ctx:
+            res = backend._lib.EC_POINT_mul(
+                group, new_point, backend._ffi.NULL, generator, random_bn, bn_ctx
+            )
+            backend.openssl_assert(res == 1)
+
+        # Wrong group.
+        wrong_group = backend._lib.EC_GROUP_new_by_curve_name(714)
+
+        # Now we check if the new point (ie, the public key) is on the wrong curve.
+        with backend._tmp_bn_ctx() as bn_ctx:
+            final_result = backend._lib.EC_POINT_is_on_curve(wrong_group, new_point, bn_ctx)
+            # We expect final_result to be 0, but we get a segfault here instead.
+            # If you've gotten to this line, the issue is apparently not affecting
+            # this environment.
