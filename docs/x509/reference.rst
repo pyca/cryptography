@@ -1713,7 +1713,7 @@ X.509 Extensions
 
     .. attribute:: authority_cert_issuer
 
-        :type: :class:`Name` or None
+        :type: A list of :class:`GeneralName` instances or None
 
         The :class:`Name` of the issuer's issuer.
 
