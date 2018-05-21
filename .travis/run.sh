@@ -8,6 +8,9 @@ if [[ "${TOXENV}" == "pypy" ]]; then
     PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
 fi
+if [ -n "${LIBRESSL}" ]; then
+    OPENSSL=$LIBRESSL
+fi
 if [ -n "${OPENSSL}" ]; then
     OPENSSL_DIR="ossl-1/${OPENSSL}"
 

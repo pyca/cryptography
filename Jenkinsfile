@@ -55,16 +55,6 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.4.5',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie-libressl:2.6.4',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
@@ -227,14 +217,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             sh """#!/usr/bin/env bash
                                 set -xe
                                 cd cryptography
-                                if [[ "\${IMAGE_NAME}" == *"libressl"* ]]; then
-                                    LD_LIBRARY_PATH="/usr/local/libressl/lib:\$LD_LIBRARY_PATH" \
-                                        LDFLAGS="-L/usr/local/libressl/lib" \
-                                        CFLAGS="-I/usr/local/libressl/include" \
-                                        tox -r -- --color=yes
-                                else
-                                    tox -r -- --color=yes
-                                fi
+                                tox -r -- --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
