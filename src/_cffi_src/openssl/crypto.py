@@ -143,6 +143,6 @@ void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
 }
 
 void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
-    return free(ptr);
+    free(ptr);
 }
 """

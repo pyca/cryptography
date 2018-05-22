@@ -46,7 +46,7 @@ def _extra_compile_args(platform):
     When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
     revisit this.
     """
-    if platform != "win32":
+    if platform not in ["win32", "hp-ux11"]:
         return ["-Wconversion", "-Wno-error=sign-conversion"]
     else:
         return []
