@@ -214,7 +214,8 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
     EVP_MD_CTX_free(ctx);
 #endif
 }
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(OPENSSL_NO_SCRYPT)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(OPENSSL_NO_SCRYPT) || \
+    CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SCRYPT = 0;
 int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
@@ -223,7 +224,7 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
 static const long Cryptography_HAS_SCRYPT = 1;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
 #else
 static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
