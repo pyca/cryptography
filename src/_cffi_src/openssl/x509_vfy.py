@@ -204,7 +204,7 @@ int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
-X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
+X509 *X509_OBJECT_get0_X509(const X509_OBJECT *);
 int X509_OBJECT_get_type(const X509_OBJECT *);
 
 /* added in 1.1.0 */
@@ -246,6 +246,7 @@ static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
 
+#if !defined(CRYPTOGRAPHY_IS_LIBRESSL) || LIBRESSL_VERSION_NUMBER < 0x2070200fL
 int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
                                    size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
@@ -255,6 +256,8 @@ int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
 void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
                                         unsigned int) = NULL;
+#endif
+
 #endif
 
 /* OpenSSL 1.0.2+ or Solaris's backport */
@@ -292,7 +295,7 @@ X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
     return ctx->cert;
 }
 
-X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
+X509 *X509_OBJECT_get0_X509(const X509_OBJECT *x) {
     return x->data.x509;
 }
 #endif
