@@ -92,22 +92,22 @@ CUSTOMIZATIONS = """
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
 #endif
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
 #else
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
-#if !defined(CRYPTO_LOCK)
+# if !defined(CRYPTO_LOCK)
 static const long CRYPTO_LOCK = 0;
-#endif
-#if !defined(CRYPTO_UNLOCK)
+# endif
+# if !defined(CRYPTO_UNLOCK)
 static const long CRYPTO_UNLOCK = 0;
-#endif
-#if !defined(CRYPTO_READ)
+# endif
+# if !defined(CRYPTO_READ)
 static const long CRYPTO_READ = 0;
-#endif
-#if !defined(CRYPTO_LOCK_SSL)
+# endif
+# if !defined(CRYPTO_LOCK_SSL)
 static const long CRYPTO_LOCK_SSL = 0;
-#endif
+# endif
 void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
