@@ -142,43 +142,26 @@ def test_ec_numbers():
     assert numbers.public_numbers.y == 3
     assert isinstance(numbers.public_numbers.curve, DummyCurve)
 
+
+@pytest.mark.parametrize(
+    ("private_value", "x", "y", "curve"),
+    [
+        (None, 2, 3, DummyCurve()),
+        (1, None, 3, DummyCurve()),
+        (1, 2, None, DummyCurve()),
+        (1, 2, 3, None),
+    ]
+)
+def test_invalid_ec_numbers_args(private_value, x, y, curve):
     with pytest.raises(TypeError):
         ec.EllipticCurvePrivateNumbers(
-            None,
-            ec.EllipticCurvePublicNumbers(
-                2, 3, DummyCurve()
-            )
+            private_value, ec.EllipticCurvePublicNumbers(x, y, curve)
         )
 
-    with pytest.raises(TypeError):
-        ec.EllipticCurvePrivateNumbers(
-            1,
-            ec.EllipticCurvePublicNumbers(
-                None, 3, DummyCurve()
-            )
-        )
 
+def test_invalid_private_numbers_public_numbers():
     with pytest.raises(TypeError):
-        ec.EllipticCurvePrivateNumbers(
-            1,
-            ec.EllipticCurvePublicNumbers(
-                2, None, DummyCurve()
-            )
-        )
-
-    with pytest.raises(TypeError):
-        ec.EllipticCurvePrivateNumbers(
-            1,
-            ec.EllipticCurvePublicNumbers(
-                2, 3, None
-            )
-        )
-
-    with pytest.raises(TypeError):
-        ec.EllipticCurvePrivateNumbers(
-            1,
-            None
-        )
+        ec.EllipticCurvePrivateNumbers(1, None)
 
 
 def test_encode_point():
