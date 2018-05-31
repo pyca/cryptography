@@ -536,7 +536,7 @@ const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
    OpenSSLs. Such is our burden. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
 /* from ssl/ssl_lib.c */
 size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
 {

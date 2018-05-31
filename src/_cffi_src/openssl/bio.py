@@ -40,7 +40,7 @@ void BIO_clear_retry_flags(BIO *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
 int BIO_up_ref(BIO *b) {
     CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
     return 1;
