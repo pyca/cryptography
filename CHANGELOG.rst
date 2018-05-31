@@ -13,6 +13,8 @@ Changelog
 * Support for Python 2.7.x without ``hmac.compare_digest`` has been deprecated.
   We will require Python 2.7.7 or higher (or 2.7.6 on Ubuntu) in the next
   ``cryptography`` release.
+* Fixed multiple issues preventing ``cryptography`` from compiling against
+  LibreSSL 2.7.x.
 
 .. _v2-2-2:
 
