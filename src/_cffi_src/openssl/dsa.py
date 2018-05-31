@@ -34,8 +34,8 @@ int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
 """
 
 CUSTOMIZATIONS = """
-/* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
+/* These functions were added in OpenSSL 1.1.0 */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 void DSA_get0_pqg(const DSA *d,
                   const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
 {
