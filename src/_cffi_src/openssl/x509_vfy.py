@@ -273,7 +273,7 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE6
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
     return ctx->objs;
 }
@@ -285,7 +285,7 @@ int X509_OBJECT_get_type(const X509_OBJECT *x) {
 }
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 /* from x509/x509_vfy.c */
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
 {
