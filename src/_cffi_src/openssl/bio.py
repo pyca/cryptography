@@ -24,7 +24,7 @@ int BIO_write(BIO *, const void *, int);
 /* Added in 1.1.0 */
 int BIO_up_ref(BIO *);
 
-BIO *BIO_new(const BIO_METHOD *);
+BIO *BIO_new(BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
 BIO_METHOD *BIO_s_datagram(void);
 BIO *BIO_new_mem_buf(const void *, int);
