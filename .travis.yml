@@ -63,7 +63,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
-          env: DOWNSTREAM=dynamodb-encryption-sdk
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0h
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0h
         - python: 2.7
