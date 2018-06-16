@@ -256,6 +256,7 @@ setup(
     author_email=about["__email__"],
 
     classifiers=[
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "License :: OSI Approved :: BSD License",
