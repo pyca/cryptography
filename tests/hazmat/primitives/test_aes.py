@@ -85,7 +85,7 @@ class TestAESModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.ECB()
+        algorithms.AES(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support AES ECB",
 )
