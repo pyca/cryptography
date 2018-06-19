@@ -55,6 +55,8 @@ class _CipherContext(object):
                 _Reasons.UNSUPPORTED_CIPHER
             )
 
+        utils._check_bytes("{0} key".format(cipher.name), cipher.key)
+
         if isinstance(mode, modes.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
         elif isinstance(mode, modes.ModeWithTweak):
