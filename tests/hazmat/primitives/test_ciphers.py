@@ -36,6 +36,10 @@ class TestAES(object):
         with pytest.raises(ValueError):
             AES(binascii.unhexlify(b"0" * 12))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="AES key must be bytes"):
+            AES(u"0"*32)
+
 
 class TestAESXTS(object):
     @pytest.mark.requires_backend_interface(interface=CipherBackend)

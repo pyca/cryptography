@@ -49,19 +49,6 @@ class TestCipher(object):
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipherContext(object):
-    def test_incorrect_key_type(self, backend):
-        key = u"0" * 32
-        cipher = Cipher(
-            algorithms.AES(key),
-            modes.CFB8(binascii.unhexlify(b"0" * 32)),
-            backend
-        )
-        with pytest.raises(TypeError, match="AES key must be bytes"):
-            cipher.decryptor()
-
-        with pytest.raises(TypeError, match="AES key must be bytes"):
-            cipher.encryptor()
-
     def test_use_after_finalize(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
