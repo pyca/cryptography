@@ -60,6 +60,13 @@ def build_vectors(fips_vectors):
 
             r, s = sigdecode_der(signature, None)
 
+            # Normalize signatures to lowS
+            # https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#Low_S_values_in_signatures
+            if s > int('7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0', 16):
+                # r remains unchanged. Update s and signature
+                s = int('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141', 16) - s
+                signature = sigencode_der(r, s, None)
+
             yield "Msg = {0}".format(hexlify(message))
             yield "d = {0:x}".format(secret_key.privkey.secret_multiplier)
             yield "Qx = {0:x}".format(public_key.pubkey.point.x())
