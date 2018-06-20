@@ -48,7 +48,7 @@ matrix:
         - python: 3.6
           env: TOXENV=py36 LIBRESSL=2.7.4
         - python: 3.6
-          env: TOXENV=py36 OPENSSL=1.1.1-pre7
+          env: TOXENV=py36 OPENSSL=1.1.1-pre8
         - python: 3.6
           env: TOXENV=docs OPENSSL=1.1.0h
           addons:
@@ -63,7 +63,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
         - python: 2.7
-          env: DOWNSTREAM=pyopenssl OPENSSL=1.1.1-pre7
+          env: DOWNSTREAM=pyopenssl OPENSSL=1.1.1-pre8
         - python: 2.7
           env: DOWNSTREAM=twisted
         - python: 2.7
