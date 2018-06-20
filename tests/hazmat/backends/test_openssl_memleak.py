@@ -60,6 +60,9 @@ def main(argv):
     gc.collect()
     gc.collect()
 
+    if lib.Cryptography_HAS_OPENSSL_CLEANUP:
+        lib.OPENSSL_cleanup()
+
     # Swap back to the original functions so that if OpenSSL tries to free
     # something from its atexit handle it won't be going through a Python
     # function, which will be deallocated when this function returns
@@ -69,9 +72,6 @@ def main(argv):
         ffi.addressof(lib, "Cryptography_free_wrapper"),
     )
     assert result == 1
-
-    if lib.Cryptography_HAS_OPENSSL_CLEANUP:
-        lib.OPENSSL_cleanup()
 
     remaining = set(heap) - start_heap
 
