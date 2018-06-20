@@ -11,6 +11,7 @@ INCLUDES = """
 TYPES = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS;
 static const long Cryptography_HAS_MEM_FUNCTIONS;
+static const long Cryptography_HAS_OPENSSL_CLEANUP;
 
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
@@ -34,8 +35,9 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-/* CRYPTO_cleanup_all_ex_data became a macro in 1.1.0 */
+
 void CRYPTO_cleanup_all_ex_data(void);
+void OPENSSL_cleanup(void);
 
 /* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
    have become macros that are no ops */
@@ -112,6 +114,10 @@ void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
+
+void (*OPENSSL_cleanup)(void) = NULL;
+
 /* This function has a significantly different signature pre-1.1.0. since it is
  * for testing only, we don't bother to expose it on older OpenSSLs.
  */
@@ -122,6 +128,7 @@ int (*Cryptography_CRYPTO_set_mem_functions)(
     void (*)(void *, const char *, int)) = NULL;
 
 #else
+static const long Cryptography_HAS_OPENSSL_CLEANUP = 1;
 static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
 
 int Cryptography_CRYPTO_set_mem_functions(

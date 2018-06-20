@@ -60,6 +60,9 @@ def main(argv):
     gc.collect()
     gc.collect()
 
+    if lib.Cryptography_HAS_OPENSSL_CLEANUP:
+        lib.OPENSSL_cleanup()
+
     # Swap back to the original functions so that if OpenSSL tries to free
     # something from its atexit handle it won't be going through a Python
     # function, which will be deallocated when this function returns
