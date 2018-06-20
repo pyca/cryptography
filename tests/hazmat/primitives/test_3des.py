@@ -170,7 +170,7 @@ class TestTripleDESModeCFB8(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.TripleDES("\x00" * 8), modes.ECB()
+        algorithms.TripleDES(b"\x00" * 8), modes.ECB()
     ),
     skip_message="Does not support TripleDES ECB",
 )
