@@ -37,8 +37,8 @@ class TestAES(object):
             AES(binascii.unhexlify(b"0" * 12))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="AES key must be bytes"):
-            AES(u"0"*32)
+        with pytest.raises(TypeError, match="Key must be bytes"):
+            AES(u"0" * 32)
 
 
 class TestAESXTS(object):
