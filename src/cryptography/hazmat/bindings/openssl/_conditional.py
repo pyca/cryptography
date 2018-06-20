@@ -298,5 +298,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
-    "Cryptography_HAS_OPENSSL_CLEANUP": cryptgoraphy_has_openssl_cleanup,
+    "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
 }
