@@ -36,6 +36,10 @@ class TestAES(object):
         with pytest.raises(ValueError):
             AES(binascii.unhexlify(b"0" * 12))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            AES(u"0" * 32)
+
 
 class TestAESXTS(object):
     @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -75,6 +79,10 @@ class TestCamellia(object):
         with pytest.raises(ValueError):
             Camellia(binascii.unhexlify(b"0" * 12))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            Camellia(u"0" * 32)
+
 
 class TestTripleDES(object):
     @pytest.mark.parametrize("key", [
@@ -90,6 +98,10 @@ class TestTripleDES(object):
         with pytest.raises(ValueError):
             TripleDES(binascii.unhexlify(b"0" * 12))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            TripleDES(u"0" * 16)
+
 
 class TestBlowfish(object):
     @pytest.mark.parametrize(("key", "keysize"), [
@@ -103,6 +115,10 @@ class TestBlowfish(object):
         with pytest.raises(ValueError):
             Blowfish(binascii.unhexlify(b"0" * 6))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            Blowfish(u"0" * 8)
+
 
 class TestCAST5(object):
     @pytest.mark.parametrize(("key", "keysize"), [
@@ -115,6 +131,10 @@ class TestCAST5(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             CAST5(binascii.unhexlify(b"0" * 34))
+
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            CAST5(u"0" * 10)
 
 
 class TestARC4(object):
@@ -135,6 +155,10 @@ class TestARC4(object):
         with pytest.raises(ValueError):
             ARC4(binascii.unhexlify(b"0" * 34))
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            ARC4(u"0" * 10)
+
 
 class TestIDEA(object):
     def test_key_size(self):
@@ -145,6 +169,10 @@ class TestIDEA(object):
         with pytest.raises(ValueError):
             IDEA(b"\x00" * 17)
 
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            IDEA(u"0" * 16)
+
 
 class TestSEED(object):
     def test_key_size(self):
@@ -154,6 +182,10 @@ class TestSEED(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             SEED(b"\x00" * 17)
+
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            SEED(u"0" * 16)
 
 
 def test_invalid_backend():

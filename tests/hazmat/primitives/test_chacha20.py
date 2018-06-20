@@ -58,3 +58,7 @@ class TestChaCha20(object):
 
         with pytest.raises(TypeError):
             algorithms.ChaCha20(b"0" * 32, object())
+
+    def test_invalid_key_type(self):
+        with pytest.raises(TypeError, match="key must be bytes"):
+            algorithms.ChaCha20(u"0" * 32, b"0" * 16)
