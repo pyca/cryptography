@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 def _verify_key_size(algorithm, key):
     # Verify that the key is instance of bytes
-    utils._check_bytes("Key", key)
+    utils._check_bytes("key", key)
 
     # Verify that the key size matches the expected key size
     if len(key) * 8 not in algorithm.key_sizes:

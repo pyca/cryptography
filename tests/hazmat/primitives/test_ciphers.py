@@ -37,7 +37,7 @@ class TestAES(object):
             AES(binascii.unhexlify(b"0" * 12))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             AES(u"0" * 32)
 
 
@@ -80,7 +80,7 @@ class TestCamellia(object):
             Camellia(binascii.unhexlify(b"0" * 12))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             Camellia(u"0" * 32)
 
 
@@ -99,7 +99,7 @@ class TestTripleDES(object):
             TripleDES(binascii.unhexlify(b"0" * 12))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             TripleDES(u"0" * 16)
 
 
@@ -116,7 +116,7 @@ class TestBlowfish(object):
             Blowfish(binascii.unhexlify(b"0" * 6))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             Blowfish(u"0" * 8)
 
 
@@ -133,7 +133,7 @@ class TestCAST5(object):
             CAST5(binascii.unhexlify(b"0" * 34))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             CAST5(u"0" * 10)
 
 
@@ -156,7 +156,7 @@ class TestARC4(object):
             ARC4(binascii.unhexlify(b"0" * 34))
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             ARC4(u"0" * 10)
 
 
@@ -170,7 +170,7 @@ class TestIDEA(object):
             IDEA(b"\x00" * 17)
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             IDEA(u"0" * 16)
 
 
@@ -184,7 +184,7 @@ class TestSEED(object):
             SEED(b"\x00" * 17)
 
     def test_invalid_key_type(self):
-        with pytest.raises(TypeError, match="Key must be bytes"):
+        with pytest.raises(TypeError, match="key must be bytes"):
             SEED(u"0" * 16)
 
 
