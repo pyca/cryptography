@@ -70,6 +70,8 @@ def main(argv):
     )
     assert result == 1
 
+    lib.OPENSSL_cleanup()
+
     remaining = set(heap) - start_heap
 
     if remaining:

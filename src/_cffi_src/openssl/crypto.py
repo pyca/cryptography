@@ -34,8 +34,9 @@ static const int CRYPTO_LOCK_SSL;
 
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
-/* CRYPTO_cleanup_all_ex_data became a macro in 1.1.0 */
+
 void CRYPTO_cleanup_all_ex_data(void);
+void OPENSSL_cleanup(void);
 
 /* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
    have become macros that are no ops */
