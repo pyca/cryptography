@@ -72,6 +72,12 @@ BIGNUM *BN_mod_inverse(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 int BN_num_bytes(const BIGNUM *);
 
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+
+/* The following 3 prime methods are exposed for Tribler. */
+int BN_generate_prime_ex(BIGNUM *, int, int, const BIGNUM *,
+                         const BIGNUM *, BN_GENCB *);
+int BN_is_prime_ex(const BIGNUM *, int, BN_CTX *, BN_GENCB *);
+const int BN_prime_checks_for_size(int);
 """
 
 CUSTOMIZATIONS = """
