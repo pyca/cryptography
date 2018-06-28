@@ -5,11 +5,11 @@ if (env.BRANCH_NAME == "master") {
 def configs = [
     [
         label: 'windows',
-        toxenvs: ['py27', 'py34', 'py35', 'py36'],
+        toxenvs: ['py27', 'py34', 'py35', 'py36', 'py37'],
     ],
     [
         label: 'windows64',
-        toxenvs: ['py27', 'py34', 'py35', 'py36'],
+        toxenvs: ['py27', 'py34', 'py35', 'py36', 'py37'],
     ],
     [
         label: 'freebsd11',
