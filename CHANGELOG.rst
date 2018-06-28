@@ -8,6 +8,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for Python 3.7.
 * Added :meth:`~cryptography.fernet.Fernet.extract_timestamp` to get the
   authenticated timestamp of a :doc:`Fernet </fernet>` token.
 * Support for Python 2.7.x without ``hmac.compare_digest`` has been deprecated.
