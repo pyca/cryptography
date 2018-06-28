@@ -152,7 +152,8 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             py27: "C:\\Python27\\python.exe",
                             py34: "C:\\Python34\\python.exe",
                             py35: "C:\\Python35\\python.exe",
-                            py36: "C:\\Python36\\python.exe"
+                            py36: "C:\\Python36\\python.exe",
+                            py37: "C:\\Python37\\python.exe"
                         ]
                         if (toxenv == "py35" || toxenv == "py36") {
                             opensslPaths = [
