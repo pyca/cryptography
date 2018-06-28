@@ -50,7 +50,7 @@ def build(version, label, imageName) {
                     py34: "C:\\Python34\\python.exe",
                     py35: "C:\\Python35\\python.exe",
                     py36: "C:\\Python36\\python.exe",
-                    py37: "C:\\Python36\\python.exe"
+                    py37: "C:\\Python37\\python.exe"
                 ]
                 if (version == "py35" || version == "py36" || version == "py37") {
                     opensslPaths = [
