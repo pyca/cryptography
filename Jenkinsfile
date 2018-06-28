@@ -155,7 +155,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             py36: "C:\\Python36\\python.exe",
                             py37: "C:\\Python37\\python.exe"
                         ]
-                        if (toxenv == "py35" || toxenv == "py36") {
+                        if (toxenv == "py35" || toxenv == "py36" || toxenv == "py37") {
                             opensslPaths = [
                                 "windows": [
                                     "include": "C:\\OpenSSL-Win32-2015\\include",
