@@ -137,6 +137,7 @@ class SignatureAlgorithmOID(object):
     RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
     RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
     RSA_WITH_SHA512 = ObjectIdentifier("1.2.840.113549.1.1.13")
+    RSASSA_PSS = ObjectIdentifier("1.2.840.113549.1.1.10")
     ECDSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10045.4.1")
     ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
     ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
@@ -221,6 +222,7 @@ _OID_NAMES = {
     SignatureAlgorithmOID.RSA_WITH_SHA256: "sha256WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA384: "sha384WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA512: "sha512WithRSAEncryption",
+    SignatureAlgorithmOID.RSASSA_PSS: "RSASSA-PSS",
     SignatureAlgorithmOID.ECDSA_WITH_SHA1: "ecdsa-with-SHA1",
     SignatureAlgorithmOID.ECDSA_WITH_SHA224: "ecdsa-with-SHA224",
     SignatureAlgorithmOID.ECDSA_WITH_SHA256: "ecdsa-with-SHA256",

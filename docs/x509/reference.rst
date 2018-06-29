@@ -2569,6 +2569,15 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.2.840.113549.1.1.13"``. This is
         a SHA512 digest signed by an RSA key.
 
+    .. attribute:: RSASSA_PSS
+
+        .. versionadded:: 2.3
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.1.10"``. This is
+        signed by an RSA key using the Probabilistic Signature Scheme (PSS)
+        padding from RFC 4055. The hash function and padding are defined by
+        signature algorithm parameters.
+
     .. attribute:: ECDSA_WITH_SHA1
 
         Corresponds to the dotted string ``"1.2.840.10045.4.1"``. This is a SHA1
