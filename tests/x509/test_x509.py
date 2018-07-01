@@ -3886,11 +3886,11 @@ class TestRelativeDistinguishedName(object):
             x509.RelativeDistinguishedName(["not-a-NameAttribute"])
 
     def test_init_duplicate_attribute(self):
-        rdn = x509.RelativeDistinguishedName([
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-        ])
-        assert len(rdn) == 1
+        with pytest.raises(ValueError):
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'val1'),
+                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'val1'),
+            ])
 
     def test_hash(self):
         rdn1 = x509.RelativeDistinguishedName([
@@ -3932,8 +3932,11 @@ class TestRelativeDistinguishedName(object):
         assert rdn1 != object()
 
     def test_iter_input(self):
+        # Order must be preserved too
         attrs = [
-            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value3')
         ]
         rdn = x509.RelativeDistinguishedName(iter(attrs))
         assert list(rdn) == attrs

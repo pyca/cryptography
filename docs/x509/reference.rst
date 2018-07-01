@@ -1117,7 +1117,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     Technically, a Name is a list of *sets* of attributes, called *Relative
     Distinguished Names* or *RDNs*, although multi-valued RDNs are rarely
     encountered.  The iteration order of values within a multi-valued RDN is
-    undefined.  If you need to handle multi-valued RDNs, the ``rdns`` property
+    preserved.  If you need to handle multi-valued RDNs, the ``rdns`` property
     gives access to an ordered list of :class:`RelativeDistinguishedName`
     objects.
 
@@ -1203,7 +1203,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. versionadded:: 1.6
 
     A relative distinguished name is a non-empty set of name attributes.  The
-    object is iterable to get every attribute.
+    object is iterable to get every attribute, preserving the original order.
+    Passing duplicate attributes to the constructor raises ``ValueError``.
 
     .. method:: get_attributes_for_oid(oid)
 

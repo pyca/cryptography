@@ -16,6 +16,9 @@ Changelog
   ``cryptography`` release.
 * Fixed multiple issues preventing ``cryptography`` from compiling against
   LibreSSL 2.7.x.
+* The :class:`~cryptography.x509.RelativeDistinguishedName` class now
+  preserves the order of attributes. Duplicate attributes now raise an error
+  instead of silently discarding duplicates.
 
 .. _v2-2-2:
 
