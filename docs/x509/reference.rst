@@ -583,7 +583,7 @@ X.509 CRL (Certificate Revocation List) Object
         .. doctest::
 
             >>> crl.issuer
-            <Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value='US')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='cryptography.io')>])>
+            <Name(C=US, CN=cryptography.io)>
 
     .. attribute:: next_update
 
@@ -1246,6 +1246,14 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :return bytes: The DER encoded name.
 
+    .. method:: rfc4514_string()
+
+        .. versionadded:: 2.5
+
+        :return str: Format the given name as a `RFC 4514`_ Distinguished Name
+            string, for example ``CN=mydomain.com, O=My Org, C=US``.
+
+
 .. class:: Version
 
     .. versionadded:: 0.7
@@ -1279,6 +1287,13 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The value of the attribute.
 
+    .. method:: rfc4514_string()
+
+        .. versionadded:: 2.5
+
+        :return str: Format the given attribute as a `RFC 4514`_ Distinguished
+            Name string.
+
 
 .. class:: RelativeDistinguishedName(attributes)
 
@@ -1295,6 +1310,13 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A list of :class:`NameAttribute` instances that match the OID
             provided.  The list should contain zero or one values.
 
+    .. method:: rfc4514_string()
+
+        .. versionadded:: 2.5
+
+        :return str: Format the given RDN set as a `RFC 4514`_ Distinguished
+            Name string.
+
 
 .. class:: ObjectIdentifier
 
@@ -1308,6 +1330,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :type: :class:`str`
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
+
+.. _`RFC 4514`: https://tools.ietf.org/html/rfc4514
 
 .. _general_name_classes:
 

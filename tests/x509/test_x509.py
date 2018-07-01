@@ -1138,30 +1138,11 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        if not six.PY2:
-            assert repr(cert) == (
-                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
-                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value='GT487"
-                "42965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11, "
-                "name=organizationalUnitName)>, value='See www.rapidssl.com/re"
-                "sources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier(oi"
-                "d=2.5.4.11, name=organizationalUnitName)>, value='Domain Cont"
-                "rol Validated - RapidSSL(R)')>, <NameAttribute(oid=<ObjectIde"
-                "ntifier(oid=2.5.4.3, name=commonName)>, value='www.cryptograp"
-                "hy.io')>])>, ...)>"
-            )
-        else:
-            assert repr(cert) == (
-                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
-                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value=u'GT48"
-                "742965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11,"
-                " name=organizationalUnitName)>, value=u'See www.rapidssl.com/"
-                "resources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier("
-                "oid=2.5.4.11, name=organizationalUnitName)>, value=u'Domain C"
-                "ontrol Validated - RapidSSL(R)')>, <NameAttribute(oid=<Object"
-                "Identifier(oid=2.5.4.3, name=commonName)>, value=u'www.crypto"
-                "graphy.io')>])>, ...)>"
-            )
+        assert repr(cert) == (
+            "<Certificate(subject=<Name(OU=GT48742965, OU=See www.rapidssl.com"
+            "/resources/cps (c)14, OU=Domain Control Validated - RapidSSL(R), "
+            "CN=www.cryptography.io)>, ...)>"
+        )
 
     def test_parse_tls_feature_extension(self, backend):
         cert = _load_cert(
@@ -3933,6 +3914,18 @@ class TestNameAttribute(object):
                 "nName)>, value=u'value')>"
             )
 
+    def test_distinugished_name(self):
+        # Escaping
+        na = x509.NameAttribute(NameOID.COMMON_NAME, u'James "Jim" Smith, III')
+        assert na.rfc4514_string() == r'CN=James \"Jim\" Smith\, III'
+        na = x509.NameAttribute(NameOID.USER_ID, u'# escape+,;\0this ')
+        assert na.rfc4514_string() == r'UID=\# escape\+\,\;\00this\ '
+
+        # Nonstandard attribute OID
+        na = x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'somebody@example.com')
+        assert (na.rfc4514_string() ==
+                '1.2.840.113549.1.9.1=somebody@example.com')
+
 
 class TestRelativeDistinguishedName(object):
     def test_init_empty(self):
@@ -4120,20 +4113,23 @@ class TestName(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
 
-        if not six.PY2:
-            assert repr(name) == (
-                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
-                "=commonName)>, value='cryptography.io')>, <NameAttribute(oid="
-                "<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, valu"
-                "e='PyCA')>])>"
-            )
-        else:
-            assert repr(name) == (
-                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
-                "=commonName)>, value=u'cryptography.io')>, <NameAttribute(oid"
-                "=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, val"
-                "ue=u'PyCA')>])>"
-            )
+        assert repr(name) == "<Name(CN=cryptography.io, O=PyCA)>"
+
+    def test_rfc4514_string(self):
+        n = x509.Name([
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'Sales'),
+                x509.NameAttribute(NameOID.COMMON_NAME, u'J.  Smith'),
+            ]),
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'example'),
+            ]),
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'net'),
+            ]),
+        ])
+        assert (n.rfc4514_string() ==
+                'OU=Sales+CN=J.  Smith, DC=example, DC=net')
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
