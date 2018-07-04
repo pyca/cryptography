@@ -135,7 +135,7 @@ EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 @utils.register_interface(EllipticCurve)
 class SECT571R1(object):
     name = "sect571r1"
-    key_size = 571
+    key_size = 570
 
 
 @utils.register_interface(EllipticCurve)
