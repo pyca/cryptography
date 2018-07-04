@@ -1080,6 +1080,8 @@ class TestECDH(object):
         # At this point fail indicates that one of the underlying keys was
         # changed. This results in a non-matching derived key.
         if vector['fail']:
+            # Errno 8 indicates Z should be changed.
+            assert vector['errno'] == 8
             assert z != vector['Z']
         else:
             assert z == vector['Z']
