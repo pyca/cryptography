@@ -20,7 +20,7 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
-def whycheproof(request):
+def wycheproof(request):
     wycheproof = request.config.getoption("--wycheproof-root")
     if wycheproof is None:
         pytest.skip("--wycheproof-root not provided")
