@@ -18,21 +18,23 @@ if [ -n "${OPENSSL}" ]; then
     if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
         curl -O "https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz"
         tar zxf "openssl-${OPENSSL}.tar.gz"
-        cd "openssl-${OPENSSL}"
+        pushd "openssl-${OPENSSL}"
         ./config shared no-asm no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
         shlib_sed
         make depend
         make install
+        popd
     fi
 elif [ -n "${LIBRESSL}" ]; then
     LIBRESSL_DIR="ossl-1/${LIBRESSL}"
     if [[ ! -f "$HOME/$LIBRESSL_DIR/bin/openssl" ]]; then
         curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL}.tar.gz"
         tar zxf "libressl-${LIBRESSL}.tar.gz"
-        cd "libressl-${LIBRESSL}"
+        pushd "libressl-${LIBRESSL}"
         ./config -Wl -Wl,-Bsymbolic-functions -fPIC shared --prefix="$HOME/$LIBRESSL_DIR"
         shlib_sed
         make -j"$(nproc)" install
+        popd
     fi
 fi
 pip install virtualenv
