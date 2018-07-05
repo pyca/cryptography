@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 
 from .utils import load_tests
 
+
 def test_x25519(backend, wycheproof):
     for group, test in load_tests(wycheproof, "x25519_test.json"):
         assert not group
