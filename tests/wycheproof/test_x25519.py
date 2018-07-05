@@ -19,7 +19,7 @@ def test_x25519(backend, wycheproof):
             binascii.unhexlify(test["private"])
         )
         public_key = X25519PublicKey.from_public_bytes(
-            binascii.unhexlify(test{"public"])
+            binascii.unhexlify(test["public"])
         )
 
         assert test["result"] in ["valid", "acceptable"]
