@@ -25,5 +25,5 @@ def test_x25519(backend, wycheproof):
         assert test["result"] in ["valid", "acceptable"]
         assert (
             private_key.exchange(public_key) ==
-            binascii.unhexlify(test["shared"]
+            binascii.unhexlify(test["shared"])
         )
