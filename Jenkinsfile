@@ -144,6 +144,16 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
         timeout(time: 30, unit: 'MINUTES') {
 
             checkout_git(label)
+            checkout([
+                $class: 'GitSCM',
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: 'wycheproof',
+                ]],
+                userRemoteConfigs: [[
+                    'url': 'https://github.com/google/wycheproof',
+                ]]
+            ])
 
             withCredentials([string(credentialsId: 'cryptography-codecov-token', variable: 'CODECOV_TOKEN')]) {
                 withEnv(["LABEL=$label", "TOXENV=$toxenv", "IMAGE_NAME=$imageName"]) {
@@ -185,7 +195,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
 
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
                             @set LIB="${opensslPaths[label]['lib']}";%LIB%
-                            tox -r
+                            tox -r -- --wycheproof-root=../wycheproof
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
                             call .codecov/Scripts/activate
@@ -205,7 +215,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
                                     CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
-                                    tox -r --  --color=yes
+                                    tox -r --  --color=yes --wycheproof-root=../wycheproof
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
@@ -218,7 +228,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             sh """#!/usr/bin/env bash
                                 set -xe
                                 cd cryptography
-                                tox -r -- --color=yes
+                                tox -r -- --color=yes --wycheproof-root=../wycheproof
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
