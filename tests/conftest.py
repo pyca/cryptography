@@ -15,6 +15,18 @@ def pytest_report_header(config):
     return "OpenSSL: {0}".format(openssl_backend.openssl_version_text())
 
 
+def pytest_addoption(parser):
+    parser.addoption("--wycheproof-root", default=None)
+
+
+@pytest.fixture
+def whycheproof(request):
+    wycheproof = request.config.getoption("--wycheproof-root")
+    if wycheproof is None:
+        pytest.skip("--wycheproof-root not provided")
+    return wycheproof
+
+
 @pytest.fixture()
 def backend(request):
     required_interfaces = [
