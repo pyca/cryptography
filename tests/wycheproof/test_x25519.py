@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
+from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
 )
@@ -13,6 +14,11 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 from .utils import load_tests
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: not backend.x25519_supported(),
+    skip_message="Requires OpenSSL without X25519 support"
+)
+@pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x25519(backend, wycheproof):
     for group, test in load_tests(wycheproof, "x25519_test.json"):
         assert not group
