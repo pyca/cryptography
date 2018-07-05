@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
+import pytest
+
 from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
