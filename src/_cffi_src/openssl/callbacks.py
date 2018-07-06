@@ -33,7 +33,7 @@ typedef struct {
 """
 
 FUNCTIONS = """
-int _setup_ssl_threads(void);
+int Cryptography_setup_ssl_threads(void);
 int Cryptography_pem_password_cb(char *, int, int, void *);
 """
 
@@ -120,7 +120,7 @@ static void init_mutexes(void) {
 }
 
 
-int _setup_ssl_threads(void) {
+int Cryptography_setup_ssl_threads(void) {
     if (_ssl_locks == NULL) {
         _ssl_locks_count = CRYPTO_num_locks();
         _ssl_locks = calloc(_ssl_locks_count, sizeof(Cryptography_mutex));
