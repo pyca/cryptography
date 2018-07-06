@@ -6,7 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import collections
+import json
 import math
+import os
 import re
 from contextlib import contextmanager
 
@@ -884,3 +886,14 @@ def load_nist_ccm_vectors(vector_data):
             test_data[name.lower()] = value.encode("ascii")
 
     return data
+
+
+def load_wycheproof_tests(wycheproof, test_file):
+    path = os.path.join(wycheproof, "testvectors", test_file)
+    with open(path) as f:
+        data = json.load(f)
+        for group in data["testGroups"]:
+            cases = group.pop("tests")
+            for c in cases:
+                yield group, c
+
