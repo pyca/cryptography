@@ -23,7 +23,8 @@ from .utils import load_tests
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x25519(backend, wycheproof):
     for group, test in load_tests(wycheproof, "x25519_test.json"):
-        assert not group
+        assert list(group.items()) == [("curve", "curve25519")]
+
         private_key = X25519PrivateKey._from_private_bytes(
             binascii.unhexlify(test["private"])
         )
