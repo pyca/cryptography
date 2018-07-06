@@ -145,7 +145,7 @@ class Binding(object):
 
             # If nothing else has setup a locking callback already, we set up
             # our own
-            res = lib._setup_ssl_threads()
+            res = lib.Cryptography_setup_ssl_threads()
             _openssl_assert(cls.lib, res == 1)
 
 
