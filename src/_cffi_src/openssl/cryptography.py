@@ -5,6 +5,11 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
+/* define our OpenSSL API compatibility level to 1.0.1. Any symbols older than
+   that will raise an error during compilation. We can raise this number again
+   after we drop 1.0.2 support in the distant future.  */
+#define OPENSSL_API_COMPAT 0x10001000L
+
 #include <openssl/opensslv.h>
 
 
