@@ -893,6 +893,11 @@ class WycheproofTest(object):
         self.testgroup = testgroup
         self.testcase = testcase
 
+    def __repr__(self):
+        return "<WycheproofTest({!r}, {!r})>".format(
+            self.testgroup, self.testcase
+        )
+
 
 def load_wycheproof_tests(wycheproof, test_file):
     path = os.path.join(wycheproof, "testvectors", test_file)
