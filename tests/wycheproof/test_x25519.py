@@ -17,8 +17,8 @@ from .utils import load_tests
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: not backend.x25519_supported(),
-    skip_message="Requires OpenSSL without X25519 support"
+    only_if=lambda backend: backend.x25519_supported(),
+    skip_message="Requires OpenSSL with X25519 support"
 )
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x25519(backend, wycheproof):
