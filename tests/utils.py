@@ -888,6 +888,12 @@ def load_nist_ccm_vectors(vector_data):
     return data
 
 
+class WycheproofTest(object):
+    def __init__(self, testgroup, testcase):
+        self.testgroup = testgroup
+        self.testcase = testcase
+
+
 def load_wycheproof_tests(wycheproof, test_file):
     path = os.path.join(wycheproof, "testvectors", test_file)
     with open(path) as f:
@@ -895,5 +901,5 @@ def load_wycheproof_tests(wycheproof, test_file):
         for group in data["testGroups"]:
             cases = group.pop("tests")
             for c in cases:
-                yield group, c
+                yield WycheproofTest(group, c)
 
