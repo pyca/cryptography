@@ -31,9 +31,8 @@ def pytest_generate_tests(metafunc):
         if wycheproof is None:
             pytest.skip("--wycheproof-root not provided")
 
-        paths = request.node.get_marker("wycheproof_tests").args
         testcases = []
-        for path in paths:
+        for path in metafunc.function.wycheproof_tests.args:
             testcases.extend(load_wycheproof_tests(wycheproof, path))
         metafunc.parametrize("wycheproof", testcases)
 
