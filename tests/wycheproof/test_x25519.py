@@ -13,27 +13,25 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
 )
 
-from .utils import load_tests
-
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support"
 )
 @pytest.mark.requires_backend_interface(interface=DHBackend)
+@pytest.mark.wycheproof_tests("x25519_test.json")
 def test_x25519(backend, wycheproof):
-    for group, test in load_tests(wycheproof, "x25519_test.json"):
-        assert list(group.items()) == [("curve", "curve25519")]
+    assert list(wycheproof.testgroup.items()) == [("curve", "curve25519")]
 
-        private_key = X25519PrivateKey._from_private_bytes(
-            binascii.unhexlify(test["private"])
-        )
-        public_key = X25519PublicKey.from_public_bytes(
-            binascii.unhexlify(test["public"])
-        )
+    private_key = X25519PrivateKey._from_private_bytes(
+        binascii.unhexlify(wycheproof.testcase["private"])
+    )
+    public_key = X25519PublicKey.from_public_bytes(
+        binascii.unhexlify(wycheproof.testcase["public"])
+    )
 
-        assert test["result"] in ["valid", "acceptable"]
-        assert (
-            private_key.exchange(public_key) ==
-            binascii.unhexlify(test["shared"])
-        )
+    assert wycheproof.testcase["result"] in ["valid", "acceptable"]
+    assert (
+        private_key.exchange(public_key) ==
+        binascii.unhexlify(wycheproof.testcase["shared"])
+    )

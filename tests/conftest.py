@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
-from .utils import check_backend_support
+from .utils import check_backend_support, load_wycheproof_tests
 
 
 def pytest_report_header(config):
@@ -19,12 +19,22 @@ def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
 
 
+class WycheproofTest(object):
+    def __init__(self, testgroup, testcase):
+        self.testgroup = testgroup
+        self.testcase = testcase
+
+
 @pytest.fixture
 def wycheproof(request):
     wycheproof = request.config.getoption("--wycheproof-root")
     if wycheproof is None:
         pytest.skip("--wycheproof-root not provided")
-    return wycheproof
+
+    paths = request.node.get_marker("wycheproof_tests").args
+    for path in paths:
+        for testgroup, testcase in load_wycheproof_tests(wycheproof, path):
+            yield WycheproofTest(testgroup, testcase)
 
 
 @pytest.fixture()
