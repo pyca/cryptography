@@ -384,10 +384,11 @@ class TestRSASignature(object):
                 n=private["modulus"]
             )
         ).private_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
-        signer.update(binascii.unhexlify(example["message"]))
-        signature = signer.finalize()
+        signature = private_key.sign(
+            binascii.unhexlify(example["message"]),
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
         assert binascii.hexlify(signature) == example["signature"]
 
     @pytest.mark.supported(
@@ -459,12 +460,9 @@ class TestRSASignature(object):
             mgf=padding.MGF1(hash_alg),
             salt_length=padding.PSS.MAX_LENGTH
         )
-        signer = private_key.signer(pss, hash_alg)
-        signer.update(b"testing signature")
-        signature = signer.finalize()
-        verifier = public_key.verifier(signature, pss, hash_alg)
-        verifier.update(b"testing signature")
-        verifier.verify()
+        msg = b"testing signature"
+        signature = private_key.sign(msg, pss, hash_alg)
+        public_key.verify(signature, msg, pss, hash_alg)
 
     @pytest.mark.supported(
         only_if=lambda backend: (
@@ -480,15 +478,14 @@ class TestRSASignature(object):
     )
     def test_pss_minimum_key_size_for_digest(self, backend):
         private_key = RSA_KEY_522.private_key(backend)
-        signer = private_key.signer(
+        private_key.sign(
+            b"no failure",
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA512()
         )
-        signer.update(b"no failure")
-        signer.finalize()
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -506,7 +503,8 @@ class TestRSASignature(object):
     def test_pss_signing_digest_too_large_for_key_size(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
-            private_key.signer(
+            private_key.sign(
+                b"msg",
                 padding.PSS(
                     mgf=padding.MGF1(hashes.SHA1()),
                     salt_length=padding.PSS.MAX_LENGTH
@@ -525,16 +523,15 @@ class TestRSASignature(object):
     )
     def test_pss_signing_salt_length_too_long(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
-        signer = private_key.signer(
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA1()),
-                salt_length=1000000
-            ),
-            hashes.SHA1()
-        )
-        signer.update(b"failure coming")
         with pytest.raises(ValueError):
-            signer.finalize()
+            private_key.sign(
+                b"failure coming",
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA1()),
+                    salt_length=1000000
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -555,12 +552,12 @@ class TestRSASignature(object):
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.signer(DummyAsymmetricPadding(), hashes.SHA1())
+            private_key.sign(b"msg", DummyAsymmetricPadding(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(TypeError):
-            private_key.signer("notpadding", hashes.SHA1())
+            private_key.sign(b"msg", "notpadding", hashes.SHA1())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -571,7 +568,8 @@ class TestRSASignature(object):
     def test_unsupported_pss_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
-            private_key.signer(
+            private_key.sign(
+                b"msg",
                 padding.PSS(
                     mgf=DummyMGF(),
                     salt_length=padding.PSS.MAX_LENGTH
@@ -587,13 +585,12 @@ class TestRSASignature(object):
     )
     def test_pkcs1_digest_too_large_for_key_size(self, backend):
         private_key = RSA_KEY_599.private_key(backend)
-        signer = private_key.signer(
-            padding.PKCS1v15(),
-            hashes.SHA512()
-        )
-        signer.update(b"failure coming")
         with pytest.raises(ValueError):
-            signer.finalize()
+            private_key.sign(
+                b"failure coming",
+                padding.PKCS1v15(),
+                hashes.SHA512()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -603,12 +600,11 @@ class TestRSASignature(object):
     )
     def test_pkcs1_minimum_key_size(self, backend):
         private_key = RSA_KEY_745.private_key(backend)
-        signer = private_key.signer(
+        private_key.sign(
+            b"no failure",
             padding.PKCS1v15(),
             hashes.SHA512()
         )
-        signer.update(b"no failure")
-        signer.finalize()
 
     def test_sign(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -617,9 +613,7 @@ class TestRSASignature(object):
         algorithm = hashes.SHA1()
         signature = private_key.sign(message, pkcs, algorithm)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, pkcs, algorithm)
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, pkcs, algorithm)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -637,9 +631,7 @@ class TestRSASignature(object):
         prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
         signature = private_key.sign(digest, pss, prehashed_alg)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, pss, hashes.SHA1())
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, pss, hashes.SHA1())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -728,17 +720,16 @@ class TestRSAVerification(object):
     def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
-        signer.update(b"sign me")
-        signature = signer.finalize()
-        verifier = public_key.verifier(
-            signature,
-            padding.PKCS1v15(),
-            hashes.SHA1()
+        signature = private_key.sign(
+            b"sign me", padding.PKCS1v15(), hashes.SHA1()
         )
-        verifier.update(b"incorrect data")
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                b"incorrect data",
+                padding.PKCS1v15(),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -750,17 +741,12 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         private_key2 = RSA_KEY_512_ALT.private_key(backend)
         public_key = private_key2.public_key()
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
-        signer.update(b"sign me")
-        signature = signer.finalize()
-        verifier = public_key.verifier(
-            signature,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-        verifier.update(b"sign me")
+        msg = b"sign me"
+        signature = private_key.sign(msg, padding.PKCS1v15(), hashes.SHA1())
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature, msg, padding.PKCS1v15(), hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -817,17 +803,16 @@ class TestRSAVerification(object):
             b"0e68c3649df91c5bc3665f96e157efa75b71934aaa514d91e94ca8418d100f45"
             b"6f05288e58525f99666bab052adcffdf7186eb40f583bd38d98c97d3d524808b"
         )
-        verifier = public_key.verifier(
-            signature,
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA1()
-        )
-        verifier.update(b"incorrect data")
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                b"incorrect data",
+                padding.PSS(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -853,17 +838,16 @@ class TestRSAVerification(object):
             ),
             e=65537
         ).public_key(backend)
-        verifier = public_key.verifier(
-            signature,
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA1()
-        )
-        verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                b"sign me",
+                padding.PSS(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -889,17 +873,16 @@ class TestRSAVerification(object):
             ),
             e=65537
         ).public_key(backend)
-        verifier = public_key.verifier(
-            signature,
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA1()
-        )
-        verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                b"sign me",
+                padding.PSS(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -910,9 +893,9 @@ class TestRSAVerification(object):
     def test_use_after_finalize(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
-        signer.update(b"sign me")
-        signature = signer.finalize()
+        signature = private_key.sign(
+            b"sign me", padding.PKCS1v15(), hashes.SHA1()
+        )
 
         verifier = public_key.verifier(
             signature,
@@ -930,8 +913,8 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.verifier(
-                b"sig", DummyAsymmetricPadding(), hashes.SHA1()
+            public_key.verify(
+                b"sig", b"msg", DummyAsymmetricPadding(), hashes.SHA1()
             )
 
     @pytest.mark.supported(
@@ -955,7 +938,7 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
-            public_key.verifier(b"sig", "notpadding", hashes.SHA1())
+            public_key.verify(b"sig", b"msg", "notpadding", hashes.SHA1())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -967,8 +950,9 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
-            public_key.verifier(
+            public_key.verify(
                 b"sig",
+                b"msg",
                 padding.PSS(
                     mgf=DummyMGF(),
                     salt_length=padding.PSS.MAX_LENGTH
@@ -997,8 +981,9 @@ class TestRSAVerification(object):
         )
         public_key = private_key.public_key()
         with pytest.raises(ValueError):
-            public_key.verifier(
+            public_key.verify(
                 signature,
+                b"msg doesn't matter",
                 padding.PSS(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     salt_length=padding.PSS.MAX_LENGTH
@@ -1028,28 +1013,25 @@ class TestRSAVerification(object):
             ),
             e=65537
         ).public_key(backend)
-        verifier = public_key.verifier(
-            signature,
-            padding.PSS(
-                mgf=padding.MGF1(
-                    algorithm=hashes.SHA1(),
-                ),
-                salt_length=1000000
-            ),
-            hashes.SHA1()
-        )
-        verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(
+                signature,
+                b"sign me",
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA1(),
+                    ),
+                    salt_length=1000000
+                ),
+                hashes.SHA1()
+            )
 
     def test_verify(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         message = b"one little message"
         pkcs = padding.PKCS1v15()
         algorithm = hashes.SHA1()
-        signer = private_key.signer(pkcs, algorithm)
-        signer.update(message)
-        signature = signer.finalize()
+        signature = private_key.sign(message, pkcs, algorithm)
         public_key = private_key.public_key()
         public_key.verify(signature, message, pkcs, algorithm)
 
