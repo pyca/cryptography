@@ -379,10 +379,10 @@ Modes
 
         Cryptography will generate a 128-bit tag when finalizing encryption.
         You can shorten a tag by truncating it to the desired length but this
-        is **not recommended** as it lowers the security margins of the
-        authentication (`NIST SP-800-38D`_ recommends 96-:term:`bits` or
-        greater).  Applications wishing to allow truncation must pass the
-        ``min_tag_length`` parameter.
+        is **not recommended** as it makes it easier to forge messages, and
+        also potentially leaks the key (`NIST SP-800-38D`_ recommends
+        96-:term:`bits` or greater).  Applications wishing to allow truncation
+        can pass the ``min_tag_length`` parameter.
 
         .. versionchanged:: 0.5
 
