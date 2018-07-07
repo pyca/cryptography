@@ -9,7 +9,7 @@ import binascii
 import pytest
 
 from cryptography.hazmat.backends.interfaces import RSABackend
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, serialization
 
 
 _DIGESTS = {
