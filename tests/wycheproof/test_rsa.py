@@ -20,6 +20,7 @@ _DIGESTS = {
     "SHA-512": hashes.SHA512(),
 }
 
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.wycheproof_tests(
     "rsa_signature_test.json",
