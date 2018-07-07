@@ -8,8 +8,10 @@ import binascii
 
 import pytest
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primtives.asymmetric import padding
 
 
 _DIGESTS = {
