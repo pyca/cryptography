@@ -918,4 +918,3 @@ def load_wycheproof_tests(wycheproof, test_file):
             cases = group.pop("tests")
             for c in cases:
                 yield WycheproofTest(group, c)
-
