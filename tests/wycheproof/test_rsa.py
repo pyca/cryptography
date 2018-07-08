@@ -42,10 +42,8 @@ def test_rsa_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if (
-        wycheproof.testcase["result"] == "valid" or (
-            wycheproof.testcase["result"] == "acceptable" and
-            "MissingNull" not in wycheproof.testcase["flags"]
-        )
+        wycheproof.valid or
+        (wycheproof.acceptable and not wycheproof.has_flag("MissingNull"))
     ):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),
