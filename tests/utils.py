@@ -898,6 +898,17 @@ class WycheproofTest(object):
             self.testgroup, self.testcase
         )
 
+    @property
+    def valid(self):
+        return self.testcase["result"] == "valid"
+
+    @property
+    def acceptable(self):
+        return self.testcase["result"] == "acceptable"
+
+    def has_flag(self, flag):
+        return flag in self.testcase["flags"]
+
 
 def load_wycheproof_tests(wycheproof, test_file):
     path = os.path.join(wycheproof, "testvectors", test_file)

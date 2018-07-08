@@ -30,7 +30,7 @@ def test_x25519(backend, wycheproof):
         binascii.unhexlify(wycheproof.testcase["public"])
     )
 
-    assert wycheproof.testcase["result"] in ["valid", "acceptable"]
+    assert wycheproof.valid or wycheproof.acceptable
     assert (
         private_key.exchange(public_key) ==
         binascii.unhexlify(wycheproof.testcase["shared"])
