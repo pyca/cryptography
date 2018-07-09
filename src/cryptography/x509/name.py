@@ -101,13 +101,18 @@ class NameAttribute(object):
 
 class RelativeDistinguishedName(object):
     def __init__(self, attributes):
-        attributes = frozenset(attributes)
+        attributes = list(attributes)
         if not attributes:
             raise ValueError("a relative distinguished name cannot be empty")
         if not all(isinstance(x, NameAttribute) for x in attributes):
             raise TypeError("attributes must be an iterable of NameAttribute")
 
+        # Keep list and frozenset to preserve attribute order where it matters
         self._attributes = attributes
+        self._attribute_set = frozenset(attributes)
+
+        if len(self._attribute_set) != len(attributes):
+            raise ValueError("duplicate attributes are not allowed")
 
     def get_attributes_for_oid(self, oid):
         return [i for i in self if i.oid == oid]
@@ -116,13 +121,13 @@ class RelativeDistinguishedName(object):
         if not isinstance(other, RelativeDistinguishedName):
             return NotImplemented
 
-        return self._attributes == other._attributes
+        return self._attribute_set == other._attribute_set
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash(self._attributes)
+        return hash(self._attribute_set)
 
     def __iter__(self):
         return iter(self._attributes)
