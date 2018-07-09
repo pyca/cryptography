@@ -154,7 +154,10 @@ Elliptic Curve Signature Algorithms
 
     .. warning::
         The point represented by this object is not validated in any way until
-        :meth:`EllipticCurvePublicNumbers.public_key` is called.
+        :meth:`EllipticCurvePublicNumbers.public_key` is called and may not
+        represent a valid point on the curve. You should not attempt to perform
+        any computations using the values from this class until you have either
+        validated it yourself or called ``public_key()`` successfully.
 
     .. versionadded:: 0.5
 
