@@ -4092,6 +4092,24 @@ class TestName(object):
             b"b060355040a0c0450794341"
         )
 
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_bmpstring_bytes(self, backend):
+        # For this test we need an odd length string. BMPString is UCS-2
+        # encoded so it will always be even length and OpenSSL will error if
+        # you pass an odd length string without encoding it properly first.
+        name = x509.Name([
+            x509.NameAttribute(
+                NameOID.COMMON_NAME,
+                u'cryptography.io',
+                _ASN1Type.BMPString
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+        ])
+        assert name.public_bytes(backend) == binascii.unhexlify(
+            b"30383127302506035504031e1e00630072007900700074006f00670072006100"
+            b"7000680079002e0069006f310d300b060355040a0c0450794341"
+        )
+
 
 def test_random_serial_number(monkeypatch):
     sample_data = os.urandom(20)
