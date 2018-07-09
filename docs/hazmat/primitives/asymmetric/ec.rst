@@ -152,6 +152,13 @@ Elliptic Curve Signature Algorithms
 
 .. class:: EllipticCurvePublicNumbers(x, y, curve)
 
+    .. warning::
+        The point represented by this object is not validated in any way until
+        :meth:`EllipticCurvePublicNumbers.public_key` is called and may not
+        represent a valid point on the curve. You should not attempt to perform
+        any computations using the values from this class until you have either
+        validated it yourself or called ``public_key()`` successfully.
+
     .. versionadded:: 0.5
 
     The collection of integers that make up an EC public key.
@@ -182,6 +189,7 @@ Elliptic Curve Signature Algorithms
         :param backend: An instance of
             :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
+        :raises ValueError: Raised if the point is invalid for the curve.
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
     .. method:: encode_point()
