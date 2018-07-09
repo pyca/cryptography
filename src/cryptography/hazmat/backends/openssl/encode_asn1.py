@@ -14,6 +14,7 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
 )
+from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID
 
 
@@ -116,11 +117,15 @@ def _encode_sk_name_entry(backend, attributes):
 
 
 def _encode_name_entry(backend, attribute):
-    value = attribute.value.encode('utf8')
+    if attribute._type is _ASN1Type.BMPString:
+        value = attribute.value.encode('utf_16_be')
+    else:
+        value = attribute.value.encode('utf8')
+
     obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
 
     name_entry = backend._lib.X509_NAME_ENTRY_create_by_OBJ(
-        backend._ffi.NULL, obj, attribute._type.value, value, -1
+        backend._ffi.NULL, obj, attribute._type.value, value, len(value)
     )
     return name_entry
 
