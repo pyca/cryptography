@@ -152,6 +152,10 @@ Elliptic Curve Signature Algorithms
 
 .. class:: EllipticCurvePublicNumbers(x, y, curve)
 
+    .. warning::
+        The point represented by this object is not validated in any way until
+        :meth:`EllipticCurvePublicNumbers.public_key` is called.
+
     .. versionadded:: 0.5
 
     The collection of integers that make up an EC public key.
@@ -175,12 +179,6 @@ Elliptic Curve Signature Algorithms
         The affine y component of the public point used for verifying.
 
     .. method:: public_key(backend)
-
-        .. note::
-            When calling this method the point is checked to to confirm that
-            it is on ``curve``. If the point is invalid then a ``ValueError``
-            will be raised. This can occur if the ``x`` and ``y`` points are
-            created from untrusted data.
 
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
