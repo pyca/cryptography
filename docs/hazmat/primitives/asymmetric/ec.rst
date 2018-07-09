@@ -177,9 +177,10 @@ Elliptic Curve Signature Algorithms
     .. method:: public_key(backend)
 
         .. note::
-            The point represented by ``x`` and ``y`` in this object is checked
-            to confirm that it is on ``curve`` when calling this method. If the
-            point is not on the curve then a ``ValueError`` will be raised.
+            When calling this method the point is checked to to confirm that
+            it is on ``curve``. If the point is invalid then a ``ValueError``
+            will be raised. This can occur if the ``x`` and ``y`` points are
+            created from untrusted data.
 
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
