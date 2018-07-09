@@ -176,12 +176,18 @@ Elliptic Curve Signature Algorithms
 
     .. method:: public_key(backend)
 
+        .. note::
+            The point represented by ``x`` and ``y`` in this object is checked
+            to confirm that it is on ``curve`` when calling this method. If the
+            point is not on the curve then a ``ValueError`` will be raised.
+
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
 
         :param backend: An instance of
             :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
+        :raises ValueError: Raised if the point is invalid for the curve.
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
     .. method:: encode_point()
