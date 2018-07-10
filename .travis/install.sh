@@ -22,7 +22,9 @@ if [ -n "${OPENSSL}" ]; then
         ./config shared no-asm no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
         shlib_sed
         make depend
-        make install
+        # avoid installing the docs
+        # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
+        make -j"$(nproc)" install_sw install_ssldirs
         popd
     fi
 elif [ -n "${LIBRESSL}" ]; then
