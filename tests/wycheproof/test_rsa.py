@@ -23,6 +23,20 @@ _DIGESTS = {
 }
 
 
+def should_verify(backend, wycheproof):
+    if wycheproof.valid:
+        return True
+
+    if wycheproof.acceptable:
+        if (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
+            wycheproof.has_flag("MissingNull")
+        ):
+            return False
+        return True
+
+     return False
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.wycheproof_tests(
     "rsa_signature_test.json",
@@ -41,10 +55,7 @@ def test_rsa_signature(backend, wycheproof):
     )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
-    if (
-        wycheproof.valid or
-        (wycheproof.acceptable and not wycheproof.has_flag("MissingNull"))
-    ):
+    if should_verify(backend, wycheproof):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),
             binascii.unhexlify(wycheproof.testcase["msg"]),
