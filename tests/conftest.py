@@ -19,12 +19,6 @@ def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
 
 
-class WycheproofTest(object):
-    def __init__(self, testgroup, testcase):
-        self.testgroup = testgroup
-        self.testcase = testcase
-
-
 def pytest_generate_tests(metafunc):
     if "wycheproof" in metafunc.fixturenames:
         wycheproof = metafunc.config.getoption("--wycheproof-root")
