@@ -143,6 +143,7 @@ def cryptography_has_locking_callbacks():
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
         "CRYPTO_lock",
+        "Cryptography_setup_ssl_threads",
     ]
 
 
