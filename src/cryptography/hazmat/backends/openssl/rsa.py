@@ -264,8 +264,7 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
     # occurs.
     backend.openssl_assert(res >= 0)
     if res == 0:
-        errors = backend._consume_errors()
-        backend.openssl_assert(errors)
+        backend._consume_errors()
         raise InvalidSignature
 
 
