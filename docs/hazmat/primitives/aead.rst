@@ -61,6 +61,8 @@ also support providing integrity for associated data which is not encrypted.
             authenticated with the key, but does not need to be encrypted. Can
             be ``None``.
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
+        :raises OverflowError: If data passed is greater than 2\ :sup:`32`
+            bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
 
@@ -130,6 +132,8 @@ also support providing integrity for associated data which is not encrypted.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
+        :raises OverflowError: If data passed is greater than 2\ :sup:`32`
+            bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
 
@@ -215,6 +219,8 @@ also support providing integrity for associated data which is not encrypted.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
         :returns bytes: The ciphertext bytes with the tag appended.
+        :raises OverflowError: If data passed is greater than 2\ :sup:`32`
+            bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
 
