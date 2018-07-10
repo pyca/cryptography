@@ -731,6 +731,41 @@ class TestRSAVerification(object):
                 hashes.SHA1()
             )
 
+    def test_invalid_signature_sequence_removed(self, backend):
+        """
+        This test comes from wycheproof
+        """
+        key_der = binascii.unhexlify(
+            b"30820122300d06092a864886f70d01010105000382010f003082010a02820101"
+            b"00a2b451a07d0aa5f96e455671513550514a8a5b462ebef717094fa1fee82224"
+            b"e637f9746d3f7cafd31878d80325b6ef5a1700f65903b469429e89d6eac88450"
+            b"97b5ab393189db92512ed8a7711a1253facd20f79c15e8247f3d3e42e46e48c9"
+            b"8e254a2fe9765313a03eff8f17e1a029397a1fa26a8dce26f490ed81299615d9"
+            b"814c22da610428e09c7d9658594266f5c021d0fceca08d945a12be82de4d1ece"
+            b"6b4c03145b5d3495d4ed5411eb878daf05fd7afc3e09ada0f1126422f590975a"
+            b"1969816f48698bcbba1b4d9cae79d460d8f9f85e7975005d9bc22c4e5ac0f7c1"
+            b"a45d12569a62807d3b9a02e5a530e773066f453d1f5b4c2e9cf7820283f742b9"
+            b"d50203010001"
+        )
+        sig = binascii.unhexlify(
+            b"498209f59a0679a1f926eccf3056da2cba553d7ab3064e7c41ad1d739f038249"
+            b"f02f5ad12ee246073d101bc3cdb563e8b6be61562056422b7e6c16ad53deb12a"
+            b"f5de744197753a35859833f41bb59c6597f3980132b7478fd0b95fd27dfad64a"
+            b"20fd5c25312bbd41a85286cd2a83c8df5efa0779158d01b0747ff165b055eb28"
+            b"80ea27095700a295593196d8c5922cf6aa9d7e29b5056db5ded5eb20aeb31b89"
+            b"42e26b15a5188a4934cd7e39cfe379a197f49a204343a493452deebca436ee61"
+            b"4f4daf989e355544489f7e69ffa8ccc6a1e81cf0ab33c3e6d7591091485a6a31"
+            b"bda3b33946490057b9a3003d3fd9daf7c4778b43fd46144d945d815f12628ff4"
+        )
+        public_key = serialization.load_der_public_key(key_der, backend)
+        with pytest.raises(InvalidSignature):
+            public_key.verify(
+                sig,
+                binascii.unhexlify(b"313233343030"),
+                padding.PKCS1v15(),
+                hashes.SHA256()
+            )
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
