@@ -14,21 +14,22 @@ shlib_sed() {
 # download, compile, and install if it's not already present via travis
 # cache
 if [ -n "${OPENSSL}" ]; then
-    OPENSSL_DIR="ossl-1/${OPENSSL}"
+    OPENSSL_DIR="ossl-2/${OPENSSL}"
     if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
         curl -O "https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz"
         tar zxf "openssl-${OPENSSL}.tar.gz"
         pushd "openssl-${OPENSSL}"
-        ./config shared no-asm no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
+        ./config shared no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
         shlib_sed
         make depend
+        make -j"$(nproc)"
         # avoid installing the docs
         # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
-        make -j"$(nproc)" install_sw install_ssldirs
+        make install_sw install_ssldirs
         popd
     fi
 elif [ -n "${LIBRESSL}" ]; then
-    LIBRESSL_DIR="ossl-1/${LIBRESSL}"
+    LIBRESSL_DIR="ossl-2/${LIBRESSL}"
     if [[ ! -f "$HOME/$LIBRESSL_DIR/bin/openssl" ]]; then
         curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL}.tar.gz"
         tar zxf "libressl-${LIBRESSL}.tar.gz"
