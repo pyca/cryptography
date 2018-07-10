@@ -21,12 +21,15 @@ class TestOpenSSL(object):
 
     def test_crypto_lock_init(self):
         b = Binding()
-        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
-            pytest.skip("Requires an older OpenSSL. Must be < 1.1.0")
 
         b.init_static_locks()
         lock_cb = b.lib.CRYPTO_get_locking_callback()
-        assert lock_cb != b.ffi.NULL
+        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+            assert lock_cb == b.ffi.NULL
+            assert b.lib.Cryptography_HAS_LOCKING_CALLBACKS == 0
+        else:
+            assert lock_cb != b.ffi.NULL
+            assert b.lib.Cryptography_HAS_LOCKING_CALLBACKS == 1
 
     def test_add_engine_more_than_once(self):
         b = Binding()
