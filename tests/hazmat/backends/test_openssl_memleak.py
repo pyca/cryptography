@@ -225,3 +225,11 @@ class TestOpenSSLMemoryLeaks(object):
             from cryptography.hazmat.primitives.asymmetric import ec
             ec.derive_private_key(1, ec.SECP256R1(), backend)
         """))
+
+    def test_x25519_pubkey_from_private_key(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            from cryptography.hazmat.primitives.asymmetric import x25519
+            private_key = x25519.X25519PrivateKey.generate()
+            private_key.public_key()
+        """))
