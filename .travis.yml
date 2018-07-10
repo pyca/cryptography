@@ -6,7 +6,7 @@ language: python
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/ossl-1/
+        - $HOME/ossl-2/
 
 # Only build master, the version branches (e.g. 1.7.x), and
 # version tags (which are apparently considered branches by travis)

@@ -12,7 +12,7 @@ if [ -n "${LIBRESSL}" ]; then
     OPENSSL=$LIBRESSL
 fi
 if [ -n "${OPENSSL}" ]; then
-    OPENSSL_DIR="ossl-1/${OPENSSL}"
+    OPENSSL_DIR="ossl-2/${OPENSSL}"
 
     export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
     export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
