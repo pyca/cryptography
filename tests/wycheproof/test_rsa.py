@@ -35,7 +35,7 @@ def should_verify(backend, wycheproof):
             return False
         return True
 
-     return False
+    return False
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.wycheproof_tests(
