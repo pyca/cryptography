@@ -10,6 +10,9 @@ import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.backends.openssl.encode_asn1 import (
+    _encode_asn1_int_gc
+)
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
     _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
@@ -234,6 +237,22 @@ class _CertificateRevocationList(object):
         der = self._backend._read_mem_bio(bio)
         h.update(der)
         return h.finalize()
+
+    def get_revoked_certificate(self, serial_number):
+        revoked = self._backend._ffi.new("X509_REVOKED **")
+        asn1_int = _encode_asn1_int_gc(self._backend, serial_number)
+        res = self._backend._lib.X509_CRL_get0_by_serial(
+            self._x509_crl, revoked, asn1_int
+        )
+        if res == 0:
+            return None
+        else:
+            self._backend.openssl_assert(
+                revoked[0] != self._backend._ffi.NULL
+            )
+            return _RevokedCertificate(
+                self._backend, self._x509_crl, revoked[0]
+            )
 
     @property
     def signature_hash_algorithm(self):
