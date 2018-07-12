@@ -31,7 +31,12 @@ def test_x25519(backend, wycheproof):
     )
 
     assert wycheproof.valid or wycheproof.acceptable
-    assert (
-        private_key.exchange(public_key) ==
-        binascii.unhexlify(wycheproof.testcase["shared"])
-    )
+
+    expected = binascii.unhexlify(wycheproof.testcase["shared"])
+    if expected == b"\x00" * 32:
+        assert wycheproof.acceptable
+        # OpenSSL returns an error on all zeros shared key
+        with pytest.raises(ValueError):
+            private_key.exchange(public_key)
+    else:
+        assert private_key.exchange(public_key) == expected
