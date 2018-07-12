@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from ..utils import skip_if_wycheproof_none, WycheproofTest
+from ..utils import WycheproofTest, skip_if_wycheproof_none
 
 
 def test_wycheproof_test_repr():
