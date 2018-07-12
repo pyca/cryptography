@@ -894,7 +894,7 @@ class WycheproofTest(object):
         self.testcase = testcase
 
     def __repr__(self):
-        return "<WycheproofTest({!r}, {!r}, tdId={})>".format(
+        return "<WycheproofTest({!r}, {!r}, tcId={})>".format(
             self.testgroup, self.testcase, self.testcase["tcId"],
         )
 
