@@ -71,5 +71,9 @@ class _X25519PrivateKey(object):
         self._backend.openssl_assert(keylen[0] > 0)
         buf = self._backend._ffi.new("unsigned char[]", keylen[0])
         res = self._backend._lib.EVP_PKEY_derive(ctx, buf, keylen)
-        self._backend.openssl_assert(res == 1)
+        if res != 1:
+            raise ValueError(
+                "Null shared key derived from public/private pair."
+            )
+
         return self._backend._ffi.buffer(buf, keylen[0])[:]

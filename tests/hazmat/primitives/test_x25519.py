@@ -76,6 +76,23 @@ class TestX25519Exchange(object):
 
         assert computed_shared_key == shared_key
 
+    def test_null_shared_key_raises_error(self, backend):
+        """
+        The vector used here is taken from wycheproof's x25519 test vectors
+        """
+        public = binascii.unhexlify(
+            "5f9c95bca3508c24b1d0b1559c83ef5b04445cc4581c8e86d8224eddd09f1157"
+        )
+        private = binascii.unhexlify(
+            "78f1e8edf14481b389448dac8f59c70b038e7cf92ef2c7eff57a72466e115296"
+        )
+        private_key = X25519PrivateKey._from_private_bytes(
+            private
+        )
+        public_key = X25519PublicKey.from_public_bytes(public)
+        with pytest.raises(ValueError):
+            private_key.exchange(public_key)
+
     # These vectors are also from RFC 7748
     # https://tools.ietf.org/html/rfc7748#section-6.1
     @pytest.mark.parametrize(
