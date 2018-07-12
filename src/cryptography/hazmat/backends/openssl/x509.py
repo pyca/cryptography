@@ -10,14 +10,14 @@ import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_int_gc
-)
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
     _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
     _REVOKED_CERTIFICATE_EXTENSION_PARSER, _asn1_integer_to_int,
     _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
+)
+from cryptography.hazmat.backends.openssl.encode_asn1 import (
+    _encode_asn1_int_gc
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
