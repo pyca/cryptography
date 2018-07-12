@@ -910,6 +910,12 @@ class WycheproofTest(object):
         return flag in self.testcase["flags"]
 
 
+def skip_if_wycheproof_none(wycheproof):
+    # This factored into it's own function so we can easily test both branches
+    if wycheproof is None:
+        pytest.skip("--wycheproof-root not provided")
+
+
 def load_wycheproof_tests(wycheproof, test_file):
     path = os.path.join(wycheproof, "testvectors", test_file)
     with open(path) as f:

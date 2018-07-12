@@ -4,10 +4,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
 
-from ..utils import WycheproofTest
+from ..utils import skip_if_wycheproof_none, WycheproofTest
 
 
 def test_wycheproof_test_repr():
     wycheproof = WycheproofTest({}, {"tcId": 3})
     assert repr(wycheproof) == "<WycheproofTest({}, {'tcId': 3}, tcId=3)>"
+
+
+def test_skip_if_wycheproof_none():
+    with pytest.raises(pytest.skip.Exception):
+        skip_if_wycheproof_none(None)
+
+    skip_if_wycheproof_none("abc")
