@@ -51,6 +51,12 @@ def should_verify(backend, wycheproof):
     "rsa_signature_4096_sha512_test.json",
 )
 def test_rsa_signature(backend, wycheproof):
+    if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102:
+        pytest.skip(
+            "Many of these tests fail on OpenSSL < 1.0.2 and since upstream "
+            "isn't maintaing it, they'll never be fixed."
+        )
+
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
