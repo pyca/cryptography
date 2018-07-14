@@ -911,7 +911,8 @@ class WycheproofTest(object):
 
 
 def skip_if_wycheproof_none(wycheproof):
-    # This is factored into its own function so we can easily test both branches
+    # This is factored into its own function so we can easily test both
+    # branches
     if wycheproof is None:
         pytest.skip("--wycheproof-root not provided")
 
