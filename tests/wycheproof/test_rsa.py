@@ -41,11 +41,14 @@ def should_verify(backend, wycheproof):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.supported(
     only_if=lambda backend: (
+        # TODO: this also skips on LibreSSL, which is ok for now, since these
+        # don't pass on Libre, but we'll need to fix this after they resolve
+        # it.
         not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
     ),
     skip_message=(
         "Many of these tests fail on OpenSSL < 1.0.2 and since upstream isn't"
-        "  maintaing it, they'll never be fixed."
+        " maintaing it, they'll never be fixed."
     ),
 )
 @pytest.mark.wycheproof_tests(
