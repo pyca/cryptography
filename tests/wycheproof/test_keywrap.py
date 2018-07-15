@@ -25,15 +25,7 @@ def test_keywrap_with_padding(backend, wycheproof):
     if wycheproof.valid or wycheproof.acceptable:
         assert result == expected
 
-    if (
-        wycheproof.acceptable and
-        wycheproof.testcase["comment"] == "wrapping small key"
-    ):
-        with pytest.raises(ValueError):
-            keywrap.aes_key_unwrap_with_padding(
-                wrapping_key, expected, backend
-            )
-    elif wycheproof.valid or wycheproof.acceptable:
+    if wycheproof.valid or wycheproof.acceptable:
         result = keywrap.aes_key_unwrap_with_padding(
             wrapping_key, expected, backend
         )
