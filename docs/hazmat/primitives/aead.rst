@@ -55,13 +55,12 @@ also support providing integrity for associated data which is not encrypted.
 
         :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
-        :param bytes data: The data to encrypt. Must be less than or equal to
-            2\ :sup:`32` bytes.
+        :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
             be ``None``.
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
-        :raises OverflowError: If ``data`` or ``associated_data`` is greater
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`32` bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
@@ -127,12 +126,11 @@ also support providing integrity for associated data which is not encrypted.
         :param bytes nonce: NIST `recommends a 96-bit IV length`_ for best
             performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
-        :param bytes data: The data to encrypt. Must be less than or equal to
-            2\ :sup:`32` bytes.
+        :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
-        :raises OverflowError: If ``data`` or ``associated_data`` is greater
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`32` bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
@@ -214,12 +212,11 @@ also support providing integrity for associated data which is not encrypted.
             encrypting and must satisfy the condition:
             ``len(data) < 2 ** (8 * (15 - len(nonce)))``
             **NEVER REUSE A NONCE** with a key.
-        :param bytes data: The data to encrypt. Must be less than or equal to
-            2\ :sup:`32` bytes.
+        :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
         :returns bytes: The ciphertext bytes with the tag appended.
-        :raises OverflowError: If ``data`` or ``associated_data`` is greater
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`32` bytes.
 
     .. method:: decrypt(nonce, data, associated_data)
