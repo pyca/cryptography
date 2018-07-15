@@ -25,7 +25,7 @@ def test_keywrap_with_padding(backend, wycheproof):
     if wycheproof.valid or wycheproof.acceptable:
         assert result == expected
 
-    if wycheproof.valid or wycheproof.acceptable:
+    if wycheproof.valid or (wycheproof.acceptable and not len(expected) < 16):
         result = keywrap.aes_key_unwrap_with_padding(
             wrapping_key, expected, backend
         )
