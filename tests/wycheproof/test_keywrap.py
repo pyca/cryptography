@@ -22,7 +22,8 @@ def test_keywrap_with_padding(backend, wycheproof):
     result = keywrap.aes_key_wrap_with_padding(
         wrapping_key, key_to_wrap, backend
     )
-    assert result == expected
+    if wycheproof.valid or wycheproof.acceptable:
+        assert result == expected
 
     if (
         wycheproof.acceptable and
@@ -52,7 +53,8 @@ def test_keywrap(backend, wycheproof):
     expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
     result = keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
-    assert result == expected
+    if wycheproof.valid or wycheproof.acceptable
+        assert result == expected
 
     if wycheproof.valid or wycheproof.acceptable:
         result = keywrap.aes_key_unwrap(wrapping_key, expected, backend)
