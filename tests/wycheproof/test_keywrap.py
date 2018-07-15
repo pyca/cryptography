@@ -53,7 +53,7 @@ def test_keywrap(backend, wycheproof):
     expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
     result = keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
-    if wycheproof.valid or wycheproof.acceptable
+    if wycheproof.valid or wycheproof.acceptable:
         assert result == expected
 
     if wycheproof.valid or wycheproof.acceptable:
