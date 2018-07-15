@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import keywrap
 def test_keywrap_with_padding(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
-    expected = binacii.unhexlify(wycheproof.testcase["ct"])
+    expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
     result = keywrap.aes_key_wrap_with_padding(
         wrapping_key, key_to_wrap, backend
@@ -41,7 +41,7 @@ def test_keywrap_with_padding(backend, wycheproof):
 def test_keywrap(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
-    expected = binacii.unhexlify(wycheproof.testcase["ct"])
+    expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
     result = keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
     assert result == expected
