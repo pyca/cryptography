@@ -22,6 +22,11 @@ from ...utils import (
 )
 
 
+class FakeData(object):
+    def __len__(self):
+        return 2 ** 32 + 1
+
+
 def _aead_supported(cls):
     try:
         cls(b"0" * 32)
@@ -46,6 +51,17 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20Poly1305(object):
+    def test_data_too_large(self):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = b"0" * 12
+
+        with pytest.raises(OverflowError):
+            chacha.encrypt(nonce, FakeData(), b"")
+
+        with pytest.raises(OverflowError):
+            chacha.encrypt(nonce, b"", FakeData())
+
     def test_generate_key(self):
         key = ChaCha20Poly1305.generate_key()
         assert len(key) == 32
@@ -168,6 +184,17 @@ def test_aesccm_unsupported_on_older_openssl(backend):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESCCM(object):
+    def test_data_too_large(self):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = b"0" * 12
+
+        with pytest.raises(OverflowError):
+            aesccm.encrypt(nonce, FakeData(), b"")
+
+        with pytest.raises(OverflowError):
+            aesccm.encrypt(nonce, b"", FakeData())
+
     def test_default_tag_length(self, backend):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
@@ -309,6 +336,17 @@ def _load_gcm_vectors():
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESGCM(object):
+    def test_data_too_large(self):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = b"0" * 12
+
+        with pytest.raises(OverflowError):
+            aesgcm.encrypt(nonce, FakeData(), b"")
+
+        with pytest.raises(OverflowError):
+            aesgcm.encrypt(nonce, b"", FakeData())
+
     @pytest.mark.parametrize("vector", _load_gcm_vectors())
     def test_vectors(self, vector):
         key = binascii.unhexlify(vector["key"])

@@ -89,7 +89,7 @@ def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend):
 
 def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
     if len(wrapped_key) < 16:
-        raise ValueError("Must be at least 16 bytes")
+        raise InvalidUnwrap("Must be at least 16 bytes")
 
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
@@ -132,10 +132,10 @@ def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
 
 def aes_key_unwrap(wrapping_key, wrapped_key, backend):
     if len(wrapped_key) < 24:
-        raise ValueError("Must be at least 24 bytes")
+        raise InvalidUnwrap("Must be at least 24 bytes")
 
     if len(wrapped_key) % 8 != 0:
-        raise ValueError("The wrapped key must be a multiple of 8 bytes")
+        raise InvalidUnwrap("The wrapped key must be a multiple of 8 bytes")
 
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
