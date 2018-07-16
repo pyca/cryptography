@@ -48,7 +48,7 @@ def should_verify(backend, wycheproof):
     ),
     skip_message=(
         "Many of these tests fail on OpenSSL < 1.0.2 and since upstream isn't"
-        " maintaing it, they'll never be fixed."
+        " maintaining it, they'll never be fixed."
     ),
 )
 @pytest.mark.wycheproof_tests(
