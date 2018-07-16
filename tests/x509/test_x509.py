@@ -181,6 +181,18 @@ class TestCertificateRevocationList(object):
         # Check that len() works for CRLs.
         assert len(crl) == 12
 
+    def test_get_revoked_certificate_by_serial_number(self, backend):
+        crl = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "crls", "LongSerialNumberCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+        serial_number = 725064303890588110203033396814564464046290047507
+        revoked = crl.get_revoked_certificate_by_serial_number(serial_number)
+        assert revoked.serial_number == serial_number
+        assert crl.get_revoked_certificate_by_serial_number(500) is None
+
     def test_revoked_cert_retrieval_retain_only_revoked(self, backend):
         """
         This test attempts to trigger the crash condition described in

@@ -189,6 +189,13 @@ class CertificateRevocationList(object):
         Returns bytes using digest passed.
         """
 
+    @abc.abstractmethod
+    def get_revoked_certificate_by_serial_number(self, serial_number):
+        """
+        Returns an instance of RevokedCertificate or None if the serial_number
+        is not in the CRL.
+        """
+
     @abc.abstractproperty
     def signature_hash_algorithm(self):
         """

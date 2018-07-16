@@ -238,6 +238,8 @@ X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_get_ext_count(X509_CRL *);
 
+int X509_CRL_get0_by_serial(X509_CRL *, X509_REVOKED **, ASN1_INTEGER *);
+
 /* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
 int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                           CRYPTO_EX_free *);

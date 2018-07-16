@@ -463,6 +463,15 @@ X.509 CRL (Certificate Revocation List) Object
             >>> crl.fingerprint(hashes.SHA256())
             b'e\xcf.\xc4:\x83?1\xdc\xf3\xfc\x95\xd7\xb3\x87\xb3\x8e\xf8\xb93!\x87\x07\x9d\x1b\xb4!\xb9\xe4W\xf4\x1f'
 
+    .. method:: get_revoked_certificate_by_serial_number(serial_number)
+
+        .. versionadded:: 2.3
+
+        :param serial_number: The serial as a Python integer.
+        :returns: :class:`~cryptography.x509.RevokedCertificate` if the
+            ``serial_number`` is present in the CRL or ``None`` if it
+            is not.
+
     .. attribute:: signature_hash_algorithm
 
         :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
