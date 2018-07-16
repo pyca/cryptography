@@ -19,6 +19,10 @@ Changelog
 * The :class:`~cryptography.x509.RelativeDistinguishedName` class now
   preserves the order of attributes. Duplicate attributes now raise an error
   instead of silently discarding duplicates.
+* :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap` and
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
+  now raise :class:`~cryptography.hazmat.primitives.keywrap.InvalidUnwrap` if
+  the wrapped key is an invalid length, instead of ``ValueError``.
 
 .. _v2-2-2:
 
