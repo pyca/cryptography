@@ -8,11 +8,28 @@ import pytest
 
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
-from .utils import check_backend_support
+from .utils import (
+    check_backend_support, load_wycheproof_tests, skip_if_wycheproof_none
+)
 
 
 def pytest_report_header(config):
     return "OpenSSL: {0}".format(openssl_backend.openssl_version_text())
+
+
+def pytest_addoption(parser):
+    parser.addoption("--wycheproof-root", default=None)
+
+
+def pytest_generate_tests(metafunc):
+    if "wycheproof" in metafunc.fixturenames:
+        wycheproof = metafunc.config.getoption("--wycheproof-root")
+        skip_if_wycheproof_none(wycheproof)
+
+        testcases = []
+        for path in metafunc.function.wycheproof_tests.args:
+            testcases.extend(load_wycheproof_tests(wycheproof, path))
+        metafunc.parametrize("wycheproof", testcases)
 
 
 @pytest.fixture()

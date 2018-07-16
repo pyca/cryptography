@@ -40,6 +40,9 @@ elif [ -n "${LIBRESSL}" ]; then
         popd
     fi
 fi
+
+git clone --depth=1 https://github.com/google/wycheproof $HOME/wycheproof
+
 pip install virtualenv
 
 python -m virtualenv ~/.venv

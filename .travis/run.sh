@@ -24,7 +24,7 @@ fi
 source ~/.venv/bin/activate
 
 if [ -n "${TOXENV}" ]; then
-    tox
+    tox -- --wycheproof-root=$HOME/wycheproof
 else
     pip install .
     case "${DOWNSTREAM}" in
