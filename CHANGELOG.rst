@@ -17,7 +17,7 @@ Changelog
 * Fixed multiple issues preventing ``cryptography`` from compiling against
   LibreSSL 2.7.x.
 * Added
-  :class:`~cryptography.x509.CertificateRevocationList.get_revoked_certificate`
+  :class:`~cryptography.x509.CertificateRevocationList.get_revoked_certificate_by_serial_number`
   for quick serial number searches in CRLs.
 * The :class:`~cryptography.x509.RelativeDistinguishedName` class now
   preserves the order of attributes. Duplicate attributes now raise an error

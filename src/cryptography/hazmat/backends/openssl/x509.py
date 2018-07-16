@@ -238,7 +238,7 @@ class _CertificateRevocationList(object):
         h.update(der)
         return h.finalize()
 
-    def get_revoked_certificate(self, serial_number):
+    def get_revoked_certificate_by_serial_number(self, serial_number):
         revoked = self._backend._ffi.new("X509_REVOKED **")
         asn1_int = _encode_asn1_int_gc(self._backend, serial_number)
         res = self._backend._lib.X509_CRL_get0_by_serial(

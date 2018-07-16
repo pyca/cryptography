@@ -190,7 +190,7 @@ class CertificateRevocationList(object):
         """
 
     @abc.abstractmethod
-    def get_revoked_certificate(self, serial_number):
+    def get_revoked_certificate_by_serial_number(self, serial_number):
         """
         Returns an instance of RevokedCertificate or None if the serial_number
         is not in the CRL.
