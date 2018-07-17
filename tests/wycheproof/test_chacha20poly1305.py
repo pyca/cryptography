@@ -11,6 +11,7 @@ import pytest
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+
 from ..hazmat.primitives.test_aead import _aead_supported
 
 
