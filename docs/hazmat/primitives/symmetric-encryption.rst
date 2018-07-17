@@ -395,7 +395,7 @@ Modes
         :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`.
         Otherwise, the tag is mandatory.
 
-    :param bytes min_tag_length: The minimum length ``tag`` must be. By default
+    :param int min_tag_length: The minimum length ``tag`` must be. By default
         this is ``16``, meaning tag truncation is not allowed. Allowing tag
         truncation is strongly discouraged for most applications.
 
