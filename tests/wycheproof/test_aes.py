@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -71,3 +72,25 @@ def test_aes_gcm(backend, wycheproof):
         assert len(iv) == 0
         with pytest.raises(ValueError):
             Cipher(algorithms.AES(key), modes.GCM(iv), backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.wycheproof_tests("aes_gcm_test.json")
+def test_aes_gcm_aead_api(backend, wycheproof):
+    key = binascii.unhexlify(wycheproof.testcase["key"])
+    iv = binascii.unhexlify(wycheproof.testcase["iv"])
+    aad = binascii.unhexlify(wycheproof.testcase["aad"])
+    msg = binascii.unhexlify(wycheproof.testcase["msg"])
+    ct = binascii.unhexlify(wycheproof.testcase["ct"])
+    tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    aesgcm = AESGCM(key)
+    if wycheproof.valid or wycheproof.acceptable:
+        computed_ct = aesgcm.encrypt(iv, msg, aad)
+        assert computed_ct == ct + tag
+        computed_msg = aesgcm.decrypt(iv, ct + tag, aad)
+        assert computed_msg == msg
+    else:
+        # All invalid GCM tests are IV len 0 right now
+        assert len(iv) == 0
+        with pytest.raises(ValueError):
+            aesgcm.encrypt(iv, msg, aad)
