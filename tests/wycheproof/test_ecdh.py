@@ -8,7 +8,6 @@ import binascii
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import serialization
@@ -33,6 +32,7 @@ _CURVES = {
     "brainpoolP512t1": None,
 }
 
+
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.wycheproof_tests(
     "ecdh_test.json",
@@ -51,7 +51,7 @@ def test_ecdh(backend, wycheproof):
     curve = _CURVES[wycheproof.testcase["curve"]]
     if curve is None:
         pytest.skip(
-           "Unsupport curve ({})".format(wycheproof.testcase["curve"])
+            "Unsupport curve ({})".format(wycheproof.testcase["curve"])
         )
     private_key = ec.derive_private_key(
         int(wycheproof.testcase["private"], 16), curve, backend
@@ -72,6 +72,8 @@ def test_ecdh(backend, wycheproof):
 
     if wycheproof.valid or wycheproof.acceptable:
         computed_shared = private_key.exchange(ec.ECDH(), public_key)
+        expected_shared = binascii.unhexlify(wycheproof.testcase["shared"])
+        assert computed_shared == expected_shared
     else:
         with pytest.raises(ValueError):
             private_key.exchange(ec.ECDH(), public_key)
