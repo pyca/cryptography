@@ -399,7 +399,8 @@ Modes
         this is ``16``, meaning tag truncation is not allowed. Allowing tag
         truncation is strongly discouraged for most applications.
 
-    :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
+    :raises ValueError: This is raised if ``len(tag) < min_tag_length`` or the
+        ``initialization_vector`` is too short.
 
     :raises NotImplementedError: This is raised if the version of the OpenSSL
         backend used is 1.0.1 or earlier.
