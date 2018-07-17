@@ -9,20 +9,20 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends.interfaces import CipherBackend
+from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.cmac import CMAC
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=CMACBackend)
 @pytest.mark.wycheproof_tests("aes_cmac_test.json")
-def test_keywrap_with_padding(backend, wycheproof):
+def test_aes_cmac(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
 
     # skip truncated tags, which we don't support in the API
-    if wycheproof.valid and not len(tag) != 16:
+    if wycheproof.valid and len(tag) == 16:
         ctx = CMAC(AES(key), backend)
         ctx.update(msg)
         ctx.verify(tag)
