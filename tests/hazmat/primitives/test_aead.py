@@ -385,9 +385,9 @@ class TestAESGCM(object):
 
     def test_invalid_nonce_length(self, backend):
         key = AESGCM.generate_key(128)
-        aesccm = AESGCM(key)
+        aesgcm = AESGCM(key)
         with pytest.raises(ValueError):
-            aesccm.encrypt(b"", b"hi", None)
+            aesgcm.encrypt(b"", b"hi", None)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
