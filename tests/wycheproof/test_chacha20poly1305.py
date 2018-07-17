@@ -35,7 +35,7 @@ def test_chacha2poly1305(wycheproof):
         assert computed_ct == ct + tag
         computed_msg = chacha.decrypt(iv, ct + tag, aad)
         assert computed_msg == msg
-    elif not wycheproof.valid and len(iv) != 12:
+    elif len(iv) != 12:
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(ValueError):
             chacha.encrypt(iv, msg, aad)
