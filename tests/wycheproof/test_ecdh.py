@@ -53,9 +53,13 @@ def test_ecdh(backend, wycheproof):
         pytest.skip(
             "Unsupport curve ({})".format(wycheproof.testcase["curve"])
         )
-    private_key = ec.derive_private_key(
-        int(wycheproof.testcase["private"], 16), curve, backend
-    )
+
+    try:
+        private_key = ec.derive_private_key(
+            int(wycheproof.testcase["private"], 16), curve, backend
+        )
+    except UnsupportedAlgorithm:
+        return
 
     try:
         public_key = serialization.load_der_public_key(
