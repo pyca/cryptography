@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **SECURITY ISSUE:**
+  :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`
+  allowed tag truncation by default which can allow tag forgery in some cases.
+  The method now enforces the ``min_tag_length`` provided to the
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` constructor.
 * Added support for Python 3.7.
 * Added :meth:`~cryptography.fernet.Fernet.extract_timestamp` to get the
   authenticated timestamp of a :doc:`Fernet </fernet>` token.
