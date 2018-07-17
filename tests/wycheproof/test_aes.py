@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -40,3 +41,56 @@ def test_aes_cbc_pkcs5(backend, wycheproof):
         assert computed_ct != ct
         with pytest.raises(ValueError):
             unpadder.update(padded_msg) + unpadder.finalize()
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.wycheproof_tests("aes_gcm_test.json")
+def test_aes_gcm(backend, wycheproof):
+    key = binascii.unhexlify(wycheproof.testcase["key"])
+    iv = binascii.unhexlify(wycheproof.testcase["iv"])
+    aad = binascii.unhexlify(wycheproof.testcase["aad"])
+    msg = binascii.unhexlify(wycheproof.testcase["msg"])
+    ct = binascii.unhexlify(wycheproof.testcase["ct"])
+    tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if wycheproof.valid or wycheproof.acceptable:
+        enc = Cipher(algorithms.AES(key), modes.GCM(iv), backend).encryptor()
+        enc.authenticate_additional_data(aad)
+        computed_ct = enc.update(msg) + enc.finalize()
+        computed_tag = enc.tag
+        assert computed_ct == ct
+        assert computed_tag == tag
+        dec = Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv, tag, min_tag_length=len(tag)),
+            backend
+        ).decryptor()
+        dec.authenticate_additional_data(aad)
+        computed_msg = dec.update(ct) + dec.finalize()
+        assert computed_msg == msg
+    else:
+        # All invalid GCM tests are IV len 0 right now
+        assert len(iv) == 0
+        with pytest.raises(ValueError):
+            Cipher(algorithms.AES(key), modes.GCM(iv), backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.wycheproof_tests("aes_gcm_test.json")
+def test_aes_gcm_aead_api(backend, wycheproof):
+    key = binascii.unhexlify(wycheproof.testcase["key"])
+    iv = binascii.unhexlify(wycheproof.testcase["iv"])
+    aad = binascii.unhexlify(wycheproof.testcase["aad"])
+    msg = binascii.unhexlify(wycheproof.testcase["msg"])
+    ct = binascii.unhexlify(wycheproof.testcase["ct"])
+    tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    aesgcm = AESGCM(key)
+    if wycheproof.valid or wycheproof.acceptable:
+        computed_ct = aesgcm.encrypt(iv, msg, aad)
+        assert computed_ct == ct + tag
+        computed_msg = aesgcm.decrypt(iv, ct + tag, aad)
+        assert computed_msg == msg
+    else:
+        # All invalid GCM tests are IV len 0 right now
+        assert len(iv) == 0
+        with pytest.raises(ValueError):
+            aesgcm.encrypt(iv, msg, aad)
