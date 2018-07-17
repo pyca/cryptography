@@ -21,7 +21,6 @@ _DIGESTS = {
     "SHA-384": hashes.SHA384(),
     "SHA-512": hashes.SHA512(),
 }
-_CURVES = {}
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
@@ -43,12 +42,15 @@ _CURVES = {}
     "ecdsa_secp384r1_sha512_test.json",
     "ecdsa_secp521r1_sha512_test.json",
 )
-def test_rsa_signature(backend, wycheproof):
+def test_ecdsa_signature(backend, wycheproof):
     try:
         key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
         )
     except (UnsupportedAlgorithm, ValueError):
+        # In OpenSSL 1.0.1, some keys fail to load with ValueError, instead of
+        # Unsupported Algorithm. We can remove handling for that exception
+        # when we drop support.
         pytest.skip(
             "unable to load key (curve {})".format(
                 wycheproof.testgroup["key"]["curve"]
