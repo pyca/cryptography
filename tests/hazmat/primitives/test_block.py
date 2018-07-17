@@ -191,6 +191,10 @@ class TestModeValidation(object):
                 backend,
             )
 
+    def test_gcm(self):
+        with pytest.raises(ValueError):
+            modes.GCM(b"")
+
 
 class TestModesRequireBytes(object):
     def test_cbc(self):
