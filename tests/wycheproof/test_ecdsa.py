@@ -48,9 +48,9 @@ def test_rsa_signature(backend, wycheproof):
         key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
         )
-    except UnsupportedAlgorithm:
+    except (UnsupportedAlgorithm, ValueError):
         pytest.skip(
-            "curve not supported ({})".format(
+            "unable to load key (curve {})".format(
                 wycheproof.testgroup["key"]["curve"]
             )
         )
