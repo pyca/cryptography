@@ -670,6 +670,7 @@ Interfaces
         :raises ValueError: This is raised when the data provided isn't
             a multiple of the algorithm's block size, if ``min_tag_length`` is
             less than 4, or if ``len(tag) < min_tag_length``.
+            ``min_tag_length`` is an argument to the ``GCM`` constructor.
         :raises NotImplementedError: This is raised if the version of the
             OpenSSL backend used is 1.0.1 or earlier.
 

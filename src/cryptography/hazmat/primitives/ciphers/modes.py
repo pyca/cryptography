@@ -220,6 +220,7 @@ class GCM(object):
                         min_tag_length)
                 )
         self._tag = tag
+        self._min_tag_length = min_tag_length
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")

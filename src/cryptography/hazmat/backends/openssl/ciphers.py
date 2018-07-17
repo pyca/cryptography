@@ -199,6 +199,11 @@ class _CipherContext(object):
                 "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
                 "method please update OpenSSL"
             )
+        if len(tag) < self._mode._min_tag_length:
+            raise ValueError(
+                "Authentication tag must be {0} bytes or longer.".format(
+                    self._mode._min_tag_length)
+            )
         res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
             self._ctx, self._backend._lib.EVP_CTRL_AEAD_SET_TAG,
             len(tag), tag

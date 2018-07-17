@@ -439,3 +439,19 @@ class TestAESModeGCM(object):
             decryptor.finalize()
         else:
             decryptor.finalize_with_tag(tag)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ),
+        skip_message="Not supported on OpenSSL 1.0.1",
+    )
+    def test_gcm_tag_decrypt_finalize_tag_length(self, backend):
+        decryptor = base.Cipher(
+            algorithms.AES(b"0" * 16),
+            modes.GCM(b"0" * 12),
+            backend=backend
+        ).decryptor()
+        with pytest.raises(ValueError):
+            decryptor.finalize_with_tag(b"tagtooshort")
