@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-3:
 
-2.3 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.3 - 2018-07-18
+~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE:**
   :meth:`~cryptography.hazmat.primitives.ciphers.AEADDecryptionContext.finalize_with_tag`
