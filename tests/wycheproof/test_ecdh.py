@@ -57,12 +57,9 @@ def test_ecdh(backend, wycheproof):
         )
     _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
 
-    try:
-        private_key = ec.derive_private_key(
-            int(wycheproof.testcase["private"], 16), curve, backend
-        )
-    except UnsupportedAlgorithm:
-        return
+    private_key = ec.derive_private_key(
+        int(wycheproof.testcase["private"], 16), curve, backend
+    )
 
     try:
         public_key = serialization.load_der_public_key(
