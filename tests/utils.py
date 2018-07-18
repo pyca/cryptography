@@ -906,6 +906,10 @@ class WycheproofTest(object):
     def acceptable(self):
         return self.testcase["result"] == "acceptable"
 
+    @property
+    def invalid(self):
+        return self.testcase["result"] == "invalid"
+
     def has_flag(self, flag):
         return flag in self.testcase["flags"]
 
