@@ -13,6 +13,8 @@ from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from ..hazmat.primitives.test_ec import _skip_exchange_algorithm_unsupported
+
 
 _CURVES = {
     "secp224r1": ec.SECP224R1(),
@@ -51,8 +53,9 @@ def test_ecdh(backend, wycheproof):
     curve = _CURVES[wycheproof.testcase["curve"]]
     if curve is None:
         pytest.skip(
-            "Unsupport curve ({})".format(wycheproof.testcase["curve"])
+            "Unsupported curve ({})".format(wycheproof.testcase["curve"])
         )
+    _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
 
     try:
         private_key = ec.derive_private_key(
