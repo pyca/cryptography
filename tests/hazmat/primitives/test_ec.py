@@ -65,8 +65,8 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
         algorithm, curve
     ):
         pytest.skip(
-            "Exchange algorithm is not supported by this backend {0}".format(
-                backend
+            "Exchange with {0} curve is not supported by {1}".format(
+                curve.name, backend
             )
         )
 
