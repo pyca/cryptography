@@ -348,7 +348,8 @@ the rest.
 OpenSSH Public Key
 ~~~~~~~~~~~~~~~~~~
 
-The format used by OpenSSH to store public keys, as specified in :rfc:`4253`.
+The format used by OpenSSH to store public keys, as specified in their
+`documentation`_.
 
 An example RSA key in OpenSSH format (line breaks added for formatting
 purposes)::
@@ -369,7 +370,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     .. versionadded:: 0.7
 
-    Deserialize a public key from OpenSSH (:rfc:`4253`) encoded data to an
+    Deserialize a public key from OpenSSH encoded data to an
     instance of the public key type for the specified backend.
 
     .. note::
@@ -560,3 +561,4 @@ Serialization Encryption Types
 
 
 .. _`PKCS3`: https://www.emc.com/emc-plus/rsa-labs/standards-initiatives/pkcs-3-diffie-hellman-key-agreement-standar.htm
+.. _`documentation`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys
