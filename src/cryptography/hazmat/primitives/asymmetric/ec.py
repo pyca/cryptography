@@ -68,7 +68,7 @@ class EllipticCurvePrivateKey(object):
         Bit size of a secret scalar for the curve.
         """
 
-    @abc.abstractproperty
+    @abc.abstractmethod
     def sign(self, data, signature_algorithm):
         """
         Signs the data
