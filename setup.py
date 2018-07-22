@@ -43,6 +43,7 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
+# `setup_requirements` must be kept in sync with `pyproject.toml`
 setup_requirements = ["cffi>=1.7,!=1.11.3"]
 
 if platform.python_implementation() == "PyPy":
