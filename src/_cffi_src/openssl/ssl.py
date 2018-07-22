@@ -798,7 +798,7 @@ int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
 int (*SSL_extension_supported)(unsigned int) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
 int (*SSL_CIPHER_is_aead)(const SSL_CIPHER *) = NULL;
 int (*SSL_CIPHER_get_cipher_nid)(const SSL_CIPHER *) = NULL;
 int (*SSL_CIPHER_get_digest_nid)(const SSL_CIPHER *) = NULL;
