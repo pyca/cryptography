@@ -29,6 +29,7 @@ static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
+static const long Cryptography_HAS_CIPHER_DETAILS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -796,4 +797,16 @@ int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
 
 int (*SSL_extension_supported)(unsigned int) = NULL;
 #endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
+int (*SSL_CIPHER_is_aead)(const SSL_CIPHER *) = NULL;
+int (*SSL_CIPHER_get_cipher_nid)(const SSL_CIPHER *) = NULL;
+int (*SSL_CIPHER_get_digest_nid)(const SSL_CIPHER *) = NULL;
+int (*SSL_CIPHER_get_kx_nid)(const SSL_CIPHER *) = NULL;
+int (*SSL_CIPHER_get_auth_nid)(const SSL_CIPHER *) = NULL;
+static const long Cryptography_HAS_CIPHER_DETAILS = 0;
+#else
+static const long Cryptography_HAS_CIPHER_DETAILS = 1;
+#endif
+
 """
