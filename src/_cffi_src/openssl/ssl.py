@@ -286,11 +286,11 @@ void SSL_SESSION_free(SSL_SESSION *);
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 const char *SSL_CIPHER_get_id(const SSL_CIPHER *);
-int SSL_CIPHER_is_aead(const SSL_CIPHER *c);
-int SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *c);
-int SSL_CIPHER_get_digest_nid(const SSL_CIPHER *c);
-int SSL_CIPHER_get_kx_nid(const SSL_CIPHER *c);
-int SSL_CIPHER_get_auth_nid(const SSL_CIPHER *c);
+int SSL_CIPHER_is_aead(const SSL_CIPHER *);
+int SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *);
+int SSL_CIPHER_get_digest_nid(const SSL_CIPHER *);
+int SSL_CIPHER_get_kx_nid(const SSL_CIPHER *);
+int SSL_CIPHER_get_auth_nid(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
