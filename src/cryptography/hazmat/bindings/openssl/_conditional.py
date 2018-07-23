@@ -246,6 +246,16 @@ def cryptography_has_openssl_cleanup():
     ]
 
 
+def cryptography_has_cipher_details():
+    return [
+        "SSL_CIPHER_is_aead",
+        "SSL_CIPHER_get_cipher_nid",
+        "SSL_CIPHER_get_digest_nid",
+        "SSL_CIPHER_get_kx_nid",
+        "SSL_CIPHER_get_auth_nid",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -299,4 +309,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
+    "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
 }
