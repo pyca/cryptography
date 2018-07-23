@@ -1853,304 +1853,81 @@ class TestRSANumbers(object):
         with pytest.raises(TypeError):
             rsa.RSAPublicNumbers(e=1, n=None)
 
-    def test_private_numbers_invalid_types(self):
-        public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
-
+    @pytest.mark.parametrize(
+        ("p", "q", "d", "dmp1", "dmq1", "iqmp", "public_numbers"),
+        [
+            (None, 5, 1, 1, 1, 2, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, None, 1, 1, 1, 2, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, 5, None, 1, 1, 2, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, 5, 1, None, 1, 2, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, 5, 1, 1, None, 2, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, 5, 1, 1, 1, None, rsa.RSAPublicNumbers(e=1, n=15)),
+            (3, 5, 1, 1, 1, 2, None),
+        ]
+    )
+    def test_private_numbers_invalid_types(self, p, q, d, dmp1, dmq1, iqmp,
+                                           public_numbers):
         with pytest.raises(TypeError):
             rsa.RSAPrivateNumbers(
-                p=None,
-                q=5,
-                d=1,
-                dmp1=1,
-                dmq1=1,
-                iqmp=2,
+                p=p, q=q,
+                d=d,
+                dmp1=dmp1,
+                dmq1=dmq1,
+                iqmp=iqmp,
                 public_numbers=public_numbers
             )
 
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=None,
-                d=1,
-                dmp1=1,
-                dmq1=1,
-                iqmp=2,
-                public_numbers=public_numbers
-            )
-
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=5,
-                d=None,
-                dmp1=1,
-                dmq1=1,
-                iqmp=2,
-                public_numbers=public_numbers
-            )
-
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=5,
-                d=1,
-                dmp1=None,
-                dmq1=1,
-                iqmp=2,
-                public_numbers=public_numbers
-            )
-
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=5,
-                d=1,
-                dmp1=1,
-                dmq1=None,
-                iqmp=2,
-                public_numbers=public_numbers
-            )
-
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=5,
-                d=1,
-                dmp1=1,
-                dmq1=1,
-                iqmp=None,
-                public_numbers=public_numbers
-            )
-
-        with pytest.raises(TypeError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=5,
-                d=1,
-                dmp1=1,
-                dmq1=1,
-                iqmp=2,
-                public_numbers=None
-            )
-
-    def test_invalid_public_numbers_argument_values(self, backend):
+    @pytest.mark.parametrize(
+        ("e", "n"),
+        [
+            (7, 2),  # modulus < 3
+            (1, 15),  # public_exponent < 3
+            (17, 15),  # public_exponent > modulus
+            (14, 15),  # public_exponent not odd
+        ]
+    )
+    def test_invalid_public_numbers_argument_values(self, e, n, backend):
         # Start with public_exponent=7, modulus=15. Then change one value at a
         # time to test the bounds.
 
-        # Test a modulus < 3.
-
         with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=7, n=2).public_key(backend)
+            rsa.RSAPublicNumbers(e=e, n=n).public_key(backend)
 
-        # Test a public_exponent < 3
-        with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=1, n=15).public_key(backend)
-
-        # Test a public_exponent > modulus
-        with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=17, n=15).public_key(backend)
-
-        # Test a public_exponent that is not odd.
-        with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=14, n=15).public_key(backend)
-
-    def test_invalid_private_numbers_argument_values(self, backend):
+    @pytest.mark.parametrize(
+        ("p", "q", "d", "dmp1", "dmq1", "iqmp", "e", "n"),
+        [
+            (3, 11, 3, 1, 3, 2, 7, 2),  # modulus < 3
+            (3, 11, 3, 1, 3, 2, 7, 35),  # modulus != p * q
+            (37, 11, 3, 1, 3, 2, 7, 33),  # p > modulus
+            (3, 37, 3, 1, 3, 2, 7, 33),  # q > modulus
+            (3, 11, 3, 35, 3, 2, 7, 33),  # dmp1 > modulus
+            (3, 11, 3, 1, 35, 2, 7, 33),  # dmq1 > modulus
+            (3, 11, 3, 1, 3, 35, 7, 33),  # iqmp > modulus
+            (3, 11, 37, 1, 3, 2, 7, 33),  # d > modulus
+            (3, 11, 3, 1, 3, 2, 1, 33),  # public_exponent < 3
+            (3, 11, 3, 1, 3, 35, 65537, 33),  # public_exponent > modulus
+            (3, 11, 3, 1, 3, 2, 6, 33),  # public_exponent is not odd
+            (3, 11, 3, 2, 3, 2, 7, 33),  # dmp1 is not odd
+            (3, 11, 3, 1, 4, 2, 7, 33),  # dmq1 is not odd
+        ]
+    )
+    def test_invalid_private_numbers_argument_values(self, p, q, d, dmp1, dmq1,
+                                                     iqmp, e, n, backend):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,
         # modulus=33, dmp1=1, dmq1=3, iqmp=2. Then change one value at
         # a time to test the bounds.
 
-        # Test a modulus < 3.
         with pytest.raises(ValueError):
             rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
+                p=p,
+                q=q,
+                d=d,
+                dmp1=dmp1,
+                dmq1=dmq1,
+                iqmp=iqmp,
                 public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=2
-                )
-            ).private_key(backend)
-
-        # Test a modulus != p * q.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=35
-                )
-            ).private_key(backend)
-
-        # Test a p > modulus.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=37,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a q > modulus.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=37,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a dmp1 > modulus.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=35,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a dmq1 > modulus.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=35,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test an iqmp > modulus.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=35,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a private_exponent > modulus
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=37,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a public_exponent < 3
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=1,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a public_exponent > modulus
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=35,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=65537,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a public_exponent that is not odd.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=6,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a dmp1 that is not odd.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=2,
-                dmq1=3,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
-                )
-            ).private_key(backend)
-
-        # Test a dmq1 that is not odd.
-        with pytest.raises(ValueError):
-            rsa.RSAPrivateNumbers(
-                p=3,
-                q=11,
-                d=3,
-                dmp1=1,
-                dmq1=4,
-                iqmp=2,
-                public_numbers=rsa.RSAPublicNumbers(
-                    e=7,
-                    n=33
+                    e=e,
+                    n=n
                 )
             ).private_key(backend)
 
