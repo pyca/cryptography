@@ -53,7 +53,6 @@ class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
         hashes.SHA1(),
         digest_size=20,
-        block_size=64,
     )
 
 
@@ -66,7 +65,6 @@ class TestSHA224(object):
     test_SHA224 = generate_base_hash_test(
         hashes.SHA224(),
         digest_size=28,
-        block_size=64,
     )
 
 
@@ -79,7 +77,6 @@ class TestSHA256(object):
     test_SHA256 = generate_base_hash_test(
         hashes.SHA256(),
         digest_size=32,
-        block_size=64,
     )
 
 
@@ -92,7 +89,6 @@ class TestSHA384(object):
     test_SHA384 = generate_base_hash_test(
         hashes.SHA384(),
         digest_size=48,
-        block_size=128,
     )
 
 
@@ -105,7 +101,6 @@ class TestSHA512(object):
     test_SHA512 = generate_base_hash_test(
         hashes.SHA512(),
         digest_size=64,
-        block_size=128,
     )
 
 
@@ -118,7 +113,6 @@ class TestMD5(object):
     test_MD5 = generate_base_hash_test(
         hashes.MD5(),
         digest_size=16,
-        block_size=64,
     )
 
 
@@ -132,7 +126,6 @@ class TestBLAKE2b(object):
     test_BLAKE2b = generate_base_hash_test(
         hashes.BLAKE2b(digest_size=64),
         digest_size=64,
-        block_size=128,
     )
 
     def test_invalid_digest_size(self, backend):
@@ -156,7 +149,6 @@ class TestBLAKE2s(object):
     test_BLAKE2s = generate_base_hash_test(
         hashes.BLAKE2s(digest_size=32),
         digest_size=32,
-        block_size=64,
     )
 
     def test_invalid_digest_size(self, backend):

@@ -168,16 +168,15 @@ def hash_test(backend, algorithm, params):
     assert m.finalize() == binascii.unhexlify(expected_md)
 
 
-def generate_base_hash_test(algorithm, digest_size, block_size):
+def generate_base_hash_test(algorithm, digest_size):
     def test_base_hash(self, backend):
-        base_hash_test(backend, algorithm, digest_size, block_size)
+        base_hash_test(backend, algorithm, digest_size)
     return test_base_hash
 
 
-def base_hash_test(backend, algorithm, digest_size, block_size):
+def base_hash_test(backend, algorithm, digest_size):
     m = hashes.Hash(algorithm, backend=backend)
     assert m.algorithm.digest_size == digest_size
-    assert m.algorithm.block_size == block_size
     m_copy = m.copy()
     assert m != m_copy
     assert m._ctx != m_copy._ctx
