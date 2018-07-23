@@ -1,0 +1,7 @@
+[build-system]
+# Must be kept in sync with `setup_requirements` in `setup.py`
+requires = [
+    "setuptools>=18.5",
+    "wheel",
+    "cffi>=1.7,!=1.11.3; python_implementation != 'PyPy'",
+]

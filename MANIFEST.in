@@ -6,6 +6,8 @@ include LICENSE.APACHE
 include LICENSE.BSD
 include README.rst
 
+include pyproject.toml
+
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
 prune docs/_build
