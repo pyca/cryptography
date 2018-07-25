@@ -42,8 +42,8 @@ def should_verify(backend, wycheproof):
 @pytest.mark.supported(
     only_if=lambda backend: (
         # TODO: this also skips on LibreSSL, which is ok for now, since these
-        # don't pass on Libre, but we'll need to fix this after they resolve
-        # it.
+        # don't pass on Libre, but we'll need to fix this when LibreSSL 2.8 is
+        # released.
         not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
     ),
     skip_message=(
