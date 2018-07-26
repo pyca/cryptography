@@ -541,7 +541,8 @@ class TestRSASignature(object):
     )
     def test_use_after_finalize(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
+        with pytest.warns(CryptographyDeprecationWarning):
+            signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(b"sign me")
         signer.finalize()
         with pytest.raises(AlreadyFinalized):
@@ -658,7 +659,8 @@ class TestRSASignature(object):
     )
     def test_prehashed_unsupported_in_signer_ctx(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             private_key.signer(
                 padding.PKCS1v15(),
                 asym_utils.Prehashed(hashes.SHA1())
@@ -672,7 +674,8 @@ class TestRSASignature(object):
     )
     def test_prehashed_unsupported_in_verifier_ctx(self, backend):
         public_key = RSA_KEY_512.private_key(backend).public_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(
                 b"0" * 64,
                 padding.PKCS1v15(),
@@ -702,14 +705,12 @@ class TestRSAVerification(object):
             e=public["public_exponent"],
             n=public["modulus"]
         ).public_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            verifier = public_key.verifier(
-                binascii.unhexlify(example["signature"]),
-                padding.PKCS1v15(),
-                hashes.SHA1()
-            )
-        verifier.update(binascii.unhexlify(example["message"]))
-        verifier.verify()
+        public_key.verify(
+            binascii.unhexlify(example["signature"]),
+            binascii.unhexlify(example["message"]),
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -932,11 +933,12 @@ class TestRSAVerification(object):
             b"sign me", padding.PKCS1v15(), hashes.SHA1()
         )
 
-        verifier = public_key.verifier(
-            signature,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            verifier = public_key.verifier(
+                signature,
+                padding.PKCS1v15(),
+                hashes.SHA1()
+            )
         verifier.update(b"sign me")
         verifier.verify()
         with pytest.raises(AlreadyFinalized):
@@ -962,7 +964,8 @@ class TestRSAVerification(object):
         public_key = RSA_KEY_512.public_numbers.public_key(backend)
         signature = 1234
 
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(
                 signature,
                 padding.PKCS1v15(),

@@ -378,7 +378,7 @@ class TestECDSAVectors(object):
 
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
+        ), pytest.warns(CryptographyDeprecationWarning):
             key.signer(DummySignatureAlgorithm())
 
         with raises_unsupported_algorithm(
@@ -388,7 +388,7 @@ class TestECDSAVectors(object):
 
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
+        ), pytest.warns(CryptographyDeprecationWarning):
             key.public_key().verifier(b"", DummySignatureAlgorithm())
 
         with raises_unsupported_algorithm(
@@ -546,9 +546,7 @@ class TestECDSAVectors(object):
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         signature = private_key.sign(message, algorithm)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, algorithm)
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, algorithm)
 
     def test_sign_prehashed(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -560,9 +558,7 @@ class TestECDSAVectors(object):
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         signature = private_key.sign(data, algorithm)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA1()))
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, ec.ECDSA(hashes.SHA1()))
 
     def test_sign_prehashed_digest_mismatch(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -580,9 +576,7 @@ class TestECDSAVectors(object):
         message = b"one little message"
         algorithm = ec.ECDSA(hashes.SHA1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        signer = private_key.signer(algorithm)
-        signer.update(message)
-        signature = signer.finalize()
+        signature = private_key.sign(message, algorithm)
         public_key = private_key.public_key()
         public_key.verify(signature, message, algorithm)
 
@@ -591,9 +585,7 @@ class TestECDSAVectors(object):
         message = b"one little message"
         algorithm = ec.ECDSA(hashes.SHA1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        signer = private_key.signer(algorithm)
-        signer.update(message)
-        signature = signer.finalize()
+        signature = private_key.sign(message, algorithm)
         h = hashes.Hash(hashes.SHA1(), backend)
         h.update(message)
         data = h.finalize()
@@ -618,14 +610,16 @@ class TestECDSAVectors(object):
     def test_prehashed_unsupported_in_signer_ctx(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             private_key.signer(ec.ECDSA(Prehashed(hashes.SHA1())))
 
     def test_prehashed_unsupported_in_verifier_ctx(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         public_key = private_key.public_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(
                 b"0" * 64,
                 ec.ECDSA(Prehashed(hashes.SHA1()))
@@ -1022,7 +1016,8 @@ class TestECDSAVerification(object):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend)
         public_key = key.public_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
 
 

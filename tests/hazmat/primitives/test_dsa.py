@@ -383,31 +383,28 @@ class TestDSAVerification(object):
             y=vector['y']
         ).public_key(backend)
         sig = encode_dss_signature(vector['r'], vector['s'])
-        with pytest.warns(CryptographyDeprecationWarning):
-            verifier = public_key.verifier(sig, algorithm())
 
-        verifier.update(vector['msg'])
         if vector['result'] == "F":
             with pytest.raises(InvalidSignature):
-                verifier.verify()
+                public_key.verify(sig, vector['msg'], algorithm())
         else:
-            verifier.verify()
+            public_key.verify(sig, vector['msg'], algorithm())
 
     def test_dsa_verify_invalid_asn1(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
-        verifier = public_key.verifier(b'fakesig', hashes.SHA1())
-        verifier.update(b'fakesig')
         with pytest.raises(InvalidSignature):
-            verifier.verify()
+            public_key.verify(b'fakesig', b'fakemsg', hashes.SHA1())
 
     def test_signature_not_bytes(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(1234, hashes.SHA1())
 
     def test_use_after_finalize(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
-        verifier = public_key.verifier(b'fakesig', hashes.SHA1())
+        with pytest.warns(CryptographyDeprecationWarning):
+            verifier = public_key.verifier(b'fakesig', hashes.SHA1())
         verifier.update(b'irrelevant')
         with pytest.raises(InvalidSignature):
             verifier.verify()
@@ -420,9 +417,7 @@ class TestDSAVerification(object):
         message = b"one little message"
         algorithm = hashes.SHA1()
         private_key = DSA_KEY_1024.private_key(backend)
-        signer = private_key.signer(algorithm)
-        signer.update(message)
-        signature = signer.finalize()
+        signature = private_key.sign(message, algorithm)
         public_key = private_key.public_key()
         public_key.verify(signature, message, algorithm)
 
@@ -450,12 +445,14 @@ class TestDSAVerification(object):
 
     def test_prehashed_unsupported_in_signer_ctx(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             private_key.signer(Prehashed(hashes.SHA1()))
 
     def test_prehashed_unsupported_in_verifier_ctx(self, backend):
         public_key = DSA_KEY_1024.private_key(backend).public_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), \
+                pytest.warns(CryptographyDeprecationWarning):
             public_key.verifier(
                 b"0" * 64, Prehashed(hashes.SHA1())
             )
@@ -502,7 +499,8 @@ class TestDSASignature(object):
 
     def test_use_after_finalize(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
-        signer = private_key.signer(hashes.SHA1())
+        with pytest.warns(CryptographyDeprecationWarning):
+            signer = private_key.signer(hashes.SHA1())
         signer.update(b"data")
         signer.finalize()
         with pytest.raises(AlreadyFinalized):
@@ -516,9 +514,7 @@ class TestDSASignature(object):
         algorithm = hashes.SHA1()
         signature = private_key.sign(message, algorithm)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, algorithm)
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, algorithm)
 
     def test_prehashed_sign(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
@@ -529,9 +525,7 @@ class TestDSASignature(object):
         prehashed_alg = Prehashed(hashes.SHA1())
         signature = private_key.sign(digest, prehashed_alg)
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, hashes.SHA1())
-        verifier.update(message)
-        verifier.verify()
+        public_key.verify(signature, message, hashes.SHA1())
 
     def test_prehashed_digest_mismatch(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
