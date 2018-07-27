@@ -3121,9 +3121,9 @@ class TestCertificateSigningRequestBuilder(object):
             ),
             x509.RFC822Name(u"test@example.com"),
             x509.RFC822Name(u"email"),
-            x509.RFC822Name(u"email@em\xe5\xefl.com"),
+            x509.RFC822Name(u"email@xn--eml-vla4c.com"),
             x509.UniformResourceIdentifier(
-                u"https://\u043f\u044b\u043a\u0430.cryptography"
+                u"https://xn--80ato2c.cryptography"
             ),
             x509.UniformResourceIdentifier(
                 u"gopher://cryptography:70/some/path"
