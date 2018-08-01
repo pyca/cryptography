@@ -72,7 +72,7 @@ def test_aes_gcm(backend, wycheproof):
         with pytest.raises(ValueError):
             Cipher(algorithms.AES(key), modes.GCM(iv), backend)
     else:
-         dec = Cipher(
+        dec = Cipher(
             algorithms.AES(key),
             modes.GCM(iv, tag, min_tag_length=len(tag)),
             backend
