@@ -75,7 +75,7 @@ class AESCCM(object):
         if not isinstance(tag_length, int):
             raise TypeError("tag_length must be an integer")
 
-        if tag_length not in (4, 6, 8, 12, 14, 16):
+        if tag_length not in (4, 6, 8, 10, 12, 14, 16):
             raise ValueError("Invalid tag_length")
 
         self._tag_length = tag_length
