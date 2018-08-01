@@ -16,6 +16,8 @@ from cryptography.hazmat.primitives.ciphers import (
 )
 from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
 
+from ..hazmat.primitives.test_aead import _aead_supported
+
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.wycheproof_tests("aes_cbc_pkcs5_test.json")
@@ -106,6 +108,10 @@ def test_aes_gcm_aead_api(backend, wycheproof):
             aesgcm.decrypt(iv, ct + tag, aad)
 
 
+@pytest.mark.skipif(
+    not _aead_supported(AESCCM),
+    reason="Requires OpenSSL with AES-CCM support",
+)
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.wycheproof_tests("aes_ccm_test.json")
 def test_aes_ccm_aead_api(backend, wycheproof):
