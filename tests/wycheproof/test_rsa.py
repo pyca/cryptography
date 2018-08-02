@@ -62,7 +62,7 @@ def should_verify(backend, wycheproof):
     "rsa_signature_4096_sha384_test.json",
     "rsa_signature_4096_sha512_test.json",
 )
-def test_rsa_signature(backend, wycheproof):
+def test_rsa_pkcs1v15_signature(backend, wycheproof):
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
@@ -82,4 +82,44 @@ def test_rsa_signature(backend, wycheproof):
                 binascii.unhexlify(wycheproof.testcase["msg"]),
                 padding.PKCS1v15(),
                 digest,
+            )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.wycheproof_tests(
+    "rsa_pss_2048_sha1_mgf1_20_test.json",
+    "rsa_pss_2048_sha256_mgf1_0_test.json",
+    "rsa_pss_2048_sha256_mgf1_32_test.json",
+    "rsa_pss_3072_sha256_mgf1_32_test.json",
+    "rsa_pss_4096_sha256_mgf1_32_test.json",
+    "rsa_pss_4096_sha512_mgf1_32_test.json",
+    "rsa_pss_misc_test.json",
+)
+def test_rsa_pss_signature(backend, wycheproof):
+    key = serialization.load_der_public_key(
+        binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
+    )
+    digest = _DIGESTS[wycheproof.testgroup["sha"]]
+    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+
+    if wycheproof.valid or wycheproof.acceptable:
+        key.verify(
+            binascii.unhexlify(wycheproof.testcase["sig"]),
+            binascii.unhexlify(wycheproof.testcase["msg"]),
+            padding.PSS(
+                mgf=padding.MGF1(mgf_digest),
+                salt_length=wycheproof.testgroup["sLen"]
+            ),
+            digest
+        )
+    else:
+        with pytest.raises(InvalidSignature):
+            key.verify(
+                binascii.unhexlify(wycheproof.testcase["sig"]),
+                binascii.unhexlify(wycheproof.testcase["msg"]),
+                padding.PSS(
+                    mgf=padding.MGF1(mgf_digest),
+                    salt_length=wycheproof.testgroup["sLen"]
+                ),
+                digest
             )
