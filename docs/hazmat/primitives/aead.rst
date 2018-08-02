@@ -169,7 +169,7 @@ also support providing integrity for associated data which is not encrypted.
     :param int tag_length: The length of the authentication tag. This
         defaults to 16 bytes and it is **strongly** recommended that you
         do not make it shorter unless absolutely necessary. Valid tag
-        lengths are 4, 6, 8, 12, 14, and 16.
+        lengths are 4, 6, 8, 10, 12, 14, and 16.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
         OpenSSL does not support AES-CCM.

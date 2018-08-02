@@ -14,7 +14,9 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
+
+from ..hazmat.primitives.test_aead import _aead_supported
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -104,3 +106,39 @@ def test_aes_gcm_aead_api(backend, wycheproof):
     else:
         with pytest.raises(InvalidTag):
             aesgcm.decrypt(iv, ct + tag, aad)
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESCCM),
+    reason="Requires OpenSSL with AES-CCM support",
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.wycheproof_tests("aes_ccm_test.json")
+def test_aes_ccm_aead_api(backend, wycheproof):
+    key = binascii.unhexlify(wycheproof.testcase["key"])
+    iv = binascii.unhexlify(wycheproof.testcase["iv"])
+    aad = binascii.unhexlify(wycheproof.testcase["aad"])
+    msg = binascii.unhexlify(wycheproof.testcase["msg"])
+    ct = binascii.unhexlify(wycheproof.testcase["ct"])
+    tag = binascii.unhexlify(wycheproof.testcase["tag"])
+
+    if (
+        wycheproof.invalid and
+        wycheproof.testcase["comment"] == "Invalid tag size"
+    ):
+        with pytest.raises(ValueError):
+            AESCCM(key, tag_length=wycheproof.testgroup["tagSize"] // 8)
+        return
+
+    aesccm = AESCCM(key, tag_length=wycheproof.testgroup["tagSize"] // 8)
+    if wycheproof.valid or wycheproof.acceptable:
+        computed_ct = aesccm.encrypt(iv, msg, aad)
+        assert computed_ct == ct + tag
+        computed_msg = aesccm.decrypt(iv, ct + tag, aad)
+        assert computed_msg == msg
+    elif not 7 <= len(iv) <= 13:
+        with pytest.raises(ValueError):
+            aesccm.decrypt(iv, ct + tag, aad)
+    else:
+        with pytest.raises(InvalidTag):
+            aesccm.decrypt(iv, ct + tag, aad)
