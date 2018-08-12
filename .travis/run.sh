@@ -52,14 +52,14 @@ else
             cd aws-encryption-sdk-python
             pip install -r test/requirements.txt
             pip install -e .
-            pytest -m local -l
+            pytest -m local test/
             ;;
         dynamodb-encryption-sdk)
             git clone --depth=1 https://github.com/awslabs/aws-dynamodb-encryption-python
             cd aws-dynamodb-encryption-python
             pip install -r test/requirements.txt
             pip install -e .
-            pytest -m "local and not slow and not veryslow and not nope" -l
+            pytest -m "local and not slow and not veryslow and not nope"
             ;;
         certbot)
             git clone --depth=1 https://github.com/certbot/certbot
