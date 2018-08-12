@@ -65,7 +65,8 @@ class TestOpenSSL(object):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         assert b.lib.SSL_OP_ALL > 0
-        ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
+        ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
+        assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
         ssl = b.ffi.gc(ssl, b.lib.SSL_free)
