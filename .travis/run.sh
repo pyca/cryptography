@@ -52,7 +52,7 @@ else
             cd aws-encryption-sdk-python
             pip install -r test/requirements.txt
             pip install -e .
-            pytest -m local -l
+            pytest -m local -l test/
             ;;
         dynamodb-encryption-sdk)
             git clone --depth=1 https://github.com/awslabs/aws-dynamodb-encryption-python
