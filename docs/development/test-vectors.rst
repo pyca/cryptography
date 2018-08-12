@@ -8,11 +8,22 @@ not possible ``cryptography`` has chosen to create a set of custom vectors
 using an official vector file as input to verify consistency between
 implemented backends.
 
-Vectors are kept in the `cryptography_vectors` package rather than within our
+Vectors are kept in the ``cryptography_vectors`` package rather than within our
 main test suite.
 
 Sources
 -------
+
+Project Wycheproof
+~~~~~~~~~~~~~~~~~~
+
+We run vectors from `Project Wycheproof`_ -- a collection of known edge-cases
+for various cryptographic algorithms. These are not included in the repository
+(or ``cryptography_vectors`` package), but rather cloned from Git in our
+continuous integration environments.
+
+We have ensured all test vectors are used as of commit
+``f89f4c53a8845fcefcdb9f14ee9191dbe167e3e3``.
 
 Asymmetric ciphers
 ~~~~~~~~~~~~~~~~~~
@@ -511,6 +522,7 @@ header format (substituting the correct information):
 
 .. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
+.. _`Project Wycheproof`: https://github.com/google/wycheproof
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/

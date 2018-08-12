@@ -105,5 +105,6 @@ Verisign
 versioning
 wildcard
 WoSign
+Wycheproof
 Xcode
 XEX
