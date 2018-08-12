@@ -115,7 +115,7 @@ class TestOpenSSL(object):
         assert len(errors) == 10
 
     def test_ssl_ciphers_registered(self):
-        meth = backend._lib.TLSv1_method()
+        meth = backend._lib.SSLv23_method()
         ctx = backend._lib.SSL_CTX_new(meth)
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
