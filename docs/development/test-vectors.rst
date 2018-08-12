@@ -17,10 +17,10 @@ Sources
 Project Wycheproof
 ~~~~~~~~~~~~~~~~~~
 
-We run vectors from `Project Wycheproof`_ -- a collection of known edge-cases for
-various cryptographic algorithms. These are not included in the repository (or
-``cryptography_vectors`` package), but rather cloned from Git in our continuous
-integration environments.
+We run vectors from `Project Wycheproof`_ -- a collection of known edge-cases
+for various cryptographic algorithms. These are not included in the repository
+(or ``cryptography_vectors`` package), but rather cloned from Git in our
+continuous integration environments.
 
 We have ensured all test vectors are used as of commit
 ``f89f4c53a8845fcefcdb9f14ee9191dbe167e3e3``.
