@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-3-1:
+
+2.3.1 - 2018-08-14
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.0i.
+
 .. _v2-3:
 
 2.3 - 2018-07-18
