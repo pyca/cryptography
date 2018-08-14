@@ -615,7 +615,7 @@ X.509 Certificate Builder
         ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ... ]))
         >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
-        >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
+        >>> builder = builder.not_valid_after(datetime.datetime.today() + (one_day * 30))
         >>> builder = builder.serial_number(x509.random_serial_number())
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(

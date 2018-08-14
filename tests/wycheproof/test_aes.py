@@ -8,6 +8,7 @@ import binascii
 
 import pytest
 
+from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import (
@@ -67,11 +68,19 @@ def test_aes_gcm(backend, wycheproof):
         dec.authenticate_additional_data(aad)
         computed_msg = dec.update(ct) + dec.finalize()
         assert computed_msg == msg
-    else:
-        # All invalid GCM tests are IV len 0 right now
-        assert len(iv) == 0
+    elif len(iv) == 0:
         with pytest.raises(ValueError):
             Cipher(algorithms.AES(key), modes.GCM(iv), backend)
+    else:
+        dec = Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv, tag, min_tag_length=len(tag)),
+            backend
+        ).decryptor()
+        dec.authenticate_additional_data(aad)
+        dec.update(ct)
+        with pytest.raises(InvalidTag):
+            dec.finalize()
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -89,8 +98,9 @@ def test_aes_gcm_aead_api(backend, wycheproof):
         assert computed_ct == ct + tag
         computed_msg = aesgcm.decrypt(iv, ct + tag, aad)
         assert computed_msg == msg
-    else:
-        # All invalid GCM tests are IV len 0 right now
-        assert len(iv) == 0
+    elif len(iv) == 0:
         with pytest.raises(ValueError):
             aesgcm.encrypt(iv, msg, aad)
+    else:
+        with pytest.raises(InvalidTag):
+            aesgcm.decrypt(iv, ct + tag, aad)
