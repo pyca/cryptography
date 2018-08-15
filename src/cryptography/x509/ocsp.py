@@ -25,6 +25,11 @@ def load_der_ocsp_request(data):
     return backend.load_der_ocsp_request(data)
 
 
+def create_ocsp_request_from_cert(cert, issuer, algorithm):
+    from cryptography.hazmat.backends.openssl.backend import backend
+    return backend.create_ocsp_request_from_cert(cert, issuer, algorithm)
+
+
 @six.add_metaclass(abc.ABCMeta)
 class OCSPRequest(object):
     @abc.abstractmethod

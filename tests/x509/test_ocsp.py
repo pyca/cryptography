@@ -8,10 +8,12 @@ import os
 
 import pytest
 
+from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509 import ocsp
 
+from .test_x509 import _load_cert
 from ..utils import load_vectors_from_file
 
 
@@ -113,3 +115,20 @@ class TestOCSPRequest(object):
             req.public_bytes("invalid")
         with pytest.raises(ValueError):
             req.public_bytes(serialization.Encoding.PEM)
+
+
+def test_create_ocsp_request_from_cert():
+    from cryptography.hazmat.backends.openssl.backend import backend
+    cert = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    issuer = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    req = ocsp.create_ocsp_request_from_cert(cert, issuer, hashes.SHA1())
+    with open("/Users/pkehrer/Desktop/out.der", "wb") as f:
+        f.write(req.public_bytes(serialization.Encoding.DER))
