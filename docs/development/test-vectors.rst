@@ -409,6 +409,10 @@ Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * ``x509/ocsp/req-sha1.der`` - An OCSP request containing a single request and
   using SHA1 as the hash algorithm.
+* ``x509/ocsp/req-multi-sha1.der`` - An OCSP request containing multiple
+  requests.
+* ``x509/ocsp/req-invalid-hash-alg.der`` - An OCSP request containing an
+  invalid hash algorithm OID.
 
 Hashes
 ~~~~~~
