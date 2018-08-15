@@ -24,12 +24,16 @@ def _load_data(filename, loader):
 
 
 class TestOCSPRequest(object):
+    def test_bad_request(self):
+        with pytest.raises(ValueError):
+            ocsp.load_der_ocsp_request(b"invalid")
+
     def test_load_request_one_item(self):
         req = _load_data(
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
         )
-        len(req) == 1
+        assert len(req) == 1
         assert req[0].issuer_name_hash == (b"8\xcaF\x8c\x07D\x8d\xf4\x81\x96"
                                            b"\xc7mmLpQ\x9e`\xa7\xbd")
         assert req[0].issuer_key_hash == (b"yu\xbb\x84:\xcb,\xdez\t\xbe1"
@@ -44,7 +48,7 @@ class TestOCSPRequest(object):
             os.path.join("x509", "ocsp", "req-multi-sha1.der"),
             ocsp.load_der_ocsp_request,
         )
-        len(req) == 2
+        assert len(req) == 2
         assert req[0].issuer_name_hash == (b"8\xcaF\x8c\x07D\x8d\xf4\x81\x96"
                                            b"\xc7mmLpQ\x9e`\xa7\xbd")
         assert req[0].issuer_key_hash == (b"yu\xbb\x84:\xcb,\xdez\t\xbe1"

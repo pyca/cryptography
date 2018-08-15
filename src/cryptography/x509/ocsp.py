@@ -29,31 +29,45 @@ def load_der_ocsp_request(data):
 class OCSPRequest(object):
     @abc.abstractmethod
     def __iter__(self):
-        """ Must support iteration of Requests """
+        """
+        Must support iteration of Requests
+        """
 
     @abc.abstractmethod
     def __getitem__(self, idx):
-        """ Subscripting is a required feature as well """
+        """
+        Subscripting is a required feature as well
+        """
 
     @abc.abstractmethod
     def public_bytes(self, encoding):
-        """ Serializes the request to DER """
+        """
+        Serializes the request to DER
+        """
 
 
 @six.add_metaclass(abc.ABCMeta)
 class Request(object):
     @abc.abstractproperty
     def issuer_key_hash(self):
-        """ The hash of the issuer public key """
+        """
+        The hash of the issuer public key
+        """
 
     @abc.abstractproperty
     def issuer_name_hash(self):
-        """ The hash of the issuer name """
+        """
+        The hash of the issuer name
+        """
 
     @abc.abstractproperty
     def hash_algorithm(self):
-        """ The hash algorithm used in the issuer name and key hashes """
+        """
+        The hash algorithm used in the issuer name and key hashes
+        """
 
     @abc.abstractproperty
     def serial_number(self):
-        """ The serial number of the cert whose status is being checked """
+        """
+        The serial number of the cert whose status is being checked
+        """

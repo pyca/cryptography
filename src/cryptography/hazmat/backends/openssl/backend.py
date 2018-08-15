@@ -1423,7 +1423,10 @@ class Backend(object):
     def load_der_ocsp_request(self, data):
         mem_bio = self._bytes_to_bio(data)
         request = self._lib.d2i_OCSP_REQUEST_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(request != self._ffi.NULL)
+        if request == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load OCSP request")
+
         request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
         return _OCSPRequest(self, request)
 

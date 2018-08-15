@@ -71,7 +71,7 @@ class _Request(object):
             return _OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{0} not recognized".format(oid)
+                "Signature algorithm OID: {0} not recognized".format(oid)
             )
 
 
