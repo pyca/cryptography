@@ -26,7 +26,6 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1f``
-* ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
 
