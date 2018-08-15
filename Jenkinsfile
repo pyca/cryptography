@@ -12,10 +12,6 @@ def configs = [
         toxenvs: ['py27', 'py34', 'py35', 'py36', 'py37'],
     ],
     [
-        label: 'freebsd11',
-        toxenvs: ['py27'],
-    ],
-    [
         label: 'sierra',
         toxenvs: ['py27', 'py36'],
     ],

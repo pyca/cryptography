@@ -14,7 +14,6 @@ Currently we test ``cryptography`` on Python 2.7, 3.4+, and
 PyPy 5.3+ on these operating systems.
 
 * x86-64 CentOS 7.x
-* x86-64 FreeBSD 11
 * macOS 10.12 Sierra, 10.11 El Capitan
 * x86-64 Ubuntu 14.04, 16.04, and rolling
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
@@ -27,7 +26,6 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1f``
-* ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
 

@@ -277,8 +277,6 @@ class TestOpenSSLRandomEngine(object):
                 assert name == 'getentropy'
             else:
                 assert name == '/dev/urandom'
-        if 'bsd' in sys.platform:
-            assert name in ['getentropy', '/dev/urandom']
         if sys.platform == 'win32':
             assert name == 'CryptGenRandom'
 
