@@ -258,6 +258,24 @@ class CertificateRevocationList(object):
         """
 
     @abc.abstractmethod
+    def __len__(self):
+        """
+        Number of revoked certificates in the CRL.
+        """
+
+    @abc.abstractmethod
+    def __getitem__(self, idx):
+        """
+        Returns a revoked certificate (or slice of revoked certificates).
+        """
+
+    @abc.abstractmethod
+    def __iter__(self):
+        """
+        Iterator over the revoked certificates
+        """
+
+    @abc.abstractmethod
     def is_signature_valid(self, public_key):
         """
         Verifies signature of revocation list against given public key.
