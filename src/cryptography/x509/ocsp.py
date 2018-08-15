@@ -30,13 +30,19 @@ class OCSPRequest(object):
     @abc.abstractmethod
     def __iter__(self):
         """
-        Must support iteration of Requests
+        Iteration of Requests
+        """
+
+    @abc.abstractmethod
+    def __len__(self):
+        """
+        Number of Requests inside the OCSPRequest object
         """
 
     @abc.abstractmethod
     def __getitem__(self, idx):
         """
-        Subscripting is a required feature as well
+        Returns a Request or range of Requests
         """
 
     @abc.abstractmethod
