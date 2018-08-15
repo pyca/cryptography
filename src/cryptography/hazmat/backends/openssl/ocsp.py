@@ -11,6 +11,7 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _asn1_integer_to_int, _asn1_string_to_bytes, _obj2txt
 )
+from cryptography.hazmat.primitives import serialization
 from cryptography.x509.ocsp import OCSPRequest, Request, _OIDS_TO_HASH
 
 
@@ -89,6 +90,17 @@ class _OCSPRequest(object):
         )
         self._backend.openssl_assert(request != self._backend._ffi.NULL)
         return _Request(self._backend, self._ocsp_request, request)
+
+    def public_bytes(self, encoding):
+        if encoding is not serialization.Encoding.DER:
+            raise ValueError(
+                "The only allowed encoding value is Encoding.DER"
+            )
+
+        bio = self._backend._create_mem_bio_gc()
+        res = self._backend._lib.i2d_OCSP_REQUEST_bio(bio, self._ocsp_request)
+        self._backend.openssl_assert(res > 0)
+        return self._backend._read_mem_bio(bio)
 
     def __iter__(self):
         for i in range(len(self)):

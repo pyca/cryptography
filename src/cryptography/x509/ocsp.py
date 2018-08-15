@@ -35,6 +35,10 @@ class OCSPRequest(object):
     def __getitem__(self, idx):
         """ Subscripting is a required feature as well """
 
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """ Serializes the request to DER """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Request(object):

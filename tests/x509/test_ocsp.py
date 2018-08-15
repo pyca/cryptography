@@ -9,7 +9,7 @@ import os
 import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509 import ocsp
 
 from ..utils import load_vectors_from_file
@@ -90,3 +90,22 @@ class TestOCSPRequest(object):
         )
         with pytest.raises(UnsupportedAlgorithm):
             req[0].hash_algorithm
+
+    def test_serialize_request(self):
+        req_bytes = load_vectors_from_file(
+            filename=os.path.join("x509", "ocsp", "req-sha1.der"),
+            loader=lambda data: data.read(),
+            mode="rb"
+        )
+        req = ocsp.load_der_ocsp_request(req_bytes)
+        assert req.public_bytes(serialization.Encoding.DER) == req_bytes
+
+    def test_invalid_serialize_encoding(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "req-sha1.der"),
+            ocsp.load_der_ocsp_request,
+        )
+        with pytest.raises(ValueError):
+            req.public_bytes("invalid")
+        with pytest.raises(ValueError):
+            req.public_bytes(serialization.Encoding.PEM)

@@ -49,6 +49,13 @@ Interfaces
     An ``OCSPRequest`` is an iterable containing one or more
     :class:`~cryptography.x509.ocsp.Request` objects.
 
+    .. method:: public_bytes(encoding)
+
+        :param encoding: The encoding to use. Only
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
+            is supported.
+
+        :return bytes: The serialized OCSP request.
 
 .. class:: Request
 
