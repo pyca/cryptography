@@ -61,9 +61,9 @@ Interfaces
 
     .. versionadded:: 2.4
 
-    A ``Request`` represents a unique identifier for a certificate whose
-    status is being checked. It may also contain additional extensions
-    (currently unsupported).
+    A ``Request`` contains several attributes that create a unique identifier
+    for a certificate whose status is being checked. It may also contain
+    additional extensions (currently unsupported).
 
     .. attribute:: issuer_key_hash
 
