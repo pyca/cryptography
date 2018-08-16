@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added initial :doc:`OCSP </x509/ocsp>` support.
+
 .. _v2-3-1:
 
 2.3.1 - 2018-08-14
