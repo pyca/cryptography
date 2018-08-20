@@ -186,6 +186,13 @@ def cryptography_has_sct():
         "sk_SCT_num",
         "sk_SCT_value",
         "SCT_LIST_free",
+        "sk_SCT_push",
+        "sk_SCT_new_null",
+        "SCT_new",
+        "SCT_set1_log_id",
+        "SCT_set_timestamp",
+        "SCT_set_version",
+        "SCT_set_log_entry_type",
     ]
 
 

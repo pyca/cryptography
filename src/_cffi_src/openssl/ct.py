@@ -52,6 +52,14 @@ int sk_SCT_num(const Cryptography_STACK_OF_SCT *);
 SCT *sk_SCT_value(const Cryptography_STACK_OF_SCT *, int);
 
 void SCT_LIST_free(Cryptography_STACK_OF_SCT *);
+
+int sk_SCT_push(Cryptography_STACK_OF_SCT *, SCT *);
+Cryptography_STACK_OF_SCT *sk_SCT_new_null(void);
+SCT *SCT_new(void);
+int SCT_set1_log_id(SCT *, unsigned char *, size_t);
+void SCT_set_timestamp(SCT *, uint64_t);
+int SCT_set_version(SCT *, sct_version_t);
+int SCT_set_log_entry_type(SCT *, ct_log_entry_type_t);
 """
 
 CUSTOMIZATIONS = """
@@ -89,5 +97,12 @@ int (*sk_SCT_num)(const Cryptography_STACK_OF_SCT *) = NULL;
 SCT *(*sk_SCT_value)(const Cryptography_STACK_OF_SCT *, int) = NULL;
 
 void (*SCT_LIST_free)(Cryptography_STACK_OF_SCT *) = NULL;
+int (*sk_SCT_push)(Cryptography_STACK_OF_SCT *, SCT *) = NULL;
+Cryptography_STACK_OF_SCT *(*sk_SCT_new_null)(void) = NULL;
+SCT *(*SCT_new)(void) = NULL;
+int (*SCT_set1_log_id)(SCT *, unsigned char *, size_t) = NULL;
+void (*SCT_set_timestamp)(SCT *, uint64_t) = NULL;
+int (*SCT_set_version)(SCT *, sct_version_t) = NULL;
+int (*SCT_set_log_entry_type)(SCT *, ct_log_entry_type_t) = NULL;
 #endif
 """
