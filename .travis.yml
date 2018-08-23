@@ -32,9 +32,9 @@ matrix:
           dist: xenial
           sudo: true
         - python: pypy-5.3
-          env: TOXENV=pypy
+          env: TOXENV=pypy-nocoverage
         - python: pypy2.7-5.10.0
-          env: TOXENV=pypy
+          env: TOXENV=pypy-nocoverage
         - python: pypy3.5-5.10.1
           env: TOXENV=pypy3-nocoverage
         - python: 2.7
