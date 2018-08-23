@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import os
 
 import pytest
@@ -130,5 +131,8 @@ def test_create_ocsp_request_from_cert():
         backend
     )
     req = ocsp.create_ocsp_request_from_cert(cert, issuer, hashes.SHA1())
-    with open("/Users/pkehrer/Desktop/out.der", "wb") as f:
-        f.write(req.public_bytes(serialization.Encoding.DER))
+    serialized = req.public_bytes(serialization.Encoding.DER)
+    assert serialized == base64.b64decode(
+        b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NN"
+        b"GCDS7zkZ/oHxb8+IIy1kCAj8g"
+    )
