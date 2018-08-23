@@ -41,8 +41,10 @@ Asymmetric ciphers
 * PKCS #8 PEM serialization vectors from
 
   * GnuTLS: `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_,
-    `unenc-rsa-pkcs8.pem`_, `pkcs12_s2k_pem.c`_. The contents of
-    `enc2-rsa-pkcs8.pem`_ was re-encrypted using a stronger PKCS#8 cipher.
+    `unenc-rsa-pkcs8.pem`_, `pkcs12_s2k_pem.c`_. The encoding error in
+    `unenc-rsa-pkcs8.pem`_ was fixed, and the contents of `enc-rsa-pkcs8.pem`_
+    was re-encrypted to include it. The contents of `enc2-rsa-pkcs8.pem`_
+    was re-encrypted using a stronger PKCS#8 cipher.
   * `Botan's ECC private keys`_.
 * `asymmetric/public/PKCS1/dsa.pub.pem`_ is a PKCS1 DSA public key from the
   Ruby test suite.
