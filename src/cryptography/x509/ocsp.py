@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+from enum import Enum
 
 import six
 
@@ -19,6 +20,21 @@ _OIDS_TO_HASH = {
     "2.16.840.1.101.3.4.2.2": hashes.SHA384(),
     "2.16.840.1.101.3.4.2.3": hashes.SHA512(),
 }
+
+
+class OCSPResponseStatus(Enum):
+    successful = 0
+    malformed_request = 1
+    internal_error = 2
+    try_later = 3
+    sig_required = 5
+    unauthorized = 6
+
+
+class OCSPCertStatus(Enum):
+    good = 0
+    revoked = 1
+    unknown = 2
 
 
 def load_der_ocsp_request(data):
@@ -87,4 +103,129 @@ class OCSPRequest(object):
     def public_bytes(self, encoding):
         """
         Serializes the request to DER
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class OCSPResponse(object):
+    @abc.abstractproperty
+    def response_status(self):
+        """
+        The status of the response. This is a value from the OCSPResponseStatus
+        enumeration
+        """
+
+    # All these values are on the basic response
+    @abc.abstractproperty
+    def signature_algorithm_oid(self):
+        """
+        The ObjectIdentifier of the signature algorithm
+        """
+
+    @abc.abstractproperty
+    def signature(self):
+        """
+        The signature bytes
+        """
+
+    @abc.abstractproperty
+    def certs(self):
+        """
+        List of certs that may be used to help verify a response.
+        """
+
+    @abc.abstractproperty
+    def version(self):
+        """
+        The version
+        """
+
+    @abc.abstractproperty
+    def responder_id(self):
+        """
+        The responder's key hash or Name
+        """
+
+    @abc.abstractproperty
+    def produced_at(self):
+        """
+        The time the response was produced
+        """
+
+    @abc.abstractmethod
+    def __iter__(self):
+        """
+        Iteration of SingleResponses
+        """
+
+    @abc.abstractmethod
+    def __len__(self):
+        """
+        Number of SingleResponses inside the OCSPResponse object
+        """
+
+    @abc.abstractmethod
+    def __getitem__(self, idx):
+        """
+        Returns a SingleResponse or range of SingleResponses
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class SingleResponse(object):
+    @abc.abstractproperty
+    def status(self):
+        """
+        The status of the certificate (an element from the OCSPCertStatus enum)
+        """
+
+    @abc.abstractproperty
+    def revocation_time(self):
+        """
+        The date of when the certificate was revoked or None if not
+        revoked.
+        """
+
+    @abc.abstractproperty
+    def revocation_reason(self):
+        """
+        The reason the certificate was revoked or None if not specified or
+        notrevoked.
+        """
+
+    @abc.abstractproperty
+    def this_update(self):
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct
+        """
+
+    @abc.abstractproperty
+    def next_update(self):
+        """
+        The time when newer information will be available
+        """
+
+    @abc.abstractproperty
+    def issuer_key_hash(self):
+        """
+        The hash of the issuer public key
+        """
+
+    @abc.abstractproperty
+    def issuer_name_hash(self):
+        """
+        The hash of the issuer name
+        """
+
+    @abc.abstractproperty
+    def hash_algorithm(self):
+        """
+        The hash algorithm used in the issuer name and key hashes
+        """
+
+    @abc.abstractproperty
+    def serial_number(self):
+        """
+        The serial number of the cert whose status is being checked
         """
