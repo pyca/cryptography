@@ -41,7 +41,9 @@ elif [ -n "${LIBRESSL}" ]; then
     fi
 fi
 
-git clone --depth=1 https://github.com/google/wycheproof $HOME/wycheproof
+if [ -z "${DOWNSTREAM}" ]; then
+    git clone --depth=1 https://github.com/google/wycheproof $HOME/wycheproof
+fi
 
 pip install virtualenv
 
