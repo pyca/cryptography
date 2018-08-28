@@ -1,0 +1,8 @@
+In order to add downstream tests to be run in CI, first add a test handler for
+the downstream consumer that you want to test. This should be a file in this
+".travis/downstream.d/" directory and follow the form defined in the
+"downstream-template.sh" template file. The new test handler file should be
+named in the format of {downstream name}.sh where {downstream name} is the
+name that you wish to use to identify the consumer. Next, add an entry to
+the test matrix in ".travis.yml" that sets the DOWNSTREAM environment
+variable to the downstream name that you selected.
