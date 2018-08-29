@@ -38,6 +38,45 @@ _HASH_TYPES = {
     "SHA-512": hashes.SHA512,
 }
 
+_compressed_points = [
+    {
+        "in": "037399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42"
+              "c9b37ac68",
+        "curve": ec.SECP256R1,
+        "x": "7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b"
+             "37ac68",
+        "y": "6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27"
+             "271f6d",
+    },
+    {
+        "in": "02d13b763988943682267deb6298ad3bdfec192459f9e9bf2d2227c8e"
+              "c3e8ced91",
+        "curve": ec.SECP256R1,
+        "x": "d13b763988943682267deb6298ad3bdfec192459f9e9bf2d2227c8ec3e"
+             "8ced91",
+        "y": "badeb7ee4662680c587a84de3f2d1ca7284b65790597408836eea3207e"
+             "2f3a22",
+    },
+    {
+        "in": "032cac5ae983fcb88bc502dd48d561c810e2b40edc7b6b67ea52ceb41"
+              "5093be0d0",
+        "curve": ec.SECP256K1,
+        "x": "2cac5ae983fcb88bc502dd48d561c810e2b40edc7b6b67ea52ceb41509"
+             "3be0d0",
+        "y": "1445c276b193e10679bbdf638717c8db78021e79639e171e8cd37057b7"
+             "798d0d"
+    },
+    {
+        "in": "02e836ff83c6ab4d7ea391f4897cb926b16cbe6eb0991dd81b4a294c6"
+              "5fe9a9691",
+        "curve": ec.SECP256K1,
+        "x": "e836ff83c6ab4d7ea391f4897cb926b16cbe6eb0991dd81b4a294c65fe"
+             "9a9691",
+        "y": "8cb0f15636148db6f54ad50c7da4aa2920519391678c24ad8db8097c6b"
+             "f168b0"
+    },
+]
+
 
 def _skip_ecdsa_vector(backend, curve_type, hash_type):
     if not backend.elliptic_curve_signature_algorithm_supported(
@@ -182,15 +221,27 @@ def test_encode_point():
     )
 
 
+@pytest.mark.parametrize("dat", _compressed_points)
+def test_encode_compressed_point(dat):
+    # secp256r1 point
+    compressed = binascii.unhexlify(dat["in"])
+    x = int(dat["x"], 16)
+    y = int(dat["y"], 16)
+    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
+    data = pn.encode_point(compressed=True)
+    assert data == compressed
+
+
 def test_from_encoded_point():
     # secp256r1 point
     data = binascii.unhexlify(
         "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
     )
-    pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
-        ec.SECP256R1(), data
-    )
+    with pytest.warns(CryptographyDeprecationWarning):
+        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
+            ec.SECP256R1(), data
+        )
     assert pn.x == int(
         '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec',
         16
@@ -207,27 +258,30 @@ def test_from_encoded_point_invalid_length():
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460"
     )
     with pytest.raises(ValueError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP384R1(), bad_data
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                ec.SECP384R1(), bad_data
+            )
 
 
-def test_from_encoded_point_unsupported_point_type():
+def test_from_encoded_point_unsupported_without_backend():
     # set to point type 2.
     unsupported_type = binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
+        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec"
     )
     with pytest.raises(ValueError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP256R1(), unsupported_type
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                ec.SECP256R1(), unsupported_type
+            )
 
 
 def test_from_encoded_point_not_a_curve():
     with pytest.raises(TypeError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            "notacurve", b"\x04data"
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                "notacurve", b"\x04data"
+            )
 
 
 def test_ec_public_numbers_repr():
@@ -1007,6 +1061,83 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
+            )
+
+    @pytest.mark.parametrize("dat", _compressed_points)
+    def test_from_encoded_point_compressed(self, backend, dat):
+        compressed_point = binascii.unhexlify(dat["in"])
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
+            dat["curve"](), compressed_point, backend
+        )
+        assert pn.public_numbers().x == int(dat["x"], 16), dat
+        assert pn.public_numbers().y == int(dat["y"], 16), dat
+
+    def test_from_encoded_point_notoncurve(self, backend):
+        uncompressed_point = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6e"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP256R1(), uncompressed_point, backend
+            )
+
+    def test_from_encoded_point_uncompressed(self, backend):
+        uncompressed_point = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256R1(), uncompressed_point, backend
+        )
+        assert pn.public_numbers().x == int(
+            '7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac68',
+            16
+        )
+        assert pn.public_numbers().y == int(
+            '6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f6d',
+            16
+        )
+
+    def test_from_encoded_point_invalid_length(self, backend):
+        bad_data = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP384R1(), bad_data, backend
+            )
+
+    def test_from_encoded_point_need_backend(self, backend):
+        bad_data = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP384R1(), bad_data, None
+            )
+
+    def test_from_encoded_point_not_a_curve(self, backend):
+        with pytest.raises(TypeError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                "notacurve", b"\x04data", backend
+            )
+
+    def test_from_encoded_point_unsupported_encoding(self, backend):
+        # set to point type 2.
+        unsupported_type = binascii.unhexlify(
+            "057399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac6"
+            "8"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP256R1(), unsupported_type, backend
             )
 
 

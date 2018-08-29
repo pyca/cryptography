@@ -56,6 +56,11 @@ Changelog
   ``cryptography`` from a wheel.
 * Added initial :doc:`OCSP </x509/ocsp>` support.
 * Added support for :class:`~cryptography.x509.PrecertPoison`.
+* Deprecated
+  :meth:`cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`
+  in favor of
+  :meth:`cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
+  which checks that the resulting point is on the curve, and supports compressed points
 
 .. _v2-3-1:
 
