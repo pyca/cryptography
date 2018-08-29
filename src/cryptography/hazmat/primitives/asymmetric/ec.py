@@ -318,18 +318,31 @@ class EllipticCurvePublicNumbers(object):
     def public_key(self, backend):
         return backend.load_elliptic_curve_public_numbers(self)
 
-    def encode_point(self):
+    def encode_point(self, compressed=False):
         # key_size is in bits. Convert to bytes and round up
         byte_length = (self.curve.key_size + 7) // 8
-        return (
-            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
-            utils.int_to_bytes(self.y, byte_length)
-        )
+        if not compressed:
+            return (
+                b'\x04' + utils.int_to_bytes(self.x, byte_length) +
+                utils.int_to_bytes(self.y, byte_length)
+            )
+        else:
+            compression_byte = b'\x03' if self.y % 2 else b'\x02'
+            return (
+                compression_byte + utils.int_to_bytes(self.x, byte_length)
+            )
 
     @classmethod
-    def from_encoded_point(cls, curve, data):
+    def from_encoded_point(cls, curve, data, backend=None):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
+
+        compressed_byte_length = 1 + (curve.key_size + 7) // 8
+        if len(data) == compressed_byte_length:
+            if not backend:
+                raise ValueError('Must provide backend for compressed points')
+
+            data = backend.uncompress_elliptic_curve_bytes(curve, data)
 
         if data.startswith(b'\x04'):
             # key_size is in bits. Convert to bytes and round up

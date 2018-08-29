@@ -1382,6 +1382,41 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
+    def uncompress_elliptic_curve_bytes(self, curve, point_bytes):
+        with self._tmp_bn_ctx() as bn_ctx:
+            curve_nid = self._elliptic_curve_to_nid(curve)
+
+            group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
+            group = self._ffi.gc(group, self._lib.EC_GROUP_free)
+
+            point = self._lib.EC_POINT_new(group)
+            self.openssl_assert(point != self._ffi.NULL)
+            point = self._ffi.gc(point, self._lib.EC_POINT_free)
+
+            res = self._lib.EC_POINT_oct2point(group, point, point_bytes,
+                                               len(point_bytes), bn_ctx)
+            self.openssl_assert(res == 1)
+
+            length = self._lib.EC_POINT_point2oct(
+                group,
+                point,
+                self._lib.POINT_CONVERSION_UNCOMPRESSED,
+                self._ffi.NULL,
+                0,
+                bn_ctx)
+            self.openssl_assert(length > 0)
+
+            buf = self._ffi.new("unsigned char[]", length)
+            self._lib.EC_POINT_point2oct(
+                group,
+                point,
+                self._lib.POINT_CONVERSION_UNCOMPRESSED,
+                buf,
+                length,
+                bn_ctx)
+
+            return self._ffi.buffer(buf)[:]
+
     def derive_elliptic_curve_private_key(self, private_value, curve):
         curve_nid = self._elliptic_curve_to_nid(curve)
 

@@ -182,6 +182,23 @@ def test_encode_point():
     )
 
 
+def test_encode_compressed_point():
+    # secp256r1 point
+    x = int(
+        '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec',
+        16
+    )
+    y = int(
+        '3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e',
+        16
+    )
+    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
+    data = pn.encode_point(compressed=True)
+    assert data == binascii.unhexlify(
+        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec"
+    )
+
+
 def test_from_encoded_point():
     # secp256r1 point
     data = binascii.unhexlify(
@@ -212,10 +229,10 @@ def test_from_encoded_point_invalid_length():
         )
 
 
-def test_from_encoded_point_unsupported_point_type():
+def test_from_encoded_point_unsupported_without_backend():
     # set to point type 2.
     unsupported_type = binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
+        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec"
     )
     with pytest.raises(ValueError):
         ec.EllipticCurvePublicNumbers.from_encoded_point(
@@ -1008,6 +1025,24 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
+
+    def test_from_encoded_point_compressed(self, backend):
+        # set to point type 2.
+        compressed_point = binascii.unhexlify(
+            "037399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac6"
+            "8"
+        )
+        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
+            ec.SECP256R1(), compressed_point, backend
+        )
+        assert pn.x == int(
+            '7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac68',
+            16
+        )
+        assert pn.y == int(
+            '6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f6d',
+            16
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
