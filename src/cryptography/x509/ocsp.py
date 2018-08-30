@@ -23,18 +23,18 @@ _OIDS_TO_HASH = {
 
 
 class OCSPResponseStatus(Enum):
-    successful = 0
-    malformed_request = 1
-    internal_error = 2
-    try_later = 3
-    sig_required = 5
-    unauthorized = 6
+    SUCCESSFUL = 0
+    MALFORMED_REQUEST = 1
+    INTERNAL_ERROR = 2
+    TRY_LATER = 3
+    SIG_REQUIRED = 5
+    UNAUTHORIZED = 6
 
 
 class OCSPCertStatus(Enum):
-    good = 0
-    revoked = 1
-    unknown = 2
+    GOOD = 0
+    REVOKED = 1
+    UNKNOWN = 2
 
 
 def load_der_ocsp_request(data):
@@ -115,7 +115,6 @@ class OCSPResponse(object):
         enumeration
         """
 
-    # All these values are on the basic response
     @abc.abstractproperty
     def signature_algorithm_oid(self):
         """
@@ -129,15 +128,11 @@ class OCSPResponse(object):
         """
 
     @abc.abstractproperty
-    def certs(self):
+    def certificates(self):
         """
-        List of certs that may be used to help verify a response.
-        """
-
-    @abc.abstractproperty
-    def version(self):
-        """
-        The version
+        A list of certificates used to help build a chain to verify the OCSP
+        response. This situation occurs when the OCSP responder uses a delegate
+        certificate.
         """
 
     @abc.abstractproperty
@@ -152,27 +147,6 @@ class OCSPResponse(object):
         The time the response was produced
         """
 
-    @abc.abstractmethod
-    def __iter__(self):
-        """
-        Iteration of SingleResponses
-        """
-
-    @abc.abstractmethod
-    def __len__(self):
-        """
-        Number of SingleResponses inside the OCSPResponse object
-        """
-
-    @abc.abstractmethod
-    def __getitem__(self, idx):
-        """
-        Returns a SingleResponse or range of SingleResponses
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class SingleResponse(object):
     @abc.abstractproperty
     def status(self):
         """
