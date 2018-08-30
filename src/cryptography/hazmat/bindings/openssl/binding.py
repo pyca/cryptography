@@ -163,6 +163,7 @@ def _verify_openssl_version(lib):
             DeprecationWarning
         )
 
+
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
