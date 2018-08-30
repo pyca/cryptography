@@ -133,40 +133,38 @@ class TestOCSPRequest(object):
             req.public_bytes(serialization.Encoding.PEM)
 
 
-def test_create_ocsp_request_no_req():
-    builder = ocsp.OCSPRequestBuilder()
-    with pytest.raises(ValueError):
-        builder.build()
+class TestOCSPRequestBuilder(object):
+    def test_create_ocsp_request_no_req(self):
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.build()
 
+    def test_create_ocsp_request_invalid_alg(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.add_request(cert, issuer, hashes.MD5())
 
-def test_create_ocsp_request_invalid_alg():
-    cert, issuer = _cert_and_issuer()
-    builder = ocsp.OCSPRequestBuilder()
-    with pytest.raises(ValueError):
-        builder.add_request(cert, issuer, hashes.MD5())
+    def test_create_ocsp_request(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        req = builder.build()
+        serialized = req.public_bytes(serialization.Encoding.DER)
+        assert serialized == base64.b64decode(
+            b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz"
+            b"/NNGCDS7zkZ/oHxb8+IIy1kCAj8g"
+        )
 
-
-def test_create_ocsp_request():
-    cert, issuer = _cert_and_issuer()
-    builder = ocsp.OCSPRequestBuilder()
-    builder = builder.add_request(cert, issuer, hashes.SHA1())
-    req = builder.build()
-    serialized = req.public_bytes(serialization.Encoding.DER)
-    assert serialized == base64.b64decode(
-        b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NN"
-        b"GCDS7zkZ/oHxb8+IIy1kCAj8g"
-    )
-
-
-def test_create_ocsp_request_two_reqs():
-    builder = ocsp.OCSPRequestBuilder()
-    cert, issuer = _cert_and_issuer()
-    builder = builder.add_request(cert, issuer, hashes.SHA1())
-    builder = builder.add_request(cert, issuer, hashes.SHA1())
-    req = builder.build()
-    serialized = req.public_bytes(serialization.Encoding.DER)
-    assert serialized == base64.b64decode(
-        b'MIGDMIGAMH4wPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+flk3SCTEBBTDnPP8'
-        b'00YINLvORn+gfFvz4gjLWQICPyAwPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+'
-        b'flk3SCTEBBTDnPP800YINLvORn+gfFvz4gjLWQICPyA='
-    )
+    def test_create_ocsp_request_two_reqs(self):
+        builder = ocsp.OCSPRequestBuilder()
+        cert, issuer = _cert_and_issuer()
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        req = builder.build()
+        serialized = req.public_bytes(serialization.Encoding.DER)
+        assert serialized == base64.b64decode(
+            b"MIGDMIGAMH4wPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+flk3SCTEBBTD"
+            b"nPP800YINLvORn+gfFvz4gjLWQICPyAwPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLT"
+            b"CYO6DWB+flk3SCTEBBTDnPP800YINLvORn+gfFvz4gjLWQICPyA="
+        )
