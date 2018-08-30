@@ -47,7 +47,8 @@ def main(argv):
             (buf, length) = trace
             symbols = backtrace_lib.backtrace_symbols(buf, length)
             stack = [
-                backtrace_ffi.string(symbols[i]).decode() for i in range(length)
+                backtrace_ffi.string(symbols[i]).decode()
+                for i in range(length)
             ]
             lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
             return stack
