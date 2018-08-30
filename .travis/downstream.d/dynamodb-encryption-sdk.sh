@@ -9,7 +9,7 @@ case "${1}" in
         ;;
     run)
         cd aws-dynamodb-encryption-python
-        pytest -m "local and not slow and not veryslow and not nope"
+        pytest test/ -m "local and not slow and not veryslow and not nope"
         ;;
     *)
         exit 1
