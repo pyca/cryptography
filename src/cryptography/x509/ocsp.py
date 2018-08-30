@@ -9,6 +9,7 @@ import abc
 import six
 
 from cryptography.hazmat.primitives import hashes
+from cryptography.x509 import Certificate
 
 
 _OIDS_TO_HASH = {
@@ -38,6 +39,12 @@ class OCSPRequestBuilder(object):
             raise ValueError(
                 "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
             )
+        if (
+            not isinstance(cert, Certificate) or
+            not isinstance(issuer, Certificate)
+        ):
+            raise TypeError("cert and issuer must be a Certificate")
+
         return OCSPRequestBuilder(self._requests + [(cert, issuer, algorithm)])
 
     def build(self):

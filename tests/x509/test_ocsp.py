@@ -145,6 +145,15 @@ class TestOCSPRequestBuilder(object):
         with pytest.raises(ValueError):
             builder.add_request(cert, issuer, hashes.MD5())
 
+    def test_create_ocsp_request_invalid_cert(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.add_request(b"notacert", issuer, hashes.SHA1())
+
+        with pytest.raises(TypeError):
+            builder.add_request(cert, b"notacert", hashes.SHA1())
+
     def test_create_ocsp_request(self):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
