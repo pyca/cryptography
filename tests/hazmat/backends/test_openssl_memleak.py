@@ -39,8 +39,14 @@ def main(argv):
     def backtrace():
         buf = backtrace_ffi.new("void*[]", 24)
         length = backtrace_lib.backtrace(buf, len(buf))
+        return (buf, length)
+
+    def symbolize_backtrace(trace):
+        (buf, length) = trace
         symbols = backtrace_lib.backtrace_symbols(buf, length)
-        stack = [symbols[i] for i in range(length)]
+        stack = [
+            backtrace_ffi.string(symbols[i]).decode() for i in range(length)
+        ]
         lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
         return stack
 
@@ -98,7 +104,7 @@ def main(argv):
                 "size": heap[ptr][0],
                 "path": ffi.string(heap[ptr][1]).decode(),
                 "line": heap[ptr][2],
-                "backtrace": [backtrace_ffi.string(p).decode() for p in heap[ptr][3]],
+                "backtrace": symbolize_backtrace(heap[ptr][3]),
             })
             for ptr in remaining
         )))
