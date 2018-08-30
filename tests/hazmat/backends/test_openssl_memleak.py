@@ -29,26 +29,34 @@ def main(argv):
 
     heap = {}
 
-    backtrace_ffi = cffi.FFI()
-    backtrace_ffi.cdef('''
-       int backtrace(void **, int);
-       char **backtrace_symbols(void *const *, int);
-    ''')
-    backtrace_lib = backtrace_ffi.dlopen(None)
+    BACKTRACE_ENABLED = False
+    if BACKTRACE_ENABLED:
+        backtrace_ffi = cffi.FFI()
+        backtrace_ffi.cdef('''
+            int backtrace(void **, int);
+            char **backtrace_symbols(void *const *, int);
+        ''')
+        backtrace_lib = backtrace_ffi.dlopen(None)
 
-    def backtrace():
-        buf = backtrace_ffi.new("void*[]", 24)
-        length = backtrace_lib.backtrace(buf, len(buf))
-        return (buf, length)
+        def backtrace():
+            buf = backtrace_ffi.new("void*[]", 24)
+            length = backtrace_lib.backtrace(buf, len(buf))
+            return (buf, length)
 
-    def symbolize_backtrace(trace):
-        (buf, length) = trace
-        symbols = backtrace_lib.backtrace_symbols(buf, length)
-        stack = [
-            backtrace_ffi.string(symbols[i]).decode() for i in range(length)
-        ]
-        lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
-        return stack
+        def symbolize_backtrace(trace):
+            (buf, length) = trace
+            symbols = backtrace_lib.backtrace_symbols(buf, length)
+            stack = [
+                backtrace_ffi.string(symbols[i]).decode() for i in range(length)
+            ]
+            lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
+            return stack
+    else:
+        def backtrace():
+            return None
+
+        def symbolize_backtrace(trace):
+            return None
 
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
