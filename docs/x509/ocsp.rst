@@ -105,28 +105,37 @@ Loading Requests
 Creating Requests
 ~~~~~~~~~~~~~~~~~
 
-.. function:: create_ocsp_request_from_cert(cert, issuer, algorithm)
+.. class:: OCSPRequestBuilder
 
     .. versionadded:: 2.4
 
-    Create an OCSP request from a certificate, issuer certificate, and hash
-    algorithm. This function generates a basic request suitable for
-    submission to a public OCSP responder.
+    This class is used to create :class:`~cryptography.x509.ocsp.OCSPRequest`
+    objects.
 
-    :param cert: The :class:`~cryptography.x509.Certificate` whose validity
-        is being checked.
 
-    :param issuer: The issuer :class:`~cryptography.x509.Certificate` of the
-        certificate that is being checked.
+    .. method:: add_request(cert, issuer, algorithm)
 
-    :param algorithm: A
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        instance. For OCSP only
-        :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
-        :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
-        :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
-        :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
-        :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
+        Adds a request using a certificate, issuer certificate, and hash
+        algorithm.
+
+        :param cert: The :class:`~cryptography.x509.Certificate` whose validity
+            is being checked.
+
+        :param issuer: The issuer :class:`~cryptography.x509.Certificate` of
+            the certificate that is being checked.
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            instance. For OCSP only
+            :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
+            :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
+
+    .. method:: build()
+
+        :returns: A new :class:`~cryptography.x509.ocsp.OCSPRequest`.
 
     .. doctest::
 
@@ -136,7 +145,9 @@ Creating Requests
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
         >>> cert = load_pem_x509_certificate(pem_cert, default_backend())
         >>> issuer = load_pem_x509_certificate(pem_issuer, default_backend())
-        >>> req = ocsp.create_ocsp_request_from_cert(cert, issuer, SHA1())
+        >>> builder = ocsp.OCSPRequestBuilder()
+        >>> builder = builder.add_request(cert, issuer, SHA1())
+        >>> req = builder.build()
         >>> base64.b64encode(req.public_bytes(serialization.Encoding.DER))
         b'MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NNGCDS7zkZ/oHxb8+IIy1kCAj8g'
 

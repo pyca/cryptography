@@ -25,9 +25,19 @@ def load_der_ocsp_request(data):
     return backend.load_der_ocsp_request(data)
 
 
-def create_ocsp_request_from_cert(cert, issuer, algorithm):
-    from cryptography.hazmat.backends.openssl.backend import backend
-    return backend.create_ocsp_request_from_cert(cert, issuer, algorithm)
+class OCSPRequestBuilder(object):
+    def __init__(self, requests=[]):
+        self._requests = requests
+
+    def add_request(self, cert, issuer, algorithm):
+        return OCSPRequestBuilder(self._requests + [(cert, issuer, algorithm)])
+
+    def build(self):
+        from cryptography.hazmat.backends.openssl.backend import backend
+        if len(self._requests) == 0:
+            raise ValueError("You must add a request before building")
+
+        return backend.create_ocsp_request(self._requests)
 
 
 @six.add_metaclass(abc.ABCMeta)

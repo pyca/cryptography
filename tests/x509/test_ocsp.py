@@ -118,7 +118,7 @@ class TestOCSPRequest(object):
             req.public_bytes(serialization.Encoding.PEM)
 
 
-def test_create_ocsp_request_from_cert():
+def test_create_ocsp_request():
     from cryptography.hazmat.backends.openssl.backend import backend
     cert = _load_cert(
         os.path.join("x509", "cryptography.io.pem"),
@@ -130,9 +130,35 @@ def test_create_ocsp_request_from_cert():
         x509.load_pem_x509_certificate,
         backend
     )
-    req = ocsp.create_ocsp_request_from_cert(cert, issuer, hashes.SHA1())
+    builder = ocsp.OCSPRequestBuilder()
+    builder = builder.add_request(cert, issuer, hashes.SHA1())
+    req = builder.build()
     serialized = req.public_bytes(serialization.Encoding.DER)
     assert serialized == base64.b64decode(
         b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NN"
         b"GCDS7zkZ/oHxb8+IIy1kCAj8g"
+    )
+
+
+def test_create_ocsp_request_two_reqs():
+    from cryptography.hazmat.backends.openssl.backend import backend
+    cert = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    issuer = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    builder = ocsp.OCSPRequestBuilder()
+    builder = builder.add_request(cert, issuer, hashes.SHA1())
+    builder = builder.add_request(cert, issuer, hashes.SHA1())
+    req = builder.build()
+    serialized = req.public_bytes(serialization.Encoding.DER)
+    assert serialized == base64.b64decode(
+        b'MIGDMIGAMH4wPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+flk3SCTEBBTDnPP8'
+        b'00YINLvORn+gfFvz4gjLWQICPyAwPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+'
+        b'flk3SCTEBBTDnPP800YINLvORn+gfFvz4gjLWQICPyA='
     )
