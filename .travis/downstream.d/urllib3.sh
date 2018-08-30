@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 case "${1}" in
     install)

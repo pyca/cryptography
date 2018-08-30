@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 case "${1}" in
     install)
         git clone --depth=1 https://github.com/twisted/twisted
         cd twisted
-        pip install -e .[tls,conch,http2]
+        pip install -e ".[tls,conch,http2]"
         ;;
     run)
         cd twisted
