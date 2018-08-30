@@ -233,3 +233,23 @@ class TestOpenSSLMemoryLeaks(object):
             private_key = x25519.X25519PrivateKey.generate()
             private_key.public_key()
         """))
+
+    def test_x509_ocsp_nocheck(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import rsa
+
+            private_key = rsa.generate_private_key(
+                key_size=2048, public_exponent=65537, backend=backend
+            )
+            cert = x509.CertificateSigningRequestBuilder().subject_name(
+                x509.Name([])
+            ).add_extension(
+               x509.OCSPNoCheck(), critical=False
+            ).sign(private_key, hashes.SHA256(), backend)
+
+            cert.extensions
+        """))

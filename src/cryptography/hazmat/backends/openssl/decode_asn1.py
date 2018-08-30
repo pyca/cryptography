@@ -165,6 +165,8 @@ def _decode_general_name(backend, gn):
 
 
 def _decode_ocsp_no_check(backend, ext):
+    asn1_null = backend._ffi.cast("ASN1_NULL *", ext)
+    backend._lib.ASN1_NULL_free(asn1_null)
     return x509.OCSPNoCheck()
 
 
