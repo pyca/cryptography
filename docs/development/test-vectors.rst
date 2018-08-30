@@ -159,6 +159,8 @@ X.509
   cryptography website.
 * ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the
   ``cryptography.io.pem`` certificate.
+* ``cryptography.io.precert.pem`` - A pre-certificate with the CT poison
+  extension for the cryptography website.
 * ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
   ``langui.sh`` that contains wildcard entries in the SAN extension.
 * ``san_edipartyname.der`` - A DSA certificate from a `Mozilla bug`_
