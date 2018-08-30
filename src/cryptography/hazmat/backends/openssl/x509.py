@@ -429,6 +429,14 @@ class _CertificateSigningRequest(object):
     @utils.cached_property
     def extensions(self):
         x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
+        x509_exts = self._backend._ffi.gc(
+            x509_exts,
+            lambda x: self._backend._lib.sk_X509_EXTENSION_pop_free(
+                x, self._backend._ffi.addressof(
+                    self._backend._lib._original_lib, "X509_EXTENSION_free"
+                )
+            )
+        )
         return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
 
     def public_bytes(self, encoding):

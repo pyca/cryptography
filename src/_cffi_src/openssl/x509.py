@@ -76,6 +76,8 @@ static const int XN_FLAG_FN_ALIGN;
 static const int XN_FLAG_RFC2253;
 static const int XN_FLAG_ONELINE;
 static const int XN_FLAG_MULTILINE;
+
+typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
 """
 
 FUNCTIONS = """
@@ -282,6 +284,7 @@ int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
 int sk_X509_EXTENSION_insert(X509_EXTENSIONS *, X509_EXTENSION *, int);
 X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
+void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
