@@ -12,6 +12,7 @@ security vulnerability, you should also include the following steps:
 * Request a `CVE from MITRE`_. Once you have recieved the CVE, it should be
   included in the changelog. Ideally you should request the CVE before starting
   the releaes process so that the CVE is available at the time of the release.
+* Ensure that the changelog entry credits whoever reported the issue.
 * The release should be announced on the `oss-security`_ mailing list, in
   addition to the regular announcement lists.
 
