@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import threading
 import types
+import warnings
 
 from cryptography import utils
 from cryptography.exceptions import InternalError
