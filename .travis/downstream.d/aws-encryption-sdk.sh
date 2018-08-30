@@ -12,6 +12,6 @@ case "${1}" in
         pytest -m local test/
         ;;
     *)
-        exit
+        exit 1
         ;;
 esac

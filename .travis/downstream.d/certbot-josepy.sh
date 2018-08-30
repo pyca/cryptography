@@ -11,6 +11,6 @@ case "${1}" in
         pytest src
         ;;
     *)
-        exit
+        exit 1
         ;;
 esac

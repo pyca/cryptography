@@ -12,6 +12,6 @@ case "${1}" in
         pytest -m "local and not slow and not veryslow and not nope"
         ;;
     *)
-        exit
+        exit 1
         ;;
 esac

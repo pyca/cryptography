@@ -12,6 +12,6 @@ case "${1}" in
         inv test
         ;;
     *)
-        exit
+        exit 1
         ;;
 esac

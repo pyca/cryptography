@@ -14,6 +14,6 @@ case "${1}" in
         pytest acme
         ;;
     *)
-        exit
+        exit 1
         ;;
 esac
