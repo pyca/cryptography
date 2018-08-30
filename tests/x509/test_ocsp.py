@@ -4,14 +4,17 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import os
 
 import pytest
 
+from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509 import ocsp
 
+from .test_x509 import _load_cert
 from ..utils import load_vectors_from_file
 
 
@@ -21,6 +24,21 @@ def _load_data(filename, loader):
         loader=lambda data: loader(data.read()),
         mode="rb"
     )
+
+
+def _cert_and_issuer():
+    from cryptography.hazmat.backends.openssl.backend import backend
+    cert = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    issuer = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    return cert, issuer
 
 
 class TestOCSPRequest(object):
@@ -113,3 +131,49 @@ class TestOCSPRequest(object):
             req.public_bytes("invalid")
         with pytest.raises(ValueError):
             req.public_bytes(serialization.Encoding.PEM)
+
+
+class TestOCSPRequestBuilder(object):
+    def test_create_ocsp_request_no_req(self):
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.build()
+
+    def test_create_ocsp_request_invalid_alg(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.add_request(cert, issuer, hashes.MD5())
+
+    def test_create_ocsp_request_invalid_cert(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.add_request(b"notacert", issuer, hashes.SHA1())
+
+        with pytest.raises(TypeError):
+            builder.add_request(cert, b"notacert", hashes.SHA1())
+
+    def test_create_ocsp_request(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        req = builder.build()
+        serialized = req.public_bytes(serialization.Encoding.DER)
+        assert serialized == base64.b64decode(
+            b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz"
+            b"/NNGCDS7zkZ/oHxb8+IIy1kCAj8g"
+        )
+
+    def test_create_ocsp_request_two_reqs(self):
+        builder = ocsp.OCSPRequestBuilder()
+        cert, issuer = _cert_and_issuer()
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        builder = builder.add_request(cert, issuer, hashes.SHA1())
+        req = builder.build()
+        serialized = req.public_bytes(serialization.Encoding.DER)
+        assert serialized == base64.b64decode(
+            b"MIGDMIGAMH4wPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLTCYO6DWB+flk3SCTEBBTD"
+            b"nPP800YINLvORn+gfFvz4gjLWQICPyAwPTA7MAkGBSsOAwIaBQAEFEALRnrx5rLT"
+            b"CYO6DWB+flk3SCTEBBTDnPP800YINLvORn+gfFvz4gjLWQICPyA="
+        )

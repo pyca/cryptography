@@ -9,6 +9,7 @@ import abc
 import six
 
 from cryptography.hazmat.primitives import hashes
+from cryptography.x509 import Certificate
 
 
 _OIDS_TO_HASH = {
@@ -23,6 +24,35 @@ _OIDS_TO_HASH = {
 def load_der_ocsp_request(data):
     from cryptography.hazmat.backends.openssl.backend import backend
     return backend.load_der_ocsp_request(data)
+
+
+class OCSPRequestBuilder(object):
+    def __init__(self, requests=[]):
+        self._requests = requests
+
+    def add_request(self, cert, issuer, algorithm):
+        allowed_hashes = (
+            hashes.SHA1, hashes.SHA224, hashes.SHA256,
+            hashes.SHA384, hashes.SHA512
+        )
+        if not isinstance(algorithm, allowed_hashes):
+            raise ValueError(
+                "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
+            )
+        if (
+            not isinstance(cert, Certificate) or
+            not isinstance(issuer, Certificate)
+        ):
+            raise TypeError("cert and issuer must be a Certificate")
+
+        return OCSPRequestBuilder(self._requests + [(cert, issuer, algorithm)])
+
+    def build(self):
+        from cryptography.hazmat.backends.openssl.backend import backend
+        if len(self._requests) == 0:
+            raise ValueError("You must add a request before building")
+
+        return backend.create_ocsp_request(self)
 
 
 @six.add_metaclass(abc.ABCMeta)

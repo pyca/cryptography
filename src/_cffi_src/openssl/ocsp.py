@@ -35,6 +35,8 @@ OCSP_ONEREQ *OCSP_request_onereq_get0(OCSP_REQUEST *, int);
 int OCSP_ONEREQ_get_ext_count(OCSP_ONEREQ *);
 X509_EXTENSION *OCSP_ONEREQ_get_ext(OCSP_ONEREQ *, int);
 OCSP_CERTID *OCSP_onereq_get0_id(OCSP_ONEREQ *);
+OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
+OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
 
 
 OCSP_BASICRESP *OCSP_BASICRESP_new(void);
