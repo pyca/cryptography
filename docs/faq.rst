@@ -22,7 +22,8 @@ features a collection of hand selected algorithms.
 ``cryptography``'s :ref:`recipes <cryptography-layout>` layer has similar goals
 to NaCl.
 
-If you prefer NaCl's design, we highly recommend `PyNaCl`_.
+If you prefer NaCl's design, we highly recommend `PyNaCl`_, which is also
+maintained by the PyCA team.
 
 Why use ``cryptography``?
 -------------------------
