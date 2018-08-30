@@ -10,6 +10,7 @@ boolean
 Botan
 Brainpool
 Capitan
+changelog
 Changelog
 ciphertext
 codebook
