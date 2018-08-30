@@ -55,11 +55,6 @@ If you are using PyPy, we do not currently ship ``cryptography`` wheels for
 PyPy. You will need to install your own copy of OpenSSL -- we recommend using
 Homebrew.
 
-Starting ``cryptography`` using ``mod_wsgi`` produces an ``InternalError`` during a call in ``_register_osrandom_engine``
--------------------------------------------------------------------------------------------------------------------------
-
-Upgrade to the latest ``cryptography`` and this issue should be resolved.
-
 ``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
 -------------------------------------------------------------------------
 
@@ -69,11 +64,6 @@ OpenSSL. Try removing the other libraries and see if the problem persists.
 If you have no other libraries using OpenSSL in your process, or they do not
 appear to be at fault, it's possible that this is a bug in ``cryptography``.
 Please file an `issue`_ with instructions on how to reproduce it.
-
-Installing ``cryptography`` fails with ``ImportError: No module named setuptools_ext``
---------------------------------------------------------------------------------------
-
-Your ``cffi`` package is out of date. ``pip install -U cffi`` to update it.
 
 error: ``-Werror=sign-conversion``: No option ``-Wsign-conversion`` during installation
 ---------------------------------------------------------------------------------------
@@ -97,7 +87,7 @@ Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
 The OpenSSL project has dropped support for the 0.9.8 and 1.0.0 release series.
 Since they are no longer receiving security patches from upstream,
 ``cryptography`` is also dropping support for them. To fix this issue you
-should upgrade to a newer version of OpenSSL (1.0.1 or later). This may require
+should upgrade to a newer version of OpenSSL (1.0.2 or later). This may require
 you to upgrade to a newer operating system.
 
 .. _`NaCl`: https://nacl.cr.yp.to/
