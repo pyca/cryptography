@@ -4426,7 +4426,7 @@ class TestInhibitAnyPolicy(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestInhibitAnyPolicyExtension(object):
-    def test_nocheck(self, backend):
+    def test_inhibit_any_policy(self, backend):
         cert = _load_cert(
             os.path.join(
                 "x509", "custom", "inhibit_any_policy_5.pem"
