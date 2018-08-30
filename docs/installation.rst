@@ -28,6 +28,7 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
+* ``OpenSSL 1.1.1-latest``
 
 Building cryptography on Windows
 --------------------------------

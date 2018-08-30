@@ -41,6 +41,12 @@ matrix:
           env: TOXENV=py27 OPENSSL=1.1.0h
         - python: 3.5
           env: TOXENV=py35 OPENSSL=1.1.0h
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.1.1-pre9
+        - python: 3.7
+          env: TOXENV=py37 OPENSSL=1.1.1-pre9
+          dist: xenial
+          sudo: true
         - python: 3.6
           env: TOXENV=py36 LIBRESSL=2.4.5
         - python: 3.6
