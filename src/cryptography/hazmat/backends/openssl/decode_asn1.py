@@ -596,6 +596,10 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
+def _decoder_precert_poison(backend, ext):
+    return x509.PrecertPoison()
+
+
 def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp
@@ -772,6 +776,7 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
+    ExtensionOID.PRECERT_POISON: _decoder_precert_poison,
 }
 _EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
 _EXTENSION_HANDLERS[

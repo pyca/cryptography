@@ -855,6 +855,11 @@ class OCSPNoCheck(object):
 
 
 @utils.register_interface(ExtensionType)
+class PrecertPoison(object):
+    oid = ExtensionOID.PRECERT_POISON
+
+
+@utils.register_interface(ExtensionType)
 class TLSFeature(object):
     oid = ExtensionOID.TLS_FEATURE
 
