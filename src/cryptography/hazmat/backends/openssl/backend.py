@@ -1439,16 +1439,16 @@ class Backend(object):
         ocsp_req = self._lib.OCSP_REQUEST_new()
         self.openssl_assert(ocsp_req != self._ffi.NULL)
         ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
-        for cert, issuer, algorithm in builder._requests:
-            evp_md = self._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
-            self.openssl_assert(evp_md != self._ffi.NULL)
-            certid = self._lib.OCSP_cert_to_id(
-                evp_md, cert._x509, issuer._x509
-            )
-            self.openssl_assert(certid != self._ffi.NULL)
-            onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
-            self.openssl_assert(onereq != self._ffi.NULL)
+        cert, issuer, algorithm = builder._request
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        certid = self._lib.OCSP_cert_to_id(
+            evp_md, cert._x509, issuer._x509
+        )
+        self.openssl_assert(certid != self._ffi.NULL)
+        onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
+        self.openssl_assert(onereq != self._ffi.NULL)
         return _OCSPRequest(self, ocsp_req)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):

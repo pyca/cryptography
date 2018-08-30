@@ -27,10 +27,13 @@ def load_der_ocsp_request(data):
 
 
 class OCSPRequestBuilder(object):
-    def __init__(self, requests=[]):
-        self._requests = requests
+    def __init__(self, request=None):
+        self._request = request
 
-    def add_request(self, cert, issuer, algorithm):
+    def add_certificate(self, cert, issuer, algorithm):
+        if self._request is not None:
+            raise ValueError("Only one certificate can be added to a request")
+
         allowed_hashes = (
             hashes.SHA1, hashes.SHA224, hashes.SHA256,
             hashes.SHA384, hashes.SHA512
@@ -45,45 +48,18 @@ class OCSPRequestBuilder(object):
         ):
             raise TypeError("cert and issuer must be a Certificate")
 
-        return OCSPRequestBuilder(self._requests + [(cert, issuer, algorithm)])
+        return OCSPRequestBuilder((cert, issuer, algorithm))
 
     def build(self):
         from cryptography.hazmat.backends.openssl.backend import backend
-        if len(self._requests) == 0:
-            raise ValueError("You must add a request before building")
+        if self._request is None:
+            raise ValueError("You must add a certificate before building")
 
         return backend.create_ocsp_request(self)
 
 
 @six.add_metaclass(abc.ABCMeta)
 class OCSPRequest(object):
-    @abc.abstractmethod
-    def __iter__(self):
-        """
-        Iteration of Requests
-        """
-
-    @abc.abstractmethod
-    def __len__(self):
-        """
-        Number of Requests inside the OCSPRequest object
-        """
-
-    @abc.abstractmethod
-    def __getitem__(self, idx):
-        """
-        Returns a Request or range of Requests
-        """
-
-    @abc.abstractmethod
-    def public_bytes(self, encoding):
-        """
-        Serializes the request to DER
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class Request(object):
     @abc.abstractproperty
     def issuer_key_hash(self):
         """
@@ -106,4 +82,9 @@ class Request(object):
     def serial_number(self):
         """
         The serial number of the cert whose status is being checked
+        """
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Serializes the request to DER
         """
