@@ -82,7 +82,7 @@ strongly recommend that you upgrade as soon as possible.
 Disclosure Process
 ------------------
 
-When we become aware of a security bug in ``cryptography``, we will endeavour to
+When we become aware of a security bug in ``cryptography``, we will endeavor to
 fix it and issue a release as quickly as possible. We will generally issue a new
 release for any security issue.
 
