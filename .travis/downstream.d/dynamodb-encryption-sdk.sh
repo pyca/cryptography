@@ -4,8 +4,8 @@ case "${1}" in
     install)
         git clone --depth=1 https://github.com/awslabs/aws-dynamodb-encryption-python
         cd aws-dynamodb-encryption-python
-        pip install -r test/upstream-requirements-py27.txt
         pip install -e .
+        pip install -r test/upstream-requirements-py27.txt
         ;;
     run)
         cd aws-dynamodb-encryption-python
