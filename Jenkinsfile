@@ -83,7 +83,7 @@ if (env.BRANCH_NAME == "master") {
     configs.add(
         [
             label: 'docker',
-            imageName: 'pyca/cryptography-runner-sid',
+            imageName: 'pyca/cryptography-runner-buster',
             toxenvs: ['docs-linkcheck'],
         ]
     )
