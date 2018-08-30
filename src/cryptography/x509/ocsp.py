@@ -30,6 +30,14 @@ class OCSPRequestBuilder(object):
         self._requests = requests
 
     def add_request(self, cert, issuer, algorithm):
+        allowed_hashes = (
+            hashes.SHA1, hashes.SHA224, hashes.SHA256,
+            hashes.SHA384, hashes.SHA512
+        )
+        if not isinstance(algorithm, allowed_hashes):
+            raise ValueError(
+                "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
+            )
         return OCSPRequestBuilder(self._requests + [(cert, issuer, algorithm)])
 
     def build(self):
@@ -37,7 +45,7 @@ class OCSPRequestBuilder(object):
         if len(self._requests) == 0:
             raise ValueError("You must add a request before building")
 
-        return backend.create_ocsp_request(self._requests)
+        return backend.create_ocsp_request(self)
 
 
 @six.add_metaclass(abc.ABCMeta)

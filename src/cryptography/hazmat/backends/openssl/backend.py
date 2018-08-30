@@ -1430,16 +1430,16 @@ class Backend(object):
         request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
         return _OCSPRequest(self, request)
 
-    def create_ocsp_request(self, requests):
+    def create_ocsp_request(self, builder):
         ocsp_req = self._lib.OCSP_REQUEST_new()
         self.openssl_assert(ocsp_req != self._ffi.NULL)
         ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
-        for request in requests:
+        for cert, issuer, algorithm in builder._requests:
             evp_md = self._lib.EVP_get_digestbyname(
-                request[2].name.encode("ascii"))
+                algorithm.name.encode("ascii"))
             self.openssl_assert(evp_md != self._ffi.NULL)
             certid = self._lib.OCSP_cert_to_id(
-                evp_md, request[0]._x509, request[1]._x509
+                evp_md, cert._x509, issuer._x509
             )
             self.openssl_assert(certid != self._ffi.NULL)
             onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)

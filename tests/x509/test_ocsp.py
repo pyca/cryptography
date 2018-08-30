@@ -26,6 +26,21 @@ def _load_data(filename, loader):
     )
 
 
+def _cert_and_issuer():
+    from cryptography.hazmat.backends.openssl.backend import backend
+    cert = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    issuer = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+        backend
+    )
+    return cert, issuer
+
+
 class TestOCSPRequest(object):
     def test_bad_request(self):
         with pytest.raises(ValueError):
@@ -118,18 +133,21 @@ class TestOCSPRequest(object):
             req.public_bytes(serialization.Encoding.PEM)
 
 
+def test_create_ocsp_request_no_req():
+    builder = ocsp.OCSPRequestBuilder()
+    with pytest.raises(ValueError):
+        builder.build()
+
+
+def test_create_ocsp_request_invalid_alg():
+    cert, issuer = _cert_and_issuer()
+    builder = ocsp.OCSPRequestBuilder()
+    with pytest.raises(ValueError):
+        builder.add_request(cert, issuer, hashes.MD5())
+
+
 def test_create_ocsp_request():
-    from cryptography.hazmat.backends.openssl.backend import backend
-    cert = _load_cert(
-        os.path.join("x509", "cryptography.io.pem"),
-        x509.load_pem_x509_certificate,
-        backend
-    )
-    issuer = _load_cert(
-        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
-        x509.load_pem_x509_certificate,
-        backend
-    )
+    cert, issuer = _cert_and_issuer()
     builder = ocsp.OCSPRequestBuilder()
     builder = builder.add_request(cert, issuer, hashes.SHA1())
     req = builder.build()
@@ -141,18 +159,8 @@ def test_create_ocsp_request():
 
 
 def test_create_ocsp_request_two_reqs():
-    from cryptography.hazmat.backends.openssl.backend import backend
-    cert = _load_cert(
-        os.path.join("x509", "cryptography.io.pem"),
-        x509.load_pem_x509_certificate,
-        backend
-    )
-    issuer = _load_cert(
-        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
-        x509.load_pem_x509_certificate,
-        backend
-    )
     builder = ocsp.OCSPRequestBuilder()
+    cert, issuer = _cert_and_issuer()
     builder = builder.add_request(cert, issuer, hashes.SHA1())
     builder = builder.add_request(cert, issuer, hashes.SHA1())
     req = builder.build()
