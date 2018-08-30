@@ -140,7 +140,8 @@ class Binding(object):
             # the setup for this.
             __import__("_ssl")
 
-            if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
+            if (not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS or
+                    cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL):
                 return
 
             # If nothing else has setup a locking callback already, we set up
