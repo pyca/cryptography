@@ -501,6 +501,37 @@ All named curves are instances of :class:`EllipticCurve`.
 
 
 
+Elliptic Curve Object Identifiers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: EllipticCurveOID
+
+    .. versionadded:: 2.4
+
+    .. attribute:: SECP192R1
+
+        Corresponds to the dotted string ``"1.2.840.10045.3.1.1"``.
+
+    .. attribute:: SECP224R1
+
+        Corresponds to the dotted string ``"1.3.132.0.33"``.
+
+    .. attribute:: SECP256K1
+
+        Corresponds to the dotted string ``"1.3.132.0.10"``.
+
+    .. attribute:: SECP256R1
+
+        Corresponds to the dotted string ``"1.2.840.10045.3.1.7"``.
+
+    .. attribute:: SECP384R1
+
+        Corresponds to the dotted string ``"1.3.132.0.34"``.
+
+    .. attribute:: SECP521R1
+
+        Corresponds to the dotted string ``"1.3.132.0.35"``.
+
 Key Interfaces
 ~~~~~~~~~~~~~~
 
