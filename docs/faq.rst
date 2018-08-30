@@ -91,6 +91,14 @@ Since they are no longer receiving security patches from upstream,
 should upgrade to a newer version of OpenSSL (1.0.2 or later). This may require
 you to upgrade to a newer operating system.
 
+Why are there no wheels for Python 3.5+ on Linux or macOS?
+----------------------------------------------------------
+
+Our Python3 wheels, for macOS and Linux, are ``abi3`` wheels. This means they
+support multiple versions of Python. The Python 3.4 ``abi3`` wheel can be used
+with any version of Python greater than or equal to 3.4. Recent versions of
+``pip`` will automatically install ``abi3`` wheels.
+
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
