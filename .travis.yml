@@ -38,9 +38,9 @@ matrix:
         - python: pypy3.5-5.10.1
           env: TOXENV=pypy3-nocoverage
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0h
+          env: TOXENV=py27 OPENSSL=1.1.0i
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0h
+          env: TOXENV=py35 OPENSSL=1.1.0i
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.1-pre9
         - python: 3.7
@@ -54,7 +54,7 @@ matrix:
         - python: 3.6
           env: TOXENV=py36 LIBRESSL=2.7.4
         - python: 3.6
-          env: TOXENV=docs OPENSSL=1.1.0h
+          env: TOXENV=docs OPENSSL=1.1.0i
           addons:
               apt:
                   packages:
@@ -73,9 +73,9 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0h
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0i
         - python: 2.7
-          env: DOWNSTREAM=certbot OPENSSL=1.1.0h
+          env: DOWNSTREAM=certbot OPENSSL=1.1.0i
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
