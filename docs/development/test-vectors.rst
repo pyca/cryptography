@@ -411,7 +411,8 @@ Custom X.509 Certificate Revocation List Vectors
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
-* ``x509/ocsp/resp-sha256.der`` - An OCSP response with a SHA256 signature.
+* ``x509/ocsp/resp-sha256.der`` - An OCSP response for ``cryptography.io`` with
+  a SHA256 signature.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
