@@ -183,4 +183,5 @@ __all__ = [
     "UnrecognizedExtension",
     "PolicyConstraints",
     "PrecertificateSignedCertificateTimestamps",
+    "PrecertPoison",
 ]

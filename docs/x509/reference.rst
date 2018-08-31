@@ -1958,7 +1958,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        Returns :attr:`~Cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
 
 
 .. class:: DeltaCRLIndicator(crl_number)
