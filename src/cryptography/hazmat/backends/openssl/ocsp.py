@@ -4,23 +4,28 @@
 
 from __future__ import absolute_import, division, print_function
 
-import operator
-
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _asn1_integer_to_int, _asn1_string_to_bytes, _obj2txt
 )
 from cryptography.hazmat.primitives import serialization
-from cryptography.x509.ocsp import OCSPRequest, Request, _OIDS_TO_HASH
+from cryptography.x509.ocsp import OCSPRequest, _OIDS_TO_HASH
 
 
-@utils.register_interface(Request)
-class _Request(object):
-    def __init__(self, backend, ocsp_request, request):
+@utils.register_interface(OCSPRequest)
+class _OCSPRequest(object):
+    def __init__(self, backend, ocsp_request):
+        if backend._lib.OCSP_request_onereq_count(ocsp_request) > 1:
+            raise NotImplementedError(
+                'OCSP request contains more than one request'
+            )
         self._backend = backend
         self._ocsp_request = ocsp_request
-        self._request = request
+        self._request = self._backend._lib.OCSP_request_onereq_get0(
+            self._ocsp_request, 0
+        )
+        self._backend.openssl_assert(self._request != self._backend._ffi.NULL)
         self._cert_id = self._backend._lib.OCSP_onereq_get0_id(self._request)
         self._backend.openssl_assert(self._cert_id != self._backend._ffi.NULL)
 
@@ -74,23 +79,6 @@ class _Request(object):
                 "Signature algorithm OID: {0} not recognized".format(oid)
             )
 
-
-@utils.register_interface(OCSPRequest)
-class _OCSPRequest(object):
-    def __init__(self, backend, ocsp_request):
-        self._backend = backend
-        self._ocsp_request = ocsp_request
-
-    def __len__(self):
-        return self._backend._lib.OCSP_request_onereq_count(self._ocsp_request)
-
-    def _request(self, idx):
-        request = self._backend._lib.OCSP_request_onereq_get0(
-            self._ocsp_request, idx
-        )
-        self._backend.openssl_assert(request != self._backend._ffi.NULL)
-        return _Request(self._backend, self._ocsp_request, request)
-
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:
             raise ValueError(
@@ -101,19 +89,3 @@ class _OCSPRequest(object):
         res = self._backend._lib.i2d_OCSP_REQUEST_bio(bio, self._ocsp_request)
         self._backend.openssl_assert(res > 0)
         return self._backend._read_mem_bio(bio)
-
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self._request(i)
-
-    def __getitem__(self, idx):
-        if isinstance(idx, slice):
-            start, stop, step = idx.indices(len(self))
-            return [self._request(i) for i in range(start, stop, step)]
-        else:
-            idx = operator.index(idx)
-            if idx < 0:
-                idx += len(self)
-            if not 0 <= idx < len(self):
-                raise IndexError
-            return self._request(idx)

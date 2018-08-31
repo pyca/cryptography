@@ -97,8 +97,7 @@ Loading Requests
 
         >>> from cryptography.x509 import ocsp
         >>> ocsp_req = ocsp.load_der_ocsp_request(der_ocsp_req)
-        >>> for request in ocsp_req:
-        ...     print(request.serial_number)
+        >>> print(ocsp_req.serial_number)
         872625873161273451176241581705670534707360122361
 
 
@@ -113,10 +112,10 @@ Creating Requests
     objects.
 
 
-    .. method:: add_request(cert, issuer, algorithm)
+    .. method:: add_certificate(cert, issuer, algorithm)
 
         Adds a request using a certificate, issuer certificate, and hash
-        algorithm.
+        algorithm. This can only be called once.
 
         :param cert: The :class:`~cryptography.x509.Certificate` whose validity
             is being checked.
@@ -141,15 +140,16 @@ Creating Requests
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import serialization
-        >>> from cryptography.hazmat.primitives.hashes import SHA256
+        >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
         >>> cert = load_pem_x509_certificate(pem_cert, default_backend())
         >>> issuer = load_pem_x509_certificate(pem_issuer, default_backend())
         >>> builder = ocsp.OCSPRequestBuilder()
-        >>> builder = builder.add_request(cert, issuer, SHA256())
+        >>> # SHA1 is in this example because RFC 5019 mandates its use.
+        >>> builder = builder.add_certificate(cert, issuer, SHA1())
         >>> req = builder.build()
         >>> base64.b64encode(req.public_bytes(serialization.Encoding.DER))
-        b'MF8wXTBbMFkwVzANBglghkgBZQMEAgEFAAQgn3BowBaoh77h17ULfkX6781dUDPD82Taj8wO1jZWhZoEINxPgjoQth3w7q4AouKKerMxIMIuUG4EuWU2pZfwih52AgI/IA=='
+        b'MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NNGCDS7zkZ/oHxb8+IIy1kCAj8g'
 
 
 Interfaces
@@ -159,24 +159,8 @@ Interfaces
 
     .. versionadded:: 2.4
 
-    An ``OCSPRequest`` is an iterable containing one or more
-    :class:`~cryptography.x509.ocsp.Request` objects.
-
-    .. method:: public_bytes(encoding)
-
-        :param encoding: The encoding to use. Only
-            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
-            is supported.
-
-        :return bytes: The serialized OCSP request.
-
-.. class:: Request
-
-    .. versionadded:: 2.4
-
-    A ``Request`` contains several attributes that create a unique identifier
-    for a certificate whose status is being checked. It may also contain
-    additional extensions (currently unsupported).
+    An ``OCSPRequest`` is an object containing information about a certificate
+    whose status is being checked.
 
     .. attribute:: issuer_key_hash
 
@@ -205,3 +189,11 @@ Interfaces
         :type: int
 
         The serial number of the certificate to check.
+
+    .. method:: public_bytes(encoding)
+
+        :param encoding: The encoding to use. Only
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
+            is supported.
+
+        :return bytes: The serialized OCSP request.
