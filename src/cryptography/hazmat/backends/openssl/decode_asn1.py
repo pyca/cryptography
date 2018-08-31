@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import ipaddress
 
-from asn1crypto.core import Integer, SequenceOf
+import asn1crypto.core
 
 from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
@@ -17,8 +17,8 @@ from cryptography.x509.oid import (
 )
 
 
-class _Integers(SequenceOf):
-    _child_spec = Integer
+class _Integers(asn1crypto.core.SequenceOf):
+    _child_spec = asn1crypto.core.Integer
 
 
 def _obj2txt(backend, obj):
@@ -202,8 +202,8 @@ class _X509ExtensionParser(object):
                     "Duplicate {0} extension found".format(oid), oid
                 )
 
-            # This OID is only supported in OpenSSL 1.1.0+ but we want
-            # to support it in all versions of OpenSSL so we decode it
+            # These OIDs are only supported in OpenSSL 1.1.0+ but we want
+            # to support them in all versions of OpenSSL so we decode them
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
                 data = backend._lib.X509_EXTENSION_get_data(ext)
@@ -212,6 +212,17 @@ class _X509ExtensionParser(object):
                     [_TLS_FEATURE_TYPE_TO_ENUM[x.native] for x in parsed]
                 )
                 extensions.append(x509.Extension(oid, critical, value))
+                seen_oids.add(oid)
+                continue
+            elif oid == ExtensionOID.PRECERT_POISON:
+                data = backend._lib.X509_EXTENSION_get_data(ext)
+                parsed = asn1crypto.core.Null.load(
+                    _asn1_string_to_bytes(backend, data)
+                )
+                assert parsed == asn1crypto.core.Null()
+                extensions.append(x509.Extension(
+                    oid, critical, x509.PrecertPoison()
+                ))
                 seen_oids.add(oid)
                 continue
 

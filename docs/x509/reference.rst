@@ -1944,6 +1944,23 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
 
 
+.. class:: PrecertPoison()
+
+    .. versionadded:: 2.4
+
+    This extension indicates that the certificate should not be treated as a
+    certificate for the purposes of validation, but is instead for submission
+    to a certificate transparency log in order to obtain SCTs which will be
+    embedded in a :class:`PrecertificateSignedCertificateTimestamps` extension
+    on the final certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
+
+
 .. class:: DeltaCRLIndicator(crl_number)
 
     .. versionadded:: 2.1
@@ -2803,6 +2820,12 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 1.9
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.2"``.
+
+    .. attribute:: PRECERT_POISON
+
+        .. versionadded:: 2.4
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
 
     .. attribute:: POLICY_CONSTRAINTS
 

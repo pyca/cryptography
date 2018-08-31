@@ -13,6 +13,7 @@ Changelog
   support, however we strongly encourage all users to upgrade or install
   ``cryptography`` from a wheel.
 * Added initial :doc:`OCSP </x509/ocsp>` support.
+* Added support for :class:`~cryptography.x509.PrecertPoison`.
 
 .. _v2-3-1:
 

@@ -4442,6 +4442,35 @@ class TestInhibitAnyPolicyExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestPrecertPoisonExtension(object):
+    def test_load(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.precert.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        poison = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRECERT_POISON
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
+        poison = cert.extensions.get_extension_for_class(
+            x509.PrecertPoison
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
+
+    def test_generate(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert = _make_certbuilder(private_key).add_extension(
+            x509.PrecertPoison(), critical=True
+        ).sign(private_key, hashes.SHA256(), backend)
+        poison = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRECERT_POISON
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
