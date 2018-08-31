@@ -128,6 +128,12 @@ class OCSPResponse(object):
         """
 
     @abc.abstractproperty
+    def tbs_response_bytes(self):
+        """
+        The tbsResponseData bytes
+        """
+
+    @abc.abstractproperty
     def certificates(self):
         """
         A list of certificates used to help build a chain to verify the OCSP
@@ -136,9 +142,15 @@ class OCSPResponse(object):
         """
 
     @abc.abstractproperty
-    def responder_id(self):
+    def responder_key_hash(self):
         """
-        The responder's key hash or Name
+        The responder's key hash or None
+        """
+
+    @abc.abstractproperty
+    def responder_name(self):
+        """
+        The responder's Name or None
         """
 
     @abc.abstractproperty
