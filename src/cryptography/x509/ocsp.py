@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+from enum import Enum
 
 import six
 
@@ -19,6 +20,24 @@ _OIDS_TO_HASH = {
     "2.16.840.1.101.3.4.2.2": hashes.SHA384(),
     "2.16.840.1.101.3.4.2.3": hashes.SHA512(),
 }
+
+
+class OCSPResponseStatus(Enum):
+    SUCCESSFUL = 0
+    MALFORMED_REQUEST = 1
+    INTERNAL_ERROR = 2
+    TRY_LATER = 3
+    SIG_REQUIRED = 5
+    UNAUTHORIZED = 6
+
+
+_RESPONSE_STATUS_TO_ENUM = dict((x.value, x) for x in OCSPResponseStatus)
+
+
+class OCSPCertStatus(Enum):
+    GOOD = 0
+    REVOKED = 1
+    UNKNOWN = 2
 
 
 def load_der_ocsp_request(data):
@@ -87,4 +106,115 @@ class OCSPRequest(object):
     def public_bytes(self, encoding):
         """
         Serializes the request to DER
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class OCSPResponse(object):
+    @abc.abstractproperty
+    def response_status(self):
+        """
+        The status of the response. This is a value from the OCSPResponseStatus
+        enumeration
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm_oid(self):
+        """
+        The ObjectIdentifier of the signature algorithm
+        """
+
+    @abc.abstractproperty
+    def signature(self):
+        """
+        The signature bytes
+        """
+
+    @abc.abstractproperty
+    def tbs_response_bytes(self):
+        """
+        The tbsResponseData bytes
+        """
+
+    @abc.abstractproperty
+    def certificates(self):
+        """
+        A list of certificates used to help build a chain to verify the OCSP
+        response. This situation occurs when the OCSP responder uses a delegate
+        certificate.
+        """
+
+    @abc.abstractproperty
+    def responder_key_hash(self):
+        """
+        The responder's key hash or None
+        """
+
+    @abc.abstractproperty
+    def responder_name(self):
+        """
+        The responder's Name or None
+        """
+
+    @abc.abstractproperty
+    def produced_at(self):
+        """
+        The time the response was produced
+        """
+
+    @abc.abstractproperty
+    def certificate_status(self):
+        """
+        The status of the certificate (an element from the OCSPCertStatus enum)
+        """
+
+    @abc.abstractproperty
+    def revocation_time(self):
+        """
+        The date of when the certificate was revoked or None if not
+        revoked.
+        """
+
+    @abc.abstractproperty
+    def revocation_reason(self):
+        """
+        The reason the certificate was revoked or None if not specified or
+        not revoked.
+        """
+
+    @abc.abstractproperty
+    def this_update(self):
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct
+        """
+
+    @abc.abstractproperty
+    def next_update(self):
+        """
+        The time when newer information will be available
+        """
+
+    @abc.abstractproperty
+    def issuer_key_hash(self):
+        """
+        The hash of the issuer public key
+        """
+
+    @abc.abstractproperty
+    def issuer_name_hash(self):
+        """
+        The hash of the issuer name
+        """
+
+    @abc.abstractproperty
+    def hash_algorithm(self):
+        """
+        The hash algorithm used in the issuer name and key hashes
+        """
+
+    @abc.abstractproperty
+    def serial_number(self):
+        """
+        The serial number of the cert whose status is being checked
         """
