@@ -9,8 +9,9 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * Deprecated OpenSSL 1.0.1 support. OpenSSL 1.0.1 is no longer supported by
-  the OpenSSL project. Please upgrade to a newer version of OpenSSL, or
-  install ``cryptography`` from a wheel.
+  the OpenSSL project. At this time there is no time table for dropping
+  support, however we strongly encourage all users to upgrade or install
+  ``cryptography`` from a wheel.
 * Added initial :doc:`OCSP </x509/ocsp>` support.
 
 .. _v2-3-1:
