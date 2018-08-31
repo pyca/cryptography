@@ -409,6 +409,11 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
   ``DeltaCRLIndicator`` extension.
 
+X.509 OCSP Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~
+* ``x509/ocsp/resp-sha256.der`` - An OCSP response for ``cryptography.io`` with
+  a SHA256 signature.
+
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * ``x509/ocsp/req-sha1.der`` - An OCSP request containing a single request and
