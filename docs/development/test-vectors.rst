@@ -417,6 +417,7 @@ Custom X.509 OCSP Test Vectors
   requests.
 * ``x509/ocsp/req-invalid-hash-alg.der`` - An OCSP request containing an
   invalid hash algorithm OID.
+* ``x509/ocsp/resp-sha256.der`` - An OCSP response with a SHA256 signature.
 
 Hashes
 ~~~~~~
