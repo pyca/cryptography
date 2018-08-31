@@ -2821,7 +2821,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.2"``.
 
-    .. attribute:: PRECERT_POISONRT
+    .. attribute:: PRECERT_POISON
 
         .. versionadded:: 2.4
 
