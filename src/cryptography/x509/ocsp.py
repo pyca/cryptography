@@ -31,6 +31,9 @@ class OCSPResponseStatus(Enum):
     UNAUTHORIZED = 6
 
 
+_RESPONSE_STATUS_TO_ENUM = dict((x.value, x) for x in OCSPResponseStatus)
+
+
 class OCSPCertStatus(Enum):
     GOOD = 0
     REVOKED = 1
@@ -160,7 +163,7 @@ class OCSPResponse(object):
         """
 
     @abc.abstractproperty
-    def status(self):
+    def certificate_status(self):
         """
         The status of the certificate (an element from the OCSPCertStatus enum)
         """
