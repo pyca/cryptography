@@ -176,7 +176,7 @@ class OCSPResponse(object):
     def revocation_reason(self):
         """
         The reason the certificate was revoked or None if not specified or
-        notrevoked.
+        not revoked.
         """
 
     @abc.abstractproperty
