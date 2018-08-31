@@ -249,11 +249,6 @@ def _encode_ocsp_nocheck(backend, ext):
     return backend._lib.ASN1_NULL_new()
 
 
-def _encode_precert_poison(backend, ext):
-    # Doesn't actually need to be freed
-    return backend._lib.ASN1_NULL_new()
-
-
 def _encode_key_usage(backend, key_usage):
     set_bit = backend._lib.ASN1_BIT_STRING_set_bit
     ku = backend._lib.ASN1_BIT_STRING_new()
@@ -594,7 +589,6 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
-    ExtensionOID.PRECERT_POISON: _encode_precert_poison,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
