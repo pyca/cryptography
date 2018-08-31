@@ -23,14 +23,46 @@ def main(argv):
     import gc
     import json
 
+    import cffi
+
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
     heap = {}
 
+    BACKTRACE_ENABLED = False
+    if BACKTRACE_ENABLED:
+        backtrace_ffi = cffi.FFI()
+        backtrace_ffi.cdef('''
+            int backtrace(void **, int);
+            char **backtrace_symbols(void *const *, int);
+        ''')
+        backtrace_lib = backtrace_ffi.dlopen(None)
+
+        def backtrace():
+            buf = backtrace_ffi.new("void*[]", 24)
+            length = backtrace_lib.backtrace(buf, len(buf))
+            return (buf, length)
+
+        def symbolize_backtrace(trace):
+            (buf, length) = trace
+            symbols = backtrace_lib.backtrace_symbols(buf, length)
+            stack = [
+                backtrace_ffi.string(symbols[i]).decode()
+                for i in range(length)
+            ]
+            lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
+            return stack
+    else:
+        def backtrace():
+            return None
+
+        def symbolize_backtrace(trace):
+            return None
+
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
         ptr = lib.Cryptography_malloc_wrapper(size, path, line)
-        heap[ptr] = (size, path, line)
+        heap[ptr] = (size, path, line, backtrace())
         return ptr
 
     @ffi.callback("void *(void *, size_t, const char *, int)")
@@ -38,7 +70,7 @@ def main(argv):
         if ptr != ffi.NULL:
             del heap[ptr]
         new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
-        heap[new_ptr] = (size, path, line)
+        heap[new_ptr] = (size, path, line, backtrace())
         return new_ptr
 
     @ffi.callback("void(void *, const char *, int)")
@@ -81,6 +113,7 @@ def main(argv):
                 "size": heap[ptr][0],
                 "path": ffi.string(heap[ptr][1]).decode(),
                 "line": heap[ptr][2],
+                "backtrace": symbolize_backtrace(heap[ptr][3]),
             })
             for ptr in remaining
         )))
@@ -177,7 +210,7 @@ class TestOpenSSLMemoryLeaks(object):
     @pytest.mark.parametrize("path", [
         "x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt",
     ])
-    def test_x509_extensions(self, path):
+    def test_x509_certificate_extensions(self, path):
         assert_no_memory_leaks(textwrap.dedent("""
         def func(path):
             from cryptography import x509
@@ -192,6 +225,26 @@ class TestOpenSSLMemoryLeaks(object):
 
             cert.extensions
         """), [path])
+
+    def test_x509_csr_extensions(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import rsa
+
+            private_key = rsa.generate_private_key(
+                key_size=2048, public_exponent=65537, backend=backend
+            )
+            cert = x509.CertificateSigningRequestBuilder().subject_name(
+                x509.Name([])
+            ).add_extension(
+               x509.OCSPNoCheck(), critical=False
+            ).sign(private_key, hashes.SHA256(), backend)
+
+            cert.extensions
+        """))
 
     def test_ec_private_numbers_private_key(self):
         assert_no_memory_leaks(textwrap.dedent("""

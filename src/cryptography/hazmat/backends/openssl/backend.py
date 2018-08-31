@@ -707,10 +707,15 @@ class Backend(object):
         sk_extension = self._lib.sk_X509_EXTENSION_new_null()
         self.openssl_assert(sk_extension != self._ffi.NULL)
         sk_extension = self._ffi.gc(
-            sk_extension, self._lib.sk_X509_EXTENSION_free
+            sk_extension,
+            lambda x: self._lib.sk_X509_EXTENSION_pop_free(
+                x, self._ffi.addressof(
+                    self._lib._original_lib, "X509_EXTENSION_free"
+                )
+            )
         )
-        # gc is not necessary for CSRs, as sk_X509_EXTENSION_free
-        # will release all the X509_EXTENSIONs.
+        # Don't GC individual extensions because the memory is owned by
+        # sk_extensions and will be freed along with it.
         self._create_x509_extensions(
             extensions=builder._extensions,
             handlers=_EXTENSION_ENCODE_HANDLERS,
