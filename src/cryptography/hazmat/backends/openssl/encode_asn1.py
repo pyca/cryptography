@@ -250,7 +250,8 @@ def _encode_ocsp_nocheck(backend, ext):
 
 
 def _encode_precert_poison(backend, ext):
-    return _encode_asn1_str_gc(backend, b"\x05\x00", 2)
+    # Doesn't actually need to be freed
+    return backend._lib.ASN1_NULL_new()
 
 
 def _encode_key_usage(backend, key_usage):
