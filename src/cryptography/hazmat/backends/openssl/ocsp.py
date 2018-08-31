@@ -17,7 +17,9 @@ from cryptography.x509.ocsp import OCSPRequest, _OIDS_TO_HASH
 class _OCSPRequest(object):
     def __init__(self, backend, ocsp_request):
         if backend._lib.OCSP_request_onereq_count(ocsp_request) > 1:
-            raise ValueError('OCSP request contains more than one request')
+            raise NotImplementedError(
+                'OCSP request contains more than one request'
+            )
         self._backend = backend
         self._ocsp_request = ocsp_request
         self._request = self._backend._lib.OCSP_request_onereq_get0(

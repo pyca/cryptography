@@ -61,7 +61,7 @@ class TestOCSPRequest(object):
         )
 
     def test_load_request_two_requests(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(NotImplementedError):
             _load_data(
                 os.path.join("x509", "ocsp", "req-multi-sha1.der"),
                 ocsp.load_der_ocsp_request,
