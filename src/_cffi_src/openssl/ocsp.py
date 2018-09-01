@@ -81,6 +81,9 @@ CUSTOMIZATIONS = """
     CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && \
     CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J \
     ) || CRYPTOGRAPHY_OPENSSL_BETWEEN_111_and_111PRE9
+/* These structs come from ocsp_lcl.h and are needed to de-opaque the struct
+   for the getters in OpenSSL 1.1.0 through 1.1.0i, as well as 1.1.1-pre1 to
+   1.1.1-pre9 */
 struct ocsp_responder_id_st {
     int type;
     union {
