@@ -219,11 +219,17 @@ Interfaces
         to sign the response. This will be one of the OIDs from
         :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: signature
 
         :type: bytes
 
         The signature bytes.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: tbs_response_bytes
 
@@ -231,6 +237,9 @@ Interfaces
 
         The DER encoded bytes payload that is hashed and then signed. This
         data may be used to validate the signature on the OCSP response.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: certificates
 
@@ -240,12 +249,18 @@ Interfaces
         used to help build a chain to verify the OCSP response. This situation
         occurs when the OCSP responder uses a delegate certificate.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: responder_key_hash
 
         :type: bytes or None
 
         The responder's key hash or ``None`` if the response has a
         ``responder_name``.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: responder_name
 
@@ -254,17 +269,26 @@ Interfaces
         The responder's ``Name`` or ``None`` if the response has a
         ``responder_key_hash``.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: produced_at
 
         :type: :class:`datetime.datetime`
 
         A naïve datetime representing the time when the response was produced.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: certificate_status
 
         :type: :class:`~cryptography.x509.ocsp.OCSPCertStatus`
 
         The status of the certificate being checked.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: revocation_time
 
@@ -273,12 +297,18 @@ Interfaces
         A naïve datetime representing the time when the certificate was revoked
         or ``None`` if the certificate has not been revoked.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: revocation_reason
 
         :type: :class:`~cryptography.x509.ReasonFlags` or None
 
         The reason the certificate was revoked or ``None`` if not specified or
         not revoked.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: this_update
 
@@ -287,12 +317,18 @@ Interfaces
         A naïve datetime representing the most recent time at which the status
         being indicated is known by the responder to have been correct.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: next_update
 
         :type: :class:`datetime.datetime`
 
         A naïve datetime representing the time when newer information will
         be available.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: issuer_key_hash
 
@@ -301,12 +337,18 @@ Interfaces
         The hash of the certificate issuer's key. The hash algorithm used
         is defined by the ``hash_algorithm`` property.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: issuer_name_hash
 
         :type: bytes
 
         The hash of the certificate issuer's name. The hash algorithm used
         is defined by the ``hash_algorithm`` property.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
     .. attribute:: hash_algorithm
 
@@ -316,11 +358,17 @@ Interfaces
         The algorithm used to generate the ``issuer_key_hash`` and
         ``issuer_name_hash``.
 
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
     .. attribute:: serial_number
 
         :type: int
 
         The serial number of the certificate that was checked.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
 
 .. class:: OCSPResponseStatus
