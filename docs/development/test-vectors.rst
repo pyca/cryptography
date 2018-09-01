@@ -193,6 +193,8 @@ X.509
   DNS name entries of the SAN extension.
 * ``badasn1time.pem`` - A certificate containing an incorrectly specified
   UTCTime in its validity->not_after.
+* ``letsencryptx3.pem`` - A subordinate certificate used by Let's Encrypt to
+  issue end entity certificates.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
