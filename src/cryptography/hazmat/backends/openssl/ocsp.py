@@ -19,6 +19,19 @@ from cryptography.x509.ocsp import (
 )
 
 
+def _response_check(func):
+    def wrapper(*args):
+        if args[0].response_status != OCSPResponseStatus.SUCCESSFUL:
+            raise ValueError(
+                "OCSP response status is not successful so the property "
+                "has no value"
+            )
+        else:
+            return func(*args)
+
+    return wrapper
+
+
 def _issuer_key_hash(backend, cert_id):
     key_hash = backend._ffi.new("ASN1_OCTET_STRING **")
     res = backend._lib.OCSP_id_get0_info(
@@ -100,18 +113,6 @@ class _OCSPResponse(object):
             )
 
     response_status = utils.read_only_property("_status")
-
-    def _response_check(func):
-        def wrapper(*args):
-            if args[0].response_status != OCSPResponseStatus.SUCCESSFUL:
-                raise ValueError(
-                    "OCSP response status is not successful so the property "
-                    "has no value"
-                )
-            else:
-                return func(*args)
-
-        return wrapper
 
     @property
     @_response_check
