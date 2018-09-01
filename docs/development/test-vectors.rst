@@ -415,7 +415,10 @@ X.509 OCSP Test Vectors
   a SHA256 signature.
 * ``x509/ocsp/resp-unauthorized.der`` - An OCSP response with an unauthorized
   status.
-* ``x509/ocsp/resp-revoked.der`` - An OCSP response with a revoked
+* ``x509/ocsp/resp-revoked.der`` - An OCSP response for ``revoked.badssl.com``
+  with a revoked status.
+* ``x509/ocsp/resp-delegate-unknown-cert.der`` - An OCSP response for an
+  unknown cert from ``AC Camerafirma``. This response also contains a delegate
   certificate.
 
 Custom X.509 OCSP Test Vectors
