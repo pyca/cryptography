@@ -149,12 +149,20 @@ const ASN1_OCTET_STRING *OCSP_resp_get0_signature(const OCSP_BASICRESP *bs)
     CRYPTOGRAPHY_OPENSSL_BETWEEN_111_and_111PRE9
 const X509_ALGOR *OCSP_resp_get0_tbs_sigalg(const OCSP_BASICRESP *bs)
 {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+    return bs->signatureAlgorithm;
+#else
     return &bs->signatureAlgorithm;
+#endif
 }
 
 const OCSP_RESPDATA *OCSP_resp_get0_respdata(const OCSP_BASICRESP *bs)
 {
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+    return bs->tbsResponseData;
+#else
     return &bs->tbsResponseData;
+#endif
 }
 #endif
 """
