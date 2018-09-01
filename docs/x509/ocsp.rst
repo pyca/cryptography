@@ -197,3 +197,182 @@ Interfaces
             is supported.
 
         :return bytes: The serialized OCSP request.
+
+.. class:: OCSPResponse
+
+    .. versionadded:: 2.4
+
+    An ``OCSPResponse`` is the data provided by an OCSP responder in response
+    to an ``OCSPRequest``.
+
+    .. attribute:: response_status
+
+        :type: :class:`~cryptography.x509.ocsp.OCSPResponseStatus`
+
+        The status of the response.
+
+    .. attribute:: signature_algorithm_oid
+
+        :type: :class:`~cryptography.x509.ObjectIdentifier`
+
+        Returns the object identifier of the signature algorithm used
+        to sign the response. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.SignatureAlgorithmOID`.
+
+    .. attribute:: signature
+
+        :type: bytes
+
+        The signature bytes.
+
+    .. attribute:: tbs_response_bytes
+
+        :type: bytes
+
+        The DER encoded bytes payload that is hashed and then signed. This
+        data may be used to validate the signature on the OCSP response.
+
+    .. attribute:: certificates
+
+        :type: list
+
+        A list of zero or more :class:`~cryptography.x509.Certificate` objects
+        used to help build a chain to verify the OCSP response. This situation
+        occurs when the OCSP responder uses a delegate certificate.
+
+    .. attribute:: responder_key_hash
+
+        :type: bytes or None
+
+        The responder's key hash or ``None`` if the response has a
+        ``responder_name``.
+
+    .. attribute:: responder_name
+
+        :type: :class:`~cryptography.x509.Name` or None
+
+        The responder's ``Name`` or ``None`` if the response has a
+        ``responder_key_hash``.
+
+    .. attribute:: produced_at
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the time when the response was produced.
+
+    .. attribute:: certificate_status
+
+        :type: :class:`~cryptography.x509.ocsp.OCSPCertStatus`
+
+        The status of the certificate being checked.
+
+    .. attribute:: revocation_time
+
+        :type: :class:`datetime.datetime` or None
+
+        A naïve datetime representing the time when the certificate was revoked
+        or ``None`` if the certificate has not been revoked.
+
+    .. attribute:: revocation_reason
+
+        :type: :class:`~cryptography.x509.ReasonFlags` or None
+
+        The reason the certificate was revoked or ``None`` if not specified or
+        not revoked.
+
+    .. attribute:: this_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the most recent time at which the status
+        being indicated is known by the responder to have been correct.
+
+    .. attribute:: next_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the time when newer information will
+        be available.
+
+    .. attribute:: issuer_key_hash
+
+        :type: bytes
+
+        The hash of the certificate issuer's key. The hash algorithm used
+        is defined by the ``hash_algorithm`` property.
+
+    .. attribute:: issuer_name_hash
+
+        :type: bytes
+
+        The hash of the certificate issuer's name. The hash algorithm used
+        is defined by the ``hash_algorithm`` property.
+
+    .. attribute:: hash_algorithm
+
+        :type: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.Hash`
+
+        The algorithm used to generate the ``issuer_key_hash`` and
+        ``issuer_name_hash``.
+
+    .. attribute:: serial_number
+
+        :type: int
+
+        The serial number of the certificate that was checked.
+
+
+.. class:: OCSPResponseStatus
+
+    .. versionadded:: 2.4
+
+    An enumeration of response statuses.
+
+    .. attribute:: SUCCESSFUL
+
+        Represents a successful OCSP response.
+
+    .. attribute:: MALFORMED_REQUEST
+
+        May be returned by an OCSP responder that is unable to parse a
+        given request.
+
+    .. attribute:: INTERNAL_ERROR
+
+        May be returned by an OCSP responder that is currently experiencing
+        operational problems.
+
+    .. attribute:: TRY_LATER
+
+        May be returned by an OCSP responder that is overloaded.
+
+    .. attribute:: SIG_REQUIRED
+
+        May be returned by an OCSP responder that requires signed OCSP
+        requests.
+
+    .. attribute:: UNAUTHORIZED
+
+        May be returned by an OCSP responder when queried for a certificate for
+        which the responder is unaware or an issuer for which the responder is
+        not authoritative.
+
+
+.. class:: OCSPCertStatus
+
+    .. versionadded:: 2.4
+
+    An enumeration of certificate statuses in an OCSP response.
+
+    .. attribute:: GOOD
+
+        The value for a certificate that is not revoked.
+
+    .. attribute:: REVOKED
+
+        The certificate being checked is revoked.
+
+    .. attribute:: UNKNOWN
+
+        The certificate being checked is not known to the OCSP responder.
