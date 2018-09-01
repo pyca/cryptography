@@ -422,6 +422,11 @@ X.509 OCSP Test Vectors
 * ``x509/ocsp/resp-delegate-unknown-cert.der`` - An OCSP response for an
   unknown cert from ``AC Camerafirma``. This response also contains a delegate
   certificate.
+* ``x509/ocsp/resp-responder-key-hash.der`` - An OCSP response from the
+  ``DigiCert`` OCSP responder that uses a key hash for the responder ID.
+* ``x509/ocsp/resp-revoked-reason.der`` - An OCSP response from the
+  ``QuoVadis`` OCSP responder that contains a revoked certificate with a
+  revocation reason.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
