@@ -15,12 +15,22 @@ typedef ... OCSP_RESPONSE;
 typedef ... OCSP_BASICRESP;
 typedef ... OCSP_SINGLERESP;
 typedef ... OCSP_CERTID;
+typedef ... OCSP_RESPDATA;
 """
 
 FUNCTIONS = """
 int OCSP_response_status(OCSP_RESPONSE *);
 OCSP_BASICRESP *OCSP_response_get1_basic(OCSP_RESPONSE *);
 int OCSP_BASICRESP_get_ext_count(OCSP_BASICRESP *);
+const ASN1_OCTET_STRING *OCSP_resp_get0_signature(const OCSP_BASICRESP *);
+Cryptography_STACK_OF_X509 *OCSP_resp_get0_certs(const OCSP_BASICRESP *);
+const ASN1_GENERALIZEDTIME *OCSP_resp_get0_produced_at(
+    const OCSP_BASICRESP *);
+const OCSP_CERTID *OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *);
+int OCSP_resp_get0_id(const OCSP_BASICRESP *, const ASN1_OCTET_STRING **,
+                      const X509_NAME **);
+const X509_ALGOR *OCSP_resp_get0_tbs_sigalg(const OCSP_BASICRESP *);
+const OCSP_RESPDATA *OCSP_resp_get0_respdata(const OCSP_BASICRESP *);
 X509_EXTENSION *OCSP_BASICRESP_get_ext(OCSP_BASICRESP *, int);
 int OCSP_resp_count(OCSP_BASICRESP *);
 OCSP_SINGLERESP *OCSP_resp_get0(OCSP_BASICRESP *, int);
@@ -51,6 +61,7 @@ int OCSP_BASICRESP_add1_ext_i2d(OCSP_BASICRESP *, int, void *, int,
 int OCSP_basic_sign(OCSP_BASICRESP *, X509 *, EVP_PKEY *, const EVP_MD *,
                     Cryptography_STACK_OF_X509 *, unsigned long);
 OCSP_RESPONSE *OCSP_response_create(int, OCSP_BASICRESP *);
+void OCSP_RESPONSE_free(OCSP_RESPONSE *);
 
 OCSP_REQUEST *OCSP_REQUEST_new(void);
 void OCSP_REQUEST_free(OCSP_REQUEST *);
@@ -62,7 +73,88 @@ OCSP_REQUEST *d2i_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST **);
 OCSP_RESPONSE *d2i_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE **);
 int i2d_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST *);
 int i2d_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE *);
+int i2d_OCSP_RESPDATA(OCSP_RESPDATA *, unsigned char **);
 """
 
 CUSTOMIZATIONS = """
+#if ( \
+    CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && \
+    CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J \
+    ) || CRYPTOGRAPHY_OPENSSL_BETWEEN_111_and_111PRE9
+/* These structs come from ocsp_lcl.h and are needed to de-opaque the struct
+   for the getters in OpenSSL 1.1.0 through 1.1.0i, as well as 1.1.1-pre1 to
+   1.1.1-pre9 */
+struct ocsp_responder_id_st {
+    int type;
+    union {
+        X509_NAME *byName;
+        ASN1_OCTET_STRING *byKey;
+    } value;
+};
+struct ocsp_response_data_st {
+    ASN1_INTEGER *version;
+    OCSP_RESPID responderId;
+    ASN1_GENERALIZEDTIME *producedAt;
+    STACK_OF(OCSP_SINGLERESP) *responses;
+    STACK_OF(X509_EXTENSION) *responseExtensions;
+};
+struct ocsp_basic_response_st {
+    OCSP_RESPDATA tbsResponseData;
+    X509_ALGOR signatureAlgorithm;
+    ASN1_BIT_STRING *signature;
+    STACK_OF(X509) *certs;
+};
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* These functions are all taken from ocsp_cl.c in OpenSSL 1.1.0 */
+const OCSP_CERTID *OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *single)
+{
+    return single->certId;
+}
+const Cryptography_STACK_OF_X509 *OCSP_resp_get0_certs(
+    const OCSP_BASICRESP *bs)
+{
+    return bs->certs;
+}
+int OCSP_resp_get0_id(const OCSP_BASICRESP *bs,
+                      const ASN1_OCTET_STRING **pid,
+                      const X509_NAME **pname)
+{
+    const OCSP_RESPID *rid = bs->tbsResponseData->responderId;
+
+    if (rid->type == V_OCSP_RESPID_NAME) {
+        *pname = rid->value.byName;
+        *pid = NULL;
+    } else if (rid->type == V_OCSP_RESPID_KEY) {
+        *pid = rid->value.byKey;
+        *pname = NULL;
+    } else {
+        return 0;
+    }
+    return 1;
+}
+const ASN1_GENERALIZEDTIME *OCSP_resp_get0_produced_at(
+    const OCSP_BASICRESP* bs)
+{
+    return bs->tbsResponseData->producedAt;
+}
+const ASN1_OCTET_STRING *OCSP_resp_get0_signature(const OCSP_BASICRESP *bs)
+{
+    return bs->signature;
+}
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J || \
+    CRYPTOGRAPHY_OPENSSL_BETWEEN_111_and_111PRE9
+const X509_ALGOR *OCSP_resp_get0_tbs_sigalg(const OCSP_BASICRESP *bs)
+{
+    return &bs->signatureAlgorithm;
+}
+
+const OCSP_RESPDATA *OCSP_resp_get0_respdata(const OCSP_BASICRESP *bs)
+{
+    return &bs->tbsResponseData;
+}
+#endif
 """
