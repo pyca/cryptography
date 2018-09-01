@@ -42,7 +42,9 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
-from cryptography.hazmat.backends.openssl.ocsp import _OCSPRequest
+from cryptography.hazmat.backends.openssl.ocsp import (
+    _OCSPRequest, _OCSPResponse
+)
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
@@ -1440,6 +1442,16 @@ class Backend(object):
 
         request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
         return _OCSPRequest(self, request)
+
+    def load_der_ocsp_response(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
+        if response == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load OCSP response")
+
+        response = self._ffi.gc(response, self._lib.OCSP_RESPONSE_free)
+        return _OCSPResponse(self, response)
 
     def create_ocsp_request(self, builder):
         ocsp_req = self._lib.OCSP_REQUEST_new()
