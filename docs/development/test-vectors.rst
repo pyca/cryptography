@@ -413,6 +413,10 @@ X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
 * ``x509/ocsp/resp-sha256.der`` - An OCSP response for ``cryptography.io`` with
   a SHA256 signature.
+* ``x509/ocsp/resp-unauthorized.der`` - An OCSP response with an unauthorized
+  status.
+* ``x509/ocsp/resp-revoked.der`` - An OCSP response with a revoked
+  certificate.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
