@@ -216,7 +216,6 @@ class _CertificateRevocationList(object):
     def __init__(self, backend, x509_crl):
         self._backend = backend
         self._x509_crl = x509_crl
-        self._sorted_crl = None
 
     def __eq__(self, other):
         if not isinstance(other, x509.CertificateRevocationList):
@@ -239,15 +238,17 @@ class _CertificateRevocationList(object):
         h.update(der)
         return h.finalize()
 
-    def get_revoked_certificate_by_serial_number(self, serial_number):
+    @utils.cached_property
+    def _sorted_crl(self):
         # X509_CRL_get0_by_serial sorts in place, which breaks a variety of
         # things we don't want to break (like iteration and the signature).
         # Let's dupe it and sort that instead.
-        if self._sorted_crl is None:
-            dup = self._backend._lib.X509_CRL_dup(self._x509_crl)
-            self._backend.openssl_assert(dup != self._backend._ffi.NULL)
-            dup = self._backend._ffi.gc(dup, self._backend._lib.X509_CRL_free)
-            self._sorted_crl = dup
+        dup = self._backend._lib.X509_CRL_dup(self._x509_crl)
+        self._backend.openssl_assert(dup != self._backend._ffi.NULL)
+        dup = self._backend._ffi.gc(dup, self._backend._lib.X509_CRL_free)
+        return dup
+
+    def get_revoked_certificate_by_serial_number(self, serial_number):
         revoked = self._backend._ffi.new("X509_REVOKED **")
         asn1_int = _encode_asn1_int_gc(self._backend, serial_number)
         res = self._backend._lib.X509_CRL_get0_by_serial(
