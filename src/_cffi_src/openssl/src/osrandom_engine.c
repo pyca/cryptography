@@ -149,7 +149,7 @@ static int dev_urandom_fd(void) {
 
 static int dev_urandom_read(unsigned char *buffer, int size) {
     int fd;
-    ssize_t n;
+    int n;
 
     fd = dev_urandom_fd();
     if (fd < 0) {
@@ -158,7 +158,7 @@ static int dev_urandom_read(unsigned char *buffer, int size) {
 
     while (size > 0) {
         do {
-            n = read(fd, buffer, (size_t)size);
+            n = (int)read(fd, buffer, (size_t)size);
         } while (n < 0 && errno == EINTR);
 
         if (n <= 0) {
@@ -219,7 +219,7 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    size_t len;
+    int len;
     int res;
 
     switch(getentropy_works) {
@@ -230,8 +230,8 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     case CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS:
         while (size > 0) {
             /* OpenBSD and macOS restrict maximum buffer size to 256. */
-            len = size > 256 ? 256 : (size_t)size;
-            res = getentropy(buffer, len);
+            len = size > 256 ? 256 : size;
+            res = getentropy(buffer, (size_t)len);
             if (res < 0) {
                 ERR_Cryptography_OSRandom_error(
                     CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
@@ -362,7 +362,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
                 return 0;
             }
             buffer += n;
-            size -= n;
+            size -= (int)n;
         }
         return 1;
     }

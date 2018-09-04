@@ -700,8 +700,8 @@ static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
-static const long SSL_OP_NO_DTLSv1 = NULL;
-static const long SSL_OP_NO_DTLSv1_2 = NULL;
+static const long SSL_OP_NO_DTLSv1 = 0;
+static const long SSL_OP_NO_DTLSv1_2 = 0;
 long *(*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long *(*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #else
