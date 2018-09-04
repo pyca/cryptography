@@ -49,5 +49,5 @@ pip install virtualenv
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-# This coverage pin must be kept in sync with tox.ini
-pip install tox codecov coverage==4.3.4
+# If we pin coverage it must be kept in sync with tox.ini and Jenkinsfile
+pip install tox codecov coverage
