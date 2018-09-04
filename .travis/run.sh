@@ -7,7 +7,7 @@ if [[ "${TOXENV}" == "pypy" ]]; then
 fi
 if [ -n "${LIBRESSL}" ]; then
     OPENSSL=$LIBRESSL
-    export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function"
+    export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function"
 fi
 
 if [ -n "${OPENSSL}" ]; then
