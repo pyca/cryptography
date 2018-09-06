@@ -28,13 +28,11 @@ KeyedHashVector = collections.namedtuple(
 
 
 def check_backend_support(backend, item):
-    supported = item.node.iter_markers("supported")
-    if supported:
-        for mark in supported:
-            if not mark.kwargs["only_if"](backend):
-                pytest.skip("{0} ({1})".format(
-                    mark.kwargs["skip_message"], backend
-                ))
+    for mark in item.node.iter_markers("supported"):
+        if not mark.kwargs["only_if"](backend):
+            pytest.skip("{0} ({1})".format(
+                mark.kwargs["skip_message"], backend
+            ))
 
 
 @contextmanager
