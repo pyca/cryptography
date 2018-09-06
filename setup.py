@@ -54,7 +54,7 @@ if platform.python_implementation() == "PyPy":
         )
 
 test_requirements = [
-    "pytest>=3.2.1,!=3.3.0",
+    "pytest>=3.6.0",
     "pretend",
     "iso8601",
     "pytz",

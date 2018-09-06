@@ -28,7 +28,7 @@ KeyedHashVector = collections.namedtuple(
 
 
 def check_backend_support(backend, item):
-    supported = item.keywords.get("supported")
+    supported = item.node.iter_markers("supported")
     if supported:
         for mark in supported:
             if not mark.kwargs["only_if"](backend):

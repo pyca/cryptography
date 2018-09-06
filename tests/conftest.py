@@ -36,7 +36,7 @@ def pytest_generate_tests(metafunc):
 def backend(request):
     required_interfaces = [
         mark.kwargs["interface"]
-        for mark in request.node.get_marker("requires_backend_interface")
+        for mark in request.node.iter_markers("requires_backend_interface")
     ]
     if not all(
         isinstance(openssl_backend, iface) for iface in required_interfaces
