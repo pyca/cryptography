@@ -190,6 +190,12 @@ Interfaces
 
         The serial number of the certificate to check.
 
+    .. attribute:: extensions
+
+        :type: :class:`~cryptography.x509.Extensions`
+
+        The extensions encoded in the request.
+
     .. method:: public_bytes(encoding)
 
         :param encoding: The encoding to use. Only

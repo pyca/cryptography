@@ -2854,6 +2854,15 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.29.24"``.
 
+
+.. class:: OCSPExtensionOID
+
+    .. versionadded:: 2.4
+
+    .. attribute:: NONCE
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.2"``.
+
 Helper Functions
 ~~~~~~~~~~~~~~~~
 .. currentmodule:: cryptography.x509

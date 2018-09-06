@@ -96,6 +96,10 @@ class ExtensionOID(object):
     )
 
 
+class OCSPExtensionOID(object):
+    NONCE = ObjectIdentifier("1.3.6.1.5.5.7.48.1.2")
+
+
 class CRLEntryExtensionOID(object):
     CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
     CRL_REASON = ObjectIdentifier("2.5.29.21")
@@ -271,4 +275,5 @@ _OID_NAMES = {
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
     CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
+    OCSPExtensionOID.NONCE: "OCSPNonce",
 }

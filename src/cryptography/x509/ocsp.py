@@ -108,6 +108,12 @@ class OCSPRequest(object):
         Serializes the request to DER
         """
 
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        The list of request extensions. Not single request extensions.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class OCSPResponse(object):

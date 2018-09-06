@@ -40,6 +40,8 @@ X509_EXTENSION *OCSP_SINGLERESP_get_ext(OCSP_SINGLERESP *, int);
 int OCSP_single_get0_status(OCSP_SINGLERESP *, int *, ASN1_GENERALIZEDTIME **,
                             ASN1_GENERALIZEDTIME **, ASN1_GENERALIZEDTIME **);
 
+int OCSP_REQUEST_get_ext_count(OCSP_REQUEST *);
+X509_EXTENSION *OCSP_REQUEST_get_ext(OCSP_REQUEST *, int);
 int OCSP_request_onereq_count(OCSP_REQUEST *);
 OCSP_ONEREQ *OCSP_request_onereq_get0(OCSP_REQUEST *, int);
 int OCSP_ONEREQ_get_ext_count(OCSP_ONEREQ *);
