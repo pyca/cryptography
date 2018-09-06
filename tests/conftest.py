@@ -27,7 +27,8 @@ def pytest_generate_tests(metafunc):
         skip_if_wycheproof_none(wycheproof)
 
         testcases = []
-        for path in metafunc.function.wycheproof_tests.args:
+        marker = metafunc.definition.get_closest_marker("wycheproof_tests")
+        for path in marker.args:
             testcases.extend(load_wycheproof_tests(wycheproof, path))
         metafunc.parametrize("wycheproof", testcases)
 
