@@ -7,12 +7,14 @@ if [[ "${TOXENV}" == "pypy" ]]; then
 fi
 if [ -n "${LIBRESSL}" ]; then
     OPENSSL=$LIBRESSL
+    export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function"
 fi
+
 if [ -n "${OPENSSL}" ]; then
     OPENSSL_DIR="ossl-2/${OPENSSL}"
 
     export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
-    export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
+    export CFLAGS="${CFLAGS} -I$HOME/$OPENSSL_DIR/include"
     # rpath on linux will cause it to use an absolute path so we don't need to
     # do LD_LIBRARY_PATH
     export LDFLAGS="-L$HOME/$OPENSSL_DIR/lib -Wl,-rpath=$HOME/$OPENSSL_DIR/lib"
