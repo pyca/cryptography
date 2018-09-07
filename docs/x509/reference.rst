@@ -2432,6 +2432,30 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
         :type: :class:`datetime.datetime`
 
+OCSP Extensions
+~~~~~~~~~~~~~~~
+
+.. class:: OCSPNonce(nonce)
+
+    .. versionadded:: 2.4
+
+    OCSP nonce is an extension that is only valid inside
+    :class:`~cryptography.x509.ocsp.OCSPRequest` and
+    :class:`~cryptography.x509.ocsp.OCSPResponse` objects. The nonce
+    cryptographically binds a request and a response to prevent replay attacks.
+    In practice nonces are rarely used in OCSP due to the desire to precompute
+    OCSP responses at large scale.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.OCSPExtensionOID.NONCE`.
+
+    .. attribute:: nonce
+
+        :type: bytes
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
