@@ -436,6 +436,8 @@ Custom X.509 OCSP Test Vectors
   requests.
 * ``x509/ocsp/req-invalid-hash-alg.der`` - An OCSP request containing an
   invalid hash algorithm OID.
+* ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
+  extension.
 
 Hashes
 ~~~~~~
