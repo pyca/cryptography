@@ -1426,7 +1426,7 @@ class OCSPNonce(object):
         return hash(self.nonce)
 
     def __repr__(self):
-        return "<OCSPNonce(nonce={0})>".format(self.nonce)
+        return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
 
     nonce = utils.read_only_property("_nonce")
 

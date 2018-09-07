@@ -4566,11 +4566,11 @@ class TestOCSPNonce(object):
         assert nonce1 != object()
 
     def test_repr(self):
-        nonce1 = x509.OCSPNonce(b"5" * 10)
+        nonce1 = x509.OCSPNonce(b"nonce")
         if not six.PY2:
-            assert repr(nonce1) == "<OCSPNonce(nonce=b'5555555555')>"
+            assert repr(nonce1) == "<OCSPNonce(nonce=b'nonce')>"
         else:
-            assert repr(nonce1) == "<OCSPNonce(nonce='5555555555')>"
+            assert repr(nonce1) == "<OCSPNonce(nonce='nonce')>"
 
     def test_hash(self):
         nonce1 = x509.OCSPNonce(b"0" * 5)
