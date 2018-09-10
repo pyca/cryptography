@@ -95,7 +95,7 @@ class _OCSPRequest(object):
     def hash_algorithm(self):
         return _hash_algorithm(self._backend, self._cert_id)
 
-    @property
+    @utils.cached_property
     def extensions(self):
         return _OCSP_REQ_EXT_PARSER.parse(self._backend, self._ocsp_request)
 
