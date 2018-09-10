@@ -24,7 +24,7 @@ from cryptography.x509.certificate_transparency import (
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import RelativeDistinguishedName
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
+    CRLEntryExtensionOID, ExtensionOID, OCSPExtensionOID, ObjectIdentifier,
 )
 
 
@@ -1401,6 +1401,34 @@ class PrecertificateSignedCertificateTimestamps(object):
                 list(self)
             )
         )
+
+
+@utils.register_interface(ExtensionType)
+class OCSPNonce(object):
+    oid = OCSPExtensionOID.NONCE
+
+    def __init__(self, nonce):
+        if not isinstance(nonce, bytes):
+            raise TypeError("nonce must be bytes")
+
+        self._nonce = nonce
+
+    def __eq__(self, other):
+        if not isinstance(other, OCSPNonce):
+            return NotImplemented
+
+        return self.nonce == other.nonce
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.nonce)
+
+    def __repr__(self):
+        return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
+
+    nonce = utils.read_only_property("_nonce")
 
 
 @utils.register_interface(ExtensionType)

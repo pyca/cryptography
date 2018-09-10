@@ -13,7 +13,8 @@ from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
+    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID,
+    OCSPExtensionOID,
 )
 
 
@@ -765,6 +766,12 @@ def _parse_asn1_generalized_time(backend, generalized_time):
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
+def _decode_nonce(backend, nonce):
+    nonce = backend._ffi.cast("ASN1_OCTET_STRING *", nonce)
+    nonce = backend._ffi.gc(nonce, backend._lib.ASN1_OCTET_STRING_free)
+    return x509.OCSPNonce(_asn1_string_to_bytes(backend, nonce))
+
+
 _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
@@ -806,6 +813,10 @@ _CRL_EXTENSION_HANDLERS = {
     ),
 }
 
+_OCSP_REQ_EXTENSION_HANDLERS = {
+    OCSPExtensionOID.NONCE: _decode_nonce,
+}
+
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -834,4 +845,10 @@ _CRL_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_CRL_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_CRL_get_ext(x, i),
     handlers=_CRL_EXTENSION_HANDLERS,
+)
+
+_OCSP_REQ_EXT_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_REQUEST_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_REQUEST_get_ext(x, i),
+    handlers=_OCSP_REQ_EXTENSION_HANDLERS,
 )

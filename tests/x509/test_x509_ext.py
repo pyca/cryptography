@@ -4547,3 +4547,34 @@ class TestInvalidExtension(object):
         )
         with pytest.raises(ValueError):
             cert.extensions
+
+
+class TestOCSPNonce(object):
+    def test_non_bytes(self):
+        with pytest.raises(TypeError):
+            x509.OCSPNonce(38)
+
+    def test_eq(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 5)
+        assert nonce1 == nonce2
+
+    def test_ne(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 6)
+        assert nonce1 != nonce2
+        assert nonce1 != object()
+
+    def test_repr(self):
+        nonce1 = x509.OCSPNonce(b"nonce")
+        if not six.PY2:
+            assert repr(nonce1) == "<OCSPNonce(nonce=b'nonce')>"
+        else:
+            assert repr(nonce1) == "<OCSPNonce(nonce='nonce')>"
+
+    def test_hash(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 5)
+        nonce3 = x509.OCSPNonce(b"1" * 5)
+        assert hash(nonce1) == hash(nonce2)
+        assert hash(nonce1) != hash(nonce3)

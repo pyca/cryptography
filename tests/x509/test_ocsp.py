@@ -59,6 +59,19 @@ class TestOCSPRequest(object):
         assert req.serial_number == int(
             "98D9E5C0B4C373552DF77C5D0F1EB5128E4945F9", 16
         )
+        assert len(req.extensions) == 0
+
+    def test_load_request_with_extensions(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "req-ext-nonce.der"),
+            ocsp.load_der_ocsp_request,
+        )
+        assert len(req.extensions) == 1
+        ext = req.extensions[0]
+        assert ext.critical is False
+        assert ext.value == x509.OCSPNonce(
+            b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd"
+        )
 
     def test_load_request_two_requests(self):
         with pytest.raises(NotImplementedError):

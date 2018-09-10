@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _asn1_integer_to_int, _asn1_string_to_bytes, _obj2txt
+    _OCSP_REQ_EXT_PARSER, _asn1_integer_to_int, _asn1_string_to_bytes, _obj2txt
 )
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.ocsp import OCSPRequest, _OIDS_TO_HASH
@@ -94,6 +94,10 @@ class _OCSPRequest(object):
     @property
     def hash_algorithm(self):
         return _hash_algorithm(self._backend, self._cert_id)
+
+    @utils.cached_property
+    def extensions(self):
+        return _OCSP_REQ_EXT_PARSER.parse(self._backend, self._ocsp_request)
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:
