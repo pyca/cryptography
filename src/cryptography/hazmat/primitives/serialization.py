@@ -125,8 +125,7 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
             "Compressed elliptic curve points are not supported"
         )
 
-    numbers = ec.EllipticCurvePublicNumbers.from_encoded_point(curve, data)
-    return numbers.public_key(backend)
+    return ec.EllipticCurvePublicKey.from_encoded_point(curve, data)
 
 
 def _ssh_read_next_string(data):

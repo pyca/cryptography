@@ -128,6 +128,31 @@ class EllipticCurvePublicKey(object):
         Verifies the signature of the data.
         """
 
+    @classmethod
+    def from_encoded_point(cls, curve, data, backend):
+        if not isinstance(curve, EllipticCurve):
+            raise TypeError("curve must be an EllipticCurve instance")
+
+        if not backend:
+            raise ValueError('Must provide backend to decode point')
+
+        byte_length = (curve.key_size + 7) // 8
+        compressed_byte_length = 1 + (curve.key_size + 7) // 8
+        if len(data) == compressed_byte_length:
+            data = backend.uncompress_elliptic_curve_bytes(curve, data)
+
+        if data.startswith(b'\x04'):
+            # key_size is in bits. Convert to bytes and round up
+            if len(data) == 2 * byte_length + 1:
+                x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
+                y = utils.int_from_bytes(data[byte_length + 1:], 'big')
+                return backend.load_elliptic_curve_public_numbers(
+                    EllipticCurvePublicNumbers(x, y, curve))
+            else:
+                raise ValueError('Invalid elliptic curve point data length')
+        else:
+            raise ValueError('Unsupported elliptic curve point type')
+
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 

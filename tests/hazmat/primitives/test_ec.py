@@ -1027,19 +1027,19 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
 
     def test_from_encoded_point_compressed(self, backend):
-        # set to point type 2.
+        # set to point type 2 or 3.
         compressed_point = binascii.unhexlify(
             "037399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac6"
             "8"
         )
-        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
             ec.SECP256R1(), compressed_point, backend
         )
-        assert pn.x == int(
+        assert pn.public_numbers().x == int(
             '7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac68',
             16
         )
-        assert pn.y == int(
+        assert pn.public_numbers().y == int(
             '6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f6d',
             16
         )
