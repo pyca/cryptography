@@ -296,5 +296,3 @@ class _EllipticCurvePublicKey(object):
             self._backend, data, signature_algorithm._algorithm
         )
         _ecdsa_sig_verify(self._backend, self, signature, data)
-
-
