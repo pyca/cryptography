@@ -24,17 +24,13 @@ jobs:
 
   - script: git clone https://github.com/google/wycheproof
     displayName: 'Clone wycheproof'
-
+    
   - script: |
-      #!/bin/bash -xe
+      set -x
+      set -e
       if [[ "$PYTHON_VERSION" == "2.7" ]]; then
-          export TOXENV=py27
+        export TOXENV=py27
       elif [[ "PYTHON_VERSION" == "3.7" ]]; then
-          export TOXENV=py37
+        export TOXENV=py37
       fi
-      echo $TOXENV
-      CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-      LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-      CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
-      tox -r --  --color=yes --wycheproof-root=wycheproof
-    displayName: 'Run tests'
+      printenv
