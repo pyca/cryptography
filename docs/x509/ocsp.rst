@@ -178,8 +178,7 @@ Interfaces
 
     .. attribute:: hash_algorithm
 
-        :type: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.Hash`
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
         The algorithm used to generate the ``issuer_key_hash`` and
         ``issuer_name_hash``.
@@ -358,8 +357,7 @@ Interfaces
 
     .. attribute:: hash_algorithm
 
-        :type: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.Hash`
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
         The algorithm used to generate the ``issuer_key_hash`` and
         ``issuer_name_hash``.

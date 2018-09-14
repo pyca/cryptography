@@ -1371,7 +1371,7 @@ General Name Classes
 
     .. attribute:: value
 
-        :type: `bytes`
+        :type: bytes
 
 X.509 Extensions
 ~~~~~~~~~~~~~~~~
@@ -2261,7 +2261,7 @@ X.509 Extensions
 
     .. attribute:: value
 
-        :type: byte
+        :type: bytes
 
         Returns the DER encoded bytes payload of the extension.
 
