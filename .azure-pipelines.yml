@@ -1,0 +1,31 @@
+jobs:
+- job: 'Run mac tests'
+  pool:
+    vmImage: 'macOS 10.13'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+    maxParallel: 5
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: brew install openssl@1.1
+    displayName: 'Install OpenSSL'
+
+  - script: pip install tox
+    displayName: 'Install tox'
+
+  - script: git clone https://github.com/google/wycheproof
+    displayName: 'Clone wycheproof'
+
+  - script: |
+    CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
+      LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
+      CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
+      tox -r --  --color=yes --wycheproof-root=wycheproof
+    displayName: 'Run tests'
