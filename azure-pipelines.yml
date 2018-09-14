@@ -1,5 +1,5 @@
 jobs:
-- job: 'run-mac-tests'
+- job: 'mac'
   pool:
     vmImage: 'macOS 10.13'
   strategy:
