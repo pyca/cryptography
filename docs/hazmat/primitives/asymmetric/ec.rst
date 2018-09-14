@@ -660,7 +660,7 @@ Key Interfaces
 
         :param bytes data: The serialized point byte string.
 
-        :returns: An :class:`EllipticCurvePublicNumbers` instance.
+        :returns: An :class:`EllipticCurvePublicKey` instance.
 
         :raises ValueError: Raised on invalid point type or data length.
 

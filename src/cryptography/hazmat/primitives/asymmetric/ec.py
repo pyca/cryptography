@@ -8,6 +8,8 @@ import abc
 
 import six
 
+import warnings
+
 from cryptography import utils
 
 
@@ -358,16 +360,17 @@ class EllipticCurvePublicNumbers(object):
             )
 
     @classmethod
-    def from_encoded_point(cls, curve, data, backend=None):
+    def from_encoded_point(cls, curve, data):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
-        compressed_byte_length = 1 + (curve.key_size + 7) // 8
-        if len(data) == compressed_byte_length:
-            if not backend:
-                raise ValueError('Must provide backend for compressed points')
-
-            data = backend.uncompress_elliptic_curve_bytes(curve, data)
+        warnings.warn(
+            "Support for unsafe construction of public numbers from "
+            "encoded data will be removed in a future version. "
+            "Please use EllipticCurvePublicKey.from_encoded_point",
+            utils.DeprecatedIn24,
+            stacklevel=2,
+        )
 
         if data.startswith(b'\x04'):
             # key_size is in bits. Convert to bytes and round up
