@@ -297,7 +297,7 @@ setup(
 
         "test": test_requirements,
         "docs": [
-            "sphinx >= 1.6.5",
+            "sphinx >= 1.6.5,!=1.8.0",
             "sphinx_rtd_theme",
         ],
         "docstest": [
