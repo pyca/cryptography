@@ -39,6 +39,6 @@ jobs:
         CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
         tox -r --  --color=yes --wycheproof-root=wycheproof
 
-   - displayName: 'Submit coverage'
-     condition: 'succeeded'
-     script: codecov
+  - displayName: 'Submit coverage'
+    condition: 'succeeded'
+    script: codecov
