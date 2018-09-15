@@ -16,17 +16,16 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - displayName: 'Install OpenSSL'
-    script: brew install openssl@1.1
+  - script: brew install openssl@1.1
+    displayName: 'Install OpenSSL'
 
-  - displayName: 'Install tox & codecov'
-    script: pip install tox codecov
+  - script: pip install tox codecov
+    displayName: 'Install tox & codecov'
 
-  - displayName: 'Clone wycheproof'
-    script: git clone https://github.com/google/wycheproof
+  - script: git clone https://github.com/google/wycheproof
+    displayName: 'Clone wycheproof'
 
-  - displayName: 'Run tests'    
-    script: |
+  - script: |
       set -e
       set -x
       if [[ "$PYTHON_VERSION" == "2.7" ]]; then
@@ -38,7 +37,8 @@ jobs:
         LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
         CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
         tox -r --  --color=yes --wycheproof-root=wycheproof
+    displayName: 'Run tests'
 
-  - displayName: 'Submit coverage'
+  - script: codecov
+    displayName: 'Submit coverage'
     condition: 'succeeded'
-    script: codecov
