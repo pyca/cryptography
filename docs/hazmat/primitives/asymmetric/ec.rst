@@ -649,7 +649,7 @@ Key Interfaces
 
     .. classmethod:: from_encoded_point(curve, data, backend)
 
-        .. versionadded:: 1.1
+        .. versionadded:: 2.4
 
         Decodes a byte string as described in `SEC 1 v2.0`_ section 2.3.3 and
         returns an :class:`EllipticCurvePublicKey`.
