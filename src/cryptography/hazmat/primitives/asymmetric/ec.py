@@ -5,10 +5,9 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import warnings
 
 import six
-
-import warnings
 
 from cryptography import utils
 
