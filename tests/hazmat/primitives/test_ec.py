@@ -1085,11 +1085,22 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 ec.SECP384R1(), bad_data, None
             )
 
-        def test_from_encoded_point_not_a_curve(self, backend):
-            with pytest.raises(TypeError):
-                ec.EllipticCurvePublicNumbers.from_encoded_point(
-                    "notacurve", b"\x04data", backend
-                )
+    def test_from_encoded_point_not_a_curve(self, backend):
+        with pytest.raises(TypeError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                "notacurve", b"\x04data", backend
+            )
+
+    def test_from_encoded_point_unsupported_encoding(self, backend):
+        # set to point type 2.
+        unsupported_type = binascii.unhexlify(
+            "057399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac6"
+            "8"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                ec.SECP256R1(), unsupported_type
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
