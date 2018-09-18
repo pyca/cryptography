@@ -1044,6 +1044,53 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             16
         )
 
+    def test_from_encoded_point_uncompressed(self, backend):
+        # set to point type 2 or 3.
+        uncompressed_point = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256R1(), uncompressed_point, backend
+        )
+        assert pn.public_numbers().x == int(
+            '7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac68',
+            16
+        )
+        assert pn.public_numbers().y == int(
+            '6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f6d',
+            16
+        )
+
+    def test_from_encoded_point_invalid_length(self, backend):
+        bad_data = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP384R1(), bad_data, backend
+            )
+
+    def test_from_encoded_point_need_backend(self, backend):
+        bad_data = binascii.unhexlify(
+            "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
+            "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
+            "6d"
+        )
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP384R1(), bad_data, None
+            )
+
+        def test_from_encoded_point_not_a_curve(self, backend):
+            with pytest.raises(TypeError):
+                ec.EllipticCurvePublicNumbers.from_encoded_point(
+                    "notacurve", b"\x04data", backend
+                )
+
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSAVerification(object):
