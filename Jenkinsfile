@@ -216,7 +216,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
                                 pip install coverage==4.3.4
-                                bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
+                                bash <(curl --retry 3 -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
                             """
                         }
                     } else {
