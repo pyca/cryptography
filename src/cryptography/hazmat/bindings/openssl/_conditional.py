@@ -211,6 +211,19 @@ def cryptography_has_x25519():
     ]
 
 
+def cryptography_has_ed25519():
+    return [
+        "NID_ED25519",
+    ]
+
+
+def cryptography_has_oneshot_evp_digest_sign_verify():
+    return [
+        "EVP_DigestSign",
+        "EVP_DigestVerify",
+    ]
+
+
 def cryptography_has_evp_pkey_get_set_tls_encodedpoint():
     return [
         "EVP_PKEY_get1_tls_encodedpoint",
@@ -309,6 +322,10 @@ CONDITIONAL_NAMES = {
         cryptography_has_x509_store_ctx_get_issuer
     ),
     "Cryptography_HAS_X25519": cryptography_has_x25519,
+    "Cryptography_HAS_ED25519": cryptography_has_ed25519,
+    "Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY": (
+        cryptography_has_oneshot_evp_digest_sign_verify
+    ),
     "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": (
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
