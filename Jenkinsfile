@@ -83,7 +83,7 @@ if (env.BRANCH_NAME == "master") {
     configs.add(
         [
             label: 'docker',
-            imageName: 'pyca/cryptography-runner-sid',
+            imageName: 'pyca/cryptography-runner-buster',
             toxenvs: ['docs-linkcheck'],
         ]
     )
@@ -196,7 +196,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                             virtualenv .codecov
                             call .codecov/Scripts/activate
                             REM this pin must be kept in sync with tox.ini
-                            pip install coverage==4.3.4
+                            pip install coverage
                             pip install codecov
                             codecov -e JOB_BASE_NAME,LABEL,TOXENV
                         """
@@ -210,13 +210,13 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 cd cryptography
                                 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
+                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
                                     tox -r --  --color=yes --wycheproof-root=../wycheproof
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
-                                pip install coverage==4.3.4
-                                bash <(curl --retry 3 -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
+                                pip install coverage
+                                bash <(curl -s --retry 3 https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV
                             """
                         }
                     } else {
@@ -228,7 +228,7 @@ def build(toxenv, label, imageName, artifacts, artifactExcludes) {
                                 virtualenv .venv
                                 source .venv/bin/activate
                                 # This pin must be kept in sync with tox.ini
-                                pip install coverage==4.3.4
+                                pip install coverage
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL,TOXENV,IMAGE_NAME
                             """
                         }

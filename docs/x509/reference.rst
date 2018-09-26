@@ -1371,7 +1371,7 @@ General Name Classes
 
     .. attribute:: value
 
-        :type: `bytes`
+        :type: bytes
 
 X.509 Extensions
 ~~~~~~~~~~~~~~~~
@@ -1944,6 +1944,23 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
 
 
+.. class:: PrecertPoison()
+
+    .. versionadded:: 2.4
+
+    This extension indicates that the certificate should not be treated as a
+    certificate for the purposes of validation, but is instead for submission
+    to a certificate transparency log in order to obtain SCTs which will be
+    embedded in a :class:`PrecertificateSignedCertificateTimestamps` extension
+    on the final certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
+
+
 .. class:: DeltaCRLIndicator(crl_number)
 
     .. versionadded:: 2.1
@@ -2244,7 +2261,7 @@ X.509 Extensions
 
     .. attribute:: value
 
-        :type: byte
+        :type: bytes
 
         Returns the DER encoded bytes payload of the extension.
 
@@ -2415,6 +2432,30 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
         :type: :class:`datetime.datetime`
 
+OCSP Extensions
+~~~~~~~~~~~~~~~
+
+.. class:: OCSPNonce(nonce)
+
+    .. versionadded:: 2.4
+
+    OCSP nonce is an extension that is only valid inside
+    :class:`~cryptography.x509.ocsp.OCSPRequest` and
+    :class:`~cryptography.x509.ocsp.OCSPResponse` objects. The nonce
+    cryptographically binds a request and a response to prevent replay attacks.
+    In practice nonces are rarely used in OCSP due to the desire to precompute
+    OCSP responses at large scale.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.OCSPExtensionOID.NONCE`.
+
+    .. attribute:: nonce
+
+        :type: bytes
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
@@ -2804,6 +2845,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.2"``.
 
+    .. attribute:: PRECERT_POISON
+
+        .. versionadded:: 2.4
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
+
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
@@ -2830,6 +2877,15 @@ instances. The following common OIDs are available as constants.
     .. attribute:: INVALIDITY_DATE
 
         Corresponds to the dotted string ``"2.5.29.24"``.
+
+
+.. class:: OCSPExtensionOID
+
+    .. versionadded:: 2.4
+
+    .. attribute:: NONCE
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.2"``.
 
 Helper Functions
 ~~~~~~~~~~~~~~~~

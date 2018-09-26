@@ -32,7 +32,8 @@ def test_check_backend_support_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]})
+    node = pretend.stub(iter_markers=lambda x: [supported])
+    item = pretend.stub(node=node)
     with pytest.raises(pytest.skip.Exception) as exc_info:
         check_backend_support(True, item)
     assert exc_info.value.args[0] == "Nope (True)"
@@ -42,7 +43,8 @@ def test_check_backend_support_no_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: True, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": [supported]})
+    node = pretend.stub(iter_markers=lambda x: [supported])
+    item = pretend.stub(node=node)
     assert check_backend_support(None, item) is None
 
 

@@ -7,18 +7,19 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import ipaddress
 
-from asn1crypto.core import Integer, SequenceOf
+import asn1crypto.core
 
 from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
+    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID,
+    OCSPExtensionOID,
 )
 
 
-class _Integers(SequenceOf):
-    _child_spec = Integer
+class _Integers(asn1crypto.core.SequenceOf):
+    _child_spec = asn1crypto.core.Integer
 
 
 def _obj2txt(backend, obj):
@@ -202,8 +203,8 @@ class _X509ExtensionParser(object):
                     "Duplicate {0} extension found".format(oid), oid
                 )
 
-            # This OID is only supported in OpenSSL 1.1.0+ but we want
-            # to support it in all versions of OpenSSL so we decode it
+            # These OIDs are only supported in OpenSSL 1.1.0+ but we want
+            # to support them in all versions of OpenSSL so we decode them
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
                 data = backend._lib.X509_EXTENSION_get_data(ext)
@@ -212,6 +213,17 @@ class _X509ExtensionParser(object):
                     [_TLS_FEATURE_TYPE_TO_ENUM[x.native] for x in parsed]
                 )
                 extensions.append(x509.Extension(oid, critical, value))
+                seen_oids.add(oid)
+                continue
+            elif oid == ExtensionOID.PRECERT_POISON:
+                data = backend._lib.X509_EXTENSION_get_data(ext)
+                parsed = asn1crypto.core.Null.load(
+                    _asn1_string_to_bytes(backend, data)
+                )
+                assert parsed == asn1crypto.core.Null()
+                extensions.append(x509.Extension(
+                    oid, critical, x509.PrecertPoison()
+                ))
                 seen_oids.add(oid)
                 continue
 
@@ -754,6 +766,12 @@ def _parse_asn1_generalized_time(backend, generalized_time):
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
+def _decode_nonce(backend, nonce):
+    nonce = backend._ffi.cast("ASN1_OCTET_STRING *", nonce)
+    nonce = backend._ffi.gc(nonce, backend._lib.ASN1_OCTET_STRING_free)
+    return x509.OCSPNonce(_asn1_string_to_bytes(backend, nonce))
+
+
 _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
@@ -795,6 +813,10 @@ _CRL_EXTENSION_HANDLERS = {
     ),
 }
 
+_OCSP_REQ_EXTENSION_HANDLERS = {
+    OCSPExtensionOID.NONCE: _decode_nonce,
+}
+
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -823,4 +845,10 @@ _CRL_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_CRL_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_CRL_get_ext(x, i),
     handlers=_CRL_EXTENSION_HANDLERS,
+)
+
+_OCSP_REQ_EXT_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_REQUEST_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_REQUEST_get_ext(x, i),
+    handlers=_OCSP_REQ_EXTENSION_HANDLERS,
 )

@@ -11,6 +11,8 @@ import contextlib
 import itertools
 from contextlib import contextmanager
 
+import asn1crypto.core
+
 import six
 
 from cryptography import utils, x509
@@ -707,10 +709,15 @@ class Backend(object):
         sk_extension = self._lib.sk_X509_EXTENSION_new_null()
         self.openssl_assert(sk_extension != self._ffi.NULL)
         sk_extension = self._ffi.gc(
-            sk_extension, self._lib.sk_X509_EXTENSION_free
+            sk_extension,
+            lambda x: self._lib.sk_X509_EXTENSION_pop_free(
+                x, self._ffi.addressof(
+                    self._lib._original_lib, "X509_EXTENSION_free"
+                )
+            )
         )
-        # gc is not necessary for CSRs, as sk_X509_EXTENSION_free
-        # will release all the X509_EXTENSIONs.
+        # Don't GC individual extensions because the memory is owned by
+        # sk_extensions and will be freed along with it.
         self._create_x509_extensions(
             extensions=builder._extensions,
             handlers=_EXTENSION_ENCODE_HANDLERS,
@@ -784,20 +791,16 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Set the "not before" time.
-        res = self._lib.ASN1_TIME_set(
+        self._set_asn1_time(
             self._lib.X509_get_notBefore(x509_cert),
             calendar.timegm(builder._not_valid_before.timetuple())
         )
-        if res == self._ffi.NULL:
-            self._raise_time_set_error()
 
         # Set the "not after" time.
-        res = self._lib.ASN1_TIME_set(
+        self._set_asn1_time(
             self._lib.X509_get_notAfter(x509_cert),
             calendar.timegm(builder._not_valid_after.timetuple())
         )
-        if res == self._ffi.NULL:
-            self._raise_time_set_error()
 
         # Add extensions.
         self._create_x509_extensions(
@@ -830,18 +833,20 @@ class Backend(object):
 
         return _Certificate(self, x509_cert)
 
-    def _raise_time_set_error(self):
-        errors = self._consume_errors()
-        self.openssl_assert(
-            errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_ASN1,
-                self._lib.ASN1_R_ERROR_GETTING_TIME
+    def _set_asn1_time(self, asn1_time, time):
+        res = self._lib.ASN1_TIME_set(asn1_time, time)
+        if res == self._ffi.NULL:
+            errors = self._consume_errors()
+            self.openssl_assert(
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_ASN1,
+                    self._lib.ASN1_R_ERROR_GETTING_TIME
+                )
             )
-        )
-        raise ValueError(
-            "Invalid time. This error can occur if you set a time too far in "
-            "the future on Windows."
-        )
+            raise ValueError(
+                "Invalid time. This error can occur if you set a time too far "
+                "in the future on Windows."
+            )
 
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
@@ -877,20 +882,22 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Set the last update time.
-        last_update = self._lib.ASN1_TIME_set(
-            self._ffi.NULL, calendar.timegm(builder._last_update.timetuple())
-        )
+        last_update = self._lib.ASN1_TIME_new()
         self.openssl_assert(last_update != self._ffi.NULL)
         last_update = self._ffi.gc(last_update, self._lib.ASN1_TIME_free)
+        self._set_asn1_time(
+            last_update, calendar.timegm(builder._last_update.timetuple())
+        )
         res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
         # Set the next update time.
-        next_update = self._lib.ASN1_TIME_set(
-            self._ffi.NULL, calendar.timegm(builder._next_update.timetuple())
-        )
+        next_update = self._lib.ASN1_TIME_new()
         self.openssl_assert(next_update != self._ffi.NULL)
         next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
+        self._set_asn1_time(
+            next_update, calendar.timegm(builder._next_update.timetuple())
+        )
         res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
@@ -960,6 +967,10 @@ class Backend(object):
             asn1 = _Integers([x.value for x in extension.value]).dump()
             value = _encode_asn1_str_gc(self, asn1, len(asn1))
             return self._create_raw_x509_extension(extension, value)
+        elif isinstance(extension.value, x509.PrecertPoison):
+            asn1 = asn1crypto.core.Null().dump()
+            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            return self._create_raw_x509_extension(extension, value)
         else:
             try:
                 encode = handlers[extension.oid]
@@ -989,12 +1000,12 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        rev_date = self._lib.ASN1_TIME_set(
-            self._ffi.NULL,
-            calendar.timegm(builder._revocation_date.timetuple())
-        )
+        rev_date = self._lib.ASN1_TIME_new()
         self.openssl_assert(rev_date != self._ffi.NULL)
         rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
+        self._set_asn1_time(
+            rev_date, calendar.timegm(builder._revocation_date.timetuple())
+        )
         res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
         self.openssl_assert(res == 1)
         # add CRL entry extensions
@@ -1464,6 +1475,22 @@ class Backend(object):
 
         request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
         return _OCSPRequest(self, request)
+
+    def create_ocsp_request(self, builder):
+        ocsp_req = self._lib.OCSP_REQUEST_new()
+        self.openssl_assert(ocsp_req != self._ffi.NULL)
+        ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
+        cert, issuer, algorithm = builder._request
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        certid = self._lib.OCSP_cert_to_id(
+            evp_md, cert._x509, issuer._x509
+        )
+        self.openssl_assert(certid != self._ffi.NULL)
+        onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
+        self.openssl_assert(onereq != self._ffi.NULL)
+        return _OCSPRequest(self, ocsp_req)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

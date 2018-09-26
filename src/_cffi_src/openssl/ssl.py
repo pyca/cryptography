@@ -238,12 +238,6 @@ void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
                                         unsigned char *,
                                         unsigned int *
                                     ));
-void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
-                                  int (*)(
-                                      SSL *,
-                                      const unsigned char *,
-                                      unsigned int
-                                  ));
 long SSL_CTX_get_read_ahead(SSL_CTX *);
 long SSL_CTX_set_read_ahead(SSL_CTX *, long);
 
@@ -285,7 +279,10 @@ void SSL_SESSION_free(SSL_SESSION *);
 /* Information about actually used cipher */
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
-uint32_t SSL_CIPHER_get_id(const SSL_CIPHER *);
+/* the modern signature of this is uint32_t, but older openssl declared it
+   as unsigned long. To make our compiler flags happy we'll declare it as a
+   64-bit wide value, which should always be safe */
+uint64_t SSL_CIPHER_get_id(const SSL_CIPHER *);
 int SSL_CIPHER_is_aead(const SSL_CIPHER *);
 int SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *);
 int SSL_CIPHER_get_digest_nid(const SSL_CIPHER *);
@@ -700,10 +697,10 @@ static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
-static const long SSL_OP_NO_DTLSv1 = NULL;
-static const long SSL_OP_NO_DTLSv1_2 = NULL;
-long *(*DTLS_set_link_mtu)(SSL *, long) = NULL;
-long *(*DTLS_get_link_min_mtu)(SSL *) = NULL;
+static const long SSL_OP_NO_DTLSv1 = 0;
+static const long SSL_OP_NO_DTLSv1_2 = 0;
+long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
+long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif

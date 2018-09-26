@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import threading
 import types
+import warnings
 
 from cryptography import utils
 from cryptography.exceptions import InternalError
@@ -140,7 +141,8 @@ class Binding(object):
             # the setup for this.
             __import__("_ssl")
 
-            if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
+            if (not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS or
+                    cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL):
                 return
 
             # If nothing else has setup a locking callback already, we set up
@@ -149,9 +151,24 @@ class Binding(object):
             _openssl_assert(cls.lib, res == 1)
 
 
+def _verify_openssl_version(lib):
+    if (
+        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
+        not lib.CRYPTOGRAPHY_IS_LIBRESSL
+    ):
+        warnings.warn(
+            "OpenSSL version 1.0.1 is no longer supported by the OpenSSL "
+            "project, please upgrade. A future version of cryptography will "
+            "drop support for it.",
+            DeprecationWarning
+        )
+
+
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
+
+_verify_openssl_version(Binding.lib)

@@ -82,42 +82,12 @@ strongly recommend that you upgrade as soon as possible.
 Disclosure Process
 ------------------
 
-Our process for taking a security issue from private discussion to public
-disclosure involves multiple steps.
+When we become aware of a security bug in ``cryptography``, we will endeavor to
+fix it and issue a release as quickly as possible. We will generally issue a new
+release for any security issue.
 
-Approximately one week before full public disclosure, we will send advance
-notification of the issue to a list of people and organizations, primarily
-composed of operating-system vendors and other distributors of
-``cryptography``.  This notification will consist of an email message
-containing:
+The steps for issuing a security release are described in our
+:doc:`/doing-a-release` documentation.
 
-* A full description of the issue and the affected versions of
-  ``cryptography``.
-* The steps we will be taking to remedy the issue.
-* The patches, if any, that will be applied to ``cryptography``.
-* The date on which the ``cryptography`` team will apply these patches, issue
-  new releases, and publicly disclose the issue.
-
-Simultaneously, the reporter of the issue will receive notification of the date
-on which we plan to take the issue public.
-
-On the day of disclosure, we will take the following steps:
-
-* Apply the relevant patches to the ``cryptography`` repository. The commit
-  messages for these patches will indicate that they are for security issues,
-  but will not describe the issue in any detail; instead, they will warn of
-  upcoming disclosure.
-* Issue the relevant releases.
-* Post a notice to the cryptography mailing list that describes the issue in
-  detail, point to the new release and crediting the reporter of the issue.
-
-If a reported issue is believed to be particularly time-sensitive – due to a
-known exploit in the wild, for example – the time between advance notification
-and public disclosure may be shortened considerably.
-
-The list of people and organizations who receives advanced notification of
-security issues is not and will not be made public. This list generally
-consists of high-profile downstream distributors and is entirely at the
-discretion of the ``cryptography`` team.
 
 .. _`master`: https://github.com/pyca/cryptography
