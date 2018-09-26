@@ -68,6 +68,7 @@ static const long SSL_OP_NO_SSLv3;
 static const long SSL_OP_NO_TLSv1;
 static const long SSL_OP_NO_TLSv1_1;
 static const long SSL_OP_NO_TLSv1_2;
+static const long SSL_OP_NO_TLSv1_3;
 static const long SSL_OP_NO_DTLSv1;
 static const long SSL_OP_NO_DTLSv1_2;
 static const long SSL_OP_NO_COMPRESSION;
@@ -804,6 +805,10 @@ int (*SSL_CIPHER_get_auth_nid)(const SSL_CIPHER *) = NULL;
 static const long Cryptography_HAS_CIPHER_DETAILS = 0;
 #else
 static const long Cryptography_HAS_CIPHER_DETAILS = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#define SSL_OP_NO_TLSv1_3 0
 #endif
 
 """
