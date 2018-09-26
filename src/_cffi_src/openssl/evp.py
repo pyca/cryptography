@@ -156,7 +156,7 @@ EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 /* Added in 1.1.1 */
 int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
-                   const unsigned char *tbs, size_t);
+                   const unsigned char *, size_t);
 int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
                      const unsigned char *, size_t);
 /* Added in 1.1.0 */
