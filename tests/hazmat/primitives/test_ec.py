@@ -1109,8 +1109,8 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             "8"
         )
         with pytest.raises(ValueError):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                ec.SECP256R1(), unsupported_type
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP256R1(), unsupported_type, backend
             )
 
 
