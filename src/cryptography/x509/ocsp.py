@@ -40,9 +40,17 @@ class OCSPCertStatus(Enum):
     UNKNOWN = 2
 
 
+_CERT_STATUS_TO_ENUM = dict((x.value, x) for x in OCSPCertStatus)
+
+
 def load_der_ocsp_request(data):
     from cryptography.hazmat.backends.openssl.backend import backend
     return backend.load_der_ocsp_request(data)
+
+
+def load_der_ocsp_response(data):
+    from cryptography.hazmat.backends.openssl.backend import backend
+    return backend.load_der_ocsp_response(data)
 
 
 class OCSPRequestBuilder(object):

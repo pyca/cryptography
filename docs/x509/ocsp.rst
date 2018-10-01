@@ -74,6 +74,7 @@ OCSP
         b",\xdez\t\xbe1\x1bC\xbc\x1c*MSX\x02\x15\x00\x98\xd9\xe5\xc0\xb4\xc3"
         b"sU-\xf7|]\x0f\x1e\xb5\x12\x8eIE\xf9"
     )
+    der_ocsp_resp_unauth = b"0\x03\n\x01\x06"
 
 OCSP (Online Certificate Status Protocol) is a method of checking the
 revocation status of certificates. It is specified in :rfc:`6960`, as well
@@ -150,6 +151,26 @@ Creating Requests
         >>> req = builder.build()
         >>> base64.b64encode(req.public_bytes(serialization.Encoding.DER))
         b'MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NNGCDS7zkZ/oHxb8+IIy1kCAj8g'
+
+Loading Responses
+~~~~~~~~~~~~~~~~~
+
+.. function:: load_der_ocsp_response(data)
+
+    .. versionadded:: 2.4
+
+    Deserialize an OCSP response from DER encoded data.
+
+    :param bytes data: The DER encoded OCSP response data.
+
+    :returns: An instance of :class:`~cryptography.x509.ocsp.OCSPResponse`.
+
+    .. doctest::
+
+        >>> from cryptography.x509 import ocsp
+        >>> ocsp_resp = ocsp.load_der_ocsp_response(der_ocsp_resp_unauth)
+        >>> print(ocsp_resp.response_status)
+        OCSPResponseStatus.UNAUTHORIZED
 
 
 Interfaces
