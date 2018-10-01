@@ -180,16 +180,6 @@ class _OCSPResponse(object):
         if x509_name == self._backend._ffi.NULL:
             return None
         else:
-            # x509_name is obtained via a get0 call so we do not control
-            # its lifetime. To ensure the underlying memory is not freed we
-            # duplicate it to a new X509_NAME *.
-            x509_name_dup = self._backend._lib.X509_NAME_dup(x509_name)
-            self._backend.openssl_assert(
-                x509_name_dup != self._backend._ffi.NULL
-            )
-            x509_name_dup = self._backend._ffi.gc(
-                x509_name_dup, self._backend._lib.X509_NAME_free
-            )
             return _decode_x509_name(self._backend, x509_name)
 
     def _responder_key_name(self):
@@ -253,6 +243,7 @@ class _OCSPResponse(object):
             self._backend._ffi.NULL,
             self._backend._ffi.NULL,
         )
+        # If no reason is encoded OpenSSL returns -1
         if reason_ptr[0] == -1:
             return None
         else:
