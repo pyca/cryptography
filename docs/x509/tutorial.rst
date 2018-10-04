@@ -169,3 +169,19 @@ checks:
     ...     # Do something EC specific
     ... else:
     ...     # Remember to handle this case
+    
+Determining that a Certificate Signature is Correct
+---------------------------------------------------
+
+We need to check if a certificate signature is correct :
+
+.. code-block:: pycon
+   
+   >>> issuer_public_key = load_pem_public_key(issuer_public_key_pem, default_backend())
+   >>> issuer_public_key.verify(
+   ...   cert.signature,
+   ...   cert.tbs_certificate_bytes,
+   ...   #Depends on the algorithm used to create the certificate
+   ...   padding.PKCS1v15(),
+   ...   cert.signature_hash_algorithm,
+   ...   )
