@@ -817,6 +817,10 @@ _OCSP_REQ_EXTENSION_HANDLERS = {
     OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
+_OCSP_BASICRESP_EXTENSION_HANDLERS = {
+    OCSPExtensionOID.NONCE: _decode_nonce,
+}
+
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -851,4 +855,10 @@ _OCSP_REQ_EXT_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_REQUEST_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_REQUEST_get_ext(x, i),
     handlers=_OCSP_REQ_EXTENSION_HANDLERS,
+)
+
+_OCSP_BASICRESP_EXT_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_BASICRESP_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_BASICRESP_get_ext(x, i),
+    handlers=_OCSP_BASICRESP_EXTENSION_HANDLERS,
 )
