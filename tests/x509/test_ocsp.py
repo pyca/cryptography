@@ -247,6 +247,8 @@ class TestOCSPResponse(object):
             assert resp.hash_algorithm
         with pytest.raises(ValueError):
             assert resp.serial_number
+        with pytest.raises(ValueError):
+            assert resp.extensions
 
     def test_load_revoked(self):
         resp = _load_data(
