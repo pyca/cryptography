@@ -68,8 +68,8 @@ def _encode_asn1_utf8_str(backend, string):
     return s
 
 
-def _encode_asn1_str_gc(backend, data, length):
-    s = _encode_asn1_str(backend, data, length)
+def _encode_asn1_str_gc(backend, data):
+    s = _encode_asn1_str(backend, data, len(data))
     s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
     return s
 
@@ -359,7 +359,7 @@ def _encode_alt_name(backend, san):
 
 
 def _encode_subject_key_identifier(backend, ski):
-    return _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
+    return _encode_asn1_str_gc(backend, ski.digest)
 
 
 def _encode_general_name(backend, name):
