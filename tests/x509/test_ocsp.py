@@ -207,6 +207,7 @@ class TestOCSPResponse(object):
         )
         assert isinstance(resp.hash_algorithm, hashes.SHA1)
         assert resp.serial_number == 271024907440004808294641238224534273948400
+        assert len(resp.extensions) == 0
 
     def test_load_unauthorized(self):
         resp = _load_data(
@@ -246,6 +247,8 @@ class TestOCSPResponse(object):
             assert resp.hash_algorithm
         with pytest.raises(ValueError):
             assert resp.serial_number
+        with pytest.raises(ValueError):
+            assert resp.extensions
 
     def test_load_revoked(self):
         resp = _load_data(
@@ -283,3 +286,15 @@ class TestOCSPResponse(object):
             ocsp.load_der_ocsp_response,
         )
         assert resp.revocation_reason is x509.ReasonFlags.superseded
+
+    def test_response_extensions(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-revoked-reason.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert len(resp.extensions) == 1
+        ext = resp.extensions[0]
+        assert ext.critical is False
+        assert ext.value == x509.OCSPNonce(
+            b'\x04\x105\x957\x9fa\x03\x83\x87\x89rW\x8f\xae\x99\xf7"'
+        )

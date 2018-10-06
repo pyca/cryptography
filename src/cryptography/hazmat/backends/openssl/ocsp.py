@@ -9,7 +9,8 @@ import functools
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CRL_ENTRY_REASON_CODE_TO_ENUM, _OCSP_REQ_EXT_PARSER, _asn1_integer_to_int,
+    _CRL_ENTRY_REASON_CODE_TO_ENUM, _OCSP_BASICRESP_EXT_PARSER,
+    _OCSP_REQ_EXT_PARSER, _asn1_integer_to_int,
     _asn1_string_to_bytes, _decode_x509_name, _obj2txt,
     _parse_asn1_generalized_time,
 )
@@ -299,6 +300,11 @@ class _OCSPResponse(object):
     @_requires_successful_response
     def serial_number(self):
         return _serial_number(self._backend, self._cert_id)
+
+    @utils.cached_property
+    @_requires_successful_response
+    def extensions(self):
+        return _OCSP_BASICRESP_EXT_PARSER.parse(self._backend, self._basic)
 
 
 @utils.register_interface(OCSPRequest)

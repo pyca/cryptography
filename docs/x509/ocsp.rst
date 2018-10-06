@@ -395,6 +395,11 @@ Interfaces
         :raises ValueError: If ``response_status`` is not
             :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
+    .. attribute:: extensions
+
+        :type: :class:`~cryptography.x509.Extensions`
+
+        The extensions encoded in the response.
 
 .. class:: OCSPResponseStatus
 

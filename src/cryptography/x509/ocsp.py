@@ -232,3 +232,9 @@ class OCSPResponse(object):
         """
         The serial number of the cert whose status is being checked
         """
+
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        The list of response extensions. Not single response extensions.
+        """
