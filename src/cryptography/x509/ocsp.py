@@ -11,6 +11,7 @@ import six
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from cryptography.x509.base import _reject_duplicate_extension
 
 
 _OIDS_TO_HASH = {
@@ -83,11 +84,7 @@ class OCSPRequestBuilder(object):
             raise TypeError("extension must be an ExtensionType")
 
         extension = x509.Extension(extension.oid, critical, extension)
-
-        # TODO: This is quadratic in the number of extensions
-        for e in self._extensions:
-            if e.oid == extension.oid:
-                raise ValueError('This extension has already been set.')
+        _reject_duplicate_extension(extension, self._extensions)
 
         return OCSPRequestBuilder(
             self._request, self._extensions + [extension]
