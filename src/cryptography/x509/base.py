@@ -20,6 +20,13 @@ from cryptography.x509.name import Name
 _UNIX_EPOCH = datetime.datetime(1970, 1, 1)
 
 
+def _reject_duplicate_extension(extension, extensions):
+    # This is quadratic in the number of extensions
+    for e in extensions:
+        if e.oid == extension.oid:
+            raise ValueError('This extension has already been set.')
+
+
 def _convert_to_naive_utc_time(time):
     """Normalizes a datetime to a naive datetime in UTC.
 
@@ -406,11 +413,8 @@ class CertificateSigningRequestBuilder(object):
             raise TypeError("extension must be an ExtensionType")
 
         extension = Extension(extension.oid, critical, extension)
+        _reject_duplicate_extension(extension, self._extensions)
 
-        # TODO: This is quadratic in the number of extensions
-        for e in self._extensions:
-            if e.oid == extension.oid:
-                raise ValueError('This extension has already been set.')
         return CertificateSigningRequestBuilder(
             self._subject_name, self._extensions + [extension]
         )
@@ -558,11 +562,7 @@ class CertificateBuilder(object):
             raise TypeError("extension must be an ExtensionType")
 
         extension = Extension(extension.oid, critical, extension)
-
-        # TODO: This is quadratic in the number of extensions
-        for e in self._extensions:
-            if e.oid == extension.oid:
-                raise ValueError('This extension has already been set.')
+        _reject_duplicate_extension(extension, self._extensions)
 
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
@@ -658,11 +658,7 @@ class CertificateRevocationListBuilder(object):
             raise TypeError("extension must be an ExtensionType")
 
         extension = Extension(extension.oid, critical, extension)
-
-        # TODO: This is quadratic in the number of extensions
-        for e in self._extensions:
-            if e.oid == extension.oid:
-                raise ValueError('This extension has already been set.')
+        _reject_duplicate_extension(extension, self._extensions)
         return CertificateRevocationListBuilder(
             self._issuer_name, self._last_update, self._next_update,
             self._extensions + [extension], self._revoked_certificates
@@ -736,11 +732,7 @@ class RevokedCertificateBuilder(object):
             raise TypeError("extension must be an ExtensionType")
 
         extension = Extension(extension.oid, critical, extension)
-
-        # TODO: This is quadratic in the number of extensions
-        for e in self._extensions:
-            if e.oid == extension.oid:
-                raise ValueError('This extension has already been set.')
+        _reject_duplicate_extension(extension, self._extensions)
         return RevokedCertificateBuilder(
             self._serial_number, self._revocation_date,
             self._extensions + [extension]
