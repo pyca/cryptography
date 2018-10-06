@@ -16,6 +16,8 @@ typedef ... OCSP_BASICRESP;
 typedef ... OCSP_SINGLERESP;
 typedef ... OCSP_CERTID;
 typedef ... OCSP_RESPDATA;
+static const long OCSP_NOCERTS;
+static const long OCSP_RESPID_KEY;
 """
 
 FUNCTIONS = """
@@ -49,6 +51,7 @@ X509_EXTENSION *OCSP_ONEREQ_get_ext(OCSP_ONEREQ *, int);
 OCSP_CERTID *OCSP_onereq_get0_id(OCSP_ONEREQ *);
 OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
 OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
+void OCSP_CERTID_free(OCSP_CERTID *);
 
 
 OCSP_BASICRESP *OCSP_BASICRESP_new(void);
