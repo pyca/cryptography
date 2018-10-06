@@ -135,6 +135,11 @@ class TestOCSPRequestBuilder(object):
         with pytest.raises(ValueError):
             builder.add_extension(x509.OCSPNonce(b"123"), False)
 
+    def test_add_invalid_extension(self):
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.add_extension("notanext", False)
+
     def test_create_ocsp_request_invalid_cert(self):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
