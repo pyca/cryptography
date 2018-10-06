@@ -16,6 +16,8 @@ typedef ... OCSP_BASICRESP;
 typedef ... OCSP_SINGLERESP;
 typedef ... OCSP_CERTID;
 typedef ... OCSP_RESPDATA;
+static const long OCSP_NOCERTS;
+static const long OCSP_RESPID_KEY;
 """
 
 FUNCTIONS = """
@@ -49,6 +51,7 @@ X509_EXTENSION *OCSP_ONEREQ_get_ext(OCSP_ONEREQ *, int);
 OCSP_CERTID *OCSP_onereq_get0_id(OCSP_ONEREQ *);
 OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
 OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
+void OCSP_CERTID_free(OCSP_CERTID *);
 
 
 OCSP_BASICRESP *OCSP_BASICRESP_new(void);
@@ -58,8 +61,7 @@ OCSP_SINGLERESP *OCSP_basic_add1_status(OCSP_BASICRESP *, OCSP_CERTID *, int,
                                         ASN1_TIME *);
 int OCSP_basic_add1_nonce(OCSP_BASICRESP *, unsigned char *, int);
 int OCSP_basic_add1_cert(OCSP_BASICRESP *, X509 *);
-int OCSP_BASICRESP_add1_ext_i2d(OCSP_BASICRESP *, int, void *, int,
-                                unsigned long);
+int OCSP_BASICRESP_add_ext(OCSP_BASICRESP *, X509_EXTENSION *, int);
 int OCSP_basic_sign(OCSP_BASICRESP *, X509 *, EVP_PKEY *, const EVP_MD *,
                     Cryptography_STACK_OF_X509 *, unsigned long);
 OCSP_RESPONSE *OCSP_response_create(int, OCSP_BASICRESP *);
@@ -68,7 +70,7 @@ void OCSP_RESPONSE_free(OCSP_RESPONSE *);
 OCSP_REQUEST *OCSP_REQUEST_new(void);
 void OCSP_REQUEST_free(OCSP_REQUEST *);
 int OCSP_request_add1_nonce(OCSP_REQUEST *, unsigned char *, int);
-int OCSP_REQUEST_add1_ext_i2d(OCSP_REQUEST *, int, void *, int, unsigned long);
+int OCSP_REQUEST_add_ext(OCSP_REQUEST *, X509_EXTENSION *, int);
 int OCSP_id_get0_info(ASN1_OCTET_STRING **, ASN1_OBJECT **,
                       ASN1_OCTET_STRING **, ASN1_INTEGER **, OCSP_CERTID *);
 OCSP_REQUEST *d2i_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST **);
