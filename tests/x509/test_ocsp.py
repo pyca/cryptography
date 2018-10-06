@@ -330,3 +330,22 @@ class TestOCSPResponse(object):
         assert ext.value == x509.OCSPNonce(
             b'\x04\x105\x957\x9fa\x03\x83\x87\x89rW\x8f\xae\x99\xf7"'
         )
+
+    def test_serialize_reponse(self):
+        resp_bytes = load_vectors_from_file(
+            filename=os.path.join("x509", "ocsp", "resp-revoked.der"),
+            loader=lambda data: data.read(),
+            mode="rb"
+        )
+        resp = ocsp.load_der_ocsp_response(resp_bytes)
+        assert resp.public_bytes(serialization.Encoding.DER) == resp_bytes
+
+    def test_invalid_serialize_encoding(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-revoked.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        with pytest.raises(ValueError):
+            resp.public_bytes("invalid")
+        with pytest.raises(ValueError):
+            resp.public_bytes(serialization.Encoding.PEM)

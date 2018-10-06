@@ -411,6 +411,14 @@ Interfaces
 
         The extensions encoded in the response.
 
+    .. method:: public_bytes(encoding)
+
+        :param encoding: The encoding to use. Only
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
+            is supported.
+
+        :return bytes: The serialized OCSP response.
+
 .. class:: OCSPResponseStatus
 
     .. versionadded:: 2.4

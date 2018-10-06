@@ -306,6 +306,19 @@ class _OCSPResponse(object):
     def extensions(self):
         return _OCSP_BASICRESP_EXT_PARSER.parse(self._backend, self._basic)
 
+    def public_bytes(self, encoding):
+        if encoding is not serialization.Encoding.DER:
+            raise ValueError(
+                "The only allowed encoding value is Encoding.DER"
+            )
+
+        bio = self._backend._create_mem_bio_gc()
+        res = self._backend._lib.i2d_OCSP_RESPONSE_bio(
+            bio, self._ocsp_response
+        )
+        self._backend.openssl_assert(res > 0)
+        return self._backend._read_mem_bio(bio)
+
 
 @utils.register_interface(OCSPRequest)
 class _OCSPRequest(object):
