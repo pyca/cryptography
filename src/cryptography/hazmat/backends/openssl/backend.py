@@ -961,17 +961,15 @@ class Backend(object):
 
     def _create_x509_extension(self, handlers, extension):
         if isinstance(extension.value, x509.UnrecognizedExtension):
-            value = _encode_asn1_str_gc(
-                self, extension.value.value, len(extension.value.value)
-            )
+            value = _encode_asn1_str_gc(self, extension.value.value)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.TLSFeature):
             asn1 = _Integers([x.value for x in extension.value]).dump()
-            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.PrecertPoison):
             asn1 = asn1crypto.core.Null().dump()
-            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         else:
             try:
