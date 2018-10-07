@@ -133,6 +133,16 @@ Creating Requests
             :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
             :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
 
+    .. method:: add_extension(extension, critical)
+
+        Adds an extension to the request.
+
+        :param extension: An extension conforming to the
+            :class:`~cryptography.x509.ExtensionType` interface.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled.
+
     .. method:: build()
 
         :returns: A new :class:`~cryptography.x509.ocsp.OCSPRequest`.

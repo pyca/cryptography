@@ -129,6 +129,17 @@ class TestOCSPRequestBuilder(object):
         with pytest.raises(ValueError):
             builder.add_certificate(cert, issuer, hashes.MD5())
 
+    def test_add_extension_twice(self):
+        builder = ocsp.OCSPRequestBuilder()
+        builder = builder.add_extension(x509.OCSPNonce(b"123"), False)
+        with pytest.raises(ValueError):
+            builder.add_extension(x509.OCSPNonce(b"123"), False)
+
+    def test_add_invalid_extension(self):
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.add_extension("notanext", False)
+
     def test_create_ocsp_request_invalid_cert(self):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
@@ -148,6 +159,27 @@ class TestOCSPRequestBuilder(object):
             b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz"
             b"/NNGCDS7zkZ/oHxb8+IIy1kCAj8g"
         )
+
+    @pytest.mark.parametrize(
+        ("ext", "critical"),
+        [
+            [x509.OCSPNonce(b"0000"), False],
+            [x509.OCSPNonce(b"\x00\x01\x02"), True],
+        ]
+    )
+    def test_create_ocsp_request_with_extension(self, ext, critical):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        builder = builder.add_certificate(
+            cert, issuer, hashes.SHA1()
+        ).add_extension(
+            ext, critical
+        )
+        req = builder.build()
+        assert len(req.extensions) == 1
+        assert req.extensions[0].value == ext
+        assert req.extensions[0].oid == ext.oid
+        assert req.extensions[0].critical is critical
 
 
 class TestOCSPResponse(object):

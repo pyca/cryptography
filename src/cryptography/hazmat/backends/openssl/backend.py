@@ -38,6 +38,7 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
+    _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc, _txt2obj_gc,
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
@@ -1465,6 +1466,13 @@ class Backend(object):
         self.openssl_assert(certid != self._ffi.NULL)
         onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
         self.openssl_assert(onereq != self._ffi.NULL)
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=ocsp_req,
+            add_func=self._lib.OCSP_REQUEST_add_ext,
+            gc=True,
+        )
         return _OCSPRequest(self, ocsp_req)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):

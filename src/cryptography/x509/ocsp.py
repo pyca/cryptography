@@ -9,8 +9,9 @@ from enum import Enum
 
 import six
 
+from cryptography import x509
 from cryptography.hazmat.primitives import hashes
-from cryptography.x509 import Certificate
+from cryptography.x509.base import _reject_duplicate_extension
 
 
 _OIDS_TO_HASH = {
@@ -54,8 +55,9 @@ def load_der_ocsp_response(data):
 
 
 class OCSPRequestBuilder(object):
-    def __init__(self, request=None):
+    def __init__(self, request=None, extensions=[]):
         self._request = request
+        self._extensions = extensions
 
     def add_certificate(self, cert, issuer, algorithm):
         if self._request is not None:
@@ -70,12 +72,23 @@ class OCSPRequestBuilder(object):
                 "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
             )
         if (
-            not isinstance(cert, Certificate) or
-            not isinstance(issuer, Certificate)
+            not isinstance(cert, x509.Certificate) or
+            not isinstance(issuer, x509.Certificate)
         ):
             raise TypeError("cert and issuer must be a Certificate")
 
-        return OCSPRequestBuilder((cert, issuer, algorithm))
+        return OCSPRequestBuilder((cert, issuer, algorithm), self._extensions)
+
+    def add_extension(self, extension, critical):
+        if not isinstance(extension, x509.ExtensionType):
+            raise TypeError("extension must be an ExtensionType")
+
+        extension = x509.Extension(extension.oid, critical, extension)
+        _reject_duplicate_extension(extension, self._extensions)
+
+        return OCSPRequestBuilder(
+            self._request, self._extensions + [extension]
+        )
 
     def build(self):
         from cryptography.hazmat.backends.openssl.backend import backend

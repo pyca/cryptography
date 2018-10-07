@@ -15,7 +15,9 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _DISTPOINT_TYPE_RELATIVENAME
 )
 from cryptography.x509.name import _ASN1Type
-from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID
+from cryptography.x509.oid import (
+    CRLEntryExtensionOID, ExtensionOID, OCSPExtensionOID,
+)
 
 
 def _encode_asn1_int(backend, x):
@@ -569,6 +571,10 @@ def _encode_general_subtree(backend, subtrees):
         return general_subtrees
 
 
+def _encode_nonce(backend, nonce):
+    return _encode_asn1_str_gc(backend, nonce.nonce)
+
+
 _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.BASIC_CONSTRAINTS: _encode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
@@ -603,4 +609,8 @@ _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
     CRLEntryExtensionOID.CRL_REASON: _encode_crl_reason,
     CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
+}
+
+_OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS = {
+    OCSPExtensionOID.NONCE: _encode_nonce,
 }
