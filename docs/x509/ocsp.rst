@@ -135,11 +135,6 @@ Creating Requests
 
     .. method:: add_extension(extension, critical)
 
-        .. note::
-
-            The only extension currently supported is
-            :class:`~cryptography.x509.OCSPNonce`.
-
         Adds an extension to the request.
 
         :param extension: An extension conforming to the

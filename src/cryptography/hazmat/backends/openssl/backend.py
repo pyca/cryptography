@@ -1471,7 +1471,7 @@ class Backend(object):
             handlers=_OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
             x509_obj=ocsp_req,
             add_func=self._lib.OCSP_REQUEST_add_ext,
-            gc=True
+            gc=True,
         )
         return _OCSPRequest(self, ocsp_req)
 

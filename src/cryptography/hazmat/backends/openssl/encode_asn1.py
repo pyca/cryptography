@@ -572,7 +572,7 @@ def _encode_general_subtree(backend, subtrees):
 
 
 def _encode_nonce(backend, nonce):
-    return _encode_asn1_str_gc(backend, nonce.nonce, len(nonce.nonce))
+    return _encode_asn1_str_gc(backend, nonce.nonce)
 
 
 _EXTENSION_ENCODE_HANDLERS = {
