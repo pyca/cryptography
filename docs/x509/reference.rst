@@ -473,17 +473,13 @@ X.509 Certificate Object
            >>> from cryptography.hazmat.primitives.asymmetric import padding
            >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
            >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
-           >>> try:
-           ...     issuer_public_key.verify(
-           ...       cert_to_check.signature,
-           ...       cert_to_check.tbs_certificate_bytes,
-           ...       #Depends on the algorithm used to create the certificate
-           ...       padding.PKCS1v15(),
-           ...       cert_to_check.signature_hash_algorithm,
-           ...     )
-           ...     print(True)
-           ... except InvalidSignature:
-           ...     print(False)
+           >>> issuer_public_key.verify(
+           ...   cert_to_check.signature,
+           ...   cert_to_check.tbs_certificate_bytes,
+           ...   #Depends on the algorithm used to create the certificate
+           ...   padding.PKCS1v15(),
+           ...   cert_to_check.signature_hash_algorithm,
+           ... )
 
 
     .. method:: public_bytes(encoding)
