@@ -471,7 +471,7 @@ X.509 Certificate Object
            >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
            >>> from cryptography.exceptions import InvalidSignature
            >>> from cryptography.hazmat.primitives.asymmetric import padding
-           >>> issuer_public_key = load_pem_public_key(issuer_public_key_pem, default_backend())
+           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
            >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
            >>> try:
            ...     issuer_public_key.verify(
