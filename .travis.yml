@@ -78,6 +78,7 @@ matrix:
           env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0i
           # dynamodb-encryption-sdk tests fail on xenial for whatever reason
           dist: trusty
+          sudo: false
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0i
         - python: 2.7
