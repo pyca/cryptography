@@ -86,6 +86,7 @@ matrix:
           env: DOWNSTREAM=urllib3
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
+          sudo: false
 
 install:
     - ./.travis/install.sh
