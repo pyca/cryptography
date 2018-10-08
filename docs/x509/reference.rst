@@ -481,9 +481,9 @@ X.509 Certificate Object
            ...       padding.PKCS1v15(),
            ...       cert_to_check.signature_hash_algorithm,
            ...     )
-           ...     return True
+           ...     print(True)
            ... except InvalidSignature:
-           ...     return False
+           ...     print(False)
 
 
     .. method:: public_bytes(encoding)
