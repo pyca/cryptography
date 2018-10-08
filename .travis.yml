@@ -31,6 +31,8 @@ matrix:
           env: TOXENV=py37
         - python: pypy-5.3
           env: TOXENV=pypy-nocoverage
+          # PyPy 5.3 isn't available for xenial
+          dist: trusty
         - python: pypy2.7-5.10.0
           env: TOXENV=pypy-nocoverage
         - python: pypy3.5-5.10.1
@@ -74,12 +76,16 @@ matrix:
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
           env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0i
+          # dynamodb-encryption-sdk tests fail on xenial for whatever reason
+          dist: trust
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0i
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
           env: DOWNSTREAM=urllib3
+          # urllib3 tests fail on xenial for whatever reason
+          dist: trusty
 
 install:
     - ./.travis/install.sh
