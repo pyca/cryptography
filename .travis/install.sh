@@ -23,7 +23,7 @@ if [ -n "${OPENSSL}" ]; then
         shlib_sed
         make depend
         make -j"$(nproc)"
-        if [[ "${OPENSSL}" =~ "1.0.1" ]]; then
+        if [[ "${OPENSSL}" =~ 1.0.1 ]]; then
             # OpenSSL 1.0.1 doesn't support installing without the docs.
             make install
         else
