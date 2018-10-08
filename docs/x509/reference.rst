@@ -103,50 +103,49 @@ X.509 Reference
 
     pem_issuer_public_key = b"""
     -----BEGIN RSA PUBLIC KEY-----
-    MIICCgKCAgEAwTxVKCroZcp2KXBiJRCdpXxJMgyl/8tMKVr3e15OLfTmWskpGOwj
-    NhKpvw5nwLiKRAAMbyrnIEWBiGj3LTpOFQvGgAdKmjONqLirVDtINVs2M9aa9nsl
-    vQ8Ye5d1UnJxvwTzqCP3p9GwT9/G/mZsKH+H4YsP2VXtgrdbud4zGvk3OSHVYLhA
-    DVdiO45MZMBiyXcK5+9bNDv4PpCn7/epX5B+bnamgpeCPzGgVJ1Z+FctZcgWs7q6
-    UM+3XZDrnyAYn8KZaHG+kXiMgdzAoJHQrxAIxMnaP0wG9oT30o8mX0v9/rFdOErk
-    EiZSuSGnfjMARBENU/K4Vtyc2uNBOdQ0oAa5Wgl80etq6CPio2yqoVcDsvtmp8Bi
-    bcyiF7tfCX0Na4VA50nBc0urAItATwjX0GgRiFl/7/OGsM1xXhvQF8EanW89ZYuw
-    +uh3FsQA3ujykdN7Nx8stG8nptZu0eNy7e7qWslupAy2xfHZUfpOls266BiSZ5u4
-    2I/cnxhLJhb+uGGD+elAAATu9bnDstLc/bI62CotW7RFbOtQlYMp54dut+YdMS+S
-    /GU5vn+7muFK0GbmzxuSC+MnVVnrC73hM1jmISmy/VrespYoXNIUQ+G1whnWN4FF
-    v09vbFyGRhYx8i+gnzPchefiy0gT9gFcyiCKhBfFErkY+cctXPEu+RUCAwEAAQ==
+    MIICCgKCAgEAyYcqyuT6oQxpvg/VSn2Zc68wZ823D0VAJ2woramFx+2KPWB7B7Ot
+    tVSNRfm0OxJOU3TFAoep54Z2wgOoz0zRmeW6/7gvIuBKp2TW0qZAt3l9sgpE29iw
+    CsoZQlMrLKiDPzCC6Fptk+YPSST9sqwhWDKK1QvOg68DKRxTpEek1hBpC0XRsnuX
+    fvJJQqP39vxzpA0PsicI/wrvWX3vO8z+j9+botPerbeamoeHCsc0xgTLyIygWysB
+    rNskxlzC2U4Kw6mQhGghlLReo1rFsO2/hLTnvLs+Y1lQhnFeOKCx1WVXhzBIyO9B
+    dVVH5Cinb5wBNKvxbevRf4icdWcwtknmgKf69xj7yvFjt/vft74BB1Y5ltLYFmEb
+    0JBxm5MAJfW4YnMQr0AxdjOhjHq4MN7X4ZzwEpJaYJdRmvMsMGN88cyjYPxsaOG+
+    dZ/E9MmTjh0gnTjyD4gmsvR/gtTR/XFJ2wkbnnL1RyxNi6j2UW8C7tpNv0TIuArx
+    3SHGPZN0WsaKTxZPb0L/ob1WBT0mhiq1GzB431cXgbxyh8EdKk+xSptA3V+ca2V2
+    NuXlJIJaOoPMj/qjDW4I/peKGnk9tLknJ0hpRzz11j77pJsV0dGoGKVHIR2oZqT5
+    0ZJJb5DXNbiTnspKLNmBt0YlNiXtlCIPxVUkhL141FuCLc8h6FjD6E0CAwEAAQ==
     -----END RSA PUBLIC KEY-----
     """.strip()
 
     pem_data_to_check = b"""
     -----BEGIN CERTIFICATE-----
-    MIIEuDCCAqCgAwIBAgIUP8oVU9TFlpH7fJd6FaDu4pw2YzUwDQYJKoZIhvcNAQEN
-    BQAwFjEUMBIGA1UEAwwLQ2VydGlmaWNhdGUwHhcNMTgxMDA4MDkyNjAyWhcNMTgx
-    MDE4MDkyNjAyWjAWMRQwEgYDVQQDDAtDZXJ0aWZpY2F0ZTCCAiIwDQYJKoZIhvcN
-    AQEBBQADggIPADCCAgoCggIBAOKqcEjHtIybdkkFISRzaW3F54xmEssizZDsAxBh
-    Hj5kdp37hNs7dT6dfGrYEmo8yTq9qz47P9SqUT94TE8mDsoAHAitKV33b7f8vUZP
-    dR+Ng3Exi5fyusR2dJwCrGMGJe/Mpqo3Ckq5o+2iKe0jNPFLY1BhiyrHg5sGEUyJ
-    8uhUHbz18kzL+K9JqNg4wV40goUvOil4mBKvqDk4fjM2/5hmPIJcyDRrxHKLnAGo
-    ij44BsNQcQlKa5qC5+TjhwpCf+vFt8+w3BgkOtlyguT/tqXTvTMEI/nRtVztBNT7
-    050mi95+ezqfof9gXl+rFUwNZdtkOC9o0q1lXB2BMTFDTnuoAA8lBD8IVr2K016E
-    Ou5lwT2hrcZHO2K8GegY2AZdIkqaDEWtG0Iwauw1UEGAhtk6cgTFdZH0i/UiXgAZ
-    jIfilTIZ4ICG+/VR8TE/J2raiRBvpRMVp36xMpW4TJ/KqVuF3y98T7jBlXgMEp/G
-    bG9VXbcETKpNZut0RFff5QO3oMXqHBtC5iC8RRGmTzDA11zBgiVcdkbQGw0qMlFj
-    EbFJu09pJcexhdk2RGZbLQ8DApJrKgI52FwJMR2N+xQOIW7z6r5xdp2QhGOwuvRU
-    sOm/wG1OLO2x9/uaczl2HJAjaGBsqJPdFmFk2ddUMitj2pmdZ3pt0js8dT3p0rys
-    32/nAgMBAAEwDQYJKoZIhvcNAQENBQADggIBAF3UETvAknZ6CqBJwFmOJ8/wQMW6
-    WJ6iqRY9OovHrHqTiHeIU5Ml4St17de4x/RxLRmEW0Rj05rQn7udNm2PzANKZYZF
-    sDOaM/ifYHvFmEzLx+BIdGntVyfrSQd+Jl/f9rNG/n1DVOi75BXbDIi/QxXokNKo
-    9lkvlV53ShgMWhghSPvHlHDOmpcNi/80hw5ZGcGo2TS6/MWaqGZtu0whSQ6emCpX
-    Etx17wQUqs+rqhZcEKIRF9suUjY9sKivXm0aTPDAdhvNdUVvRukR2Tk/Nd3s8feQ
-    cJ1YhTXdYXKYezOXfPsEJpo2YOVEDhxP25xHV99PcfhBsKxL8UYfK3sRLIWKk/5V
-    H4GvE6zQv7qwXLSsX4Q6bTkpUw6zZaYe5Lr5IPqCrFJY2C5nZ9+Yj5oQIR2O8Vf5
-    k9tHw1k0veshZuS1m+DkmaGnQkfZ9qRBW2HEXfsO3LLXH0PZeifi2RBokMAy0M5n
-    KldORvj+WMrym41TTBz+oldOY46Px5EUiqdNrMxxNV8qqoO04knxNAok49mlUEsU
-    gfLneuxO+9qwVkgNa3/BEFw7cB9fP64zp1MJ6bFc1nsD8RAyX9nB9V+dEgzYmJo/
-    MsqHwKZ+ml+4Y7bLLykKv7dp2fJVHJY4zZCwcXxN2xnX9UU3kvxCPUoV2wl6PRFh
-    K6XQpoGuSr5xhv2a
+    MIIErjCCApagAwIBAgIUUrUZsZrrBmRD2hvRuspp+lPsZXcwDQYJKoZIhvcNAQEN
+    BQAwETEPMA0GA1UEAwwGSXNzdWVyMB4XDTE4MTAwODEzNDg1NFoXDTE4MTAxODEz
+    NDg1NFowETEPMA0GA1UEAwwGSXNzdWVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8A
+    MIICCgKCAgEAyYcqyuT6oQxpvg/VSn2Zc68wZ823D0VAJ2woramFx+2KPWB7B7Ot
+    tVSNRfm0OxJOU3TFAoep54Z2wgOoz0zRmeW6/7gvIuBKp2TW0qZAt3l9sgpE29iw
+    CsoZQlMrLKiDPzCC6Fptk+YPSST9sqwhWDKK1QvOg68DKRxTpEek1hBpC0XRsnuX
+    fvJJQqP39vxzpA0PsicI/wrvWX3vO8z+j9+botPerbeamoeHCsc0xgTLyIygWysB
+    rNskxlzC2U4Kw6mQhGghlLReo1rFsO2/hLTnvLs+Y1lQhnFeOKCx1WVXhzBIyO9B
+    dVVH5Cinb5wBNKvxbevRf4icdWcwtknmgKf69xj7yvFjt/vft74BB1Y5ltLYFmEb
+    0JBxm5MAJfW4YnMQr0AxdjOhjHq4MN7X4ZzwEpJaYJdRmvMsMGN88cyjYPxsaOG+
+    dZ/E9MmTjh0gnTjyD4gmsvR/gtTR/XFJ2wkbnnL1RyxNi6j2UW8C7tpNv0TIuArx
+    3SHGPZN0WsaKTxZPb0L/ob1WBT0mhiq1GzB431cXgbxyh8EdKk+xSptA3V+ca2V2
+    NuXlJIJaOoPMj/qjDW4I/peKGnk9tLknJ0hpRzz11j77pJsV0dGoGKVHIR2oZqT5
+    0ZJJb5DXNbiTnspKLNmBt0YlNiXtlCIPxVUkhL141FuCLc8h6FjD6E0CAwEAATAN
+    BgkqhkiG9w0BAQ0FAAOCAgEAVFzNKhEpkH8V8l0NEBAZHNi1e+lcg35fZZ9plqcw
+    Pvk+6M7LW0KD0QWYQWm/dJme4DFsM7lh5u4/m+H4yS7/RP9pads9YwBudchvGR1c
+    S4CCrRAmO8/A0vpQJcEwdS7fdYShBsqMrZ2TvzceVn2dvQbxB6pLkK7KIbDPVJA2
+    HXFFXe2npHmdc80iTz2ShbdVSvyPvk6vc6NFFCg6lSQFuif3vV0+aYqi6DXv4h92
+    9qAdES8ZLDfDulxyajyPbtF35f2Of99CumP5UzG4RQbvtI8gShuK1YFYe2sWJFE0
+    MgSsqGCbl5mcrWxm9YxysRKMZ+Hc4tnkvfmG6GsKtp8u/5pG11XgxXaQl4fZ7JNa
+    QFuD5gEXkEC1mCnhWlnguJgjQlpKadMOORmVTqG9dNQ6GEsha+XWpinm5L9fEZuA
+    F88nNyubKLwEl68N7WWWKQlIl4q8Pe5FEp1pd9rLjOW4gzgYBccIfBK3oMC7uFJg
+    a/9GeOKPiq90UMrCI+CAsIbzuPOaAp3g69JonuDwcs4cu8ui1udxs9q7ox3qSWGZ
+    G1U/hmwvZH9kfIv5BKIzNLy4oxXPDJ7MZIBsxVxaNv8KUQ/JLtpVJa3oYqEx18+V
+    JNr8Pr3y61X8pLmJnaCu+ixshiy2gjxXxDFBVEEt1G9JHrSs3R+yvcHxCrM3+ian
+    Nh4=
     -----END CERTIFICATE-----
-
     """.strip()
 
 Loading Certificates
@@ -464,7 +463,7 @@ X.509 Certificate Object
         than just signature checks.
 
         An example on how to check if a certificate signature is correct with a method
-        on the public key (this does not mean that the cert should be truster):
+        on the public key (this does not mean that the cert should be trusted):
 
         .. doctest::
 
@@ -473,6 +472,7 @@ X.509 Certificate Object
            >>> from cryptography.hazmat.primitives.asymmetric import padding
            >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
            >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
+           >>> # verify() raises a
            >>> issuer_public_key.verify(
            ...   cert_to_check.signature,
            ...   cert_to_check.tbs_certificate_bytes,
@@ -481,6 +481,9 @@ X.509 Certificate Object
            ...   cert_to_check.signature_hash_algorithm,
            ... )
 
+           An
+           :class:`~cryptography.exceptions.InvalidSignature`
+           exception will be raised otherwise.
 
     .. method:: public_bytes(encoding)
 
