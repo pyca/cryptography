@@ -468,11 +468,9 @@ X.509 Certificate Object
         .. doctest::
 
            >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
-           >>> from cryptography.exceptions import InvalidSignature
            >>> from cryptography.hazmat.primitives.asymmetric import padding
            >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
            >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
-           >>> # verify() raises a
            >>> issuer_public_key.verify(
            ...   cert_to_check.signature,
            ...   cert_to_check.tbs_certificate_bytes,
@@ -483,7 +481,7 @@ X.509 Certificate Object
 
            An
            :class:`~cryptography.exceptions.InvalidSignature`
-           exception will be raised otherwise.
+           exception will be raised if the signature fails to verify.
 
     .. method:: public_bytes(encoding)
 
