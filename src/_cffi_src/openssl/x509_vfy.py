@@ -128,6 +128,8 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 
 static const long X509_LU_X509;
 static const long X509_LU_CRL;
+
+static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
 """
 
 FUNCTIONS = """

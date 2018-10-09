@@ -185,6 +185,8 @@ X509 *SSL_get_certificate(const SSL *);
 X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
+X509_VERIFY_PARAM *SSL_get0_param(SSL *ssl);
+
 int SSL_use_certificate(SSL *, X509 *);
 int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
 int SSL_use_certificate_file(SSL *, const char *, int);
