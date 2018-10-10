@@ -4426,7 +4426,7 @@ class TestInhibitAnyPolicy(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestInhibitAnyPolicyExtension(object):
-    def test_nocheck(self, backend):
+    def test_inhibit_any_policy(self, backend):
         cert = _load_cert(
             os.path.join(
                 "x509", "custom", "inhibit_any_policy_5.pem"
@@ -4438,6 +4438,35 @@ class TestInhibitAnyPolicyExtension(object):
             ExtensionOID.INHIBIT_ANY_POLICY
         ).value
         assert iap.skip_certs == 5
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestPrecertPoisonExtension(object):
+    def test_load(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.precert.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        poison = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRECERT_POISON
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
+        poison = cert.extensions.get_extension_for_class(
+            x509.PrecertPoison
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
+
+    def test_generate(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert = _make_certbuilder(private_key).add_extension(
+            x509.PrecertPoison(), critical=True
+        ).sign(private_key, hashes.SHA256(), backend)
+        poison = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRECERT_POISON
+        ).value
+        assert isinstance(poison, x509.PrecertPoison)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -4518,3 +4547,34 @@ class TestInvalidExtension(object):
         )
         with pytest.raises(ValueError):
             cert.extensions
+
+
+class TestOCSPNonce(object):
+    def test_non_bytes(self):
+        with pytest.raises(TypeError):
+            x509.OCSPNonce(38)
+
+    def test_eq(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 5)
+        assert nonce1 == nonce2
+
+    def test_ne(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 6)
+        assert nonce1 != nonce2
+        assert nonce1 != object()
+
+    def test_repr(self):
+        nonce1 = x509.OCSPNonce(b"nonce")
+        if not six.PY2:
+            assert repr(nonce1) == "<OCSPNonce(nonce=b'nonce')>"
+        else:
+            assert repr(nonce1) == "<OCSPNonce(nonce='nonce')>"
+
+    def test_hash(self):
+        nonce1 = x509.OCSPNonce(b"0" * 5)
+        nonce2 = x509.OCSPNonce(b"0" * 5)
+        nonce3 = x509.OCSPNonce(b"1" * 5)
+        assert hash(nonce1) == hash(nonce2)
+        assert hash(nonce1) != hash(nonce3)

@@ -27,7 +27,8 @@ def pytest_generate_tests(metafunc):
         skip_if_wycheproof_none(wycheproof)
 
         testcases = []
-        for path in metafunc.function.wycheproof_tests.args:
+        marker = metafunc.definition.get_closest_marker("wycheproof_tests")
+        for path in marker.args:
             testcases.extend(load_wycheproof_tests(wycheproof, path))
         metafunc.parametrize("wycheproof", testcases)
 
@@ -36,7 +37,7 @@ def pytest_generate_tests(metafunc):
 def backend(request):
     required_interfaces = [
         mark.kwargs["interface"]
-        for mark in request.node.get_marker("requires_backend_interface")
+        for mark in request.node.iter_markers("requires_backend_interface")
     ]
     if not all(
         isinstance(openssl_backend, iface) for iface in required_interfaces

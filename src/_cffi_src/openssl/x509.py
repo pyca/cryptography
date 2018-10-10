@@ -76,6 +76,8 @@ static const int XN_FLAG_FN_ALIGN;
 static const int XN_FLAG_RFC2253;
 static const int XN_FLAG_ONELINE;
 static const int XN_FLAG_MULTILINE;
+
+typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
 """
 
 FUNCTIONS = """
@@ -258,8 +260,8 @@ int X509_get_signature_nid(const X509 *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
-/* in 1.1.0 becomes const ASN1_BIT_STRING, const X509_ALGOR */
-void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
+void X509_get0_signature(const ASN1_BIT_STRING **,
+                         const X509_ALGOR **, const X509 *);
 
 long X509_get_version(X509 *);
 
@@ -282,6 +284,7 @@ int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
 int sk_X509_EXTENSION_insert(X509_EXTENSIONS *, X509_EXTENSION *, int);
 X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
+void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
@@ -344,8 +347,8 @@ CUSTOMIZATIONS = """
    opaquing. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
 /* from x509/x_x509.c version 1.0.2 */
-void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
-                         const X509 *x)
+void X509_get0_signature(const ASN1_BIT_STRING **psig,
+                         const X509_ALGOR **palg, const X509 *x)
 {
     if (psig)
         *psig = x->signature;

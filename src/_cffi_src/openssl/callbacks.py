@@ -47,6 +47,7 @@ CUSTOMIZATIONS = """
    using CPython APIs by Armin Rigo of the PyPy project.
 */
 
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 #ifdef _WIN32
 typedef CRITICAL_SECTION Cryptography_mutex;
 static __inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
@@ -78,7 +79,6 @@ static inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
     ASSERT_STATUS(pthread_mutex_unlock(mutex));
 }
 #endif
-
 
 
 static unsigned int _ssl_locks_count = 0;
@@ -135,6 +135,9 @@ int Cryptography_setup_ssl_threads(void) {
     }
     return 1;
 }
+#else
+int (*Cryptography_setup_ssl_threads)(void) = NULL;
+#endif
 
 typedef struct {
     char *password;

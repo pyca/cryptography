@@ -91,6 +91,13 @@ class ExtensionOID(object):
     PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
         ObjectIdentifier("1.3.6.1.4.1.11129.2.4.2")
     )
+    PRECERT_POISON = (
+        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.3")
+    )
+
+
+class OCSPExtensionOID(object):
+    NONCE = ObjectIdentifier("1.3.6.1.5.5.7.48.1.2")
 
 
 class CRLEntryExtensionOID(object):
@@ -268,4 +275,5 @@ _OID_NAMES = {
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
     CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
+    OCSPExtensionOID.NONCE: "OCSPNonce",
 }

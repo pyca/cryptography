@@ -30,6 +30,7 @@ typedef struct asn1_string_st ASN1_UTF8STRING;
 typedef ... ASN1_TYPE;
 typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
+typedef ... ASN1_NULL;
 
 static const int V_ASN1_GENERALIZEDTIME;
 
@@ -97,6 +98,8 @@ ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 
 int i2d_ASN1_TYPE(ASN1_TYPE *, unsigned char **);
 ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
+
+ASN1_NULL *ASN1_NULL_new(void);
 """
 
 CUSTOMIZATIONS = """

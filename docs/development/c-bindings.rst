@@ -191,7 +191,7 @@ version, and it's impractical to create ``#ifdef`` statements for each
 one. In that case, it may make sense to either check for a particular
 version. For example, to check for OpenSSL 1.1.0 or newer::
 
-    #if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    #if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 
 Sometimes, the version of a library on a particular platform will have
 features that you thought it wouldn't, based on its version.

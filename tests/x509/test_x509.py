@@ -550,6 +550,35 @@ class TestRevokedCertificate(object):
         assert crl[2:4][0].serial_number == crl[2].serial_number
         assert crl[2:4][1].serial_number == crl[3].serial_number
 
+    def test_get_revoked_certificate_doesnt_reorder(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        )
+        for i in [2, 500, 3, 49, 7, 1]:
+            revoked_cert = x509.RevokedCertificateBuilder().serial_number(
+                i
+            ).revocation_date(
+                datetime.datetime(2012, 1, 1, 1, 1)
+            ).build(backend)
+            builder = builder.add_revoked_certificate(revoked_cert)
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert crl[0].serial_number == 2
+        assert crl[2].serial_number == 3
+        # make sure get_revoked_certificate_by_serial_number doesn't affect
+        # ordering after being invoked
+        crl.get_revoked_certificate_by_serial_number(500)
+        assert crl[0].serial_number == 2
+        assert crl[2].serial_number == 3
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

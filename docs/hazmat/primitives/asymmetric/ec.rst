@@ -455,7 +455,7 @@ Key Interfaces
 
     .. attribute:: name
 
-        :type: string
+        :type: str
 
         The name of the curve. Usually the name used for the ASN.1 OID such as
         ``secp256k1``.

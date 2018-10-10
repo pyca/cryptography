@@ -33,6 +33,7 @@ static const int Cryptography_HAS_PKEY_CTX;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
 static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
+static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
 """
 
 FUNCTIONS = """
@@ -98,6 +99,12 @@ const EVP_MD *EVP_sha256(void);
 const EVP_MD *EVP_sha384(void);
 const EVP_MD *EVP_sha512(void);
 
+int EVP_DigestSignInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
+                       ENGINE *, EVP_PKEY *);
+int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
+                         ENGINE *, EVP_PKEY *);
+
+
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
 
@@ -147,6 +154,11 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
    without worrying about what OpenSSL we're running against. */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
+/* Added in 1.1.1 */
+int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
+                   const unsigned char *, size_t);
+int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
+                     const unsigned char *, size_t);
 /* Added in 1.1.0 */
 size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
 int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
@@ -230,6 +242,16 @@ static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
 size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
 int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
                                       size_t) = NULL;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 0;
+int (*EVP_DigestSign)(EVP_MD_CTX *, unsigned char *, size_t *,
+                      const unsigned char *tbs, size_t) = NULL;
+int (*EVP_DigestVerify)(EVP_MD_CTX *, const unsigned char *, size_t,
+                        const unsigned char *, size_t) = NULL;
+#else
+static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
 #endif
 
 /* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */

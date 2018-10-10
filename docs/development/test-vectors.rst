@@ -159,6 +159,8 @@ X.509
   cryptography website.
 * ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the
   ``cryptography.io.pem`` certificate.
+* ``cryptography.io.precert.pem`` - A pre-certificate with the CT poison
+  extension for the cryptography website.
 * ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
   ``langui.sh`` that contains wildcard entries in the SAN extension.
 * ``san_edipartyname.der`` - A DSA certificate from a `Mozilla bug`_
@@ -191,6 +193,8 @@ X.509
   DNS name entries of the SAN extension.
 * ``badasn1time.pem`` - A certificate containing an incorrectly specified
   UTCTime in its validity->not_after.
+* ``letsencryptx3.pem`` - A subordinate certificate used by Let's Encrypt to
+  issue end entity certificates.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -407,6 +411,23 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
   ``DeltaCRLIndicator`` extension.
 
+X.509 OCSP Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~
+* ``x509/ocsp/resp-sha256.der`` - An OCSP response for ``cryptography.io`` with
+  a SHA256 signature.
+* ``x509/ocsp/resp-unauthorized.der`` - An OCSP response with an unauthorized
+  status.
+* ``x509/ocsp/resp-revoked.der`` - An OCSP response for ``revoked.badssl.com``
+  with a revoked status.
+* ``x509/ocsp/resp-delegate-unknown-cert.der`` - An OCSP response for an
+  unknown cert from ``AC Camerafirma``. This response also contains a delegate
+  certificate.
+* ``x509/ocsp/resp-responder-key-hash.der`` - An OCSP response from the
+  ``DigiCert`` OCSP responder that uses a key hash for the responder ID.
+* ``x509/ocsp/resp-revoked-reason.der`` - An OCSP response from the
+  ``QuoVadis`` OCSP responder that contains a revoked certificate with a
+  revocation reason.
+
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * ``x509/ocsp/req-sha1.der`` - An OCSP request containing a single request and
@@ -415,6 +436,8 @@ Custom X.509 OCSP Test Vectors
   requests.
 * ``x509/ocsp/req-invalid-hash-alg.der`` - An OCSP request containing an
   invalid hash algorithm OID.
+* ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
+  extension.
 
 Hashes
 ~~~~~~
