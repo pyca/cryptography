@@ -472,11 +472,11 @@ X.509 Certificate Object
            >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
            >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
            >>> issuer_public_key.verify(
-           ...   cert_to_check.signature,
-           ...   cert_to_check.tbs_certificate_bytes,
-           ...   #Depends on the algorithm used to create the certificate
-           ...   padding.PKCS1v15(),
-           ...   cert_to_check.signature_hash_algorithm,
+           ...     cert_to_check.signature,
+           ...     cert_to_check.tbs_certificate_bytes,
+           ...     # Depends on the algorithm used to create the certificate
+           ...     padding.PKCS1v15(),
+           ...     cert_to_check.signature_hash_algorithm,
            ... )
 
            An
