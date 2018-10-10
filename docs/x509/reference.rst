@@ -101,6 +101,53 @@ X.509 Reference
     -----END CERTIFICATE-----
     """.strip()
 
+    pem_issuer_public_key = b"""
+    -----BEGIN RSA PUBLIC KEY-----
+    MIICCgKCAgEAyYcqyuT6oQxpvg/VSn2Zc68wZ823D0VAJ2woramFx+2KPWB7B7Ot
+    tVSNRfm0OxJOU3TFAoep54Z2wgOoz0zRmeW6/7gvIuBKp2TW0qZAt3l9sgpE29iw
+    CsoZQlMrLKiDPzCC6Fptk+YPSST9sqwhWDKK1QvOg68DKRxTpEek1hBpC0XRsnuX
+    fvJJQqP39vxzpA0PsicI/wrvWX3vO8z+j9+botPerbeamoeHCsc0xgTLyIygWysB
+    rNskxlzC2U4Kw6mQhGghlLReo1rFsO2/hLTnvLs+Y1lQhnFeOKCx1WVXhzBIyO9B
+    dVVH5Cinb5wBNKvxbevRf4icdWcwtknmgKf69xj7yvFjt/vft74BB1Y5ltLYFmEb
+    0JBxm5MAJfW4YnMQr0AxdjOhjHq4MN7X4ZzwEpJaYJdRmvMsMGN88cyjYPxsaOG+
+    dZ/E9MmTjh0gnTjyD4gmsvR/gtTR/XFJ2wkbnnL1RyxNi6j2UW8C7tpNv0TIuArx
+    3SHGPZN0WsaKTxZPb0L/ob1WBT0mhiq1GzB431cXgbxyh8EdKk+xSptA3V+ca2V2
+    NuXlJIJaOoPMj/qjDW4I/peKGnk9tLknJ0hpRzz11j77pJsV0dGoGKVHIR2oZqT5
+    0ZJJb5DXNbiTnspKLNmBt0YlNiXtlCIPxVUkhL141FuCLc8h6FjD6E0CAwEAAQ==
+    -----END RSA PUBLIC KEY-----
+    """.strip()
+
+    pem_data_to_check = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIErjCCApagAwIBAgIUUrUZsZrrBmRD2hvRuspp+lPsZXcwDQYJKoZIhvcNAQEN
+    BQAwETEPMA0GA1UEAwwGSXNzdWVyMB4XDTE4MTAwODEzNDg1NFoXDTE4MTAxODEz
+    NDg1NFowETEPMA0GA1UEAwwGSXNzdWVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8A
+    MIICCgKCAgEAyYcqyuT6oQxpvg/VSn2Zc68wZ823D0VAJ2woramFx+2KPWB7B7Ot
+    tVSNRfm0OxJOU3TFAoep54Z2wgOoz0zRmeW6/7gvIuBKp2TW0qZAt3l9sgpE29iw
+    CsoZQlMrLKiDPzCC6Fptk+YPSST9sqwhWDKK1QvOg68DKRxTpEek1hBpC0XRsnuX
+    fvJJQqP39vxzpA0PsicI/wrvWX3vO8z+j9+botPerbeamoeHCsc0xgTLyIygWysB
+    rNskxlzC2U4Kw6mQhGghlLReo1rFsO2/hLTnvLs+Y1lQhnFeOKCx1WVXhzBIyO9B
+    dVVH5Cinb5wBNKvxbevRf4icdWcwtknmgKf69xj7yvFjt/vft74BB1Y5ltLYFmEb
+    0JBxm5MAJfW4YnMQr0AxdjOhjHq4MN7X4ZzwEpJaYJdRmvMsMGN88cyjYPxsaOG+
+    dZ/E9MmTjh0gnTjyD4gmsvR/gtTR/XFJ2wkbnnL1RyxNi6j2UW8C7tpNv0TIuArx
+    3SHGPZN0WsaKTxZPb0L/ob1WBT0mhiq1GzB431cXgbxyh8EdKk+xSptA3V+ca2V2
+    NuXlJIJaOoPMj/qjDW4I/peKGnk9tLknJ0hpRzz11j77pJsV0dGoGKVHIR2oZqT5
+    0ZJJb5DXNbiTnspKLNmBt0YlNiXtlCIPxVUkhL141FuCLc8h6FjD6E0CAwEAATAN
+    BgkqhkiG9w0BAQ0FAAOCAgEAVFzNKhEpkH8V8l0NEBAZHNi1e+lcg35fZZ9plqcw
+    Pvk+6M7LW0KD0QWYQWm/dJme4DFsM7lh5u4/m+H4yS7/RP9pads9YwBudchvGR1c
+    S4CCrRAmO8/A0vpQJcEwdS7fdYShBsqMrZ2TvzceVn2dvQbxB6pLkK7KIbDPVJA2
+    HXFFXe2npHmdc80iTz2ShbdVSvyPvk6vc6NFFCg6lSQFuif3vV0+aYqi6DXv4h92
+    9qAdES8ZLDfDulxyajyPbtF35f2Of99CumP5UzG4RQbvtI8gShuK1YFYe2sWJFE0
+    MgSsqGCbl5mcrWxm9YxysRKMZ+Hc4tnkvfmG6GsKtp8u/5pG11XgxXaQl4fZ7JNa
+    QFuD5gEXkEC1mCnhWlnguJgjQlpKadMOORmVTqG9dNQ6GEsha+XWpinm5L9fEZuA
+    F88nNyubKLwEl68N7WWWKQlIl4q8Pe5FEp1pd9rLjOW4gzgYBccIfBK3oMC7uFJg
+    a/9GeOKPiq90UMrCI+CAsIbzuPOaAp3g69JonuDwcs4cu8ui1udxs9q7ox3qSWGZ
+    G1U/hmwvZH9kfIv5BKIzNLy4oxXPDJ7MZIBsxVxaNv8KUQ/JLtpVJa3oYqEx18+V
+    JNr8Pr3y61X8pLmJnaCu+ixshiy2gjxXxDFBVEEt1G9JHrSs3R+yvcHxCrM3+ian
+    Nh4=
+    -----END CERTIFICATE-----
+    """.strip()
+
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -414,6 +461,27 @@ X.509 Certificate Object
         data may be used to validate a signature, but use extreme caution as
         certificate validation is a complex problem that involves much more
         than just signature checks.
+
+        An example on how to check if a certificate signature is correct with a method
+        on the public key (this does not mean that the cert should be trusted):
+
+        .. doctest::
+
+           >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
+           >>> from cryptography.hazmat.primitives.asymmetric import padding
+           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
+           >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
+           >>> issuer_public_key.verify(
+           ...   cert_to_check.signature,
+           ...   cert_to_check.tbs_certificate_bytes,
+           ...   #Depends on the algorithm used to create the certificate
+           ...   padding.PKCS1v15(),
+           ...   cert_to_check.signature_hash_algorithm,
+           ... )
+
+           An
+           :class:`~cryptography.exceptions.InvalidSignature`
+           exception will be raised if the signature fails to verify.
 
     .. method:: public_bytes(encoding)
 
