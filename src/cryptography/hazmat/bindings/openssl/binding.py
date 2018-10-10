@@ -160,7 +160,7 @@ def _verify_openssl_version(lib):
             "OpenSSL version 1.0.1 is no longer supported by the OpenSSL "
             "project, please upgrade. A future version of cryptography will "
             "drop support for it.",
-            DeprecationWarning
+            utils.CryptographyDeprecationWarning
         )
 
 
