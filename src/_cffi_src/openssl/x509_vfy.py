@@ -129,7 +129,12 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 static const long X509_LU_X509;
 static const long X509_LU_CRL;
 
+static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
+static const long X509_CHECK_FLAG_NO_WILDCARDS;
 static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
+static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
+static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
+static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
 """
 
 FUNCTIONS = """
@@ -240,6 +245,24 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 #endif
 #ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
+#endif
+#ifndef X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
+static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT = 0;
+#endif
+#ifndef X509_CHECK_FLAG_NO_WILDCARDS
+static const long X509_CHECK_FLAG_NO_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
+static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
+static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
 #endif
 
 /* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
