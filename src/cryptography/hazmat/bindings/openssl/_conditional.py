@@ -103,7 +103,12 @@ def cryptography_has_102_verification_params():
         "X509_CHECK_FLAG_NO_WILDCARDS",
         "X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS",
         "X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS",
-        "X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS",
+        "X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS"
+    ]
+
+
+def cryptography_has_110_verification_params():
+    return [
         "X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"
     ]
 
@@ -307,6 +312,9 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_102_VERIFICATION_PARAMS": (
         cryptography_has_102_verification_params
+    ),
+    "Cryptography_HAS_110_VERIFICATION_PARAMS": (
+        cryptography_has_110_verification_params
     ),
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": (
         cryptography_has_x509_v_flag_trusted_first
