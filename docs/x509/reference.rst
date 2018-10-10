@@ -462,7 +462,7 @@ X.509 Certificate Object
         certificate validation is a complex problem that involves much more
         than just signature checks.
 
-        To validate the signature on a certificate:
+        To validate the signature on a certificate you can do the following. Note: This only verifies that the certificate was signed with the private key associated with the public key provided and does not perform any of the other checks needed for secure certificate validation. Additionally, this example will only work for RSA public keys with ``PKCS1v15`` signatures, and so it can't be used for general purpose signature verification.
 
         .. doctest::
 
