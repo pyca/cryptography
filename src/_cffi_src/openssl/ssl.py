@@ -626,9 +626,7 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 /* SSL_get0_param was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
 X509_VERIFY_PARAM *(*SSL_get0_param)(SSL *) = NULL;
-static const long Cryptography_HAS_SSL_GET0_PARAM = 0;
 #else
-static const long Cryptography_HAS_SSL_GET0_PARAM = 1;
 #endif
 
 /* ALPN was added in OpenSSL 1.0.2. */
