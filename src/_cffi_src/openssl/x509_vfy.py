@@ -21,6 +21,7 @@ typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 TYPES = """
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
+static const long Cryptography_HAS_110_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
