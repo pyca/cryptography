@@ -462,8 +462,7 @@ X.509 Certificate Object
         certificate validation is a complex problem that involves much more
         than just signature checks.
 
-        An example on how to check if a certificate signature is correct with a method
-        on the public key (this does not mean that the cert should be trusted):
+        To validate the signature on a certificate:
 
         .. doctest::
 
