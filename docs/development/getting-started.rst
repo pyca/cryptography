@@ -19,8 +19,8 @@ mode. For example:
     $ pip install --requirement dev-requirements.txt
     $ pip install --editable .
 
-Make sure that ``pip install --requirement ...`` has installed the Python 
-package ``vectors/`` and packages on ``tests/`` . If it didn't, you may 
+Make sure that ``pip install --requirement ...`` has installed the Python
+package ``vectors/`` and packages on ``tests/`` . If it didn't, you may
 install them manually by using ``pip`` on each directory.
 
 You will also need to install ``enchant`` using your system's package manager
