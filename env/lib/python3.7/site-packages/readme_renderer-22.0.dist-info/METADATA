@@ -1,0 +1,82 @@
+Metadata-Version: 2.1
+Name: readme-renderer
+Version: 22.0
+Summary: readme_renderer is a library for rendering "readme" descriptions for Warehouse
+Home-page: https://github.com/pypa/readme_renderer
+Author: The Python Packaging Authority
+Author-email: admin@mail.pypi.org
+License: Apache License, Version 2.0
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: POSIX :: BSD
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Dist: bleach (>=2.1.0)
+Requires-Dist: cmarkgfm (>=0.2.0)
+Requires-Dist: docutils (>=0.13.1)
+Requires-Dist: future
+Requires-Dist: Pygments
+Requires-Dist: six
+
+Readme Renderer
+===============
+
+Readme Renderer is a library that will safely render arbitrary
+``README`` files into HTML. It is designed to be used in Warehouse_ to
+render the ``long_description`` for packages. It can handle Markdown,
+reStructuredText (``.rst``), and plain text.
+
+.. _Warehouse: https://github.com/pypa/warehouse
+
+
+Check Description Locally
+-------------------------
+
+reStructuredText
+~~~~~~~~~~~~~~~~
+
+To locally check whether your reStructuredText long descriptions will render on
+PyPI, simply install the ``readme_renderer`` library using:
+
+.. code-block:: console
+
+    $ pip install readme_renderer
+    $ python setup.py check -r -s
+    running check
+
+If there's a problem rendering your ``long_description``, the check
+will tell you. If your ``long_description`` is fine, you'll get no
+output.
+
+
+Markdown
+~~~~~~~~
+
+Checking your Markdown long descriptions is unecessary, because unlike rST,
+where a properly rendered description is all-or-nothing, PyPI will still render
+your Markdown description as Markdown if it has some invalid or incorrect
+syntax.
+
+
+Code of Conduct
+---------------
+
+Everyone interacting in the readme_renderer project's codebases, issue trackers,
+chat rooms, and mailing lists is expected to follow the `PyPA Code of Conduct`_.
+
+.. _PyPA Code of Conduct: https://www.pypa.io/en/latest/code-of-conduct/
+
+

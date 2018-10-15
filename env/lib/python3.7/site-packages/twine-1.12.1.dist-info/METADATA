@@ -1,0 +1,375 @@
+Metadata-Version: 2.1
+Name: twine
+Version: 1.12.1
+Summary: Collection of utilities for publishing packages on PyPI
+Home-page: https://twine.readthedocs.io/
+Author: Donald Stufft and individual contributors
+Author-email: donald@stufft.io
+License: Apache License, Version 2.0
+Project-URL: Twine source, https://github.com/pypa/twine/
+Project-URL: Packaging tutorial, https://packaging.python.org/tutorials/distributing-packages/
+Project-URL: Twine documentation, https://twine.readthedocs.io/en/latest/
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: POSIX :: BSD
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Provides-Extra: keyring
+Provides-Extra: with-blake2
+Requires-Dist: pkginfo (>=1.4.2)
+Requires-Dist: readme-renderer (>=21.0)
+Requires-Dist: requests (!=2.15,!=2.16,>=2.5.0)
+Requires-Dist: requests-toolbelt (>=0.8.0)
+Requires-Dist: setuptools (>=0.7.0)
+Requires-Dist: tqdm (>=4.14)
+Provides-Extra: keyring
+Requires-Dist: keyring; extra == 'keyring'
+Provides-Extra: with-blake2
+Requires-Dist: pyblake2; extra == 'with-blake2'
+
+twine
+=====
+
+.. rtd-inclusion-marker-do-not-remove
+
+Twine is `a utility`_ for `publishing`_ Python packages on `PyPI`_.
+
+It provides build system independent uploads of source and binary
+`distribution artifacts <distributions>`_ for both new and existing
+`projects`_.
+
+
+Why Should I Use This?
+----------------------
+
+The goal of ``twine`` is to improve PyPI interaction by improving
+security and testability.
+
+The biggest reason to use ``twine`` is that it securely authenticates
+you to `PyPI`_ over HTTPS using a verified connection regardless of
+the underlying Python version, while whether or not
+``python setup.py upload`` will work correctly and securely depends
+on your build system, your Python version and the underlying operating
+system.
+
+Secondly, it allows you to precreate your distribution files.
+``python setup.py upload`` only allows you to upload something that you're
+building with ``distutils`` or ``setuptools``, and created in the same
+command invocation. This means that you cannot test the
+exact file you're going to upload to PyPI to ensure that it works before
+uploading it.
+
+Finally, ``twine`` allows you to pre-sign your files and pass the
+``.asc`` files into the command line invocation (``twine upload
+myproject-1.0.1.tar.gz myproject-1.0.1.tar.gz.asc``). This enables you
+to be assured that you're typing your ``gpg`` passphrase into ``gpg``
+itself and not anything else, since *you* will be the one directly
+executing ``gpg --detach-sign -a <filename>``.
+
+
+Features
+--------
+
+- Verified HTTPS connections
+- Uploading doesn't require executing ``setup.py``
+- Uploading files that have already been created, allowing testing of
+  distributions before release
+- Supports uploading any packaging format (including `wheels`_)
+
+
+Installation
+------------
+
+.. code-block:: console
+
+    $ pip install twine
+
+
+Using Twine
+-----------
+
+1. Create some distributions in the normal way:
+
+   .. code-block:: console
+
+       $ python setup.py sdist bdist_wheel
+
+2. Upload with ``twine`` to `Test PyPI`_ and verify things look right. Twine will automatically prompt for your username and password:
+
+   .. code-block:: console
+
+       $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+       username: ...
+       password:
+       ...
+
+3. Upload to `PyPI`_:
+
+   .. code-block:: console
+
+       $ twine upload dist/*
+
+4. Done!
+
+More documentation on using ``twine`` to upload packages to PyPI is in
+the `Python Packaging User Guide`_.
+
+Keyring Support
+---------------
+
+Instead of typing in your password every time you upload a distribution, Twine
+allows you to store your username and password securely using `keyring`_.
+
+To use the keyring, you must first install the keyring packages:
+
+- On Windows and MacOS you just need to install ``keyring``, for example,
+  ``pip install --user keyring``.
+- On Linux, in addition to the ``keyring`` package you also need to ensure the
+  ``python3-dbus`` system package is installed. For example, ``apt install
+  python3-dbus``. See `Keyring's installation instructions`_ for more details.
+
+Once keyring is installed you can use the ``keyring`` program to set your
+username and password to use for each package index (repository) you want to
+upload to using Twine.
+
+To set your username and password for test PyPI run the following command.
+``keyring`` will prompt you for your password:
+
+.. code-block:: console
+
+    $ keyring set https://test.pypi.org/legacy/ your-username
+    # or
+    $ python3 -m keyring set https://test.pypi.org/legacy/ your-username
+
+To set your username and password for PyPI run this command, again, ``keyring``
+will prompt for the password:
+
+.. code-block:: console
+
+    $ keyring set https://upload.pypi.org/legacy/ your-username
+    # or
+    $ python3 -m keyring set https://upload.pypi.org/legacy/ your-username
+
+
+The next time you run ``twine`` it will prompt you for a username and will grab the appropriate password from the keyring.
+
+.. Note:: If you are using Linux in a headless environment (such as on a
+    server) you'll need to do some additional steps to ensure that Keyring can
+    store secrets securely. See `Using Keyring on headless systems`_.
+
+.. _`keyring`: https://pypi.org/project/keyring/
+.. _`Keyring's installation instructions`:
+    https://keyring.readthedocs.io/en/latest#installation-instructions
+.. _`Using Keyring on headless systems`:
+    https://keyring.readthedocs.io/en/latest/#using-keyring-on-headless-linux-systems
+
+Disabling Keyring
+^^^^^^^^^^^^^^^^^
+
+In some cases, the presence of keyring may be problemmatic. To disable
+keyring and defer to a prompt for passwords, uninstall ``keyring``
+or if that's not an option, you can also configure keyring to be disabled.
+
+See `twine 338 <https://github.com/pypa/twine/issues/338>`_ for a
+discussion on ways to do that.
+
+Options
+-------
+
+``twine upload``
+^^^^^^^^^^^^^^^^
+
+Uploads one or more distributions to a repository.
+
+.. code-block:: console
+
+    $ twine upload -h
+
+    usage: twine upload [-h] [-r REPOSITORY] [--repository-url REPOSITORY_URL]
+                        [-s] [--sign-with SIGN_WITH] [-i IDENTITY] [-u USERNAME]
+                        [-p PASSWORD] [-c COMMENT] [--config-file CONFIG_FILE]
+                        [--skip-existing] [--cert path] [--client-cert path]
+                        dist [dist ...]
+
+    positional arguments:
+      dist                  The distribution files to upload to the repository
+                            (package index). Usually dist/* . May additionally
+                            contain a .asc file to include an existing signature
+                            with the file upload.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -r REPOSITORY, --repository REPOSITORY
+                            The repository (package index) to upload the package
+                            to. Should be a section in the config file (default:
+                            pypi). (Can also be set via TWINE_REPOSITORY
+                            environment variable.)
+      --repository-url REPOSITORY_URL
+                            The repository (package index) URL to upload the
+                            package to. This overrides --repository. (Can also be
+                            set via TWINE_REPOSITORY_URL environment variable.)
+      -s, --sign            Sign files to upload using GPG.
+      --sign-with SIGN_WITH
+                            GPG program used to sign uploads (default: gpg).
+      -i IDENTITY, --identity IDENTITY
+                            GPG identity used to sign files.
+      -u USERNAME, --username USERNAME
+                            The username to authenticate to the repository
+                            (package index) as. (Can also be set via
+                            TWINE_USERNAME environment variable.)
+      -p PASSWORD, --password PASSWORD
+                            The password to authenticate to the repository
+                            (package index) with. (Can also be set via
+                            TWINE_PASSWORD environment variable.)
+      -c COMMENT, --comment COMMENT
+                            The comment to include with the distribution file.
+      --config-file CONFIG_FILE
+                            The .pypirc config file to use.
+      --skip-existing       Continue uploading files if one already exists. (Only
+                            valid when uploading to PyPI. Other implementations
+                            may not support this.)
+      --cert path           Path to alternate CA bundle (can also be set via
+                            TWINE_CERT environment variable).
+      --client-cert path    Path to SSL client certificate, a single file
+                            containing the private key and the certificate in PEM
+                            format.
+
+``twine check``
+^^^^^^^^^^^^^^^
+
+Checks whether your distributions long description will render correctly on PyPI.
+
+.. code-block:: console
+
+    $ twine check -h
+    usage: twine check [-h] dist [dist ...]
+
+    positional arguments:
+    dist        The distribution files to check, usually dist/*
+
+    optional arguments:
+    -h, --help  show this help message and exit
+
+``twine register``
+^^^^^^^^^^^^^^^^^^
+
+**WARNING**: The ``register`` command is `no longer necessary if you are uploading to
+pypi.org`_.  As such, it is `no longer supported`_ in `Warehouse`_ (the new
+PyPI software running on pypi.org). However, you may need this if you are using
+a different package index.
+
+For completeness, its usage:
+
+.. code-block:: console
+
+    $ twine register -h
+
+    usage: twine register [-h] -r REPOSITORY [--repository-url REPOSITORY_URL]
+                          [-u USERNAME] [-p PASSWORD] [-c COMMENT]
+                          [--config-file CONFIG_FILE] [--cert path]
+                          [--client-cert path]
+                          package
+
+    positional arguments:
+      package               File from which we read the package metadata.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -r REPOSITORY, --repository REPOSITORY
+                            The repository (package index) to register the package
+                            to. Should be a section in the config file. (Can also
+                            be set via TWINE_REPOSITORY environment variable.)
+                            Initial package registration no longer necessary on
+                            pypi.org:
+                            https://packaging.python.org/guides/migrating-to-pypi-
+                            org/
+      --repository-url REPOSITORY_URL
+                            The repository (package index) URL to register the
+                            package to. This overrides --repository. (Can also be
+                            set via TWINE_REPOSITORY_URL environment variable.)
+      -u USERNAME, --username USERNAME
+                            The username to authenticate to the repository
+                            (package index) as. (Can also be set via
+                            TWINE_USERNAME environment variable.)
+      -p PASSWORD, --password PASSWORD
+                            The password to authenticate to the repository
+                            (package index) with. (Can also be set via
+                            TWINE_PASSWORD environment variable.)
+      -c COMMENT, --comment COMMENT
+                            The comment to include with the distribution file.
+      --config-file CONFIG_FILE
+                            The .pypirc config file to use.
+      --cert path           Path to alternate CA bundle (can also be set via
+                            TWINE_CERT environment variable).
+      --client-cert path    Path to SSL client certificate, a single file
+                            containing the private key and the certificate in PEM
+                            format.
+
+Environment Variables
+^^^^^^^^^^^^^^^^^^^^^
+
+Twine also supports configuration via environment variables. Options passed on
+the command line will take precedence over options set via environment
+variables. Definition via environment variable is helpful in environments where
+it is not convenient to create a `.pypirc` file, such as a CI/build server, for
+example.
+
+* ``TWINE_USERNAME`` - the username to use for authentication to the repository.
+* ``TWINE_PASSWORD`` - the password to use for authentication to the repository.
+* ``TWINE_REPOSITORY`` - the repository configuration, either defined as a
+  section in `.pypirc` or provided as a full URL.
+* ``TWINE_REPOSITORY_URL`` - the repository URL to use.
+* ``TWINE_CERT`` - custom CA certificate to use for repositories with
+  self-signed or untrusted certificates.
+
+Resources
+---------
+
+* `IRC <https://webchat.freenode.net/?channels=%23pypa>`_
+  (``#pypa`` - irc.freenode.net)
+* `GitHub repository <https://github.com/pypa/twine>`_
+* User and developer `documentation`_
+* `Python Packaging User Guide`_
+
+Contributing
+------------
+
+See our `developer documentation`_ for how to get started, an
+architectural overview, and our future development plans.
+
+Code of Conduct
+---------------
+
+Everyone interacting in the ``twine`` project's codebases, issue
+trackers, chat rooms, and mailing lists is expected to follow the
+`PyPA Code of Conduct`_.
+
+.. _`a utility`: https://pypi.org/project/twine/
+.. _`publishing`: https://packaging.python.org/tutorials/distributing-packages/
+.. _`PyPI`: https://pypi.org
+.. _`Test PyPI`: https://packaging.python.org/guides/using-testpypi/
+.. _`Python Packaging User Guide`: https://packaging.python.org/tutorials/distributing-packages/
+.. _`documentation`: https://twine.readthedocs.io/
+.. _`developer documentation`: https://twine.readthedocs.io/en/latest/contributing.html
+.. _`projects`: https://packaging.python.org/glossary/#term-project
+.. _`distributions`: https://packaging.python.org/glossary/#term-distribution-package
+.. _`PyPA Code of Conduct`: https://www.pypa.io/en/latest/code-of-conduct/
+.. _`Warehouse`: https://github.com/pypa/warehouse
+.. _`wheels`: https://packaging.python.org/glossary/#term-wheel
+.. _`no longer necessary if you are uploading to pypi.org`: https://packaging.python.org/guides/migrating-to-pypi-org/#registering-package-names-metadata
+.. _`no longer supported`: https://github.com/pypa/warehouse/issues/1627
+
+

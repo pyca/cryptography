@@ -1,0 +1,75 @@
+Metadata-Version: 2.1
+Name: cmarkgfm
+Version: 0.4.2
+Summary: Minimal bindings to GitHub's fork of cmark
+Home-page: https://github.com/jonparrott/cmarkgfm
+Author: The Python Packaging Authority
+Author-email: thea@skeletonbuddy.com, pypa-dev@googlegroups.com
+License: UNKNOWN
+Project-URL: Bug Reports, https://github.com/jonparrott/cmarkgfm/issues
+Project-URL: Funding, https://donate.pypi.org
+Project-URL: Source, https://github.com/jonparrott/cmarkgfm
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Requires-Dist: cffi (>=1.0.0)
+
+cmarkgfm - Bindings to GitHub's cmark
+=====================================
+
+Minimalist bindings to GitHub's fork of cmark.
+
+Installation
+------------
+
+This package is published as `cmarkgfm <https://pypi.org/project/cmarkgfm/>`__
+and can be installed with `pip` or `pipenv`::
+
+    pip install --user cmarkgfm
+    pipenv install cmarkgfm
+
+Wheels are provided for macOS, Linux, and Windows for Python 2.7, 3.4, 3.5, and 3.6.
+
+Usage
+-----
+
+High-level usage is really straightforward. To render normal CommonMark
+markdown:
+
+.. code-block:: python
+
+    import cmarkgfm
+
+    html = cmarkgfm.markdown_to_html(markdown_text)
+
+
+To render GitHub-flavored markdown:
+
+.. code-block:: python
+
+    import cmarkgfm
+
+    html = cmarkgfm.github_flavored_markdown_to_html(markdown_text)
+
+
+Contributing
+------------
+
+Pull requests are welcome. :)
+
+
+License
+-------
+
+This project is under the MIT License. It includes components under differing
+copyright under the ``third_party`` directory in this source tree.
+
+
