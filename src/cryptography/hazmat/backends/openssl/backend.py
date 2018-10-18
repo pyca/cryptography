@@ -1135,6 +1135,34 @@ class Backend(object):
         self._handle_key_loading_error()
 
     def load_pem_x509_certificate(self, data):
+        # checks if the wrap is as expected, searching for '\n'
+        bad_wrapping = False
+
+        if len(data) == 778:
+            if chr(data[27]) != '\n':
+                bad_wrapping = True
+
+            elif not bad_wrapping:
+                for k in range(0, 11):
+                    if chr(data[92+65*k]) != '\n':
+                        bad_wrapping = True
+                        break
+
+            elif chr(data[751]) != '\n':
+                bad_wrapping = True
+
+            elif chr(data[777]) != '\n':
+                bad_wrapping = True
+
+        else:
+            bad_wrapping = True
+
+        if bad_wrapping:
+            self._consume_errors()
+            raise ValueError("Certificate with wrong wrapping. Make sure each "
+                            + "data line has 64 bytes.")
+
+
         mem_bio = self._bytes_to_bio(data)
         x509 = self._lib.PEM_read_bio_X509(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
