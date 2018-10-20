@@ -8,6 +8,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.4.x.
 * Deprecated OpenSSL 1.0.1 support. OpenSSL 1.0.1 is no longer supported by
   the OpenSSL project. At this time there is no time table for dropping
   support, however we strongly encourage all users to upgrade or install
