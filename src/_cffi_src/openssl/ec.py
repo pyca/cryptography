@@ -126,8 +126,7 @@ int (*EC_POINT_set_compressed_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
 static const long Cryptography_HAS_EC2M = 1;
 #endif
 
-#if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102) || \
-    (CRYPTOGRAPHY_IS_LIBRESSL && LIBRESSL_VERSION_NUMBER < 0x20020002L)
+#if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102)
 static const long Cryptography_HAS_EC_1_0_2 = 0;
 const char *(*EC_curve_nid2nist)(int) = NULL;
 #else
