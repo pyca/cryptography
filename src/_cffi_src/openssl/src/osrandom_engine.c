@@ -92,7 +92,7 @@ static struct {
 
 /* return -1 on error */
 static int dev_urandom_fd(void) {
-    int fd, n, flags;
+    int fd, n;
     struct stat st;
 
     /* Check that fd still points to the correct device */
