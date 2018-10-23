@@ -179,6 +179,9 @@ epub_theme = 'epub'
 linkcheck_retries = 5
 
 linkcheck_ignore = [
-    # Certificate is issued by a Japanese CA that isn't publicly trusted
-    "https://www.cryptrec.go.jp",
+    # Returns a 404 if you're not logged in
+    (
+        "https://ci.cryptography.io/"
+        "job/cryptography-support-jobs/job/openssl-release-1.1/"
+    ),
 ]
