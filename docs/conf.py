@@ -180,5 +180,5 @@ linkcheck_retries = 5
 
 linkcheck_ignore = [
     # Returns a 404 if you're not logged in
-    "https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/",
+    "https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/"
 ]
