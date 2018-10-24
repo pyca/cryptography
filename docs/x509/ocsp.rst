@@ -329,7 +329,7 @@ Creating Responses
     .. classmethod:: build_unsuccessful(response_status)
 
         Creates an unsigned OCSP response which can then be serialized and
-        sent to clients. ``build_unsuccessful`` should be called for any
+        sent to clients. ``build_unsuccessful`` may only be called with a
         :class:`~cryptography.x509.ocsp.OCSPResponseStatus` that is not
         ``SUCCESSFUL``. Since this is a class method note that no other
         methods can or should be called as unsuccessful statuses do not
