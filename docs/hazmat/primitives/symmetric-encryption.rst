@@ -803,7 +803,7 @@ Exceptions
 
 
 
-.. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`described by Colin Percival`: https://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends a 96-bit IV length`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 .. _`NIST SP-800-38D`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 .. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
