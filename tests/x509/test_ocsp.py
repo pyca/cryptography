@@ -319,6 +319,14 @@ class TestOCSPResponse(object):
         )
         assert resp.revocation_reason is x509.ReasonFlags.superseded
 
+    def test_load_revoked_no_next_update(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-revoked-no-next-update.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert resp.serial_number == 16160
+        assert resp.next_update is None
+
     def test_response_extensions(self):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked-reason.der"),
