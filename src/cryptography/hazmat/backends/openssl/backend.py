@@ -795,14 +795,12 @@ class Backend(object):
 
         # Set the "not before" time.
         self._set_asn1_time(
-            self._lib.X509_get_notBefore(x509_cert),
-            calendar.timegm(builder._not_valid_before.timetuple())
+            self._lib.X509_get_notBefore(x509_cert), builder._not_valid_before
         )
 
         # Set the "not after" time.
         self._set_asn1_time(
-            self._lib.X509_get_notAfter(x509_cert),
-            calendar.timegm(builder._not_valid_after.timetuple())
+            self._lib.X509_get_notAfter(x509_cert), builder._not_valid_after
         )
 
         # Add extensions.
@@ -837,7 +835,8 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def _set_asn1_time(self, asn1_time, time):
-        res = self._lib.ASN1_TIME_set(asn1_time, time)
+        timestamp = calendar.timegm(time.timetuple())
+        res = self._lib.ASN1_TIME_set(asn1_time, timestamp)
         if res == self._ffi.NULL:
             errors = self._consume_errors()
             self.openssl_assert(
@@ -888,9 +887,7 @@ class Backend(object):
         last_update = self._lib.ASN1_TIME_new()
         self.openssl_assert(last_update != self._ffi.NULL)
         last_update = self._ffi.gc(last_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            last_update, calendar.timegm(builder._last_update.timetuple())
-        )
+        self._set_asn1_time(last_update, builder._last_update)
         res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
@@ -898,9 +895,7 @@ class Backend(object):
         next_update = self._lib.ASN1_TIME_new()
         self.openssl_assert(next_update != self._ffi.NULL)
         next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            next_update, calendar.timegm(builder._next_update.timetuple())
-        )
+        self._set_asn1_time(next_update, builder._next_update)
         res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
@@ -1004,9 +999,7 @@ class Backend(object):
         rev_date = self._lib.ASN1_TIME_new()
         self.openssl_assert(rev_date != self._ffi.NULL)
         rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            rev_date, calendar.timegm(builder._revocation_date.timetuple())
-        )
+        self._set_asn1_time(rev_date, builder._revocation_date)
         res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
         self.openssl_assert(res == 1)
         # add CRL entry extensions
