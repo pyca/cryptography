@@ -427,6 +427,8 @@ X.509 OCSP Test Vectors
 * ``x509/ocsp/resp-revoked-reason.der`` - An OCSP response from the
   ``QuoVadis`` OCSP responder that contains a revoked certificate with a
   revocation reason.
+* ``x509/ocsp/resp-revoked-no-next-update.der`` - An OCSP response that
+  contains a revoked certificate and no ``nextUpdate`` value.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

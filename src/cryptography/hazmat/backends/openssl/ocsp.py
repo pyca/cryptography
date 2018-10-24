@@ -278,8 +278,10 @@ class _OCSPResponse(object):
             self._backend._ffi.NULL,
             asn1_time,
         )
-        self._backend.openssl_assert(asn1_time[0] != self._backend._ffi.NULL)
-        return _parse_asn1_generalized_time(self._backend, asn1_time[0])
+        if asn1_time[0] != self._backend._ffi.NULL:
+            return _parse_asn1_generalized_time(self._backend, asn1_time[0])
+        else:
+            return None
 
     @property
     @_requires_successful_response
