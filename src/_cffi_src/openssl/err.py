@@ -139,6 +139,7 @@ static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE;
 static const int SSL_AD_UNKNOWN_PSK_IDENTITY;
 
 static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
+static const int X509_R_KEY_VALUES_MISMATCH;
 """
 
 FUNCTIONS = """
