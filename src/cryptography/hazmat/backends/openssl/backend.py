@@ -850,6 +850,13 @@ class Backend(object):
                 "in the future on Windows."
             )
 
+    def _create_asn1_time(self, time):
+        asn1_time = self._lib.ASN1_TIME_new()
+        self.openssl_assert(asn1_time != self._ffi.NULL)
+        asn1_time = self._ffi.gc(asn1_time, self._lib.ASN1_TIME_free)
+        self._set_asn1_time(asn1_time, time)
+        return asn1_time
+
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
             raise TypeError('Builder type mismatch.')
@@ -884,18 +891,12 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Set the last update time.
-        last_update = self._lib.ASN1_TIME_new()
-        self.openssl_assert(last_update != self._ffi.NULL)
-        last_update = self._ffi.gc(last_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(last_update, builder._last_update)
+        last_update = self._create_asn1_time(builder._last_update)
         res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
         # Set the next update time.
-        next_update = self._lib.ASN1_TIME_new()
-        self.openssl_assert(next_update != self._ffi.NULL)
-        next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(next_update, builder._next_update)
+        next_update = self._create_asn1_time(builder._next_update)
         res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
@@ -996,10 +997,7 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        rev_date = self._lib.ASN1_TIME_new()
-        self.openssl_assert(rev_date != self._ffi.NULL)
-        rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(rev_date, builder._revocation_date)
+        rev_date = self._create_asn1_time(builder._revocation_date)
         res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
         self.openssl_assert(res == 1)
         # add CRL entry extensions
