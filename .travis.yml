@@ -88,12 +88,6 @@ matrix:
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-sid
         - python: 2.7
           services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-xenial
-        - python: 3.5
-          services: docker
-          env: TOXENV=py35 DOCKER=pyca/cryptography-runner-ubuntu-xenial
-        - python: 2.7
-          services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling
         - python: 3.6
           services: docker
