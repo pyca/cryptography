@@ -88,6 +88,11 @@ matrix:
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
+    allow_failures:
+        # Remove allow_failures as soon as josepy's flake8 issue is resolved
+        # https://github.com/certbot/josepy/pull/39
+        - python: 2.7
+          env: DOWNSTREAM=certbot-josepy
 
 install:
     - ./.travis/install.sh
