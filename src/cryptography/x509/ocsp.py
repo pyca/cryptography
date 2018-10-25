@@ -41,13 +41,13 @@ class OCSPResponseStatus(Enum):
 
 
 _RESPONSE_STATUS_TO_ENUM = dict((x.value, x) for x in OCSPResponseStatus)
+_ALLOWED_HASHES = (
+    hashes.SHA1, hashes.SHA224, hashes.SHA256,
+    hashes.SHA384, hashes.SHA512
+)
 
 
 def _verify_algorithm(algorithm):
-    _ALLOWED_HASHES = (
-        hashes.SHA1, hashes.SHA224, hashes.SHA256,
-        hashes.SHA384, hashes.SHA512
-    )
     if not isinstance(algorithm, _ALLOWED_HASHES):
         raise ValueError(
             "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
@@ -111,8 +111,8 @@ class OCSPRequestBuilder(object):
 
 
 class _SingleResponse(object):
-    def __init__(self, cert, issuer, algorithm, this_update, next_update,
-                 cert_status, revocation_time, revocation_reason):
+    def __init__(self, cert, issuer, algorithm, cert_status, this_update,
+                 next_update, revocation_time, revocation_reason):
         if (
             not isinstance(cert, x509.Certificate) or
             not isinstance(issuer, x509.Certificate)
@@ -186,15 +186,15 @@ class OCSPResponseBuilder(object):
             raise ValueError("Only one response per OCSPResponse.")
 
         singleresp = _SingleResponse(
-            cert, issuer, algorithm, this_update, next_update,
-            cert_status, revocation_time, revocation_reason
+            cert, issuer, algorithm, cert_status, this_update, next_update,
+            revocation_time, revocation_reason
         )
         return OCSPResponseBuilder(
             singleresp, self._responder_id,
             self._certs, self._extensions,
         )
 
-    def responder_id(self, responder_cert, encoding):
+    def responder_id(self, encoding, responder_cert):
         if self._responder_id is not None:
             raise ValueError("responder_id can only be set once")
         if not isinstance(responder_cert, x509.Certificate):

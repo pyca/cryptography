@@ -1493,21 +1493,17 @@ class Backend(object):
         if builder._response._revocation_time is None:
             rev_time = self._ffi.NULL
         else:
-            rev_time = self._lib.ASN1_TIME_new()
-            self.openssl_assert(rev_time != self._ffi.NULL)
-            rev_time = self._ffi.gc(rev_time, self._lib.ASN1_TIME_free)
-            self._set_asn1_time(rev_time, builder._response._revocation_time)
+            rev_time = self._create_asn1_time(
+                builder._response._revocation_time
+            )
+
         next_update = self._ffi.NULL
         if builder._response._next_update is not None:
-            next_update = self._lib.ASN1_TIME_new()
-            self.openssl_assert(next_update != self._ffi.NULL)
-            next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
-            self._set_asn1_time(next_update, builder._response._next_update)
+            next_update = self._create_asn1_time(
+                builder._response._next_update
+            )
 
-        this_update = self._lib.ASN1_TIME_new()
-        self.openssl_assert(this_update != self._ffi.NULL)
-        this_update = self._ffi.gc(this_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(this_update, builder._response._this_update)
+        this_update = self._create_asn1_time(builder._response._this_update)
 
         res = self._lib.OCSP_basic_add1_status(
             basic,
@@ -1522,8 +1518,7 @@ class Backend(object):
         # okay, now sign the basic structure
         evp_md = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
         self.openssl_assert(evp_md != self._ffi.NULL)
-        responder_cert = builder._responder_id[0]
-        responder_encoding = builder._responder_id[1]
+        responder_cert, responder_encoding = builder._responder_id
         flags = self._lib.OCSP_NOCERTS
         if responder_encoding is ocsp.OCSPResponderEncoding.HASH:
             flags |= self._lib.OCSP_RESPID_KEY

@@ -211,73 +211,8 @@ class TestOCSPRequestBuilder(object):
         assert req.extensions[0].critical is critical
 
 
-class TestSingleResponse(object):
-    def test_invalid_init(self):
-        cert, issuer = _cert_and_issuer()
-        time = datetime.datetime.utcnow()
-        reason = x509.ReasonFlags.cessation_of_operation
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                'bad', issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.GOOD, None, None
-            )
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, 'bad', hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.GOOD, None, None
-            )
-        with pytest.raises(ValueError):
-            ocsp._SingleResponse(
-                cert, issuer, 'notahash', time, time,
-                ocsp.OCSPCertStatus.GOOD, None, None
-            )
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), 'bad', time,
-                ocsp.OCSPCertStatus.GOOD, None, None
-            )
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, 'bad',
-                ocsp.OCSPCertStatus.GOOD, None, None
-            )
-
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                0, None, None
-            )
-        with pytest.raises(ValueError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.GOOD, time, None
-            )
-        with pytest.raises(ValueError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.GOOD, None, reason
-            )
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.REVOKED, None, reason
-            )
-        with pytest.raises(TypeError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.REVOKED, time, 0
-            )
-        with pytest.raises(ValueError):
-            ocsp._SingleResponse(
-                cert, issuer, hashes.SHA256(), time, time,
-                ocsp.OCSPCertStatus.REVOKED,
-                time - datetime.timedelta(days=36500),
-                None
-            )
-
-
 class TestOCSPResponseBuilder(object):
-    def test_invalid_add_response(self):
+    def test_add_response_twice(self):
         cert, issuer = _cert_and_issuer()
         time = datetime.datetime.now()
         builder = ocsp.OCSPResponseBuilder()
@@ -289,6 +224,67 @@ class TestOCSPResponseBuilder(object):
             builder.add_response(
                 cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD, time,
                 time, None, None
+            )
+
+    def test_invalid_add_response(self):
+        cert, issuer = _cert_and_issuer()
+        time = datetime.datetime.utcnow()
+        reason = x509.ReasonFlags.cessation_of_operation
+        builder = ocsp.OCSPResponseBuilder()
+        with pytest.raises(TypeError):
+            builder.add_response(
+                'bad', issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                time, time, None, None
+            )
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, 'bad', hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                time, time, None, None
+            )
+        with pytest.raises(ValueError):
+            builder.add_response(
+                cert, issuer, 'notahash', ocsp.OCSPCertStatus.GOOD,
+                time, time, None, None
+            )
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                'bad', time, None, None
+            )
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                time, 'bad', None, None
+            )
+
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), 0, time, time, None, None
+            )
+        with pytest.raises(ValueError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                time, time, time, None
+            )
+        with pytest.raises(ValueError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.GOOD,
+                time, time, None, reason
+            )
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.REVOKED,
+                time, time, None, reason
+            )
+        with pytest.raises(TypeError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.REVOKED,
+                time, time, time, 0
+            )
+        with pytest.raises(ValueError):
+            builder.add_response(
+                cert, issuer, hashes.SHA256(), ocsp.OCSPCertStatus.REVOKED,
+                time, time, time - datetime.timedelta(days=36500), None
             )
 
     def test_invalid_certificates(self):
@@ -309,13 +305,13 @@ class TestOCSPResponseBuilder(object):
         builder = ocsp.OCSPResponseBuilder()
         cert, _ = _cert_and_issuer()
         with pytest.raises(TypeError):
-            builder.responder_id('invalid', ocsp.OCSPResponderEncoding.HASH)
+            builder.responder_id(ocsp.OCSPResponderEncoding.HASH, 'invalid')
         with pytest.raises(TypeError):
-            builder.responder_id(cert, 'notanenum')
+            builder.responder_id('notanenum', cert)
 
-        builder = builder.responder_id(cert, ocsp.OCSPResponderEncoding.NAME)
+        builder = builder.responder_id(ocsp.OCSPResponderEncoding.NAME, cert)
         with pytest.raises(ValueError):
-            builder.responder_id(cert, ocsp.OCSPResponderEncoding.NAME)
+            builder.responder_id(ocsp.OCSPResponderEncoding.NAME, cert)
 
     def test_invalid_extension(self):
         builder = ocsp.OCSPResponseBuilder()
@@ -326,7 +322,7 @@ class TestOCSPResponseBuilder(object):
         builder = ocsp.OCSPResponseBuilder()
         root_cert, private_key = _generate_root()
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         )
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256())
@@ -353,7 +349,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -369,7 +365,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -398,7 +394,7 @@ class TestOCSPResponseBuilder(object):
         next_update = this_update + datetime.timedelta(days=7)
         revoked_date = this_update - datetime.timedelta(days=300)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.REVOKED,
             this_update, next_update, revoked_date, None
@@ -421,7 +417,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -439,7 +435,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         revoked_date = this_update - datetime.timedelta(days=300)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.REVOKED,
             this_update, None, revoked_date, None
@@ -463,7 +459,7 @@ class TestOCSPResponseBuilder(object):
         next_update = this_update + datetime.timedelta(days=7)
         revoked_date = this_update - datetime.timedelta(days=300)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.NAME
+            ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.REVOKED,
             this_update, next_update, revoked_date,
@@ -487,7 +483,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.HASH
+            ocsp.OCSPResponderEncoding.HASH, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -509,7 +505,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.HASH
+            ocsp.OCSPResponderEncoding.HASH, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -527,7 +523,7 @@ class TestOCSPResponseBuilder(object):
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
         builder = builder.responder_id(
-            root_cert, ocsp.OCSPResponderEncoding.HASH
+            ocsp.OCSPResponderEncoding.HASH, root_cert
         ).add_response(
             cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD, this_update,
             next_update, None, None
@@ -545,11 +541,11 @@ class TestOCSPResponseBuilder(object):
     @pytest.mark.parametrize(
         ("status", "der"),
         [
-            [ocsp.OCSPResponseStatus.MALFORMED_REQUEST, b"0\x03\n\x01\x01"],
-            [ocsp.OCSPResponseStatus.INTERNAL_ERROR, b"0\x03\n\x01\x02"],
-            [ocsp.OCSPResponseStatus.TRY_LATER, b"0\x03\n\x01\x03"],
-            [ocsp.OCSPResponseStatus.SIG_REQUIRED, b"0\x03\n\x01\x05"],
-            [ocsp.OCSPResponseStatus.UNAUTHORIZED, b"0\x03\n\x01\x06"],
+            (ocsp.OCSPResponseStatus.MALFORMED_REQUEST, b"0\x03\n\x01\x01"),
+            (ocsp.OCSPResponseStatus.INTERNAL_ERROR, b"0\x03\n\x01\x02"),
+            (ocsp.OCSPResponseStatus.TRY_LATER, b"0\x03\n\x01\x03"),
+            (ocsp.OCSPResponseStatus.SIG_REQUIRED, b"0\x03\n\x01\x05"),
+            (ocsp.OCSPResponseStatus.UNAUTHORIZED, b"0\x03\n\x01\x06"),
         ]
     )
     def test_build_non_successful_statuses(self, status, der):

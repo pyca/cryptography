@@ -262,7 +262,7 @@ Creating Responses
         :param list certs: A list of :class:`~cryptography.x509.Certificate`
             objects.
 
-    .. method:: responder_id(responder_cert, encoding)
+    .. method:: responder_id(encoding, responder_cert)
 
         Set the ``responderID`` on the OCSP response. This is the data a
         client will use to determine what certificate signed the response.
@@ -316,11 +316,13 @@ Creating Responses
         >>> builder = ocsp.OCSPResponseBuilder()
         >>> # SHA1 is in this example because RFC 5019 mandates its use.
         >>> builder = builder.add_response(
-        ...     cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.GOOD,
-        ...     datetime.datetime.now(), datetime.datetime.now(),
-        ...     None, None
+        ...     cert=cert, issuer=issuer, algorithm=hashes.SHA1(),
+        ...     cert_status=ocsp.OCSPCertStatus.GOOD,
+        ...     this_update=datetime.datetime.now(),
+        ...     next_update=datetime.datetime.now(),
+        ...     revocation_time=None, revocation_reason=None
         ... ).responder_id(
-        ...     responder_cert, ocsp.OCSPResponderEncoding.HASH
+        ...     ocsp.OCSPResponderEncoding.HASH, responder_cert
         ... )
         >>> response = builder.sign(responder_key, hashes.SHA256())
         >>> response.certificate_status
