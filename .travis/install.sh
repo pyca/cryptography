@@ -47,6 +47,10 @@ elif [ -n "${LIBRESSL}" ]; then
 fi
 
 if [ -n "${DOCKER}" ]; then
+    if [ -n "${OPENSSL}" ] || [ -n "${LIBRESSL}" ]; then
+        echo "OPENSSL and LIBRESSL are not allowed when DOCKER is set."
+        exit 1
+    fi
     docker pull "$DOCKER"
 fi
 
