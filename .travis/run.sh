@@ -25,10 +25,11 @@ source ~/.venv/bin/activate
 if [ -n "${DOCKER}" ]; then
     # We will be able to drop the -u once we switch the default container user in the
     # dockerfiles.
-    docker run -u 2000:2000 -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
+    docker run --rm -u 2000:2000 \
+        -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
         -e TOXENV "${DOCKER}" \
-        /bin/sh -c "cd ${TRAVIS_BUILD_DIR};tox -- --wycheproof-root='/wycheproof'"
+        /bin/sh -c "cd ${TRAVIS_BUILD_DIR}; tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then
     tox -- --wycheproof-root="$HOME/wycheproof"
 else
