@@ -28,8 +28,8 @@ if [ -n "${DOCKER}" ]; then
     docker run --rm -u 2000:2000 \
         -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
-        -e TOXENV "${DOCKER}" \
         -w "${TRAVIS_BUILD_DIR}" \
+        -e TOXENV "${DOCKER}" \
         /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then
     tox -- --wycheproof-root="$HOME/wycheproof"
