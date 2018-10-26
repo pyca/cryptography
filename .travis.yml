@@ -55,6 +55,56 @@ matrix:
           env: TOXENV=py37 LIBRESSL=2.7.4
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.8.2
+
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-wheezy
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-jessie
+        - python: 3.4
+          services: docker
+          env: TOXENV=py34 DOCKER=pyca/cryptography-runner-jessie
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-stretch
+        - python: 3.5
+          services: docker
+          env: TOXENV=py35 DOCKER=pyca/cryptography-runner-stretch
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-buster
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-buster
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-sid
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-sid
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 2.7
+          services: docker
+          env: TOXENV=randomorder DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-fedora
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-fedora
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-alpine:latest
+
         - python: 3.6
           env: TOXENV=docs OPENSSL=1.1.0i
           addons:

@@ -46,6 +46,14 @@ elif [ -n "${LIBRESSL}" ]; then
     fi
 fi
 
+if [ -n "${DOCKER}" ]; then
+    if [ -n "${OPENSSL}" ] || [ -n "${LIBRESSL}" ]; then
+        echo "OPENSSL and LIBRESSL are not allowed when DOCKER is set."
+        exit 1
+    fi
+    docker pull "$DOCKER"
+fi
+
 if [ -z "${DOWNSTREAM}" ]; then
     git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"
 fi
