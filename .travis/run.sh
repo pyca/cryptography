@@ -29,7 +29,8 @@ if [ -n "${DOCKER}" ]; then
         -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
         -e TOXENV "${DOCKER}" \
-        /bin/sh -c "cd ${TRAVIS_BUILD_DIR}; tox -- --wycheproof-root='/wycheproof'"
+        -w "${TRAVIS_BUILD_DIR}" \
+        /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then
     tox -- --wycheproof-root="$HOME/wycheproof"
 else
