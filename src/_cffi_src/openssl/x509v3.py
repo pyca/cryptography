@@ -142,6 +142,15 @@ typedef struct {
 } DIST_POINT;
 
 typedef struct {
+    DIST_POINT_NAME *distpoint;
+    int onlyuser;
+    int onlyCA;
+    ASN1_BIT_STRING *onlysomereasons;
+    int indirectCRL;
+    int onlyattr;
+} ISSUING_DIST_POINT;
+
+typedef struct {
     ASN1_STRING *organization;
     Cryptography_STACK_OF_ASN1_INTEGER *noticenos;
 } NOTICEREF;
@@ -293,6 +302,9 @@ void DIST_POINT_NAME_free(DIST_POINT_NAME *);
 
 GENERAL_NAME *GENERAL_NAME_new(void);
 void GENERAL_NAME_free(GENERAL_NAME *);
+
+ISSUING_DIST_POINT *ISSUING_DIST_POINT_new(void);
+void ISSUING_DIST_POINT_free(ISSUING_DIST_POINT *);
 """
 
 CUSTOMIZATIONS = """
