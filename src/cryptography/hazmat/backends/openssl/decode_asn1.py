@@ -566,11 +566,10 @@ def _decode_reasons(backend, reasons):
 
 
 def _decode_distpoint(backend, distpoint):
-    full_name = None
-    relative_name = None
-    # Type 0 is fullName, there is no #define for it in the code.
     if distpoint.type == _DISTPOINT_TYPE_FULLNAME:
         full_name = _decode_general_names(backend, distpoint.name.fullname)
+        return full_name, None
+
     # OpenSSL code doesn't test for a specific type for
     # relativename, everything that isn't fullname is considered
     # relativename.  Per RFC 5280:
@@ -578,22 +577,21 @@ def _decode_distpoint(backend, distpoint):
     # DistributionPointName ::= CHOICE {
     #      fullName                [0]      GeneralNames,
     #      nameRelativeToCRLIssuer [1]      RelativeDistinguishedName }
-    else:
-        rns = distpoint.name.relativename
-        rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
-        attributes = set()
-        for i in range(rnum):
-            rn = backend._lib.sk_X509_NAME_ENTRY_value(
-                rns, i
-            )
-            backend.openssl_assert(rn != backend._ffi.NULL)
-            attributes.add(
-                _decode_x509_name_entry(backend, rn)
-            )
+    rns = distpoint.name.relativename
+    rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
+    attributes = set()
+    for i in range(rnum):
+        rn = backend._lib.sk_X509_NAME_ENTRY_value(
+            rns, i
+        )
+        backend.openssl_assert(rn != backend._ffi.NULL)
+        attributes.add(
+            _decode_x509_name_entry(backend, rn)
+        )
 
-        relative_name = x509.RelativeDistinguishedName(attributes)
+    relative_name = x509.RelativeDistinguishedName(attributes)
 
-    return full_name, relative_name
+    return None, relative_name
 
 
 def _decode_crl_distribution_points(backend, cdps):
