@@ -92,7 +92,8 @@ class PyTest(test):
 
 def keywords_with_side_effects(argv):
     """
-    Get a dictionary with setup keywords that (can) have side effects.
+    Get a dictionary with setup keywords that (can) have side effects
+    getting a dictionary with setup keywords.
 
     :param argv: A list of strings with command line arguments.
     :returns: A dictionary with keyword arguments for the ``setup()`` function.
