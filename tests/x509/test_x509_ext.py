@@ -4473,20 +4473,18 @@ class TestPrecertPoisonExtension(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSignedCertificateTimestamps(object):
     def test_eq(self, backend):
-        cert = _load_cert(
+        scts = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
             backend
-        )
-        scts = cert.extensions.get_extension_for_class(
+        ).extensions.get_extension_for_class(
             x509.PrecertificateSignedCertificateTimestamps
         ).value._signed_certificate_timestamps
-        cert2 = _load_cert(
+        scts2 = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
             backend
-        )
-        scts2 = cert2.extensions.get_extension_for_class(
+        ).extensions.get_extension_for_class(
             x509.PrecertificateSignedCertificateTimestamps
         ).value._signed_certificate_timestamps
         assert scts[0] == scts2[0]
