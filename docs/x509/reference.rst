@@ -2934,6 +2934,12 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.5.29.46"``. The identifier for the
         :class:`~cryptography.x509.FreshestCRL` extension type.
 
+    .. attribute:: ISSUING_DISTRIBUTION_POINT
+
+        .. versionadded:: 2.4
+
+        Corresponds to the dotted string ``"2.5.29.28"``.
+
 
 .. class:: CRLEntryExtensionOID
 
