@@ -310,81 +310,11 @@ Tanja Lange.
 
 All named curves are instances of :class:`EllipticCurve`.
 
-.. class:: SECT571K1
+.. class:: SECP256R1
 
     .. versionadded:: 0.5
 
-    SECG curve ``sect571k1``. Also called NIST K-571.
-
-
-.. class:: SECT409K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect409k1``. Also called NIST K-409.
-
-
-.. class:: SECT283K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect283k1``. Also called NIST K-283.
-
-
-.. class:: SECT233K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect233k1``. Also called NIST K-233.
-
-
-.. class:: SECT163K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect163k1``. Also called NIST K-163.
-
-
-.. class:: SECT571R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect571r1``. Also called NIST B-571.
-
-
-.. class:: SECT409R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect409r1``. Also called NIST B-409.
-
-
-.. class:: SECT283R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect283r1``. Also called NIST B-283.
-
-
-.. class:: SECT233R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect233r1``. Also called NIST B-233.
-
-
-.. class:: SECT163R2
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect163r2``. Also called NIST B-163.
-
-
-.. class:: SECP521R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``secp521r1``. Also called NIST P-521.
+    SECG curve ``secp256r1``. Also called NIST P-256.
 
 
 .. class:: SECP384R1
@@ -394,11 +324,11 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp384r1``. Also called NIST P-384.
 
 
-.. class:: SECP256R1
+.. class:: SECP521R1
 
     .. versionadded:: 0.5
 
-    SECG curve ``secp256r1``. Also called NIST P-256.
+    SECG curve ``secp521r1``. Also called NIST P-521.
 
 
 .. class:: SECP224R1
@@ -442,6 +372,87 @@ All named curves are instances of :class:`EllipticCurve`.
 
     Brainpool curve specified in :rfc:`5639`. These curves are discouraged
     for new systems.
+
+.. class:: SECT571K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect571k1``. Also called NIST K-571. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT409K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect409k1``. Also called NIST K-409. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT283K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect283k1``. Also called NIST K-283. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT233K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect233k1``. Also called NIST K-233. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT163K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect163k1``. Also called NIST K-163. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT571R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect571r1``. Also called NIST B-571. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT409R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect409r1``. Also called NIST B-409. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT283R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect283r1``. Also called NIST B-283. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT233R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect233r1``. Also called NIST B-233. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT163R2
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect163r2``. Also called NIST B-163. These binary curves are
+    discouraged for new systems.
+
+
 
 
 Key Interfaces
