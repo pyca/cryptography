@@ -533,7 +533,17 @@ def _decode_dist_points(backend, cdps):
     return dist_points
 
 
-_REASON_MAPPING = {
+# ReasonFlags ::= BIT STRING {
+#      unused                  (0),
+#      keyCompromise           (1),
+#      cACompromise            (2),
+#      affiliationChanged      (3),
+#      superseded              (4),
+#      cessationOfOperation    (5),
+#      certificateHold         (6),
+#      privilegeWithdrawn      (7),
+#      aACompromise            (8) }
+_REASON_BIT_MAPPING = {
     1: x509.ReasonFlags.key_compromise,
     2: x509.ReasonFlags.ca_compromise,
     3: x509.ReasonFlags.affiliation_changed,
@@ -547,18 +557,8 @@ _REASON_MAPPING = {
 
 def _decode_reasons(backend, reasons):
     # We will check each bit from RFC 5280
-    # ReasonFlags ::= BIT STRING {
-    #      unused                  (0),
-    #      keyCompromise           (1),
-    #      cACompromise            (2),
-    #      affiliationChanged      (3),
-    #      superseded              (4),
-    #      cessationOfOperation    (5),
-    #      certificateHold         (6),
-    #      privilegeWithdrawn      (7),
-    #      aACompromise            (8) }
     enum_reasons = []
-    for bit_position, reason in six.iteritems(_REASON_MAPPING):
+    for bit_position, reason in six.iteritems(_REASON_BIT_MAPPING):
         if backend._lib.ASN1_BIT_STRING_get_bit(reasons, bit_position):
             enum_reasons.append(reason)
 
