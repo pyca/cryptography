@@ -4471,6 +4471,72 @@ class TestPrecertPoisonExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestSignedCertificateTimestamps(object):
+    def test_eq(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        scts = cert.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        cert2 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        scts2 = cert2.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        assert scts[0] == scts2[0]
+
+    def test_ne(self, backend):
+        scts = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        scts2 = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        assert scts[0] != scts2[0]
+        assert scts[0] != object()
+
+    def test_hash(self, backend):
+        scts = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        scts2 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        scts3 = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value._signed_certificate_timestamps
+        assert hash(scts[0]) == hash(scts2[0])
+        assert hash(scts[0]) != hash(scts3[0])
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
@@ -4480,6 +4546,66 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
             "<PrecertificateSignedCertificateTimestamps([])>"
         )
+
+    def test_eq(self, backend):
+        psct1 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        psct2 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        assert psct1 == psct2
+
+    def test_ne(self, backend):
+        psct1 = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        psct2 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        assert psct1 != psct2
+        assert psct1 != object()
+
+    def test_hash(self, backend):
+        psct1 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        psct2 = _load_cert(
+            os.path.join("x509", "badssl-sct.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        psct3 = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        ).extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        assert hash(psct1) == hash(psct2)
+        assert hash(psct1) != hash(psct3)
 
     @pytest.mark.supported(
         only_if=lambda backend: (

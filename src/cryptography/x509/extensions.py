@@ -1402,6 +1402,21 @@ class PrecertificateSignedCertificateTimestamps(object):
             )
         )
 
+    def __hash__(self):
+        return hash(tuple(self._signed_certificate_timestamps))
+
+    def __eq__(self, other):
+        if not isinstance(other, PrecertificateSignedCertificateTimestamps):
+            return NotImplemented
+
+        return (
+            self._signed_certificate_timestamps ==
+            other._signed_certificate_timestamps
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 @utils.register_interface(ExtensionType)
 class OCSPNonce(object):
