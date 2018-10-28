@@ -25,7 +25,9 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
-from cryptography.hazmat.backends.openssl.decode_asn1 import _Integers
+from cryptography.hazmat.backends.openssl.decode_asn1 import (
+    _CRL_ENTRY_REASON_ENUM_TO_CODE, _Integers
+)
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey, _dh_params_dup
 )
@@ -38,6 +40,7 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
+    _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
     _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc, _txt2obj_gc,
 )
@@ -69,6 +72,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB, XTS
 )
 from cryptography.hazmat.primitives.kdf import scrypt
+from cryptography.x509 import ocsp
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -1465,6 +1469,104 @@ class Backend(object):
             gc=True,
         )
         return _OCSPRequest(self, ocsp_req)
+
+    def _create_ocsp_basic_response(self, builder, private_key, algorithm):
+        basic = self._lib.OCSP_BASICRESP_new()
+        self.openssl_assert(basic != self._ffi.NULL)
+        basic = self._ffi.gc(basic, self._lib.OCSP_BASICRESP_free)
+        evp_md = self._lib.EVP_get_digestbyname(
+            builder._response._algorithm.name.encode("ascii")
+        )
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        certid = self._lib.OCSP_cert_to_id(
+            evp_md, builder._response._cert._x509,
+            builder._response._issuer._x509
+        )
+        self.openssl_assert(certid != self._ffi.NULL)
+        certid = self._ffi.gc(certid, self._lib.OCSP_CERTID_free)
+        if builder._response._revocation_reason is None:
+            reason = -1
+        else:
+            reason = _CRL_ENTRY_REASON_ENUM_TO_CODE[
+                builder._response._revocation_reason
+            ]
+        if builder._response._revocation_time is None:
+            rev_time = self._ffi.NULL
+        else:
+            rev_time = self._create_asn1_time(
+                builder._response._revocation_time
+            )
+
+        next_update = self._ffi.NULL
+        if builder._response._next_update is not None:
+            next_update = self._create_asn1_time(
+                builder._response._next_update
+            )
+
+        this_update = self._create_asn1_time(builder._response._this_update)
+
+        res = self._lib.OCSP_basic_add1_status(
+            basic,
+            certid,
+            builder._response._cert_status.value,
+            reason,
+            rev_time,
+            this_update,
+            next_update
+        )
+        self.openssl_assert(res != self._ffi.NULL)
+        # okay, now sign the basic structure
+        evp_md = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        responder_cert, responder_encoding = builder._responder_id
+        flags = self._lib.OCSP_NOCERTS
+        if responder_encoding is ocsp.OCSPResponderEncoding.HASH:
+            flags |= self._lib.OCSP_RESPID_KEY
+
+        if builder._certs is not None:
+            for cert in builder._certs:
+                res = self._lib.OCSP_basic_add1_cert(basic, cert._x509)
+                self.openssl_assert(res == 1)
+
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=basic,
+            add_func=self._lib.OCSP_BASICRESP_add_ext,
+            gc=True,
+        )
+
+        res = self._lib.OCSP_basic_sign(
+            basic, responder_cert._x509, private_key._evp_pkey,
+            evp_md, self._ffi.NULL, flags
+        )
+        if res != 1:
+            errors = self._consume_errors()
+            self.openssl_assert(
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_X509,
+                    self._lib.X509_R_KEY_VALUES_MISMATCH
+                )
+            )
+            raise ValueError("responder_cert must be signed by private_key")
+
+        return basic
+
+    def create_ocsp_response(self, response_status, builder, private_key,
+                             algorithm):
+        if response_status is ocsp.OCSPResponseStatus.SUCCESSFUL:
+            basic = self._create_ocsp_basic_response(
+                builder, private_key, algorithm
+            )
+        else:
+            basic = self._ffi.NULL
+
+        ocsp_resp = self._lib.OCSP_response_create(
+            response_status.value, basic
+        )
+        self.openssl_assert(ocsp_resp != self._ffi.NULL)
+        ocsp_resp = self._ffi.gc(ocsp_resp, self._lib.OCSP_RESPONSE_free)
+        return _OCSPResponse(self, ocsp_resp)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

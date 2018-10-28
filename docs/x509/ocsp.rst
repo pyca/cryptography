@@ -68,6 +68,24 @@ OCSP
     gP8L8mJMcCaY
     -----END CERTIFICATE-----
     """
+    pem_responder_cert = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIBPjCB5KADAgECAgQHW80VMAoGCCqGSM49BAMCMCcxCzAJBgNVBAYTAlVTMRgw
+    FgYDVQQDDA9DcnlwdG9ncmFwaHkgQ0EwHhcNMTgxMDA3MTIzNTEwWhcNMjgxMDA0
+    MTIzNTEwWjAnMQswCQYDVQQGEwJVUzEYMBYGA1UEAwwPQ3J5cHRvZ3JhcGh5IENB
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbQ2E0N/E3R0zEG+qa+yAFXBY6Fte
+    QzyvFdq7EZHDktlyUllaVJBrbX1ItV0MlayFwwQPhZmuLPpQBzuVKyrUfTAKBggq
+    hkjOPQQDAgNJADBGAiEAo0NQRmfPvhWQpSvJzV+2Ag441Zeckk+bib7swduQIjIC
+    IQCqYD9pArB2SWfmhQCSZkNEATlsPIML8lvlSkbNcrmrqQ==
+    -----END CERTIFICATE-----
+    """
+    pem_responder_key = b"""
+    -----BEGIN PRIVATE KEY-----
+    MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgO+vsRu8xDIVZE+xh
+    s8ESqJqcpJlwmj8CtF8HPHxrDSGhRANCAARtDYTQ38TdHTMQb6pr7IAVcFjoW15D
+    PK8V2rsRkcOS2XJSWVpUkGttfUi1XQyVrIXDBA+Fma4s+lAHO5UrKtR9
+    -----END PRIVATE KEY-----
+    """
     der_ocsp_req = (
         b"0V0T0R0P0N0\t\x06\x05+\x0e\x03\x02\x1a\x05\x00\x04\x148\xcaF\x8c"
         b"\x07D\x8d\xf4\x81\x96\xc7mmLpQ\x9e`\xa7\xbd\x04\x14yu\xbb\x84:\xcb"
@@ -181,6 +199,156 @@ Loading Responses
         >>> ocsp_resp = ocsp.load_der_ocsp_response(der_ocsp_resp_unauth)
         >>> print(ocsp_resp.response_status)
         OCSPResponseStatus.UNAUTHORIZED
+
+
+Creating Responses
+~~~~~~~~~~~~~~~~~~
+
+.. class:: OCSPResponseBuilder
+
+    .. versionadded:: 2.4
+
+    This class is used to create :class:`~cryptography.x509.ocsp.OCSPResponse`
+    objects. You cannot set ``produced_at`` on OCSP responses at this time.
+    Instead the field is set to current UTC time when calling ``sign``. For
+    unsuccessful statuses call the class method
+    :meth:`~cryptography.x509.ocsp.OCSPResponseBuilder.build_unsuccessful`.
+
+    .. method:: add_response(cert, issuer, algorithm, cert_status, this_update, next_update, revocation_time, revocation_reason)
+
+        This method adds status information about the certificate that was
+        requested to the response.
+
+        :param cert: The :class:`~cryptography.x509.Certificate` whose validity
+            is being checked.
+
+        :param issuer: The issuer :class:`~cryptography.x509.Certificate` of
+            the certificate that is being checked.
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            instance. For OCSP only
+            :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
+            :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
+
+        :param cert_status: An item from the
+            :class:`~cryptography.x509.ocsp.OCSPCertStatus` enumeration.
+
+        :param this_update: A naïve :class:`datetime.datetime` object
+            representing the most recent time in UTC at which the status being
+            indicated is known by the responder to be correct.
+
+        :param next_update: A naïve :class:`datetime.datetime` object or
+            ``None``. The time in UTC at or before which newer information will
+            be available about the status of the certificate.
+
+        :param revocation_time: A naïve :class:`datetime.datetime` object or
+            ``None`` if the ``cert`` is not revoked. The time in UTC at which
+            the certificate was revoked.
+
+        :param revocation_reason: An item from the
+            :class:`~cryptography.x509.ReasonFlags` enumeration or ``None`` if
+            the ``cert`` is not revoked.
+
+    .. method:: certificates(certs)
+
+        Add additional certificates that should be used to verify the
+        signature on the response. This is typically used when the responder
+        utilizes an OCSP delegate.
+
+        :param list certs: A list of :class:`~cryptography.x509.Certificate`
+            objects.
+
+    .. method:: responder_id(encoding, responder_cert)
+
+        Set the ``responderID`` on the OCSP response. This is the data a
+        client will use to determine what certificate signed the response.
+
+        :param responder_cert: The :class:`~cryptography.x509.Certificate`
+            object for the certificate whose private key will sign the
+            OCSP response. If the certificate and key do not match an
+            error will be raised when calling ``sign``.
+        :param encoding: Either
+            :attr:`~cryptography.x509.ocsp.OCSPResponderEncoding.HASH` or
+            :attr:`~cryptography.x509.ocsp.OCSPResponderEncoding.NAME`.
+
+    .. method:: add_extension(extension, critical)
+
+        Adds an extension to the response.
+
+        :param extension: An extension conforming to the
+            :class:`~cryptography.x509.ExtensionType` interface.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled.
+
+    .. method:: sign(private_key, algorithm)
+
+        Creates the OCSP response that can then be serialized and sent to
+        clients. This method will create a
+        :attr:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` response.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
+            will be used to generate the signature.
+
+        :returns: A new :class:`~cryptography.x509.ocsp.OCSPResponse`.
+
+    .. doctest::
+
+        >>> import datetime
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
+        >>> cert = load_pem_x509_certificate(pem_cert, default_backend())
+        >>> issuer = load_pem_x509_certificate(pem_issuer, default_backend())
+        >>> responder_cert = load_pem_x509_certificate(pem_responder_cert, default_backend())
+        >>> responder_key = serialization.load_pem_private_key(pem_responder_key, None, default_backend())
+        >>> builder = ocsp.OCSPResponseBuilder()
+        >>> # SHA1 is in this example because RFC 5019 mandates its use.
+        >>> builder = builder.add_response(
+        ...     cert=cert, issuer=issuer, algorithm=hashes.SHA1(),
+        ...     cert_status=ocsp.OCSPCertStatus.GOOD,
+        ...     this_update=datetime.datetime.now(),
+        ...     next_update=datetime.datetime.now(),
+        ...     revocation_time=None, revocation_reason=None
+        ... ).responder_id(
+        ...     ocsp.OCSPResponderEncoding.HASH, responder_cert
+        ... )
+        >>> response = builder.sign(responder_key, hashes.SHA256())
+        >>> response.certificate_status
+        <OCSPCertStatus.GOOD: 0>
+
+    .. classmethod:: build_unsuccessful(response_status)
+
+        Creates an unsigned OCSP response which can then be serialized and
+        sent to clients. ``build_unsuccessful`` may only be called with a
+        :class:`~cryptography.x509.ocsp.OCSPResponseStatus` that is not
+        ``SUCCESSFUL``. Since this is a class method note that no other
+        methods can or should be called as unsuccessful statuses do not
+        encode additional data.
+
+        :returns: A new :class:`~cryptography.x509.ocsp.OCSPResponse`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
+        >>> response = ocsp.OCSPResponseBuilder.build_unsuccessful(
+        ...     ocsp.OCSPResponseStatus.UNAUTHORIZED
+        ... )
+        >>> response.response_status
+        <OCSPResponseStatus.UNAUTHORIZED: 6>
 
 
 Interfaces
@@ -472,3 +640,20 @@ Interfaces
     .. attribute:: UNKNOWN
 
         The certificate being checked is not known to the OCSP responder.
+
+.. class:: OCSPResponderEncoding
+
+    .. versionadded:: 2.4
+
+    An enumeration of ``responderID`` encodings that can be passed to
+    :meth:`~cryptography.x509.ocsp.OCSPResponseBuilder.responder_id`.
+
+    .. attribute:: HASH
+
+        Encode the hash of the public key whose corresponding private key
+        signed the response.
+
+    .. attribute:: NAME
+
+        Encode the X.509 ``Name`` of the certificate whose private key signed
+        the response.
