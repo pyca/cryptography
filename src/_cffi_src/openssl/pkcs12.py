@@ -10,6 +10,8 @@ INCLUDES = """
 
 TYPES = """
 typedef ... PKCS12;
+
+static const int PKCS12_R_MAC_VERIFY_FAILURE;
 """
 
 FUNCTIONS = """

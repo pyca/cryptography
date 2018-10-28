@@ -109,8 +109,44 @@ method on the key object. Documentation for these methods in found in the
 :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
 :mod:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
 
+PKCS12
+~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization.pkcs12
+
+PKCS12 is a binary format described in :rfc:`7292`. It can contain
+certificates, keys, and more. PKCS12 files commonly have a ``pfx`` or ``p12``
+file suffix.
+
+.. note::
+
+    ``cryptography`` only supports a single certificate and private key when
+    parsing PKCS12 files at this time.
+
+.. function:: load_load_key_and_certificates_from_pkcs12(data, password, backend)
+
+    .. versionadded:: 2.5
+
+    Deserialize a PKCS12 blob.
+
+    :param bytes data: The binary data.
+
+    :param bytes password: The password to use to decrypt the data. ``None``
+        if the PKCS12 is not encrypted.
+
+    :param backend: A backend instance.
+
+    :returns: A tuple of
+        ``(certificate, private_key, [additional_certificates])``.
+        ``certificate`` is either a :class:`~cryptography.x509.Certificate` or
+        ``None``, ``private_key`` is a private key type or ``None``, and
+        ``additional_certificates`` is a list of
+        :class:`~cryptography.x509.Certificate` instances.
+
 PEM
 ~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization
 
 PEM is an encapsulation format, meaning keys in it can actually be any of
 several different key types. However these are all self-identifying, so you

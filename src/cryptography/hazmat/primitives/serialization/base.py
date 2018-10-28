@@ -12,6 +12,10 @@ import six
 from cryptography import utils
 
 
+def load_pkcs12(data, password, backend):
+    return backend.load_pkcs12(data, password)
+
+
 def load_pem_private_key(data, password, backend):
     return backend.load_pem_private_key(data, password)
 
