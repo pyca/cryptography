@@ -412,6 +412,30 @@ Custom X.509 Certificate Revocation List Vectors
   was used to generate it.
 * ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
   ``DeltaCRLIndicator`` extension.
+* ``crl_idp_fullname_only.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension with only a ``fullname`` for the
+  distribution point.
+* ``crl_idp_only_ca.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that is only valid for CA certificate
+  revocation.
+* ``crl_idp_fullname_only_aa.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that sets a ``fullname`` and is only
+  valid for attribute certificate revocation.
+* ``crl_idp_fullname_only_user.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that sets a ``fullname`` and is only
+  valid for user certificate revocation.
+* ``crl_idp_fullname_indirect_crl.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that sets a ``fullname`` and the
+  indirect CRL flag.
+* ``crl_idp_reasons_only.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that is only valid for revocations
+  with the ``keyCompromise`` reason.
+* ``crl_idp_relative_user_all_reasons.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension that sets all revocation reasons as
+  allowed.
+* ``crl_idp_relativename_only.pem`` - Contains a CRL with an
+  ``IssuingDistributionPoints`` extension with only a ``relativename`` for
+  the distribution point.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
