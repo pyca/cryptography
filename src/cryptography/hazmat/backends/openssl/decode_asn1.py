@@ -9,6 +9,8 @@ import ipaddress
 
 import asn1crypto.core
 
+import six
+
 from cryptography import x509
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
@@ -510,44 +512,7 @@ def _decode_dist_points(backend, cdps):
         reasons = None
         cdp = backend._lib.sk_DIST_POINT_value(cdps, i)
         if cdp.reasons != backend._ffi.NULL:
-            # We will check each bit from RFC 5280
-            # ReasonFlags ::= BIT STRING {
-            #      unused                  (0),
-            #      keyCompromise           (1),
-            #      cACompromise            (2),
-            #      affiliationChanged      (3),
-            #      superseded              (4),
-            #      cessationOfOperation    (5),
-            #      certificateHold         (6),
-            #      privilegeWithdrawn      (7),
-            #      aACompromise            (8) }
-            reasons = []
-            get_bit = backend._lib.ASN1_BIT_STRING_get_bit
-            if get_bit(cdp.reasons, 1):
-                reasons.append(x509.ReasonFlags.key_compromise)
-
-            if get_bit(cdp.reasons, 2):
-                reasons.append(x509.ReasonFlags.ca_compromise)
-
-            if get_bit(cdp.reasons, 3):
-                reasons.append(x509.ReasonFlags.affiliation_changed)
-
-            if get_bit(cdp.reasons, 4):
-                reasons.append(x509.ReasonFlags.superseded)
-
-            if get_bit(cdp.reasons, 5):
-                reasons.append(x509.ReasonFlags.cessation_of_operation)
-
-            if get_bit(cdp.reasons, 6):
-                reasons.append(x509.ReasonFlags.certificate_hold)
-
-            if get_bit(cdp.reasons, 7):
-                reasons.append(x509.ReasonFlags.privilege_withdrawn)
-
-            if get_bit(cdp.reasons, 8):
-                reasons.append(x509.ReasonFlags.aa_compromise)
-
-            reasons = frozenset(reasons)
+            reasons = _decode_reasons(backend, cdp.reasons)
 
         if cdp.CRLissuer != backend._ffi.NULL:
             crl_issuer = _decode_general_names(backend, cdp.CRLissuer)
@@ -555,32 +520,9 @@ def _decode_dist_points(backend, cdps):
         # Certificates may have a crl_issuer/reasons and no distribution
         # point so make sure it's not null.
         if cdp.distpoint != backend._ffi.NULL:
-            # Type 0 is fullName, there is no #define for it in the code.
-            if cdp.distpoint.type == _DISTPOINT_TYPE_FULLNAME:
-                full_name = _decode_general_names(
-                    backend, cdp.distpoint.name.fullname
-                )
-            # OpenSSL code doesn't test for a specific type for
-            # relativename, everything that isn't fullname is considered
-            # relativename.  Per RFC 5280:
-            #
-            # DistributionPointName ::= CHOICE {
-            #      fullName                [0]      GeneralNames,
-            #      nameRelativeToCRLIssuer [1]      RelativeDistinguishedName }
-            else:
-                rns = cdp.distpoint.name.relativename
-                rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
-                attributes = set()
-                for i in range(rnum):
-                    rn = backend._lib.sk_X509_NAME_ENTRY_value(
-                        rns, i
-                    )
-                    backend.openssl_assert(rn != backend._ffi.NULL)
-                    attributes.add(
-                        _decode_x509_name_entry(backend, rn)
-                    )
-
-                relative_name = x509.RelativeDistinguishedName(attributes)
+            full_name, relative_name = _decode_distpoint(
+                backend, cdp.distpoint
+            )
 
         dist_points.append(
             x509.DistributionPoint(
@@ -589,6 +531,67 @@ def _decode_dist_points(backend, cdps):
         )
 
     return dist_points
+
+
+# ReasonFlags ::= BIT STRING {
+#      unused                  (0),
+#      keyCompromise           (1),
+#      cACompromise            (2),
+#      affiliationChanged      (3),
+#      superseded              (4),
+#      cessationOfOperation    (5),
+#      certificateHold         (6),
+#      privilegeWithdrawn      (7),
+#      aACompromise            (8) }
+_REASON_BIT_MAPPING = {
+    1: x509.ReasonFlags.key_compromise,
+    2: x509.ReasonFlags.ca_compromise,
+    3: x509.ReasonFlags.affiliation_changed,
+    4: x509.ReasonFlags.superseded,
+    5: x509.ReasonFlags.cessation_of_operation,
+    6: x509.ReasonFlags.certificate_hold,
+    7: x509.ReasonFlags.privilege_withdrawn,
+    8: x509.ReasonFlags.aa_compromise,
+}
+
+
+def _decode_reasons(backend, reasons):
+    # We will check each bit from RFC 5280
+    enum_reasons = []
+    for bit_position, reason in six.iteritems(_REASON_BIT_MAPPING):
+        if backend._lib.ASN1_BIT_STRING_get_bit(reasons, bit_position):
+            enum_reasons.append(reason)
+
+    return frozenset(enum_reasons)
+
+
+def _decode_distpoint(backend, distpoint):
+    if distpoint.type == _DISTPOINT_TYPE_FULLNAME:
+        full_name = _decode_general_names(backend, distpoint.name.fullname)
+        return full_name, None
+
+    # OpenSSL code doesn't test for a specific type for
+    # relativename, everything that isn't fullname is considered
+    # relativename.  Per RFC 5280:
+    #
+    # DistributionPointName ::= CHOICE {
+    #      fullName                [0]      GeneralNames,
+    #      nameRelativeToCRLIssuer [1]      RelativeDistinguishedName }
+    rns = distpoint.name.relativename
+    rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
+    attributes = set()
+    for i in range(rnum):
+        rn = backend._lib.sk_X509_NAME_ENTRY_value(
+            rns, i
+        )
+        backend.openssl_assert(rn != backend._ffi.NULL)
+        attributes.add(
+            _decode_x509_name_entry(backend, rn)
+        )
+
+    relative_name = x509.RelativeDistinguishedName(attributes)
+
+    return None, relative_name
 
 
 def _decode_crl_distribution_points(backend, cdps):
