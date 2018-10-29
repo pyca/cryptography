@@ -105,6 +105,10 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
+        - python: 2.7
+          services: docker
+          env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
+          if: branch = master AND type != pull_request
         - python: 3.4
           env: TOXENV=pep8
 
@@ -130,10 +134,6 @@ matrix:
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
-        - python: 2.7
-          services: docker
-          env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
-          if: branch = master AND type != pull_request
 
 install:
     - ./.travis/install.sh
