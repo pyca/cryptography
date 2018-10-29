@@ -28,17 +28,6 @@ def configs = [
     ],
 ]
 
-/* Add the linkcheck job to our config list if we're on master */
-if (env.BRANCH_NAME == "master") {
-    configs.add(
-        [
-            label: 'docker',
-            imageName: 'pyca/cryptography-runner-buster',
-            toxenvs: ['docs-linkcheck'],
-        ]
-    )
-}
-
 def checkout_git(label) {
     retry(3) {
         def script = ""
