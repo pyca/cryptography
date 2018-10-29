@@ -138,6 +138,10 @@ matrix:
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
+        - python: 2.7
+          services: docker
+          env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
+          if: branch = master AND type != pull_request
 
 install:
     - ./.travis/install.sh
