@@ -138,7 +138,7 @@ class EllipticCurvePublicKey(object):
             raise ValueError('Must provide backend to decode point')
 
         byte_length = (curve.key_size + 7) // 8
-        compressed_byte_length = 1 + (curve.key_size + 7) // 8
+        compressed_byte_length = 1 + byte_length
         if (len(data) == compressed_byte_length and
                 data[0:1] in (b'\x02', b'\x03')):
             data = backend.uncompress_elliptic_curve_bytes(curve, data)

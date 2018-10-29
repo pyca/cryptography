@@ -1064,8 +1064,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
 
     def test_from_encoded_point_compressed(self, backend):
-        # set to point type 2 or 3
-
         for dat in _compressed_points:
             compressed_point = binascii.unhexlify(dat["in"])
             pn = ec.EllipticCurvePublicKey.from_encoded_point(
@@ -1086,7 +1084,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
 
     def test_from_encoded_point_uncompressed(self, backend):
-        # set to point type 2 or 3.
         uncompressed_point = binascii.unhexlify(
             "047399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac"
             "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
