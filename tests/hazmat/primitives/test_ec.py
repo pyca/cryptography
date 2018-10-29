@@ -220,6 +220,7 @@ def test_encode_point():
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
     )
 
+
 @pytest.mark.parametrize("dat", _compressed_points)
 def test_encode_compressed_point(dat):
     # secp256r1 point
