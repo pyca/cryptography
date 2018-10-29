@@ -181,7 +181,7 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
-    def _build_openssl_digest_name(self, algorithm):
+    def _evp_md_from_algorithm(self, algorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":
             alg = "{0}{1}".format(
                 algorithm.name, algorithm.digest_size * 8
@@ -189,12 +189,17 @@ class Backend(object):
         else:
             alg = algorithm.name.encode("ascii")
 
-        return alg
+        evp_md = self._lib.EVP_get_digestbyname(alg)
+        return evp_md
+
+    def _evp_md_non_null_from_algorithm(self, algorithm):
+        evp_md = self._evp_md_from_algorithm(algorithm)
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        return evp_md
 
     def hash_supported(self, algorithm):
-        name = self._build_openssl_digest_name(algorithm)
-        digest = self._lib.EVP_get_digestbyname(name)
-        return digest != self._ffi.NULL
+        evp_md = self._evp_md_from_algorithm(algorithm)
+        return evp_md != self._ffi.NULL
 
     def hmac_supported(self, algorithm):
         return self.hash_supported(algorithm)
@@ -286,9 +291,7 @@ class Backend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         buf = self._ffi.new("unsigned char[]", length)
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode("ascii"))
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         res = self._lib.PKCS5_PBKDF2_HMAC(
             key_material,
             len(key_material),
@@ -685,10 +688,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
@@ -767,10 +767,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()
@@ -875,10 +872,7 @@ class Backend(object):
                 "MD5 is not a supported hash algorithm for EC/DSA CRLs"
             )
 
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty CRL.
         x509_crl = self._lib.X509_CRL_new()
@@ -1452,9 +1446,7 @@ class Backend(object):
         self.openssl_assert(ocsp_req != self._ffi.NULL)
         ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
         cert, issuer, algorithm = builder._request
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode("ascii"))
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         certid = self._lib.OCSP_cert_to_id(
             evp_md, cert._x509, issuer._x509
         )
@@ -1474,10 +1466,9 @@ class Backend(object):
         basic = self._lib.OCSP_BASICRESP_new()
         self.openssl_assert(basic != self._ffi.NULL)
         basic = self._ffi.gc(basic, self._lib.OCSP_BASICRESP_free)
-        evp_md = self._lib.EVP_get_digestbyname(
-            builder._response._algorithm.name.encode("ascii")
+        evp_md = self._evp_md_non_null_from_algorithm(
+            builder._response._algorithm
         )
-        self.openssl_assert(evp_md != self._ffi.NULL)
         certid = self._lib.OCSP_cert_to_id(
             evp_md, builder._response._cert._x509,
             builder._response._issuer._x509
@@ -1516,8 +1507,7 @@ class Backend(object):
         )
         self.openssl_assert(res != self._ffi.NULL)
         # okay, now sign the basic structure
-        evp_md = self._lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         responder_cert, responder_encoding = builder._responder_id
         flags = self._lib.OCSP_NOCERTS
         if responder_encoding is ocsp.OCSPResponderEncoding.HASH:
