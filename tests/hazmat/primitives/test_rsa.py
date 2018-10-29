@@ -12,7 +12,7 @@ import os
 import pytest
 
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InvalidSignature, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend
