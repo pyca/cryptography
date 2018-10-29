@@ -223,19 +223,13 @@ def test_encode_point():
 
 def test_encode_compressed_point():
     # secp256r1 point
-    x = int(
-        '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec',
-        16
-    )
-    y = int(
-        '3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e',
-        16
-    )
-    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
-    data = pn.encode_point(compressed=True)
-    assert data == binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec"
-    )
+    for dat in _compressed_points:
+        compressed = binascii.unhexlify(dat["in"])
+        x = int(dat["x"], 16)
+        y = int(dat["y"], 16)
+        pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
+        data = pn.encode_point(compressed=True)
+        assert data == compressed
 
 
 def test_from_encoded_point():
