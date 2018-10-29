@@ -141,7 +141,7 @@ matrix:
         - python: 2.7
           services: docker
           env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
-          if: branch = master
+          if: branch = master AND type != pull_request
 
 install:
     - ./.travis/install.sh
