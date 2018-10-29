@@ -144,7 +144,6 @@ class EllipticCurvePublicKey(object):
             data = backend.uncompress_elliptic_curve_bytes(curve, data)
 
         if data.startswith(b'\x04'):
-            # key_size is in bits. Convert to bytes and round up
             if len(data) == 2 * byte_length + 1:
                 x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
                 y = utils.int_from_bytes(data[byte_length + 1:], 'big')
