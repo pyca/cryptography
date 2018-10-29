@@ -74,15 +74,9 @@ matrix:
         - python: 3.5
           services: docker
           env: TOXENV=py35 DOCKER=pyca/cryptography-runner-stretch
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-buster
         - python: 3.6
           services: docker
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-buster
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-sid
         - python: 3.6
           services: docker
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-sid
@@ -111,10 +105,8 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
-        - python: 2.7
-          env: TOXENV=pep8
         - python: 3.4
-          env: TOXENV=py3pep8
+          env: TOXENV=pep8
 
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
