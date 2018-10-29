@@ -22,7 +22,16 @@ fi
 
 source ~/.venv/bin/activate
 
-if [ -n "${TOXENV}" ]; then
+if [ -n "${DOCKER}" ]; then
+    # We will be able to drop the -u once we switch the default container user in the
+    # dockerfiles.
+    docker run --rm -u 2000:2000 \
+        -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
+        -v "${HOME}/wycheproof":/wycheproof \
+        -w "${TRAVIS_BUILD_DIR}" \
+        -e TOXENV "${DOCKER}" \
+        /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
+elif [ -n "${TOXENV}" ]; then
     tox -- --wycheproof-root="$HOME/wycheproof"
 else
     downstream_script="${TRAVIS_BUILD_DIR}/.travis/downstream.d/${DOWNSTREAM}.sh"

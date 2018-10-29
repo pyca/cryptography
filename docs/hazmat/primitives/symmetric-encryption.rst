@@ -803,7 +803,7 @@ Exceptions
 
 
 
-.. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`described by Colin Percival`: https://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends a 96-bit IV length`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 .. _`NIST SP-800-38D`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 .. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
@@ -811,5 +811,5 @@ Exceptions
 .. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
-.. _`OpenPGP`: http://openpgp.org
+.. _`OpenPGP`: https://www.openpgp.org/
 .. _`disk encryption`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS

@@ -93,7 +93,7 @@ Post-release tasks
   release.
 
 .. _`CVE from MITRE`: https://cveform.mitre.org/
-.. _`oss-security`: http://www.openwall.com/lists/oss-security/
+.. _`oss-security`: https://www.openwall.com/lists/oss-security/
 .. _`upgrading OpenSSL issue template`: https://github.com/pyca/cryptography/issues/new?template=openssl-release.md
 .. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev

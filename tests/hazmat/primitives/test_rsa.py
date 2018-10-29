@@ -635,6 +635,24 @@ class TestRSASignature(object):
         public_key.verify(signature, message, pss, hashes.SHA1())
 
     @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.BLAKE2s(digest_size=32)),
+        skip_message="Does not support BLAKE2s",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
+    def test_unsupported_hash(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.sign(message, pss, hashes.BLAKE2s(32))
+
+    @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
         ),

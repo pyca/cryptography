@@ -286,3 +286,24 @@ class TestOpenSSLMemoryLeaks(object):
             private_key = x25519.X25519PrivateKey.generate()
             private_key.public_key()
         """))
+
+    def test_create_ocsp_request(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.x509 import ocsp
+            import cryptography_vectors
+
+            path = "x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt"
+            with cryptography_vectors.open_vector_file(path, "rb") as f:
+                cert = x509.load_der_x509_certificate(
+                    f.read(), backend
+                )
+            builder = ocsp.OCSPRequestBuilder()
+            builder = builder.add_certificate(
+                cert, cert, hashes.SHA1()
+            ).add_extension(x509.OCSPNonce(b"0000"), False)
+            req = builder.build()
+        """))

@@ -1,5 +1,5 @@
-sudo: false
-dist: trusty
+sudo: true
+dist: xenial
 
 language: python
 
@@ -29,14 +29,18 @@ matrix:
           env: TOXENV=py36
         - python: 3.7
           env: TOXENV=py37
-          dist: xenial
-          sudo: true
         - python: pypy-5.3
           env: TOXENV=pypy-nocoverage
+          # PyPy 5.3 isn't available for xenial
+          dist: trusty
         - python: pypy2.7-5.10.0
           env: TOXENV=pypy-nocoverage
         - python: pypy3.5-5.10.1
           env: TOXENV=pypy3-nocoverage
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.0.1u
+        - python: 3.7
+          env: TOXENV=py37 OPENSSL=1.0.1u
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0i
         - python: 3.5
@@ -45,20 +49,62 @@ matrix:
           env: TOXENV=py27 OPENSSL=1.1.1
         - python: 3.7
           env: TOXENV=py37 OPENSSL=1.1.1
-          dist: xenial
-          sudo: true
-        - python: 3.7
-          env: TOXENV=py37 LIBRESSL=2.4.5
-          dist: xenial
-          sudo: true
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.6.5
-          dist: xenial
-          sudo: true
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.7.4
-          dist: xenial
-          sudo: true
+        - python: 3.7
+          env: TOXENV=py37 LIBRESSL=2.8.2
+
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-wheezy
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-jessie
+        - python: 3.4
+          services: docker
+          env: TOXENV=py34 DOCKER=pyca/cryptography-runner-jessie
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-stretch
+        - python: 3.5
+          services: docker
+          env: TOXENV=py35 DOCKER=pyca/cryptography-runner-stretch
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-buster
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-buster
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-sid
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-sid
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 2.7
+          services: docker
+          env: TOXENV=randomorder DOCKER=pyca/cryptography-runner-ubuntu-rolling
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-fedora
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-fedora
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-alpine:latest
+
         - python: 3.6
           env: TOXENV=docs OPENSSL=1.1.0i
           addons:
@@ -80,12 +126,18 @@ matrix:
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
           env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0i
+          # dynamodb-encryption-sdk tests fail on xenial for whatever reason
+          dist: trusty
+          sudo: false
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0i
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
           env: DOWNSTREAM=urllib3
+          # urllib3 tests fail on xenial for whatever reason
+          dist: trusty
+          sudo: false
 
 install:
     - ./.travis/install.sh

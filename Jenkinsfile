@@ -21,60 +21,10 @@ def configs = [
     ],
     [
         label: 'docker',
-        imageName: 'pyca/cryptography-runner-centos7',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-wheezy',
-        toxenvs: ['py27'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-jessie',
-        toxenvs: ['py27', 'py34'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-stretch',
-        toxenvs: ['py27', 'py35'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-buster',
-        toxenvs: ['py27', 'py36'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-sid',
-        toxenvs: ['py27', 'py36'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-ubuntu-xenial',
-        toxenvs: ['py27', 'py35'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py36', 'randomorder'],
-    ],
-    [
-        label: 'docker',
         imageName: 'pyca/cryptography-runner-sid',
         toxenvs: ['docs'],
         artifacts: 'cryptography/docs/_build/html/**',
         artifactExcludes: '**/*.doctree',
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-fedora',
-        toxenvs: ['py27', 'py36'],
-    ],
-    [
-        label: 'docker',
-        imageName: 'pyca/cryptography-runner-alpine:latest',
-        toxenvs: ['py36'],
     ],
 ]
 

@@ -23,9 +23,14 @@ if [ -n "${OPENSSL}" ]; then
         shlib_sed
         make depend
         make -j"$(nproc)"
-        # avoid installing the docs
-        # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
-        make install_sw install_ssldirs
+        if [[ "${OPENSSL}" =~ 1.0.1 ]]; then
+            # OpenSSL 1.0.1 doesn't support installing without the docs.
+            make install
+        else
+            # avoid installing the docs
+            # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
+            make install_sw install_ssldirs
+        fi
         popd
     fi
 elif [ -n "${LIBRESSL}" ]; then
@@ -39,6 +44,14 @@ elif [ -n "${LIBRESSL}" ]; then
         make -j"$(nproc)" install
         popd
     fi
+fi
+
+if [ -n "${DOCKER}" ]; then
+    if [ -n "${OPENSSL}" ] || [ -n "${LIBRESSL}" ]; then
+        echo "OPENSSL and LIBRESSL are not allowed when DOCKER is set."
+        exit 1
+    fi
+    docker pull "$DOCKER"
 fi
 
 if [ -z "${DOWNSTREAM}" ]; then

@@ -98,6 +98,18 @@ def cryptography_has_102_verification_params():
         "X509_VERIFY_PARAM_set1_ip",
         "X509_VERIFY_PARAM_set1_ip_asc",
         "X509_VERIFY_PARAM_set_hostflags",
+        "SSL_get0_param",
+        "X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT",
+        "X509_CHECK_FLAG_NO_WILDCARDS",
+        "X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS",
+        "X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS",
+        "X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS"
+    ]
+
+
+def cryptography_has_110_verification_params():
+    return [
+        "X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"
     ]
 
 
@@ -182,6 +194,7 @@ def cryptography_has_sct():
         "SCT_get_version",
         "SCT_get_log_entry_type",
         "SCT_get0_log_id",
+        "SCT_get0_signature",
         "SCT_get_timestamp",
         "SCT_set_source",
         "sk_SCT_num",
@@ -300,6 +313,9 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_102_VERIFICATION_PARAMS": (
         cryptography_has_102_verification_params
+    ),
+    "Cryptography_HAS_110_VERIFICATION_PARAMS": (
+        cryptography_has_110_verification_params
     ),
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": (
         cryptography_has_x509_v_flag_trusted_first

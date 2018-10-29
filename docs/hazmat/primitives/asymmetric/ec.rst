@@ -238,6 +238,58 @@ Elliptic Curve Key Exchange algorithm
     key, derivation of multiple keys, and destroys any structure that may be
     present.
 
+    .. warning::
+
+        This example does not give `forward secrecy`_ and is only provided as a
+        demonstration of the basic Diffie-Hellman construction. For real world
+        applications always use the ephemeral form described after this example.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+        >>> # Generate a private key for use in the exchange.
+        >>> server_private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> # In a real handshake the peer is a remote client. For this
+        >>> # example we'll generate another local private key though.
+        >>> peer_private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> shared_key = server_private_key.exchange(
+        ...     ec.ECDH(), peer_private_key.public_key())
+        >>> # Perform key derivation.
+        >>> derived_key = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=None,
+        ...     info=b'handshake data',
+        ...     backend=default_backend()
+        ... ).derive(shared_key)
+        >>> # And now we can demonstrate that the handshake performed in the
+        >>> # opposite direction gives the same final value
+        >>> same_shared_key = peer_private_key.exchange(
+        ...     ec.ECDH(), server_private_key.public_key())
+        >>> # Perform key derivation.
+        >>> same_derived_key = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=None,
+        ...     info=b'handshake data',
+        ...     backend=default_backend()
+        ... ).derive(same_shared_key)
+        >>> derived_key == same_derived_key
+        True
+
+    ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
+    preferred** over simple ECDH and provides `forward secrecy`_ when used.
+    You must generate a new private key using :func:`generate_private_key` for
+    each :meth:`~EllipticCurvePrivateKey.exchange` when performing an ECDHE key
+    exchange. An example of the ephemeral form:
+
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
@@ -279,12 +331,6 @@ Elliptic Curve Key Exchange algorithm
         ...     backend=default_backend()
         ... ).derive(shared_key_2)
 
-    ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
-    preferred** over simple ECDH and provides `forward secrecy`_ when used.
-    You must generate a new private key using :func:`generate_private_key` for
-    each :meth:`~EllipticCurvePrivateKey.exchange` when performing an ECDHE key
-    exchange.
-
 Elliptic Curves
 ---------------
 
@@ -310,81 +356,11 @@ Tanja Lange.
 
 All named curves are instances of :class:`EllipticCurve`.
 
-.. class:: SECT571K1
+.. class:: SECP256R1
 
     .. versionadded:: 0.5
 
-    SECG curve ``sect571k1``. Also called NIST K-571.
-
-
-.. class:: SECT409K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect409k1``. Also called NIST K-409.
-
-
-.. class:: SECT283K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect283k1``. Also called NIST K-283.
-
-
-.. class:: SECT233K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect233k1``. Also called NIST K-233.
-
-
-.. class:: SECT163K1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect163k1``. Also called NIST K-163.
-
-
-.. class:: SECT571R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect571r1``. Also called NIST B-571.
-
-
-.. class:: SECT409R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect409r1``. Also called NIST B-409.
-
-
-.. class:: SECT283R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect283r1``. Also called NIST B-283.
-
-
-.. class:: SECT233R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect233r1``. Also called NIST B-233.
-
-
-.. class:: SECT163R2
-
-    .. versionadded:: 0.5
-
-    SECG curve ``sect163r2``. Also called NIST B-163.
-
-
-.. class:: SECP521R1
-
-    .. versionadded:: 0.5
-
-    SECG curve ``secp521r1``. Also called NIST P-521.
+    SECG curve ``secp256r1``. Also called NIST P-256.
 
 
 .. class:: SECP384R1
@@ -394,11 +370,11 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp384r1``. Also called NIST P-384.
 
 
-.. class:: SECP256R1
+.. class:: SECP521R1
 
     .. versionadded:: 0.5
 
-    SECG curve ``secp256r1``. Also called NIST P-256.
+    SECG curve ``secp521r1``. Also called NIST P-521.
 
 
 .. class:: SECP224R1
@@ -442,6 +418,87 @@ All named curves are instances of :class:`EllipticCurve`.
 
     Brainpool curve specified in :rfc:`5639`. These curves are discouraged
     for new systems.
+
+.. class:: SECT571K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect571k1``. Also called NIST K-571. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT409K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect409k1``. Also called NIST K-409. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT283K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect283k1``. Also called NIST K-283. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT233K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect233k1``. Also called NIST K-233. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT163K1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect163k1``. Also called NIST K-163. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT571R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect571r1``. Also called NIST B-571. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT409R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect409r1``. Also called NIST B-409. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT283R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect283r1``. Also called NIST B-283. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT233R1
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect233r1``. Also called NIST B-233. These binary curves are
+    discouraged for new systems.
+
+
+.. class:: SECT163R2
+
+    .. versionadded:: 0.5
+
+    SECG curve ``sect163r2``. Also called NIST B-163. These binary curves are
+    discouraged for new systems.
+
+
 
 
 Key Interfaces
@@ -746,7 +803,7 @@ in PEM format.
 .. _`800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
-.. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
+.. _`elliptic curve diffie-hellman is faster than diffie-hellman`: https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
 .. _`minimize the number of security concerns for elliptic-curve cryptography`: https://cr.yp.to/ecdh/curve25519-20060209.pdf
 .. _`SafeCurves`: https://safecurves.cr.yp.to/
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA

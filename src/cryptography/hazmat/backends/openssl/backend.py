@@ -25,7 +25,9 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
-from cryptography.hazmat.backends.openssl.decode_asn1 import _Integers
+from cryptography.hazmat.backends.openssl.decode_asn1 import (
+    _CRL_ENTRY_REASON_ENUM_TO_CODE, _Integers
+)
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters, _DHPrivateKey, _DHPublicKey, _dh_params_dup
 )
@@ -38,11 +40,15 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
+    _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
+    _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc, _txt2obj_gc,
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
-from cryptography.hazmat.backends.openssl.ocsp import _OCSPRequest
+from cryptography.hazmat.backends.openssl.ocsp import (
+    _OCSPRequest, _OCSPResponse
+)
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
@@ -66,6 +72,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB, XTS
 )
 from cryptography.hazmat.primitives.kdf import scrypt
+from cryptography.x509 import ocsp
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -174,7 +181,7 @@ class Backend(object):
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
 
-    def _build_openssl_digest_name(self, algorithm):
+    def _evp_md_from_algorithm(self, algorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":
             alg = "{0}{1}".format(
                 algorithm.name, algorithm.digest_size * 8
@@ -182,12 +189,17 @@ class Backend(object):
         else:
             alg = algorithm.name.encode("ascii")
 
-        return alg
+        evp_md = self._lib.EVP_get_digestbyname(alg)
+        return evp_md
+
+    def _evp_md_non_null_from_algorithm(self, algorithm):
+        evp_md = self._evp_md_from_algorithm(algorithm)
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        return evp_md
 
     def hash_supported(self, algorithm):
-        name = self._build_openssl_digest_name(algorithm)
-        digest = self._lib.EVP_get_digestbyname(name)
-        return digest != self._ffi.NULL
+        evp_md = self._evp_md_from_algorithm(algorithm)
+        return evp_md != self._ffi.NULL
 
     def hmac_supported(self, algorithm):
         return self.hash_supported(algorithm)
@@ -279,9 +291,7 @@ class Backend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         buf = self._ffi.new("unsigned char[]", length)
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode("ascii"))
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         res = self._lib.PKCS5_PBKDF2_HMAC(
             key_material,
             len(key_material),
@@ -678,10 +688,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
@@ -760,10 +767,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()
@@ -792,14 +796,12 @@ class Backend(object):
 
         # Set the "not before" time.
         self._set_asn1_time(
-            self._lib.X509_get_notBefore(x509_cert),
-            calendar.timegm(builder._not_valid_before.timetuple())
+            self._lib.X509_get_notBefore(x509_cert), builder._not_valid_before
         )
 
         # Set the "not after" time.
         self._set_asn1_time(
-            self._lib.X509_get_notAfter(x509_cert),
-            calendar.timegm(builder._not_valid_after.timetuple())
+            self._lib.X509_get_notAfter(x509_cert), builder._not_valid_after
         )
 
         # Add extensions.
@@ -834,7 +836,8 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def _set_asn1_time(self, asn1_time, time):
-        res = self._lib.ASN1_TIME_set(asn1_time, time)
+        timestamp = calendar.timegm(time.timetuple())
+        res = self._lib.ASN1_TIME_set(asn1_time, timestamp)
         if res == self._ffi.NULL:
             errors = self._consume_errors()
             self.openssl_assert(
@@ -847,6 +850,13 @@ class Backend(object):
                 "Invalid time. This error can occur if you set a time too far "
                 "in the future on Windows."
             )
+
+    def _create_asn1_time(self, time):
+        asn1_time = self._lib.ASN1_TIME_new()
+        self.openssl_assert(asn1_time != self._ffi.NULL)
+        asn1_time = self._ffi.gc(asn1_time, self._lib.ASN1_TIME_free)
+        self._set_asn1_time(asn1_time, time)
+        return asn1_time
 
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
@@ -862,10 +872,7 @@ class Backend(object):
                 "MD5 is not a supported hash algorithm for EC/DSA CRLs"
             )
 
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode('ascii')
-        )
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty CRL.
         x509_crl = self._lib.X509_CRL_new()
@@ -882,22 +889,12 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Set the last update time.
-        last_update = self._lib.ASN1_TIME_new()
-        self.openssl_assert(last_update != self._ffi.NULL)
-        last_update = self._ffi.gc(last_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            last_update, calendar.timegm(builder._last_update.timetuple())
-        )
+        last_update = self._create_asn1_time(builder._last_update)
         res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
         # Set the next update time.
-        next_update = self._lib.ASN1_TIME_new()
-        self.openssl_assert(next_update != self._ffi.NULL)
-        next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            next_update, calendar.timegm(builder._next_update.timetuple())
-        )
+        next_update = self._create_asn1_time(builder._next_update)
         res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
@@ -959,17 +956,15 @@ class Backend(object):
 
     def _create_x509_extension(self, handlers, extension):
         if isinstance(extension.value, x509.UnrecognizedExtension):
-            value = _encode_asn1_str_gc(
-                self, extension.value.value, len(extension.value.value)
-            )
+            value = _encode_asn1_str_gc(self, extension.value.value)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.TLSFeature):
             asn1 = _Integers([x.value for x in extension.value]).dump()
-            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.PrecertPoison):
             asn1 = asn1crypto.core.Null().dump()
-            value = _encode_asn1_str_gc(self, asn1, len(asn1))
+            value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         else:
             try:
@@ -1000,12 +995,7 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        rev_date = self._lib.ASN1_TIME_new()
-        self.openssl_assert(rev_date != self._ffi.NULL)
-        rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(
-            rev_date, calendar.timegm(builder._revocation_date.timetuple())
-        )
+        rev_date = self._create_asn1_time(builder._revocation_date)
         res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
         self.openssl_assert(res == 1)
         # add CRL entry extensions
@@ -1476,21 +1466,132 @@ class Backend(object):
         request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
         return _OCSPRequest(self, request)
 
+    def load_der_ocsp_response(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
+        if response == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load OCSP response")
+
+        response = self._ffi.gc(response, self._lib.OCSP_RESPONSE_free)
+        return _OCSPResponse(self, response)
+
     def create_ocsp_request(self, builder):
         ocsp_req = self._lib.OCSP_REQUEST_new()
         self.openssl_assert(ocsp_req != self._ffi.NULL)
         ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
         cert, issuer, algorithm = builder._request
-        evp_md = self._lib.EVP_get_digestbyname(
-            algorithm.name.encode("ascii"))
-        self.openssl_assert(evp_md != self._ffi.NULL)
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         certid = self._lib.OCSP_cert_to_id(
             evp_md, cert._x509, issuer._x509
         )
         self.openssl_assert(certid != self._ffi.NULL)
         onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
         self.openssl_assert(onereq != self._ffi.NULL)
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=ocsp_req,
+            add_func=self._lib.OCSP_REQUEST_add_ext,
+            gc=True,
+        )
         return _OCSPRequest(self, ocsp_req)
+
+    def _create_ocsp_basic_response(self, builder, private_key, algorithm):
+        basic = self._lib.OCSP_BASICRESP_new()
+        self.openssl_assert(basic != self._ffi.NULL)
+        basic = self._ffi.gc(basic, self._lib.OCSP_BASICRESP_free)
+        evp_md = self._evp_md_non_null_from_algorithm(
+            builder._response._algorithm
+        )
+        certid = self._lib.OCSP_cert_to_id(
+            evp_md, builder._response._cert._x509,
+            builder._response._issuer._x509
+        )
+        self.openssl_assert(certid != self._ffi.NULL)
+        certid = self._ffi.gc(certid, self._lib.OCSP_CERTID_free)
+        if builder._response._revocation_reason is None:
+            reason = -1
+        else:
+            reason = _CRL_ENTRY_REASON_ENUM_TO_CODE[
+                builder._response._revocation_reason
+            ]
+        if builder._response._revocation_time is None:
+            rev_time = self._ffi.NULL
+        else:
+            rev_time = self._create_asn1_time(
+                builder._response._revocation_time
+            )
+
+        next_update = self._ffi.NULL
+        if builder._response._next_update is not None:
+            next_update = self._create_asn1_time(
+                builder._response._next_update
+            )
+
+        this_update = self._create_asn1_time(builder._response._this_update)
+
+        res = self._lib.OCSP_basic_add1_status(
+            basic,
+            certid,
+            builder._response._cert_status.value,
+            reason,
+            rev_time,
+            this_update,
+            next_update
+        )
+        self.openssl_assert(res != self._ffi.NULL)
+        # okay, now sign the basic structure
+        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        responder_cert, responder_encoding = builder._responder_id
+        flags = self._lib.OCSP_NOCERTS
+        if responder_encoding is ocsp.OCSPResponderEncoding.HASH:
+            flags |= self._lib.OCSP_RESPID_KEY
+
+        if builder._certs is not None:
+            for cert in builder._certs:
+                res = self._lib.OCSP_basic_add1_cert(basic, cert._x509)
+                self.openssl_assert(res == 1)
+
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=basic,
+            add_func=self._lib.OCSP_BASICRESP_add_ext,
+            gc=True,
+        )
+
+        res = self._lib.OCSP_basic_sign(
+            basic, responder_cert._x509, private_key._evp_pkey,
+            evp_md, self._ffi.NULL, flags
+        )
+        if res != 1:
+            errors = self._consume_errors()
+            self.openssl_assert(
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_X509,
+                    self._lib.X509_R_KEY_VALUES_MISMATCH
+                )
+            )
+            raise ValueError("responder_cert must be signed by private_key")
+
+        return basic
+
+    def create_ocsp_response(self, response_status, builder, private_key,
+                             algorithm):
+        if response_status is ocsp.OCSPResponseStatus.SUCCESSFUL:
+            basic = self._create_ocsp_basic_response(
+                builder, private_key, algorithm
+            )
+        else:
+            basic = self._ffi.NULL
+
+        ocsp_resp = self._lib.OCSP_response_create(
+            response_status.value, basic
+        )
+        self.openssl_assert(ocsp_resp != self._ffi.NULL)
+        ocsp_resp = self._ffi.gc(ocsp_resp, self._lib.OCSP_RESPONSE_free)
+        return _OCSPResponse(self, ocsp_resp)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

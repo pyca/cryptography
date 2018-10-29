@@ -82,6 +82,7 @@ class ExtensionOID(object):
     EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
     FRESHEST_CRL = ObjectIdentifier("2.5.29.46")
     INHIBIT_ANY_POLICY = ObjectIdentifier("2.5.29.54")
+    ISSUING_DISTRIBUTION_POINT = ObjectIdentifier("2.5.29.28")
     AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
     SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
@@ -265,6 +266,9 @@ _OID_NAMES = {
     ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
     ExtensionOID.FRESHEST_CRL: "freshestCRL",
     ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
+    ExtensionOID.ISSUING_DISTRIBUTION_POINT: (
+        "issuingDistributionPoint"
+    ),
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",

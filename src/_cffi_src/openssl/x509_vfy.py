@@ -21,6 +21,7 @@ typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 TYPES = """
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
+static const long Cryptography_HAS_110_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
@@ -128,6 +129,13 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 
 static const long X509_LU_X509;
 static const long X509_LU_CRL;
+
+static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
+static const long X509_CHECK_FLAG_NO_WILDCARDS;
+static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
+static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
+static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
+static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
 """
 
 FUNCTIONS = """
@@ -239,6 +247,21 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 #ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
+#ifndef X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
+static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT = 0;
+#endif
+#ifndef X509_CHECK_FLAG_NO_WILDCARDS
+static const long X509_CHECK_FLAG_NO_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
+static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS = 0;
+#endif
+#ifndef X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
+static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS = 0;
+#endif
 
 /* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
    below because it shows up in some earlier 3rd party OpenSSL packages. */
@@ -257,6 +280,15 @@ int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
 void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
                                         unsigned int) = NULL;
 #endif
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 0;
+#ifndef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
+#endif
+#else
+static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 1;
 #endif
 
 /* OpenSSL 1.0.2+ or Solaris's backport */
