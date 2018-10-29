@@ -111,10 +111,8 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
-        - python: 2.7
-          env: TOXENV=pep8
         - python: 3.4
-          env: TOXENV=py3pep8
+          env: TOXENV=pep8
 
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
