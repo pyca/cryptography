@@ -220,16 +220,15 @@ def test_encode_point():
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
     )
 
-
-def test_encode_compressed_point():
+@pytest.mark.parametrize("dat", _compressed_points)
+def test_encode_compressed_point(dat):
     # secp256r1 point
-    for dat in _compressed_points:
-        compressed = binascii.unhexlify(dat["in"])
-        x = int(dat["x"], 16)
-        y = int(dat["y"], 16)
-        pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
-        data = pn.encode_point(compressed=True)
-        assert data == compressed
+    compressed = binascii.unhexlify(dat["in"])
+    x = int(dat["x"], 16)
+    y = int(dat["y"], 16)
+    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
+    data = pn.encode_point(compressed=True)
+    assert data == compressed
 
 
 def test_from_encoded_point():
@@ -1063,14 +1062,14 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
 
-    def test_from_encoded_point_compressed(self, backend):
-        for dat in _compressed_points:
-            compressed_point = binascii.unhexlify(dat["in"])
-            pn = ec.EllipticCurvePublicKey.from_encoded_point(
-                dat["curve"](), compressed_point, backend
-            )
-            assert pn.public_numbers().x == int(dat["x"], 16), dat
-            assert pn.public_numbers().y == int(dat["y"], 16), dat
+    @pytest.mark.parametrize("dat", _compressed_points)
+    def test_from_encoded_point_compressed(self, backend, dat):
+        compressed_point = binascii.unhexlify(dat["in"])
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
+            dat["curve"](), compressed_point, backend
+        )
+        assert pn.public_numbers().x == int(dat["x"], 16), dat
+        assert pn.public_numbers().y == int(dat["y"], 16), dat
 
     def test_from_encoded_point_notoncurve(self, backend):
         uncompressed_point = binascii.unhexlify(
