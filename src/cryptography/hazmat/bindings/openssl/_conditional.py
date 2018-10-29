@@ -194,6 +194,7 @@ def cryptography_has_sct():
         "SCT_get_version",
         "SCT_get_log_entry_type",
         "SCT_get0_log_id",
+        "SCT_get0_signature",
         "SCT_get_timestamp",
         "SCT_set_source",
         "sk_SCT_num",
