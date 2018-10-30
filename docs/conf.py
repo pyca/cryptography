@@ -184,4 +184,6 @@ linkcheck_ignore = [
         "https://ci.cryptography.io/"
         "job/cryptography-support-jobs/job/openssl-release-1.1/"
     ),
+    # Small DH key results in a TLS failure on modern OpenSSL
+    "https://info.isl.ntt.co.jp/crypt/eng/camellia/",
 ]
