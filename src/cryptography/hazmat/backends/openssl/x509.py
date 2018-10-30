@@ -534,3 +534,23 @@ class _SignedCertificateTimestamp(object):
         # we only have precerts.
         assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
         return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
+
+    @property
+    def _signature(self):
+        ptrptr = self._backend._ffi.new("unsigned char **")
+        res = self._backend._lib.SCT_get0_signature(self._sct, ptrptr)
+        self._backend.openssl_assert(res > 0)
+        self._backend.openssl_assert(ptrptr[0] != self._backend._ffi.NULL)
+        return self._backend._ffi.buffer(ptrptr[0], res)[:]
+
+    def __hash__(self):
+        return hash(self._signature)
+
+    def __eq__(self, other):
+        if not isinstance(other, _SignedCertificateTimestamp):
+            return NotImplemented
+
+        return self._signature == other._signature
+
+    def __ne__(self, other):
+        return not self == other
