@@ -98,6 +98,9 @@ Custom asymmetric vectors
 * ``asymmetric/public/PKCS1/rsa.pub.pem`` and
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
+* ``x509/custom/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
+  the private key for the certificate ``x509/custom/ca/ca.pem``. This key is
+  encoded in several of the PKCS12 custom vectors.
 
 
 Key exchange
@@ -351,6 +354,9 @@ Custom X.509 Vectors
   a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
 * ``freshestcrl.pem`` - A self-signed certificate containing a ``freshestCRL``
   extension.
+* ``ca/ca.pem`` - A self-signed certificate with ``basicConstraints`` set to
+  true. Its private key is ``ca/ca_key.pem``. This certificate is encoded in
+  several of the PKCS12 custom vectors.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -466,6 +472,20 @@ Custom X.509 OCSP Test Vectors
   invalid hash algorithm OID.
 * ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
   extension.
+
+Custom PKCS12 Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``pkcs12/cert-key-aes256cbc.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  both encrypted with AES 256 CBC with the password ``cryptography``.
+* ``pkcs12/cert-none-key-none.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  with no encryption. The password (used for integrity checking only) is
+  ``cryptography``.
+* ``cert-rc2-key-3des.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) encrypted with RC2 and key
+  (``x509/custom/ca/ca_key.pem``) encrypted via 3DES with the password
+  ``cryptography``.
 
 Hashes
 ~~~~~~
