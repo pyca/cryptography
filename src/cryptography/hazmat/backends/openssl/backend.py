@@ -836,8 +836,8 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def _set_asn1_time(self, asn1_time, time):
-        timestamp = calendar.timegm(time.timetuple())
-        res = self._lib.ASN1_TIME_set(asn1_time, timestamp)
+        timestamp = time.strftime('%Y%m%d%H%M%SZ').encode('ascii')
+        res = self._lib.ASN1_TIME_set_string(asn1_time, timestamp)
         if res == self._ffi.NULL:
             errors = self._consume_errors()
             self.openssl_assert(
