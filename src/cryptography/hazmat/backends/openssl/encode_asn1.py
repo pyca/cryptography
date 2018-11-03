@@ -114,7 +114,7 @@ def _encode_sk_name_entry(backend, attributes):
     for attribute in attributes:
         name_entry = _encode_name_entry(backend, attribute)
         res = backend._lib.sk_X509_NAME_ENTRY_push(stack, name_entry)
-        backend.openssl_assert(res == 1)
+        backend.openssl_assert(res >= 1)
     return stack
 
 
