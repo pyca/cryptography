@@ -1475,3 +1475,135 @@ class UnrecognizedExtension(object):
 
     def __hash__(self):
         return hash((self.oid, self.value))
+
+
+@utils.register_interface(ExtensionType)
+class IssuingDistributionPoint(object):
+    oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
+
+    def __init__(self, only_contains_user_certs, only_contains_ca_certs,
+                 indirect_crl, only_contains_attribute_certs,
+                 only_some_reasons=None, full_name=None, relative_name=None):
+
+        if (
+            only_some_reasons and (
+                not isinstance(only_some_reasons, frozenset) or not all(
+                    isinstance(x, ReasonFlags) for x in only_some_reasons
+                )
+            )
+        ):
+            raise TypeError(
+                "only_some_reasons must be None or frozenset of ReasonFlags"
+            )
+
+        if only_some_reasons and (
+            ReasonFlags.unspecified in only_some_reasons or
+            ReasonFlags.remove_from_crl in only_some_reasons
+        ):
+            raise ValueError(
+                "unspecified and remove_from_crl are not valid reasons in an "
+                "IssuingDistributionPoint"
+            )
+
+        bools = [
+            only_contains_user_certs, only_contains_ca_certs,
+            indirect_crl, only_contains_attribute_certs
+        ]
+
+        if not all([isinstance(x, bool) for x in bools]):
+            raise TypeError(
+                "only_contains_user_certs, only_contains_ca_certs, "
+                "indirect_crl and only_contains_attribute_certs "
+                "must all be boolean."
+            )
+
+        if len([x for x in bools if x is True]) > 1:
+            raise ValueError(
+                "Only one of the following can be set to True: "
+                "only_contains_user_certs, only_contains_ca_certs, "
+                "indirect_crl, only_contains_attribute_certs"
+            )
+
+        if (
+            all(not x for x in bools) and not any([
+                full_name, relative_name, only_some_reasons
+            ])
+        ):
+            raise ValueError(
+                "Cannot create empty extension: "
+                "if only_contains_user_certs, only_contains_ca_certs, "
+                "indirectCRL, and only_contains_attribute_certs are all False"
+                ", then either full_name, relative_name or only_some_reasons "
+                "must have a value."
+            )
+
+        self._only_contains_user_certs = only_contains_user_certs
+        self._only_contains_ca_certs = only_contains_ca_certs
+        self._indirect_crl = indirect_crl
+        self._only_contains_attribute_certs = only_contains_attribute_certs
+        self._only_some_reasons = only_some_reasons
+        self._full_name = full_name
+        self._relative_name = relative_name
+
+    def __repr__(self):
+        return (
+            "<IssuingDistributionPoint(only_contains_user_certs="
+            "{0.only_contains_user_certs}, "
+            "only_contains_ca_certs={0.only_contains_ca_certs}, "
+            "indirect_crl={0.indirect_crl}, "
+            "only_contains_attribute_certs={0.only_contains_attribute_certs}, "
+            "only_some_reasons={0.only_some_reasons}, "
+            "full_name={0.full_name}, "
+            "relative_name={0.relative_name}>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, IssuingDistributionPoint):
+            return NotImplemented
+
+        return (
+            self.only_contains_user_certs == other.only_contains_user_certs and
+            self.only_contains_ca_certs == other.only_contains_ca_certs and
+            self.indirect_crl == other.indirect_crl and
+            self.only_contains_attribute_certs ==
+            other.only_contains_attribute_certs and
+            self.only_some_reasons == other.only_some_reasons and
+            self.full_name == other.full_name and
+            self.relative_name == other.relative_name
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((
+            self.only_contains_user_certs,
+            self.only_contains_ca_certs,
+            self.only_contains_attribute_certs,
+            self.indirect_crl,
+            self.only_some_reasons,
+            self.full_name,
+            self.relative_name
+        ))
+
+    only_contains_user_certs = utils.read_only_property(
+        "_only_contains_user_certs"
+    )
+    only_contains_ca_certs = utils.read_only_property(
+        "_only_contains_ca_certs"
+    )
+    only_contains_attribute_certs = utils.read_only_property(
+        "_only_contains_attribute_certs"
+    )
+    indirect_crl = utils.read_only_property(
+        "_indirect_crl"
+    )
+    only_some_reasons = utils.read_only_property(
+        "_only_some_reasons"
+    )
+    full_name = utils.read_only_property(
+        "_full_name"
+    )
+    relative_name = utils.read_only_property(
+        "_relative_name"
+    )

@@ -23,6 +23,7 @@ class ExtensionOID(object):
     POLICY_CONSTRAINTS = ObjectIdentifier("2.5.29.36")
     EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
     FRESHEST_CRL = ObjectIdentifier("2.5.29.46")
+    ISSUING_DISTRIBUTION_POINT = ObjectIdentifier("2.5.29.28")
     INHIBIT_ANY_POLICY = ObjectIdentifier("2.5.29.54")
     ISSUING_DISTRIBUTION_POINT = ObjectIdentifier("2.5.29.28")
     AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
@@ -207,6 +208,7 @@ _OID_NAMES = {
     ExtensionOID.POLICY_CONSTRAINTS: "policyConstraints",
     ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
     ExtensionOID.FRESHEST_CRL: "freshestCRL",
+    ExtensionOID.ISSUING_DISTRIBUTION_POINT: "issuingDistributionPoint",
     ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: (
         "issuingDistributionPoint"

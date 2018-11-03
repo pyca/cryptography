@@ -21,9 +21,9 @@ from cryptography.x509.extensions import (
     DeltaCRLIndicator, DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
     Extension, ExtensionNotFound, ExtensionType, Extensions, FreshestCRL,
     GeneralNames, InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName,
-    KeyUsage, NameConstraints, NoticeReference, OCSPNoCheck, OCSPNonce,
-    PolicyConstraints, PolicyInformation, PrecertPoison,
-    PrecertificateSignedCertificateTimestamps, ReasonFlags,
+    IssuingDistributionPoint, KeyUsage, NameConstraints, NoticeReference,
+    OCSPNoCheck, OCSPNonce, PolicyConstraints, PolicyInformation,
+    PrecertPoison, PrecertificateSignedCertificateTimestamps, ReasonFlags,
     SubjectAlternativeName, SubjectKeyIdentifier, TLSFeature, TLSFeatureType,
     UnrecognizedExtension, UserNotice
 )
@@ -51,6 +51,7 @@ OID_EXTENDED_KEY_USAGE = ExtensionOID.EXTENDED_KEY_USAGE
 OID_FRESHEST_CRL = ExtensionOID.FRESHEST_CRL
 OID_INHIBIT_ANY_POLICY = ExtensionOID.INHIBIT_ANY_POLICY
 OID_ISSUER_ALTERNATIVE_NAME = ExtensionOID.ISSUER_ALTERNATIVE_NAME
+OID_ISSUING_DISTRIBUTION_POINT = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 OID_KEY_USAGE = ExtensionOID.KEY_USAGE
 OID_NAME_CONSTRAINTS = ExtensionOID.NAME_CONSTRAINTS
 OID_OCSP_NO_CHECK = ExtensionOID.OCSP_NO_CHECK
@@ -134,6 +135,7 @@ __all__ = [
     "Extension",
     "ExtendedKeyUsage",
     "FreshestCRL",
+    "IssuingDistributionPoint"
     "TLSFeature",
     "TLSFeatureType",
     "OCSPNoCheck",
