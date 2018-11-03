@@ -137,6 +137,9 @@ class TestBLAKE2b(object):
 
         with pytest.raises(ValueError):
             hashes.BLAKE2b(digest_size=-1)
+	
+	with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=32)
 
 
 @pytest.mark.supported(
@@ -160,6 +163,9 @@ class TestBLAKE2s(object):
 
         with pytest.raises(ValueError):
             hashes.BLAKE2s(digest_size=-1)
+	
+	with pytest.raises(ValueError):
+            hashes.BLAKE2s(digest_size=16)
 
 
 def test_invalid_backend():
