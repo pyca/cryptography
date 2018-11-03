@@ -4574,13 +4574,22 @@ class TestIssuingDistributionPointExtension(object):
             False, False, False, False,
             frozenset([x509.ReasonFlags.key_compromise]), None, None
         )
-        assert repr(idp) == (
-            "<IssuingDistributionPoint(only_contains_user_certs=False, only_"
-            "contains_ca_certs=False, indirect_crl=False, only_contains_attr"
-            "ibute_certs=False, only_some_reasons=frozenset({<ReasonFlags.ke"
-            "y_compromise: 'keyCompromise'>}), full_name=None, relative_name"
-            "=None>"
-        )
+        if not six.PY2:
+            assert repr(idp) == (
+                "<IssuingDistributionPoint(only_contains_user_certs=False, onl"
+                "y_contains_ca_certs=False, indirect_crl=False, only_contains_"
+                "attribute_certs=False, only_some_reasons=frozenset({<ReasonFl"
+                "ags.key_compromise: 'keyCompromise'>}), full_name=None, relat"
+                "ive_name=None>"
+            )
+        else:
+            assert repr(idp) == (
+                "<IssuingDistributionPoint(only_contains_user_certs=False, onl"
+                "y_contains_ca_certs=False, indirect_crl=False, only_contains_"
+                "attribute_certs=False, only_some_reasons=frozenset([<ReasonFl"
+                "ags.key_compromise: 'keyCompromise'>]), full_name=None, relat"
+                "ive_name=None>"
+            )
 
     def test_eq(self):
         idp1 = x509.IssuingDistributionPoint(
