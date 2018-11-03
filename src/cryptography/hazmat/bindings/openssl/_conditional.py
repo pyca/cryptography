@@ -293,6 +293,7 @@ def cryptography_has_cipher_details():
 def cryptography_has_tlsv13():
     return [
         "SSL_OP_NO_TLSv1_3",
+        "SSL_CTX_set_ciphersuites",
     ]
 
 

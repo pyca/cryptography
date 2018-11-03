@@ -531,6 +531,9 @@ int SSL_CTX_add_server_custom_ext(SSL_CTX *, unsigned int,
                                   void *);
 
 int SSL_extension_supported(unsigned int);
+
+/* Used to configure TLS 1.3 cipher suites */
+int SSL_CTX_set_ciphersuites(SSL_CTX *, const char *);
 """
 
 CUSTOMIZATIONS = """
@@ -820,6 +823,7 @@ static const long Cryptography_HAS_CIPHER_DETAILS = 1;
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
+int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
