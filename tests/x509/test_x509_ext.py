@@ -4449,28 +4449,28 @@ class TestIssuingDistributionPointExtension(object):
                 x509.IssuingDistributionPoint(
                     False, False, True, False, None, [
                         x509.UniformResourceIdentifier(
-                            "http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl")], None)
             ],
             [
                 "crl_idp_fullname_only.pem",
                 x509.IssuingDistributionPoint(
                     False, False, False, False, None, [
                         x509.UniformResourceIdentifier(
-                            "http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl")], None)
             ],
             [
                 "crl_idp_fullname_only_aa.pem",
                 x509.IssuingDistributionPoint(
                     False, False, False, True, None, [
                         x509.UniformResourceIdentifier(
-                            "http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl")], None)
             ],
             [
                 "crl_idp_fullname_only_user.pem",
                 x509.IssuingDistributionPoint(
                     True, False, False, False, None, [
                         x509.UniformResourceIdentifier(
-                            "http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl")], None)
             ],
             [
                 "crl_idp_only_ca.pem",
@@ -4478,7 +4478,7 @@ class TestIssuingDistributionPointExtension(object):
                     False, True, False, False, None, None,
                     x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
                     ])
                 )
             ],
@@ -4503,7 +4503,7 @@ class TestIssuingDistributionPointExtension(object):
                         x509.ReasonFlags.aa_compromise,
                     ]), None, x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
                     ])
                 )
             ],
@@ -4513,7 +4513,7 @@ class TestIssuingDistributionPointExtension(object):
                     False, False, False, False, None, None,
                     x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
                     ])
                 )
             ],
@@ -4587,14 +4587,14 @@ class TestIssuingDistributionPointExtension(object):
             False, False, False, False, None, None,
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(
-                    oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
             ])
         )
         idp2 = x509.IssuingDistributionPoint(
             False, False, False, False, None, None,
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(
-                    oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
             ])
         )
         assert idp1 == idp2
@@ -4604,14 +4604,14 @@ class TestIssuingDistributionPointExtension(object):
             False, False, False, False, None, None,
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(
-                    oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
             ])
         )
         idp2 = x509.IssuingDistributionPoint(
             True, False, False, False, None, None,
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(
-                    oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
             ])
         )
         assert idp1 != idp2
@@ -4628,7 +4628,7 @@ class TestIssuingDistributionPointExtension(object):
             True, False, False, False, None, None,
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(
-                    oid=x509.NameOID.ORGANIZATION_NAME, value='PyCA')
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
             ])
         )
         assert hash(idp1) == hash(idp2)
