@@ -817,7 +817,7 @@ static const long Cryptography_HAS_CIPHER_DETAILS = 0;
 static const long Cryptography_HAS_CIPHER_DETAILS = 1;
 #endif
 
-if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
 #else
