@@ -135,7 +135,7 @@ __all__ = [
     "Extension",
     "ExtendedKeyUsage",
     "FreshestCRL",
-    "IssuingDistributionPoint"
+    "IssuingDistributionPoint",
     "TLSFeature",
     "TLSFeatureType",
     "OCSPNoCheck",
