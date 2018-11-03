@@ -2319,6 +2319,76 @@ X.509 Extensions
 
         :type: int
 
+.. class:: IssuingDistributionPoint(only_contains_user_certs,\
+           only_contains_ca_certs, indirect_crl, only_contains_attribute_certs,\
+           only_some_reasons=None, full_name=None, relative_name=None)
+
+    .. versionadded:: 2.4
+
+    Issuing distribution point is a CRL extension that identifies the CRL
+    distribution point and scope for a particular CRL, and it indicates whether
+    the CRL covers revocation for end entity certificates only, CA certificates
+    only, attribute certificates only, or a limited set of reason codes. For
+    specific details on the way this extension should be processed see
+    :rfc:`5280`.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.ISSUING_DISTRIBUTION_POINT`.
+
+    .. attribute:: only_contains_user_certs
+
+        :type: bool
+
+        Set to ``True`` if the CRL this extension is embedded within only
+        contains information about user certificates.
+
+    .. attribute:: only_contains_ca_certs
+
+        :type: bool
+
+        Set to ``True`` if the CRL this extension is embedded within only
+        contains information about CA certificates.
+
+    .. attribute:: indirect_crl
+
+        :type: bool
+
+        Set to ``True`` if the CRL this extension is embedded within includes
+        certificates issued by one or more authorities other than the CRL
+        issuer.
+
+    .. attribute:: only_contains_attribute_certs
+
+        :type: bool
+
+        Set to ``True`` if the CRL this extension is embedded within only
+        contains information about attribute certificates.
+
+    .. attribute:: only_some_reasons
+
+        :type: frozenset of :class:`ReasonFlags` or None
+
+        The reasons for which the issuing distribution point is valid.
+
+    .. attribute:: full_name
+
+        :type: list of :class:`GeneralName` instances or None
+
+        This field describes methods to retrieve the CRL. At most one of
+        ``full_name`` or ``relative_name`` will be non-None.
+
+    .. attribute:: relative_name
+
+        :type: :class:`RelativeDistinguishedName` or None
+
+        This field describes methods to retrieve the CRL relative to the CRL
+        issuer. At most one of ``full_name`` or ``relative_name`` will be
+        non-None.
+
 .. class:: UnrecognizedExtension
 
     .. versionadded:: 1.2
