@@ -102,6 +102,7 @@ static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
 static const long SSL_VERIFY_NONE;
+static const long SSL_VERIFY_POST_HANDSHAKE;
 static const long SSL_SESS_CACHE_OFF;
 static const long SSL_SESS_CACHE_CLIENT;
 static const long SSL_SESS_CACHE_SERVER;
@@ -532,8 +533,10 @@ int SSL_CTX_add_server_custom_ext(SSL_CTX *, unsigned int,
 
 int SSL_extension_supported(unsigned int);
 
-/* Used to configure TLS 1.3 cipher suites */
 int SSL_CTX_set_ciphersuites(SSL_CTX *, const char *);
+int SSL_verify_client_post_handshake(SSL *);
+void SSL_CTX_set_post_handshake_auth(SSL_CTX *, int);
+void SSL_set_post_handshake_auth(SSL *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -823,7 +826,11 @@ static const long Cryptography_HAS_CIPHER_DETAILS = 1;
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
+static const long SSL_VERIFY_POST_HANDSHAKE = 0;
 int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
+int (*SSL_verify_client_post_handshake)(SSL *) = NULL;
+void (*SSL_CTX_set_post_handshake_auth)(SSL_CTX *, int) = NULL;
+void (*SSL_set_post_handshake_auth)(SSL *, int) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
