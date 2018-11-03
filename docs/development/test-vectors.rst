@@ -486,6 +486,9 @@ Custom PKCS12 Test Vectors
   (``x509/custom/ca/ca.pem``) encrypted with RC2 and key
   (``x509/custom/ca/ca_key.pem``) encrypted via 3DES with the password
   ``cryptography``.
+* ``no-password.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``) with no
+  encryption and no password.
 
 Hashes
 ~~~~~~
