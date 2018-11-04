@@ -482,13 +482,19 @@ Custom PKCS12 Test Vectors
   (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
   with no encryption. The password (used for integrity checking only) is
   ``cryptography``.
-* ``cert-rc2-key-3des.p12`` - A PKCS12 file containing a cert
+* ``pkcs12/cert-rc2-key-3des.p12`` - A PKCS12 file containing a cert
   (``x509/custom/ca/ca.pem``) encrypted with RC2 and key
   (``x509/custom/ca/ca_key.pem``) encrypted via 3DES with the password
   ``cryptography``.
-* ``no-password.p12`` - A PKCS12 file containing a cert
+* ``pkcs12/no-password.p12`` - A PKCS12 file containing a cert
   (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``) with no
   encryption and no password.
+* ``pkcs12/no-cert-key-aes256cbc.p12`` - A PKCS12 file containing a key
+  (``x509/custom/ca/ca_key.pem``) encrypted via AES 256 CBC with the
+  password ``cryptography`` and no certificate.
+* ``pkcs12/cert-aes256cbc-no-key.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) encrypted via AES 256 CBC with the
+  password ``cryptography`` and no private key.
 
 Hashes
 ~~~~~~
