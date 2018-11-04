@@ -492,6 +492,9 @@ Custom PKCS12 Test Vectors
 * ``pkcs12/no-cert-key-aes256cbc.p12`` - A PKCS12 file containing a key
   (``x509/custom/ca/ca_key.pem``) encrypted via AES 256 CBC with the
   password ``cryptography`` and no certificate.
+* ``pkcs12/cert-aes256cbc-no-key.p12`` - A PKCS12 file containing a cert
+  (``x509/custom/ca/ca.pem``) encrypted via AES 256 CBC with the
+  password ``cryptography`` and no private key.
 
 Hashes
 ~~~~~~
