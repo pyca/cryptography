@@ -1388,6 +1388,8 @@ class Backend(object):
             curve_nid = self._elliptic_curve_to_nid(curve)
 
             group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
+            self.openssl_assert(group != self._ffi.NULL)
+
             group = self._ffi.gc(group, self._lib.EC_GROUP_free)
 
             point = self._lib.EC_POINT_new(group)
