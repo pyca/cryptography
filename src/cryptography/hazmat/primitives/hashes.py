@@ -155,14 +155,6 @@ class BLAKE2b(object):
         if (digest_size != 64):
             raise ValueError("Digest size must be 64")
 
-        if (
-            digest_size > self._max_digest_size or
-            digest_size < self._min_digest_size
-        ):
-            raise ValueError("Digest size must be {0}-{1}".format(
-                self._min_digest_size, self._max_digest_size)
-            )
-
         self._digest_size = digest_size
 
     digest_size = utils.read_only_property("_digest_size")
@@ -179,14 +171,6 @@ class BLAKE2s(object):
 
         if (digest_size != 32):
             raise ValueError("Digest size must be 32")
-
-        if (
-            digest_size > self._max_digest_size or
-            digest_size < self._min_digest_size
-        ):
-            raise ValueError("Digest size must be {0}-{1}".format(
-                self._min_digest_size, self._max_digest_size)
-            )
 
         self._digest_size = digest_size
 
