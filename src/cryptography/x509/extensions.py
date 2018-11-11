@@ -43,7 +43,7 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        data = six.binary_type(PublicKeyInfo.load(serialized)['public_key'])
+        data = bytes(PublicKeyInfo.load(serialized)['public_key'])
 
     return hashlib.sha1(data).digest()
 
