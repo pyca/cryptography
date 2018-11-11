@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-4:
 
-2.4 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.4 - 2018-11-11
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.4.x.
 * Deprecated OpenSSL 1.0.1 support. OpenSSL 1.0.1 is no longer supported by
