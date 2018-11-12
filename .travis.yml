@@ -100,7 +100,7 @@ matrix:
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-alpine:latest
 
         - python: 3.6
-          env: TOXENV=docs OPENSSL=1.1.0i
+          env: TOXENV=docs OPENSSL=1.1.1
           addons:
               apt:
                   packages:
