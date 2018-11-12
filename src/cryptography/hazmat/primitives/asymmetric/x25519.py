@@ -25,7 +25,9 @@ class X25519PublicKey(object):
 
     @abc.abstractmethod
     def public_bytes(self):
-        pass
+        """
+        The serialized bytes of the public key.
+        """
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -47,8 +49,12 @@ class X25519PrivateKey(object):
 
     @abc.abstractmethod
     def public_key(self):
-        pass
+        """
+        The serialized bytes of the public key.
+        """
 
     @abc.abstractmethod
     def exchange(self, peer_public_key):
-        pass
+        """
+        Performs a key exchange operation using the provided peer's public key.
+        """
