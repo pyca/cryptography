@@ -529,6 +529,12 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
+    .. attribute:: oid
+
+        :type: :class:`~cryptography.x509.ObjectIdentifier`
+
+        Returns the object identifier assigned to the curve.
+
 
 .. class:: EllipticCurveSignatureAlgorithm
 

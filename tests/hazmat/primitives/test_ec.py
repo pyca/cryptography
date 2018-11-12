@@ -73,6 +73,7 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
 
 @utils.register_interface(ec.EllipticCurve)
 class DummyCurve(object):
+    oid = "doesntmatter"
     name = "dummy-curve"
     key_size = 1
 
