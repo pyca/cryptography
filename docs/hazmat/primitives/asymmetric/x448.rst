@@ -36,7 +36,7 @@ present.
     >>> # Perform key derivation.
     >>> derived_key = HKDF(
     ...     algorithm=hashes.SHA256(),
-    ...     length=56,
+    ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
     ...     backend=default_backend()
@@ -47,7 +47,7 @@ present.
     >>> shared_key_2 = private_key_2.exchange(peer_public_key_2)
     >>> derived_key_2 = HKDF(
     ...     algorithm=hashes.SHA256(),
-    ...     length=56,
+    ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
     ...     backend=default_backend()
@@ -58,7 +58,7 @@ Key interfaces
 
 .. class:: X448PrivateKey
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.5
 
     .. classmethod:: generate()
 
@@ -79,7 +79,7 @@ Key interfaces
 
 .. class:: X448PublicKey
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.5
 
     .. classmethod:: from_public_bytes(data)
 
