@@ -2321,9 +2321,9 @@ X.509 Extensions
 
 .. class:: IssuingDistributionPoint(only_contains_user_certs,\
            only_contains_ca_certs, indirect_crl, only_contains_attribute_certs,\
-           only_some_reasons=None, full_name=None, relative_name=None)
+           only_some_reasons, full_name, relative_name)
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     Issuing distribution point is a CRL extension that identifies the CRL
     distribution point and scope for a particular CRL, and it indicates whether
@@ -2372,7 +2372,8 @@ X.509 Extensions
 
         :type: frozenset of :class:`ReasonFlags` or None
 
-        The reasons for which the issuing distribution point is valid.
+        The reasons for which the issuing distribution point is valid. None
+        indicates that it is valid for all reasons.
 
     .. attribute:: full_name
 

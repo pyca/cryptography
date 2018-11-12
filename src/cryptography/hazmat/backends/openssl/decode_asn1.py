@@ -467,18 +467,20 @@ def _decode_general_subtrees(backend, stack_subtrees):
 def _decode_issuing_dist_point(backend, idp):
     idp = backend._ffi.cast("ISSUING_DIST_POINT *", idp)
     idp = backend._ffi.gc(idp, backend._lib.ISSUING_DIST_POINT_free)
-    full_name = None
-    relative_name = None
     if idp.distpoint != backend._ffi.NULL:
         full_name, relative_name = _decode_distpoint(backend, idp.distpoint)
+    else:
+        full_name = None
+        relative_name = None
 
     only_user = idp.onlyuser == 255
     only_ca = idp.onlyCA == 255
     indirect_crl = idp.indirectCRL == 255
     only_attr = idp.onlyattr == 255
-    only_some_reasons = None
     if idp.onlysomereasons != backend._ffi.NULL:
         only_some_reasons = _decode_reasons(backend, idp.onlysomereasons)
+    else:
+        only_some_reasons = None
 
     return x509.IssuingDistributionPoint(
         only_user, only_ca, indirect_crl, only_attr, only_some_reasons,

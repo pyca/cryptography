@@ -1452,7 +1452,7 @@ class IssuingDistributionPoint(object):
 
     def __init__(self, only_contains_user_certs, only_contains_ca_certs,
                  indirect_crl, only_contains_attribute_certs,
-                 only_some_reasons=None, full_name=None, relative_name=None):
+                 only_some_reasons, full_name, relative_name):
 
         if (
             only_some_reasons and (
@@ -1474,17 +1474,22 @@ class IssuingDistributionPoint(object):
                 "IssuingDistributionPoint"
             )
 
-        bools = [
-            only_contains_user_certs, only_contains_ca_certs,
-            indirect_crl, only_contains_attribute_certs
-        ]
-
-        if not all([isinstance(x, bool) for x in bools]):
+        if not (
+            isinstance(only_contains_user_certs, bool) and
+            isinstance(only_contains_ca_certs, bool) and
+            isinstance(indirect_crl, bool) and
+            isinstance(only_contains_attribute_certs, bool)
+        ):
             raise TypeError(
                 "only_contains_user_certs, only_contains_ca_certs, "
                 "indirect_crl and only_contains_attribute_certs "
                 "must all be boolean."
             )
+
+        bools = [
+            only_contains_user_certs, only_contains_ca_certs,
+            indirect_crl, only_contains_attribute_certs
+        ]
 
         if len([x for x in bools if x is True]) > 1:
             raise ValueError(
@@ -1494,8 +1499,10 @@ class IssuingDistributionPoint(object):
             )
 
         if (
-            all(not x for x in bools) and not any([
-                full_name, relative_name, only_some_reasons
+            not any([
+                only_contains_user_certs, only_contains_ca_certs,
+                indirect_crl, only_contains_attribute_certs, full_name,
+                relative_name, only_some_reasons
             ])
         ):
             raise ValueError(

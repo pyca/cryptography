@@ -4449,28 +4449,39 @@ class TestIssuingDistributionPointExtension(object):
                 x509.IssuingDistributionPoint(
                     False, False, True, False, None, [
                         x509.UniformResourceIdentifier(
-                            u"http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl")
+                    ], None
+                )
             ],
             [
                 "crl_idp_fullname_only.pem",
                 x509.IssuingDistributionPoint(
                     False, False, False, False, None, [
                         x509.UniformResourceIdentifier(
-                            u"http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl"
+                        )
+                    ], None
+                )
             ],
             [
                 "crl_idp_fullname_only_aa.pem",
                 x509.IssuingDistributionPoint(
                     False, False, False, True, None, [
                         x509.UniformResourceIdentifier(
-                            u"http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl"
+                        )
+                    ], None
+                )
             ],
             [
                 "crl_idp_fullname_only_user.pem",
                 x509.IssuingDistributionPoint(
                     True, False, False, False, None, [
                         x509.UniformResourceIdentifier(
-                            u"http://myhost.com/myca.crl")], None)
+                            u"http://myhost.com/myca.crl"
+                        )
+                    ], None
+                )
             ],
             [
                 "crl_idp_only_ca.pem",
@@ -4478,7 +4489,8 @@ class TestIssuingDistributionPointExtension(object):
                     False, True, False, False, None, None,
                     x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
                     ])
                 )
             ],
@@ -4503,7 +4515,8 @@ class TestIssuingDistributionPointExtension(object):
                         x509.ReasonFlags.aa_compromise,
                     ]), None, x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
                     ])
                 )
             ],
@@ -4513,7 +4526,8 @@ class TestIssuingDistributionPointExtension(object):
                     False, False, False, False, None, None,
                     x509.RelativeDistinguishedName([
                         x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
                     ])
                 )
             ],
@@ -4532,42 +4546,47 @@ class TestIssuingDistributionPointExtension(object):
         assert idp == expected
 
     @pytest.mark.parametrize(
-        ("error", "args"),
+        (
+            "error", "only_contains_user_certs", "only_contains_ca_certs",
+            "indirect_crl", "only_contains_attribute_certs",
+            "only_some_reasons", "full_name", "relative_name"
+        ),
         [
             [
-                TypeError,
-                (False, False, False, False, 'notafrozenset', None, None)
+                TypeError, False, False, False, False, 'notafrozenset', None,
+                None
             ],
             [
-                TypeError,
-                (False, False, False, False, frozenset(['bad']), None, None)
+                TypeError, False, False, False, False, frozenset(['bad']),
+                None, None
             ],
             [
-                ValueError,
-                (
-                    False, False, False, False,
-                    frozenset([x509.ReasonFlags.unspecified]), None, None
-                )
+                ValueError, False, False, False, False,
+                frozenset([x509.ReasonFlags.unspecified]), None, None
             ],
             [
-                ValueError,
-                (
-                    False, False, False, False,
-                    frozenset([x509.ReasonFlags.remove_from_crl]), None, None
-                )
+                ValueError, False, False, False, False,
+                frozenset([x509.ReasonFlags.remove_from_crl]), None, None
             ],
-            [TypeError, ('notabool', False, False, False, None, None, None)],
-            [TypeError, (False, 'notabool', False, False, None, None, None)],
-            [TypeError, (False, False, 'notabool', False, None, None, None)],
-            [TypeError, (False, False, False, 'notabool', None, None, None)],
-            [ValueError, (True, True, False, False, None, None, None)],
-            [ValueError, (False, False, True, True, None, None, None)],
-            [ValueError, (False, False, False, False, None, None, None)],
+            [TypeError, 'notabool', False, False, False, None, None, None],
+            [TypeError, False, 'notabool', False, False, None, None, None],
+            [TypeError, False, False, 'notabool', False, None, None, None],
+            [TypeError, False, False, False, 'notabool', None, None, None],
+            [ValueError, True, True, False, False, None, None, None],
+            [ValueError, False, False, True, True, None, None, None],
+            [ValueError, False, False, False, False, None, None, None],
         ]
     )
-    def test_invalid_init(self, error, args):
+    def test_invalid_init(self, error, only_contains_user_certs,
+                          only_contains_ca_certs, indirect_crl,
+                          only_contains_attribute_certs, only_some_reasons,
+                          full_name, relative_name):
         with pytest.raises(error):
-            x509.IssuingDistributionPoint(*args)
+            x509.IssuingDistributionPoint(
+                only_contains_user_certs, only_contains_ca_certs,
+                indirect_crl, only_contains_attribute_certs, only_some_reasons,
+                full_name, relative_name
+            )
 
     def test_repr(self):
         idp = x509.IssuingDistributionPoint(
