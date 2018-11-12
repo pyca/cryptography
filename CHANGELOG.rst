@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v2-4-1:
+
+2.4.1 - 2018-11-11
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a build breakage in our ``manylinux1`` wheels.
+
 .. _v2-4:
 
 2.4 - 2018-11-11
