@@ -10,6 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_X25519;
+static const int Cryptography_HAS_X448;
 static const int Cryptography_HAS_ED25519;
 
 static const int NID_undef;
@@ -93,6 +94,7 @@ static const int NID_sect409r1;
 static const int NID_sect571k1;
 static const int NID_sect571r1;
 static const int NID_X25519;
+static const int NID_X448;
 static const int NID_ED25519;
 static const int NID_wap_wsg_idm_ecid_wtls1;
 static const int NID_wap_wsg_idm_ecid_wtls3;
@@ -240,5 +242,11 @@ static const long Cryptography_HAS_ED25519 = 0;
 static const int NID_ED25519 = 0;
 #else
 static const long Cryptography_HAS_ED25519 = 1;
+#endif
+#ifndef NID_X448
+static const long Cryptography_HAS_X448 = 0;
+static const int NID_X448 = 0;
+#else
+static const long Cryptography_HAS_X448 = 1;
 #endif
 """
