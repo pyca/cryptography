@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v2-5:
+
+2.5 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v2-4-1:
 
 2.4.1 - 2018-11-11
