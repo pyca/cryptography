@@ -55,6 +55,9 @@ from cryptography.hazmat.backends.openssl.rsa import (
 from cryptography.hazmat.backends.openssl.x25519 import (
     _X25519PrivateKey, _X25519PublicKey
 )
+from cryptography.hazmat.backends.openssl.x448 import (
+    _X448PrivateKey, _X448PublicKey
+)
 from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
     _CertificateSigningRequest, _RevokedCertificate
@@ -2079,6 +2082,42 @@ class Backend(object):
 
     def x25519_supported(self):
         return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+
+    def x448_load_public_bytes(self, data):
+        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
+            self._lib.NID_X448, self._ffi.NULL, data, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return _X448PublicKey(self, evp_pkey)
+
+    def x448_load_private_bytes(self, data):
+        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
+            self._lib.NID_X448, self._ffi.NULL, data, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return _X448PrivateKey(self, evp_pkey)
+
+    def x448_generate_key(self):
+        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
+            self._lib.NID_X448, self._ffi.NULL
+        )
+        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
+        evp_pkey_ctx = self._ffi.gc(
+            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
+        )
+        res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
+        self.openssl_assert(res == 1)
+        evp_ppkey = self._ffi.new("EVP_PKEY **")
+        res = self._lib.EVP_PKEY_keygen(evp_pkey_ctx, evp_ppkey)
+        self.openssl_assert(res == 1)
+        self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
+        return _X448PrivateKey(self, evp_pkey)
+
+    def x448_supported(self):
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
