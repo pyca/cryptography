@@ -301,6 +301,15 @@ def cryptography_has_tlsv13():
     ]
 
 
+def cryptography_has_raw_key():
+    return [
+        "EVP_PKEY_new_raw_private_key",
+        "EVP_PKEY_new_raw_public_key",
+        "EVP_PKEY_get_raw_private_key",
+        "EVP_PKEY_get_raw_public_key",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -363,4 +372,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
+    "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
 }
