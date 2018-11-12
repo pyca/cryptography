@@ -92,7 +92,7 @@ static struct {
 
 /* return -1 on error */
 static int dev_urandom_fd(void) {
-    int fd, n;
+    int fd, n, flags;
     struct stat st;
 
     /* Check that fd still points to the correct device */
@@ -106,11 +106,18 @@ static int dev_urandom_fd(void) {
         }
     }
     if (urandom_cache.fd < 0) {
-        fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+        fd = open("/dev/urandom", O_RDONLY);
         if (fd < 0) {
             goto error;
         }
         if (fstat(fd, &st)) {
+            goto error;
+        }
+        /* set CLOEXEC flag */
+        flags = fcntl(fd, F_GETFD);
+        if (flags == -1) {
+            goto error;
+        } else if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
             goto error;
         }
         /* Another thread initialized the fd */
