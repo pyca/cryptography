@@ -102,6 +102,20 @@ SHA-2 family
     SHA-512 is a cryptographic hash function from the SHA-2 family and is
     standardized by NIST. It produces a 512-bit message digest.
 
+.. class:: SHA512_224()
+
+    .. versionadded:: 2.5
+
+    SHA-512/224 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 224-bit message digest.
+
+.. class:: SHA512_256()
+
+    .. versionadded:: 2.5
+
+    SHA-512/256 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 256-bit message digest.
+
 BLAKE2
 ~~~~~~
 
