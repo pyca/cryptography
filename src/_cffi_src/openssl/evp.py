@@ -34,6 +34,7 @@ static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
 static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
+static const long Cryptography_HAS_RAW_KEY;
 """
 
 FUNCTIONS = """
@@ -193,6 +194,13 @@ int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
                    uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
                    size_t);
+
+EVP_PKEY *EVP_PKEY_new_raw_private_key(int, ENGINE *, const unsigned char *,
+                                       size_t);
+EVP_PKEY *EVP_PKEY_new_raw_public_key(int, ENGINE *, const unsigned char *,
+                                      size_t);
+int EVP_PKEY_get_raw_private_key(const EVP_PKEY *, unsigned char *, size_t *);
+int EVP_PKEY_get_raw_public_key(const EVP_PKEY *, unsigned char *, size_t *);
 """
 
 CUSTOMIZATIONS = """
@@ -246,12 +254,22 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 0;
+static const long Cryptography_HAS_RAW_KEY = 0;
 int (*EVP_DigestSign)(EVP_MD_CTX *, unsigned char *, size_t *,
                       const unsigned char *tbs, size_t) = NULL;
 int (*EVP_DigestVerify)(EVP_MD_CTX *, const unsigned char *, size_t,
                         const unsigned char *, size_t) = NULL;
+EVP_PKEY *(*EVP_PKEY_new_raw_private_key)(int, ENGINE *, const unsigned char *,
+                                       size_t) = NULL;
+EVP_PKEY *(*EVP_PKEY_new_raw_public_key)(int, ENGINE *, const unsigned char *,
+                                      size_t) = NULL;
+int (*EVP_PKEY_get_raw_private_key)(const EVP_PKEY *, unsigned char *,
+                                    size_t *) = NULL;
+int (*EVP_PKEY_get_raw_public_key)(const EVP_PKEY *, unsigned char *,
+                                   size_t *) = NULL;
 #else
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
+static const long Cryptography_HAS_RAW_KEY = 1;
 #endif
 
 /* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
