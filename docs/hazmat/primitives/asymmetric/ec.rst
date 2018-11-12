@@ -808,6 +808,84 @@ Elliptic Curve Object Identifiers
 
         Corresponds to the dotted string ``"1.3.132.0.35"``.
 
+    .. attribute:: BRAINPOOLP256R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.7"``.
+
+    .. attribute:: BRAINPOOLP384R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.11"``.
+
+    .. attribute:: BRAINPOOLP512R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.13"``.
+
+    .. attribute:: SECT163K1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.1"``.
+
+    .. attribute:: SECT163R2
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.15"``.
+
+    .. attribute:: SECT233K1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.26"``.
+
+    .. attribute:: SECT233R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.27"``.
+
+    .. attribute:: SECT283K1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.16"``.
+
+    .. attribute:: SECT283R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.17"``.
+
+    .. attribute:: SECT409K1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.36"``.
+
+    .. attribute:: SECT409R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.37"``.
+
+    .. attribute:: SECT571K1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.38"``.
+
+    .. attribute:: SECT571R1
+
+        .. versionadded:: 2.5
+
+        Corresponds to the dotted string ``"1.3.132.0.39"``.
+
 
 .. _`FIPS 186-3`: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
