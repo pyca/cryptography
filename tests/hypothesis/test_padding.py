@@ -2,8 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from hypothesis import given
-from hypothesis.strategies import HealthCheck, binary, integers
+from hypothesis import HealthCheck, given, settings
+from hypothesis.strategies import binary, integers
 
 from cryptography.hazmat.primitives.padding import ANSIX923, PKCS7
 
