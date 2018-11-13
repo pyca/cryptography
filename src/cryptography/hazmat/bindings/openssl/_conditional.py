@@ -234,6 +234,7 @@ def cryptography_has_x448():
 def cryptography_has_ed25519():
     return [
         "NID_ED25519",
+        "EVP_PKEY_ED25519",
     ]
 
 
