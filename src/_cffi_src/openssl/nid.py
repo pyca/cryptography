@@ -11,6 +11,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_X25519;
 static const int Cryptography_HAS_X448;
+static const int Cryptography_HAS_ED448;
 static const int Cryptography_HAS_ED25519;
 
 static const int NID_undef;
@@ -248,5 +249,11 @@ static const long Cryptography_HAS_X448 = 0;
 static const int NID_X448 = 0;
 #else
 static const long Cryptography_HAS_X448 = 1;
+#endif
+#ifndef NID_ED448
+static const long Cryptography_HAS_ED448 = 0;
+static const int NID_ED448 = 0;
+#else
+static const long Cryptography_HAS_ED448 = 1;
 #endif
 """

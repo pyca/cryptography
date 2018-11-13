@@ -231,9 +231,17 @@ def cryptography_has_x448():
     ]
 
 
+def cryptography_has_ed448():
+    return [
+        "EVP_PKEY_ED448",
+        "NID_ED448",
+    ]
+
+
 def cryptography_has_ed25519():
     return [
         "NID_ED25519",
+        "EVP_PKEY_ED25519",
     ]
 
 
@@ -370,6 +378,7 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_X25519": cryptography_has_x25519,
     "Cryptography_HAS_X448": cryptography_has_x448,
+    "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY": (
         cryptography_has_oneshot_evp_digest_sign_verify
