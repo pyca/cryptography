@@ -139,3 +139,6 @@ class TestX25519Exchange(object):
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
             X25519PublicKey.from_public_bytes(b"a" * 31)
+
+        with pytest.raises(ValueError):
+            X25519PublicKey.from_public_bytes(b"a" * 33)
