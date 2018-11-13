@@ -24,6 +24,7 @@ static const int EVP_PKEY_EC;
 static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
 static const int EVP_PKEY_X448;
+static const int EVP_PKEY_ED448;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
@@ -304,5 +305,11 @@ static const long Cryptography_HAS_RAW_KEY = 1;
    conditional to remove it. */
 #ifndef EVP_PKEY_ED25519
 #define EVP_PKEY_ED25519 NID_ED25519
+#endif
+
+/* This is tied to ED448 support so we reuse the Cryptography_HAS_ED448
+   conditional to remove it. */
+#ifndef EVP_PKEY_ED448
+#define EVP_PKEY_ED448 NID_ED448
 #endif
 """
