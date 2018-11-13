@@ -38,6 +38,7 @@ static const int Cryptography_HAS_EVP_PKEY_DHX;
 static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
 static const long Cryptography_HAS_RAW_KEY;
+static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 """
 
 FUNCTIONS = """
@@ -69,6 +70,7 @@ int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
+int EVP_DigestFinalXOF(EVP_MD_CTX *, unsigned char *, size_t);
 const EVP_MD *EVP_get_digestbyname(const char *);
 const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
 int EVP_MD_size(const EVP_MD *);
@@ -258,6 +260,8 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 0;
 static const long Cryptography_HAS_RAW_KEY = 0;
+static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 0;
+int (*EVP_DigestFinalXOF)(EVP_MD_CTX *, unsigned char *, size_t) = NULL;
 int (*EVP_DigestSign)(EVP_MD_CTX *, unsigned char *, size_t *,
                       const unsigned char *tbs, size_t) = NULL;
 int (*EVP_DigestVerify)(EVP_MD_CTX *, const unsigned char *, size_t,
@@ -273,6 +277,7 @@ int (*EVP_PKEY_get_raw_public_key)(const EVP_PKEY *, unsigned char *,
 #else
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
 static const long Cryptography_HAS_RAW_KEY = 1;
+static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 #endif
 
 /* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
