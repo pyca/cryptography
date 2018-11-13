@@ -50,6 +50,7 @@ Asymmetric ciphers
   Ruby test suite.
 * X25519 and X448 test vectors from :rfc:`7748`.
 * RSA OAEP with custom label from the `BoringSSL evp tests`_.
+* Ed448 test vectors from :rfc:`8032`.
 
 
 Custom asymmetric vectors
