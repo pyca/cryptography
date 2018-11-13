@@ -185,6 +185,28 @@ than SHA-2 so at this time most users should choose SHA-2.
     SHA3/512 is a cryptographic hash function from the SHA-3 family and is
     standardized by NIST. It produces a 512-bit message digest.
 
+.. class:: SHAKE128(digest_size)
+
+    .. versionadded:: 2.5
+
+    SHAKE128 is an extendable output function (XOF) based on the same core
+    permutations as SHA3. It allows the caller to obtain an arbitrarily long
+    digest length. The security of the hash, however, does not exceed 128 bits
+    regardless of output length.
+
+    :param int digest_size: The length of output desired.
+
+.. class:: SHAKE256(digest_size)
+
+    .. versionadded:: 2.5
+
+    SHAKE256 is an extendable output function (XOF) based on the same core
+    permutations as SHA3. It allows the caller to obtain an arbitrarily long
+    digest length. The security of the hash, however, does not exceed 256 bits
+    regardless of output length.
+
+    :param int digest_size: The length of output desired.
+
 SHA-1
 ~~~~~
 

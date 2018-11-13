@@ -179,3 +179,24 @@ def test_buffer_protocol_hash(backend):
     assert h.finalize() == binascii.unhexlify(
         b"dff2e73091f6c05e528896c4c831b9448653dc2ff043528f6769437bc7b975c2"
     )
+
+
+class TestSHAKE(object):
+    @pytest.mark.parametrize(
+        "xof",
+        [hashes.SHAKE128, hashes.SHAKE256]
+    )
+    def test_invalid_digest_type(self, xof):
+        with pytest.raises(TypeError):
+            xof(digest_size=object())
+
+    @pytest.mark.parametrize(
+        "xof",
+        [hashes.SHAKE128, hashes.SHAKE256]
+    )
+    def test_invalid_digest_size(self, xof):
+        with pytest.raises(ValueError):
+            xof(digest_size=-5)
+
+        with pytest.raises(ValueError):
+            xof(digest_size=0)
