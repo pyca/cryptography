@@ -109,6 +109,20 @@ class SHA1(object):
 
 
 @utils.register_interface(HashAlgorithm)
+class SHA512_224(object):  # noqa: N801
+    name = "sha512-224"
+    digest_size = 28
+    block_size = 128
+
+
+@utils.register_interface(HashAlgorithm)
+class SHA512_256(object):  # noqa: N801
+    name = "sha512-256"
+    digest_size = 32
+    block_size = 128
+
+
+@utils.register_interface(HashAlgorithm)
 class SHA224(object):
     name = "sha224"
     digest_size = 28

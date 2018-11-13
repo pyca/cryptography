@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
+  and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
+  OpenSSL 1.1.1.
+
 .. _v2-4-1:
 
 2.4.1 - 2018-11-11
