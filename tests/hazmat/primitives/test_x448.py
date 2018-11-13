@@ -122,3 +122,6 @@ class TestX448Exchange(object):
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(b"a" * 55)
+
+        with pytest.raises(ValueError):
+            X448PublicKey.from_public_bytes(b"a" * 57)
