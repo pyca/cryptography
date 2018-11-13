@@ -2100,20 +2100,7 @@ class Backend(object):
         return _X448PrivateKey(self, evp_pkey)
 
     def x448_generate_key(self):
-        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
-            self._lib.NID_X448, self._ffi.NULL
-        )
-        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
-        evp_pkey_ctx = self._ffi.gc(
-            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
-        )
-        res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
-        self.openssl_assert(res == 1)
-        evp_ppkey = self._ffi.new("EVP_PKEY **")
-        res = self._lib.EVP_PKEY_keygen(evp_pkey_ctx, evp_ppkey)
-        self.openssl_assert(res == 1)
-        self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
+        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X448)
         return _X448PrivateKey(self, evp_pkey)
 
     def x448_supported(self):
