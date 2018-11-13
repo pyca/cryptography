@@ -2060,14 +2060,10 @@ class Backend(object):
         )
         return _X25519PrivateKey(self, evp_pkey)
 
-    def x25519_generate_key(self):
-        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(
-            self._lib.NID_X25519, self._ffi.NULL
-        )
+    def _evp_pkey_keygen_gc(self, nid):
+        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(nid, self._ffi.NULL)
         self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
-        evp_pkey_ctx = self._ffi.gc(
-            evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free
-        )
+        evp_pkey_ctx = self._ffi.gc(evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free)
         res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
         self.openssl_assert(res == 1)
         evp_ppkey = self._ffi.new("EVP_PKEY **")
@@ -2075,6 +2071,10 @@ class Backend(object):
         self.openssl_assert(res == 1)
         self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
+        return evp_pkey
+
+    def x25519_generate_key(self):
+        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X25519)
         return _X25519PrivateKey(self, evp_pkey)
 
     def x25519_supported(self):
