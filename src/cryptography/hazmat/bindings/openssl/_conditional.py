@@ -252,6 +252,12 @@ def cryptography_has_oneshot_evp_digest_sign_verify():
     ]
 
 
+def cryptography_has_evp_digestfinal_xof():
+    return [
+        "EVP_DigestFinalXOF",
+    ]
+
+
 def cryptography_has_evp_pkey_get_set_tls_encodedpoint():
     return [
         "EVP_PKEY_get1_tls_encodedpoint",
@@ -394,4 +400,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
+    "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
+        cryptography_has_evp_digestfinal_xof
+    ),
 }
