@@ -151,6 +151,12 @@ SHA-family of hashes.
 SHA-3 family
 ~~~~~~~~~~~~
 
+SHA-3 is the most recent NIST secure hash algorithm standard. Despite the
+larger number SHA-3 is not considered to be better than SHA-2. Instead, it uses
+a significantly different internal structure so that **if** an attack appears
+against SHA-2 it is unlikely to apply to SHA-3. SHA-3 is significantly slower
+than SHA-2 so at this time most users should choose SHA-2.
+
 .. class:: SHA3_224()
 
     .. versionadded:: 2.5
