@@ -2086,7 +2086,15 @@ class Backend(object):
             key_material, len(key_material), salt, len(salt), n, r, p,
             scrypt._MEM_LIMIT, buf, length
         )
-        self.openssl_assert(res == 1)
+        if res != 1:
+            errors = self._consume_errors()
+            if errors[0].reason == 65:
+                min_memory = 128 * n * r // (10**6)
+                raise MemoryError(
+                    "Not enough memory to derive key. These parameters require"
+                    " {} MB of memory.".format(min_memory)
+                )
+            self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
     def aead_cipher_supported(self, cipher):
