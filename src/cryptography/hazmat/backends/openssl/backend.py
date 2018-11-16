@@ -1141,9 +1141,10 @@ class Backend(object):
         )
         if x509 == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load certificate. Check " \
-                "https://cryptography.io/en/latest/faq/#why-i-can-t-import-my-pem-file" \
-                " for more information.")
+            raise ValueError("Unable to load certificate. Check "
+                             "https://cryptography.io/en/latest/faq/"
+                             "#why-i-can-t-import-my-pem-file"
+                             " for more information.")
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
@@ -1165,9 +1166,10 @@ class Backend(object):
         )
         if x509_crl == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load CRL. Check " \
-                "https://cryptography.io/en/latest/faq/#why-i-can-t-import-my-pem-file" \
-                " for more information.")
+            raise ValueError("Unable to load CRL. Check "
+                             "https://cryptography.io/en/latest/faq/"
+                             "#why-i-can-t-import-my-pem-file"
+                             " for more information.")
 
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
         return _CertificateRevocationList(self, x509_crl)
@@ -1189,9 +1191,10 @@ class Backend(object):
         )
         if x509_req == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load request. Check " \
-                "https://cryptography.io/en/latest/faq/#why-i-can-t-import-my-pem-file" \
-                " for more information.")
+            raise ValueError("Unable to load request. Check "
+                             "https://cryptography.io/en/latest/faq/"
+                             "#why-i-can-t-import-my-pem-file"
+                             " for more information.")
 
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)
