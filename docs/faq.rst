@@ -115,3 +115,43 @@ removed.
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues
+
+Why I can't import my PEM file?
+-------------------------------
+
+PEM is a file format to store keys, certificates and others cryptographic data
+into a file.  The format only uses ASCII characters to enhance compatibility,
+and the data is encoded as base64. It's defined by `RFC 7468`_. Alternatively,
+DER files stores data in binary format.
+
+If you are having trouble to import PEM files, make sure your file fits
+the following rules:
+
+- has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
+  (where ``[FILE TYPE]`` is certificate, public key, ...);
+
+- has a one-line footer like this: ``-----END [FILE TYPE]-----``;
+
+- all lines, except for the final one, must consist of exactly 64
+  characters.
+
+For example, this is a PEM file for a RSA Public Key: ::
+
+   -----BEGIN PUBLIC KEY-----
+   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7CsKFSzq20NLb2VQDXma
+   9DsDXtKADv0ziI5hT1KG6Bex5seE9pUoEcUxNv4uXo2jzAUgyRweRl/DLU8SoN8+
+   WWd6YWik4GZvNv7j0z28h9Q5jRySxy4dmElFtIRHGiKhqd1Z06z4AzrmKEzgxkOk
+   LJjY9cvwD+iXjpK2oJwNNyavvjb5YZq6V60RhpyNtKpMh2+zRLgIk9sROEPQeYfK
+   22zj2CnGBMg5Gm2uPOsGDltl/I/Fdh1aO3X4i1GXwCuPf1kSAg6lPJD0batftkSG
+   v0X0heUaV0j1HSNlBWamT4IR9+iJfKJHekOqvHQBcaCu7Ja4kXzx6GZ3M2j/Ja3A
+   2QIDAQAB
+   -----END PUBLIC KEY-----
+
+
+You can extract the info encoded in the file with OpenSSL command line:
+
+.. code-block:: console
+
+   $ openssl rsa -in keyfile.pem -pubin -text -noout
+
+.. _RFC 7468: https://tools.ietf.org/html/rfc7468
