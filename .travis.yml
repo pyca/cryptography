@@ -42,9 +42,9 @@ matrix:
         - python: 3.7
           env: TOXENV=py37 OPENSSL=1.0.1u
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0i
+          env: TOXENV=py27 OPENSSL=1.1.0j
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0i
+          env: TOXENV=py35 OPENSSL=1.1.0j
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.1
         - python: 3.7
@@ -121,12 +121,12 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0i
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j
           # dynamodb-encryption-sdk tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
         - python: 2.7
-          env: DOWNSTREAM=certbot OPENSSL=1.1.0i
+          env: DOWNSTREAM=certbot OPENSSL=1.1.0j
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
