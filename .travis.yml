@@ -46,9 +46,9 @@ matrix:
         - python: 3.5
           env: TOXENV=py35 OPENSSL=1.1.0j
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.1
+          env: TOXENV=py27 OPENSSL=1.1.1a
         - python: 3.7
-          env: TOXENV=py37 OPENSSL=1.1.1
+          env: TOXENV=py37 OPENSSL=1.1.1a
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.6.5
         - python: 3.7
@@ -100,7 +100,7 @@ matrix:
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-alpine:latest
 
         - python: 3.6
-          env: TOXENV=docs OPENSSL=1.1.1
+          env: TOXENV=docs OPENSSL=1.1.1a
           addons:
               apt:
                   packages:
