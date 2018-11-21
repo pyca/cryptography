@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-4-2:
+
+2.4.2 - 2018-11-21
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.0j.
+
 .. _v2-4-1:
 
 2.4.1 - 2018-11-11
