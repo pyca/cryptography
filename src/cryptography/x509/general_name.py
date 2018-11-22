@@ -9,8 +9,6 @@ import ipaddress
 import warnings
 from email.utils import parseaddr
 
-import idna
-
 import six
 from six.moves import urllib_parse
 
@@ -83,6 +81,10 @@ class RFC822Name(object):
         return instance
 
     def _idna_encode(self, value):
+        # Import idna lazily becase it allocates a decent amoutn of memory, and
+        # we're only using it in deprecated paths.
+        import idna
+
         _, address = parseaddr(value)
         parts = address.split(u"@")
         return parts[0] + "@" + idna.encode(parts[1]).decode("ascii")
@@ -104,6 +106,10 @@ class RFC822Name(object):
 
 
 def _idna_encode(value):
+    # Import idna lazily becase it allocates a decent amoutn of memory, and
+    # we're only using it in deprecated paths.
+    import idna
+
     # Retain prefixes '*.' for common/alt names and '.' for name constraints
     for prefix in ['*.', '.']:
         if value.startswith(prefix):
@@ -187,6 +193,10 @@ class UniformResourceIdentifier(object):
         return instance
 
     def _idna_encode(self, value):
+        # Import idna lazily becase it allocates a decent amoutn of memory, and
+        # we're only using it in deprecated paths.
+        import idna
+
         parsed = urllib_parse.urlparse(value)
         if parsed.port:
             netloc = (
