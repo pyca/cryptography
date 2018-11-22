@@ -11,6 +11,11 @@ Changelog
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
   and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
   OpenSSL 1.1.1.
+* Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA3_224`,
+  :class:`~cryptography.hazmat.primitives.hashes.SHA3_256`,
+  :class:`~cryptography.hazmat.primitives.hashes.SHA3_384`, and
+  :class:`~cryptography.hazmat.primitives.hashes.SHA3_512` when using OpenSSL
+  1.1.1.
 
 .. _v2-4-2:
 

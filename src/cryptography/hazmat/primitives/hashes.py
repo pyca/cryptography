@@ -151,6 +151,30 @@ class SHA512(object):
 
 
 @utils.register_interface(HashAlgorithm)
+class SHA3_224(object):  # noqa: N801
+    name = "sha3-224"
+    digest_size = 28
+
+
+@utils.register_interface(HashAlgorithm)
+class SHA3_256(object):  # noqa: N801
+    name = "sha3-256"
+    digest_size = 32
+
+
+@utils.register_interface(HashAlgorithm)
+class SHA3_384(object):  # noqa: N801
+    name = "sha3-384"
+    digest_size = 48
+
+
+@utils.register_interface(HashAlgorithm)
+class SHA3_512(object):  # noqa: N801
+    name = "sha3-512"
+    digest_size = 64
+
+
+@utils.register_interface(HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16

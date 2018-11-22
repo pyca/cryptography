@@ -148,6 +148,43 @@ SHA-family of hashes.
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
+SHA-3 family
+~~~~~~~~~~~~
+
+SHA-3 is the most recent NIST secure hash algorithm standard. Despite the
+larger number SHA-3 is not considered to be better than SHA-2. Instead, it uses
+a significantly different internal structure so that **if** an attack appears
+against SHA-2 it is unlikely to apply to SHA-3. SHA-3 is significantly slower
+than SHA-2 so at this time most users should choose SHA-2.
+
+.. class:: SHA3_224()
+
+    .. versionadded:: 2.5
+
+    SHA3/224 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 224-bit message digest.
+
+.. class:: SHA3_256()
+
+    .. versionadded:: 2.5
+
+    SHA3/256 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 256-bit message digest.
+
+.. class:: SHA3_384()
+
+    .. versionadded:: 2.5
+
+    SHA3/384 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 384-bit message digest.
+
+.. class:: SHA3_512()
+
+    .. versionadded:: 2.5
+
+    SHA3/512 is a cryptographic hash function from the SHA-3 family and is
+    standardized by NIST. It produces a 512-bit message digest.
+
 SHA-1
 ~~~~~
 
