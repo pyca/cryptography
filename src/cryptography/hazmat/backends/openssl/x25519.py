@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
+from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
 )
@@ -52,28 +53,6 @@ class _X25519PrivateKey(object):
         if not isinstance(peer_public_key, X25519PublicKey):
             raise TypeError("peer_public_key must be X25519PublicKey.")
 
-        ctx = self._backend._lib.EVP_PKEY_CTX_new(
-            self._evp_pkey, self._backend._ffi.NULL
+        return _evp_pkey_derive(
+            self._backend, self._evp_pkey, peer_public_key
         )
-        self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
-        ctx = self._backend._ffi.gc(ctx, self._backend._lib.EVP_PKEY_CTX_free)
-        res = self._backend._lib.EVP_PKEY_derive_init(ctx)
-        self._backend.openssl_assert(res == 1)
-        res = self._backend._lib.EVP_PKEY_derive_set_peer(
-            ctx, peer_public_key._evp_pkey
-        )
-        self._backend.openssl_assert(res == 1)
-        keylen = self._backend._ffi.new("size_t *")
-        res = self._backend._lib.EVP_PKEY_derive(
-            ctx, self._backend._ffi.NULL, keylen
-        )
-        self._backend.openssl_assert(res == 1)
-        self._backend.openssl_assert(keylen[0] > 0)
-        buf = self._backend._ffi.new("unsigned char[]", keylen[0])
-        res = self._backend._lib.EVP_PKEY_derive(ctx, buf, keylen)
-        if res != 1:
-            raise ValueError(
-                "Null shared key derived from public/private pair."
-            )
-
-        return self._backend._ffi.buffer(buf, keylen[0])[:]
