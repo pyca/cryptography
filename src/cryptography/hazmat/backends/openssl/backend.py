@@ -2084,6 +2084,9 @@ class Backend(object):
         return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 
     def x448_load_public_bytes(self, data):
+        if len(data) != 56:
+            raise ValueError("An X448 public key is 56 bytes long")
+
         evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
             self._lib.NID_X448, self._ffi.NULL, data, len(data)
         )
