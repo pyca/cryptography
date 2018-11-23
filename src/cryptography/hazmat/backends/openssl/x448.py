@@ -15,7 +15,6 @@ _X448_KEY_SIZE = 56
 
 @utils.register_interface(X448PublicKey)
 class _X448PublicKey(object):
-
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
