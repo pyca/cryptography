@@ -2030,6 +2030,8 @@ class Backend(object):
         return self._ffi.buffer(pp[0], res)[:]
 
     def x25519_load_public_bytes(self, data):
+        # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
+        # switch this to EVP_PKEY_new_raw_public_key
         evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
         backend.openssl_assert(res == 1)
@@ -2040,6 +2042,8 @@ class Backend(object):
         return _X25519PublicKey(self, evp_pkey)
 
     def x25519_load_private_bytes(self, data):
+        # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
+        # switch this to EVP_PKEY_new_raw_private_key
         # OpenSSL only has facilities for loading PKCS8 formatted private
         # keys using the algorithm identifiers specified in
         # https://tools.ietf.org/html/draft-ietf-curdle-pkix-09.
