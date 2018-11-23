@@ -24,6 +24,7 @@ private key is able to decrypt it.
     :maxdepth: 1
 
     x25519
+    x448
     ec
     rsa
     dh
