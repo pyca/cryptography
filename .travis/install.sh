@@ -51,7 +51,7 @@ if [ -n "${DOCKER}" ]; then
         echo "OPENSSL and LIBRESSL are not allowed when DOCKER is set."
         exit 1
     fi
-    docker pull "$DOCKER"
+    docker pull "$DOCKER" || docker pull "$DOCKER" || docker pull "$DOCKER"
 fi
 
 if [ -z "${DOWNSTREAM}" ]; then
