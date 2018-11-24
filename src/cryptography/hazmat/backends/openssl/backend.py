@@ -75,9 +75,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB, XTS
 )
 from cryptography.hazmat.primitives.kdf import scrypt
-from cryptography.hazmat.primitives.serialization.base import (
-    _ssh_write_mpint, _ssh_write_string
-)
+from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.x509 import ocsp
 
 
@@ -1798,19 +1796,19 @@ class Backend(object):
         if isinstance(key, rsa.RSAPublicKey):
             public_numbers = key.public_numbers()
             return b"ssh-rsa " + base64.b64encode(
-                _ssh_write_string(b"ssh-rsa") +
-                _ssh_write_mpint(public_numbers.e) +
-                _ssh_write_mpint(public_numbers.n)
+                ssh._ssh_write_string(b"ssh-rsa") +
+                ssh._ssh_write_mpint(public_numbers.e) +
+                ssh._ssh_write_mpint(public_numbers.n)
             )
         elif isinstance(key, dsa.DSAPublicKey):
             public_numbers = key.public_numbers()
             parameter_numbers = public_numbers.parameter_numbers
             return b"ssh-dss " + base64.b64encode(
-                _ssh_write_string(b"ssh-dss") +
-                _ssh_write_mpint(parameter_numbers.p) +
-                _ssh_write_mpint(parameter_numbers.q) +
-                _ssh_write_mpint(parameter_numbers.g) +
-                _ssh_write_mpint(public_numbers.y)
+                ssh._ssh_write_string(b"ssh-dss") +
+                ssh._ssh_write_mpint(parameter_numbers.p) +
+                ssh._ssh_write_mpint(parameter_numbers.q) +
+                ssh._ssh_write_mpint(parameter_numbers.g) +
+                ssh._ssh_write_mpint(public_numbers.y)
             )
         else:
             assert isinstance(key, ec.EllipticCurvePublicKey)
@@ -1827,9 +1825,9 @@ class Backend(object):
                     "supported by the SSH public key format"
                 )
             return b"ecdsa-sha2-" + curve_name + b" " + base64.b64encode(
-                _ssh_write_string(b"ecdsa-sha2-" + curve_name) +
-                _ssh_write_string(curve_name) +
-                _ssh_write_string(public_numbers.encode_point())
+                ssh._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
+                ssh._ssh_write_string(curve_name) +
+                ssh._ssh_write_string(public_numbers.encode_point())
             )
 
     def _parameter_bytes(self, encoding, format, cdata):

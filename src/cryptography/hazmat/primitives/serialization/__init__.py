@@ -9,7 +9,9 @@ from cryptography.hazmat.primitives.serialization.base import (
     NoEncryption, ParameterFormat, PrivateFormat, PublicFormat,
     load_der_parameters, load_der_private_key, load_der_public_key,
     load_pem_parameters, load_pem_private_key, load_pem_public_key,
-    load_ssh_public_key,
+)
+from cryptography.hazmat.primitives.serialization.ssh import (
+    load_ssh_public_key
 )
 
 __all__ = [
