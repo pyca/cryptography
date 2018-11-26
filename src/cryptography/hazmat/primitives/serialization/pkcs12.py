@@ -11,13 +11,6 @@ import six
 
 @six.add_metaclass(abc.ABCMeta)
 class PKCS12(object):
-    @abc.abstractmethod
-    def __init__(self, certificate, private_key, additional_certificates):
-        """
-        Create a PKCS12 object with a certificate, private key, and
-        additional certificates.
-        """
-
     @abc.abstractproperty
     def private_key(self):
         """
