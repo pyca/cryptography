@@ -123,7 +123,7 @@ file suffix.
     ``cryptography`` only supports a single certificate and private key when
     parsing PKCS12 files at this time.
 
-.. function:: load_load_key_and_certificates_from_pkcs12(data, password, backend)
+.. function:: load_load_key_and_certificates(data, password, backend)
 
     .. versionadded:: 2.5
 

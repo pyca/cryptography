@@ -5,5 +5,5 @@
 from __future__ import absolute_import, division, print_function
 
 
-def load_key_and_certificates_from_pkcs12(data, password, backend):
+def load_key_and_certificates(data, password, backend):
     return backend.load_key_and_certificates_from_pkcs12(data, password)

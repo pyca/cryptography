@@ -24,7 +24,7 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_public_key, load_ssh_public_key
 )
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
-    load_key_and_certificates_from_pkcs12
+    load_key_and_certificates
 )
 
 
@@ -1263,7 +1263,7 @@ class TestPKCS12(object):
         )
         parsed_cert, parsed_key, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", filename),
-            lambda derfile: load_key_and_certificates_from_pkcs12(
+            lambda derfile: load_key_and_certificates(
                 derfile.read(), password, backend
             ), mode="rb"
         )
@@ -1280,7 +1280,7 @@ class TestPKCS12(object):
         )
         parsed_cert, parsed_key, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "cert-aes256cbc-no-key.p12"),
-            lambda data: load_key_and_certificates_from_pkcs12(
+            lambda data: load_key_and_certificates(
                 data.read(), b"cryptography", backend
             ),
             mode="rb"
@@ -1298,7 +1298,7 @@ class TestPKCS12(object):
         )
         parsed_cert, parsed_key, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "no-cert-key-aes256cbc.p12"),
-            lambda data: load_key_and_certificates_from_pkcs12(
+            lambda data: load_key_and_certificates(
                 data.read(), b"cryptography", backend
             ),
             mode="rb"
@@ -1309,13 +1309,13 @@ class TestPKCS12(object):
 
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):
-            load_key_and_certificates_from_pkcs12(
+            load_key_and_certificates(
                 b"irrelevant", object(), backend
             )
 
     def test_not_a_pkcs12(self, backend):
         with pytest.raises(ValueError):
-            load_key_and_certificates_from_pkcs12(
+            load_key_and_certificates(
                 b"invalid", b"pass", backend
             )
 
@@ -1323,7 +1323,7 @@ class TestPKCS12(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join("pkcs12", "cert-key-aes256cbc.p12"),
-                lambda derfile: load_key_and_certificates_from_pkcs12(
+                lambda derfile: load_key_and_certificates(
                     derfile.read(), b"invalid", backend
                 ), mode="rb"
             )
