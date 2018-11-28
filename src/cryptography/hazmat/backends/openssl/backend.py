@@ -2173,7 +2173,7 @@ class Backend(object):
                 self.openssl_assert(x509 != self._ffi.NULL)
                 additional_certificates.append(_Certificate(self, x509))
 
-        return (cert, key, additional_certificates)
+        return (key, cert, additional_certificates)
 
 
 class GetCipherByName(object):

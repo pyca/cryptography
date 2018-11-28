@@ -120,10 +120,10 @@ file suffix.
 
 .. note::
 
-    ``cryptography`` only supports a single certificate and private key when
-    parsing PKCS12 files at this time.
+    ``cryptography`` only supports a single private key and associated
+    certificates when parsing PKCS12 files at this time.
 
-.. function:: load_load_key_and_certificates(data, password, backend)
+.. function:: load_key_and_certificates(data, password, backend)
 
     .. versionadded:: 2.5
 
@@ -137,9 +137,9 @@ file suffix.
     :param backend: A backend instance.
 
     :returns: A tuple of
-        ``(certificate, private_key, [additional_certificates])``.
-        ``certificate`` is either a :class:`~cryptography.x509.Certificate` or
-        ``None``, ``private_key`` is a private key type or ``None``, and
+        ``(private_key, certificate, [additional_certificates])``.
+        ``private_key`` is a private key type or ``None``, ``certificate``
+        is either a :class:`~cryptography.x509.Certificate` or ``None``, and
         ``additional_certificates`` is a list of
         :class:`~cryptography.x509.Certificate` instances.
 
