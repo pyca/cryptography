@@ -312,7 +312,7 @@ class TestOpenSSLMemoryLeaks(object):
         "pkcs12/cert-aes256cbc-no-key.p12",
         "pkcs12/cert-key-aes256cbc.p12",
     ])
-    def test_load_pkcs12(self, path):
+    def test_load_key_and_certificates_from_pkcs12(self, path):
         assert_no_memory_leaks(textwrap.dedent("""
         def func(path):
             from cryptography import x509
@@ -321,7 +321,7 @@ class TestOpenSSLMemoryLeaks(object):
             import cryptography_vectors
 
             with cryptography_vectors.open_vector_file(path, "rb") as f:
-                pkcs12.load_pkcs12(
+                pkcs12.load_key_and_certificates_from_pkcs12(
                     f.read(), b"cryptography", backend
                 )
         """), [path])
