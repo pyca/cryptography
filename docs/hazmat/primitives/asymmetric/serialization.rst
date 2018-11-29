@@ -427,10 +427,10 @@ file suffix.
     :returns: A tuple of
         ``(private_key, certificate, additional_certificates)``.
         ``private_key`` is a private key type or ``None``, ``certificate``
-        is either a :class:`~cryptography.x509.Certificate` (whose public key
-        matches the private key in the PKCS 12 object) or ``None``, and
-        ``additional_certificates`` is a list of
-        :class:`~cryptography.x509.Certificate` instances.
+        is either the :class:`~cryptography.x509.Certificate` whose public key
+        matches the private key in the PKCS 12 object or ``None``, and
+        ``additional_certificates`` is a list of all other
+        :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
