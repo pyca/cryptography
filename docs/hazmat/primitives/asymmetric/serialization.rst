@@ -397,8 +397,45 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
 
+PKCS12
+~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization.pkcs12
+
+PKCS12 is a binary format described in :rfc:`7292`. It can contain
+certificates, keys, and more. PKCS12 files commonly have a ``pfx`` or ``p12``
+file suffix.
+
+.. note::
+
+    ``cryptography`` only supports a single private key and associated
+    certificates when parsing PKCS12 files at this time.
+
+.. function:: load_key_and_certificates(data, password, backend)
+
+    .. versionadded:: 2.5
+
+    Deserialize a PKCS12 blob.
+
+    :param bytes data: The binary data.
+
+    :param bytes password: The password to use to decrypt the data. ``None``
+        if the PKCS12 is not encrypted.
+
+    :param backend: A backend instance.
+
+    :returns: A tuple of
+        ``(private_key, certificate, additional_certificates)``.
+        ``private_key`` is a private key type or ``None``, ``certificate``
+        is either the :class:`~cryptography.x509.Certificate` whose public key
+        matches the private key in the PKCS 12 object or ``None``, and
+        ``additional_certificates`` is a list of all other
+        :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
+
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization
 
 .. class:: PrivateFormat
 

@@ -2129,6 +2129,52 @@ class Backend(object):
             self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
 
+    def load_key_and_certificates_from_pkcs12(self, data, password):
+        if password is None:
+            password = self._ffi.NULL
+        elif not isinstance(password, bytes):
+            raise TypeError("Password must be a byte string or None")
+
+        bio = self._bytes_to_bio(data)
+        p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
+        if p12 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Could not deserialize PKCS12 data")
+
+        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
+        evp_pkey_ptr = self._ffi.new("EVP_PKEY **")
+        x509_ptr = self._ffi.new("X509 **")
+        sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
+        res = self._lib.PKCS12_parse(
+            p12, password, evp_pkey_ptr, x509_ptr, sk_x509_ptr
+        )
+        if res == 0:
+            self._consume_errors()
+            raise ValueError("Invalid password or PKCS12 data")
+
+        cert = None
+        key = None
+        additional_certificates = []
+
+        if evp_pkey_ptr[0] != self._ffi.NULL:
+            evp_pkey = self._ffi.gc(evp_pkey_ptr[0], self._lib.EVP_PKEY_free)
+            key = self._evp_pkey_to_private_key(evp_pkey)
+
+        if x509_ptr[0] != self._ffi.NULL:
+            x509 = self._ffi.gc(x509_ptr[0], self._lib.X509_free)
+            cert = _Certificate(self, x509)
+
+        if sk_x509_ptr[0] != self._ffi.NULL:
+            sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
+            num = self._lib.sk_X509_num(sk_x509_ptr[0])
+            for i in range(num):
+                x509 = self._lib.sk_X509_value(sk_x509, i)
+                x509 = self._ffi.gc(x509, self._lib.X509_free)
+                self.openssl_assert(x509 != self._ffi.NULL)
+                additional_certificates.append(_Certificate(self, x509))
+
+        return (key, cert, additional_certificates)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):

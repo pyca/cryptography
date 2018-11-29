@@ -307,3 +307,21 @@ class TestOpenSSLMemoryLeaks(object):
             ).add_extension(x509.OCSPNonce(b"0000"), False)
             req = builder.build()
         """))
+
+    @pytest.mark.parametrize("path", [
+        "pkcs12/cert-aes256cbc-no-key.p12",
+        "pkcs12/cert-key-aes256cbc.p12",
+    ])
+    def test_load_pkcs12_key_and_certificates(self, path):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func(path):
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives.serialization import pkcs12
+            import cryptography_vectors
+
+            with cryptography_vectors.open_vector_file(path, "rb") as f:
+                pkcs12.load_key_and_certificates(
+                    f.read(), b"cryptography", backend
+                )
+        """), [path])

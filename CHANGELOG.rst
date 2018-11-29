@@ -16,6 +16,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hashes.SHA3_384`, and
   :class:`~cryptography.hazmat.primitives.hashes.SHA3_512` when using OpenSSL
   1.1.1.
+* Added initial support for parsing PKCS12 files with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates`.
 
 .. _v2-4-2:
 
