@@ -10,7 +10,10 @@ case "${1}" in
         ;;
     run)
         cd certbot
-        pytest certbot/tests
+        # Ignore some warnings for now since they're now automatically promoted
+        # to errors. We can probably remove this when acme gets split into
+        # its own repo
+        pytest -Wignore certbot/tests
         pytest acme
         ;;
     *)
