@@ -482,6 +482,34 @@ _CRLREASONFLAGS = {
 }
 
 
+def _encode_reasonflags(backend, reasons):
+    bitmask = backend._lib.ASN1_BIT_STRING_new()
+    backend.openssl_assert(bitmask != backend._ffi.NULL)
+    for reason in reasons:
+        res = backend._lib.ASN1_BIT_STRING_set_bit(
+            bitmask, _CRLREASONFLAGS[reason], 1
+        )
+        backend.openssl_assert(res == 1)
+
+    return bitmask
+
+
+def _encode_full_name(backend, full_name):
+    dpn = backend._lib.DIST_POINT_NAME_new()
+    backend.openssl_assert(dpn != backend._ffi.NULL)
+    dpn.type = _DISTPOINT_TYPE_FULLNAME
+    dpn.name.fullname = _encode_general_names(backend, full_name)
+    return dpn
+
+
+def _encode_relative_name(backend, relative_name):
+    dpn = backend._lib.DIST_POINT_NAME_new()
+    backend.openssl_assert(dpn != backend._ffi.NULL)
+    dpn.type = _DISTPOINT_TYPE_RELATIVENAME
+    dpn.name.relativename = _encode_sk_name_entry(backend, relative_name)
+    return dpn
+
+
 def _encode_cdps_freshest_crl(backend, cdps):
     cdp = backend._lib.sk_DIST_POINT_new_null()
     cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
@@ -490,30 +518,13 @@ def _encode_cdps_freshest_crl(backend, cdps):
         backend.openssl_assert(dp != backend._ffi.NULL)
 
         if point.reasons:
-            bitmask = backend._lib.ASN1_BIT_STRING_new()
-            backend.openssl_assert(bitmask != backend._ffi.NULL)
-            dp.reasons = bitmask
-            for reason in point.reasons:
-                res = backend._lib.ASN1_BIT_STRING_set_bit(
-                    bitmask, _CRLREASONFLAGS[reason], 1
-                )
-                backend.openssl_assert(res == 1)
+            dp.reasons = _encode_reasonflags(backend, point.reasons)
 
         if point.full_name:
-            dpn = backend._lib.DIST_POINT_NAME_new()
-            backend.openssl_assert(dpn != backend._ffi.NULL)
-            dpn.type = _DISTPOINT_TYPE_FULLNAME
-            dpn.name.fullname = _encode_general_names(backend, point.full_name)
-            dp.distpoint = dpn
+            dp.distpoint = _encode_full_name(backend, point.full_name)
 
         if point.relative_name:
-            dpn = backend._lib.DIST_POINT_NAME_new()
-            backend.openssl_assert(dpn != backend._ffi.NULL)
-            dpn.type = _DISTPOINT_TYPE_RELATIVENAME
-            relativename = _encode_sk_name_entry(backend, point.relative_name)
-            backend.openssl_assert(relativename != backend._ffi.NULL)
-            dpn.name.relativename = relativename
-            dp.distpoint = dpn
+            dp.distpoint = _encode_relative_name(backend, point.relative_name)
 
         if point.crl_issuer:
             dp.CRLissuer = _encode_general_names(backend, point.crl_issuer)
