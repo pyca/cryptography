@@ -2598,6 +2598,23 @@ class TestCertificateBuilder(object):
                     crl_issuer=None,
                 )
             ]),
+            x509.FreshestCRL([
+                x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME,
+                            u"indirect CRL for indirectCRL CA3"
+                        ),
+                        x509.NameAttribute(
+                            NameOID.COUNTRY_NAME,
+                            u"US"
+                        ),
+                    ]),
+                    reasons=None,
+                    crl_issuer=None,
+                )
+            ]),
         ]
     )
     def test_ext(self, add_ext, backend):
