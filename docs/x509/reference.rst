@@ -2319,14 +2319,14 @@ X.509 Extensions
 
         :type: int
 
-.. class:: IssuingDistributionPoint(only_contains_user_certs,\
-           only_contains_ca_certs, indirect_crl, only_contains_attribute_certs,\
-           only_some_reasons, full_name, relative_name)
+.. class:: IssuingDistributionPoint(full_name, relative_name,\
+           only_contains_user_certs, only_contains_ca_certs, only_some_reasons,\
+           indirect_crl, only_contains_attribute_certs)
 
     .. versionadded:: 2.5
 
     Issuing distribution point is a CRL extension that identifies the CRL
-    distribution point and scope for a particular CRL, and it indicates whether
+    distribution point and scope for a particular CRL. It indicates whether
     the CRL covers revocation for end entity certificates only, CA certificates
     only, attribute certificates only, or a limited set of reason codes. For
     specific details on the way this extension should be processed see

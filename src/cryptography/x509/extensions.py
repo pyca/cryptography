@@ -1450,10 +1450,9 @@ class OCSPNonce(object):
 class IssuingDistributionPoint(object):
     oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 
-    def __init__(self, only_contains_user_certs, only_contains_ca_certs,
-                 indirect_crl, only_contains_attribute_certs,
-                 only_some_reasons, full_name, relative_name):
-
+    def __init__(self, full_name, relative_name, only_contains_user_certs,
+                 only_contains_ca_certs, only_some_reasons, indirect_crl,
+                 only_contains_attribute_certs):
         if (
             only_some_reasons and (
                 not isinstance(only_some_reasons, frozenset) or not all(
@@ -1486,12 +1485,12 @@ class IssuingDistributionPoint(object):
                 "must all be boolean."
             )
 
-        bools = [
+        boolean_arguments = [
             only_contains_user_certs, only_contains_ca_certs,
             indirect_crl, only_contains_attribute_certs
         ]
 
-        if len([x for x in bools if x is True]) > 1:
+        if len([x for x in boolean_arguments if x]) > 1:
             raise ValueError(
                 "Only one of the following can be set to True: "
                 "only_contains_user_certs, only_contains_ca_certs, "
@@ -1523,14 +1522,14 @@ class IssuingDistributionPoint(object):
 
     def __repr__(self):
         return (
-            "<IssuingDistributionPoint(only_contains_user_certs="
-            "{0.only_contains_user_certs}, "
+            "<IssuingDistributionPoint(full_name={0.full_name}, "
+            "relative_name={0.relative_name}, "
+            "only_contains_user_certs={0.only_contains_user_certs}, "
             "only_contains_ca_certs={0.only_contains_ca_certs}, "
-            "indirect_crl={0.indirect_crl}, "
-            "only_contains_attribute_certs={0.only_contains_attribute_certs}, "
             "only_some_reasons={0.only_some_reasons}, "
-            "full_name={0.full_name}, "
-            "relative_name={0.relative_name}>".format(self)
+            "indirect_crl={0.indirect_crl}, "
+            "only_contains_attribute_certs="
+            "{0.only_contains_attribute_certs})>".format(self)
         )
 
     def __eq__(self, other):
@@ -1538,14 +1537,14 @@ class IssuingDistributionPoint(object):
             return NotImplemented
 
         return (
+            self.full_name == other.full_name and
+            self.relative_name == other.relative_name and
             self.only_contains_user_certs == other.only_contains_user_certs and
             self.only_contains_ca_certs == other.only_contains_ca_certs and
+            self.only_some_reasons == other.only_some_reasons and
             self.indirect_crl == other.indirect_crl and
             self.only_contains_attribute_certs ==
-            other.only_contains_attribute_certs and
-            self.only_some_reasons == other.only_some_reasons and
-            self.full_name == other.full_name and
-            self.relative_name == other.relative_name
+            other.only_contains_attribute_certs
         )
 
     def __ne__(self, other):
@@ -1553,35 +1552,27 @@ class IssuingDistributionPoint(object):
 
     def __hash__(self):
         return hash((
+            self.full_name,
+            self.relative_name,
             self.only_contains_user_certs,
             self.only_contains_ca_certs,
-            self.only_contains_attribute_certs,
-            self.indirect_crl,
             self.only_some_reasons,
-            self.full_name,
-            self.relative_name
+            self.indirect_crl,
+            self.only_contains_attribute_certs,
         ))
 
+    full_name = utils.read_only_property("_full_name")
+    relative_name = utils.read_only_property("_relative_name")
     only_contains_user_certs = utils.read_only_property(
         "_only_contains_user_certs"
     )
     only_contains_ca_certs = utils.read_only_property(
         "_only_contains_ca_certs"
     )
+    only_some_reasons = utils.read_only_property("_only_some_reasons")
+    indirect_crl = utils.read_only_property("_indirect_crl")
     only_contains_attribute_certs = utils.read_only_property(
         "_only_contains_attribute_certs"
-    )
-    indirect_crl = utils.read_only_property(
-        "_indirect_crl"
-    )
-    only_some_reasons = utils.read_only_property(
-        "_only_some_reasons"
-    )
-    full_name = utils.read_only_property(
-        "_full_name"
-    )
-    relative_name = utils.read_only_property(
-        "_relative_name"
     )
 
 

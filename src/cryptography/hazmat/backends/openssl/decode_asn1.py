@@ -483,8 +483,8 @@ def _decode_issuing_dist_point(backend, idp):
         only_some_reasons = None
 
     return x509.IssuingDistributionPoint(
-        only_user, only_ca, indirect_crl, only_attr, only_some_reasons,
-        full_name, relative_name
+        full_name, relative_name, only_user, only_ca, only_some_reasons,
+        indirect_crl, only_attr
     )
 
 
