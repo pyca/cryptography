@@ -18,6 +18,7 @@ Changelog
   1.1.1.
 * Added initial support for parsing PKCS12 files with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates`.
+* Added support for :class:`~cryptography.x509.IssuingDistributionPoint`.
 
 .. _v2-4-2:
 

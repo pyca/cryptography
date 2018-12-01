@@ -4440,6 +4440,294 @@ class TestInhibitAnyPolicyExtension(object):
         assert iap.skip_certs == 5
 
 
+class TestIssuingDistributionPointExtension(object):
+    @pytest.mark.parametrize(
+        ("filename", "expected"),
+        [
+            (
+                "crl_idp_fullname_indirect_crl.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl")
+                    ],
+                    relative_name=None,
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=None,
+                    indirect_crl=True,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_fullname_only.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl")
+                    ],
+                    relative_name=None,
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=None,
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_fullname_only_aa.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl")
+                    ],
+                    relative_name=None,
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=None,
+                    indirect_crl=False,
+                    only_contains_attribute_certs=True,
+                )
+            ),
+            (
+                "crl_idp_fullname_only_user.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl")
+                    ],
+                    relative_name=None,
+                    only_contains_user_certs=True,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=None,
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_only_ca.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
+                    ]),
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=True,
+                    only_some_reasons=None,
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_reasons_only.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=None,
+                    relative_name=None,
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=frozenset([
+                        x509.ReasonFlags.key_compromise
+                    ]),
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_relative_user_all_reasons.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
+                    ]),
+                    only_contains_user_certs=True,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise,
+                        x509.ReasonFlags.affiliation_changed,
+                        x509.ReasonFlags.superseded,
+                        x509.ReasonFlags.cessation_of_operation,
+                        x509.ReasonFlags.certificate_hold,
+                        x509.ReasonFlags.privilege_withdrawn,
+                        x509.ReasonFlags.aa_compromise,
+                    ]),
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+            (
+                "crl_idp_relativename_only.pem",
+                x509.IssuingDistributionPoint(
+                    full_name=None,
+                    relative_name=x509.RelativeDistinguishedName([
+                        x509.NameAttribute(
+                            oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA"
+                        )
+                    ]),
+                    only_contains_user_certs=False,
+                    only_contains_ca_certs=False,
+                    only_some_reasons=None,
+                    indirect_crl=False,
+                    only_contains_attribute_certs=False,
+                )
+            ),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_vectors(self, filename, expected, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", filename),
+            x509.load_pem_x509_crl, backend
+        )
+        idp = crl.extensions.get_extension_for_class(
+            x509.IssuingDistributionPoint
+        ).value
+        assert idp == expected
+
+    @pytest.mark.parametrize(
+        (
+            "error", "only_contains_user_certs", "only_contains_ca_certs",
+            "indirect_crl", "only_contains_attribute_certs",
+            "only_some_reasons", "full_name", "relative_name"
+        ),
+        [
+            (
+                TypeError, False, False, False, False, 'notafrozenset', None,
+                None
+            ),
+            (
+                TypeError, False, False, False, False, frozenset(['bad']),
+                None, None
+            ),
+            (
+                ValueError, False, False, False, False,
+                frozenset([x509.ReasonFlags.unspecified]), None, None
+            ),
+            (
+                ValueError, False, False, False, False,
+                frozenset([x509.ReasonFlags.remove_from_crl]), None, None
+            ),
+            (TypeError, 'notabool', False, False, False, None, None, None),
+            (TypeError, False, 'notabool', False, False, None, None, None),
+            (TypeError, False, False, 'notabool', False, None, None, None),
+            (TypeError, False, False, False, 'notabool', None, None, None),
+            (ValueError, True, True, False, False, None, None, None),
+            (ValueError, False, False, True, True, None, None, None),
+            (ValueError, False, False, False, False, None, None, None),
+        ]
+    )
+    def test_invalid_init(self, error, only_contains_user_certs,
+                          only_contains_ca_certs, indirect_crl,
+                          only_contains_attribute_certs, only_some_reasons,
+                          full_name, relative_name):
+        with pytest.raises(error):
+            x509.IssuingDistributionPoint(
+                full_name, relative_name, only_contains_user_certs,
+                only_contains_ca_certs, only_some_reasons, indirect_crl,
+                only_contains_attribute_certs
+            )
+
+    def test_repr(self):
+        idp = x509.IssuingDistributionPoint(
+            None, None, False, False,
+            frozenset([x509.ReasonFlags.key_compromise]), False, False
+        )
+        if not six.PY2:
+            assert repr(idp) == (
+                "<IssuingDistributionPoint(full_name=None, relative_name=None,"
+                " only_contains_user_certs=False, only_contains_ca_certs=False"
+                ", only_some_reasons=frozenset({<ReasonFlags.key_compromise: '"
+                "keyCompromise'>}), indirect_crl=False, only_contains_attribut"
+                "e_certs=False)>"
+            )
+        else:
+            assert repr(idp) == (
+                "<IssuingDistributionPoint(full_name=None, relative_name=None,"
+                " only_contains_user_certs=False, only_contains_ca_certs=False"
+                ", only_some_reasons=frozenset([<ReasonFlags.key_compromise: '"
+                "keyCompromise'>]), indirect_crl=False, only_contains_attribut"
+                "e_certs=False)>"
+            )
+
+    def test_eq(self):
+        idp1 = x509.IssuingDistributionPoint(
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+            only_some_reasons=None,
+            full_name=None,
+            relative_name=x509.RelativeDistinguishedName([
+                x509.NameAttribute(
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+            ])
+        )
+        idp2 = x509.IssuingDistributionPoint(
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+            only_some_reasons=None,
+            full_name=None,
+            relative_name=x509.RelativeDistinguishedName([
+                x509.NameAttribute(
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+            ])
+        )
+        assert idp1 == idp2
+
+    def test_ne(self):
+        idp1 = x509.IssuingDistributionPoint(
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+            only_some_reasons=None,
+            full_name=None,
+            relative_name=x509.RelativeDistinguishedName([
+                x509.NameAttribute(
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+            ])
+        )
+        idp2 = x509.IssuingDistributionPoint(
+            only_contains_user_certs=True,
+            only_contains_ca_certs=False,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+            only_some_reasons=None,
+            full_name=None,
+            relative_name=x509.RelativeDistinguishedName([
+                x509.NameAttribute(
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+            ])
+        )
+        assert idp1 != idp2
+        assert idp1 != object()
+
+    def test_hash(self):
+        idp1 = x509.IssuingDistributionPoint(
+            None, None, True, False, None, False, False
+        )
+        idp2 = x509.IssuingDistributionPoint(
+            None, None, True, False, None, False, False
+        )
+        idp3 = x509.IssuingDistributionPoint(
+            None,
+            x509.RelativeDistinguishedName([
+                x509.NameAttribute(
+                    oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+            ]),
+            True, False, None, False, False
+        )
+        assert hash(idp1) == hash(idp2)
+        assert hash(idp1) != hash(idp3)
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertPoisonExtension(object):
