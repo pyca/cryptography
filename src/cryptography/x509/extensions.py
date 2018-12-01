@@ -1485,12 +1485,12 @@ class IssuingDistributionPoint(object):
                 "must all be boolean."
             )
 
-        boolean_arguments = [
+        crl_constraints = [
             only_contains_user_certs, only_contains_ca_certs,
             indirect_crl, only_contains_attribute_certs
         ]
 
-        if len([x for x in boolean_arguments if x]) > 1:
+        if len([x for x in crl_constraints if x]) > 1:
             raise ValueError(
                 "Only one of the following can be set to True: "
                 "only_contains_user_certs, only_contains_ca_certs, "
