@@ -281,7 +281,8 @@ static int osrandom_init(ENGINE *e) {
     if (getrandom_works != CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS) {
         long n;
         char dest[1];
-        n = syscall(SYS_getrandom, dest, sizeof(dest), GRND_NONBLOCK);
+        /* if the kernel CSPRNG is not initialized this will block */
+        n = syscall(SYS_getrandom, dest, sizeof(dest), 0);
         if (n == sizeof(dest)) {
             getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS;
         } else {
@@ -294,15 +295,6 @@ static int osrandom_init(ENGINE *e) {
             case EPERM:
                 /* Fallback: seccomp prevents syscall */
                 getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_FALLBACK;
-                break;
-            case EAGAIN:
-               /* Failure: Kernel CRPNG has not been seeded yet */
-                ERR_Cryptography_OSRandom_error(
-                    CRYPTOGRAPHY_OSRANDOM_F_INIT,
-                    CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_EAGAIN,
-                    __FILE__, __LINE__
-                );
-                getrandom_works = CRYPTOGRAPHY_OSRANDOM_GETRANDOM_INIT_FAILED;
                 break;
             default:
                 /* EINTR cannot occur for buflen < 256. */
@@ -350,7 +342,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         while (size > 0) {
             do {
-                n = syscall(SYS_getrandom, buffer, size, GRND_NONBLOCK);
+                n = syscall(SYS_getrandom, buffer, size, 0);
             } while (n < 0 && errno == EINTR);
 
             if (n <= 0) {
@@ -532,9 +524,6 @@ static ERR_STRING_DATA CRYPTOGRAPHY_OSRANDOM_str_reasons[] = {
      "Reading from /dev/urandom fd failed."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED),
      "getrandom() initialization failed."},
-    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_EAGAIN),
-     "getrandom() initialization failed with EAGAIN. Most likely Kernel "
-     "CPRNG is not seeded yet."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_UNEXPECTED),
      "getrandom() initialization failed with unexpected errno."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_FAILED),
