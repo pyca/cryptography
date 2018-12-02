@@ -756,7 +756,7 @@ const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
 static const long Cryptography_HAS_SIGALGS = 1;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_PSK)
 static const long Cryptography_HAS_PSK = 0;
 int (*SSL_CTX_use_psk_identity_hint)(SSL_CTX *, const char *) = NULL;
 void (*SSL_CTX_set_psk_server_callback)(SSL_CTX *,
