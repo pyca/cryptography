@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 def _verify_key_size(algorithm, key):
     # Verify that the key is instance of bytes
-    utils._check_bytes("key", key)
+    utils._check_byteslike("key", key)
 
     # Verify that the key size matches the expected key size
     if len(key) * 8 not in algorithm.key_sizes:
@@ -153,7 +153,7 @@ class ChaCha20(object):
 
     def __init__(self, key, nonce):
         self.key = _verify_key_size(self, key)
-        utils._check_bytes("nonce", nonce)
+        utils._check_byteslike("nonce", nonce)
 
         if len(nonce) != 16:
             raise ValueError("nonce must be 128-bits (16 bytes)")
