@@ -3,5 +3,5 @@
 requires = [
     "setuptools>=18.5",
     "wheel",
-    "cffi>=1.7,!=1.11.3; python_implementation != 'PyPy'",
+    "cffi>=1.8,!=1.11.3; python_implementation != 'PyPy'",
 ]
