@@ -88,9 +88,7 @@ class CBC(object):
     name = "CBC"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_bytes("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -103,8 +101,7 @@ class XTS(object):
     name = "XTS"
 
     def __init__(self, tweak):
-        if not isinstance(tweak, bytes):
-            raise TypeError("tweak must be bytes")
+        utils._check_bytes("tweak", tweak)
 
         if len(tweak) != 16:
             raise ValueError("tweak must be 128-bits (16 bytes)")
@@ -134,9 +131,7 @@ class OFB(object):
     name = "OFB"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_bytes("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -149,9 +144,7 @@ class CFB(object):
     name = "CFB"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_bytes("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -164,9 +157,7 @@ class CFB8(object):
     name = "CFB8"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_bytes("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -179,9 +170,7 @@ class CTR(object):
     name = "CTR"
 
     def __init__(self, nonce):
-        if not isinstance(nonce, bytes):
-            raise TypeError("nonce must be bytes")
-
+        utils._check_bytes("nonce", nonce)
         self._nonce = nonce
 
     nonce = utils.read_only_property("_nonce")
@@ -206,14 +195,12 @@ class GCM(object):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
         # to actually construct a bytes object that large, so we don't check
         # for it
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
+        utils._check_bytes("initialization_vector", initialization_vector)
         if len(initialization_vector) == 0:
             raise ValueError("initialization_vector must be at least 1 byte")
         self._initialization_vector = initialization_vector
         if tag is not None:
-            if not isinstance(tag, bytes):
-                raise TypeError("tag must be bytes or None")
+            utils._check_bytes("tag", tag)
             if min_tag_length < 4:
                 raise ValueError("min_tag_length must be >= 4")
             if len(tag) < min_tag_length:

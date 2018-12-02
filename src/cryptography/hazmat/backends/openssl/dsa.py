@@ -211,8 +211,7 @@ class _DSAPublicKey(object):
 
     def verifier(self, signature, signature_algorithm):
         _warn_sign_verify_deprecated()
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
+        utils._check_bytes("signature", signature)
 
         _check_not_prehashed(signature_algorithm)
         return _DSAVerificationContext(

@@ -73,10 +73,8 @@ class KBKDFHMAC(object):
         if context is None:
             context = b''
 
-        if (not isinstance(label, bytes) or
-                not isinstance(context, bytes)):
-            raise TypeError('label and context must be of type bytes')
-
+        utils._check_bytes("label", label)
+        utils._check_bytes("context", context)
         self._algorithm = algorithm
         self._mode = mode
         self._length = length
@@ -102,8 +100,7 @@ class KBKDFHMAC(object):
         if self._used:
             raise AlreadyFinalized
 
-        if not isinstance(key_material, bytes):
-            raise TypeError('key_material must be bytes')
+        utils._check_bytes("key_material", key_material)
         self._used = True
 
         # inverse floor division (equivalent to ceiling)

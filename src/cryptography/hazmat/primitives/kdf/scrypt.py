@@ -30,9 +30,7 @@ class Scrypt(object):
             )
 
         self._length = length
-        if not isinstance(salt, bytes):
-            raise TypeError("salt must be bytes.")
-
+        utils._check_bytes("salt", salt)
         if n < 2 or (n & (n - 1)) != 0:
             raise ValueError("n must be greater than 1 and be a power of 2.")
 
@@ -54,8 +52,7 @@ class Scrypt(object):
             raise AlreadyFinalized("Scrypt instances can only be used once.")
         self._used = True
 
-        if not isinstance(key_material, bytes):
-            raise TypeError("key_material must be bytes.")
+        utils._check_bytes("key_material", key_material)
         return self._backend.derive_scrypt(
             key_material, self._salt, self._length, self._n, self._r, self._p
         )

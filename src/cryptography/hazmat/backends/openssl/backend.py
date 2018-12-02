@@ -1203,8 +1203,8 @@ class Backend(object):
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
-        if password is not None and not isinstance(password, bytes):
-            raise TypeError("Password must be bytes")
+        if password is not None:
+            utils._check_bytes("password", password)
 
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         if password is not None:
@@ -2132,8 +2132,8 @@ class Backend(object):
     def load_key_and_certificates_from_pkcs12(self, data, password):
         if password is None:
             password = self._ffi.NULL
-        elif not isinstance(password, bytes):
-            raise TypeError("Password must be a byte string or None")
+        else:
+            utils._check_bytes("password", password)
 
         bio = self._bytes_to_bio(data)
         p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)

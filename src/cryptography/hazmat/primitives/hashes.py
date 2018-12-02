@@ -82,8 +82,7 @@ class Hash(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(data, bytes):
-            raise TypeError("data must be bytes.")
+        utils._check_bytes("data", data)
         self._ctx.update(data)
 
     def copy(self):

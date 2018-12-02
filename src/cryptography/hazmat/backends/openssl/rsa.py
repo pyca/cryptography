@@ -434,8 +434,7 @@ class _RSAPublicKey(object):
 
     def verifier(self, signature, padding, algorithm):
         _warn_sign_verify_deprecated()
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
+        utils._check_bytes("signature", signature)
 
         _check_not_prehashed(algorithm)
         return _RSAVerificationContext(

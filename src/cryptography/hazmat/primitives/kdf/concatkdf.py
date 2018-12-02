@@ -27,14 +27,12 @@ def _common_args_checks(algorithm, length, otherinfo):
             "Can not derive keys larger than {0} bits.".format(
                 max_length
             ))
-    if not (otherinfo is None or isinstance(otherinfo, bytes)):
-        raise TypeError("otherinfo must be bytes.")
+    if otherinfo is not None:
+        utils._check_bytes("otherinfo", otherinfo)
 
 
 def _concatkdf_derive(key_material, length, auxfn, otherinfo):
-    if not isinstance(key_material, bytes):
-        raise TypeError("key_material must be bytes.")
-
+    utils._check_bytes("key_material", key_material)
     output = [b""]
     outlen = 0
     counter = 1
@@ -96,10 +94,11 @@ class ConcatKDFHMAC(object):
         if self._otherinfo is None:
             self._otherinfo = b""
 
-        if not (salt is None or isinstance(salt, bytes)):
-            raise TypeError("salt must be bytes.")
         if salt is None:
             salt = b"\x00" * algorithm.block_size
+        else:
+            utils._check_bytes("salt", salt)
+
         self._salt = salt
 
         if not isinstance(backend, HMACBackend):

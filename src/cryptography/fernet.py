@@ -12,6 +12,7 @@ import time
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding
@@ -51,8 +52,7 @@ class Fernet(object):
         return self._encrypt_from_parts(data, current_time, iv)
 
     def _encrypt_from_parts(self, data, current_time, iv):
-        if not isinstance(data, bytes):
-            raise TypeError("data must be bytes.")
+        utils._check_bytes("data", data)
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
@@ -82,9 +82,7 @@ class Fernet(object):
 
     @staticmethod
     def _get_unverified_token_data(token):
-        if not isinstance(token, bytes):
-            raise TypeError("token must be bytes.")
-
+        utils._check_bytes("token", token)
         try:
             data = base64.urlsafe_b64decode(token)
         except (TypeError, binascii.Error):

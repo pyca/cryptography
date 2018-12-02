@@ -38,8 +38,7 @@ class HMAC(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(data, bytes):
-            raise TypeError("data must be bytes.")
+        utils._check_bytes("data", data)
         self._ctx.update(data)
 
     def copy(self):
@@ -60,8 +59,7 @@ class HMAC(object):
         return digest
 
     def verify(self, signature):
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
+        utils._check_bytes("signature", signature)
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
 

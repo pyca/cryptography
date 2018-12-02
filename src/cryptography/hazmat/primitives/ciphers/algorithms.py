@@ -153,8 +153,7 @@ class ChaCha20(object):
 
     def __init__(self, key, nonce):
         self.key = _verify_key_size(self, key)
-        if not isinstance(nonce, bytes):
-            raise TypeError("nonce must be bytes")
+        utils._check_bytes("nonce", nonce)
 
         if len(nonce) != 16:
             raise ValueError("nonce must be 128-bits (16 bytes)")

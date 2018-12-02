@@ -40,8 +40,7 @@ def _byte_padding_update(buffer_, data, block_size):
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
-    if not isinstance(data, bytes):
-        raise TypeError("data must be bytes.")
+    utils._check_bytes("data", data)
 
     buffer_ += data
 
@@ -65,8 +64,7 @@ def _byte_unpadding_update(buffer_, data, block_size):
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
-    if not isinstance(data, bytes):
-        raise TypeError("data must be bytes.")
+    utils._check_bytes("data", data)
 
     buffer_ += data
 
