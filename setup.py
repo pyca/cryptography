@@ -303,7 +303,7 @@ setup(
         "docstest": [
             "doc8",
             "pyenchant >= 1.6.11",
-            "readme_renderer >= 16.0",
+            "twine >= 1.12.0",
             "sphinxcontrib-spelling >= 4.0.1",
         ],
         "pep8test": [
