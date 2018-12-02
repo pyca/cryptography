@@ -27,8 +27,9 @@ class X963KDF(object):
         if length > max_len:
             raise ValueError(
                 "Can not derive keys larger than {0} bits.".format(max_len))
-        if not (sharedinfo is None or isinstance(sharedinfo, bytes)):
-            raise TypeError("sharedinfo must be bytes.")
+        if sharedinfo is not None:
+            utils._check_bytes("sharedinfo", sharedinfo)
+
         self._algorithm = algorithm
         self._length = length
         self._sharedinfo = sharedinfo
@@ -45,10 +46,7 @@ class X963KDF(object):
         if self._used:
             raise AlreadyFinalized
         self._used = True
-
-        if not isinstance(key_material, bytes):
-            raise TypeError("key_material must be bytes.")
-
+        utils._check_bytes("key_material", key_material)
         output = [b""]
         outlen = 0
         counter = 1
