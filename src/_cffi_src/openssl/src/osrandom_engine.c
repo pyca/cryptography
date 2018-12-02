@@ -342,7 +342,6 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     case CRYPTOGRAPHY_OSRANDOM_GETRANDOM_WORKS:
         while (size > 0) {
             do {
-                /* if the kernel CSPRNG is not initialized this will block */
                 n = syscall(SYS_getrandom, buffer, size, 0);
             } while (n < 0 && errno == EINTR);
 
@@ -525,9 +524,6 @@ static ERR_STRING_DATA CRYPTOGRAPHY_OSRANDOM_str_reasons[] = {
      "Reading from /dev/urandom fd failed."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED),
      "getrandom() initialization failed."},
-    {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_EAGAIN),
-     "getrandom() initialization failed with EAGAIN. Most likely Kernel "
-     "CPRNG is not seeded yet."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_UNEXPECTED),
      "getrandom() initialization failed with unexpected errno."},
     {ERR_REASON(CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_FAILED),
