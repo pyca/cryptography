@@ -325,3 +325,48 @@ class TestOpenSSLMemoryLeaks(object):
                     f.read(), b"cryptography", backend
                 )
         """), [path])
+
+    def test_create_crl_with_idp(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            import datetime
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import ec
+            from cryptography.x509.oid import NameOID
+
+            key = ec.generate_private_key(ec.SECP256R1(), backend)
+            last_update = datetime.datetime(2002, 1, 1, 12, 1)
+            next_update = datetime.datetime(2030, 1, 1, 12, 1)
+            idp = x509.IssuingDistributionPoint(
+                full_name=None,
+                relative_name=x509.RelativeDistinguishedName([
+                    x509.NameAttribute(
+                        oid=x509.NameOID.ORGANIZATION_NAME, value=u"PyCA")
+                ]),
+                only_contains_user_certs=False,
+                only_contains_ca_certs=True,
+                only_some_reasons=None,
+                indirect_crl=False,
+                only_contains_attribute_certs=False,
+            )
+            builder = x509.CertificateRevocationListBuilder().issuer_name(
+                x509.Name([
+                    x509.NameAttribute(
+                        NameOID.COMMON_NAME, u"cryptography.io CA"
+                    )
+                ])
+            ).last_update(
+                last_update
+            ).next_update(
+                next_update
+            ).add_extension(
+                idp, True
+            )
+
+            crl = builder.sign(key, hashes.SHA256(), backend)
+            crl.extensions.get_extension_for_class(
+                x509.IssuingDistributionPoint
+            )
+        """))
