@@ -219,7 +219,8 @@ class _CipherContext(object):
     def authenticate_additional_data(self, data):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
-            self._ctx, self._backend._ffi.NULL, outlen, data, len(data)
+            self._ctx, self._backend._ffi.NULL, outlen,
+            self._backend._ffi.from_buffer(data), len(data)
         )
         self._backend.openssl_assert(res != 0)
 

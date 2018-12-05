@@ -464,8 +464,10 @@ class TestAESModeGCM(object):
             backend
         )
         enc = cipher.encryptor()
+        enc.authenticate_additional_data(bytearray(b"foo"))
         ct = enc.update(data) + enc.finalize()
         dec = cipher.decryptor()
+        dec.authenticate_additional_data(bytearray(b"foo"))
         pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
         assert pt == data
 
