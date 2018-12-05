@@ -1661,10 +1661,8 @@ class TestKeyUsageExtension(object):
 
 
 class TestDNSName(object):
-    def test_init(self):
-        name = x509.DNSName(u"*.xn--4ca7aey.example.com")
-        assert name.value == u"*.xn--4ca7aey.example.com"
-
+    def test_init_deprecated(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u".xn--4ca7aey.example.com"
@@ -1672,6 +1670,10 @@ class TestDNSName(object):
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u"xn--4ca7aey.example.com"
+
+    def test_init(self):
+        name = x509.DNSName(u"*.xn--4ca7aey.example.com")
+        assert name.value == u"*.xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
             x509.DNSName(1.3)
@@ -1788,6 +1790,7 @@ class TestRFC822Name(object):
         assert gn.value == u"administrator"
 
     def test_idna(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.RFC822Name(u"email@em\xe5\xefl.com")
 
@@ -1827,6 +1830,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == u"singlelabel:443/test"
 
     def test_idna_no_port(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"http://\u043f\u044b\u043a\u0430.cryptography"
@@ -1835,6 +1839,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == u"http://xn--80ato2c.cryptography"
 
     def test_idna_with_port(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
@@ -1849,6 +1854,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == "ldap:///some-nonsense"
 
     def test_query_and_fragment(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"ldap://\u043f\u044b\u043a\u0430.cryptography:90/path?query="

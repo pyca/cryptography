@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** :term:`U-label` strings were deprecated in
+  version 2.1, but this version removes the default ``idna`` dependency as
+  well. If you still need this deprecated path please install cryptography
+  with the ``idna`` extra: ``pip install cryptography[idna]``.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
   and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
   OpenSSL 1.1.1.
