@@ -458,17 +458,20 @@ class TestAESModeGCM(object):
 
     def test_buffer_protocol(self, backend):
         data = bytearray(b"helloworld")
-        cipher = base.Cipher(
+        enc = base.Cipher(
             algorithms.AES(bytearray(b"\x00" * 16)),
             modes.GCM(bytearray(b"\x00" * 12)),
             backend
-        )
-        enc = cipher.encryptor()
+        ).encryptor()
         enc.authenticate_additional_data(bytearray(b"foo"))
         ct = enc.update(data) + enc.finalize()
-        dec = cipher.decryptor()
+        dec = base.Cipher(
+            algorithms.AES(bytearray(b"\x00" * 16)),
+            modes.GCM(bytearray(b"\x00" * 12), enc.tag),
+            backend
+        ).decryptor()
         dec.authenticate_additional_data(bytearray(b"foo"))
-        pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
+        pt = dec.update(ct) + dec.finalize()
         assert pt == data
 
 
