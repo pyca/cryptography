@@ -21,8 +21,6 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j
           # dynamodb-encryption-sdk tests fail on xenial for whatever reason
-          dist: trusty
-          sudo: false
 
 install:
     - ./.travis/install.sh
