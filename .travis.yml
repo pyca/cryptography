@@ -134,6 +134,8 @@ matrix:
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
+    allow_failures:
+      - env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j
 
 install:
     - ./.travis/install.sh
