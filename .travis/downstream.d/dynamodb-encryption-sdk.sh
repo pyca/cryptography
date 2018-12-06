@@ -7,9 +7,11 @@ case "${1}" in
         git rev-parse HEAD
         pip install -e .
         pip install -r test/upstream-requirements-py27.txt
+        pip list
         ;;
     run)
         cd aws-dynamodb-encryption-python
+        pip list
         pytest test/ -m "local and not slow and not veryslow and not nope"
         ;;
     *)
