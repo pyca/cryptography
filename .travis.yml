@@ -122,7 +122,6 @@ matrix:
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
           env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j BOTO_CONFIG=/dev/null
-          sudo: false
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0j
         - python: 2.7
