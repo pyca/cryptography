@@ -92,7 +92,7 @@ Glossary
         on modern computers is 8 bits and represents 256 possible values. In
         cryptographic applications when you see something say it requires a 128
         bit key, you can calculate the number of bytes by dividing by 8. 128
-        divided by 8 is 16, so a 128 bit key is a tag16 byte key.
+        divided by 8 is 16, so a 128 bit key is a 16 byte key.
 
     bytes-like
         A bytes-like object contains binary data and supports the
