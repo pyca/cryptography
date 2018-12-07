@@ -121,7 +121,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j BOTO_CONFIG=/dev/null
           # dynamodb-encryption-sdk tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
