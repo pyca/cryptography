@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
+from cryptography.x509.general_name import _lazy_import_idna
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
     NameOID, ObjectIdentifier
@@ -42,6 +43,17 @@ def _make_certbuilder(private_key):
             .not_valid_before(datetime.datetime(1999, 1, 1))
             .not_valid_after(datetime.datetime(2020, 1, 1))
     )
+
+
+def test_lazy_idna_import():
+    try:
+        __import__("idna")
+        pytest.skip("idna is installed")
+    except ImportError:
+        pass
+
+    with pytest.raises(ImportError):
+        _lazy_import_idna()
 
 
 class TestExtension(object):
@@ -1661,10 +1673,8 @@ class TestKeyUsageExtension(object):
 
 
 class TestDNSName(object):
-    def test_init(self):
-        name = x509.DNSName(u"*.xn--4ca7aey.example.com")
-        assert name.value == u"*.xn--4ca7aey.example.com"
-
+    def test_init_deprecated(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u".xn--4ca7aey.example.com"
@@ -1672,6 +1682,10 @@ class TestDNSName(object):
         with pytest.warns(utils.DeprecatedIn21):
             name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u"xn--4ca7aey.example.com"
+
+    def test_init(self):
+        name = x509.DNSName(u"*.xn--4ca7aey.example.com")
+        assert name.value == u"*.xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
             x509.DNSName(1.3)
@@ -1788,6 +1802,7 @@ class TestRFC822Name(object):
         assert gn.value == u"administrator"
 
     def test_idna(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.RFC822Name(u"email@em\xe5\xefl.com")
 
@@ -1827,6 +1842,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == u"singlelabel:443/test"
 
     def test_idna_no_port(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"http://\u043f\u044b\u043a\u0430.cryptography"
@@ -1835,6 +1851,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == u"http://xn--80ato2c.cryptography"
 
     def test_idna_with_port(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
@@ -1849,6 +1866,7 @@ class TestUniformResourceIdentifier(object):
         assert gn.value == "ldap:///some-nonsense"
 
     def test_query_and_fragment(self):
+        pytest.importorskip("idna")
         with pytest.warns(utils.DeprecatedIn21):
             gn = x509.UniformResourceIdentifier(
                 u"ldap://\u043f\u044b\u043a\u0430.cryptography:90/path?query="

@@ -29,6 +29,8 @@ matrix:
           env: TOXENV=py36
         - python: 3.7
           env: TOXENV=py37
+        - python: 3.7
+          env: TOXENV=py37-idna
         - python: pypy-5.3
           env: TOXENV=pypy-nocoverage
           # PyPy 5.3 isn't available for xenial
@@ -121,10 +123,9 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j
-          # dynamodb-encryption-sdk tests fail on xenial for whatever reason
-          dist: trusty
-          sudo: false
+          # BOTO_CONFIG works around this boto issue on travis:
+          # https://github.com/boto/boto/issues/3717
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j BOTO_CONFIG=/dev/null
         - python: 2.7
           env: DOWNSTREAM=certbot OPENSSL=1.1.0j
         - python: 2.7

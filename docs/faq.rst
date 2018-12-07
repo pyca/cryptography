@@ -99,6 +99,18 @@ support multiple versions of Python. The Python 3.4 ``abi3`` wheel can be used
 with any version of Python greater than or equal to 3.4. Recent versions of
 ``pip`` will automatically install ``abi3`` wheels.
 
+``ImportError``: ``idna`` is not installed
+------------------------------------------
+
+``cryptography`` deprecated passing :term:`U-label` strings to various X.509
+constructors in version 2.1 and in version 2.5 moved the ``idna`` dependency
+to a ``setuptools`` extra. If you see this exception you should upgrade your
+software so that it no longer depends on this deprecated feature. If that is
+not yet possible you  can also install ``cryptography`` with
+``pip install cryptography[idna]`` to automatically install the missing
+dependency. This workaround will be available until the feature is fully
+removed.
+
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html

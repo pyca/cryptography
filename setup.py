@@ -287,7 +287,6 @@ setup(
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
 
     install_requires=[
-        "idna >= 2.1",
         "asn1crypto >= 0.21.0",
         "six >= 1.4.1",
     ] + setup_requirements,
@@ -311,6 +310,12 @@ setup(
             "flake8-import-order",
             "pep8-naming",
         ],
+        # This extra is for the U-label support that was deprecated in
+        # cryptography 2.1. If you need this deprecated path install with
+        # pip install cryptography[idna]
+        "idna": [
+            "idna >= 2.1",
+        ]
     },
 
     # for cffi
