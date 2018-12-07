@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
+from cryptography.x509.general_name import _lazy_import_idna
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
     NameOID, ObjectIdentifier
@@ -42,6 +43,17 @@ def _make_certbuilder(private_key):
             .not_valid_before(datetime.datetime(1999, 1, 1))
             .not_valid_after(datetime.datetime(2020, 1, 1))
     )
+
+
+def test_lazy_idna_import():
+    try:
+        __import__("idna")
+        pytest.skip("idna is installed")
+    except ImportError:
+        pass
+
+    with pytest.raises(ImportError):
+        _lazy_import_idna()
 
 
 class TestExtension(object):

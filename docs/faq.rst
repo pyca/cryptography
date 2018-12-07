@@ -99,8 +99,8 @@ support multiple versions of Python. The Python 3.4 ``abi3`` wheel can be used
 with any version of Python greater than or equal to 3.4. Recent versions of
 ``pip`` will automatically install ``abi3`` wheels.
 
-``ModuleNotFoundError``: No module named ``'idna'``
----------------------------------------------------
+``ImportError``: ``idna`` is not installed
+------------------------------------------
 
 ``cryptography`` deprecated passing :term:`U-label` strings to various X.509
 constructors in version 2.1 and in version 2.5 moved the ``idna`` dependency

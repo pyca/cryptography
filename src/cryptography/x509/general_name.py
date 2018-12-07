@@ -30,6 +30,20 @@ _GENERAL_NAMES = {
 }
 
 
+def _lazy_import_idna():
+    # Import idna lazily becase it allocates a decent amount of memory, and
+    # we're only using it in deprecated paths.
+    try:
+        import idna
+        return idna
+    except ImportError:
+        raise ImportError(
+            "idna is not installed, but a deprecated feature that requires it"
+            " was used. See: https://cryptography.io/en/latest/faq/#importe"
+            "rror-idna-is-not-installed"
+        )
+
+
 class UnsupportedGeneralNameType(Exception):
     def __init__(self, msg, type):
         super(UnsupportedGeneralNameType, self).__init__(msg)
@@ -81,10 +95,7 @@ class RFC822Name(object):
         return instance
 
     def _idna_encode(self, value):
-        # Import idna lazily becase it allocates a decent amoutn of memory, and
-        # we're only using it in deprecated paths.
-        import idna
-
+        idna = _lazy_import_idna()
         _, address = parseaddr(value)
         parts = address.split(u"@")
         return parts[0] + "@" + idna.encode(parts[1]).decode("ascii")
@@ -106,10 +117,7 @@ class RFC822Name(object):
 
 
 def _idna_encode(value):
-    # Import idna lazily becase it allocates a decent amoutn of memory, and
-    # we're only using it in deprecated paths.
-    import idna
-
+    idna = _lazy_import_idna()
     # Retain prefixes '*.' for common/alt names and '.' for name constraints
     for prefix in ['*.', '.']:
         if value.startswith(prefix):
@@ -193,10 +201,7 @@ class UniformResourceIdentifier(object):
         return instance
 
     def _idna_encode(self, value):
-        # Import idna lazily becase it allocates a decent amoutn of memory, and
-        # we're only using it in deprecated paths.
-        import idna
-
+        idna = _lazy_import_idna()
         parsed = urllib_parse.urlparse(value)
         if parsed.port:
             netloc = (
