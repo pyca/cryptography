@@ -28,6 +28,12 @@ Changelog
   :class:`~cryptography.x509.RelativeDistinguishedName` and
   :class:`~cryptography.x509.NameAttribute` to format the name or component as
   a RFC 4514 Distinguished Name string.
+* Deprecated
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`
+  in favor of
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
+  which immediately checks if the point is on the curve and supports compressed
+  points.
 
 .. _v2-4-2:
 
@@ -56,11 +62,6 @@ Changelog
   ``cryptography`` from a wheel.
 * Added initial :doc:`OCSP </x509/ocsp>` support.
 * Added support for :class:`~cryptography.x509.PrecertPoison`.
-* Deprecated
-  :meth:`cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`
-  in favor of
-  :meth:`cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
-  which checks that the resulting point is on the curve, and supports compressed points
 
 .. _v2-3-1:
 

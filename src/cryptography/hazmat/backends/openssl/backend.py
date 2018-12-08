@@ -1383,42 +1383,29 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def uncompress_elliptic_curve_bytes(self, curve, point_bytes):
+    def load_elliptic_curve_public_bytes(self, curve, point_bytes):
+        curve_nid = self._elliptic_curve_to_nid(curve)
+        group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
+        self.openssl_assert(group != self._ffi.NULL)
+        group = self._ffi.gc(group, self._lib.EC_GROUP_free)
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
         with self._tmp_bn_ctx() as bn_ctx:
-            curve_nid = self._elliptic_curve_to_nid(curve)
-
-            group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
-            self.openssl_assert(group != self._ffi.NULL)
-
-            group = self._ffi.gc(group, self._lib.EC_GROUP_free)
-
-            point = self._lib.EC_POINT_new(group)
-            self.openssl_assert(point != self._ffi.NULL)
-            point = self._ffi.gc(point, self._lib.EC_POINT_free)
-
             res = self._lib.EC_POINT_oct2point(group, point, point_bytes,
                                                len(point_bytes), bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("Invalid public bytes for the given curve")
 
-            length = self._lib.EC_POINT_point2oct(
-                group,
-                point,
-                self._lib.POINT_CONVERSION_UNCOMPRESSED,
-                self._ffi.NULL,
-                0,
-                bn_ctx)
-            self.openssl_assert(length > 0)
-
-            buf = self._ffi.new("unsigned char[]", length)
-            self._lib.EC_POINT_point2oct(
-                group,
-                point,
-                self._lib.POINT_CONVERSION_UNCOMPRESSED,
-                buf,
-                length,
-                bn_ctx)
-
-            return self._ffi.buffer(buf)[:]
+        curve_nid = self._elliptic_curve_to_nid(curve)
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        self.openssl_assert(ec_cdata != self._ffi.NULL)
+        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+        return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
     def derive_elliptic_curve_private_key(self, private_value, curve):
         ec_cdata = self._ec_key_new_by_curve(curve)

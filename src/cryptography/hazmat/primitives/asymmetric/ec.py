@@ -154,28 +154,17 @@ class EllipticCurvePublicKey(object):
 
     @classmethod
     def from_encoded_point(cls, curve, data, backend):
+        utils._check_bytes("data", data)
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
         if not backend:
-            raise ValueError('Must provide backend to decode point')
+            raise ValueError("Must provide backend to decode point")
 
-        byte_length = (curve.key_size + 7) // 8
-        compressed_byte_length = 1 + byte_length
-        if (len(data) == compressed_byte_length and
-                data[0:1] in (b'\x02', b'\x03')):
-            data = backend.uncompress_elliptic_curve_bytes(curve, data)
+        if data[0:1] not in (b"\x02", b"\x03", b"\x04"):
+            raise ValueError("Unsupported elliptic curve point type")
 
-        if data.startswith(b'\x04'):
-            if len(data) == 2 * byte_length + 1:
-                x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
-                y = utils.int_from_bytes(data[byte_length + 1:], 'big')
-                return backend.load_elliptic_curve_public_numbers(
-                    EllipticCurvePublicNumbers(x, y, curve))
-            else:
-                raise ValueError('Invalid elliptic curve point data length')
-        else:
-            raise ValueError('Unsupported elliptic curve point type')
+        return backend.load_elliptic_curve_public_bytes(curve, data)
 
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
@@ -367,19 +356,13 @@ class EllipticCurvePublicNumbers(object):
     def public_key(self, backend):
         return backend.load_elliptic_curve_public_numbers(self)
 
-    def encode_point(self, compressed=False):
+    def encode_point(self):
         # key_size is in bits. Convert to bytes and round up
         byte_length = (self.curve.key_size + 7) // 8
-        if not compressed:
-            return (
-                b'\x04' + utils.int_to_bytes(self.x, byte_length) +
-                utils.int_to_bytes(self.y, byte_length)
-            )
-        else:
-            compression_byte = b'\x03' if self.y % 2 else b'\x02'
-            return (
-                compression_byte + utils.int_to_bytes(self.x, byte_length)
-            )
+        return (
+            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
+            utils.int_to_bytes(self.y, byte_length)
+        )
 
     @classmethod
     def from_encoded_point(cls, curve, data):
@@ -390,7 +373,7 @@ class EllipticCurvePublicNumbers(object):
             "Support for unsafe construction of public numbers from "
             "encoded data will be removed in a future version. "
             "Please use EllipticCurvePublicKey.from_encoded_point",
-            utils.DeprecatedIn24,
+            utils.DeprecatedIn25,
             stacklevel=2,
         )
 

@@ -221,17 +221,6 @@ def test_encode_point():
     )
 
 
-@pytest.mark.parametrize("dat", _compressed_points)
-def test_encode_compressed_point(dat):
-    # secp256r1 point
-    compressed = binascii.unhexlify(dat["in"])
-    x = int(dat["x"], 16)
-    y = int(dat["y"], 16)
-    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
-    data = pn.encode_point(compressed=True)
-    assert data == compressed
-
-
 def test_from_encoded_point():
     # secp256r1 point
     data = binascii.unhexlify(
@@ -267,7 +256,7 @@ def test_from_encoded_point_invalid_length():
 def test_from_encoded_point_unsupported_without_backend():
     # set to point type 2.
     unsupported_type = binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec"
+        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
     )
     with pytest.raises(ValueError):
         with pytest.warns(CryptographyDeprecationWarning):
@@ -1069,8 +1058,9 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         pn = ec.EllipticCurvePublicKey.from_encoded_point(
             dat["curve"](), compressed_point, backend
         )
-        assert pn.public_numbers().x == int(dat["x"], 16), dat
-        assert pn.public_numbers().y == int(dat["y"], 16), dat
+        public_num = pn.public_numbers()
+        assert public_num.x == int(dat["x"], 16), dat
+        assert public_num.y == int(dat["y"], 16), dat
 
     def test_from_encoded_point_notoncurve(self, backend):
         uncompressed_point = binascii.unhexlify(
@@ -1130,7 +1120,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
 
     def test_from_encoded_point_unsupported_encoding(self, backend):
-        # set to point type 2.
         unsupported_type = binascii.unhexlify(
             "057399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac6"
             "8"
