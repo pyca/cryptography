@@ -161,6 +161,7 @@ class TestBLAKE2s(object):
         with pytest.raises(ValueError):
             hashes.BLAKE2s(digest_size=-1)
 
+
 def test_invalid_backend():
     pretend_backend = object()
 
