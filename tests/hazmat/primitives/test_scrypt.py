@@ -82,7 +82,7 @@ class TestScrypt(object):
 
     def test_scrypt_malloc_failure(self, backend):
         password = b"NaCl"
-        work_factor = 1024
+        work_factor = 1024 ** 3
         block_size = 589824
         parallelization_factor = 16
         length = 64

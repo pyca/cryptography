@@ -2088,12 +2088,14 @@ class Backend(object):
         )
         if res != 1:
             errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_EVP,
-                    self._lib.ERR_R_MALLOC_FAILURE
+            if not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111:
+                # This error is only added to the stack in 1.1.1+
+                self.openssl_assert(
+                    errors[0]._lib_reason_match(
+                        self._lib.ERR_LIB_EVP,
+                        self._lib.ERR_R_MALLOC_FAILURE
+                    )
                 )
-            )
 
             min_memory = 128 * n * r // (1024**2)
             raise MemoryError(
