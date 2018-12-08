@@ -1690,6 +1690,10 @@ class Backend(object):
                 "format must be an item from the PrivateFormat enum"
             )
 
+        # X9.62 encoding is only valid for EC public keys
+        if encoding is serialization.Encoding.X962:
+            raise ValueError("X9.62 format is only valid for EC public keys")
+
         # Raw format and encoding are only valid for X25519, Ed25519, X448, and
         # Ed448 keys. We capture those cases before this method is called so if
         # we see those enum values here it means the caller has passed them to
@@ -1791,6 +1795,13 @@ class Backend(object):
     def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
+
+        # Compressed/UncompressedPoint are only valid for EC keys and those
+        # cases are handled by the ECPublicKey public_bytes method before this
+        # method is called
+        if format in (serialization.PublicFormat.UncompressedPoint,
+                      serialization.PublicFormat.CompressedPoint):
+            raise ValueError("Point formats are not valid for this key type")
 
         # Raw format and encoding are only valid for X25519, Ed25519, X448, and
         # Ed448 keys. We capture those cases before this method is called so if
