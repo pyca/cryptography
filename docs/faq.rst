@@ -111,28 +111,22 @@ not yet possible you  can also install ``cryptography`` with
 dependency. This workaround will be available until the feature is fully
 removed.
 
-.. _`NaCl`: https://nacl.cr.yp.to/
-.. _`PyNaCl`: https://pynacl.readthedocs.io
-.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
-.. _`issue`: https://github.com/pyca/cryptography/issues
-
-Why I can't import my PEM file?
+Why can't I import my PEM file?
 -------------------------------
 
-PEM is a file format to store keys, certificates and others cryptographic data
-into a file.  The format only uses ASCII characters to enhance compatibility,
-and the data is encoded as base64. It's defined by `RFC 7468`_. Alternatively,
-DER files stores data in binary format.
+PEM is a format (defined by several RFCs, but originally :rfc:`1421`) for
+encoding keys, certificates and others cryptographic data into a regular form.
+The data is encoded as base64 and wrapped with a header and footer.
 
-If you are having trouble to import PEM files, make sure your file fits
+If you are having trouble importing PEM files, make sure your file fits
 the following rules:
 
-- has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
-  (where ``[FILE TYPE]`` is certificate, public key, ...);
+* has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
+  (where ``[FILE TYPE]`` is certificate, public key, et cetera)
 
-- has a one-line footer like this: ``-----END [FILE TYPE]-----``;
+* has a one-line footer like this: ``-----END [FILE TYPE]-----``
 
-- all lines, except for the final one, must consist of exactly 64
+* all lines, except for the final one, must consist of exactly 64
   characters.
 
 For example, this is a PEM file for a RSA Public Key: ::
@@ -148,10 +142,7 @@ For example, this is a PEM file for a RSA Public Key: ::
    -----END PUBLIC KEY-----
 
 
-You can extract the info encoded in the file with OpenSSL command line:
-
-.. code-block:: console
-
-   $ openssl rsa -in keyfile.pem -pubin -text -noout
-
-.. _RFC 7468: https://tools.ietf.org/html/rfc7468
+.. _`NaCl`: https://nacl.cr.yp.to/
+.. _`PyNaCl`: https://pynacl.readthedocs.io
+.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
+.. _`issue`: https://github.com/pyca/cryptography/issues
