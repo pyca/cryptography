@@ -35,9 +35,9 @@ matrix:
           env: TOXENV=pypy-nocoverage
           # PyPy 5.3 isn't available for xenial
           dist: trusty
-        - python: pypy2.7-5.10.0
+        - python: pypy2.7-6.0
           env: TOXENV=pypy-nocoverage
-        - python: pypy3.5-5.10.1
+        - python: pypy3.5-6.0
           env: TOXENV=pypy3-nocoverage
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.0.1u
