@@ -10,6 +10,7 @@ boolean
 Botan
 Brainpool
 Capitan
+cetera
 changelog
 Changelog
 ciphertext
@@ -41,6 +42,7 @@ Docstrings
 El
 Encodings
 endian
+et
 fallback
 Fernet
 fernet
