@@ -541,8 +541,8 @@ class DistributionPoint(object):
     def __repr__(self):
         return (
             "<DistributionPoint(full_name={0.full_name}, relative_name={0.rela"
-            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_is"
-            "suer})>".format(self)
+            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_issuer})>"
+            .format(self)
         )
 
     def __eq__(self, other):
