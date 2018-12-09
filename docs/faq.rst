@@ -123,7 +123,7 @@ the following rules:
 
 * has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
   (where ``[FILE TYPE]`` is ``CERTIFICATE``, ``PUBLIC KEY``, ``PRIVATE KEY``,
-  et cetera)
+  etc.)
 
 * has a one-line footer like this: ``-----END [FILE TYPE]-----``
 
