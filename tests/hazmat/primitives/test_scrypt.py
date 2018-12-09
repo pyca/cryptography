@@ -80,6 +80,20 @@ class TestScrypt(object):
             Scrypt(salt, length, work_factor, block_size,
                    parallelization_factor, backend)
 
+    def test_scrypt_malloc_failure(self, backend):
+        password = b"NaCl"
+        work_factor = 1024 ** 3
+        block_size = 589824
+        parallelization_factor = 16
+        length = 64
+        salt = b"NaCl"
+
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
+
+        with pytest.raises(MemoryError):
+            scrypt.derive(password)
+
     def test_password_not_bytes(self, backend):
         password = 1
         work_factor = 1024

@@ -22,6 +22,8 @@ static const int ERR_LIB_PKCS12;
 static const int ERR_LIB_SSL;
 static const int ERR_LIB_X509;
 
+static const int ERR_R_MALLOC_FAILURE;
+
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
 static const int ASN1_R_CIPHER_HAS_NO_OBJECT_IDENTIFIER;

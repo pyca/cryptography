@@ -2120,7 +2120,24 @@ class Backend(object):
             key_material, len(key_material), salt, len(salt), n, r, p,
             scrypt._MEM_LIMIT, buf, length
         )
-        self.openssl_assert(res == 1)
+        if res != 1:
+            errors = self._consume_errors()
+            if not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111:
+                # This error is only added to the stack in 1.1.1+
+                self.openssl_assert(
+                    errors[0]._lib_reason_match(
+                        self._lib.ERR_LIB_EVP,
+                        self._lib.ERR_R_MALLOC_FAILURE
+                    )
+                )
+
+            # memory required formula explained here:
+            # https://blog.filippo.io/the-scrypt-parameters/
+            min_memory = 128 * n * r // (1024**2)
+            raise MemoryError(
+                "Not enough memory to derive key. These parameters require"
+                " {} MB of memory.".format(min_memory)
+            )
         return self._ffi.buffer(buf)[:]
 
     def aead_cipher_supported(self, cipher):
