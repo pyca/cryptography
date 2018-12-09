@@ -2097,6 +2097,8 @@ class Backend(object):
                     )
                 )
 
+            # memory required formula explained here:
+            # https://blog.filippo.io/the-scrypt-parameters/
             min_memory = 128 * n * r // (1024**2)
             raise MemoryError(
                 "Not enough memory to derive key. These parameters require"
