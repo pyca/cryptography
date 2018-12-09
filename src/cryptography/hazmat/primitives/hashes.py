@@ -152,7 +152,7 @@ class BLAKE2b(object):
 
     def __init__(self, digest_size):
 
-        if (digest_size != 64):
+        if digest_size != 64:
             raise ValueError("Digest size must be 64")
 
         self._digest_size = digest_size
@@ -169,7 +169,7 @@ class BLAKE2s(object):
 
     def __init__(self, digest_size):
 
-        if (digest_size != 32):
+        if digest_size != 32:
             raise ValueError("Digest size must be 32")
 
         self._digest_size = digest_size
