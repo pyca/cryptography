@@ -223,7 +223,7 @@ Elliptic Curve Signature Algorithms
 
         :returns: An :class:`EllipticCurvePublicNumbers` instance.
 
-        :raises ValueError: Raised when an invalid point is supplied.
+        :raises ValueError: Raised on invalid point type or data length.
 
         :raises TypeError: Raised when curve is not an
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
@@ -725,7 +725,7 @@ Key Interfaces
 
         :returns: An :class:`EllipticCurvePublicKey` instance.
 
-        :raises ValueError: Raised on invalid point type or data length.
+        :raises ValueError: Raised when an invalid point is supplied.
 
         :raises TypeError: Raised when curve is not an
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
