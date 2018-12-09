@@ -122,7 +122,8 @@ If you are having trouble importing PEM files, make sure your file fits
 the following rules:
 
 * has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
-  (where ``[FILE TYPE]`` is certificate, public key, et cetera)
+  (where ``[FILE TYPE]`` is ``CERTIFICATE``, ``PUBLIC KEY``, ``PRIVATE KEY``,
+  et cetera)
 
 * has a one-line footer like this: ``-----END [FILE TYPE]-----``
 
