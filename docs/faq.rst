@@ -111,6 +111,38 @@ not yet possible you  can also install ``cryptography`` with
 dependency. This workaround will be available until the feature is fully
 removed.
 
+Why can't I import my PEM file?
+-------------------------------
+
+PEM is a format (defined by several RFCs, but originally :rfc:`1421`) for
+encoding keys, certificates and others cryptographic data into a regular form.
+The data is encoded as base64 and wrapped with a header and footer.
+
+If you are having trouble importing PEM files, make sure your file fits
+the following rules:
+
+* has a one-line header like this: ``-----BEGIN [FILE TYPE]-----``
+  (where ``[FILE TYPE]`` is ``CERTIFICATE``, ``PUBLIC KEY``, ``PRIVATE KEY``,
+  etc.)
+
+* has a one-line footer like this: ``-----END [FILE TYPE]-----``
+
+* all lines, except for the final one, must consist of exactly 64
+  characters.
+
+For example, this is a PEM file for a RSA Public Key: ::
+
+   -----BEGIN PUBLIC KEY-----
+   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7CsKFSzq20NLb2VQDXma
+   9DsDXtKADv0ziI5hT1KG6Bex5seE9pUoEcUxNv4uXo2jzAUgyRweRl/DLU8SoN8+
+   WWd6YWik4GZvNv7j0z28h9Q5jRySxy4dmElFtIRHGiKhqd1Z06z4AzrmKEzgxkOk
+   LJjY9cvwD+iXjpK2oJwNNyavvjb5YZq6V60RhpyNtKpMh2+zRLgIk9sROEPQeYfK
+   22zj2CnGBMg5Gm2uPOsGDltl/I/Fdh1aO3X4i1GXwCuPf1kSAg6lPJD0batftkSG
+   v0X0heUaV0j1HSNlBWamT4IR9+iJfKJHekOqvHQBcaCu7Ja4kXzx6GZ3M2j/Ja3A
+   2QIDAQAB
+   -----END PUBLIC KEY-----
+
+
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html

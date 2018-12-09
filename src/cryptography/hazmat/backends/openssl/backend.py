@@ -1141,7 +1141,10 @@ class Backend(object):
         )
         if x509 == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load certificate")
+            raise ValueError(
+                "Unable to load certificate. See https://cryptography.io/en/la"
+                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+            )
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
@@ -1163,7 +1166,10 @@ class Backend(object):
         )
         if x509_crl == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load CRL")
+            raise ValueError(
+                "Unable to load CRL. See https://cryptography.io/en/la"
+                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+            )
 
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
         return _CertificateRevocationList(self, x509_crl)
@@ -1185,7 +1191,10 @@ class Backend(object):
         )
         if x509_req == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Unable to load request")
+            raise ValueError(
+                "Unable to load request. See https://cryptography.io/en/la"
+                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+            )
 
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)
