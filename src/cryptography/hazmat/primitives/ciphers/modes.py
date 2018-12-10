@@ -88,7 +88,7 @@ class CBC(object):
     name = "CBC"
 
     def __init__(self, initialization_vector):
-        utils._check_bytes("initialization_vector", initialization_vector)
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -101,7 +101,7 @@ class XTS(object):
     name = "XTS"
 
     def __init__(self, tweak):
-        utils._check_bytes("tweak", tweak)
+        utils._check_byteslike("tweak", tweak)
 
         if len(tweak) != 16:
             raise ValueError("tweak must be 128-bits (16 bytes)")
@@ -131,7 +131,7 @@ class OFB(object):
     name = "OFB"
 
     def __init__(self, initialization_vector):
-        utils._check_bytes("initialization_vector", initialization_vector)
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -144,7 +144,7 @@ class CFB(object):
     name = "CFB"
 
     def __init__(self, initialization_vector):
-        utils._check_bytes("initialization_vector", initialization_vector)
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -157,7 +157,7 @@ class CFB8(object):
     name = "CFB8"
 
     def __init__(self, initialization_vector):
-        utils._check_bytes("initialization_vector", initialization_vector)
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -170,7 +170,7 @@ class CTR(object):
     name = "CTR"
 
     def __init__(self, nonce):
-        utils._check_bytes("nonce", nonce)
+        utils._check_byteslike("nonce", nonce)
         self._nonce = nonce
 
     nonce = utils.read_only_property("_nonce")
@@ -195,7 +195,7 @@ class GCM(object):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
         # to actually construct a bytes object that large, so we don't check
         # for it
-        utils._check_bytes("initialization_vector", initialization_vector)
+        utils._check_byteslike("initialization_vector", initialization_vector)
         if len(initialization_vector) == 0:
             raise ValueError("initialization_vector must be at least 1 byte")
         self._initialization_vector = initialization_vector

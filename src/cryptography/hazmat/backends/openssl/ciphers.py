@@ -56,13 +56,15 @@ class _CipherContext(object):
             )
 
         if isinstance(mode, modes.ModeWithInitializationVector):
-            iv_nonce = mode.initialization_vector
+            iv_nonce = self._backend._ffi.from_buffer(
+                mode.initialization_vector
+            )
         elif isinstance(mode, modes.ModeWithTweak):
-            iv_nonce = mode.tweak
+            iv_nonce = self._backend._ffi.from_buffer(mode.tweak)
         elif isinstance(mode, modes.ModeWithNonce):
-            iv_nonce = mode.nonce
+            iv_nonce = self._backend._ffi.from_buffer(mode.nonce)
         elif isinstance(cipher, modes.ModeWithNonce):
-            iv_nonce = cipher.nonce
+            iv_nonce = self._backend._ffi.from_buffer(cipher.nonce)
         else:
             iv_nonce = self._backend._ffi.NULL
         # begin init with cipher and operation type
@@ -105,7 +107,7 @@ class _CipherContext(object):
             ctx,
             self._backend._ffi.NULL,
             self._backend._ffi.NULL,
-            cipher.key,
+            self._backend._ffi.from_buffer(cipher.key),
             iv_nonce,
             operation
         )
@@ -131,8 +133,10 @@ class _CipherContext(object):
             "unsigned char *", self._backend._ffi.from_buffer(buf)
         )
         outlen = self._backend._ffi.new("int *")
-        res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen,
-                                                  data, len(data))
+        res = self._backend._lib.EVP_CipherUpdate(
+            self._ctx, buf, outlen,
+            self._backend._ffi.from_buffer(data), len(data)
+        )
         self._backend.openssl_assert(res != 0)
         return outlen[0]
 
@@ -215,7 +219,8 @@ class _CipherContext(object):
     def authenticate_additional_data(self, data):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
-            self._ctx, self._backend._ffi.NULL, outlen, data, len(data)
+            self._ctx, self._backend._ffi.NULL, outlen,
+            self._backend._ffi.from_buffer(data), len(data)
         )
         self._backend.openssl_assert(res != 0)
 

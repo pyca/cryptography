@@ -455,3 +455,45 @@ class TestAESModeGCM(object):
         ).decryptor()
         with pytest.raises(ValueError):
             decryptor.finalize_with_tag(b"tagtooshort")
+
+    def test_buffer_protocol(self, backend):
+        data = bytearray(b"helloworld")
+        enc = base.Cipher(
+            algorithms.AES(bytearray(b"\x00" * 16)),
+            modes.GCM(bytearray(b"\x00" * 12)),
+            backend
+        ).encryptor()
+        enc.authenticate_additional_data(bytearray(b"foo"))
+        ct = enc.update(data) + enc.finalize()
+        dec = base.Cipher(
+            algorithms.AES(bytearray(b"\x00" * 16)),
+            modes.GCM(bytearray(b"\x00" * 12), enc.tag),
+            backend
+        ).decryptor()
+        dec.authenticate_additional_data(bytearray(b"foo"))
+        pt = dec.update(ct) + dec.finalize()
+        assert pt == data
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        modes.CBC(bytearray(b"\x00" * 16)),
+        modes.CTR(bytearray(b"\x00" * 16)),
+        modes.OFB(bytearray(b"\x00" * 16)),
+        modes.CFB(bytearray(b"\x00" * 16)),
+        modes.CFB8(bytearray(b"\x00" * 16)),
+        modes.XTS(bytearray(b"\x00" * 16)),
+    ]
+)
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+def test_buffer_protocol_alternate_modes(mode, backend):
+    data = bytearray(b"sixteen_byte_msg")
+    cipher = base.Cipher(
+        algorithms.AES(bytearray(b"\x00" * 32)), mode, backend
+    )
+    enc = cipher.encryptor()
+    ct = enc.update(data) + enc.finalize()
+    dec = cipher.decryptor()
+    pt = dec.update(ct) + dec.finalize()
+    assert pt == data

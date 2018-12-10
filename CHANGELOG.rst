@@ -12,6 +12,7 @@ Changelog
   version 2.1, but this version removes the default ``idna`` dependency as
   well. If you still need this deprecated path please install cryptography
   with the ``idna`` extra: ``pip install cryptography[idna]``.
+* **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.4.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
   and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
   OpenSSL 1.1.1.

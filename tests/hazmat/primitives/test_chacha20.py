@@ -44,6 +44,18 @@ class TestChaCha20(object):
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert binascii.hexlify(computed_ct) == vector["ciphertext"]
 
+    def test_buffer_protocol(self, backend):
+        key = bytearray(os.urandom(32))
+        nonce = bytearray(os.urandom(16))
+        cipher = Cipher(
+            algorithms.ChaCha20(key, nonce), None, backend
+        )
+        enc = cipher.encryptor()
+        ct = enc.update(bytearray(b"hello")) + enc.finalize()
+        dec = cipher.decryptor()
+        pt = dec.update(ct) + dec.finalize()
+        assert pt == b"hello"
+
     def test_key_size(self):
         chacha = algorithms.ChaCha20(b"0" * 32, b"0" * 16)
         assert chacha.key_size == 256

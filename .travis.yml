@@ -31,9 +31,9 @@ matrix:
           env: TOXENV=py37
         - python: 3.7
           env: TOXENV=py37-idna
-        - python: pypy-5.3
+        - python: pypy-5.4
           env: TOXENV=pypy-nocoverage
-          # PyPy 5.3 isn't available for xenial
+          # PyPy 5.4 isn't available for xenial
           dist: trusty
         - python: pypy2.7-5.10.0
           env: TOXENV=pypy-nocoverage

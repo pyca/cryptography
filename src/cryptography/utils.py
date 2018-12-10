@@ -30,6 +30,13 @@ def _check_bytes(name, value):
         raise TypeError("{0} must be bytes".format(name))
 
 
+def _check_byteslike(name, value):
+    try:
+        memoryview(value)
+    except TypeError:
+        raise TypeError("{0} must be bytes-like".format(name))
+
+
 def read_only_property(name):
     return property(lambda self: getattr(self, name))
 
