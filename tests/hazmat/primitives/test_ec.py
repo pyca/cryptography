@@ -227,10 +227,9 @@ def test_from_encoded_point():
         "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
     )
-    with pytest.warns(CryptographyDeprecationWarning):
-        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP256R1(), data
-        )
+    pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
+        ec.SECP256R1(), data
+    )
     assert pn.x == int(
         '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec',
         16
@@ -247,30 +246,27 @@ def test_from_encoded_point_invalid_length():
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460"
     )
     with pytest.raises(ValueError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                ec.SECP384R1(), bad_data
-            )
+        ec.EllipticCurvePublicNumbers.from_encoded_point(
+            ec.SECP384R1(), bad_data
+        )
 
 
-def test_from_encoded_point_unsupported_without_backend():
+def test_from_encoded_point_unsupported_point_no_backend():
     # set to point type 2.
     unsupported_type = binascii.unhexlify(
         "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
     )
     with pytest.raises(ValueError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                ec.SECP256R1(), unsupported_type
-            )
+        ec.EllipticCurvePublicNumbers.from_encoded_point(
+            ec.SECP256R1(), unsupported_type
+        )
 
 
 def test_from_encoded_point_not_a_curve():
     with pytest.raises(TypeError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                "notacurve", b"\x04data"
-            )
+        ec.EllipticCurvePublicNumbers.from_encoded_point(
+            "notacurve", b"\x04data"
+        )
 
 
 def test_ec_public_numbers_repr():
@@ -1108,7 +1104,9 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             "686699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27271f"
             "6d"
         )
-        with pytest.raises(ValueError):
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.BACKEND_MISSING_INTERFACE
+        ):
             ec.EllipticCurvePublicKey.from_encoded_point(
                 ec.SECP384R1(), bad_data, None
             )

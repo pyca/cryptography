@@ -5,12 +5,13 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import warnings
 
 import six
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._oid import ObjectIdentifier
+from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 
 
 class EllipticCurveOID(object):
@@ -158,8 +159,11 @@ class EllipticCurvePublicKey(object):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
-        if not backend:
-            raise ValueError("Must provide backend to decode point")
+        if not isinstance(backend, EllipticCurveBackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement EllipticCurveBackend.",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         if data[0:1] not in (b"\x02", b"\x03", b"\x04"):
             raise ValueError("Unsupported elliptic curve point type")
@@ -368,14 +372,6 @@ class EllipticCurvePublicNumbers(object):
     def from_encoded_point(cls, curve, data):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
-
-        warnings.warn(
-            "Support for unsafe construction of public numbers from "
-            "encoded data will be removed in a future version. "
-            "Please use EllipticCurvePublicKey.from_encoded_point",
-            utils.DeprecatedIn25,
-            stacklevel=2,
-        )
 
         if data.startswith(b'\x04'):
             # key_size is in bits. Convert to bytes and round up

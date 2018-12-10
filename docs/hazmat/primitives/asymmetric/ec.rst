@@ -206,11 +206,6 @@ Elliptic Curve Signature Algorithms
 
         .. versionadded:: 1.1
 
-        .. note::
-
-            This has been deprecated in favor of
-            :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`
-
         Decodes a byte string as described in `SEC 1 v2.0`_ section 2.3.3 and
         returns an :class:`EllipticCurvePublicNumbers`. This method only
         supports uncompressed points.
