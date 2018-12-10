@@ -31,7 +31,10 @@ def _check_bytes(name, value):
 
 
 def _check_byteslike(name, value):
-    memoryview(value)
+    try:
+        memoryview(value)
+    except TypeError:
+        raise TypeError("{0} must be bytes-like".format(name))
 
 
 def read_only_property(name):
