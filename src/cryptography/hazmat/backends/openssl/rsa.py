@@ -127,10 +127,11 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
 def _handle_rsa_enc_dec_error(backend, key):
     errors = backend._consume_errors()
     backend.openssl_assert(errors)
-    assert errors[0].lib == backend._lib.ERR_LIB_RSA
+    backend.openssl_assert(errors[0].lib == backend._lib.ERR_LIB_RSA)
     if isinstance(key, _RSAPublicKey):
-        assert (errors[0].reason ==
-                backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+        backend.openssl_assert(
+            errors[0].reason == backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE
+        )
         raise ValueError(
             "Data too long for key size. Encrypt less data or use a "
             "larger key size."
@@ -148,7 +149,7 @@ def _handle_rsa_enc_dec_error(backend, key):
         if backend._lib.Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR:
             decoding_errors.append(backend._lib.RSA_R_PKCS_DECODING_ERROR)
 
-        assert errors[0].reason in decoding_errors
+        backend.openssl_assert(errors[0].reason in decoding_errors)
         raise ValueError("Decryption failed.")
 
 
@@ -236,17 +237,20 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
         pkey_ctx, buf, buflen, data, len(data))
     if res != 1:
         errors = backend._consume_errors()
-        assert errors[0].lib == backend._lib.ERR_LIB_RSA
+        backend.openssl_assert(errors[0].lib == backend._lib.ERR_LIB_RSA)
         reason = None
-        if (errors[0].reason ==
-                backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE):
+        if (
+            errors[0].reason ==
+            backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE
+        ):
             reason = ("Salt length too long for key size. Try using "
                       "MAX_LENGTH instead.")
         else:
-            assert (errors[0].reason ==
-                    backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY)
+            backend.openssl_assert(
+                errors[0].reason ==
+                backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+            )
             reason = "Digest too large for key size. Use a larger key."
-        assert reason is not None
         raise ValueError(reason)
 
     return backend._ffi.buffer(buf)[:]
