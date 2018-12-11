@@ -9,9 +9,7 @@ import abc
 import six
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._oid import ObjectIdentifier
-from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 
 
 class EllipticCurveOID(object):
@@ -154,20 +152,15 @@ class EllipticCurvePublicKey(object):
         """
 
     @classmethod
-    def from_encoded_point(cls, curve, data, backend):
+    def from_encoded_point(cls, curve, data):
         utils._check_bytes("data", data)
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
-        if not isinstance(backend, EllipticCurveBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement EllipticCurveBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
         if data[0:1] not in (b"\x02", b"\x03", b"\x04"):
             raise ValueError("Unsupported elliptic curve point type")
 
+        from cryptography.hazmat.backends.openssl.backend import backend
         return backend.load_elliptic_curve_public_bytes(curve, data)
 
 
