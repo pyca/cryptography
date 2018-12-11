@@ -1398,7 +1398,6 @@ class Backend(object):
                 self._consume_errors()
                 raise ValueError("Invalid public bytes for the given curve")
 
-        curve_nid = self._elliptic_curve_to_nid(curve)
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
