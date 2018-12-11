@@ -1360,7 +1360,7 @@ class Backend(object):
     def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
 
-        ec_cdata = self._ec_key_new_by_curve(public.ruve)
+        ec_cdata = self._ec_key_new_by_curve(public.curve)
 
         private_value = self._ffi.gc(
             self._int_to_bn(numbers.private_value), self._lib.BN_clear_free
