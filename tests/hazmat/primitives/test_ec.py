@@ -38,45 +38,6 @@ _HASH_TYPES = {
     "SHA-512": hashes.SHA512,
 }
 
-_compressed_points = [
-    {
-        "in": "037399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42"
-              "c9b37ac68",
-        "curve": ec.SECP256R1,
-        "x": "7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b"
-             "37ac68",
-        "y": "6699ececc4f5f0d756d3c450708a0694eb0a07a68b805070b40b058d27"
-             "271f6d",
-    },
-    {
-        "in": "02d13b763988943682267deb6298ad3bdfec192459f9e9bf2d2227c8e"
-              "c3e8ced91",
-        "curve": ec.SECP256R1,
-        "x": "d13b763988943682267deb6298ad3bdfec192459f9e9bf2d2227c8ec3e"
-             "8ced91",
-        "y": "badeb7ee4662680c587a84de3f2d1ca7284b65790597408836eea3207e"
-             "2f3a22",
-    },
-    {
-        "in": "032cac5ae983fcb88bc502dd48d561c810e2b40edc7b6b67ea52ceb41"
-              "5093be0d0",
-        "curve": ec.SECP256K1,
-        "x": "2cac5ae983fcb88bc502dd48d561c810e2b40edc7b6b67ea52ceb41509"
-             "3be0d0",
-        "y": "1445c276b193e10679bbdf638717c8db78021e79639e171e8cd37057b7"
-             "798d0d"
-    },
-    {
-        "in": "02e836ff83c6ab4d7ea391f4897cb926b16cbe6eb0991dd81b4a294c6"
-              "5fe9a9691",
-        "curve": ec.SECP256K1,
-        "x": "e836ff83c6ab4d7ea391f4897cb926b16cbe6eb0991dd81b4a294c65fe"
-             "9a9691",
-        "y": "8cb0f15636148db6f54ad50c7da4aa2920519391678c24ad8db8097c6b"
-             "f168b0"
-    },
-]
-
 
 def _skip_ecdsa_vector(backend, curve_type, hash_type):
     if not backend.elliptic_curve_signature_algorithm_supported(
@@ -1048,15 +1009,23 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
 
-    @pytest.mark.parametrize("dat", _compressed_points)
-    def test_from_encoded_point_compressed(self, dat):
-        compressed_point = binascii.unhexlify(dat["in"])
-        pn = ec.EllipticCurvePublicKey.from_encoded_point(
-            dat["curve"](), compressed_point
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "EC", "compressed_points.txt"),
+            load_nist_vectors
         )
+    )
+    def test_from_encoded_point_compressed(self, vector):
+        curve = {
+            b"SECP256R1": ec.SECP256R1(),
+            b"SECP256K1": ec.SECP256K1(),
+        }[vector["curve"]]
+        point = binascii.unhexlify(vector["point"])
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(curve, point)
         public_num = pn.public_numbers()
-        assert public_num.x == int(dat["x"], 16), dat
-        assert public_num.y == int(dat["y"], 16), dat
+        assert public_num.x == int(vector["x"], 16)
+        assert public_num.y == int(vector["y"], 16)
 
     def test_from_encoded_point_notoncurve(self):
         uncompressed_point = binascii.unhexlify(
