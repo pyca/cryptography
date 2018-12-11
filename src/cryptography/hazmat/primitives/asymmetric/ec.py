@@ -157,7 +157,7 @@ class EllipticCurvePublicKey(object):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
-        if data[0:1] not in (b"\x02", b"\x03", b"\x04"):
+        if six.indexbytes(data, 0) not in [0x02, 0x03, 0x04]:
             raise ValueError("Unsupported elliptic curve point type")
 
         from cryptography.hazmat.backends.openssl.backend import backend
