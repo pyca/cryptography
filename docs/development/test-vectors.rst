@@ -102,6 +102,8 @@ Custom asymmetric vectors
 * ``x509/custom/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
   the private key for the certificate ``x509/custom/ca/ca.pem``. This key is
   encoded in several of the PKCS12 custom vectors.
+* ``asymmetric/EC/compressed_points.txt`` - Contains compressed public points
+  generated using OpenSSL.
 
 
 Key exchange
