@@ -704,7 +704,7 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
-    .. classmethod:: from_encoded_point(curve, data, backend)
+    .. classmethod:: from_encoded_point(curve, data)
 
         .. versionadded:: 2.5
 
