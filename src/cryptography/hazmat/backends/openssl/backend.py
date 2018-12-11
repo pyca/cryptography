@@ -1343,11 +1343,7 @@ class Backend(object):
         """
 
         if self.elliptic_curve_supported(curve):
-            curve_nid = self._elliptic_curve_to_nid(curve)
-
-            ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-            self.openssl_assert(ec_cdata != self._ffi.NULL)
-            ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+            ec_cdata = self._ec_key_new_by_curve(curve)
 
             res = self._lib.EC_KEY_generate_key(ec_cdata)
             self.openssl_assert(res == 1)
@@ -1364,11 +1360,7 @@ class Backend(object):
     def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
 
-        curve_nid = self._elliptic_curve_to_nid(public.curve)
-
-        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        self.openssl_assert(ec_cdata != self._ffi.NULL)
-        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+        ec_cdata = self._ec_key_new_by_curve(public.curve)
 
         private_value = self._ffi.gc(
             self._int_to_bn(numbers.private_value), self._lib.BN_clear_free
@@ -1384,12 +1376,7 @@ class Backend(object):
         return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
 
     def load_elliptic_curve_public_numbers(self, numbers):
-        curve_nid = self._elliptic_curve_to_nid(numbers.curve)
-
-        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        self.openssl_assert(ec_cdata != self._ffi.NULL)
-        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-
+        ec_cdata = self._ec_key_new_by_curve(numbers.curve)
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, numbers.x, numbers.y)
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
@@ -1397,11 +1384,7 @@ class Backend(object):
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
     def derive_elliptic_curve_private_key(self, private_value, curve):
-        curve_nid = self._elliptic_curve_to_nid(curve)
-
-        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        self.openssl_assert(ec_cdata != self._ffi.NULL)
-        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+        ec_cdata = self._ec_key_new_by_curve(curve)
 
         get_func, group = self._ec_key_determine_group_get_func(ec_cdata)
 
@@ -1433,6 +1416,12 @@ class Backend(object):
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
         return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+
+    def _ec_key_new_by_curve(self, curve):
+        curve_nid = self._elliptic_curve_to_nid(curve)
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        self.openssl_assert(ec_cdata != self._ffi.NULL)
+        return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
     def load_der_ocsp_request(self, data):
         mem_bio = self._bytes_to_bio(data)
