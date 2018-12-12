@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import warnings
 
 import six
 
@@ -365,6 +366,14 @@ class EllipticCurvePublicNumbers(object):
     def from_encoded_point(cls, curve, data):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
+
+        warnings.warn(
+            "Support for unsafe construction of public numbers from "
+            "encoded data will be removed in a future version. "
+            "Please use EllipticCurvePublicKey.from_encoded_point",
+            utils.DeprecatedIn25,
+            stacklevel=2,
+        )
 
         if data.startswith(b'\x04'):
             # key_size is in bits. Convert to bytes and round up

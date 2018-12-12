@@ -31,7 +31,9 @@ Changelog
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
   which immediately checks if the point is on the curve and supports compressed
-  points.
+  points. Deprecated the previous method
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+
 
 .. _v2-4-2:
 
