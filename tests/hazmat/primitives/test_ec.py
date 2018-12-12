@@ -188,9 +188,10 @@ def test_from_encoded_point():
         "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
     )
-    pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
-        ec.SECP256R1(), data
-    )
+    with pytest.warns(CryptographyDeprecationWarning):
+        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
+            ec.SECP256R1(), data
+        )
     assert pn.x == int(
         '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec',
         16
@@ -207,9 +208,10 @@ def test_from_encoded_point_invalid_length():
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460"
     )
     with pytest.raises(ValueError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP384R1(), bad_data
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                ec.SECP384R1(), bad_data
+            )
 
 
 def test_from_encoded_point_unsupported_point_no_backend():
@@ -218,16 +220,18 @@ def test_from_encoded_point_unsupported_point_no_backend():
         "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
     )
     with pytest.raises(ValueError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP256R1(), unsupported_type
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                ec.SECP256R1(), unsupported_type
+            )
 
 
 def test_from_encoded_point_not_a_curve():
     with pytest.raises(TypeError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            "notacurve", b"\x04data"
-        )
+        with pytest.warns(CryptographyDeprecationWarning):
+            ec.EllipticCurvePublicNumbers.from_encoded_point(
+                "notacurve", b"\x04data"
+            )
 
 
 def test_ec_public_numbers_repr():
