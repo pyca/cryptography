@@ -176,7 +176,6 @@ class SHA3_512(object):  # noqa: N801
 @utils.register_interface(HashAlgorithm)
 class SHAKE128(object):
     name = "shake128"
-    block_size = None
 
     def __init__(self, digest_size):
         if not isinstance(digest_size, int):
@@ -193,7 +192,6 @@ class SHAKE128(object):
 @utils.register_interface(HashAlgorithm)
 class SHAKE256(object):
     name = "shake256"
-    block_size = None
 
     def __init__(self, digest_size):
         if not isinstance(digest_size, int):
