@@ -28,6 +28,10 @@ Changelog
   :class:`~cryptography.x509.RelativeDistinguishedName` and
   :class:`~cryptography.x509.NameAttribute` to format the name or component as
   a RFC 4514 Distinguished Name string.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
+  which immediately checks if the point is on the curve and supports compressed
+  points.
 
 .. _v2-4-2:
 

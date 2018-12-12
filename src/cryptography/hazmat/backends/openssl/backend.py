@@ -1383,6 +1383,26 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
+    def load_elliptic_curve_public_bytes(self, curve, point_bytes):
+        ec_cdata = self._ec_key_new_by_curve(curve)
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_oct2point(
+                group, point, point_bytes, len(point_bytes), bn_ctx
+            )
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("Invalid public bytes for the given curve")
+
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+        return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+
     def derive_elliptic_curve_private_key(self, private_value, curve):
         ec_cdata = self._ec_key_new_by_curve(curve)
 

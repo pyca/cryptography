@@ -704,6 +704,27 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
+    .. classmethod:: from_encoded_point(curve, data)
+
+        .. versionadded:: 2.5
+
+        Decodes a byte string as described in `SEC 1 v2.0`_ section 2.3.3 and
+        returns an :class:`EllipticCurvePublicKey`. This class method supports
+        compressed points.
+
+        :param curve: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
+            instance.
+
+        :param bytes data: The serialized point byte string.
+
+        :returns: An :class:`EllipticCurvePublicKey` instance.
+
+        :raises ValueError: Raised when an invalid point is supplied.
+
+        :raises TypeError: Raised when curve is not an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
+
 
 .. class:: EllipticCurvePublicKeyWithSerialization
 
