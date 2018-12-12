@@ -194,7 +194,10 @@ than SHA-2 so at this time most users should choose SHA-2.
     digest length. The security of the hash, however, does not exceed 128 bits
     regardless of output length.
 
-    :param int digest_size: The length of output desired.
+    :param int digest_size: The length of output desired. Must be greater than
+        zero.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
 
 .. class:: SHAKE256(digest_size)
 
@@ -205,7 +208,10 @@ than SHA-2 so at this time most users should choose SHA-2.
     digest length. The security of the hash, however, does not exceed 256 bits
     regardless of output length.
 
-    :param int digest_size: The length of output desired.
+    :param int digest_size: The length of output desired. Must be greater than
+        zero.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
 
 SHA-1
 ~~~~~
