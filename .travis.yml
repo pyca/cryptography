@@ -135,6 +135,10 @@ matrix:
           # urllib3 tests fail on xenial for whatever reason
           dist: trusty
           sudo: false
+    allow_failures:
+        # We can remove this when https://github.com/paramiko/paramiko/pull/1354 merges
+        - python: 2.7
+          env: DOWNSTREAM=paramiko
 
 install:
     - ./.travis/install.sh
