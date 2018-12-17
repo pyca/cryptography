@@ -218,7 +218,7 @@ class Name(object):
         elements are separated by '+'. The latter is almost never used in
         real world certificates.
         """
-        return ', '.join(attr.rfc4514_string() for attr in self._attributes)
+        return ','.join(attr.rfc4514_string() for attr in self._attributes)
 
     def get_attributes_for_oid(self, oid):
         return [i for i in self if i.oid == oid]
