@@ -1139,8 +1139,8 @@ class TestRSACertificate(object):
             backend
         )
         assert repr(cert) == (
-            "<Certificate(subject=<Name(OU=GT48742965, OU=See www.rapidssl.com"
-            "/resources/cps (c)14, OU=Domain Control Validated - RapidSSL(R), "
+            "<Certificate(subject=<Name(OU=GT48742965,OU=See www.rapidssl.com"
+            "/resources/cps (c)14,OU=Domain Control Validated - RapidSSL(R),"
             "CN=www.cryptography.io)>, ...)>"
         )
 
@@ -4113,7 +4113,7 @@ class TestName(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
 
-        assert repr(name) == "<Name(CN=cryptography.io, O=PyCA)>"
+        assert repr(name) == "<Name(CN=cryptography.io,O=PyCA)>"
 
     def test_rfc4514_string(self):
         n = x509.Name([
@@ -4129,7 +4129,7 @@ class TestName(object):
             ]),
         ])
         assert (n.rfc4514_string() ==
-                'OU=Sales+CN=J.  Smith, DC=example, DC=net')
+                'OU=Sales+CN=J.  Smith,DC=example,DC=net')
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):

@@ -583,7 +583,7 @@ X.509 CRL (Certificate Revocation List) Object
         .. doctest::
 
             >>> crl.issuer
-            <Name(C=US, CN=cryptography.io)>
+            <Name(C=US,CN=cryptography.io)>
 
     .. attribute:: next_update
 
@@ -1194,7 +1194,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     get every attribute or you can use :meth:`Name.get_attributes_for_oid` to
     obtain the specific type you want. Names are sometimes represented as a
     slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
-    ``CN=mydomain.com, O=My Org, C=US``).
+    ``CN=mydomain.com,O=My Org,C=US``).
 
     Technically, a Name is a list of *sets* of attributes, called *Relative
     Distinguished Names* or *RDNs*, although multi-valued RDNs are rarely
@@ -1251,7 +1251,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         .. versionadded:: 2.5
 
         :return str: Format the given name as a `RFC 4514`_ Distinguished Name
-            string, for example ``CN=mydomain.com, O=My Org, C=US``.
+            string, for example ``CN=mydomain.com,O=My Org,C=US``.
 
 
 .. class:: Version
