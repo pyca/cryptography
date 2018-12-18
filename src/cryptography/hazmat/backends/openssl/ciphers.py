@@ -52,9 +52,9 @@ class _CipherContext(object):
             if mode is None:
                 msg += "in {0.name} mode ".format(mode)
             msg += (
-                "is not supported by this backend (your version of OpenSSL may "
-                "be too old)"
-            )
+                "is not supported by this backend (Your version of OpenSSL may "
+                "be too old. Current version: {0}.)"
+            ).format(self._backend.openssl_version_text())
             raise UnsupportedAlgorithm(msg, _Reasons.UNSUPPORTED_CIPHER)
 
         if isinstance(mode, modes.ModeWithInitializationVector):
