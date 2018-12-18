@@ -1071,6 +1071,12 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 ec.SECP384R1(), bad_data
             )
 
+    def test_from_encoded_point_empty_byte_string(self):
+        with pytest.raises(ValueError):
+            ec.EllipticCurvePublicKey.from_encoded_point(
+                ec.SECP384R1(), b""
+            )
+
     def test_from_encoded_point_not_a_curve(self):
         with pytest.raises(TypeError):
             ec.EllipticCurvePublicKey.from_encoded_point(

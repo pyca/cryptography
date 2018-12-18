@@ -155,6 +155,9 @@ class EllipticCurvePublicKey(object):
     @classmethod
     def from_encoded_point(cls, curve, data):
         utils._check_bytes("data", data)
+        if len(data) == 0:
+            raise ValueError("data must not be an empty byte string")
+
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
