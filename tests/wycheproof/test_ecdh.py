@@ -98,11 +98,7 @@ def test_ecdh_ecpoint(backend, wycheproof):
         int(wycheproof.testcase["private"], 16), curve, backend
     )
 
-    if (
-        wycheproof.testcase["comment"] == "point is not on curve" or
-        not wycheproof.testcase["public"]
-    ):
-        assert wycheproof.invalid
+    if wycheproof.invalid:
         with pytest.raises(ValueError):
             ec.EllipticCurvePublicKey.from_encoded_point(
                 curve, binascii.unhexlify(wycheproof.testcase["public"])
