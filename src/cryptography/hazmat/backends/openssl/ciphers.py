@@ -48,12 +48,14 @@ class _CipherContext(object):
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend._ffi.NULL:
-            raise UnsupportedAlgorithm(
-                "cipher {0} in {1} mode is not supported "
-                "by this backend.".format(
-                    cipher.name, mode.name if mode else mode),
-                _Reasons.UNSUPPORTED_CIPHER
+            msg = "cipher {0.name}".format(cipher)
+            if mode is None:
+                msg += " in {0.name} mode".format(mode)
+            msg += (
+                "is not supported by this backend (your version of OpenSSL may "
+                "be too old)"
             )
+            raise UnsupportedAlgorithm(msg, _Reasons.UNSUPPORTED_CIPHER)
 
         if isinstance(mode, modes.ModeWithInitializationVector):
             iv_nonce = self._backend._ffi.from_buffer(
