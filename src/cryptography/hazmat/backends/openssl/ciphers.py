@@ -48,9 +48,9 @@ class _CipherContext(object):
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend._ffi.NULL:
-            msg = "cipher {0.name}".format(cipher)
+            msg = "cipher {0.name} ".format(cipher)
             if mode is None:
-                msg += " in {0.name} mode".format(mode)
+                msg += "in {0.name} mode ".format(mode)
             msg += (
                 "is not supported by this backend (your version of OpenSSL may "
                 "be too old)"
