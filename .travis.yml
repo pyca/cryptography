@@ -94,9 +94,9 @@ matrix:
         - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-fedora
-        - python: 3.6
+        - python: 3.7
           services: docker
-          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-fedora
+          env: TOXENV=py37 DOCKER=pyca/cryptography-runner-fedora
         - python: 3.6
           services: docker
           env: TOXENV=py36 DOCKER=pyca/cryptography-runner-alpine:latest
