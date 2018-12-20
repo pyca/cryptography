@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa, ec, dsa
 
 
 class ExtensionOID(object):
@@ -114,6 +115,37 @@ _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.DSA_WITH_SHA1: hashes.SHA1(),
     SignatureAlgorithmOID.DSA_WITH_SHA224: hashes.SHA224(),
     SignatureAlgorithmOID.DSA_WITH_SHA256: hashes.SHA256()
+}
+
+
+_SIG_OIDS_TO_KEY_CLASS = {
+    SignatureAlgorithmOID.RSA_WITH_MD5: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSA_WITH_SHA1: rsa.RSAPublicKey,
+    SignatureAlgorithmOID._RSA_WITH_SHA1: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSA_WITH_SHA224: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSA_WITH_SHA256: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSA_WITH_SHA384: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSA_WITH_SHA512: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.RSASSA_PSS: rsa.RSAPublicKey,
+    SignatureAlgorithmOID.ECDSA_WITH_SHA1: ec.EllipticCurvePublicKey,
+    SignatureAlgorithmOID.ECDSA_WITH_SHA224: ec.EllipticCurvePublicKey,
+    SignatureAlgorithmOID.ECDSA_WITH_SHA256: ec.EllipticCurvePublicKey,
+    SignatureAlgorithmOID.ECDSA_WITH_SHA384: ec.EllipticCurvePublicKey,
+    SignatureAlgorithmOID.ECDSA_WITH_SHA512: ec.EllipticCurvePublicKey,
+    SignatureAlgorithmOID.DSA_WITH_SHA1: dsa.DSAPublicKey,
+    SignatureAlgorithmOID.DSA_WITH_SHA224: dsa.DSAPublicKey,
+    SignatureAlgorithmOID.DSA_WITH_SHA256: dsa.DSAPublicKey
+}
+
+
+_SIG_OIDS_TO_PADDING = {
+    SignatureAlgorithmOID.RSA_WITH_MD5: padding.PKCS1v15(),
+    SignatureAlgorithmOID.RSA_WITH_SHA1: padding.PKCS1v15(),
+    SignatureAlgorithmOID._RSA_WITH_SHA1: padding.PKCS1v15(),
+    SignatureAlgorithmOID.RSA_WITH_SHA224: padding.PKCS1v15(),
+    SignatureAlgorithmOID.RSA_WITH_SHA256: padding.PKCS1v15(),
+    SignatureAlgorithmOID.RSA_WITH_SHA384: padding.PKCS1v15(),
+    SignatureAlgorithmOID.RSA_WITH_SHA512: padding.PKCS1v15(),
 }
 
 

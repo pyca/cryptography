@@ -38,7 +38,8 @@ from cryptography.x509.name import (
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, CRLEntryExtensionOID,
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
-    ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
+    ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH,
+    _SIG_OIDS_TO_KEY_CLASS, _SIG_OIDS_TO_PADDING
 )
 
 
@@ -175,6 +176,8 @@ __all__ = [
     "CertificateBuilder",
     "Version",
     "_SIG_OIDS_TO_HASH",
+    "_SIG_OIDS_TO_KEY_CLASS",
+    "_SIG_OIDS_TO_PADDING",
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",

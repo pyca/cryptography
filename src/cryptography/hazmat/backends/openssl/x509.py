@@ -9,7 +9,7 @@ import operator
 import warnings
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
     _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
@@ -171,6 +171,42 @@ class _Certificate(object):
 
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
+
+    def verify_signature(self, issuer_public_key):
+        sig_oid = self.signature_algorithm_oid
+        try:
+            key_class = x509._SIG_OIDS_TO_KEY_CLASS[sig_oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(sig_oid)
+            )
+
+        if not isinstance(issuer_public_key, key_class):
+            raise InvalidSignature(
+                "Public key type does not match certificate signing algorithm"
+            )
+
+        if key_class == rsa.RSAPublicKey:
+            # RSA requires padding
+            # RSASSA-PSS padding is not implemented -- the padding parameters
+            # cannot be deduced from SignatureAlgorithmOID, but are stored
+            # within each cert.
+            try:
+                padder = x509._SIG_OIDS_TO_PADDING[sig_oid]
+            except KeyError:
+                raise UnsupportedAlgorithm(
+                    "Unsupported padding algorithm OID:{0}".format(sig_oid)
+                )
+
+            issuer_public_key.verify(self.signature,
+                                     self.tbs_certificate_bytes,
+                                     padder,
+                                     self.signature_hash_algorithm)
+        else:
+            # EllipticCurvePublicKey or DSAPublicKey
+            issuer_public_key.verify(self.signature,
+                                     self.tbs_certificate_bytes,
+                                     self.signature_hash_algorithm)
 
 
 @utils.register_interface(x509.RevokedCertificate)
