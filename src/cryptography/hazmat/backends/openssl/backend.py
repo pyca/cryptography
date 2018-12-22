@@ -508,6 +508,9 @@ class Backend(object):
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
+            # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
+            return _X448PrivateKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -1737,7 +1740,7 @@ class Backend(object):
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
         else:
-            raise TypeError("encoding must be an item from the Encoding enum")
+            raise TypeError("encoding must be Encoding.PEM or Encoding.DER")
 
         bio = self._create_mem_bio_gc()
         res = write_bio(

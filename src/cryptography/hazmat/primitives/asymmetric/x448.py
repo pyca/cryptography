@@ -25,7 +25,7 @@ class X448PublicKey(object):
         return backend.x448_load_public_bytes(data)
 
     @abc.abstractmethod
-    def public_bytes(self):
+    def public_bytes(self, encoding, format):
         """
         The serialized bytes of the public key.
         """
@@ -44,7 +44,7 @@ class X448PrivateKey(object):
         return backend.x448_generate_key()
 
     @classmethod
-    def _from_private_bytes(cls, data):
+    def from_private_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
         return backend.x448_load_private_bytes(data)
 
@@ -52,6 +52,12 @@ class X448PrivateKey(object):
     def public_key(self):
         """
         The serialized bytes of the public key.
+        """
+
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        The serialized bytes of the private key.
         """
 
     @abc.abstractmethod

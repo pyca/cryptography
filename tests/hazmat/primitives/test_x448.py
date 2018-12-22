@@ -11,6 +11,7 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.backends.interfaces import DHBackend
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x448 import (
     X448PrivateKey, X448PublicKey
 )
@@ -50,7 +51,7 @@ class TestX448Exchange(object):
         private = binascii.unhexlify(vector["input_scalar"])
         public = binascii.unhexlify(vector["input_u"])
         shared_key = binascii.unhexlify(vector["output_u"])
-        private_key = X448PrivateKey._from_private_bytes(private)
+        private_key = X448PrivateKey.from_private_bytes(private)
         public_key = X448PublicKey.from_public_bytes(public)
         computed_shared_key = private_key.exchange(public_key)
         assert computed_shared_key == shared_key
@@ -64,11 +65,11 @@ class TestX448Exchange(object):
             b"aa3b4749d55b9daf1e5b00288826c467274ce3ebbdd5c17b975e09d4"
             b"af6c67cf10d087202db88286e2b79fceea3ec353ef54faa26e219f38"
         )
-        private_key = X448PrivateKey._from_private_bytes(private)
+        private_key = X448PrivateKey.from_private_bytes(private)
         public_key = X448PublicKey.from_public_bytes(public)
         for _ in range(1000):
             computed_shared_key = private_key.exchange(public_key)
-            private_key = X448PrivateKey._from_private_bytes(
+            private_key = X448PrivateKey.from_private_bytes(
                 computed_shared_key
             )
             public_key = X448PublicKey.from_public_bytes(old_private)
@@ -103,11 +104,57 @@ class TestX448Exchange(object):
             )
         ]
     )
-    def test_public_bytes(self, private_bytes, public_bytes, backend):
-        private_key = X448PrivateKey._from_private_bytes(private_bytes)
-        assert private_key.public_key().public_bytes() == public_bytes
+    def test_pub_priv_bytes_raw(self, private_bytes, public_bytes, backend):
+        private_key = X448PrivateKey.from_private_bytes(private_bytes)
+        assert private_key.private_bytes(
+            serialization.Encoding.Raw, None, serialization.NoEncryption()
+        ) == private_bytes
+        assert private_key.public_key().public_bytes(
+            serialization.Encoding.Raw, None
+        ) == public_bytes
         public_key = X448PublicKey.from_public_bytes(public_bytes)
-        assert public_key.public_bytes() == public_bytes
+        assert public_key.public_bytes(
+            serialization.Encoding.Raw, None
+        ) == public_bytes
+
+    @pytest.mark.parametrize(
+        ("encoding", "fmt", "encryption", "passwd", "load_func"),
+        [
+            (
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.BestAvailableEncryption(b"password"),
+                b"password",
+                serialization.load_pem_private_key
+            ),
+            (
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.PKCS8,
+                serialization.BestAvailableEncryption(b"password"),
+                b"password",
+                serialization.load_der_private_key
+            ),
+            (
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+                None,
+                serialization.load_pem_private_key
+            ),
+            (
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+                None,
+                serialization.load_der_private_key
+            ),
+        ]
+    )
+    def test_round_trip_private_serialization(self, encoding, fmt, encryption,
+                                              passwd, load_func, backend):
+        key = X448PrivateKey.generate()
+        serialized = key.private_bytes(encoding, fmt, encryption)
+        load_func(serialized, passwd, backend)
 
     def test_generate(self, backend):
         key = X448PrivateKey.generate()

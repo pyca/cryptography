@@ -40,6 +40,7 @@ class Encoding(Enum):
     PEM = "PEM"
     DER = "DER"
     OpenSSH = "OpenSSH"
+    Raw = "Raw"
 
 
 class PrivateFormat(Enum):
