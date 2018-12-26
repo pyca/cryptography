@@ -113,13 +113,13 @@ static void close_fd(int fd) {
 }
 
 #ifdef __linux__
-/* On Linux, we open("/dev/random") and use select() to wait until it's readable
+/* On Linux, we open("/dev/random") and use poll() to wait until it's readable
  * before we read from /dev/urandom, this ensures that we don't read from
  * /dev/urandom before the kernel CSPRNG is initialized. This isn't necessary on
  * other platforms because they don't have the same _bug_ as Linux does with
  * /dev/urandom and early boot. */
 static int wait_on_devrandom(void) {
-    struct pollfd pfd = { 0 };
+    struct pollfd pfd = {};
     int ret = 0;
     int random_fd = open("/dev/random", O_RDONLY);
     if (random_fd < 0) {
