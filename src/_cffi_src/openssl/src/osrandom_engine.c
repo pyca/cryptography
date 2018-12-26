@@ -13,6 +13,10 @@
  * Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
  */
 
+#ifdef __linux__
+#include <poll.h>
+#endif
+
 static const char *Cryptography_osrandom_engine_id = "osrandom";
 
 /****************************************************************************
