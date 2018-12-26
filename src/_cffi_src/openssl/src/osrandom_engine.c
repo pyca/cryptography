@@ -91,7 +91,7 @@ static struct {
 } urandom_cache = { -1 };
 
 static int set_cloexec(int fd) {
-    flags = fcntl(fd, F_GETFD);
+    int flags = fcntl(fd, F_GETFD);
     if (flags == -1) {
         return -1;
     }
@@ -137,7 +137,7 @@ static int wait_on_devrandom(void) {
 
 /* return -1 on error */
 static int dev_urandom_fd(void) {
-    int fd, flags;
+    int fd;
     struct stat st;
 
     /* Check that fd still points to the correct device */
