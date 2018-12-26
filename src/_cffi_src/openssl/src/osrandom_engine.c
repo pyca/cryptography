@@ -137,7 +137,7 @@ static int wait_on_devrandom(void) {
     close_fd(random_fd);
     return ret;
 }
-#else
+#endif
 
 /* return -1 on error */
 static int dev_urandom_fd(void) {
