@@ -141,7 +141,7 @@ static int wait_on_devrandom(void) {
 
 /* return -1 on error */
 static int dev_urandom_fd(void) {
-    int fd;
+    int fd = -1;
     struct stat st;
 
     /* Check that fd still points to the correct device */
