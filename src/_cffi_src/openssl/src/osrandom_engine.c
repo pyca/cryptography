@@ -105,13 +105,6 @@ static int set_cloexec(int fd) {
     return 0;
 }
 
-static void close_fd(int fd) {
-    int n;
-    do {
-        n = close(fd);
-    } while (n < 0 && errno == EINTR);
-}
-
 #ifdef __linux__
 /* On Linux, we open("/dev/random") and use poll() to wait until it's readable
  * before we read from /dev/urandom, this ensures that we don't read from
@@ -134,7 +127,7 @@ static int wait_on_devrandom(void) {
     do {
         ret = poll(&pfd, 1, -1);
     } while (ret < 0 && (errno == EINTR || errno == EAGAIN));
-    close_fd(random_fd);
+    close(random_fd);
     return ret;
 }
 #endif
@@ -173,7 +166,7 @@ static int dev_urandom_fd(void) {
         }
         /* Another thread initialized the fd */
         if (urandom_cache.fd >= 0) {
-            close_fd(fd);
+            close(fd);
             return urandom_cache.fd;
         }
         urandom_cache.st_dev = st.st_dev;
@@ -184,7 +177,7 @@ static int dev_urandom_fd(void) {
 
   error:
     if (fd != -1) {
-        close_fd(fd);
+        close(fd);
     }
     ERR_Cryptography_OSRandom_error(
         CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_FD,
@@ -232,7 +225,7 @@ static void dev_urandom_close(void) {
                 && st.st_ino == urandom_cache.st_ino) {
             fd = urandom_cache.fd;
             urandom_cache.fd = -1;
-            close_fd(fd);
+            close(fd);
         }
     }
 }
