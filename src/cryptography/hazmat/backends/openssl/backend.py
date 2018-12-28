@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import base64
-import calendar
 import collections
 import contextlib
 import itertools
