@@ -13,6 +13,10 @@
  * Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
  */
 
+#ifdef __linux__
+#include <poll.h>
+#endif
+
 static const char *Cryptography_osrandom_engine_id = "osrandom";
 
 /****************************************************************************
@@ -90,9 +94,47 @@ static struct {
     ino_t st_ino;
 } urandom_cache = { -1 };
 
+static int set_cloexec(int fd) {
+    int flags = fcntl(fd, F_GETFD);
+    if (flags == -1) {
+        return -1;
+    }
+    if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
+        return -1;
+    }
+    return 0;
+}
+
+#ifdef __linux__
+/* On Linux, we open("/dev/random") and use poll() to wait until it's readable
+ * before we read from /dev/urandom, this ensures that we don't read from
+ * /dev/urandom before the kernel CSPRNG is initialized. This isn't necessary on
+ * other platforms because they don't have the same _bug_ as Linux does with
+ * /dev/urandom and early boot. */
+static int wait_on_devrandom(void) {
+    struct pollfd pfd = {};
+    int ret = 0;
+    int random_fd = open("/dev/random", O_RDONLY);
+    if (random_fd < 0) {
+        return -1;
+    }
+    if (set_cloexec(random_fd) < 0) {
+        return -1;
+    }
+    pfd.fd = random_fd;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
+    do {
+        ret = poll(&pfd, 1, -1);
+    } while (ret < 0 && (errno == EINTR || errno == EAGAIN));
+    close(random_fd);
+    return ret;
+}
+#endif
+
 /* return -1 on error */
 static int dev_urandom_fd(void) {
-    int fd, n, flags;
+    int fd = -1;
     struct stat st;
 
     /* Check that fd still points to the correct device */
@@ -106,25 +148,25 @@ static int dev_urandom_fd(void) {
         }
     }
     if (urandom_cache.fd < 0) {
+#ifdef __linux__
+        if (wait_on_devrandom() < 0) {
+            goto error;
+        }
+#endif
+
         fd = open("/dev/urandom", O_RDONLY);
         if (fd < 0) {
+            goto error;
+        }
+        if (set_cloexec(fd) < 0) {
             goto error;
         }
         if (fstat(fd, &st)) {
             goto error;
         }
-        /* set CLOEXEC flag */
-        flags = fcntl(fd, F_GETFD);
-        if (flags == -1) {
-            goto error;
-        } else if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-            goto error;
-        }
         /* Another thread initialized the fd */
         if (urandom_cache.fd >= 0) {
-            do {
-                n = close(fd);
-            } while (n < 0 && errno == EINTR);
+            close(fd);
             return urandom_cache.fd;
         }
         urandom_cache.st_dev = st.st_dev;
@@ -135,9 +177,7 @@ static int dev_urandom_fd(void) {
 
   error:
     if (fd != -1) {
-        do {
-            n = close(fd);
-        } while (n < 0 && errno == EINTR);
+        close(fd);
     }
     ERR_Cryptography_OSRandom_error(
         CRYPTOGRAPHY_OSRANDOM_F_DEV_URANDOM_FD,
@@ -177,7 +217,7 @@ static int dev_urandom_read(unsigned char *buffer, int size) {
 
 static void dev_urandom_close(void) {
     if (urandom_cache.fd >= 0) {
-        int fd, n;
+        int fd;
         struct stat st;
 
         if (fstat(urandom_cache.fd, &st)
@@ -185,9 +225,7 @@ static void dev_urandom_close(void) {
                 && st.st_ino == urandom_cache.st_ino) {
             fd = urandom_cache.fd;
             urandom_cache.fd = -1;
-            do {
-                n = close(fd);
-            } while (n < 0 && errno == EINTR);
+            close(fd);
         }
     }
 }
