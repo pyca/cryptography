@@ -638,7 +638,7 @@ header format (substituting the correct information):
 .. _`NIST SP-800-38B`: https://csrc.nist.gov/publications/detail/sp/800-38b/archive/2005-05-01
 .. _`NIST PKI Testing`: https://csrc.nist.gov/Projects/PKI-Testing
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
-.. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
+.. _`DigiCert Global Root G3`: https://cacerts.digicert.com/DigiCertGlobalRootG3.crt
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
