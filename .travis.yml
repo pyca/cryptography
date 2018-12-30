@@ -78,9 +78,9 @@ matrix:
         - python: 3.5
           services: docker
           env: TOXENV=py35 DOCKER=pyca/cryptography-runner-stretch
-        - python: 3.6
+        - python: 3.7
           services: docker
-          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-buster
+          env: TOXENV=py37 DOCKER=pyca/cryptography-runner-buster
         - python: 3.7
           services: docker
           env: TOXENV=py37 DOCKER=pyca/cryptography-runner-sid
