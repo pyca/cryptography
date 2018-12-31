@@ -32,7 +32,7 @@ def _get_openssl_libraries(platform):
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
         # libssl must come before libcrypto
-        # (http://marc.info/?l=openssl-users&m=135361825921871)
+        # (https://marc.info/?l=openssl-users&m=135361825921871)
         return ["ssl", "crypto"]
 
 

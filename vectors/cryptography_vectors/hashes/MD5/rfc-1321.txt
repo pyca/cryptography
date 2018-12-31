@@ -1,4 +1,4 @@
-# http://tools.ietf.org/html/rfc1321
+# https://tools.ietf.org/html/rfc1321
 
 Len = 0
 Msg = 00

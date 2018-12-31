@@ -1,4 +1,4 @@
-# Vectors taken from http://info.isl.ntt.co.jp/crypt/eng/camellia/
+# Vectors taken from https://info.isl.ntt.co.jp/crypt/eng/camellia/
 # Download is t_camelia.txt
 
 # Camellia with 256-bit key
