@@ -435,7 +435,7 @@ def load_fips_dsa_sig_vectors(vector_data):
     return vectors
 
 
-# http://tools.ietf.org/html/rfc4492#appendix-A
+# https://tools.ietf.org/html/rfc4492#appendix-A
 _ECDSA_CURVE_NAMES = {
     "P-192": "secp192r1",
     "P-224": "secp224r1",

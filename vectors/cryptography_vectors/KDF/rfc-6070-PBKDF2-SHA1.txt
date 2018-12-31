@@ -1,4 +1,4 @@
-# PBKDF2 SHA1 vectors from http://www.ietf.org/rfc/rfc6070.txt
+# PBKDF2 SHA1 vectors from https://www.ietf.org/rfc/rfc6070.txt
 
 COUNT = 0
 PASSWORD = password
