@@ -2061,6 +2061,15 @@ class TestRSAPrivateKeySerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    def test_private_bytes_rejects_raw(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption()
+            )
+
     @pytest.mark.parametrize(
         ("fmt", "password"),
         [
