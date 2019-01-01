@@ -172,3 +172,34 @@ class TestX448Exchange(object):
 
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(b"a" * 57)
+
+    def test_invalid_private_bytes(self, backend):
+        key = X448PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.private_bytes(serialization.Encoding.Raw, None, None)
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.PKCS8,
+                None
+            )
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM, None, serialization.NoEncryption()
+            )
+
+    def test_invalid_public_bytes(self, backend):
+        key = X448PrivateKey.generate().public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.Raw,
+                serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.PKCS1
+            )
