@@ -181,4 +181,6 @@ linkcheck_retries = 5
 linkcheck_ignore = [
     # Small DH key results in a TLS failure on modern OpenSSL
     "https://info.isl.ntt.co.jp/crypt/eng/camellia/",
+    # Federal government shutdown, and the anti-deficiency act
+    r"^https://[\w\.]+?\.nist\.gov/.*",
 ]
