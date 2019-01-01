@@ -104,6 +104,13 @@ Custom asymmetric vectors
   encoded in several of the PKCS12 custom vectors.
 * ``asymmetric/EC/compressed_points.txt`` - Contains compressed public points
   generated using OpenSSL.
+* ``asymmetric/X448/x448-pkcs8-enc.pem`` and
+  ``asymmetric/X448/x448-pkcs8-enc.der`` contain an X448 key encrypted with
+  AES 256 CBC with the password ``password``.
+* ``asymmetric/X448/x448-pkcs8.pem`` and ``asymmetric/X448/x448-pkcs8.der``
+  contain an unencrypted X448 key.
+* ``asymmetric/X448/x448-pub.pem`` and ``asymmetric/X448/x448-pub.der`` contain
+  an X448 public key.
 
 
 Key exchange
