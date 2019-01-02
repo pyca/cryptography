@@ -126,4 +126,4 @@ multiple of the block size.
         :raises ValueError: When trying to remove padding from incorrectly
                             padded data.
 
-.. _`ANSI X.923`: https://en.wikipedia.org/wiki/Padding_%28cryptography%29#ANSI_X.923
+.. _`ANSI X.923`: https://en.wikipedia.org/wiki/Padding_%28cryptography%29#ANSI_X9.23
