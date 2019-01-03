@@ -1,4 +1,4 @@
-# from the RIPEMD homepage: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
+# from the RIPEMD homepage: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 # formatted to use the hash loader
 
 Len = 0
