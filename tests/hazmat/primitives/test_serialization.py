@@ -18,7 +18,8 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa, x448
 from cryptography.hazmat.primitives.serialization import (
-    BestAvailableEncryption, Encoding, PublicFormat,
+    BestAvailableEncryption, Encoding, NoEncryption,
+    PublicFormat, PrivateFormat,
     load_der_parameters, load_der_private_key,
     load_der_public_key, load_pem_parameters, load_pem_private_key,
     load_pem_public_key, load_ssh_public_key
@@ -1239,41 +1240,38 @@ class TestKeySerializationEncryptionTypes(object):
     skip_message="Requires OpenSSL with X448 support"
 )
 class TestX448Serialization(object):
-    @pytest.mark.parametrize(
-        ("key_path", "password"),
-        [
-            (["X448", "x448-pkcs8-enc.der"], b"password"),
-            (["X448", "x448-pkcs8.der"], None),
-        ]
-    )
     def test_load_der_private_key(self, key_path, password, backend):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda derfile: load_der_private_key(
-                derfile.read(), password, backend
-            ),
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "X448", "x448-pkcs8-enc.der"),
+            lambda derfile: derfile.read(),
             mode="rb"
         )
-        assert key
-        assert isinstance(key, x448.X448PrivateKey)
+        key = load_der_private_key(data, password, backend)
+        unencrypted = load_vectors_from_file(
+            os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
+            lambda derfile: derfile.read(),
+            mode="rb"
+        )
+        key = load_der_private_key(data, b"password", backend)
+        assert key.private_bytes(
+            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+        ) == unencrypted
 
-    @pytest.mark.parametrize(
-        ("key_path", "password"),
-        [
-            (["X448", "x448-pkcs8-enc.pem"], b"password"),
-            (["X448", "x448-pkcs8.pem"], None),
-        ]
-    )
-    def test_load_pem_private_key(self, key_path, password, backend):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), password, backend
-            ),
+    def test_load_pem_private_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "X448", "x448-pkcs8-enc.pem"),
+            lambda pemfile: pemfile.read(),
             mode="rb"
         )
-        assert key
-        assert isinstance(key, x448.X448PrivateKey)
+        unencrypted = load_vectors_from_file(
+            os.path.join("asymmetric", "X448", "x448-pkcs8.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        key = load_pem_private_key(data, b"password", backend)
+        assert key.private_bytes(
+            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+        ) == unencrypted
 
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader"),
