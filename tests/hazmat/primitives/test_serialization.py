@@ -1254,7 +1254,7 @@ class TestX448Serialization(object):
         )
         key = load_der_private_key(data, b"password", backend)
         assert key.private_bytes(
-            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+            Encoding.DER, PrivateFormat.PKCS8, NoEncryption()
         ) == unencrypted
 
     def test_load_pem_private_key(self, backend):
