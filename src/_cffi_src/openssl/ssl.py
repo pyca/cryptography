@@ -154,6 +154,11 @@ static const long TLSEXT_STATUSTYPE_ocsp;
 typedef ... SSL_CIPHER;
 typedef ... Cryptography_STACK_OF_SSL_CIPHER;
 typedef ... COMP_METHOD;
+
+typedef struct {
+    const char *name;
+    unsigned long id;
+} SRTP_PROTECTION_PROFILE;
 """
 
 FUNCTIONS = """
@@ -423,6 +428,7 @@ long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 int SSL_CTX_set_tlsext_use_srtp(SSL_CTX *, const char *);
 int SSL_set_tlsext_use_srtp(SSL *, const char *);
+SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
 
 long SSL_session_reused(SSL *);
 
