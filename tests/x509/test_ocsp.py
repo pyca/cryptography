@@ -631,41 +631,41 @@ class TestOCSPResponse(object):
         )
         assert resp.response_status == ocsp.OCSPResponseStatus.UNAUTHORIZED
         with pytest.raises(ValueError):
-            assert resp.signature_algorithm_oid
+            resp.signature_algorithm_oid
         with pytest.raises(ValueError):
-            assert resp.signature_hash_algorithm
+            resp.signature_hash_algorithm
         with pytest.raises(ValueError):
-            assert resp.signature
+            resp.signature
         with pytest.raises(ValueError):
-            assert resp.tbs_response_bytes
+            resp.tbs_response_bytes
         with pytest.raises(ValueError):
-            assert resp.certificates
+            resp.certificates
         with pytest.raises(ValueError):
-            assert resp.responder_key_hash
+            resp.responder_key_hash
         with pytest.raises(ValueError):
-            assert resp.responder_name
+            resp.responder_name
         with pytest.raises(ValueError):
-            assert resp.produced_at
+            resp.produced_at
         with pytest.raises(ValueError):
-            assert resp.certificate_status
+            resp.certificate_status
         with pytest.raises(ValueError):
-            assert resp.revocation_time
+            resp.revocation_time
         with pytest.raises(ValueError):
-            assert resp.revocation_reason
+            resp.revocation_reason
         with pytest.raises(ValueError):
-            assert resp.this_update
+            resp.this_update
         with pytest.raises(ValueError):
-            assert resp.next_update
+            resp.next_update
         with pytest.raises(ValueError):
-            assert resp.issuer_key_hash
+            resp.issuer_key_hash
         with pytest.raises(ValueError):
-            assert resp.issuer_name_hash
+            resp.issuer_name_hash
         with pytest.raises(ValueError):
-            assert resp.hash_algorithm
+            resp.hash_algorithm
         with pytest.raises(ValueError):
-            assert resp.serial_number
+            resp.serial_number
         with pytest.raises(ValueError):
-            assert resp.extensions
+            resp.extensions
 
     def test_load_revoked(self):
         resp = _load_data(
