@@ -583,6 +583,7 @@ class TestOCSPResponse(object):
         assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
         assert (resp.signature_algorithm_oid ==
                 x509.SignatureAlgorithmOID.RSA_WITH_SHA256)
+        assert isinstance(resp.signature_hash_algorithm, hashes.SHA256)
         assert resp.signature == base64.b64decode(
             b"I9KUlyLV/2LbNCVu1BQphxdNlU/jBzXsPYVscPjW5E93pCrSO84GkIWoOJtqsnt"
             b"78DLcQPnF3W24NXGzSGKlSWfXIsyoXCxnBm0mIbD5ZMnKyXEnqSR33Z9He/A+ML"
@@ -602,7 +603,7 @@ class TestOCSPResponse(object):
             resp.signature,
             resp.tbs_response_bytes,
             PKCS1v15(),
-            hashes.SHA256()
+            resp.signature_hash_algorithm
         )
         assert resp.certificates == []
         assert resp.responder_key_hash is None
@@ -630,39 +631,41 @@ class TestOCSPResponse(object):
         )
         assert resp.response_status == ocsp.OCSPResponseStatus.UNAUTHORIZED
         with pytest.raises(ValueError):
-            assert resp.signature_algorithm_oid
+            resp.signature_algorithm_oid
         with pytest.raises(ValueError):
-            assert resp.signature
+            resp.signature_hash_algorithm
         with pytest.raises(ValueError):
-            assert resp.tbs_response_bytes
+            resp.signature
         with pytest.raises(ValueError):
-            assert resp.certificates
+            resp.tbs_response_bytes
         with pytest.raises(ValueError):
-            assert resp.responder_key_hash
+            resp.certificates
         with pytest.raises(ValueError):
-            assert resp.responder_name
+            resp.responder_key_hash
         with pytest.raises(ValueError):
-            assert resp.produced_at
+            resp.responder_name
         with pytest.raises(ValueError):
-            assert resp.certificate_status
+            resp.produced_at
         with pytest.raises(ValueError):
-            assert resp.revocation_time
+            resp.certificate_status
         with pytest.raises(ValueError):
-            assert resp.revocation_reason
+            resp.revocation_time
         with pytest.raises(ValueError):
-            assert resp.this_update
+            resp.revocation_reason
         with pytest.raises(ValueError):
-            assert resp.next_update
+            resp.this_update
         with pytest.raises(ValueError):
-            assert resp.issuer_key_hash
+            resp.next_update
         with pytest.raises(ValueError):
-            assert resp.issuer_name_hash
+            resp.issuer_key_hash
         with pytest.raises(ValueError):
-            assert resp.hash_algorithm
+            resp.issuer_name_hash
         with pytest.raises(ValueError):
-            assert resp.serial_number
+            resp.hash_algorithm
         with pytest.raises(ValueError):
-            assert resp.extensions
+            resp.serial_number
+        with pytest.raises(ValueError):
+            resp.extensions
 
     def test_load_revoked(self):
         resp = _load_data(
@@ -683,6 +686,17 @@ class TestOCSPResponse(object):
         assert len(resp.certificates) == 1
         assert isinstance(resp.certificates[0], x509.Certificate)
         assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
+
+    def test_load_invalid_signature_oid(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-invalid-signature-oid.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert resp.signature_algorithm_oid == x509.ObjectIdentifier(
+            "1.2.840.113549.1.1.2"
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            resp.signature_hash_algorithm
 
     def test_load_responder_key_hash(self):
         resp = _load_data(
