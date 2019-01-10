@@ -35,6 +35,8 @@ Changelog
   which immediately checks if the point is on the curve and supports compressed
   points. Deprecated the previous method
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+* Added :attr:`~cryptography.x509.ocsp.OCSPResponse.signature_hash_algorithm`
+  to ``OCSPResponse``.
 
 
 .. _v2-4-2:

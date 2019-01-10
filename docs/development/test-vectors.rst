@@ -471,6 +471,8 @@ X.509 OCSP Test Vectors
   revocation reason.
 * ``x509/ocsp/resp-revoked-no-next-update.der`` - An OCSP response that
   contains a revoked certificate and no ``nextUpdate`` value.
+* ``x509/ocsp/resp-invalid-signature-oid.der`` - An OCSP response that was
+  modified to contain an MD2 signature algorithm object identifier.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

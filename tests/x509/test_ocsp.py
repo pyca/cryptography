@@ -583,6 +583,7 @@ class TestOCSPResponse(object):
         assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
         assert (resp.signature_algorithm_oid ==
                 x509.SignatureAlgorithmOID.RSA_WITH_SHA256)
+        assert isinstance(resp.signature_hash_algorithm, hashes.SHA256)
         assert resp.signature == base64.b64decode(
             b"I9KUlyLV/2LbNCVu1BQphxdNlU/jBzXsPYVscPjW5E93pCrSO84GkIWoOJtqsnt"
             b"78DLcQPnF3W24NXGzSGKlSWfXIsyoXCxnBm0mIbD5ZMnKyXEnqSR33Z9He/A+ML"
@@ -602,7 +603,7 @@ class TestOCSPResponse(object):
             resp.signature,
             resp.tbs_response_bytes,
             PKCS1v15(),
-            hashes.SHA256()
+            resp.signature_hash_algorithm
         )
         assert resp.certificates == []
         assert resp.responder_key_hash is None
@@ -631,6 +632,8 @@ class TestOCSPResponse(object):
         assert resp.response_status == ocsp.OCSPResponseStatus.UNAUTHORIZED
         with pytest.raises(ValueError):
             assert resp.signature_algorithm_oid
+        with pytest.raises(ValueError):
+            assert resp.signature_hash_algorithm
         with pytest.raises(ValueError):
             assert resp.signature
         with pytest.raises(ValueError):
@@ -683,6 +686,17 @@ class TestOCSPResponse(object):
         assert len(resp.certificates) == 1
         assert isinstance(resp.certificates[0], x509.Certificate)
         assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
+
+    def test_load_invalid_signature_oid(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-invalid-signature-oid.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert resp.signature_algorithm_oid == x509.ObjectIdentifier(
+            "1.2.840.113549.1.1.2"
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            resp.signature_hash_algorithm
 
     def test_load_responder_key_hash(self):
         resp = _load_data(

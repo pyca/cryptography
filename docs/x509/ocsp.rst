@@ -426,6 +426,16 @@ Interfaces
         :raises ValueError: If ``response_status`` is not
             :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
 
+    .. attribute:: signature_hash_algorithm
+
+        .. versionadded:: 2.5
+
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        Returns the
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
+        was used in signing this response.
+
     .. attribute:: signature
 
         :type: bytes

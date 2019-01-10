@@ -315,6 +315,12 @@ class OCSPResponse(object):
         """
 
     @abc.abstractproperty
+    def signature_hash_algorithm(self):
+        """
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        """
+
+    @abc.abstractproperty
     def signature(self):
         """
         The signature bytes

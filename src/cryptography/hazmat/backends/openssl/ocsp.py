@@ -128,6 +128,17 @@ class _OCSPResponse(object):
 
     @property
     @_requires_successful_response
+    def signature_hash_algorithm(self):
+        oid = self.signature_algorithm_oid
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(oid)
+            )
+
+    @property
+    @_requires_successful_response
     def signature(self):
         sig = self._backend._lib.OCSP_resp_get0_signature(self._basic)
         self._backend.openssl_assert(sig != self._backend._ffi.NULL)
