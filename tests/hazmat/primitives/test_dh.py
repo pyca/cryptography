@@ -424,22 +424,19 @@ class TestDHPrivateKeySerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
-    def test_private_bytes_rejects_raw(self, backend):
+    @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
+            (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+        ]
+    )
+    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.Raw,
-                serialization.PrivateFormat.PKCS8,
-                serialization.NoEncryption()
-            )
-
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.DER,
-                serialization.PrivateFormat.Raw,
-                serialization.NoEncryption()
-            )
+            key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "is_dhx"),

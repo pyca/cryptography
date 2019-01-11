@@ -705,22 +705,19 @@ class TestECSerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
-    def test_private_bytes_rejects_raw(self, backend):
+    @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
+            (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+        ]
+    )
+    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend)
         with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.Raw,
-                serialization.PrivateFormat.PKCS8,
-                serialization.NoEncryption()
-            )
-
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.DER,
-                serialization.PrivateFormat.Raw,
-                serialization.NoEncryption()
-            )
+            key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(
         ("fmt", "password"),
