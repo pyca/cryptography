@@ -2063,10 +2063,17 @@ class TestRSAPrivateKeySerialization(object):
 
     def test_private_bytes_rejects_raw(self, backend):
         key = RSA_KEY_2048.private_key(backend)
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption()
+            )
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.Raw,
                 serialization.NoEncryption()
             )
 
@@ -2295,3 +2302,16 @@ class TestRSAPEMPublicKeySerialization(object):
         key = RSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
             key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+
+    @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
+            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
+        ]
+    )
+    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+        key = RSA_KEY_2048.private_key(backend).public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(encoding, fmt)

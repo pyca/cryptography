@@ -107,14 +107,16 @@ class TestX448Exchange(object):
     def test_pub_priv_bytes_raw(self, private_bytes, public_bytes, backend):
         private_key = X448PrivateKey.from_private_bytes(private_bytes)
         assert private_key.private_bytes(
-            serialization.Encoding.Raw, None, serialization.NoEncryption()
+            serialization.Encoding.Raw,
+            serialization.PrivateFormat.Raw,
+            serialization.NoEncryption()
         ) == private_bytes
         assert private_key.public_key().public_bytes(
-            serialization.Encoding.Raw, None
+            serialization.Encoding.Raw, serialization.PublicFormat.Raw
         ) == public_bytes
         public_key = X448PublicKey.from_public_bytes(public_bytes)
         assert public_key.public_bytes(
-            serialization.Encoding.Raw, None
+            serialization.Encoding.Raw, serialization.PublicFormat.Raw
         ) == public_bytes
 
     @pytest.mark.parametrize(
@@ -176,7 +178,11 @@ class TestX448Exchange(object):
     def test_invalid_private_bytes(self, backend):
         key = X448PrivateKey.generate()
         with pytest.raises(ValueError):
-            key.private_bytes(serialization.Encoding.Raw, None, None)
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                None
+            )
 
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -187,7 +193,9 @@ class TestX448Exchange(object):
 
         with pytest.raises(ValueError):
             key.private_bytes(
-                serialization.Encoding.PEM, None, serialization.NoEncryption()
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.Raw,
+                serialization.NoEncryption()
             )
 
     def test_invalid_public_bytes(self, backend):
@@ -202,4 +210,10 @@ class TestX448Exchange(object):
             key.public_bytes(
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.PKCS1
+            )
+
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.Raw
             )

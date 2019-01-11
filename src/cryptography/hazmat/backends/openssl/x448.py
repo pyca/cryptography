@@ -24,9 +24,17 @@ class _X448PublicKey(object):
         self._evp_pkey = evp_pkey
 
     def public_bytes(self, encoding, format):
-        if encoding is serialization.Encoding.Raw:
-            if format is not None:
-                raise ValueError("When using Raw encoding format must be None")
+        if (
+            encoding is serialization.Encoding.Raw or
+            format is serialization.PublicFormat.Raw
+        ):
+            if (
+                encoding is not serialization.Encoding.Raw or
+                format is not serialization.PublicFormat.Raw
+            ):
+                raise ValueError(
+                    "When using Raw both encoding and format must be Raw"
+                )
 
             return self._raw_public_bytes()
 
@@ -79,14 +87,18 @@ class _X448PrivateKey(object):
         )
 
     def private_bytes(self, encoding, format, encryption_algorithm):
-        if encoding is serialization.Encoding.Raw:
+        if (
+            encoding is serialization.Encoding.Raw or
+            format is serialization.PublicFormat.Raw
+        ):
             if (
-                format is not None or not
+                format is not serialization.PrivateFormat.Raw or
+                encoding is not serialization.Encoding.Raw or not
                 isinstance(encryption_algorithm, serialization.NoEncryption)
             ):
                 raise ValueError(
-                    "When using Raw encoding format must be None and "
-                    "encryption_algorithm must be NoEncryption"
+                    "When using Raw both encoding and format must be Raw "
+                    "and encryption_algorithm must be NoEncryption"
                 )
 
             return self._raw_private_bytes()

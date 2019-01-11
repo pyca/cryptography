@@ -1684,6 +1684,16 @@ class Backend(object):
                 "format must be an item from the PrivateFormat enum"
             )
 
+        # Raw format and encoding are only valid for X25519, Ed25519, X448, and
+        # Ed448 keys. We capture those cases before this method is called so if
+        # we see those enum values here it means the caller has passed them to
+        # a key that doesn't support raw type
+        if format is serialization.PrivateFormat.Raw:
+            raise ValueError("raw format is invalid with this key or encoding")
+
+        if encoding is serialization.Encoding.Raw:
+            raise ValueError("raw encoding is invalid with this key or format")
+
         if not isinstance(encryption_algorithm,
                           serialization.KeySerializationEncryption):
             raise TypeError(
@@ -1775,6 +1785,16 @@ class Backend(object):
     def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
+
+        # Raw format and encoding are only valid for X25519, Ed25519, X448, and
+        # Ed448 keys. We capture those cases before this method is called so if
+        # we see those enum values here it means the caller has passed them to
+        # a key that doesn't support raw type
+        if format is serialization.PublicFormat.Raw:
+            raise ValueError("raw format is invalid with this key or encoding")
+
+        if encoding is serialization.Encoding.Raw:
+            raise ValueError("raw encoding is invalid with this key or format")
 
         if (
             format is serialization.PublicFormat.OpenSSH or
