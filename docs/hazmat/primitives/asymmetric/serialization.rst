@@ -473,6 +473,13 @@ Serialization Formats
             ...
             -----END PRIVATE KEY-----
 
+    .. attribute:: Raw
+
+        .. versionadded:: 2.5
+
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        binary format and is invalid for other key types.
+
 .. class:: PublicFormat
 
     .. versionadded:: 0.8
@@ -515,6 +522,13 @@ Serialization Formats
 
         The public key format used by OpenSSH (e.g. as found in
         ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
+
+    .. attribute:: Raw
+
+        .. versionadded:: 2.5
+
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        binary format and is invalid for other key types.
 
 .. class:: ParameterFormat
 
@@ -571,7 +585,7 @@ Serialization Encodings
 
         .. versionadded:: 2.5
 
-        A raw format used by doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
 
