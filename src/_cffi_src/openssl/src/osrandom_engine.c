@@ -4,7 +4,7 @@
  * macOS >= 10.12  getentropy()
  * OpenBSD 5.6+    getentropy()
  * other BSD       getentropy() if SYS_getentropy is defined
- * Linux 3.4.17+   getrandom() with fallback to /dev/urandom
+ * Linux 3.17+     getrandom() with fallback to /dev/urandom
  * other           /dev/urandom with cached fd
  *
  * The /dev/urandom, getrandom and getentropy code is derived from Python's
