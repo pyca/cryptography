@@ -41,7 +41,7 @@
      * to urandom */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETENTROPY
   #elif defined(__linux__) && defined(SYS_getrandom)
-    /* Linux 3.4.17+ */
+    /* Linux 3.17+ */
     #define CRYPTOGRAPHY_OSRANDOM_ENGINE CRYPTOGRAPHY_OSRANDOM_ENGINE_GETRANDOM
   #else
     /* Keep this as last entry, fall back to /dev/urandom */
