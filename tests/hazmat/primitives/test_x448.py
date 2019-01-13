@@ -156,7 +156,8 @@ class TestX448Exchange(object):
                                               passwd, load_func, backend):
         key = X448PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd, backend)
+        assert isinstance(loaded_key, X448PrivateKey)
 
     def test_generate(self, backend):
         key = X448PrivateKey.generate()
