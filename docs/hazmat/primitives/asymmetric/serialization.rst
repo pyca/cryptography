@@ -473,6 +473,13 @@ Serialization Formats
             ...
             -----END PRIVATE KEY-----
 
+    .. attribute:: Raw
+
+        .. versionadded:: 2.5
+
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        binary format and is invalid for other key types.
+
 .. class:: PublicFormat
 
     .. versionadded:: 0.8
@@ -516,6 +523,13 @@ Serialization Formats
         The public key format used by OpenSSH (e.g. as found in
         ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
 
+    .. attribute:: Raw
+
+        .. versionadded:: 2.5
+
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        binary format and is invalid for other key types.
+
 .. class:: ParameterFormat
 
     .. versionadded:: 2.0
@@ -538,14 +552,16 @@ Serialization Encodings
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`,
     and
-    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`
     as well as ``public_bytes`` on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
     and
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
 
     .. attribute:: PEM
 
@@ -564,6 +580,13 @@ Serialization Encodings
         .. versionadded:: 1.4
 
         The format used by OpenSSH public keys. This is a text format.
+
+    .. attribute:: Raw
+
+        .. versionadded:: 2.5
+
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        binary format and is invalid for other key types.
 
 
 Serialization Encryption Types

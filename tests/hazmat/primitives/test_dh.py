@@ -425,6 +425,20 @@ class TestDHPrivateKeySerialization(object):
         assert loaded_priv_num == priv_num
 
     @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
+            (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+        ]
+    )
+    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        key = parameters.generate_private_key()
+        with pytest.raises(ValueError):
+            key.private_bytes(encoding, fmt, serialization.NoEncryption())
+
+    @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "is_dhx"),
         [
             (
@@ -805,6 +819,23 @@ class TestDHParameterSerialization(object):
             assert parameter_numbers.q == int(vec["q"], 16)
         else:
             assert parameter_numbers.q is None
+
+    @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
+            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
+            (
+                serialization.Encoding.Raw,
+                serialization.PublicFormat.SubjectPublicKeyInfo
+            ),
+        ]
+    )
+    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        key = parameters.generate_private_key().public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(encoding, fmt)
 
     def test_parameter_bytes_invalid_encoding(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)

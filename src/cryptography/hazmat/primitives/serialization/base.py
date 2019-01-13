@@ -40,17 +40,20 @@ class Encoding(Enum):
     PEM = "PEM"
     DER = "DER"
     OpenSSH = "OpenSSH"
+    Raw = "Raw"
 
 
 class PrivateFormat(Enum):
     PKCS8 = "PKCS8"
     TraditionalOpenSSL = "TraditionalOpenSSL"
+    Raw = "Raw"
 
 
 class PublicFormat(Enum):
     SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
     PKCS1 = "Raw PKCS#1"
     OpenSSH = "OpenSSH"
+    Raw = "Raw"
 
 
 class ParameterFormat(Enum):

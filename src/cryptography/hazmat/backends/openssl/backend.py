@@ -508,6 +508,9 @@ class Backend(object):
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
+            # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
+            return _X448PrivateKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -539,6 +542,9 @@ class Backend(object):
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPublicKey(self, dh_cdata, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
+            # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
+            return _X448PublicKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -1678,6 +1684,16 @@ class Backend(object):
                 "format must be an item from the PrivateFormat enum"
             )
 
+        # Raw format and encoding are only valid for X25519, Ed25519, X448, and
+        # Ed448 keys. We capture those cases before this method is called so if
+        # we see those enum values here it means the caller has passed them to
+        # a key that doesn't support raw type
+        if format is serialization.PrivateFormat.Raw:
+            raise ValueError("raw format is invalid with this key or encoding")
+
+        if encoding is serialization.Encoding.Raw:
+            raise ValueError("raw encoding is invalid with this key or format")
+
         if not isinstance(encryption_algorithm,
                           serialization.KeySerializationEncryption):
             raise TypeError(
@@ -1737,7 +1753,7 @@ class Backend(object):
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
         else:
-            raise TypeError("encoding must be an item from the Encoding enum")
+            raise TypeError("encoding must be Encoding.PEM or Encoding.DER")
 
         bio = self._create_mem_bio_gc()
         res = write_bio(
@@ -1769,6 +1785,16 @@ class Backend(object):
     def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
+
+        # Raw format and encoding are only valid for X25519, Ed25519, X448, and
+        # Ed448 keys. We capture those cases before this method is called so if
+        # we see those enum values here it means the caller has passed them to
+        # a key that doesn't support raw type
+        if format is serialization.PublicFormat.Raw:
+            raise ValueError("raw format is invalid with this key or encoding")
+
+        if encoding is serialization.Encoding.Raw:
+            raise ValueError("raw encoding is invalid with this key or format")
 
         if (
             format is serialization.PublicFormat.OpenSSH or

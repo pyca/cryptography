@@ -706,6 +706,20 @@ class TestECSerialization(object):
         assert loaded_priv_num == priv_num
 
     @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
+            (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+        ]
+    )
+    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = ec.generate_private_key(ec.SECP256R1(), backend)
+        with pytest.raises(ValueError):
+            key.private_bytes(encoding, fmt, serialization.NoEncryption())
+
+    @pytest.mark.parametrize(
         ("fmt", "password"),
         [
             [serialization.PrivateFormat.PKCS8, b"s"],
@@ -984,6 +998,20 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 "notencoding",
                 serialization.PublicFormat.SubjectPublicKeyInfo
             )
+
+    @pytest.mark.parametrize(
+        ("encoding", "fmt"),
+        [
+            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
+            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
+            (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
+        ]
+    )
+    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = ec.generate_private_key(ec.SECP256R1(), backend).public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(encoding, fmt)
 
     def test_public_bytes_invalid_format(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
