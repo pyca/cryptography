@@ -1246,7 +1246,6 @@ class TestX448Serialization(object):
             lambda derfile: derfile.read(),
             mode="rb"
         )
-        key = load_der_private_key(data, b"password", backend)
         unencrypted = load_vectors_from_file(
             os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
             lambda derfile: derfile.read(),
