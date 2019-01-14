@@ -450,13 +450,13 @@ class Backend(object):
         The char* is the storage for the BIO and it must stay alive until the
         BIO is finished with.
         """
-        data_char_p = self._ffi.new("char[]", data)
+        data_ptr = self._ffi.from_buffer(data)
         bio = self._lib.BIO_new_mem_buf(
-            data_char_p, len(data)
+            data_ptr, len(data)
         )
         self.openssl_assert(bio != self._ffi.NULL)
 
-        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
+        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_ptr)
 
     def _create_mem_bio_gc(self):
         """
@@ -2192,9 +2192,10 @@ class Backend(object):
 
     def load_key_and_certificates_from_pkcs12(self, data, password):
         if password is None:
-            password = self._ffi.NULL
+            password_ptr = self._ffi.NULL
         else:
-            utils._check_bytes("password", password)
+            utils._check_byteslike("password", password)
+            password_ptr = self._ffi.from_buffer(password)
 
         bio = self._bytes_to_bio(data)
         p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
@@ -2207,7 +2208,7 @@ class Backend(object):
         x509_ptr = self._ffi.new("X509 **")
         sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
         res = self._lib.PKCS12_parse(
-            p12, password, evp_pkey_ptr, x509_ptr, sk_x509_ptr
+            p12, password_ptr, evp_pkey_ptr, x509_ptr, sk_x509_ptr
         )
         if res == 0:
             self._consume_errors()

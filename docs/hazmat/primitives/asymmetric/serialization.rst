@@ -417,10 +417,12 @@ file suffix.
 
     Deserialize a PKCS12 blob.
 
-    :param bytes data: The binary data.
+    :param data: The binary data.
+    :type data: :term:`bytes-like`
 
-    :param bytes password: The password to use to decrypt the data. ``None``
+    :param password: The password to use to decrypt the data. ``None``
         if the PKCS12 is not encrypted.
+    :type password: :term:`bytes-like`
 
     :param backend: A backend instance.
 
