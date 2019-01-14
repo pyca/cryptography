@@ -148,4 +148,4 @@ class _X25519PrivateKey(object):
         )
         self._backend.openssl_assert(res == 1)
         pkcs8 = self._backend._read_mem_bio(bio)
-        return pkcs8[-_X25519_KEY_SIZE:len(pkcs8)]
+        return pkcs8[-_X25519_KEY_SIZE:]
