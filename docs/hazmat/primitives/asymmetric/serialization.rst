@@ -133,10 +133,12 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     Deserialize a private key from PEM encoded data to one of the supported
     asymmetric private key types.
 
-    :param bytes data: The PEM encoded key data.
+    :param data: The PEM encoded key data.
+    :type data: :term:`bytes-like`
 
-    :param bytes password: The password to use to decrypt the data. Should
+    :param password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
+    :type data: :term:`bytes-like`
 
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
@@ -241,10 +243,12 @@ the rest.
     Deserialize a private key from DER encoded data to one of the supported
     asymmetric private key types.
 
-    :param bytes data: The DER encoded key data.
+    :param data: The DER encoded key data.
+    :type data: :term:`bytes-like`
 
-    :param bytes password: The password to use to decrypt the data. Should
+    :param password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
+    :type password: :term:`bytes-like`
 
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
