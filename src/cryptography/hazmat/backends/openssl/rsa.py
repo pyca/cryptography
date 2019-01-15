@@ -238,7 +238,6 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
     if res != 1:
         errors = backend._consume_errors()
         backend.openssl_assert(errors[0].lib == backend._lib.ERR_LIB_RSA)
-        reason = None
         if (
             errors[0].reason ==
             backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE
