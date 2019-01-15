@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 def test_x25519(backend, wycheproof):
     assert list(wycheproof.testgroup.items()) == [("curve", "curve25519")]
 
-    private_key = X25519PrivateKey._from_private_bytes(
+    private_key = X25519PrivateKey.from_private_bytes(
         binascii.unhexlify(wycheproof.testcase["private"])
     )
     public_key = X25519PublicKey.from_public_bytes(

@@ -28,7 +28,7 @@ class X25519PublicKey(object):
         return backend.x25519_load_public_bytes(data)
 
     @abc.abstractmethod
-    def public_bytes(self):
+    def public_bytes(self, encoding=None, format=None):
         """
         The serialized bytes of the public key.
         """
@@ -47,7 +47,7 @@ class X25519PrivateKey(object):
         return backend.x25519_generate_key()
 
     @classmethod
-    def _from_private_bytes(cls, data):
+    def from_private_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
         return backend.x25519_load_private_bytes(data)
 
@@ -55,6 +55,12 @@ class X25519PrivateKey(object):
     def public_key(self):
         """
         The serialized bytes of the public key.
+        """
+
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        The serialized bytes of the private key.
         """
 
     @abc.abstractmethod
