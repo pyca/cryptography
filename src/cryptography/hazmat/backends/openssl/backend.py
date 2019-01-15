@@ -1219,12 +1219,12 @@ class Backend(object):
         mem_bio = self._bytes_to_bio(data)
 
         if password is not None:
-            utils._check_bytes("password", password)
+            utils._check_byteslike("password", password)
 
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         if password is not None:
-            password_buf = self._ffi.new("char []", password)
-            userdata.password = password_buf
+            password_ptr = self._ffi.from_buffer(password)
+            userdata.password = password_ptr
             userdata.length = len(password)
 
         evp_pkey = openssl_read_func(
@@ -2190,13 +2190,29 @@ class Backend(object):
             self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
 
-    def load_key_and_certificates_from_pkcs12(self, data, password):
+    @contextlib.contextmanager
+    def _zeroed_null_terminated_pass_buf(self, password):
+        """
+        This method takes a password, which can be a bytestring or a mutable
+        buffer like a bytestring, and yields a null-terminated version of that
+        data. This is required because PKCS12_parse doesn't take a length with
+        its password char * and ffi.from_buffer doesn't provide null
+        termination. So, to support zeroing the password via bytearray we
+        need to build this ridiculous construct that copies the memory, but
+        zeroes it after use.
+        """
         if password is None:
-            password_ptr = self._ffi.NULL
+            yield self._ffi.NULL
         else:
-            utils._check_byteslike("password", password)
-            password_ptr = self._ffi.from_buffer(password)
+            pass_len = len(password)
+            buf = self._ffi.new("char[]", pass_len + 1)
+            self._ffi.memmove(buf, password, pass_len)
+            try:
+                yield buf
+            finally:
+                self._ffi.memmove(buf, b"\x00" * pass_len, pass_len)
 
+    def load_key_and_certificates_from_pkcs12(self, data, password):
         bio = self._bytes_to_bio(data)
         p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
         if p12 == self._ffi.NULL:
@@ -2204,12 +2220,18 @@ class Backend(object):
             raise ValueError("Could not deserialize PKCS12 data")
 
         p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
+
+        if password is not None:
+            utils._check_byteslike("password", password)
+
         evp_pkey_ptr = self._ffi.new("EVP_PKEY **")
         x509_ptr = self._ffi.new("X509 **")
         sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
-        res = self._lib.PKCS12_parse(
-            p12, password_ptr, evp_pkey_ptr, x509_ptr, sk_x509_ptr
-        )
+        with self._zeroed_null_terminated_pass_buf(password) as password_buf:
+            res = self._lib.PKCS12_parse(
+                p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
+            )
+
         if res == 0:
             self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
