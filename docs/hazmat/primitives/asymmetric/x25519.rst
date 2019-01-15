@@ -70,6 +70,9 @@ Key interfaces
 
         .. versionadded:: 2.5
 
+        A class method for loading an X25519 key encoded as
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`.
+
         :param bytes data: 32 byte private key.
 
         :returns: :class:`X25519PrivateKey`

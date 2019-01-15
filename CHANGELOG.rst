@@ -38,9 +38,9 @@ Changelog
 * Added :attr:`~cryptography.x509.ocsp.OCSPResponse.signature_hash_algorithm`
   to ``OCSPResponse``.
 * Updated :doc:`/hazmat/primitives/asymmetric/x25519` support to allow
-  additional serialization methods. Zero argument calling of
+  additional serialization methods. Calling
   :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
-  has been deprecated.
+  with no arguments has been deprecated.
 
 
 .. _v2-4-2:

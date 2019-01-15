@@ -12,9 +12,6 @@ from cryptography.hazmat.primitives.asymmetric.x448 import (
 )
 
 _X448_KEY_SIZE = 56
-_PEM_DER = (
-    serialization.Encoding.PEM, serialization.Encoding.DER
-)
 
 
 @utils.register_interface(X448PublicKey)
@@ -39,7 +36,7 @@ class _X448PublicKey(object):
             return self._raw_public_bytes()
 
         if (
-            encoding in _PEM_DER and
+            encoding in serialization._PEM_DER and
             format is not serialization.PublicFormat.SubjectPublicKeyInfo
         ):
             raise ValueError(
@@ -104,7 +101,7 @@ class _X448PrivateKey(object):
             return self._raw_private_bytes()
 
         if (
-            encoding in _PEM_DER and
+            encoding in serialization._PEM_DER and
             format is not serialization.PrivateFormat.PKCS8
         ):
             raise ValueError(

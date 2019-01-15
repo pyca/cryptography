@@ -15,9 +15,6 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 
 
 _X25519_KEY_SIZE = 32
-_PEM_DER = (
-    serialization.Encoding.PEM, serialization.Encoding.DER
-)
 
 
 @utils.register_interface(X25519PublicKey)
@@ -54,7 +51,7 @@ class _X25519PublicKey(object):
             return self._raw_public_bytes()
 
         if (
-            encoding in _PEM_DER and
+            encoding in serialization._PEM_DER and
             format is not serialization.PublicFormat.SubjectPublicKeyInfo
         ):
             raise ValueError(
@@ -124,7 +121,7 @@ class _X25519PrivateKey(object):
             return self._raw_private_bytes()
 
         if (
-            encoding in _PEM_DER and
+            encoding in serialization._PEM_DER and
             format is not serialization.PrivateFormat.PKCS8
         ):
             raise ValueError(
@@ -148,4 +145,5 @@ class _X25519PrivateKey(object):
         )
         self._backend.openssl_assert(res == 1)
         pkcs8 = self._backend._read_mem_bio(bio)
+        self._backend.openssl_assert(len(pkcs8) == 48)
         return pkcs8[-_X25519_KEY_SIZE:]
