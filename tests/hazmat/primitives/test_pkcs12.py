@@ -108,3 +108,16 @@ class TestPKCS12(object):
                     derfile.read(), b"invalid", backend
                 ), mode="rb"
             )
+
+    def test_buffer_protocol(self, backend):
+        p12 = load_vectors_from_file(
+            os.path.join("pkcs12", "cert-key-aes256cbc.p12"),
+            lambda derfile: derfile.read(), mode="rb"
+        )
+        p12buffer = bytearray(p12)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, bytearray(b"cryptography"), backend
+        )
+        assert parsed_key is not None
+        assert parsed_cert is not None
+        assert parsed_more_certs == []

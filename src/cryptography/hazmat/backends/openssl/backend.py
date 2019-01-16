@@ -450,13 +450,13 @@ class Backend(object):
         The char* is the storage for the BIO and it must stay alive until the
         BIO is finished with.
         """
-        data_char_p = self._ffi.new("char[]", data)
+        data_ptr = self._ffi.from_buffer(data)
         bio = self._lib.BIO_new_mem_buf(
-            data_char_p, len(data)
+            data_ptr, len(data)
         )
         self.openssl_assert(bio != self._ffi.NULL)
 
-        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
+        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_ptr)
 
     def _create_mem_bio_gc(self):
         """
@@ -1225,12 +1225,12 @@ class Backend(object):
         mem_bio = self._bytes_to_bio(data)
 
         if password is not None:
-            utils._check_bytes("password", password)
+            utils._check_byteslike("password", password)
 
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         if password is not None:
-            password_buf = self._ffi.new("char []", password)
-            userdata.password = password_buf
+            password_ptr = self._ffi.from_buffer(password)
+            userdata.password = password_ptr
             userdata.length = len(password)
 
         evp_pkey = openssl_read_func(
@@ -2196,11 +2196,33 @@ class Backend(object):
             self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
 
-    def load_key_and_certificates_from_pkcs12(self, data, password):
-        if password is None:
-            password = self._ffi.NULL
+    @contextlib.contextmanager
+    def _zeroed_null_terminated_buf(self, data):
+        """
+        This method takes bytes, which can be a bytestring or a mutable
+        buffer like a bytearray, and yields a null-terminated version of that
+        data. This is required because PKCS12_parse doesn't take a length with
+        its password char * and ffi.from_buffer doesn't provide null
+        termination. So, to support zeroing the data via bytearray we
+        need to build this ridiculous construct that copies the memory, but
+        zeroes it after use.
+        """
+        if data is None:
+            yield self._ffi.NULL
         else:
-            utils._check_bytes("password", password)
+            data_len = len(data)
+            buf = self._ffi.new("char[]", data_len + 1)
+            self._ffi.memmove(buf, data, data_len)
+            try:
+                yield buf
+            finally:
+                # TODO: this could be done with memset to avoid the Python
+                # bytestring alloc.
+                self._ffi.memmove(buf, b"\x00" * data_len, data_len)
+
+    def load_key_and_certificates_from_pkcs12(self, data, password):
+        if password is not None:
+            utils._check_byteslike("password", password)
 
         bio = self._bytes_to_bio(data)
         p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
@@ -2212,9 +2234,11 @@ class Backend(object):
         evp_pkey_ptr = self._ffi.new("EVP_PKEY **")
         x509_ptr = self._ffi.new("X509 **")
         sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
-        res = self._lib.PKCS12_parse(
-            p12, password, evp_pkey_ptr, x509_ptr, sk_x509_ptr
-        )
+        with self._zeroed_null_terminated_buf(password) as password_buf:
+            res = self._lib.PKCS12_parse(
+                p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
+            )
+
         if res == 0:
             self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
