@@ -2150,8 +2150,9 @@ class Backend(object):
         return _X448PublicKey(self, evp_pkey)
 
     def x448_load_private_bytes(self, data):
+        data_ptr = self._ffi.from_buffer(data)
         evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
-            self._lib.NID_X448, self._ffi.NULL, data, len(data)
+            self._lib.NID_X448, self._ffi.NULL, data_ptr, len(data)
         )
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
