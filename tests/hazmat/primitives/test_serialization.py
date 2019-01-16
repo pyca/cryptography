@@ -50,7 +50,7 @@ class TestBufferProtocolSerialization(object):
             os.path.join("asymmetric", *key_path),
             lambda derfile: derfile.read(), mode="rb"
         )
-        key = load_der_private_key(memoryview(data), password, backend)
+        key = load_der_private_key(bytearray(data), password, backend)
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
@@ -77,7 +77,7 @@ class TestBufferProtocolSerialization(object):
             os.path.join("asymmetric", *key_path),
             lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = load_pem_private_key(memoryview(data), password, backend)
+        key = load_pem_private_key(bytearray(data), password, backend)
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
