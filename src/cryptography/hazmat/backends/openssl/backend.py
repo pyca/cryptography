@@ -14,6 +14,7 @@ from contextlib import contextmanager
 import asn1crypto.core
 
 import six
+from six.moves import range
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
@@ -2095,7 +2096,8 @@ class Backend(object):
 
     def x25519_load_private_bytes(self, data):
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
-        # switch this to EVP_PKEY_new_raw_private_key
+        # switch this to EVP_PKEY_new_raw_private_key and drop the
+        # zeroed_bytearray garbage.
         # OpenSSL only has facilities for loading PKCS8 formatted private
         # keys using the algorithm identifiers specified in
         # https://tools.ietf.org/html/draft-ietf-curdle-pkix-09.
@@ -2113,8 +2115,12 @@ class Backend(object):
             raise ValueError("An X25519 private key is 32 bytes long")
 
         pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
-        bio = self._bytes_to_bio(pkcs8_prefix + data)
-        evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+        with self._zeroed_bytearray(48) as ba:
+            ba[0:16] = pkcs8_prefix
+            ba[16:] = data
+            bio = self._bytes_to_bio(ba)
+            evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
         self.openssl_assert(
@@ -2205,6 +2211,26 @@ class Backend(object):
         )
 
     @contextlib.contextmanager
+    def _zeroed_bytearray(self, length):
+        """
+        This method creates a bytearray, which we copy data into (hopefully
+        also from a mutable buffer that can be dynamically erased!), and then
+        zero when we're done.
+        """
+        ba = bytearray(length)
+        try:
+            yield ba
+        finally:
+            self._zero_data(ba, length)
+
+    def _zero_data(self, data, length):
+        # We clear things this way because at the moment we're not
+        # sure of a better way that can guarantee it overwrites the
+        # memory of a bytearray and doesn't just replace the underlying char *.
+        for i in range(length):
+            data[i] = 0
+
+    @contextlib.contextmanager
     def _zeroed_null_terminated_buf(self, data):
         """
         This method takes bytes, which can be a bytestring or a mutable
@@ -2224,9 +2250,8 @@ class Backend(object):
             try:
                 yield buf
             finally:
-                # TODO: this could be done with memset to avoid the Python
-                # bytestring alloc.
-                self._ffi.memmove(buf, b"\x00" * data_len, data_len)
+                # Cast to a uint8_t * so we can assign by integer
+                self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
     def load_key_and_certificates_from_pkcs12(self, data, password):
         if password is not None:
