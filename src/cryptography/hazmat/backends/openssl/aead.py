@@ -54,12 +54,14 @@ def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, tag_len, backend._ffi.NULL
         )
 
+    nonce_ptr = backend._ffi.from_buffer(nonce)
+    key_ptr = backend._ffi.from_buffer(key)
     res = backend._lib.EVP_CipherInit_ex(
         ctx,
         backend._ffi.NULL,
         backend._ffi.NULL,
-        key,
-        nonce,
+        key_ptr,
+        nonce_ptr,
         int(operation == _ENCRYPT)
     )
     backend.openssl_assert(res != 0)
