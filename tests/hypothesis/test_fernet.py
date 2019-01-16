@@ -8,7 +8,7 @@ from hypothesis.strategies import binary
 from cryptography.fernet import Fernet
 
 
-@settings(suppress_health_check=[HealthCheck.too_slow])
+@settings(suppress_health_check=[HealthCheck.too_slow], deadline=None)
 @given(binary())
 def test_fernet(data):
     f = Fernet(Fernet.generate_key())
