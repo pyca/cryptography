@@ -84,12 +84,6 @@ class NameAttribute(object):
                 "value argument must be a text type."
             )
 
-        if (
-            oid in (NameOID.COUNTRY_NAME, NameOID.JURISDICTION_COUNTRY_NAME)
-            and _type == _SENTINEL
-        ):
-            _type = _ASN1Type.PrintableString
-
         # The appropriate ASN1 string type varies by OID and is defined across
         # multiple RFCs including 2459, 3280, and 5280. In general UTF8String
         # is preferred (2459), but 3280 and 5280 specify several OIDs with
