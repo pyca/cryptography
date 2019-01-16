@@ -90,12 +90,8 @@ class TestPKCS12(object):
 
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):
-            load_vectors_from_file(
-                os.path.join("pkcs12", "no-cert-key-aes256cbc.p12"),
-                lambda data: load_key_and_certificates(
-                    data.read(), object(), backend
-                ),
-                mode="rb"
+            load_key_and_certificates(
+                b"irrelevant", object(), backend
             )
 
     def test_not_a_pkcs12(self, backend):
