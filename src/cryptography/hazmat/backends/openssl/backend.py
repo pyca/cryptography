@@ -2193,8 +2193,8 @@ class Backend(object):
     @contextlib.contextmanager
     def _zeroed_null_terminated_buf(self, data):
         """
-        This method takes some bytes, which can be a bytestring or a mutable
-        buffer like a bytestring, and yields a null-terminated version of that
+        This method takes bytes, which can be a bytestring or a mutable
+        buffer like a bytearray, and yields a null-terminated version of that
         data. This is required because PKCS12_parse doesn't take a length with
         its password char * and ffi.from_buffer doesn't provide null
         termination. So, to support zeroing the data via bytearray we
