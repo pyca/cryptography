@@ -167,6 +167,21 @@ class TestChaCha20Poly1305(object):
         computed_ct = chacha.encrypt(nonce, pt, aad)
         assert computed_ct == ct + tag
 
+    def test_buffer_protocol(self, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        pt = b"encrypt me"
+        ad = b"additional"
+        nonce = os.urandom(12)
+        ct = chacha.encrypt(nonce, pt, ad)
+        computed_pt = chacha.decrypt(nonce, ct, ad)
+        assert computed_pt == pt
+        chacha2 = ChaCha20Poly1305(bytearray(key))
+        ct2 = chacha2.encrypt(bytearray(nonce), pt, ad)
+        assert ct2 == ct
+        computed_pt2 = chacha2.decrypt(bytearray(nonce), ct2, ad)
+        assert computed_pt2 == pt
+
 
 @pytest.mark.skipif(
     _aead_supported(AESCCM),
@@ -317,6 +332,21 @@ class TestAESCCM(object):
         with pytest.raises(InvalidTag):
             aesccm.decrypt(b"0" * 12, b"0", None)
 
+    def test_buffer_protocol(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"encrypt me"
+        ad = b"additional"
+        nonce = os.urandom(12)
+        ct = aesccm.encrypt(nonce, pt, ad)
+        computed_pt = aesccm.decrypt(nonce, ct, ad)
+        assert computed_pt == pt
+        aesccm2 = AESCCM(bytearray(key))
+        ct2 = aesccm2.encrypt(bytearray(nonce), pt, ad)
+        assert ct2 == ct
+        computed_pt2 = aesccm2.decrypt(bytearray(nonce), ct2, ad)
+        assert computed_pt2 == pt
+
 
 def _load_gcm_vectors():
     vectors = _load_all_params(
@@ -413,3 +443,18 @@ class TestAESGCM(object):
         pt1 = aesgcm.decrypt(nonce, ct1, None)
         pt2 = aesgcm.decrypt(nonce, ct2, b"")
         assert pt1 == pt2
+
+    def test_buffer_protocol(self, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        pt = b"encrypt me"
+        ad = b"additional"
+        nonce = os.urandom(12)
+        ct = aesgcm.encrypt(nonce, pt, ad)
+        computed_pt = aesgcm.decrypt(nonce, ct, ad)
+        assert computed_pt == pt
+        aesgcm2 = AESGCM(bytearray(key))
+        ct2 = aesgcm2.encrypt(bytearray(nonce), pt, ad)
+        assert ct2 == ct
+        computed_pt2 = aesgcm2.decrypt(bytearray(nonce), ct2, ad)
+        assert computed_pt2 == pt

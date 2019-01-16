@@ -20,7 +20,7 @@ class ChaCha20Poly1305(object):
                 "ChaCha20Poly1305 is not supported by this version of OpenSSL",
                 exceptions._Reasons.UNSUPPORTED_CIPHER
             )
-        utils._check_bytes("key", key)
+        utils._check_byteslike("key", key)
 
         if len(key) != 32:
             raise ValueError("ChaCha20Poly1305 key must be 32 bytes.")
@@ -56,7 +56,7 @@ class ChaCha20Poly1305(object):
         )
 
     def _check_params(self, nonce, data, associated_data):
-        utils._check_bytes("nonce", nonce)
+        utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
         if len(nonce) != 12:
@@ -67,7 +67,7 @@ class AESCCM(object):
     _MAX_SIZE = 2 ** 32
 
     def __init__(self, key, tag_length=16):
-        utils._check_bytes("key", key)
+        utils._check_byteslike("key", key)
         if len(key) not in (16, 24, 32):
             raise ValueError("AESCCM key must be 128, 192, or 256 bits.")
 
@@ -129,7 +129,7 @@ class AESCCM(object):
             raise ValueError("Nonce too long for data")
 
     def _check_params(self, nonce, data, associated_data):
-        utils._check_bytes("nonce", nonce)
+        utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
         if not 7 <= len(nonce) <= 13:
@@ -140,7 +140,7 @@ class AESGCM(object):
     _MAX_SIZE = 2 ** 32
 
     def __init__(self, key):
-        utils._check_bytes("key", key)
+        utils._check_byteslike("key", key)
         if len(key) not in (16, 24, 32):
             raise ValueError("AESGCM key must be 128, 192, or 256 bits.")
 
@@ -181,7 +181,7 @@ class AESGCM(object):
         )
 
     def _check_params(self, nonce, data, associated_data):
-        utils._check_bytes("nonce", nonce)
+        utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
         if len(nonce) == 0:

@@ -18,7 +18,8 @@ also support providing integrity for associated data which is not encrypted.
     It is a stream cipher combined with a MAC that offers strong integrity
     guarantees.
 
-    :param bytes key: A 32-byte key. This **must** be kept secret.
+    :param key: A 32-byte key. This **must** be kept secret.
+    :type key: :term:`bytes-like`
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
         OpenSSL does not support ChaCha20Poly1305.
@@ -53,8 +54,8 @@ also support providing integrity for associated data which is not encrypted.
         ``associated_data``.  The output of this can be passed directly
         to the ``decrypt`` method.
 
-        :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
-            key.
+        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
@@ -69,8 +70,9 @@ also support providing integrity for associated data which is not encrypted.
         called encrypt with ``associated_data`` you must pass the same
         ``associated_data`` in decrypt or the integrity check will fail.
 
-        :param bytes nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
+        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to decrypt (with tag appended).
         :param bytes associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
@@ -88,7 +90,8 @@ also support providing integrity for associated data which is not encrypted.
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
     cipher utilizing Galois Counter Mode (GCM).
 
-    :param bytes key: A 128, 192, or 256-bit key. This **must** be kept secret.
+    :param key: A 128, 192, or 256-bit key. This **must** be kept secret.
+    :type key: :term:`bytes-like`
 
     .. doctest::
 
@@ -123,9 +126,10 @@ also support providing integrity for associated data which is not encrypted.
         authenticating the ``associated_data``.  The output of this can be
         passed directly to the ``decrypt`` method.
 
-        :param bytes nonce: NIST `recommends a 96-bit IV length`_ for best
+        :param nonce: NIST `recommends a 96-bit IV length`_ for best
             performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
@@ -139,9 +143,10 @@ also support providing integrity for associated data which is not encrypted.
         called encrypt with ``associated_data`` you must pass the same
         ``associated_data`` in decrypt or the integrity check will fail.
 
-        :param bytes nonce: NIST `recommends a 96-bit IV length`_ for best
+        :param nonce: NIST `recommends a 96-bit IV length`_ for best
             performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to decrypt (with tag appended).
         :param bytes associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
@@ -165,7 +170,8 @@ also support providing integrity for associated data which is not encrypted.
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
     cipher utilizing Counter with CBC-MAC (CCM) (specified in :rfc:`3610`).
 
-    :param bytes key: A 128, 192, or 256-bit key. This **must** be kept secret.
+    :param key: A 128, 192, or 256-bit key. This **must** be kept secret.
+    :type key: :term:`bytes-like`
     :param int tag_length: The length of the authentication tag. This
         defaults to 16 bytes and it is **strongly** recommended that you
         do not make it shorter unless absolutely necessary. Valid tag
@@ -207,11 +213,12 @@ also support providing integrity for associated data which is not encrypted.
         authenticating the ``associated_data``.  The output of this can be
         passed directly to the ``decrypt`` method.
 
-        :param bytes nonce: A value of between 7 and 13 bytes. The maximum
+        :param nonce: A value of between 7 and 13 bytes. The maximum
             length is determined by the length of the ciphertext you are
             encrypting and must satisfy the condition:
             ``len(data) < 2 ** (8 * (15 - len(nonce)))``
             **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
@@ -225,9 +232,10 @@ also support providing integrity for associated data which is not encrypted.
         called encrypt with ``associated_data`` you must pass the same
         ``associated_data`` in decrypt or the integrity check will fail.
 
-        :param bytes nonce: A value of between 7 and 13 bytes. This
+        :param nonce: A value of between 7 and 13 bytes. This
             is the same value used when you originally called encrypt.
             **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
         :param bytes data: The data to decrypt (with tag appended).
         :param bytes associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
