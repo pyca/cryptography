@@ -68,7 +68,8 @@ Key interfaces
 
     .. classmethod:: from_private_bytes(data)
 
-        :param bytes data: 56 byte private key.
+        :param data: 56 byte private key.
+        :type data: :term:`bytes-like`
 
         :returns: :class:`X448PrivateKey`
 

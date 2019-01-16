@@ -218,3 +218,15 @@ class TestX448Exchange(object):
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.Raw
             )
+
+    def test_buffer_protocol(self, backend):
+        private_bytes = binascii.unhexlify(
+            b"9a8f4925d1519f5775cf46b04b5800d4ee9ee8bae8bc5565d498c28d"
+            b"d9c9baf574a9419744897391006382a6f127ab1d9ac2d8c0a598726b"
+        )
+        key = X448PrivateKey.from_private_bytes(bytearray(private_bytes))
+        assert key.private_bytes(
+            serialization.Encoding.Raw,
+            serialization.PrivateFormat.Raw,
+            serialization.NoEncryption()
+        ) == private_bytes
