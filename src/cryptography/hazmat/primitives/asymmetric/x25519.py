@@ -49,6 +49,15 @@ class X25519PrivateKey(object):
     @classmethod
     def from_private_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+        if not backend.x25519_supported():
+            raise UnsupportedAlgorithm(
+                "X25519 is not supported by this version of OpenSSL.",
+                _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
+            )
+
+        if len(data) != 32:
+            raise ValueError("An X25519 private key is 32 bytes long")
+
         return backend.x25519_load_private_bytes(data)
 
     @abc.abstractmethod

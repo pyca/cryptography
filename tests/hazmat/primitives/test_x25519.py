@@ -32,6 +32,9 @@ def test_x25519_unsupported(backend):
         X25519PublicKey.from_public_bytes(b"0" * 32)
 
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
+        X25519PublicKey.from_private_bytes(b"0" * 32)
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X25519PrivateKey.generate()
 
 
@@ -165,6 +168,13 @@ class TestX25519Exchange(object):
 
         with pytest.raises(ValueError):
             X25519PublicKey.from_public_bytes(b"a" * 33)
+
+    def test_invalid_length_from_private_bytes(self, backend):
+        with pytest.raises(ValueError):
+            X25519PrivateKey.from_private_bytes(b"a" * 31)
+
+        with pytest.raises(ValueError):
+            X25519PrivateKey.from_private_bytes(b"a" * 33)
 
     def test_invalid_private_bytes(self, backend):
         key = X25519PrivateKey.generate()
