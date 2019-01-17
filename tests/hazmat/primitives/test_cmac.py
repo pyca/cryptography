@@ -183,6 +183,19 @@ class TestCMAC(object):
         copy_cmac = cmac.copy()
         assert cmac.finalize() == copy_cmac.finalize()
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cmac_algorithm_supported(
+            AES(fake_key)),
+        skip_message="Does not support CMAC."
+    )
+    def test_buffer_protocol(self, backend):
+        key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
+        cmac = CMAC(AES(key), backend)
+        cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
+        assert cmac.finalize() == binascii.unhexlify(
+            b"a21e6e647bfeaf5ca0a5e1bcd957dfad"
+        )
+
 
 def test_invalid_backend():
     key = b"2b7e151628aed2a6abf7158809cf4f3c"
