@@ -171,6 +171,21 @@ class TestHKDF(object):
 
         assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
 
+    def test_buffer_protocol(self, backend):
+        vector = load_vectors_from_file(
+            os.path.join("KDF", "hkdf-generated.txt"), load_nist_vectors
+        )[0]
+        hkdf = HKDF(
+            hashes.SHA256(),
+            int(vector["l"]),
+            salt=vector["salt"],
+            info=vector["info"],
+            backend=backend
+        )
+        ikm = bytearray(binascii.unhexlify(vector["ikm"]))
+
+        assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
+
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFExpand(object):
@@ -178,6 +193,19 @@ class TestHKDFExpand(object):
         prk = binascii.unhexlify(
             b"077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5"
         )
+
+        okm = (b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c"
+               b"5bf34007208d5b887185865")
+
+        info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
+
+        assert binascii.hexlify(hkdf.derive(prk)) == okm
+
+    def test_buffer_protocol(self, backend):
+        prk = bytearray(binascii.unhexlify(
+            b"077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5"
+        ))
 
         okm = (b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c"
                b"5bf34007208d5b887185865")
