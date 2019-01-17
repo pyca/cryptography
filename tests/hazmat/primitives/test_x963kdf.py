@@ -45,6 +45,17 @@ class TestX963KDF(object):
 
         assert xkdf.derive(key) == derivedkey
 
+    def test_buffer_protocol(self, backend):
+        key = bytearray(binascii.unhexlify(
+            b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
+        ))
+
+        derivedkey = binascii.unhexlify(b"443024c3dae66b95e6f5670601558f71")
+
+        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+
+        assert xkdf.derive(key) == derivedkey
+
     def test_verify(self, backend):
         key = binascii.unhexlify(
             b"22518b10e70f2a3f243810ae3254139efbee04aa57c7af7d"
