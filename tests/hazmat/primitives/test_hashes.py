@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
+
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
@@ -167,3 +169,13 @@ def test_invalid_backend():
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         hashes.Hash(hashes.SHA1(), pretend_backend)
+
+
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+def test_buffer_protocol_hash(backend):
+    data = binascii.unhexlify(b"b4190e")
+    h = hashes.Hash(hashes.SHA256(), backend)
+    h.update(bytearray(data))
+    assert h.finalize() == binascii.unhexlify(
+        b"dff2e73091f6c05e528896c4c831b9448653dc2ff043528f6769437bc7b975c2"
+    )
