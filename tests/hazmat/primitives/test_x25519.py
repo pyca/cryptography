@@ -258,3 +258,12 @@ class TestX25519Exchange(object):
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
         assert isinstance(loaded_key, X25519PrivateKey)
+
+    def test_buffer_protocol(self, backend):
+        private_bytes = bytearray(os.urandom(32))
+        key = X25519PrivateKey.from_private_bytes(private_bytes)
+        assert key.private_bytes(
+            serialization.Encoding.Raw,
+            serialization.PrivateFormat.Raw,
+            serialization.NoEncryption()
+        ) == private_bytes
