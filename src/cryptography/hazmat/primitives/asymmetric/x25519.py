@@ -22,9 +22,6 @@ class X25519PublicKey(object):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
 
-        if len(data) != 32:
-            raise ValueError("An X25519 public key is 32 bytes long")
-
         return backend.x25519_load_public_bytes(data)
 
     @abc.abstractmethod
@@ -54,9 +51,6 @@ class X25519PrivateKey(object):
                 "X25519 is not supported by this version of OpenSSL.",
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
-
-        if len(data) != 32:
-            raise ValueError("An X25519 private key is 32 bytes long")
 
         return backend.x25519_load_private_bytes(data)
 

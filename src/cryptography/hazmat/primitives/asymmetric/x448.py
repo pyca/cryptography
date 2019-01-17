@@ -22,9 +22,6 @@ class X448PublicKey(object):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
 
-        if len(data) != 56:
-            raise ValueError("An X448 public key is 56 bytes long")
-
         return backend.x448_load_public_bytes(data)
 
     @abc.abstractmethod
@@ -54,9 +51,6 @@ class X448PrivateKey(object):
                 "X448 is not supported by this version of OpenSSL.",
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
-
-        if len(data) != 56:
-            raise ValueError("An X448 private key is 56 bytes long")
 
         return backend.x448_load_private_bytes(data)
 

@@ -2083,6 +2083,9 @@ class Backend(object):
     def x25519_load_public_bytes(self, data):
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
         # switch this to EVP_PKEY_new_raw_public_key
+        if len(data) != 32:
+            raise ValueError("An X25519 public key is 32 bytes long")
+
         evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
         backend.openssl_assert(res == 1)
@@ -2108,6 +2111,9 @@ class Backend(object):
         # Of course there's a bit more complexity. In reality OCTET STRING
         # contains an OCTET STRING of length 32! So the last two bytes here
         # are \x04\x20, which is an OCTET STRING of length 32.
+        if len(data) != 32:
+            raise ValueError("An X25519 private key is 32 bytes long")
+
         pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
         bio = self._bytes_to_bio(pkcs8_prefix + data)
         evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
@@ -2139,6 +2145,9 @@ class Backend(object):
         return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 
     def x448_load_public_bytes(self, data):
+        if len(data) != 56:
+            raise ValueError("An X448 public key is 56 bytes long")
+
         evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
             self._lib.NID_X448, self._ffi.NULL, data, len(data)
         )
@@ -2147,6 +2156,9 @@ class Backend(object):
         return _X448PublicKey(self, evp_pkey)
 
     def x448_load_private_bytes(self, data):
+        if len(data) != 56:
+            raise ValueError("An X448 private key is 56 bytes long")
+
         data_ptr = self._ffi.from_buffer(data)
         evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
             self._lib.NID_X448, self._ffi.NULL, data_ptr, len(data)
