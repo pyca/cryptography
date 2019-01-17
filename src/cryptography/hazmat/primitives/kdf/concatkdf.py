@@ -32,7 +32,7 @@ def _common_args_checks(algorithm, length, otherinfo):
 
 
 def _concatkdf_derive(key_material, length, auxfn, otherinfo):
-    utils._check_bytes("key_material", key_material)
+    utils._check_byteslike("key_material", key_material)
     output = [b""]
     outlen = 0
     counter = 1

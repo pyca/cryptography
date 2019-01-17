@@ -375,7 +375,8 @@ Different KDFs are suitable for different tasks such as:
 
     .. method:: derive(key_material)
 
-        :param bytes key_material: The input key material.
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
         :return bytes: The derived key.
         :raises TypeError: This exception is raised if ``key_material`` is
                             not ``bytes``.
