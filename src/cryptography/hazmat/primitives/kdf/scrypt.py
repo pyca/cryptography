@@ -52,7 +52,7 @@ class Scrypt(object):
             raise AlreadyFinalized("Scrypt instances can only be used once.")
         self._used = True
 
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         return self._backend.derive_scrypt(
             key_material, self._salt, self._length, self._n, self._r, self._p
         )

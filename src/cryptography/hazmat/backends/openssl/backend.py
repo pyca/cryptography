@@ -2181,8 +2181,9 @@ class Backend(object):
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
+        key_material_ptr = self._ffi.from_buffer(key_material)
         res = self._lib.EVP_PBE_scrypt(
-            key_material, len(key_material), salt, len(salt), n, r, p,
+            key_material_ptr, len(key_material), salt, len(salt), n, r, p,
             scrypt._MEM_LIMIT, buf, length
         )
         if res != 1:

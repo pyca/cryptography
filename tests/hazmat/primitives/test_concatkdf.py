@@ -52,6 +52,22 @@ class TestConcatKDFHash(object):
 
         assert ckdf.derive(prk) == okm
 
+    def test_buffer_protocol(self, backend):
+        prk = binascii.unhexlify(
+            b"52169af5c485dcc2321eb8d26d5efa21fb9b93c98e38412ee2484cf14f0d0d23"
+        )
+
+        okm = binascii.unhexlify(b"1c3bc9e7c4547c5191c0d478cccaed55")
+
+        oinfo = binascii.unhexlify(
+            b"a1b2c3d4e53728157e634612c12d6d5223e204aeea4341565369647bd184bcd2"
+            b"46f72971f292badaa2fe4124612cba"
+        )
+
+        ckdf = ConcatKDFHash(hashes.SHA256(), 16, oinfo, backend)
+
+        assert ckdf.derive(bytearray(prk)) == okm
+
     def test_verify(self, backend):
         prk = binascii.unhexlify(
             b"52169af5c485dcc2321eb8d26d5efa21fb9b93c98e38412ee2484cf14f0d0d23"
@@ -157,6 +173,25 @@ class TestConcatKDFHMAC(object):
         ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, oinfo, backend)
 
         assert ckdf.derive(prk) == okm
+
+    def test_buffer_protocol(self, backend):
+        prk = binascii.unhexlify(
+            b"013951627c1dea63ea2d7702dd24e963eef5faac6b4af7e4"
+            b"b831cde499dff1ce45f6179f741c728aa733583b02409208"
+            b"8f0af7fce1d045edbc5790931e8d5ca79c73"
+        )
+
+        okm = binascii.unhexlify(b"64ce901db10d558661f10b6836a122a7"
+                                 b"605323ce2f39bf27eaaac8b34cf89f2f")
+
+        oinfo = binascii.unhexlify(
+            b"a1b2c3d4e55e600be5f367e0e8a465f4bf2704db00c9325c"
+            b"9fbd216d12b49160b2ae5157650f43415653696421e68e"
+        )
+
+        ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, oinfo, backend)
+
+        assert ckdf.derive(bytearray(prk)) == okm
 
     def test_derive_explicit_salt(self, backend):
         prk = binascii.unhexlify(

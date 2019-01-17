@@ -108,6 +108,19 @@ class TestScrypt(object):
         with pytest.raises(TypeError):
             scrypt.derive(password)
 
+    def test_buffer_protocol(self, backend):
+        password = bytearray(b"password")
+        work_factor = 256
+        block_size = 8
+        parallelization_factor = 16
+        length = 10
+        salt = b"NaCl"
+
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
+
+        assert scrypt.derive(password) == b'\xf4\x92\x86\xb2\x06\x0c\x848W\x87'
+
     @pytest.mark.parametrize("params", vectors)
     def test_verify(self, backend, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)

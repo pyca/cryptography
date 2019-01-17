@@ -46,7 +46,7 @@ class X963KDF(object):
         if self._used:
             raise AlreadyFinalized
         self._used = True
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         output = [b""]
         outlen = 0
         counter = 1
