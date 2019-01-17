@@ -9,7 +9,7 @@ import pytest
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation, KBKDFHMAC, Mode
@@ -19,25 +19,26 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestKBKDFHMAC(object):
-    def test_invalid_key(self):
+    def test_invalid_key(self, backend):
         kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
 
         key = kdf.derive(b"material")
 
         kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
 
         with pytest.raises(InvalidKey):
             kdf.verify(b"material2", key)
 
-    def test_already_finalized(self):
+    def test_already_finalized(self, backend):
         kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
 
         kdf.derive(b'material')
 
@@ -46,7 +47,7 @@ class TestKBKDFHMAC(object):
 
         kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
 
         key = kdf.derive(b'material')
 
@@ -55,97 +56,95 @@ class TestKBKDFHMAC(object):
 
         kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
         kdf.verify(b'material', key)
 
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"material", key)
 
-    def test_key_length(self):
+    def test_key_length(self, backend):
         kdf = KBKDFHMAC(hashes.SHA1(), Mode.CounterMode, 85899345920, 4, 4,
                         CounterLocation.BeforeFixed, b'label', b'context',
-                        None, backend=default_backend())
+                        None, backend=backend)
 
         with pytest.raises(ValueError):
             kdf.derive(b'material')
 
-    def test_rlen(self):
+    def test_rlen(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 5, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_r_type(self):
+    def test_r_type(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA1(), Mode.CounterMode, 32, b'r', 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_l_type(self):
+    def test_l_type(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA1(), Mode.CounterMode, 32, 4, b'l',
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_l(self):
+    def test_l(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(hashes.SHA1(), Mode.CounterMode, 32, 4, None,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_unsupported_mode(self):
+    def test_unsupported_mode(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA256(), None, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_unsupported_location(self):
+    def test_unsupported_location(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                       None, b'label', b'context', None,
-                      backend=default_backend())
+                      backend=backend)
 
-    def test_unsupported_parameters(self):
+    def test_unsupported_parameters(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      b'fixed', backend=default_backend())
+                      b'fixed', backend=backend)
 
-    def test_unsupported_hash(self):
+    def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(object(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_unsupported_algorithm(self):
+    def test_unsupported_algorithm(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(DummyHashAlgorithm(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_invalid_backend(self):
-        mock_backend = object
-
+    def test_invalid_backend(self, backend):
         with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', b'context',
-                      None, backend=mock_backend())
+                      None, backend=object())
 
-    def test_unicode_error_label(self):
+    def test_unicode_error_label(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, u'label', b'context',
-                      backend=default_backend())
+                      backend=backend)
 
-    def test_unicode_error_context(self):
+    def test_unicode_error_context(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                       CounterLocation.BeforeFixed, b'label', u'context',
-                      None, backend=default_backend())
+                      None, backend=backend)
 
-    def test_unicode_error_key_material(self):
+    def test_unicode_error_key_material(self, backend):
         with pytest.raises(TypeError):
             kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 32, 4, 4,
                             CounterLocation.BeforeFixed, b'label',
-                            b'context', None, backend=default_backend())
+                            b'context', None, backend=backend)
             kdf.derive(u'material')
