@@ -28,7 +28,10 @@ from ...utils import (
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x448_unsupported(backend):
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
-        X448PublicKey.from_public_bytes(b"0" * 32)
+        X448PublicKey.from_public_bytes(b"0" * 56)
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
+        X448PrivateKey.from_private_bytes(b"0" * 56)
 
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X448PrivateKey.generate()
@@ -175,6 +178,13 @@ class TestX448Exchange(object):
 
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(b"a" * 57)
+
+    def test_invalid_length_from_private_bytes(self, backend):
+        with pytest.raises(ValueError):
+            X448PrivateKey.from_private_bytes(b"a" * 55)
+
+        with pytest.raises(ValueError):
+            X448PrivateKey.from_private_bytes(b"a" * 57)
 
     def test_invalid_private_bytes(self, backend):
         key = X448PrivateKey.generate()
