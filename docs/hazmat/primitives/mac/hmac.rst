@@ -70,7 +70,8 @@ of a message.
 
     .. method:: update(msg)
 
-        :param bytes msg: The bytes to hash and authenticate.
+        :param msg: The bytes to hash and authenticate.
+        :type msg: :term:`bytes-like`
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises TypeError: This exception is raised if ``msg`` is not ``bytes``.
 

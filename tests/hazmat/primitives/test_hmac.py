@@ -84,7 +84,7 @@ class TestHMAC(object):
     def test_buffer_protocol(self, backend):
         key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
         h = hmac.HMAC(key, hashes.SHA256(), backend)
-        h.update(b"6bc1bee22e409f96e93d7e117393172a")
+        h.update(bytearray(b"6bc1bee22e409f96e93d7e117393172a"))
         assert h.finalize() == binascii.unhexlify(
             b"a1bf7169c56a501c6585190ff4f07cad6e492a3ee187c0372614fb444b9fc3f0"
         )

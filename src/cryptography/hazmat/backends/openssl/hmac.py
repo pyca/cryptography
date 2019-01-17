@@ -56,7 +56,8 @@ class _HMACContext(object):
         )
 
     def update(self, data):
-        res = self._backend._lib.HMAC_Update(self._ctx, data, len(data))
+        data_ptr = self._backend._ffi.from_buffer(data)
+        res = self._backend._lib.HMAC_Update(self._ctx, data_ptr, len(data))
         self._backend.openssl_assert(res != 0)
 
     def finalize(self):
