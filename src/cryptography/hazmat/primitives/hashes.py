@@ -82,7 +82,7 @@ class Hash(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        utils._check_bytes("data", data)
+        utils._check_byteslike("data", data)
         self._ctx.update(data)
 
     def copy(self):
