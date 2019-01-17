@@ -57,6 +57,11 @@ class TestPBKDF2HMAC(object):
         with pytest.raises(TypeError):
             kdf.derive(u"unicode here")
 
+    def test_buffer_protocol(self, backend):
+        kdf = PBKDF2HMAC(hashes.SHA1(), 10, b"salt", 10, default_backend())
+        data = bytearray(b"data")
+        assert kdf.derive(data) == b"\xe9n\xaa\x81\xbbt\xa4\xf6\x08\xce"
+
 
 def test_invalid_backend():
     pretend_backend = object()

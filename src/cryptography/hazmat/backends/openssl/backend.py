@@ -297,8 +297,9 @@ class Backend(object):
                            key_material):
         buf = self._ffi.new("unsigned char[]", length)
         evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        key_material_ptr = self._ffi.from_buffer(key_material)
         res = self._lib.PKCS5_PBKDF2_HMAC(
-            key_material,
+            key_material_ptr,
             len(key_material),
             salt,
             len(salt),

@@ -41,7 +41,7 @@ class PBKDF2HMAC(object):
             raise AlreadyFinalized("PBKDF2 instances can only be used once.")
         self._used = True
 
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         return self._backend.derive_pbkdf2_hmac(
             self._algorithm,
             self._length,

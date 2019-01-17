@@ -43,7 +43,7 @@ class HKDF(object):
         return h.finalize()
 
     def derive(self, key_material):
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         return self._hkdf_expand.derive(self._extract(key_material))
 
     def verify(self, key_material, expected_key):
@@ -98,7 +98,7 @@ class HKDFExpand(object):
         return b"".join(output)[:self._length]
 
     def derive(self, key_material):
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         if self._used:
             raise AlreadyFinalized
 

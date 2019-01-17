@@ -92,8 +92,9 @@ Different KDFs are suitable for different tasks such as:
 
     .. method:: derive(key_material)
 
-        :param bytes key_material: The input key material. For PBKDF2 this
+        :param key_material: The input key material. For PBKDF2 this
             should be a password.
+        :type key_material: :term:`bytes-like`
         :return bytes: the derived key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive` or
@@ -199,7 +200,8 @@ Different KDFs are suitable for different tasks such as:
 
     .. method:: derive(key_material)
 
-        :param bytes key_material: The input key material.
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
         :return bytes: The derived key.
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
