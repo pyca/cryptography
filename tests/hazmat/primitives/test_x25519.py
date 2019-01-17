@@ -32,7 +32,7 @@ def test_x25519_unsupported(backend):
         X25519PublicKey.from_public_bytes(b"0" * 32)
 
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
-        X25519PublicKey.from_private_bytes(b"0" * 32)
+        X25519PrivateKey.from_private_bytes(b"0" * 32)
 
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X25519PrivateKey.generate()
