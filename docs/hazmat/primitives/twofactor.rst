@@ -41,9 +41,10 @@ codes (HMAC).
         >>> hotp_value = hotp.generate(0)
         >>> hotp.verify(hotp_value, 0)
 
-    :param bytes key: Per-user secret key. This value must be kept secret
-                      and be at least 128 :term:`bits`. It is recommended that
-                      the key be 160 bits.
+    :param key: Per-user secret key. This value must be kept secret
+                and be at least 128 :term:`bits`. It is recommended that
+                the key be 160 bits.
+    :type key: :term:`bytes-like`
     :param int length: Length of generated one time password as ``int``.
     :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
@@ -163,9 +164,10 @@ similar to the following code.
         >>> totp_value = totp.generate(time_value)
         >>> totp.verify(totp_value, time_value)
 
-    :param bytes key: Per-user secret key. This value must be kept secret
-                      and be at least 128 :term:`bits`. It is recommended that the
-                      key be 160 bits.
+    :param key: Per-user secret key. This value must be kept secret
+                and be at least 128 :term:`bits`. It is recommended that the
+                key be 160 bits.
+    :type key: :term:`bytes-like`
     :param int length: Length of generated one time password as ``int``.
     :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`

@@ -109,6 +109,11 @@ class TestHOTP(object):
             "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
             "&counter=1")
 
+    def test_buffer_protocol(self, backend):
+        key = bytearray(b"a long key with lots of entropy goes here")
+        hotp = HOTP(key, 6, SHA1(), backend)
+        assert hotp.generate(10) == b"559978"
+
 
 def test_invalid_backend():
     secret = b"12345678901234567890"
