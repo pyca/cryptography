@@ -34,6 +34,55 @@ from .utils import (
 from ...utils import raises_unsupported_algorithm
 
 
+class TestBufferProtocolSerialization(object):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["DER_Serialization", "enc-rsa-pkcs8.der"], bytearray(b"foobar")),
+            (["DER_Serialization", "enc2-rsa-pkcs8.der"], bytearray(b"baz")),
+            (["DER_Serialization", "unenc-rsa-pkcs8.der"], None),
+            (["DER_Serialization", "testrsa.der"], None),
+        ]
+    )
+    def test_load_der_rsa_private_key(self, key_path, password, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda derfile: derfile.read(), mode="rb"
+        )
+        key = load_der_private_key(bytearray(data), password, backend)
+        assert key
+        assert isinstance(key, rsa.RSAPrivateKey)
+        _check_rsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (
+                ["PEM_Serialization", "rsa_private_key.pem"],
+                bytearray(b"123456")
+            ),
+            (["PKCS8", "unenc-rsa-pkcs8.pem"], None),
+            (["PKCS8", "enc-rsa-pkcs8.pem"], bytearray(b"foobar")),
+            (["PKCS8", "enc2-rsa-pkcs8.pem"], bytearray(b"baz")),
+            (
+                ["Traditional_OpenSSL_Serialization", "key1.pem"],
+                bytearray(b"123456")
+            ),
+        ]
+    )
+    def test_load_pem_rsa_private_key(self, key_path, password, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        key = load_pem_private_key(bytearray(data), password, backend)
+        assert key
+        assert isinstance(key, rsa.RSAPrivateKey)
+        _check_rsa_private_numbers(key.private_numbers())
+
+
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDERSerialization(object):
     @pytest.mark.requires_backend_interface(interface=RSABackend)

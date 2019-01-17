@@ -1224,11 +1224,9 @@ class Backend(object):
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
-        if password is not None:
-            utils._check_byteslike("password", password)
-
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         if password is not None:
+            utils._check_byteslike("password", password)
             password_ptr = self._ffi.from_buffer(password)
             userdata.password = password_ptr
             userdata.length = len(password)
