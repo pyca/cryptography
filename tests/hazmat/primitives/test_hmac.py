@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
+
 import pytest
 
 from cryptography.exceptions import (
@@ -78,6 +80,14 @@ class TestHMAC(object):
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             hmac.HMAC(b"key", DummyHashAlgorithm(), backend)
+
+    def test_buffer_protocol(self, backend):
+        key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
+        h = hmac.HMAC(key, hashes.SHA256(), backend)
+        h.update(b"6bc1bee22e409f96e93d7e117393172a")
+        assert h.finalize() == binascii.unhexlify(
+            b"a1bf7169c56a501c6585190ff4f07cad6e492a3ee187c0372614fb444b9fc3f0"
+        )
 
 
 def test_invalid_backend():

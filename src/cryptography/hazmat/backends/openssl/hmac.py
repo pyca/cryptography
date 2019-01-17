@@ -32,8 +32,9 @@ class _HMACContext(object):
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )
+            key_ptr = self._backend._ffi.from_buffer(key)
             res = self._backend._lib.HMAC_Init_ex(
-                ctx, key, len(key), evp_md, self._backend._ffi.NULL
+                ctx, key_ptr, len(key), evp_md, self._backend._ffi.NULL
             )
             self._backend.openssl_assert(res != 0)
 
