@@ -139,6 +139,12 @@ class TestTOTP(object):
             "DGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=World"
             "&period=30")
 
+    def test_buffer_protocol(self, backend):
+        key = bytearray(b"a long key with lots of entropy goes here")
+        totp = TOTP(key, 8, hashes.SHA512(), 30, backend)
+        time = 60
+        assert totp.generate(time) == b"53049576"
+
 
 def test_invalid_backend():
     secret = b"12345678901234567890"
