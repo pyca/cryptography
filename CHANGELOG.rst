@@ -31,8 +31,8 @@ Changelog
 * Added support for :class:`~cryptography.x509.IssuingDistributionPoint`.
 * Added ``rfc4514_string()`` method to
   :meth:`x509.Name <cryptography.x509.Name.rfc4514_string>`,
-  :meth:`x509.RelativeDistinguishedName <cryptography.x509.RelativeDistinguishedName.rfc4514_string>`,
-  and
+  :meth:`x509.RelativeDistinguishedName
+  <cryptography.x509.RelativeDistinguishedName.rfc4514_string>`, and
   :meth:`x509.NameAttribute <cryptography.x509.NameAttribute.rfc4514_string>`
   to format the name or component an :rfc:`4514` Distinguished Name string.
 * Added
