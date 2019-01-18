@@ -1250,7 +1250,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         .. versionadded:: 2.5
 
-        :return str: Format the given name as a `RFC 4514`_ Distinguished Name
+        :return str: Format the given name as a :rfc:`4514` Distinguished Name
             string, for example ``CN=mydomain.com,O=My Org,C=US``.
 
 
@@ -1291,7 +1291,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         .. versionadded:: 2.5
 
-        :return str: Format the given attribute as a `RFC 4514`_ Distinguished
+        :return str: Format the given attribute as a :rfc:`4514` Distinguished
             Name string.
 
 
@@ -1314,7 +1314,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         .. versionadded:: 2.5
 
-        :return str: Format the given RDN set as a `RFC 4514`_ Distinguished
+        :return str: Format the given RDN set as a :rfc:`4514` Distinguished
             Name string.
 
 
@@ -1331,7 +1331,6 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
-.. _`RFC 4514`: https://tools.ietf.org/html/rfc4514
 
 .. _general_name_classes:
 
@@ -2794,7 +2793,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.2.840.113549.1.1.10"``. This is
         signed by an RSA key using the Probabilistic Signature Scheme (PSS)
-        padding from RFC 4055. The hash function and padding are defined by
+        padding from :rfc:`4055`. The hash function and padding are defined by
         signature algorithm parameters.
 
     .. attribute:: ECDSA_WITH_SHA1

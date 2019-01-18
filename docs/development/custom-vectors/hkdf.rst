@@ -2,7 +2,7 @@ HKDF vector creation
 ====================
 
 This page documents the code that was used to generate a longer
-HKDF test vector (1200 bytes) than is available in RFC 5869. All
+HKDF test vector (1200 bytes) than is available in :rfc:`5869`. All
 the vectors were generated using OpenSSL and verified with Go.
 
 Creation
