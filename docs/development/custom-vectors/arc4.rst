@@ -9,7 +9,7 @@ Creation
 --------
 
 ``cryptography`` was modified to support ARC4 key lengths not listed
-in rfc:`6229`. Then the following Python script was run to generate the
+in :rfc:`6229`. Then the following Python script was run to generate the
 vector files.
 
 .. literalinclude:: /development/custom-vectors/arc4/generate_arc4.py
