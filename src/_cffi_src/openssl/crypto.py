@@ -12,6 +12,7 @@ TYPES = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS;
 static const long Cryptography_HAS_MEM_FUNCTIONS;
 static const long Cryptography_HAS_OPENSSL_CLEANUP;
+static const long Cryptography_HAS_OPENSSL_INIT_CRYPTO;
 
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
@@ -31,6 +32,10 @@ static const int CRYPTO_LOCK;
 static const int CRYPTO_UNLOCK;
 static const int CRYPTO_READ;
 static const int CRYPTO_LOCK_SSL;
+
+static const int OPENSSL_INIT_ATFORK;
+
+typedef ... OPENSSL_INIT_SETTINGS;
 """
 
 FUNCTIONS = """
@@ -58,6 +63,8 @@ void OPENSSL_free(void *);
 
 /* This was removed in 1.1.0 */
 void CRYPTO_lock(int, int, const char *, int);
+
+int OPENSSL_init_crypto(uint64_t opts, const OPENSSL_INIT_SETTINGS *);
 
 /* Signature changed significantly in 1.1.0, only expose there for sanity */
 int Cryptography_CRYPTO_set_mem_functions(
@@ -93,6 +100,21 @@ CUSTOMIZATIONS = """
 # define OPENSSL_BUILT_ON        SSLEAY_BUILT_ON
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
+#endif
+#ifndef OPENSSL_INIT_ATFORK
+#define OPENSSL_INIT_ATFORK 0x00020000L
+#endif
+#if CRYPTOGRAPHY_IS_LIBRESSL
+typedef void OPENSSL_INIT_SETTINGS;
+#endif
+#if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_110) || \
+    (CRYPTOGRAPHY_IS_LIBRESSL && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER)
+static const long Cryptography_HAS_OPENSSL_INIT_CRYPTO = 0;
+typedef void OPENSSL_INIT_SETTINGS;
+int (*OPENSSL_init_crypto)(uint64_t opts,
+                           const OPENSSL_INIT_SETTINGS *) = NULL;
+#else
+static const long Cryptography_HAS_OPENSSL_INIT_CRYPTO = 1;
 #endif
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;

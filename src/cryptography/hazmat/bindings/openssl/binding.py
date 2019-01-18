@@ -114,8 +114,20 @@ class Binding(object):
         # reliably clear the error queue. Once we clear it here we will
         # error on any subsequent unexpected item in the stack.
         cls.lib.ERR_clear_error()
+        if not cls.lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111:
+            # In OpenSSL 1.1.1 and above the internal RNG can be made forksafe
+            # by calling OPENSSL_INIT_ATFORK to register the proper fork
+            # handlers. In this case we init that and do not activate our
+            # own engine, although we do add it still.
+            result = cls.lib.OPENSSL_init_crypto(
+                cls.lib.OPENSSL_INIT_ATFORK, cls.ffi.NULL
+            )
+            _openssl_assert(cls.lib, result == 1)
+
         cls._osrandom_engine_id = cls.lib.Cryptography_osrandom_engine_id
-        cls._osrandom_engine_name = cls.lib.Cryptography_osrandom_engine_name
+        cls._osrandom_engine_name = (
+            cls.lib.Cryptography_osrandom_engine_name
+        )
         result = cls.lib.Cryptography_add_osrandom_engine()
         _openssl_assert(cls.lib, result in (1, 2))
 

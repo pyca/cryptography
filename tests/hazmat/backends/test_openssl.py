@@ -170,6 +170,10 @@ class TestOpenSSL(object):
         assert backend._bn_to_int(bn) == 0
 
 
+@pytest.mark.skipif(
+    not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111,
+    reason="Requires OpenSSL < 1.1.1",
+)
 class TestOpenSSLRandomEngine(object):
     def setup(self):
         # The default RAND engine is global and shared between
@@ -292,6 +296,15 @@ class TestOpenSSLRandomEngine(object):
         assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
+
+
+@pytest.mark.skipif(
+    backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111,
+    reason="Requires OpenSSL >= 1.1.1",
+)
+def test_default_random_is_not_osrandom():
+    e = backend._lib.ENGINE_get_default_RAND()
+    assert e == backend._ffi.NULL
 
 
 class TestOpenSSLRSA(object):

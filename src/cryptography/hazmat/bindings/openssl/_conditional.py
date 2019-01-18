@@ -301,6 +301,12 @@ def cryptography_has_openssl_cleanup():
     ]
 
 
+def cryptography_has_openssl_init_crypto():
+    return [
+        "OPENSSL_init_crypto",
+    ]
+
+
 def cryptography_has_cipher_details():
     return [
         "SSL_CIPHER_is_aead",
@@ -397,6 +403,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
+    "Cryptography_HAS_OPENSSL_INIT_CRYPTO": (
+        cryptography_has_openssl_init_crypto
+    ),
     "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,

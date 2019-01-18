@@ -111,7 +111,9 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self.activate_osrandom_engine()
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111:
+            # Only activate the osrandom engine by default with OpenSSL < 1.1.1
+            self.activate_osrandom_engine()
         self._dh_types = [self._lib.EVP_PKEY_DH]
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
