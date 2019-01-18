@@ -148,3 +148,11 @@ class TestKBKDFHMAC(object):
                             CounterLocation.BeforeFixed, b'label',
                             b'context', None, backend=backend)
             kdf.derive(u'material')
+
+    def test_buffer_protocol(self, backend):
+        kdf = KBKDFHMAC(hashes.SHA256(), Mode.CounterMode, 10, 4, 4,
+                        CounterLocation.BeforeFixed, b'label', b'context',
+                        None, backend=backend)
+
+        key = kdf.derive(bytearray(b"material"))
+        assert key == b'\xb7\x01\x05\x98\xf5\x1a\x12L\xc7.'

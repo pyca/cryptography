@@ -100,7 +100,7 @@ class KBKDFHMAC(object):
         if self._used:
             raise AlreadyFinalized
 
-        utils._check_bytes("key_material", key_material)
+        utils._check_byteslike("key_material", key_material)
         self._used = True
 
         # inverse floor division (equivalent to ceiling)
