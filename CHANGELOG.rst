@@ -13,14 +13,9 @@ Changelog
   well. If you still need this deprecated path please install cryptography
   with the ``idna`` extra: ``pip install cryptography[idna]``.
 * **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.4.
-* :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
-  and
-  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
-  have been updated to allow :term:`bytes-like` types for both ``data`` and
-  ``password``.
 * Numerous classes and functions have been updated to allow :term:`bytes-like`
-  types for keying material, including symmetric algorithms, AEAD ciphers,
-  KDFs, loading asymmetric keys, and one time password classes.
+  types for keying material and passwords, including symmetric algorithms, AEAD
+  ciphers, KDFs, loading asymmetric keys, and one time password classes.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
   and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
   OpenSSL 1.1.1.
