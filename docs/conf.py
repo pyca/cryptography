@@ -176,7 +176,7 @@ epub_theme = 'epub'
 
 # Retry requests in the linkcheck builder so that we're resillient against
 # transient network errors.
-linkcheck_retries = 5
+linkcheck_retries = 10
 
 linkcheck_ignore = [
     # Small DH key results in a TLS failure on modern OpenSSL
