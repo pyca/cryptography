@@ -29,10 +29,12 @@ Changelog
 * Added initial support for parsing PKCS12 files with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates`.
 * Added support for :class:`~cryptography.x509.IssuingDistributionPoint`.
-* Added `rfc4514_string()` method to :class:`~cryptography.x509.Name`,
-  :class:`~cryptography.x509.RelativeDistinguishedName` and
-  :class:`~cryptography.x509.NameAttribute` to format the name or component as
-  a RFC 4514 Distinguished Name string.
+* Added ``rfc4514_string()`` method to
+  :meth:`~cryptography.x509.Name.rfc4514_string <x509.Name>`,
+  :meth:`~cryptography.x509.RelativeDistinguishedName.rfc4514_string <x509.RelativeDistinguishedName>`
+  and
+  :meth:`~cryptography.x509.NameAttribute.rfc4514_string <x509.NameAttribute>`
+  to format the name or component an :rfc:`4514` Distinguished Name string.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
   which immediately checks if the point is on the curve and supports compressed
