@@ -154,7 +154,7 @@ Key exchange
   Diffie-Hellman parameters and key respectively. The keys were
   generated using OpenSSL following `DHKE`_ guide. When creating the
   parameters we added the `-pkeyopt dh_rfc5114:2` option to use
-  RFC5114 2048 bit DH parameters with 224 bit subgroup.
+  :rfc:`5114` 2048 bit DH parameters with 224 bit subgroup.
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.txt`` contains
   all parameter in text.
   ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.der``,
