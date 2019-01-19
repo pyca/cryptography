@@ -191,8 +191,9 @@ than SHA-2 so at this time most users should choose SHA-2.
 
     SHAKE128 is an extendable output function (XOF) based on the same core
     permutations as SHA3. It allows the caller to obtain an arbitrarily long
-    digest length. The security of the hash, however, does not exceed 128 bits
-    regardless of output length.
+    digest length. Longer lengths, however, do not increase security or
+    collision resistance and lengths shorter than 128 bit (16 bytes) will
+    decrease it.
 
     :param int digest_size: The length of output desired. Must be greater than
         zero.
@@ -205,8 +206,9 @@ than SHA-2 so at this time most users should choose SHA-2.
 
     SHAKE256 is an extendable output function (XOF) based on the same core
     permutations as SHA3. It allows the caller to obtain an arbitrarily long
-    digest length. The security of the hash, however, does not exceed 256 bits
-    regardless of output length.
+    digest length. Longer lengths, however, do not increase security or
+    collision resistance and lengths shorter than 256 bit (32 bytes) will
+    decrease it.
 
     :param int digest_size: The length of output desired. Must be greater than
         zero.

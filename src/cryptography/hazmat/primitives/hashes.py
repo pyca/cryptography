@@ -186,7 +186,7 @@ class SHAKE128(object):
     name = "shake128"
 
     def __init__(self, digest_size):
-        if not isinstance(digest_size, int):
+        if not isinstance(digest_size, six.integer_types):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:
@@ -203,7 +203,7 @@ class SHAKE256(object):
     name = "shake256"
 
     def __init__(self, digest_size):
-        if not isinstance(digest_size, int):
+        if not isinstance(digest_size, six.integer_types):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:
