@@ -97,6 +97,7 @@ static const int NID_sect571r1;
 static const int NID_X25519;
 static const int NID_X448;
 static const int NID_ED25519;
+static const int NID_ED448;
 static const int NID_wap_wsg_idm_ecid_wtls1;
 static const int NID_wap_wsg_idm_ecid_wtls3;
 static const int NID_wap_wsg_idm_ecid_wtls4;
