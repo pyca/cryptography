@@ -57,6 +57,13 @@ class HashContext(object):
         """
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ExtendableOutputFunction(object):
+    """
+    An interface for extendable output functions.
+    """
+
+
 @utils.register_interface(HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend, ctx=None):
@@ -174,9 +181,9 @@ class SHA3_512(object):  # noqa: N801
 
 
 @utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
 class SHAKE128(object):
     name = "shake128"
-    _xof = True
 
     def __init__(self, digest_size):
         if not isinstance(digest_size, int):
@@ -191,9 +198,9 @@ class SHAKE128(object):
 
 
 @utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
 class SHAKE256(object):
     name = "shake256"
-    _xof = True
 
     def __init__(self, digest_size):
         if not isinstance(digest_size, int):

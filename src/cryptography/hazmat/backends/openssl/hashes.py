@@ -54,7 +54,7 @@ class _HashContext(object):
         self._backend.openssl_assert(res != 0)
 
     def finalize(self):
-        if getattr(self.algorithm, "_xof", False):
+        if isinstance(self.algorithm, hashes.ExtendableOutputFunction):
             # extendable output functions use a different finalize
             return self._finalize_xof()
         else:
