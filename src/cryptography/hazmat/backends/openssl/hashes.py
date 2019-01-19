@@ -54,10 +54,25 @@ class _HashContext(object):
         self._backend.openssl_assert(res != 0)
 
     def finalize(self):
+        if isinstance(self.algorithm, hashes.ExtendableOutputFunction):
+            # extendable output functions use a different finalize
+            return self._finalize_xof()
+        else:
+            buf = self._backend._ffi.new("unsigned char[]",
+                                         self._backend._lib.EVP_MAX_MD_SIZE)
+            outlen = self._backend._ffi.new("unsigned int *")
+            res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
+            self._backend.openssl_assert(res != 0)
+            self._backend.openssl_assert(
+                outlen[0] == self.algorithm.digest_size
+            )
+            return self._backend._ffi.buffer(buf)[:outlen[0]]
+
+    def _finalize_xof(self):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     self._backend._lib.EVP_MAX_MD_SIZE)
-        outlen = self._backend._ffi.new("unsigned int *")
-        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
+                                     self.algorithm.digest_size)
+        res = self._backend._lib.EVP_DigestFinalXOF(
+            self._ctx, buf, self.algorithm.digest_size
+        )
         self._backend.openssl_assert(res != 0)
-        self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
-        return self._backend._ffi.buffer(buf)[:outlen[0]]
+        return self._backend._ffi.buffer(buf)[:self.algorithm.digest_size]

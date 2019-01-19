@@ -134,7 +134,7 @@ def load_hash_vectors(vector_data):
             # string as hex 00, which is of course not actually an empty
             # string. So we parse the provided length and catch this edge case.
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
-        elif line.startswith("MD"):
+        elif line.startswith("MD") or line.startswith("Output"):
             md = line.split(" = ")[1]
             # after MD is found the Msg+MD (+ potential key) tuple is complete
             if key is not None:

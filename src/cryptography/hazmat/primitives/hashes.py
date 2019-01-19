@@ -57,6 +57,13 @@ class HashContext(object):
         """
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ExtendableOutputFunction(object):
+    """
+    An interface for extendable output functions.
+    """
+
+
 @utils.register_interface(HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend, ctx=None):
@@ -171,6 +178,40 @@ class SHA3_384(object):  # noqa: N801
 class SHA3_512(object):  # noqa: N801
     name = "sha3-512"
     digest_size = 64
+
+
+@utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
+class SHAKE128(object):
+    name = "shake128"
+
+    def __init__(self, digest_size):
+        if not isinstance(digest_size, six.integer_types):
+            raise TypeError("digest_size must be an integer")
+
+        if digest_size < 1:
+            raise ValueError("digest_size must be a positive integer")
+
+        self._digest_size = digest_size
+
+    digest_size = utils.read_only_property("_digest_size")
+
+
+@utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
+class SHAKE256(object):
+    name = "shake256"
+
+    def __init__(self, digest_size):
+        if not isinstance(digest_size, six.integer_types):
+            raise TypeError("digest_size must be an integer")
+
+        if digest_size < 1:
+            raise ValueError("digest_size must be a positive integer")
+
+        self._digest_size = digest_size
+
+    digest_size = utils.read_only_property("_digest_size")
 
 
 @utils.register_interface(HashAlgorithm)

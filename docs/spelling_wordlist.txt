@@ -41,6 +41,7 @@ Docstrings
 El
 Encodings
 endian
+extendable
 fallback
 Fernet
 fernet
