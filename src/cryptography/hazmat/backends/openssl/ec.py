@@ -276,9 +276,11 @@ class _EllipticCurvePublicKey(object):
         )
 
     def _encode_point(self, format):
-        conversion = self._backend._lib.POINT_CONVERSION_UNCOMPRESSED
         if format is serialization.PublicFormat.CompressedPoint:
             conversion = self._backend._lib.POINT_CONVERSION_COMPRESSED
+        else:
+            assert format is serialization.PublicFormat.UncompressedPoint
+            conversion = self._backend._lib.POINT_CONVERSION_UNCOMPRESSED
 
         group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
         self._backend.openssl_assert(group != self._backend._ffi.NULL)
