@@ -719,9 +719,10 @@ class TestDSASerialization(object):
             (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
             (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
             (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.X962, serialization.PrivateFormat.PKCS8),
         ]
     )
-    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         key = DSA_KEY_1024.private_key(backend)
         with pytest.raises(ValueError):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
@@ -968,15 +969,26 @@ class TestDSAPEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
         [
-            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
-            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
             (
                 serialization.Encoding.Raw,
                 serialization.PublicFormat.SubjectPublicKeyInfo
             ),
-        ]
+            (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
+        ] + list(itertools.product(
+            [
+                serialization.Encoding.Raw,
+                serialization.Encoding.X962,
+                serialization.Encoding.PEM,
+                serialization.Encoding.DER
+            ],
+            [
+                serialization.PublicFormat.Raw,
+                serialization.PublicFormat.UncompressedPoint,
+                serialization.PublicFormat.CompressedPoint
+            ]
+        ))
     )
-    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(ValueError):
             key.public_bytes(encoding, fmt)

@@ -41,6 +41,7 @@ class Encoding(Enum):
     DER = "DER"
     OpenSSH = "OpenSSH"
     Raw = "Raw"
+    X962 = "ANSI X9.62"
 
 
 class PrivateFormat(Enum):
@@ -54,6 +55,8 @@ class PublicFormat(Enum):
     PKCS1 = "Raw PKCS#1"
     OpenSSH = "OpenSSH"
     Raw = "Raw"
+    CompressedPoint = "X9.62 Compressed Point"
+    UncompressedPoint = "X9.62 Uncompressed Point"
 
 
 class ParameterFormat(Enum):

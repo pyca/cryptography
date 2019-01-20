@@ -711,9 +711,10 @@ class TestECSerialization(object):
             (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
             (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
             (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.X962, serialization.PrivateFormat.PKCS8),
         ]
     )
-    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend)
         with pytest.raises(ValueError):
@@ -1001,13 +1002,27 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
 
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
-        [
-            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
-            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
-            (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
-        ]
+        list(itertools.product(
+            [
+                serialization.Encoding.Raw,
+                serialization.Encoding.X962,
+                serialization.Encoding.PEM,
+                serialization.Encoding.DER
+            ],
+            [
+                serialization.PublicFormat.Raw,
+            ]
+        )) + list(itertools.product(
+            [serialization.Encoding.Raw],
+            [
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+                serialization.PublicFormat.PKCS1,
+                serialization.PublicFormat.UncompressedPoint,
+                serialization.PublicFormat.CompressedPoint,
+            ]
+        ))
     )
-    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend).public_key()
         with pytest.raises(ValueError):
@@ -1120,6 +1135,36 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             ec.EllipticCurvePublicKey.from_encoded_point(
                 ec.SECP256R1(), unsupported_type
             )
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "EC", "compressed_points.txt"),
+            load_nist_vectors
+        )
+    )
+    def test_serialize_point(self, vector, backend):
+        curve = {
+            b"SECP256R1": ec.SECP256R1(),
+            b"SECP256K1": ec.SECP256K1(),
+        }[vector["curve"]]
+        point = binascii.unhexlify(vector["point"])
+        key = ec.EllipticCurvePublicKey.from_encoded_point(curve, point)
+        key2 = ec.EllipticCurvePublicKey.from_encoded_point(
+            curve,
+            key.public_bytes(
+                serialization.Encoding.X962,
+                serialization.PublicFormat.UncompressedPoint
+            )
+        )
+        assert key.public_bytes(
+            serialization.Encoding.X962,
+            serialization.PublicFormat.CompressedPoint
+        ) == point
+        assert key2.public_bytes(
+            serialization.Encoding.X962,
+            serialization.PublicFormat.CompressedPoint
+        ) == point
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)

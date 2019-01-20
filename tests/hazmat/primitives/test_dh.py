@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import itertools
 import os
 
 import pytest
@@ -430,9 +431,10 @@ class TestDHPrivateKeySerialization(object):
             (serialization.Encoding.Raw, serialization.PrivateFormat.PKCS8),
             (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
             (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
+            (serialization.Encoding.X962, serialization.PrivateFormat.PKCS8),
         ]
     )
-    def test_private_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
@@ -823,15 +825,26 @@ class TestDHParameterSerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
         [
-            (serialization.Encoding.Raw, serialization.PublicFormat.Raw),
-            (serialization.Encoding.PEM, serialization.PublicFormat.Raw),
             (
                 serialization.Encoding.Raw,
                 serialization.PublicFormat.SubjectPublicKeyInfo
             ),
-        ]
+            (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
+        ] + list(itertools.product(
+            [
+                serialization.Encoding.Raw,
+                serialization.Encoding.X962,
+                serialization.Encoding.PEM,
+                serialization.Encoding.DER
+            ],
+            [
+                serialization.PublicFormat.Raw,
+                serialization.PublicFormat.UncompressedPoint,
+                serialization.PublicFormat.CompressedPoint
+            ]
+        ))
     )
-    def test_public_bytes_rejects_raw(self, encoding, fmt, backend):
+    def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key().public_key()
         with pytest.raises(ValueError):

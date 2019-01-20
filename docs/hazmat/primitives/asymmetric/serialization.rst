@@ -536,6 +536,20 @@ Serialization Formats
         A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
+    .. attribute:: CompressedPoint
+
+        .. versionadded:: 2.5
+
+        A compressed elliptic curve public key as defined in ANSI X9.62 section
+        4.3.6 (as well as `SEC 1 v2.0`_).
+
+    .. attribute:: UncompressedPoint
+
+        .. versionadded:: 2.5
+
+        An uncompressed elliptic curve public key as defined in ANSI X9.62
+        section 4.3.6 (as well as `SEC 1 v2.0`_).
+
 .. class:: ParameterFormat
 
     .. versionadded:: 2.0
@@ -594,6 +608,13 @@ Serialization Encodings
         A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
+    .. attribute:: X962
+
+        .. versionadded:: 2.5
+
+        The format used by elliptic curve point encodings. This is a binary
+        format.
+
 
 Serialization Encryption Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -626,3 +647,4 @@ Serialization Encryption Types
 
 
 .. _`PKCS3`: https://www.emc.com/emc-plus/rsa-labs/standards-initiatives/pkcs-3-diffie-hellman-key-agreement-standar.htm
+.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf

@@ -668,12 +668,20 @@ Key Interfaces
 
     .. method:: public_bytes(encoding, format)
 
-        Allows serialization of the key to bytes. Encoding (
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        Allows serialization of the key data to bytes. When encoding the public
+        key the encodings (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
         format (
         :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`)
-        are chosen to define the exact serialization.
+        are chosen to define the exact serialization. When encoding the point
+        the encoding
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.X962`
+        should be used with the formats (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.UncompressedPoint`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.CompressedPoint`
+        ).
 
         :param encoding: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
@@ -681,7 +689,7 @@ Key Interfaces
         :param format: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
-        :return bytes: Serialized key.
+        :return bytes: Serialized data.
 
     .. method:: verify(signature, data, signature_algorithm)
 
