@@ -359,6 +359,14 @@ class EllipticCurvePublicNumbers(object):
         return backend.load_elliptic_curve_public_numbers(self)
 
     def encode_point(self):
+        warnings.warn(
+            "encode_point has been deprecated on EllipticCurvePublicNumbers"
+            " and will be removed in a future version. Please use "
+            "EllipticCurvePublicKey.public_bytes to obtain both "
+            "compressed and uncompressed point encoding.",
+            utils.DeprecatedIn25,
+            stacklevel=2,
+        )
         # key_size is in bits. Convert to bytes and round up
         byte_length = (self.curve.key_size + 7) // 8
         return (
