@@ -118,6 +118,13 @@ Custom asymmetric vectors
   ``asymmetric/X25519/x25519-pkcs8.der`` contain an unencrypted X25519 key.
 * ``asymmetric/X25519/x25519-pub.pem`` and ``asymmetric/X25519/x25519-pub.der``
   contain an X25519 public key.
+* ``asymmetric/Ed448/ed448-pkcs8-enc.pem`` and
+  ``asymmetric/Ed448/ed448-pkcs8-enc.der`` contain an Ed448 key encrypted
+  with AES 256 CBC with the password ``password``.
+* ``asymmetric/Ed448/ed448-pkcs8.pem`` and
+  ``asymmetric/Ed448/ed448-pkcs8.der`` contain an unencrypted Ed448 key.
+* ``asymmetric/Ed448/ed448-pub.pem`` and ``asymmetric/Ed448/ed448-pub.der``
+  contain an Ed448 public key.
 
 
 Key exchange
