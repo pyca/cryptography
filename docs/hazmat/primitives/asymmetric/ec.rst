@@ -194,6 +194,12 @@ Elliptic Curve Signature Algorithms
 
     .. method:: encode_point()
 
+        .. warning::
+
+            This method is deprecated as of version 2.5. Callers should migrate
+            to using
+            :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`.
+
         .. versionadded:: 1.1
 
         Encodes an elliptic curve point to a byte string as described in

@@ -1885,10 +1885,15 @@ class Backend(object):
                     "Only SECP256R1, SECP384R1, and SECP521R1 curves are "
                     "supported by the SSH public key format"
                 )
+
+            point = key.public_bytes(
+                serialization.Encoding.X962,
+                serialization.PublicFormat.UncompressedPoint
+            )
             return b"ecdsa-sha2-" + curve_name + b" " + base64.b64encode(
                 ssh._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
                 ssh._ssh_write_string(curve_name) +
-                ssh._ssh_write_string(public_numbers.encode_point())
+                ssh._ssh_write_string(point)
             )
 
     def _parameter_bytes(self, encoding, format, cdata):

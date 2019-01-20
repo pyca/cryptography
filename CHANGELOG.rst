@@ -50,7 +50,8 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
   with no arguments has been deprecated.
 * Added support for encoding compressed and uncompressed points via
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`.
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`. Deprecated the previous method
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.encode_point`.
 
 
 .. _v2-4-2:

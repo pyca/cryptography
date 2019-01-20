@@ -35,7 +35,10 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.PKCS1,
         )
     elif isinstance(public_key, EllipticCurvePublicKey):
-        data = public_key.public_numbers().encode_point()
+        data = public_key.public_bytes(
+            serialization.Encoding.X962,
+            serialization.PublicFormat.UncompressedPoint
+        )
     else:
         # This is a very slow way to do this.
         serialized = public_key.public_bytes(

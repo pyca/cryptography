@@ -175,7 +175,8 @@ def test_encode_point():
         16
     )
     pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
-    data = pn.encode_point()
+    with pytest.warns(utils.DeprecatedIn25):
+        data = pn.encode_point()
     assert data == binascii.unhexlify(
         "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
         "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
