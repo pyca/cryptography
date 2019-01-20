@@ -37,6 +37,9 @@ from cryptography.hazmat.backends.openssl.dsa import (
 from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
+from cryptography.hazmat.backends.openssl.ed448 import (
+    _ED448_KEY_SIZE, _Ed448PrivateKey, _Ed448PublicKey
+)
 from cryptography.hazmat.backends.openssl.ed25519 import (
     _ED25519_KEY_SIZE, _Ed25519PrivateKey, _Ed25519PublicKey
 )
@@ -523,6 +526,9 @@ class Backend(object):
         elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
             # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
             return _X25519PrivateKey(self, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
+            # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
+            return _Ed448PrivateKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -563,6 +569,9 @@ class Backend(object):
         elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
             # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
             return _X25519PublicKey(self, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
+            # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.1
+            return _Ed448PublicKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -2231,6 +2240,40 @@ class Backend(object):
     def ed25519_generate_key(self):
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED25519)
         return _Ed25519PrivateKey(self, evp_pkey)
+
+    def ed448_supported(self):
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+
+    def ed448_load_public_bytes(self, data):
+        utils._check_bytes("data", data)
+        if len(data) != _ED448_KEY_SIZE:
+            raise ValueError("An Ed448 public key is 57 bytes long")
+
+        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
+            self._lib.NID_ED448, self._ffi.NULL, data, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed448PublicKey(self, evp_pkey)
+
+    def ed448_load_private_bytes(self, data):
+        utils._check_byteslike("data", data)
+        if len(data) != _ED448_KEY_SIZE:
+            raise ValueError("An Ed448 private key is 57 bytes long")
+
+        data_ptr = self._ffi.from_buffer(data)
+        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
+            self._lib.NID_ED448, self._ffi.NULL, data_ptr, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed448PrivateKey(self, evp_pkey)
+
+    def ed448_generate_key(self):
+        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED448)
+        return _Ed448PrivateKey(self, evp_pkey)
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)

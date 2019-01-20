@@ -27,6 +27,8 @@ Changelog
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
 * Add support for OpenSSL when compiled with the ``no-engine``
   (``OPENSSL_NO_ENGINE``) flag.
+* Added support for :doc:`/hazmat/primitives/asymmetric/ed448` when using
+  OpenSSL 1.1.1.
 
 .. _v2-5:
 

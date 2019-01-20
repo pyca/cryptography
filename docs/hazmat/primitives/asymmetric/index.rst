@@ -25,6 +25,7 @@ private key is able to decrypt it.
 
     ed25519
     x25519
+    ed448
     x448
     ec
     rsa
