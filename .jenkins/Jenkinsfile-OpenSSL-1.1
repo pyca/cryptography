@@ -15,7 +15,7 @@ def configs = [
 
 script = """
     wmic qfe
-    powershell "[Net.ServicePointManager]::SecurityProtocol = 'tls12'; wget 'https://www.openssl.org/source/openssl-1.1.0-latest.tar.gz' -OutFile 'openssl-latest.tar.gz'"
+    powershell "[Net.ServicePointManager]::SecurityProtocol = 'tls12'; wget 'https://www.openssl.org/source/openssl-1.1.1-latest.tar.gz' -OutFile 'openssl-latest.tar.gz'"
     REM Next decompress the tarball using winrar. INUL disables error msgs, which are GUI prompts and therefore undesirable
     "C:\\Program Files\\WinRAR\\WinRAR.exe" -INUL x openssl-latest.tar.gz
     cd openssl-1*
