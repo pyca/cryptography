@@ -134,9 +134,6 @@ matrix:
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
           env: DOWNSTREAM=urllib3
-          # urllib3 tests fail on xenial for whatever reason
-          dist: trusty
-          sudo: false
 
 install:
     - ./.travis/install.sh
