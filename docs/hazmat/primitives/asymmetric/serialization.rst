@@ -646,5 +646,5 @@ Serialization Encryption Types
     Do not encrypt.
 
 
-.. _`PKCS3`: https://www.emc.com/emc-plus/rsa-labs/standards-initiatives/pkcs-3-diffie-hellman-key-agreement-standar.htm
+.. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf
 .. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
