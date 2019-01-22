@@ -2210,6 +2210,10 @@ class Backend(object):
                     errors[0]._lib_reason_match(
                         self._lib.ERR_LIB_EVP,
                         self._lib.ERR_R_MALLOC_FAILURE
+                    ) or
+                    errors[0]._lib_reason_match(
+                        self._lib.ERR_LIB_EVP,
+                        self._lib.EVP_R_MEMORY_LIMIT_EXCEEDED
                     )
                 )
 
