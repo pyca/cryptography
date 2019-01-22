@@ -178,4 +178,5 @@ static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 1;
 #else
 static const long EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
 static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
+#endif
 """
