@@ -8,7 +8,6 @@ import binascii
 import datetime
 import ipaddress
 import os
-import sys
 
 from asn1crypto.x509 import Certificate
 
@@ -1722,18 +1721,16 @@ class TestCertificateBuilder(object):
                     oid
                 )[0]._type == asn1_type
 
-    @pytest.mark.skipif(sys.platform != "win32", reason="Requires windows")
     @pytest.mark.parametrize(
         ("not_valid_before", "not_valid_after"),
         [
-            [datetime.datetime(1999, 1, 1), datetime.datetime(9999, 1, 1)],
-            [datetime.datetime(9999, 1, 1), datetime.datetime(9999, 12, 31)],
+            [datetime.datetime(1970, 2, 1), datetime.datetime(9999, 1, 1)],
+            [datetime.datetime(1970, 2, 1), datetime.datetime(9999, 12, 31)],
         ]
     )
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_invalid_time_windows(self, not_valid_before, not_valid_after,
-                                  backend):
+    def test_extreme_times(self, not_valid_before, not_valid_after, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().subject_name(x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
@@ -1748,8 +1745,16 @@ class TestCertificateBuilder(object):
         ).not_valid_after(
             not_valid_after
         )
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+        cert = builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        parsed = Certificate.load(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        not_before = parsed['tbs_certificate']['validity']['not_before']
+        not_after = parsed['tbs_certificate']['validity']['not_after']
+        assert not_before.chosen.tag == 23  # UTCTime
+        assert not_after.chosen.tag == 24  # GeneralizedTime
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
