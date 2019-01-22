@@ -2027,6 +2027,35 @@ class TestCertificateBuilder(object):
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_after == utc_time
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_earliest_time(self, backend):
+        time = datetime.datetime(1950, 1, 1)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            time
+        ).not_valid_after(
+            time
+        )
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_before == time
+        assert cert.not_valid_after == time
+        parsed = Certificate.load(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        not_before = parsed['tbs_certificate']['validity']['not_before']
+        not_after = parsed['tbs_certificate']['validity']['not_after']
+        assert not_before.chosen.tag == 23  # UTCTime
+        assert not_after.chosen.tag == 23  # UTCTime
+
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(104204304504)
@@ -2036,7 +2065,7 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_after(
-                datetime.datetime(1960, 8, 10)
+                datetime.datetime(1940, 8, 10)
             )
 
     def test_not_valid_after_may_only_be_set_once(self):
@@ -2082,7 +2111,7 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_before(
-                datetime.datetime(1960, 8, 10)
+                datetime.datetime(1940, 8, 10)
             )
 
     def test_not_valid_before_may_only_be_set_once(self):

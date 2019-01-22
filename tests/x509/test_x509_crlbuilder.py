@@ -62,10 +62,10 @@ class TestCertificateRevocationListBuilder(object):
         with pytest.raises(TypeError):
             builder.last_update("notadatetime")
 
-    def test_last_update_before_unix_epoch(self):
+    def test_last_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(ValueError):
-            builder.last_update(datetime.datetime(1960, 8, 10))
+            builder.last_update(datetime.datetime(1940, 8, 10))
 
     def test_set_last_update_twice(self):
         builder = x509.CertificateRevocationListBuilder().last_update(
@@ -97,10 +97,10 @@ class TestCertificateRevocationListBuilder(object):
         with pytest.raises(TypeError):
             builder.next_update("notadatetime")
 
-    def test_next_update_before_unix_epoch(self):
+    def test_next_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(ValueError):
-            builder.next_update(datetime.datetime(1960, 8, 10))
+            builder.next_update(datetime.datetime(1940, 8, 10))
 
     def test_set_next_update_twice(self):
         builder = x509.CertificateRevocationListBuilder().next_update(
