@@ -2032,8 +2032,7 @@ class TestCertificateBuilder(object):
     def test_earliest_time(self, backend):
         time = datetime.datetime(1950, 1, 1)
         private_key = RSA_KEY_2048.private_key(backend)
-        cert_builder = x509.CertificateBuilder().not_valid_after(time)
-        cert_builder = cert_builder.subject_name(
+        cert_builder = x509.CertificateBuilder().subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
@@ -2043,11 +2042,12 @@ class TestCertificateBuilder(object):
             private_key.public_key()
         ).not_valid_before(
             time
+        ).not_valid_after(
+            time
         )
-
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_after == time
         assert cert.not_valid_before == time
+        assert cert.not_valid_after == time
         parsed = Certificate.load(
             cert.public_bytes(serialization.Encoding.DER)
         )
