@@ -11,6 +11,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_EC_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
+static const int Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED;
 
 static const int ERR_LIB_DH;
 static const int ERR_LIB_EVP;
@@ -23,6 +24,7 @@ static const int ERR_LIB_SSL;
 static const int ERR_LIB_X509;
 
 static const int ERR_R_MALLOC_FAILURE;
+static const int EVP_R_MEMORY_LIMIT_EXCEEDED;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
@@ -169,5 +171,12 @@ static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
 static const long RSA_R_PKCS_DECODING_ERROR = 0;
+#endif
+
+#ifdef EVP_R_MEMORY_LIMIT_EXCEEDED
+static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 1;
+#else
+static const long EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
+static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
 #endif
 """

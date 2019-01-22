@@ -335,6 +335,12 @@ def cryptography_has_raw_key():
     ]
 
 
+def cryptography_has_evp_r_memory_limit_exceeded():
+    return [
+        "EVP_R_MEMORY_LIMIT_EXCEEDED",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -402,5 +408,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
         cryptography_has_evp_digestfinal_xof
+    ),
+    "Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED": (
+        cryptography_has_evp_r_memory_limit_exceeded
     ),
 }
