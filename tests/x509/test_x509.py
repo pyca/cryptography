@@ -2027,6 +2027,35 @@ class TestCertificateBuilder(object):
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_after == utc_time
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_earliest_time(self, backend):
+        time = datetime.datetime(1950, 1, 1)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().not_valid_after(time)
+        cert_builder = cert_builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            time
+        )
+
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_after == time
+        assert cert.not_valid_before == time
+        parsed = Certificate.load(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        not_before = parsed['tbs_certificate']['validity']['not_before']
+        not_after = parsed['tbs_certificate']['validity']['not_after']
+        assert not_before.chosen.tag == 23  # UTCTime
+        assert not_after.chosen.tag == 23  # UTCTime
+
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(104204304504)
