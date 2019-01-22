@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import base64
-import calendar
 import collections
 import contextlib
 import itertools
@@ -854,20 +853,12 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def _set_asn1_time(self, asn1_time, time):
-        timestamp = calendar.timegm(time.timetuple())
-        res = self._lib.ASN1_TIME_set(asn1_time, timestamp)
-        if res == self._ffi.NULL:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_ASN1,
-                    self._lib.ASN1_R_ERROR_GETTING_TIME
-                )
-            )
-            raise ValueError(
-                "Invalid time. This error can occur if you set a time too far "
-                "in the future on Windows."
-            )
+        if time.year >= 2050:
+            asn1_str = time.strftime('%Y%m%d%H%M%SZ').encode('ascii')
+        else:
+            asn1_str = time.strftime('%y%m%d%H%M%SZ').encode('ascii')
+        res = self._lib.ASN1_TIME_set_string(asn1_time, asn1_str)
+        self.openssl_assert(res == 1)
 
     def _create_asn1_time(self, time):
         asn1_time = self._lib.ASN1_TIME_new()
