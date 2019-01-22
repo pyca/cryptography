@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-5:
 
-2.5 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.5 - 2019-01-22
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** :term:`U-label` strings were deprecated in
   version 2.1, but this version removes the default ``idna`` dependency as
@@ -16,6 +14,8 @@ Changelog
 * Numerous classes and functions have been updated to allow :term:`bytes-like`
   types for keying material and passwords, including symmetric algorithms, AEAD
   ciphers, KDFs, loading asymmetric keys, and one time password classes.
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.1a.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
   and :class:`~cryptography.hazmat.primitives.hashes.SHA512_256` when using
   OpenSSL 1.1.1.
