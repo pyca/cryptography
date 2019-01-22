@@ -2036,7 +2036,7 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_after(
-                datetime.datetime(1960, 8, 10)
+                datetime.datetime(1940, 8, 10)
             )
 
     def test_not_valid_after_may_only_be_set_once(self):
@@ -2082,7 +2082,7 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_before(
-                datetime.datetime(1960, 8, 10)
+                datetime.datetime(1940, 8, 10)
             )
 
     def test_not_valid_before_may_only_be_set_once(self):

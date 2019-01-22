@@ -13,7 +13,7 @@ import six
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.base import (
-    _UNIX_EPOCH, _convert_to_naive_utc_time, _reject_duplicate_extension
+    _EARLIEST_UTC_TIME, _convert_to_naive_utc_time, _reject_duplicate_extension
 )
 
 
@@ -154,9 +154,9 @@ class _SingleResponse(object):
                 raise TypeError("revocation_time must be a datetime object")
 
             revocation_time = _convert_to_naive_utc_time(revocation_time)
-            if revocation_time <= _UNIX_EPOCH:
-                raise ValueError('The revocation_time must be after the unix'
-                                 ' epoch (1970 January 1).')
+            if revocation_time < _EARLIEST_UTC_TIME:
+                raise ValueError('The revocation_time must be on or after'
+                                 ' 1950 January 1.')
 
             if (
                 revocation_reason is not None and

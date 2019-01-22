@@ -80,10 +80,10 @@ class TestRevokedCertificateBuilder(object):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().revocation_date("notadatetime")
 
-    def test_revocation_date_before_unix_epoch(self):
+    def test_revocation_date_before_1950(self):
         with pytest.raises(ValueError):
             x509.RevokedCertificateBuilder().revocation_date(
-                datetime.datetime(1960, 8, 10)
+                datetime.datetime(1940, 8, 10)
             )
 
     def test_set_revocation_date_twice(self):
