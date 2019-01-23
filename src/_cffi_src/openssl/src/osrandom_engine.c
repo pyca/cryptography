@@ -95,12 +95,12 @@ static struct {
 } urandom_cache = { -1 };
 
 static int open_cloexec(const char *path) {
-    int flags = O_RDONLY;
+    int open_flags = O_RDONLY;
 #ifdef O_CLOEXEC
-    flags |= O_CLOEXEC;
+    open_flags |= O_CLOEXEC;
 #endif
 
-    int fd = open(path, flags);
+    int fd = open(path,open_ flags);
     if (fd == -1) {
         return -1;
     }
