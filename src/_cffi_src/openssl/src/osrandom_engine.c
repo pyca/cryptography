@@ -94,7 +94,18 @@ static struct {
     ino_t st_ino;
 } urandom_cache = { -1 };
 
-static int set_cloexec(int fd) {
+static int open_cloexec(const char *path) {
+    int flags = O_RDONLY;
+#ifdef O_CLOEXEC
+    flags |= O_CLOEXEC;
+#endif
+
+    int fd = open(path, flags);
+    if (fd == -1) {
+        return -1;
+    }
+
+#ifndef O_CLOEXEC
     int flags = fcntl(fd, F_GETFD);
     if (flags == -1) {
         return -1;
@@ -102,7 +113,8 @@ static int set_cloexec(int fd) {
     if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
         return -1;
     }
-    return 0;
+#endif
+    return fd;
 }
 
 #ifdef __linux__
@@ -114,11 +126,8 @@ static int set_cloexec(int fd) {
 static int wait_on_devrandom(void) {
     struct pollfd pfd = {};
     int ret = 0;
-    int random_fd = open("/dev/random", O_RDONLY);
+    int random_fd = open_cloexec("/dev/random");
     if (random_fd < 0) {
-        return -1;
-    }
-    if (set_cloexec(random_fd) < 0) {
         return -1;
     }
     pfd.fd = random_fd;
@@ -154,11 +163,8 @@ static int dev_urandom_fd(void) {
         }
 #endif
 
-        fd = open("/dev/urandom", O_RDONLY);
+        fd = open_cloexec("/dev/urandom");
         if (fd < 0) {
-            goto error;
-        }
-        if (set_cloexec(fd) < 0) {
             goto error;
         }
         if (fstat(fd, &st)) {
