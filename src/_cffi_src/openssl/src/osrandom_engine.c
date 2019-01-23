@@ -100,7 +100,7 @@ static int open_cloexec(const char *path) {
     open_flags |= O_CLOEXEC;
 #endif
 
-    int fd = open(path,open_ flags);
+    int fd = open(path, open_flags);
     if (fd == -1) {
         return -1;
     }
