@@ -9,7 +9,6 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed, decode_dss_signature, encode_dss_signature
 )
-from cryptography.utils import CryptographyDeprecationWarning
 
 
 def test_dss_signature():
