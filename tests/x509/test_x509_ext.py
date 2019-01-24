@@ -1673,11 +1673,11 @@ class TestKeyUsageExtension(object):
 class TestDNSName(object):
     def test_init_deprecated(self):
         pytest.importorskip("idna")
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             name = x509.DNSName(u".\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u".xn--4ca7aey.example.com"
 
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             name = x509.DNSName(u"\xf5\xe4\xf6\xfc.example.com")
         assert name.value == u"xn--4ca7aey.example.com"
 
@@ -1792,7 +1792,7 @@ class TestRFC822Name(object):
 
     def test_idna(self):
         pytest.importorskip("idna")
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             gn = x509.RFC822Name(u"email@em\xe5\xefl.com")
 
         assert gn.value == u"email@xn--eml-vla4c.com"
@@ -1832,7 +1832,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_idna_no_port(self):
         pytest.importorskip("idna")
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             gn = x509.UniformResourceIdentifier(
                 u"http://\u043f\u044b\u043a\u0430.cryptography"
             )
@@ -1841,7 +1841,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_idna_with_port(self):
         pytest.importorskip("idna")
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             gn = x509.UniformResourceIdentifier(
                 u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
             )
@@ -1856,7 +1856,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_query_and_fragment(self):
         pytest.importorskip("idna")
-        with pytest.warns(utils.DeprecatedIn21):
+        with pytest.warns(utils.CryptographyDeprecationWarning):
             gn = x509.UniformResourceIdentifier(
                 u"ldap://\u043f\u044b\u043a\u0430.cryptography:90/path?query="
                 u"true#somedata"

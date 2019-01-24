@@ -8,6 +8,18 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Removed
+  ``cryptography.hazmat.primitives.asymmetric.utils.encode_rfc6979_signature``
+  and
+  ``cryptography.hazmat.primitives.asymmetric.utils.decode_rfc6979_signature``,
+  which had been deprecated for nearly 4 years. Use
+  :func:`~cryptography.hazmat.primitives.asymmetric.utils.encode_dss_signature`
+  and
+  :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`
+  instead.
+* **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
+  which had been deprecated for nearly 3 years. Use
+  :attr:`~cryptography.x509.Certificate.serial_number` instead.
 
 .. _v2-5:
 

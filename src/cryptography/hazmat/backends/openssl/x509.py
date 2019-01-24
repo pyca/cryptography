@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import operator
-import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -61,15 +60,6 @@ class _Certificate(object):
             raise x509.InvalidVersion(
                 "{0} is not a valid X509 version".format(version), version
             )
-
-    @property
-    def serial(self):
-        warnings.warn(
-            "Certificate serial is deprecated, use serial_number instead.",
-            utils.PersistentlyDeprecated,
-            stacklevel=2
-        )
-        return self.serial_number
 
     @property
     def serial_number(self):
