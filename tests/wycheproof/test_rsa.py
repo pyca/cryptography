@@ -29,8 +29,10 @@ def should_verify(backend, wycheproof):
 
     if wycheproof.acceptable:
         if (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
-            wycheproof.has_flag("MissingNull")
+            (
+                backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
+                backend._lib.CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER
+            ) and wycheproof.has_flag("MissingNull")
         ):
             return False
         return True
