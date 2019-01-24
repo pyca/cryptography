@@ -609,27 +609,6 @@ class TestRSACertificate(object):
             SignatureAlgorithmOID._RSA_WITH_SHA1
         )
 
-    def test_cert_serial_number(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
-            x509.load_der_x509_certificate,
-            backend
-        )
-
-        with pytest.warns(utils.CryptographyDeprecationWarning):
-            assert cert.serial == 2
-            assert cert.serial_number == 2
-
-    def test_cert_serial_warning(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
-            x509.load_der_x509_certificate,
-            backend
-        )
-
-        with pytest.warns(utils.CryptographyDeprecationWarning):
-            cert.serial
-
     def test_load_der_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),

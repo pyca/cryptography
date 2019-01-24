@@ -72,7 +72,7 @@ class RFC822Name(object):
                     "This means unicode characters should be encoded via "
                     "idna. Support for passing unicode strings (aka U-label) "
                     "will be removed in a future version.",
-                    utils.DeprecatedIn21,
+                    utils.PersistentlyDeprecated2017,
                     stacklevel=2,
                 )
         else:
@@ -139,7 +139,7 @@ class DNSName(object):
                     "This means unicode characters should be encoded via "
                     "idna. Support for passing unicode strings (aka U-label) "
                     "will be removed in a future version.",
-                    utils.DeprecatedIn21,
+                    utils.PersistentlyDeprecated2017,
                     stacklevel=2,
                 )
         else:
@@ -184,7 +184,7 @@ class UniformResourceIdentifier(object):
                     "This means unicode characters should be encoded via "
                     "idna. Support for passing unicode strings (aka U-label) "
                     " will be removed in a future version.",
-                    utils.DeprecatedIn21,
+                    utils.PersistentlyDeprecated2017,
                     stacklevel=2,
                 )
         else:
