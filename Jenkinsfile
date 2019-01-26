@@ -233,6 +233,7 @@ builders["setup.py-test"] = {
                         cd cryptography
                         virtualenv .venv
                         source .venv/bin/activate
+                        pip install cffi
                         python setup.py test
                     """
                 } finally {
