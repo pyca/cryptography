@@ -20,6 +20,9 @@ Changelog
 * **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
+* Installing ``cryptography`` now relies on :pep`518`. In practice this means
+  that you need to either use ``pip`` 18 or newer or you must manually install
+  ``cffi`` before installing ``cryptography``.
 
 .. _v2-5:
 

@@ -1,5 +1,5 @@
 [build-system]
-# Must be kept in sync with `setup_requirements` in `setup.py`
+# Must be kept in sync with `install_requires` in `setup.py`
 requires = [
     "setuptools>=18.5",
     "wheel",
