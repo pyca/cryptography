@@ -10,13 +10,11 @@ import os
 import platform
 import subprocess
 import sys
-from distutils.command.build import build
 
 import pkg_resources
 
 import setuptools
 from setuptools import find_packages, setup
-from setuptools.command.install import install
 from setuptools.command.test import test
 
 
