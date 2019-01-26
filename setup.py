@@ -171,11 +171,11 @@ setup(
         "src/_cffi_src/build_openssl.py:ffi",
         "src/_cffi_src/build_constant_time.py:ffi",
         "src/_cffi_src/build_padding.py:ffi",
-    ]
+    ],
 
     cmdclass={
         "test": PyTest,
-    }
+    },
 
     # for cffi
     zip_safe=False,
