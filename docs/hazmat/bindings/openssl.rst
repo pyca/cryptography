@@ -45,4 +45,4 @@ OpenSSL.
 
 .. _`CFFI`: https://cffi.readthedocs.io
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`thread safety facilities`: https://www.openssl.org/docs/man1.0.2/crypto/threads.html
+.. _`thread safety facilities`: https://www.openssl.org/docs/man1.0.2/man3/CRYPTO_THREADID_set_callback.html
