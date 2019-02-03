@@ -19,7 +19,8 @@ key derivation functions. For example, to encrypt something with
     'A really secret message. Not for prying eyes.'
 
 If you are interested in learning more about the field of cryptography, we
-recommend `Crypto 101, by Laurens Van Houtven`_.
+recommend `Crypto 101, by Laurens Van Houtven`_ and `The Cryptopals Crypto
+Challenges`_.
 
 Installation
 ------------
@@ -92,3 +93,4 @@ hazmat layer only when necessary.
     :doc:`get in touch </community>`.
 
 .. _`Crypto 101, by Laurens Van Houtven`: https://www.crypto101.io/
+.. _`The Cryptopals Crypto Challenges`: https://cryptopals.com/
