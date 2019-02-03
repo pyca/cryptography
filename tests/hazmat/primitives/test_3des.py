@@ -28,7 +28,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCBC(object):
-    test_KAT = generate_encrypt_test(
+    test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
         [
@@ -42,7 +42,7 @@ class TestTripleDESModeCBC(object):
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
-    test_MMT = generate_encrypt_test(
+    test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
         [
@@ -65,7 +65,7 @@ class TestTripleDESModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeOFB(object):
-    test_KAT = generate_encrypt_test(
+    test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
         [
@@ -79,7 +79,7 @@ class TestTripleDESModeOFB(object):
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
-    test_MMT = generate_encrypt_test(
+    test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
         [
@@ -102,7 +102,7 @@ class TestTripleDESModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCFB(object):
-    test_KAT = generate_encrypt_test(
+    test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
         [
@@ -116,7 +116,7 @@ class TestTripleDESModeCFB(object):
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
 
-    test_MMT = generate_encrypt_test(
+    test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
         [
@@ -139,7 +139,7 @@ class TestTripleDESModeCFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCFB8(object):
-    test_KAT = generate_encrypt_test(
+    test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
         [
@@ -153,7 +153,7 @@ class TestTripleDESModeCFB8(object):
         lambda iv, **kwargs: modes.CFB8(binascii.unhexlify(iv)),
     )
 
-    test_MMT = generate_encrypt_test(
+    test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
         [
@@ -176,7 +176,7 @@ class TestTripleDESModeCFB8(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeECB(object):
-    test_KAT = generate_encrypt_test(
+    test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "ECB"),
         [
@@ -190,7 +190,7 @@ class TestTripleDESModeECB(object):
         lambda **kwargs: modes.ECB(),
     )
 
-    test_MMT = generate_encrypt_test(
+    test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "ECB"),
         [

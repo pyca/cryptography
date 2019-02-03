@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeECB(object):
-    test_ECB = generate_encrypt_test(
+    test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["rfc-4269.txt"],
@@ -41,7 +41,7 @@ class TestSEEDModeECB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeCBC(object):
-    test_CBC = generate_encrypt_test(
+    test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["rfc-4196.txt"],
@@ -58,7 +58,7 @@ class TestSEEDModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeOFB(object):
-    test_OFB = generate_encrypt_test(
+    test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["seed-ofb.txt"],
@@ -75,7 +75,7 @@ class TestSEEDModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeCFB(object):
-    test_CFB = generate_encrypt_test(
+    test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["seed-cfb.txt"],

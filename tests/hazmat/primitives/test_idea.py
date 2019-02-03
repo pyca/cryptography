@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeECB(object):
-    test_ECB = generate_encrypt_test(
+    test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ecb.txt"],
@@ -41,7 +41,7 @@ class TestIDEAModeECB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeCBC(object):
-    test_CBC = generate_encrypt_test(
+    test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cbc.txt"],
@@ -58,7 +58,7 @@ class TestIDEAModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeOFB(object):
-    test_OFB = generate_encrypt_test(
+    test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ofb.txt"],
@@ -75,7 +75,7 @@ class TestIDEAModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeCFB(object):
-    test_CFB = generate_encrypt_test(
+    test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cfb.txt"],
