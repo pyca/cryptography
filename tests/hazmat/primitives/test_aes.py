@@ -58,7 +58,7 @@ class TestAESModeXTS(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCBC(object):
-    test_CBC = generate_encrypt_test(
+    test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
         [
@@ -91,7 +91,7 @@ class TestAESModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeECB(object):
-    test_ECB = generate_encrypt_test(
+    test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
         [
@@ -124,7 +124,7 @@ class TestAESModeECB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeOFB(object):
-    test_OFB = generate_encrypt_test(
+    test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
         [
@@ -157,7 +157,7 @@ class TestAESModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB(object):
-    test_CFB = generate_encrypt_test(
+    test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
         [
@@ -190,7 +190,7 @@ class TestAESModeCFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB8(object):
-    test_CFB8 = generate_encrypt_test(
+    test_cfb8 = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
         [
@@ -223,7 +223,7 @@ class TestAESModeCFB8(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCTR(object):
-    test_CTR = generate_encrypt_test(
+    test_ctr = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
@@ -240,7 +240,7 @@ class TestAESModeCTR(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeGCM(object):
-    test_GCM = generate_aead_test(
+    test_gcm = generate_aead_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "GCM"),
         [

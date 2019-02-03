@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeECB(object):
-    test_ECB = generate_encrypt_test(
+    test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
@@ -41,7 +41,7 @@ class TestCAST5ModeECB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeCBC(object):
-    test_CBC = generate_encrypt_test(
+    test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-cbc.txt"],
@@ -58,7 +58,7 @@ class TestCAST5ModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeOFB(object):
-    test_OFB = generate_encrypt_test(
+    test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ofb.txt"],
@@ -75,7 +75,7 @@ class TestCAST5ModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeCFB(object):
-    test_CFB = generate_encrypt_test(
+    test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-cfb.txt"],

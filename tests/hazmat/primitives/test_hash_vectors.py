@@ -22,7 +22,7 @@ from ...utils import load_hash_vectors, load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA1(object):
-    test_SHA1 = generate_hash_test(
+    test_sha1 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA1"),
         [
@@ -39,7 +39,7 @@ class TestSHA1(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA224(object):
-    test_SHA224 = generate_hash_test(
+    test_sha224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -56,7 +56,7 @@ class TestSHA224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA256(object):
-    test_SHA256 = generate_hash_test(
+    test_sha256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -73,7 +73,7 @@ class TestSHA256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA384(object):
-    test_SHA384 = generate_hash_test(
+    test_sha384 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -90,7 +90,7 @@ class TestSHA384(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512(object):
-    test_SHA512 = generate_hash_test(
+    test_sha512 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -107,7 +107,7 @@ class TestSHA512(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512224(object):
-    test_SHA512_224 = generate_hash_test(
+    test_sha512_224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -124,7 +124,7 @@ class TestSHA512224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512256(object):
-    test_SHA512_256 = generate_hash_test(
+    test_sha512_256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
@@ -191,7 +191,7 @@ class TestBLAKE2s256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA3224(object):
-    test_SHA3_224 = generate_hash_test(
+    test_sha3_224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
         [
@@ -208,7 +208,7 @@ class TestSHA3224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA3256(object):
-    test_SHA3_256 = generate_hash_test(
+    test_sha3_256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
         [
@@ -225,7 +225,7 @@ class TestSHA3256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA3384(object):
-    test_SHA3_384 = generate_hash_test(
+    test_sha3_384 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
         [
@@ -242,7 +242,7 @@ class TestSHA3384(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA3512(object):
-    test_SHA3_512 = generate_hash_test(
+    test_sha3_512 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
         [
