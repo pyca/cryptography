@@ -59,6 +59,7 @@ hazmat layer only when necessary.
 
     fernet
     x509/index
+    aes
 
 .. toctree::
     :maxdepth: 2
