@@ -652,7 +652,7 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
-def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+def _decode_scts(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp
     )
@@ -664,7 +664,19 @@ def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
         sct = backend._lib.sk_SCT_value(asn1_scts, i)
 
         scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
-    return x509.PrecertificateSignedCertificateTimestamps(scts)
+    return scts
+
+
+def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+    return x509.PrecertificateSignedCertificateTimestamps(
+        _decode_scts(backend, asn1_scts)
+    )
+
+
+def _decode_signed_certificate_timestamps(backend, asn1_scts):
+    return x509.SignedCertificateTimestamps(
+        _decode_scts(backend, asn1_scts)
+    )
 
 
 #    CRLReason ::= ENUMERATED {
@@ -872,7 +884,13 @@ _OCSP_BASICRESP_EXTENSION_HANDLERS = {
 
 # All revoked extensions are valid single response extensions, see:
 # https://tools.ietf.org/html/rfc6960#section-4.4.5
-_OCSP_SINGLERESP_EXTENSION_HANDLERS = _REVOKED_EXTENSION_HANDLERS.copy()
+_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT = _REVOKED_EXTENSION_HANDLERS.copy()
+_OCSP_SINGLERESP_EXTENSION_HANDLERS = (
+    _OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT.copy()
+)
+_OCSP_SINGLERESP_EXTENSION_HANDLERS[
+    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
+] = _decode_signed_certificate_timestamps
 
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
@@ -920,4 +938,10 @@ _OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
     handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS,
+)
+
+_OCSP_SINGLERESP_EXT_PARSER_NO_SCT = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
+    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT
 )

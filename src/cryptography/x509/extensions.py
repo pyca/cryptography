@@ -1439,6 +1439,49 @@ class PrecertificateSignedCertificateTimestamps(object):
 
 
 @utils.register_interface(ExtensionType)
+class SignedCertificateTimestamps(object):
+    oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
+
+    def __init__(self, signed_certificate_timestamps):
+        signed_certificate_timestamps = list(signed_certificate_timestamps)
+        if not all(
+            isinstance(sct, SignedCertificateTimestamp)
+            for sct in signed_certificate_timestamps
+        ):
+            raise TypeError(
+                "Every item in the signed_certificate_timestamps list must be "
+                "a SignedCertificateTimestamp"
+            )
+        self._signed_certificate_timestamps = signed_certificate_timestamps
+
+    __len__, __iter__, __getitem__ = _make_sequence_methods(
+        "_signed_certificate_timestamps"
+    )
+
+    def __repr__(self):
+        return (
+            "<SignedCertificateTimestamps({})>".format(
+                list(self)
+            )
+        )
+
+    def __hash__(self):
+        return hash(tuple(self._signed_certificate_timestamps))
+
+    def __eq__(self, other):
+        if not isinstance(other, SignedCertificateTimestamps):
+            return NotImplemented
+
+        return (
+            self._signed_certificate_timestamps ==
+            other._signed_certificate_timestamps
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(ExtensionType)
 class OCSPNonce(object):
     oid = OCSPExtensionOID.NONCE
 

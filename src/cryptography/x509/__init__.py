@@ -24,7 +24,8 @@ from cryptography.x509.extensions import (
     IssuingDistributionPoint, KeyUsage, NameConstraints, NoticeReference,
     OCSPNoCheck, OCSPNonce, PolicyConstraints, PolicyInformation,
     PrecertPoison, PrecertificateSignedCertificateTimestamps, ReasonFlags,
-    SubjectAlternativeName, SubjectInformationAccess, SubjectKeyIdentifier,
+    SignedCertificateTimestamps, SubjectAlternativeName,
+    SubjectInformationAccess, SubjectKeyIdentifier,
     TLSFeature, TLSFeatureType, UnrecognizedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
@@ -187,4 +188,5 @@ __all__ = [
     "PrecertificateSignedCertificateTimestamps",
     "PrecertPoison",
     "OCSPNonce",
+    "SignedCertificateTimestamps",
 ]

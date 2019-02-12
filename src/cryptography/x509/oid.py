@@ -37,6 +37,9 @@ class ExtensionOID(object):
     PRECERT_POISON = (
         ObjectIdentifier("1.3.6.1.4.1.11129.2.4.3")
     )
+    SIGNED_CERTIFICATE_TIMESTAMPS = (
+        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
+    )
 
 
 class OCSPExtensionOID(object):
@@ -229,6 +232,9 @@ _OID_NAMES = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
     ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
     ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
+        "signedCertificateTimestampList"
+    ),
+    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS: (
         "signedCertificateTimestampList"
     ),
     ExtensionOID.PRECERT_POISON: "ctPoison",
