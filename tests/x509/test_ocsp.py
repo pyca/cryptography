@@ -753,3 +753,17 @@ class TestOCSPResponse(object):
             resp.public_bytes("invalid")
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER),
+        skip_message="Requires OpenSSL 1.1.0f+",
+    )
+    def test_single_extensions(self, backend):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-single-extension.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert len(resp.single_extensions) == 1
+        ext = resp.single_extensions[0]
+        assert ext.oid == x509.ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
