@@ -898,3 +898,15 @@ _OCSP_BASICRESP_EXT_PARSER = _X509ExtensionParser(
     get_ext=lambda backend, x, i: backend._lib.OCSP_BASICRESP_get_ext(x, i),
     handlers=_OCSP_BASICRESP_EXTENSION_HANDLERS,
 )
+
+_OCSP_SINGLERESP_EXT_PARSER_NO_SCT = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
+    handlers=_EXTENSION_HANDLERS_NO_SCT
+)
+
+_OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
+    handlers=_EXTENSION_HANDLERS,
+)

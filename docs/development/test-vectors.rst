@@ -517,6 +517,8 @@ X.509 OCSP Test Vectors
   contains a revoked certificate and no ``nextUpdate`` value.
 * ``x509/ocsp/resp-invalid-signature-oid.der`` - An OCSP response that was
   modified to contain an MD2 signature algorithm object identifier.
+* ``x509/ocsp/resp-single-extension.der`` - An OCSP response that contains
+  a signed certificate timestamp list part of single extensions.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
