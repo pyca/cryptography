@@ -59,7 +59,7 @@ def _enc_dec_rsa(backend, key, data, padding):
 
     else:
         raise UnsupportedAlgorithm(
-            "{0} is not supported by this backend.".format(
+            "{} is not supported by this backend.".format(
                 padding.name
             ),
             _Reasons.UNSUPPORTED_PADDING
@@ -178,7 +178,7 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
         padding_enum = backend._lib.RSA_PKCS1_PSS_PADDING
     else:
         raise UnsupportedAlgorithm(
-            "{0} is not supported by this backend.".format(padding.name),
+            "{} is not supported by this backend.".format(padding.name),
             _Reasons.UNSUPPORTED_PADDING
         )
 
@@ -197,7 +197,7 @@ def _rsa_sig_setup(backend, padding, algorithm, key, data, init_func):
     if res == 0:
         backend._consume_errors()
         raise UnsupportedAlgorithm(
-            "{0} is not supported by this backend for RSA signing.".format(
+            "{} is not supported by this backend for RSA signing.".format(
                 algorithm.name
             ),
             _Reasons.UNSUPPORTED_HASH

@@ -128,7 +128,7 @@ def assert_no_memory_leaks(s, argv=[]):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
     argv = [
-        sys.executable, "-c", "{0}\n\n{1}".format(s, MEMORY_LEAK_SCRIPT)
+        sys.executable, "-c", "{}\n\n{}".format(s, MEMORY_LEAK_SCRIPT)
     ] + argv
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.

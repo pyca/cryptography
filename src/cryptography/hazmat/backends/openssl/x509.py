@@ -29,7 +29,7 @@ class _Certificate(object):
         self._x509 = x509
 
     def __repr__(self):
-        return "<Certificate(subject={0}, ...)>".format(self.subject)
+        return "<Certificate(subject={}, ...)>".format(self.subject)
 
     def __eq__(self, other):
         if not isinstance(other, x509.Certificate):
@@ -58,7 +58,7 @@ class _Certificate(object):
             return x509.Version.v3
         else:
             raise x509.InvalidVersion(
-                "{0} is not a valid X509 version".format(version), version
+                "{} is not a valid X509 version".format(version), version
             )
 
     @property
@@ -107,7 +107,7 @@ class _Certificate(object):
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{0} not recognized".format(oid)
+                "Signature algorithm OID:{} not recognized".format(oid)
             )
 
     @property
@@ -261,7 +261,7 @@ class _CertificateRevocationList(object):
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{0} not recognized".format(oid)
+                "Signature algorithm OID:{} not recognized".format(oid)
             )
 
     @property
@@ -413,7 +413,7 @@ class _CertificateSigningRequest(object):
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{0} not recognized".format(oid)
+                "Signature algorithm OID:{} not recognized".format(oid)
             )
 
     @property

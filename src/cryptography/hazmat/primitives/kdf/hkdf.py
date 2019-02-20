@@ -68,7 +68,7 @@ class HKDFExpand(object):
 
         if length > max_length:
             raise ValueError(
-                "Can not derive keys larger than {0} octets.".format(
+                "Can not derive keys larger than {} octets.".format(
                     max_length
                 ))
 

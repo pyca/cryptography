@@ -72,7 +72,7 @@ def _check_aes_key_length(self, algorithm):
 
 def _check_iv_length(self, algorithm):
     if len(self.initialization_vector) * 8 != algorithm.block_size:
-        raise ValueError("Invalid IV size ({0}) for {1}.".format(
+        raise ValueError("Invalid IV size ({}) for {}.".format(
             len(self.initialization_vector), self.name
         ))
 
@@ -178,7 +178,7 @@ class CTR(object):
     def validate_for_algorithm(self, algorithm):
         _check_aes_key_length(self, algorithm)
         if len(self.nonce) * 8 != algorithm.block_size:
-            raise ValueError("Invalid nonce size ({0}) for {1}.".format(
+            raise ValueError("Invalid nonce size ({}) for {}.".format(
                 len(self.nonce), self.name
             ))
 
@@ -205,7 +205,7 @@ class GCM(object):
                 raise ValueError("min_tag_length must be >= 4")
             if len(tag) < min_tag_length:
                 raise ValueError(
-                    "Authentication tag must be {0} bytes or longer.".format(
+                    "Authentication tag must be {} bytes or longer.".format(
                         min_tag_length)
                 )
         self._tag = tag
