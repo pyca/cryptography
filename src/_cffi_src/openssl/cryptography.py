@@ -11,10 +11,9 @@ import os
 base_src = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 )
-about = os.path.join(base_src, "cryptography", "__about__.py")
-__about__ = {}
-with open(about) as f:
-    exec(f.read(), __about__)
+about = {}
+with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
+    exec(f.read(), about)
 
 
 INCLUDES = """
@@ -75,8 +74,8 @@ INCLUDES = """
     (OPENSSL_VERSION_NUMBER < 0x101000af || CRYPTOGRAPHY_IS_LIBRESSL)
 #define CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 \
     (OPENSSL_VERSION_NUMBER < 0x10101000 || CRYPTOGRAPHY_IS_LIBRESSL)
-#define CRYPTOGRAPHY_PACKAGE_VERSION "{0}"
-""".format(__about__["__version__"])
+#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"
+""".format(about["__version__"])
 
 TYPES = """
 static const int CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER;

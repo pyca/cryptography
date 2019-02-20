@@ -182,7 +182,7 @@ def _verify_package_version(version):
             "shared object. This can happen if you have multiple copies of "
             "cryptography installed in your Python path. Please try creating "
             "a new virtual environment to resolve this issue. "
-            "Loaded python version: {0}, shared object version: {1}".format(
+            "Loaded python version: {}, shared object version: {}".format(
                 version, so_package_version
             )
         )
