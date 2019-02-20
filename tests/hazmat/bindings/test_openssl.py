@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _consume_errors, _openssl_assert
+    Binding, _consume_errors, _openssl_assert, _verify_package_version
 )
 
 
@@ -118,3 +118,7 @@ class TestOpenSSL(object):
         )
         b._register_osrandom_engine()
         assert _consume_errors(b.lib) == []
+
+    def test_version_mismatch(self):
+        with pytest.raises(ImportError):
+            _verify_package_version("nottherightversion")
