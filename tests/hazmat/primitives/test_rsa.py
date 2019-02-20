@@ -89,7 +89,7 @@ def _build_oaep_sha2_vectors():
             load_vectors_from_file(
                 os.path.join(
                     base_path,
-                    "oaep-{0}-{1}.txt".format(
+                    "oaep-{}-{}.txt".format(
                         mgf1alg.name, oaepalg.name
                     )
                 ),
@@ -112,7 +112,7 @@ def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
         )
     ):
         pytest.skip(
-            "Does not support {0} in MGF1 using PSS.".format(hash_alg.name)
+            "Does not support {} in MGF1 using PSS.".format(hash_alg.name)
         )
 
 

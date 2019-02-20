@@ -30,7 +30,7 @@ KeyedHashVector = collections.namedtuple(
 def check_backend_support(backend, item):
     for mark in item.node.iter_markers("supported"):
         if not mark.kwargs["only_if"](backend):
-            pytest.skip("{0} ({1})".format(
+            pytest.skip("{} ({})".format(
                 mark.kwargs["skip_message"], backend
             ))
 
@@ -396,7 +396,7 @@ def load_fips_dsa_sig_vectors(vector_data):
 
         sha_match = sha_regex.match(line)
         if sha_match:
-            digest_algorithm = "SHA-{0}".format(sha_match.group("sha"))
+            digest_algorithm = "SHA-{}".format(sha_match.group("sha"))
 
         if line.startswith("[mod"):
             continue
@@ -511,7 +511,7 @@ def load_fips_ecdsa_signing_vectors(vector_data):
         curve_match = curve_rx.match(line)
         if curve_match:
             curve_name = _ECDSA_CURVE_NAMES[curve_match.group("curve")]
-            digest_name = "SHA-{0}".format(curve_match.group("sha"))
+            digest_name = "SHA-{}".format(curve_match.group("sha"))
 
         elif line.startswith("Msg = "):
             if data is not None:

@@ -36,7 +36,7 @@ def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
         not backend.dsa_hash_supported(algorithm)
     ):
         pytest.skip(
-            "{0} does not support the provided parameters".format(backend)
+            "{} does not support the provided parameters".format(backend)
         )
 
 
