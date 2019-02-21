@@ -11,6 +11,10 @@ import six
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 
+_ED25519_KEY_SIZE = 32
+_ED25519_SIG_SIZE = 64
+
+
 @six.add_metaclass(abc.ABCMeta)
 class Ed25519PublicKey(object):
     @classmethod

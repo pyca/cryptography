@@ -22,6 +22,8 @@ Changelog
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
 * Added support for :doc:`/hazmat/primitives/asymmetric/ed25519` when using
   OpenSSL 1.1.1.
+* :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
+  now load ``ed25519`` public keys.
 * Add support for easily mapping an object identifier to its elliptic curve
   class via
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.

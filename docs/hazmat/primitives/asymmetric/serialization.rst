@@ -376,10 +376,6 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     Deserialize a public key from OpenSSH (:rfc:`4253`) encoded data to an
     instance of the public key type for the specified backend.
 
-    .. note::
-
-        Currently Ed25519 keys are not supported.
-
     :param bytes data: The OpenSSH encoded key data.
 
     :param backend: A backend which implements
@@ -391,8 +387,9 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        , or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
         depending on the contents of ``data``.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded or
