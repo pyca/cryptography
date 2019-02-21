@@ -173,12 +173,10 @@ def _verify_package_version(version):
     # up later this code checks that the currently imported package and the
     # shared object that were loaded have the same version and raise an
     # ImportError if they do not
-    so_package_version = Binding.ffi.string(
-        Binding.lib.CRYPTOGRAPHY_PACKAGE_VERSION
-    ).decode("ascii")
-    if version != so_package_version:
+    so_package_version = ffi.string(lib.CRYPTOGRAPHY_PACKAGE_VERSION)
+    if version.encode("ascii") != so_package_version:
         raise ImportError(
-            "The version of cryptography does not match with the loaded "
+            "The version of cryptography does not match the loaded "
             "shared object. This can happen if you have multiple copies of "
             "cryptography installed in your Python path. Please try creating "
             "a new virtual environment to resolve this issue. "
@@ -188,6 +186,8 @@ def _verify_package_version(version):
         )
 
 
+_verify_package_version(cryptography.__version__)
+
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
@@ -196,4 +196,3 @@ def _verify_package_version(version):
 Binding.init_static_locks()
 
 _verify_openssl_version(Binding.lib)
-_verify_package_version(cryptography.__version__)
