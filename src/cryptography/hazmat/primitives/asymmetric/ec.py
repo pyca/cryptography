@@ -465,3 +465,26 @@ class EllipticCurvePrivateNumbers(object):
 
 class ECDH(object):
     pass
+
+
+OID_TO_CURVE = {
+    ObjectIdentifier("1.2.840.10045.3.1.1"): SECP192R1,
+    ObjectIdentifier("1.3.132.0.33"): SECP224R1,
+    ObjectIdentifier("1.3.132.0.10"): SECP256K1,
+    ObjectIdentifier("1.2.840.10045.3.1.7"): SECP256R1,
+    ObjectIdentifier("1.3.132.0.34"): SECP384R1,
+    ObjectIdentifier("1.3.132.0.35"): SECP521R1,
+    ObjectIdentifier("1.3.36.3.3.2.8.1.1.7"): BrainpoolP256R1,
+    ObjectIdentifier("1.3.36.3.3.2.8.1.1.11"): BrainpoolP384R1,
+    ObjectIdentifier("1.3.36.3.3.2.8.1.1.13"): BrainpoolP512R1,
+    ObjectIdentifier("1.3.132.0.1"): SECT163K1,
+    ObjectIdentifier("1.3.132.0.15"): SECT163R2,
+    ObjectIdentifier("1.3.132.0.26"): SECT233K1,
+    ObjectIdentifier("1.3.132.0.27"): SECT233R1,
+    ObjectIdentifier("1.3.132.0.16"): SECT283K1,
+    ObjectIdentifier("1.3.132.0.17"): SECT283R1,
+    ObjectIdentifier("1.3.132.0.36"): SECT409K1,
+    ObjectIdentifier("1.3.132.0.37"): SECT409R1,
+    ObjectIdentifier("1.3.132.0.38"): SECT571K1,
+    ObjectIdentifier("1.3.132.0.39"): SECT571R1,
+}
