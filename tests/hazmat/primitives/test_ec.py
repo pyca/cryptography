@@ -11,7 +11,7 @@ from binascii import hexlify
 
 import pytest
 
-from cryptography import exceptions, utils
+from cryptography import exceptions, utils, x509
 from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, PEMSerializationBackend
 )
@@ -69,6 +69,12 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
                 curve.name, backend
             )
         )
+
+
+def test_oid_to_curve():
+    assert ec.oid_to_curve(ec.EllipticCurveOID.SECP256R1) == ec.SECP256R1
+    with pytest.raises(LookupError):
+        ec.oid_to_curve(x509.ObjectIdentifier("1.1.1.1"))
 
 
 @utils.register_interface(ec.EllipticCurve)

@@ -926,6 +926,20 @@ Elliptic Curve Object Identifiers
 
         Corresponds to the dotted string ``"1.3.132.0.39"``.
 
+.. function:: oid_to_curve(oid)
+
+    .. versionadded:: 2.6
+
+    A function that takes an :class:`~cryptography.x509.oid.ObjectIdentifier`
+    and returns the associated elliptic curve class.
+
+    :param oid: An instance of
+        :class:`~cryptography.x509.oid.ObjectIdentifier`.
+
+    :returns: The matching instance of :class:`EllipticCurve`.
+
+    :raises LookupError: Raised if no elliptic curve is found that matches
+        the provided object identifier.
 
 .. _`FIPS 186-3`: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
