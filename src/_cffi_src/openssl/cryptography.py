@@ -4,18 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
-
-
-# Load the cryptography __about__ to get the current package version
-base_src = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-about = {}
-with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
-
-
 INCLUDES = """
 /* define our OpenSSL API compatibility level to 1.0.1. Any symbols older than
    that will raise an error during compilation. We can raise this number again
@@ -74,8 +62,7 @@ INCLUDES = """
     (OPENSSL_VERSION_NUMBER < 0x101000af || CRYPTOGRAPHY_IS_LIBRESSL)
 #define CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 \
     (OPENSSL_VERSION_NUMBER < 0x10101000 || CRYPTOGRAPHY_IS_LIBRESSL)
-#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"
-""".format(about["__version__"])
+"""
 
 TYPES = """
 static const int CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER;
@@ -89,8 +76,6 @@ static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_111;
 static const int CRYPTOGRAPHY_IS_LIBRESSL;
 
 static const int CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER;
-
-static const char *const CRYPTOGRAPHY_PACKAGE_VERSION;
 """
 
 FUNCTIONS = """
