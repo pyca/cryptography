@@ -465,3 +465,36 @@ class EllipticCurvePrivateNumbers(object):
 
 class ECDH(object):
     pass
+
+
+_OID_TO_CURVE = {
+    EllipticCurveOID.SECP192R1: SECP192R1,
+    EllipticCurveOID.SECP224R1: SECP224R1,
+    EllipticCurveOID.SECP256K1: SECP256K1,
+    EllipticCurveOID.SECP256R1: SECP256R1,
+    EllipticCurveOID.SECP384R1: SECP384R1,
+    EllipticCurveOID.SECP521R1: SECP521R1,
+    EllipticCurveOID.BRAINPOOLP256R1: BrainpoolP256R1,
+    EllipticCurveOID.BRAINPOOLP384R1: BrainpoolP384R1,
+    EllipticCurveOID.BRAINPOOLP512R1: BrainpoolP512R1,
+    EllipticCurveOID.SECT163K1: SECT163K1,
+    EllipticCurveOID.SECT163R2: SECT163R2,
+    EllipticCurveOID.SECT233K1: SECT233K1,
+    EllipticCurveOID.SECT233R1: SECT233R1,
+    EllipticCurveOID.SECT283K1: SECT283K1,
+    EllipticCurveOID.SECT283R1: SECT283R1,
+    EllipticCurveOID.SECT409K1: SECT409K1,
+    EllipticCurveOID.SECT409R1: SECT409R1,
+    EllipticCurveOID.SECT571K1: SECT571K1,
+    EllipticCurveOID.SECT571R1: SECT571R1,
+}
+
+
+def get_curve_for_oid(oid):
+    try:
+        return _OID_TO_CURVE[oid]
+    except KeyError:
+        raise LookupError(
+            "The provided object identifier has no matching elliptic "
+            "curve class"
+        )

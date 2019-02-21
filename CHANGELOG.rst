@@ -20,6 +20,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
+* Add support for easily mapping an object identifier to its elliptic curve
+  class via :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
 
 .. _v2-5:
 
