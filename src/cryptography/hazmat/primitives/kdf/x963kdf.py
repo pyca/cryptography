@@ -26,7 +26,7 @@ class X963KDF(object):
         max_len = algorithm.digest_size * (2 ** 32 - 1)
         if length > max_len:
             raise ValueError(
-                "Can not derive keys larger than {0} bits.".format(max_len))
+                "Can not derive keys larger than {} bits.".format(max_len))
         if sharedinfo is not None:
             utils._check_bytes("sharedinfo", sharedinfo)
 

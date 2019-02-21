@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestBlowfishModeECB(object):
-    test_ECB = generate_encrypt_test(
+    test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ecb.txt"],
@@ -41,7 +41,7 @@ class TestBlowfishModeECB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestBlowfishModeCBC(object):
-    test_CBC = generate_encrypt_test(
+    test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cbc.txt"],
@@ -58,7 +58,7 @@ class TestBlowfishModeCBC(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestBlowfishModeOFB(object):
-    test_OFB = generate_encrypt_test(
+    test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ofb.txt"],
@@ -75,7 +75,7 @@ class TestBlowfishModeOFB(object):
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestBlowfishModeCFB(object):
-    test_CFB = generate_encrypt_test(
+    test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cfb.txt"],

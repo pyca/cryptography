@@ -33,16 +33,15 @@ OpenSSL version 1.0.1 and greater.
 Threading
 ---------
 
-``cryptography`` enables OpenSSLs `thread safety facilities`_ in two different
-ways depending on the configuration of your system. Normally the locking
-callbacks provided by your Python implementation specifically for OpenSSL will
-be used. However, if you have linked ``cryptography`` to a different version of
-OpenSSL than that used by your Python implementation we enable an alternative
-locking callback. This version is implemented in Python and so may result in
-lower performance in some situations. In particular parallelism is reduced
-because it has to acquire the GIL whenever any lock operations occur within
-OpenSSL.
+``cryptography`` enables OpenSSLs `thread safety facilities`_ in several
+different ways depending on the configuration of your system. For users on
+OpenSSL 1.1.0 or newer (including anyone who uses a binary wheel) the OpenSSL
+internal locking callbacks are automatically used. Otherwise, we first attempt
+to use the callbacks provided by your Python implementation specifically for
+OpenSSL. This will work in every case except where ``cryptography`` is linked
+against a different version of OpenSSL than the one used by your Python
+implementation. For this final case we have a C-based locking callback.
 
 .. _`CFFI`: https://cffi.readthedocs.io
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`thread safety facilities`: https://www.openssl.org/docs/man1.0.2/crypto/threads.html
+.. _`thread safety facilities`: https://www.openssl.org/docs/man1.0.2/man3/CRYPTO_THREADID_set_callback.html

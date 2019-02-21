@@ -23,6 +23,8 @@ Changelog
 * Installing ``cryptography`` now relies on :pep`518`. In practice this means
   that you need to either use ``pip`` 18 or newer or you must manually install
   ``cffi`` before installing ``cryptography``.
+* Add support for easily mapping an object identifier to its elliptic curve
+  class via :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
 
 .. _v2-5:
 

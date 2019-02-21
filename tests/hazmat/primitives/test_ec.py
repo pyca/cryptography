@@ -11,7 +11,7 @@ from binascii import hexlify
 
 import pytest
 
-from cryptography import exceptions, utils
+from cryptography import exceptions, utils, x509
 from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, PEMSerializationBackend
 )
@@ -45,7 +45,7 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
         curve_type()
     ):
         pytest.skip(
-            "ECDSA not supported with this hash {0} and curve {1}".format(
+            "ECDSA not supported with this hash {} and curve {}".format(
                 hash_type().name, curve_type().name
             )
         )
@@ -54,7 +54,7 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
 def _skip_curve_unsupported(backend, curve):
     if not backend.elliptic_curve_supported(curve):
         pytest.skip(
-            "Curve {0} is not supported by this backend {1}".format(
+            "Curve {} is not supported by this backend {}".format(
                 curve.name, backend
             )
         )
@@ -65,10 +65,16 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
         algorithm, curve
     ):
         pytest.skip(
-            "Exchange with {0} curve is not supported by {1}".format(
+            "Exchange with {} curve is not supported by {}".format(
                 curve.name, backend
             )
         )
+
+
+def test_get_curve_for_oid():
+    assert ec.get_curve_for_oid(ec.EllipticCurveOID.SECP256R1) == ec.SECP256R1
+    with pytest.raises(LookupError):
+        ec.get_curve_for_oid(x509.ObjectIdentifier("1.1.1.1"))
 
 
 @utils.register_interface(ec.EllipticCurve)

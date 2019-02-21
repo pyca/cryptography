@@ -63,7 +63,7 @@ a few details:
     >>> csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
     ...     # Provide various details about who we are.
     ...     x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
-    ...     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"CA"),
+    ...     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"California"),
     ...     x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
     ...     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
     ...     x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
@@ -123,7 +123,7 @@ Then we generate the certificate itself:
     >>> # subject and issuer are always the same.
     >>> subject = issuer = x509.Name([
     ...     x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
-    ...     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"CA"),
+    ...     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"California"),
     ...     x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
     ...     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
     ...     x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),

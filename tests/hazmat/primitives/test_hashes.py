@@ -52,7 +52,7 @@ class TestHashContext(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA1(object):
-    test_SHA1 = generate_base_hash_test(
+    test_sha1 = generate_base_hash_test(
         hashes.SHA1(),
         digest_size=20,
     )
@@ -64,7 +64,7 @@ class TestSHA1(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA224(object):
-    test_SHA224 = generate_base_hash_test(
+    test_sha224 = generate_base_hash_test(
         hashes.SHA224(),
         digest_size=28,
     )
@@ -76,7 +76,7 @@ class TestSHA224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA256(object):
-    test_SHA256 = generate_base_hash_test(
+    test_sha256 = generate_base_hash_test(
         hashes.SHA256(),
         digest_size=32,
     )
@@ -88,7 +88,7 @@ class TestSHA256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA384(object):
-    test_SHA384 = generate_base_hash_test(
+    test_sha384 = generate_base_hash_test(
         hashes.SHA384(),
         digest_size=48,
     )
@@ -100,7 +100,7 @@ class TestSHA384(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512(object):
-    test_SHA512 = generate_base_hash_test(
+    test_sha512 = generate_base_hash_test(
         hashes.SHA512(),
         digest_size=64,
     )
@@ -112,7 +112,7 @@ class TestSHA512(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestMD5(object):
-    test_MD5 = generate_base_hash_test(
+    test_md5 = generate_base_hash_test(
         hashes.MD5(),
         digest_size=16,
     )
@@ -125,7 +125,7 @@ class TestMD5(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2b(object):
-    test_BLAKE2b = generate_base_hash_test(
+    test_blake2b = generate_base_hash_test(
         hashes.BLAKE2b(digest_size=64),
         digest_size=64,
     )
@@ -148,7 +148,7 @@ class TestBLAKE2b(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2s(object):
-    test_BLAKE2s = generate_base_hash_test(
+    test_blake2s = generate_base_hash_test(
         hashes.BLAKE2s(digest_size=32),
         digest_size=32,
     )

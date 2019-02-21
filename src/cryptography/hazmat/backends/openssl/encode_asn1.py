@@ -475,7 +475,7 @@ def _encode_general_name(backend, name):
         gn.d.uniformResourceIdentifier = asn1_str
     else:
         raise ValueError(
-            "{0} is an unknown GeneralName type".format(name)
+            "{} is an unknown GeneralName type".format(name)
         )
 
     return gn

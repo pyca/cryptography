@@ -135,7 +135,7 @@ def _decode_general_name(backend, gn):
             if "1" in bits[prefix:]:
                 raise ValueError("Invalid netmask")
 
-            ip = ipaddress.ip_network(base.exploded + u"/{0}".format(prefix))
+            ip = ipaddress.ip_network(base.exploded + u"/{}".format(prefix))
         else:
             ip = ipaddress.ip_address(data)
 
@@ -160,7 +160,7 @@ def _decode_general_name(backend, gn):
     else:
         # x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
-            "{0} is not a supported type".format(
+            "{} is not a supported type".format(
                 x509._GENERAL_NAMES.get(gn.type, gn.type)
             ),
             gn.type
@@ -202,7 +202,7 @@ class _X509ExtensionParser(object):
             )
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
-                    "Duplicate {0} extension found".format(oid), oid
+                    "Duplicate {} extension found".format(oid), oid
                 )
 
             # These OIDs are only supported in OpenSSL 1.1.0+ but we want
@@ -245,7 +245,7 @@ class _X509ExtensionParser(object):
                 if ext_data == backend._ffi.NULL:
                     backend._consume_errors()
                     raise ValueError(
-                        "The {0} extension is invalid and can't be "
+                        "The {} extension is invalid and can't be "
                         "parsed".format(oid)
                     )
 
@@ -698,7 +698,7 @@ def _decode_crl_reason(backend, enum):
     try:
         return x509.CRLReason(_CRL_ENTRY_REASON_CODE_TO_ENUM[code])
     except KeyError:
-        raise ValueError("Unsupported reason code: {0}".format(code))
+        raise ValueError("Unsupported reason code: {}".format(code))
 
 
 def _decode_invalidity_date(backend, inv_date):
@@ -758,7 +758,7 @@ def _asn1_string_to_utf8(backend, asn1_string):
     res = backend._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
     if res == -1:
         raise ValueError(
-            "Unsupported ASN1 string type. Type: {0}".format(asn1_string.type)
+            "Unsupported ASN1 string type. Type: {}".format(asn1_string.type)
         )
 
     backend.openssl_assert(buf[0] != backend._ffi.NULL)

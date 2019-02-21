@@ -187,7 +187,7 @@ class Backend(object):
 
     def _evp_md_from_algorithm(self, algorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":
-            alg = "{0}{1}".format(
+            alg = "{}{}".format(
                 algorithm.name, algorithm.digest_size * 8
             ).encode("ascii")
         else:
@@ -221,7 +221,7 @@ class Backend(object):
 
     def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
         if (cipher_cls, mode_cls) in self._cipher_registry:
-            raise ValueError("Duplicate registration for: {0} {1}.".format(
+            raise ValueError("Duplicate registration for: {} {}.".format(
                 cipher_cls, mode_cls)
             )
         self._cipher_registry[cipher_cls, mode_cls] = adapter
@@ -980,7 +980,7 @@ class Backend(object):
                 encode = handlers[extension.oid]
             except KeyError:
                 raise NotImplementedError(
-                    'Extension not supported: {0}'.format(extension.oid)
+                    'Extension not supported: {}'.format(extension.oid)
                 )
 
             ext_struct = encode(self, extension.value)
@@ -1244,7 +1244,7 @@ class Backend(object):
                 else:
                     assert userdata.error == -2
                     raise ValueError(
-                        "Passwords longer than {0} bytes are not supported "
+                        "Passwords longer than {} bytes are not supported "
                         "by this backend.".format(userdata.maxsize - 1)
                     )
             else:
@@ -1356,7 +1356,7 @@ class Backend(object):
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm(
-                "Backend object does not support {0}.".format(curve.name),
+                "Backend object does not support {}.".format(curve.name),
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
 
@@ -1610,7 +1610,7 @@ class Backend(object):
         curve_nid = self._lib.OBJ_sn2nid(curve_name.encode())
         if curve_nid == self._lib.NID_undef:
             raise UnsupportedAlgorithm(
-                "{0} is not a supported elliptic curve".format(curve.name),
+                "{} is not a supported elliptic curve".format(curve.name),
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
         return curve_nid
@@ -2323,7 +2323,7 @@ class GetCipherByName(object):
 
 
 def _get_xts_cipher(backend, cipher, mode):
-    cipher_name = "aes-{0}-xts".format(cipher.key_size // 2)
+    cipher_name = "aes-{}-xts".format(cipher.key_size // 2)
     return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 

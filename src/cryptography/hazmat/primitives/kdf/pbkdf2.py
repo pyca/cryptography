@@ -24,7 +24,7 @@ class PBKDF2HMAC(object):
 
         if not backend.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
-                "{0} is not supported for PBKDF2 by this backend.".format(
+                "{} is not supported for PBKDF2 by this backend.".format(
                     algorithm.name),
                 _Reasons.UNSUPPORTED_HASH
             )

@@ -14,7 +14,7 @@ from .utils import (
 
 
 def pytest_report_header(config):
-    return "OpenSSL: {0}".format(openssl_backend.openssl_version_text())
+    return "OpenSSL: {}".format(openssl_backend.openssl_version_text())
 
 
 def pytest_addoption(parser):
@@ -43,7 +43,7 @@ def backend(request):
         isinstance(openssl_backend, iface) for iface in required_interfaces
     ):
         pytest.skip(
-            "OpenSSL doesn't implement required interfaces: {0}".format(
+            "OpenSSL doesn't implement required interfaces: {}".format(
                 required_interfaces
             )
         )

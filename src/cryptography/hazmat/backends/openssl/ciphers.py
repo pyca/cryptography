@@ -40,7 +40,7 @@ class _CipherContext(object):
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "cipher {0} in {1} mode is not supported "
+                "cipher {} in {} mode is not supported "
                 "by this backend.".format(
                     cipher.name, mode.name if mode else mode),
                 _Reasons.UNSUPPORTED_CIPHER
@@ -53,7 +53,7 @@ class _CipherContext(object):
                 msg += "in {0.name} mode ".format(mode)
             msg += (
                 "is not supported by this backend (Your version of OpenSSL "
-                "may be too old. Current version: {0}.)"
+                "may be too old. Current version: {}.)"
             ).format(self._backend.openssl_version_text())
             raise UnsupportedAlgorithm(msg, _Reasons.UNSUPPORTED_CIPHER)
 
@@ -127,7 +127,7 @@ class _CipherContext(object):
     def update_into(self, data, buf):
         if len(buf) < (len(data) + self._block_size_bytes - 1):
             raise ValueError(
-                "buffer must be at least {0} bytes for this "
+                "buffer must be at least {} bytes for this "
                 "payload".format(len(data) + self._block_size_bytes - 1)
             )
 
@@ -207,7 +207,7 @@ class _CipherContext(object):
             )
         if len(tag) < self._mode._min_tag_length:
             raise ValueError(
-                "Authentication tag must be {0} bytes or longer.".format(
+                "Authentication tag must be {} bytes or longer.".format(
                     self._mode._min_tag_length)
             )
         res = self._backend._lib.EVP_CIPHER_CTX_ctrl(

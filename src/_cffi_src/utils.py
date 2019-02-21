@@ -4,11 +4,19 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 from distutils.ccompiler import new_compiler
 from distutils.dist import Distribution
 
 from cffi import FFI
+
+
+# Load the cryptography __about__ to get the current package version
+base_src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+about = {}
+with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
+    exec(f.read(), about)
 
 
 def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
@@ -55,6 +63,11 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
 def build_ffi(module_name, cdef_source, verify_source, libraries=[],
               extra_compile_args=[], extra_link_args=[]):
     ffi = FFI()
+    # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
+    cdef_source += "\nstatic const char *const CRYPTOGRAPHY_PACKAGE_VERSION;"
+    verify_source += '\n#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"'.format(
+        about["__version__"]
+    )
     ffi.cdef(cdef_source)
     ffi.set_source(
         module_name,

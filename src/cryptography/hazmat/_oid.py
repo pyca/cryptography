@@ -50,7 +50,7 @@ class ObjectIdentifier(object):
         return not self == other
 
     def __repr__(self):
-        return "<ObjectIdentifier(oid={0}, name={1})>".format(
+        return "<ObjectIdentifier(oid={}, name={})>".format(
             self.dotted_string,
             self._name
         )
