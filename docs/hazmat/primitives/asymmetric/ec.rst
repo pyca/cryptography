@@ -930,11 +930,11 @@ Elliptic Curve Object Identifiers
 
     .. versionadded:: 2.6
 
-    A function that takes an :class:`~cryptography.x509.oid.ObjectIdentifier`
+    A function that takes an :class:`~cryptography.x509.ObjectIdentifier`
     and returns the associated elliptic curve class.
 
     :param oid: An instance of
-        :class:`~cryptography.x509.oid.ObjectIdentifier`.
+        :class:`~cryptography.x509.ObjectIdentifier`.
 
     :returns: The matching instance of :class:`EllipticCurve`.
 
