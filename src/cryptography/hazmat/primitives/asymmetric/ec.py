@@ -490,7 +490,7 @@ _OID_TO_CURVE = {
 }
 
 
-def oid_to_curve(oid):
+def get_curve_for_oid(oid):
     try:
         return _OID_TO_CURVE[oid]
     except KeyError:

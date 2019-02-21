@@ -71,10 +71,10 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
         )
 
 
-def test_oid_to_curve():
-    assert ec.oid_to_curve(ec.EllipticCurveOID.SECP256R1) == ec.SECP256R1
+def test_get_curve_for_oid():
+    assert ec.get_curve_for_oid(ec.EllipticCurveOID.SECP256R1) == ec.SECP256R1
     with pytest.raises(LookupError):
-        ec.oid_to_curve(x509.ObjectIdentifier("1.1.1.1"))
+        ec.get_curve_for_oid(x509.ObjectIdentifier("1.1.1.1"))
 
 
 @utils.register_interface(ec.EllipticCurve)

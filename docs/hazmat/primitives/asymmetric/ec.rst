@@ -926,7 +926,7 @@ Elliptic Curve Object Identifiers
 
         Corresponds to the dotted string ``"1.3.132.0.39"``.
 
-.. function:: oid_to_curve(oid)
+.. function:: get_curve_for_oid(oid)
 
     .. versionadded:: 2.6
 
@@ -936,7 +936,8 @@ Elliptic Curve Object Identifiers
     :param oid: An instance of
         :class:`~cryptography.x509.ObjectIdentifier`.
 
-    :returns: The matching instance of :class:`EllipticCurve`.
+    :returns: The matching elliptic curve class. The returned class conforms
+        to the :class:`EllipticCurve` interface.
 
     :raises LookupError: Raised if no elliptic curve is found that matches
         the provided object identifier.
