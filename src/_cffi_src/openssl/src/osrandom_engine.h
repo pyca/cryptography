@@ -70,8 +70,10 @@ enum {
     CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS
 };
 
+#ifndef OPENSSL_NO_ENGINE
 /* engine ctrl */
 #define CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION ENGINE_CMD_BASE
+#endif
 
 /* error reporting */
 static void ERR_load_Cryptography_OSRandom_strings(void);

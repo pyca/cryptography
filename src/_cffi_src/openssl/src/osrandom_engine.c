@@ -496,6 +496,7 @@ static RAND_METHOD osrandom_rand = {
     osrandom_rand_status,
 };
 
+#ifndef OPENSSL_NO_ENGINE
 static const ENGINE_CMD_DEFN osrandom_cmd_defns[] = {
     {CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION,
      "get_implementation",
@@ -529,6 +530,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
         return 0;
     }
 }
+#endif
 
 /* error reporting */
 #define ERR_FUNC(func) ERR_PACK(0, func, 0)
@@ -602,6 +604,7 @@ static void ERR_Cryptography_OSRandom_error(int function, int reason,
 /* Returns 1 if successfully added, 2 if engine has previously been added,
    and 0 for error. */
 int Cryptography_add_osrandom_engine(void) {
+#ifndef OPENSSL_NO_ENGINE
     ENGINE *e;
 
     ERR_load_Cryptography_OSRandom_strings();
@@ -637,4 +640,7 @@ int Cryptography_add_osrandom_engine(void) {
     }
 
     return 1;
+#else
+    return 0;
+#endif
 }
