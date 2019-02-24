@@ -11,7 +11,12 @@ if [ -n "${LIBRESSL}" ]; then
 fi
 
 if [ -n "${OPENSSL}" ]; then
-    OPENSSL_DIR="ossl-2/${OPENSSL}"
+    if [ -n "${OPENSSL_CONFIG_FLAGS}" ]; then
+        CONFIG_HASH=$(echo "$OPENSSL_CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
+    else
+        CONFIG_HASH=""
+    fi
+    OPENSSL_DIR="ossl-2/${OPENSSL}${CONFIG_HASH}"
 
     export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
     export CFLAGS="${CFLAGS} -I$HOME/$OPENSSL_DIR/include"
