@@ -334,7 +334,6 @@ int SSL_SESSION_print(BIO *, const SSL_SESSION *);
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
 const char *SSL_COMP_get_name(const COMP_METHOD *);
-int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 
 unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);

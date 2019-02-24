@@ -21,7 +21,10 @@ Changelog
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
 * Add support for easily mapping an object identifier to its elliptic curve
-  class via :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
+  class via
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
+* Add support for OpenSSL when compiled with the ``no-engine``
+  (``OPENSSL_NO_ENGINE``) flag.
 
 .. _v2-5:
 

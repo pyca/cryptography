@@ -341,6 +341,47 @@ def cryptography_has_evp_r_memory_limit_exceeded():
     ]
 
 
+def cryptography_has_engine():
+    return [
+        "ENGINE_get_first",
+        "ENGINE_get_last",
+        "ENGINE_add",
+        "ENGINE_remove",
+        "ENGINE_by_id",
+        "ENGINE_init",
+        "ENGINE_finish",
+        "ENGINE_load_builtin_engines",
+        "ENGINE_get_default_RAND",
+        "ENGINE_set_default_RAND",
+        "ENGINE_register_RAND",
+        "ENGINE_unregister_RAND",
+        "ENGINE_register_all_RAND",
+        "ENGINE_ctrl",
+        "ENGINE_ctrl_cmd",
+        "ENGINE_ctrl_cmd_string",
+        "ENGINE_new",
+        "ENGINE_free",
+        "ENGINE_up_ref",
+        "ENGINE_set_id",
+        "ENGINE_set_name",
+        "ENGINE_set_RAND",
+        "ENGINE_set_destroy_function",
+        "ENGINE_set_init_function",
+        "ENGINE_set_finish_function",
+        "ENGINE_set_ctrl_function",
+        "ENGINE_get_id",
+        "ENGINE_get_name",
+        "ENGINE_get_RAND",
+        "ENGINE_add_conf_module",
+        "ENGINE_load_openssl",
+        "ENGINE_load_dynamic",
+        "ENGINE_cleanup",
+        "ENGINE_METHOD_RAND",
+        "ENGINE_R_CONFLICTING_ENGINE_ID",
+        "Cryptography_add_osrandom_engine",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -412,4 +453,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED": (
         cryptography_has_evp_r_memory_limit_exceeded
     ),
+    "Cryptography_HAS_ENGINE": cryptography_has_engine,
 }
