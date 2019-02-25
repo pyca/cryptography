@@ -170,6 +170,9 @@ class TestOpenSSL(object):
         assert backend._bn_to_int(bn) == 0
 
 
+@pytest.mark.skipif(
+    backend._lib.Cryptography_HAS_ENGINE == 0,
+    reason="Requires OpenSSL with ENGINE support")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
         # The default RAND engine is global and shared between

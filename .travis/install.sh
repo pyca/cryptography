@@ -3,6 +3,8 @@
 set -e
 set -x
 
+SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
 shlib_sed() {
     # modify the shlib version to a unique one to make sure the dynamic
     # linker doesn't load the system one.
@@ -14,12 +16,12 @@ shlib_sed() {
 # download, compile, and install if it's not already present via travis
 # cache
 if [ -n "${OPENSSL}" ]; then
-    OPENSSL_DIR="ossl-2/${OPENSSL}"
+    . "$SCRIPT_DIR/openssl_config.sh"
     if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
         curl -O "https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz"
         tar zxf "openssl-${OPENSSL}.tar.gz"
         pushd "openssl-${OPENSSL}"
-        ./config shared no-ssl2 no-ssl3 -fPIC --prefix="$HOME/$OPENSSL_DIR"
+        ./config $OPENSSL_CONFIG_FLAGS -fPIC --prefix="$HOME/$OPENSSL_DIR"
         shlib_sed
         make depend
         make -j"$(nproc)"

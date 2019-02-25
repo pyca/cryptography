@@ -115,8 +115,9 @@ class Binding(object):
         # reliably clear the error queue. Once we clear it here we will
         # error on any subsequent unexpected item in the stack.
         cls.lib.ERR_clear_error()
-        result = cls.lib.Cryptography_add_osrandom_engine()
-        _openssl_assert(cls.lib, result in (1, 2))
+        if cls.lib.Cryptography_HAS_ENGINE:
+            result = cls.lib.Cryptography_add_osrandom_engine()
+            _openssl_assert(cls.lib, result in (1, 2))
 
     @classmethod
     def _ensure_ffi_initialized(cls):
