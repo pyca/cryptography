@@ -282,13 +282,13 @@ class _CertificateRevocationList(object):
 
     @property
     def next_update(self):
-        nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
+        nu = self._backend._lib.X509_CRL_get0_nextUpdate(self._x509_crl)
         self._backend.openssl_assert(nu != self._backend._ffi.NULL)
         return _parse_asn1_time(self._backend, nu)
 
     @property
     def last_update(self):
-        lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
+        lu = self._backend._lib.X509_CRL_get0_lastUpdate(self._x509_crl)
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
         return _parse_asn1_time(self._backend, lu)
 

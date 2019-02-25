@@ -22,10 +22,13 @@ int RAND_bytes(unsigned char *, int);
    pyOpenSSL (which calls this in its rand.py as of mid-2016) */
 void ERR_load_RAND_strings(void);
 
-/* RAND_cleanup became a macro in 1.1.0 */
-void RAND_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_EGD = 0;
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* RAND_cleanup became a macro in 1.1.0 */
+void RAND_cleanup(void);
+#endif
 """

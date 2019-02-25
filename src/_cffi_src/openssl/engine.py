@@ -123,11 +123,13 @@ const ENGINE_CMD_DEFN *ENGINE_get_cmd_defns(const ENGINE *);
 EVP_PKEY *ENGINE_load_private_key(ENGINE *, const char *, UI_METHOD *, void *);
 EVP_PKEY *ENGINE_load_public_key(ENGINE *, const char *, UI_METHOD *, void *);
 void ENGINE_add_conf_module(void);
+"""
+
+CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 /* these became macros in 1.1.0 */
 void ENGINE_load_openssl(void);
 void ENGINE_load_dynamic(void);
 void ENGINE_cleanup(void);
-"""
-
-CUSTOMIZATIONS = """
+#endif
 """

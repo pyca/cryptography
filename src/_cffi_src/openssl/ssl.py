@@ -15,9 +15,12 @@ static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_SSL3_METHOD;
+static const long Cryptography_HAS_TLSv1;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
+static const long Cryptography_HAS_DTLSv1;
+static const long Cryptography_HAS_DTLSv1_2;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
@@ -28,6 +31,7 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
+static const long Cryptography_HAS_GENERIC_TLS_METHOD;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_CIPHER_DETAILS;
@@ -307,9 +311,6 @@ Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 const char *SSL_get_servername(const SSL *, const int);
 /* Function signature changed to const char * in 1.1.0 */
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
-/* These became macros in 1.1.0 */
-int SSL_library_init(void);
-void SSL_load_error_strings(void);
 
 /* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
 int SSL_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
@@ -373,25 +374,6 @@ unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
  * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
  * OpenSSL support them.
  */
-const SSL_METHOD *TLSv1_1_method(void);
-const SSL_METHOD *TLSv1_1_server_method(void);
-const SSL_METHOD *TLSv1_1_client_method(void);
-
-const SSL_METHOD *TLSv1_2_method(void);
-const SSL_METHOD *TLSv1_2_server_method(void);
-const SSL_METHOD *TLSv1_2_client_method(void);
-
-const SSL_METHOD *SSLv3_method(void);
-const SSL_METHOD *SSLv3_server_method(void);
-const SSL_METHOD *SSLv3_client_method(void);
-
-const SSL_METHOD *TLSv1_method(void);
-const SSL_METHOD *TLSv1_server_method(void);
-const SSL_METHOD *TLSv1_client_method(void);
-
-const SSL_METHOD *DTLSv1_method(void);
-const SSL_METHOD *DTLSv1_server_method(void);
-const SSL_METHOD *DTLSv1_client_method(void);
 
 /* Added in 1.0.2 */
 const SSL_METHOD *DTLS_method(void);
@@ -627,6 +609,69 @@ SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
 SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_SSL3_METHOD = 1;
+const SSL_METHOD *SSLv3_method(void);
+const SSL_METHOD *SSLv3_server_method(void);
+const SSL_METHOD *SSLv3_client_method(void);
+#endif
+
+#ifdef OPENSSL_NO_TLS1_METHOD
+static const long Cryptography_HAS_TLSv1 = 0;
+SSL_METHOD* (*TLSv1_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_client_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLSv1 = 1;
+const SSL_METHOD *TLSv1_method(void);
+const SSL_METHOD *TLSv1_server_method(void);
+const SSL_METHOD *TLSv1_client_method(void);
+#endif
+
+#ifdef OPENSSL_NO_TLS1_1_METHOD
+static const long Cryptography_HAS_TLSv1_1 = 0;
+SSL_METHOD* (*TLSv1_1_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_1_client_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLSv1_1 = 1;
+const SSL_METHOD *TLSv1_1_method(void);
+const SSL_METHOD *TLSv1_1_server_method(void);
+const SSL_METHOD *TLSv1_1_client_method(void);
+#endif
+
+#ifdef OPENSSL_NO_TLS1_2_METHOD
+static const long Cryptography_HAS_TLSv1_2 = 0;
+SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLSv1_2 = 1;
+const SSL_METHOD *TLSv1_2_method(void);
+const SSL_METHOD *TLSv1_2_server_method(void);
+const SSL_METHOD *TLSv1_2_client_method(void);
+#endif
+
+#ifdef OPENSSL_NO_DTLS1_METHOD
+static const long Cryptography_HAS_DTLSv1 = 0;
+SSL_METHOD* (*DTLSv1_method)(void) = NULL;
+SSL_METHOD* (*DTLSv1_client_method)(void) = NULL;
+SSL_METHOD* (*DTLSv1_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_DTLSv1 = 1;
+const SSL_METHOD *DTLSv1_method(void);
+const SSL_METHOD *DTLSv1_server_method(void);
+const SSL_METHOD *DTLSv1_client_method(void);
+#endif
+
+#ifdef OPENSSL_NO_DTLS1_2_METHOD
+static const long Cryptography_HAS_DTLSv1_2 = 0;
+SSL_METHOD* (*DTLSv1_2_method)(void) = NULL;
+SSL_METHOD* (*DTLSv1_2_client_method)(void) = NULL;
+SSL_METHOD* (*DTLSv1_2_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_DTLSv1_2 = 1;
+const SSL_METHOD *DTLSv1_2_method(void);
+const SSL_METHOD *DTLSv1_2_server_method(void);
+const SSL_METHOD *DTLSv1_2_client_method(void);
 #endif
 
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
@@ -635,8 +680,6 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
-static const long Cryptography_HAS_TLSv1_1 = 1;
-static const long Cryptography_HAS_TLSv1_2 = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
@@ -731,6 +774,18 @@ long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_GENERIC_TLS_METHOD = 0;
+const SSL_METHOD* (*TLS_method)(void) = NULL;
+const SSL_METHOD* (*TLS_client_method)(void) = NULL;
+const SSL_METHOD* (*TLS_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_GENERIC_TLS_METHOD = 1;
+const SSL_METHOD *TLS_method(void);
+const SSL_METHOD *TLS_server_method(void);
+const SSL_METHOD *TLS_client_method(void);
 #endif
 
 static const long Cryptography_HAS_DTLS = 1;
@@ -848,5 +903,11 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* These became macros in 1.1.0 */
+int SSL_library_init(void);
+void SSL_load_error_strings(void);
 #endif
 """

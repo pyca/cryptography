@@ -265,9 +265,6 @@ void X509_get0_signature(const ASN1_BIT_STRING **,
 
 long X509_get_version(X509 *);
 
-ASN1_TIME *X509_get_notBefore(X509 *);
-ASN1_TIME *X509_get_notAfter(X509 *);
-
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
 
@@ -301,16 +298,8 @@ int i2d_DSAPublicKey(DSA *, unsigned char **);
 int i2d_DSAPrivateKey(DSA *, unsigned char **);
 
 long X509_CRL_get_version(X509_CRL *);
-ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
-ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
-
-/* These aren't macros these arguments are all const X on openssl > 1.0.x */
-int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
-int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
-int X509_set_notBefore(X509 *, ASN1_TIME *);
-int X509_set_notAfter(X509 *, ASN1_TIME *);
 
 int i2d_EC_PUBKEY(EC_KEY *, unsigned char **);
 EC_KEY *d2i_EC_PUBKEY(EC_KEY **, const unsigned char **, long);
@@ -438,5 +427,22 @@ const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
     return x->serialNumber;
 }
 #endif
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
+const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
+int X509_set1_notBefore(X509 *, const ASN1_TIME *);
+int X509_set1_notAfter(X509 *, const ASN1_TIME *);
+#else
+ASN1_TIME *X509_get_notBefore(X509 *);
+ASN1_TIME *X509_get_notAfter(X509 *);
+int X509_set_notBefore(X509 *, ASN1_TIME *);
+int X509_set_notAfter(X509 *, ASN1_TIME *);
+ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
+ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
+/* These aren't macros these arguments are all const X on openssl > 1.0.x */
+int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
+int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 #endif
 """

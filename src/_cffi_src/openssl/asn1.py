@@ -41,7 +41,6 @@ FUNCTIONS = """
 void ASN1_OBJECT_free(ASN1_OBJECT *);
 
 /*  ASN1 STRING */
-unsigned char *ASN1_STRING_data(ASN1_STRING *);
 int ASN1_STRING_set(ASN1_STRING *, const void *, int);
 
 /*  ASN1 OCTET STRING */
@@ -103,4 +102,9 @@ ASN1_NULL *ASN1_NULL_new(void);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *x);
+#else
+unsigned char *ASN1_STRING_data(ASN1_STRING *);
+#endif
 """

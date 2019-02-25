@@ -33,9 +33,11 @@ int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
 ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
 int OBJ_create(const char *, const char *, const char *);
 void OBJ_NAME_do_all(int, void (*) (const OBJ_NAME *, void *), void *);
-/* OBJ_cleanup became a macro in 1.1.0 */
-void OBJ_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* OBJ_cleanup became a macro in 1.1.0 */
+void OBJ_cleanup(void);
+#endif
 """

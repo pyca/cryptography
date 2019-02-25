@@ -60,7 +60,6 @@ int EVP_CipherUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
                      const unsigned char *, int);
 int EVP_CipherFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
 int EVP_CIPHER_block_size(const EVP_CIPHER *);
-int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
@@ -176,10 +175,6 @@ EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 /* EVP_PKEY * became const in 1.1.0 */
 int EVP_PKEY_bits(EVP_PKEY *);
 
-/* became a macro in 1.1.0 */
-void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
-
-void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 
@@ -316,5 +311,12 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
    conditional to remove it. */
 #ifndef EVP_PKEY_ED448
 #define EVP_PKEY_ED448 NID_ED448
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* became a macro in 1.1.0 */
+void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
+int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
+void OpenSSL_add_all_algorithms(void);
 #endif
 """

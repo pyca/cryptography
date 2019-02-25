@@ -36,14 +36,7 @@ static const int CRYPTO_LOCK_SSL;
 FUNCTIONS = """
 int CRYPTO_mem_ctrl(int);
 
-void CRYPTO_cleanup_all_ex_data(void);
 void OPENSSL_cleanup(void);
-
-/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
-   have become macros that are no ops */
-int CRYPTO_num_locks(void);
-void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
-void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
 
 /* SSLeay was removed in 1.1.0 */
 unsigned long SSLeay(void);
@@ -118,6 +111,8 @@ static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
 
 void (*OPENSSL_cleanup)(void) = NULL;
 
+void CRYPTO_cleanup_all_ex_data(void);
+
 /* This function has a significantly different signature pre-1.1.0. since it is
  * for testing only, we don't bother to expose it on older OpenSSLs.
  */
@@ -152,4 +147,12 @@ void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
 void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
     free(ptr);
 }
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
+   have become macros that are no ops */
+int CRYPTO_num_locks(void);
+void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+#endif
 """
