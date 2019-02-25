@@ -440,25 +440,9 @@ SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
 
 long SSL_session_reused(SSL *);
 
-void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
-                                           int (*)(SSL *,
-                                                   const unsigned char **,
-                                                   unsigned int *,
-                                                   void *),
-                                           void *);
-void SSL_CTX_set_next_proto_select_cb(SSL_CTX *,
-                                      int (*)(SSL *,
-                                              unsigned char **,
-                                              unsigned char *,
-                                              const unsigned char *,
-                                              unsigned int,
-                                              void *),
-                                      void *);
 int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int,
                           const unsigned char *, unsigned int);
-void SSL_get0_next_proto_negotiated(const SSL *,
-                                    const unsigned char **, unsigned *);
 
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
 const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
