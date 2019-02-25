@@ -1,3 +1,5 @@
+#ifndef OPENSSL_NO_ENGINE
+/* OpenSSL has ENGINE support so include all of this. */
 #ifdef _WIN32
   #include <Wincrypt.h>
 #else
@@ -97,3 +99,4 @@ static void ERR_Cryptography_OSRandom_error(int function, int reason,
 #define CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_INIT_FAILED_UNEXPECTED 402
 #define CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_FAILED 403
 #define CRYPTOGRAPHY_OSRANDOM_R_GETRANDOM_NOT_INIT 404
+#endif
