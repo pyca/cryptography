@@ -83,16 +83,17 @@ typedef struct ENGINE_CMD_DEFN_st {
     const char *cmd_desc;
     unsigned int cmd_flags;
 } ENGINE_CMD_DEFN;
-/* defining these values makes osrandom_engine compile successfully */
+
+/* This section is so osrandom_engine.c can successfully compile even
+   when engine support is disabled */
 #define ENGINE_CMD_BASE 0
 #define ENGINE_CMD_FLAG_NO_INPUT 0
 #define ENGINE_F_ENGINE_CTRL 0
 #define ENGINE_R_INVALID_ARGUMENT 0
 #define ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED 0
-
+int (*ENGINE_set_cmd_defns)(ENGINE *, const ENGINE_CMD_DEFN *) = NULL;
 
 static const unsigned int ENGINE_METHOD_RAND = 0;
-
 static const int ENGINE_R_CONFLICTING_ENGINE_ID = 0;
 
 ENGINE *(*ENGINE_get_first)(void) = NULL;
