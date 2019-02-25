@@ -115,8 +115,6 @@ class Binding(object):
         # reliably clear the error queue. Once we clear it here we will
         # error on any subsequent unexpected item in the stack.
         cls.lib.ERR_clear_error()
-        cls._osrandom_engine_id = cls.lib.Cryptography_osrandom_engine_id
-        cls._osrandom_engine_name = cls.lib.Cryptography_osrandom_engine_name
         result = cls.lib.Cryptography_add_osrandom_engine()
         _openssl_assert(cls.lib, result in (1, 2))
 
