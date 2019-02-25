@@ -649,7 +649,7 @@ static const long Cryptography_HAS_TLSv1_2 = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
-static const long Cryptography_HAS_NEXTPROTONEG = 1;
+static const long Cryptography_HAS_NEXTPROTONEG = 0;
 static const long Cryptography_HAS_ALPN = 1;
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
