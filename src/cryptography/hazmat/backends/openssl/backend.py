@@ -133,7 +133,7 @@ class Backend(object):
     def _get_osurandom_engine(self):
         # Fetches an engine by id and returns it. This creates a structural
         # reference.
-        e = self._lib.ENGINE_by_id(self._binding._osrandom_engine_id)
+        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
         self.openssl_assert(e != self._ffi.NULL)
         # Initialize the engine for use. This adds a functional reference.
         res = self._lib.ENGINE_init(e)
