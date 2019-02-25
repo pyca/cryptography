@@ -297,6 +297,25 @@ class TestOpenSSLRandomEngine(object):
         assert res == 1
 
 
+@pytest.mark.skipif(
+    backend._lib.Cryptography_HAS_ENGINE == 1,
+    reason="Requires OpenSSL without ENGINE support")
+class TestOpenSSLNoEngine(object):
+    def test_no_engine_support(self):
+        assert backend._ffi.string(
+            backend._lib.Cryptography_osrandom_engine_id
+        ) == b"no-engine-support"
+        assert backend._ffi.string(
+            backend._lib.Cryptography_osrandom_engine_name
+        ) == b"osrandom_engine disabled due to no engine support"
+
+    def test_activate_builtin_random_does_nothing(self):
+        backend.activate_builtin_random()
+
+    def test_activate_osrandom_does_nothing(self):
+        backend.activate_osrandom_engine()
+
+
 class TestOpenSSLRSA(object):
     def test_generate_rsa_parameters_supported(self):
         assert backend.generate_rsa_parameters_supported(1, 1024) is False

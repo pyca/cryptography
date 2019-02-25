@@ -119,15 +119,16 @@ class Backend(object):
         return binding._openssl_assert(self._lib, ok)
 
     def activate_builtin_random(self):
-        # Obtain a new structural reference.
-        e = self._lib.ENGINE_get_default_RAND()
-        if e != self._ffi.NULL:
-            self._lib.ENGINE_unregister_RAND(e)
-            # Reset the RNG to use the new engine.
-            self._lib.RAND_cleanup()
-            # decrement the structural reference from get_default_RAND
-            res = self._lib.ENGINE_finish(e)
-            self.openssl_assert(res == 1)
+        if self._lib.Cryptography_HAS_ENGINE:
+            # Obtain a new structural reference.
+            e = self._lib.ENGINE_get_default_RAND()
+            if e != self._ffi.NULL:
+                self._lib.ENGINE_unregister_RAND(e)
+                # Reset the RNG to use the new engine.
+                self._lib.RAND_cleanup()
+                # decrement the structural reference from get_default_RAND
+                res = self._lib.ENGINE_finish(e)
+                self.openssl_assert(res == 1)
 
     @contextlib.contextmanager
     def _get_osurandom_engine(self):
