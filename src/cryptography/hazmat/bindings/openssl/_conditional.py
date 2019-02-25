@@ -343,7 +343,6 @@ def cryptography_has_evp_r_memory_limit_exceeded():
 
 def cryptography_has_engine():
     return [
-        "ENGINE_add",
         "ENGINE_by_id",
         "ENGINE_init",
         "ENGINE_finish",
@@ -353,8 +352,6 @@ def cryptography_has_engine():
         "ENGINE_ctrl_cmd",
         "ENGINE_free",
         "ENGINE_get_name",
-        "ENGINE_load_dynamic",
-        "ENGINE_R_CONFLICTING_ENGINE_ID",
         "Cryptography_add_osrandom_engine",
     ]
 
