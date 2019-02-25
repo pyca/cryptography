@@ -139,8 +139,6 @@ static const long SSL3_RANDOM_SIZE;
 static const long TLS_ST_BEFORE;
 static const long TLS_ST_OK;
 
-static const long OPENSSL_NPN_NEGOTIATED;
-
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
