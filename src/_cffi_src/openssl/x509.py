@@ -29,53 +29,16 @@ typedef struct {
     ...;
 } X509_ALGOR;
 
-typedef ... X509_ATTRIBUTE;
-typedef ... X509_CINF;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
-typedef ... X509_REQ_INFO;
 typedef ... X509_REVOKED;
-typedef ... X509_CRL_INFO;
 typedef ... X509_CRL;
 typedef ... X509;
 
 typedef ... NETSCAPE_SPKI;
 
 typedef ... PKCS8_PRIV_KEY_INFO;
-
-static const int X509_FLAG_COMPAT;
-static const int X509_FLAG_NO_HEADER;
-static const int X509_FLAG_NO_VERSION;
-static const int X509_FLAG_NO_SERIAL;
-static const int X509_FLAG_NO_SIGNAME;
-static const int X509_FLAG_NO_ISSUER;
-static const int X509_FLAG_NO_VALIDITY;
-static const int X509_FLAG_NO_SUBJECT;
-static const int X509_FLAG_NO_PUBKEY;
-static const int X509_FLAG_NO_EXTENSIONS;
-static const int X509_FLAG_NO_SIGDUMP;
-static const int X509_FLAG_NO_AUX;
-static const int X509_FLAG_NO_ATTRIBUTES;
-
-static const int XN_FLAG_SEP_MASK;
-static const int XN_FLAG_COMPAT;
-static const int XN_FLAG_SEP_COMMA_PLUS;
-static const int XN_FLAG_SEP_CPLUS_SPC;
-static const int XN_FLAG_SEP_SPLUS_SPC;
-static const int XN_FLAG_SEP_MULTILINE;
-static const int XN_FLAG_DN_REV;
-static const int XN_FLAG_FN_MASK;
-static const int XN_FLAG_FN_SN;
-static const int XN_FLAG_FN_LN;
-static const int XN_FLAG_FN_OID;
-static const int XN_FLAG_FN_NONE;
-static const int XN_FLAG_SPC_EQ;
-static const int XN_FLAG_DUMP_UNKNOWN_FIELDS;
-static const int XN_FLAG_FN_ALIGN;
-static const int XN_FLAG_RFC2253;
-static const int XN_FLAG_ONELINE;
-static const int XN_FLAG_MULTILINE;
 
 typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
 """
@@ -108,13 +71,10 @@ int X509_set_subject_name(X509 *, X509_NAME *);
 int X509_set_issuer_name(X509 *, X509_NAME *);
 
 int X509_add_ext(X509 *, X509_EXTENSION *, int);
-X509_EXTENSION *X509_delete_ext(X509 *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
-
-int i2d_X509(X509 *, unsigned char **);
 
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
@@ -123,10 +83,7 @@ int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
 int X509_REQ_set_subject_name(X509_REQ *, X509_NAME *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
-int X509_REQ_digest(const X509_REQ *, const EVP_MD *,
-                    unsigned char *, unsigned int *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
-int X509_REQ_print(BIO *, X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
@@ -186,40 +143,19 @@ int X509_set_serialNumber(X509 *, ASN1_INTEGER *);
 
 const char *X509_verify_cert_error_string(long);
 
-const char *X509_get_default_cert_area(void);
 const char *X509_get_default_cert_dir(void);
 const char *X509_get_default_cert_file(void);
 const char *X509_get_default_cert_dir_env(void);
 const char *X509_get_default_cert_file_env(void);
-const char *X509_get_default_private_dir(void);
 
-int i2d_RSA_PUBKEY(RSA *, unsigned char **);
-RSA *d2i_RSA_PUBKEY(RSA **, const unsigned char **, long);
-RSA *d2i_RSAPublicKey(RSA **, const unsigned char **, long);
-RSA *d2i_RSAPrivateKey(RSA **, const unsigned char **, long);
-int i2d_DSA_PUBKEY(DSA *, unsigned char **);
-DSA *d2i_DSA_PUBKEY(DSA **, const unsigned char **, long);
-DSA *d2i_DSAPublicKey(DSA **, const unsigned char **, long);
-DSA *d2i_DSAPrivateKey(DSA **, const unsigned char **, long);
-
-RSA *d2i_RSAPrivateKey_bio(BIO *, RSA **);
 int i2d_RSAPrivateKey_bio(BIO *, RSA *);
 RSA *d2i_RSAPublicKey_bio(BIO *, RSA **);
 int i2d_RSAPublicKey_bio(BIO *, RSA *);
-RSA *d2i_RSA_PUBKEY_bio(BIO *, RSA **);
-int i2d_RSA_PUBKEY_bio(BIO *, RSA *);
-DSA *d2i_DSA_PUBKEY_bio(BIO *, DSA **);
-int i2d_DSA_PUBKEY_bio(BIO *, DSA *);
-DSA *d2i_DSAPrivateKey_bio(BIO *, DSA **);
 int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 
-PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
-                                                 PKCS8_PRIV_KEY_INFO **);
-void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 /* These became const X509 in 1.1.0 */
 int X509_get_ext_count(X509 *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
-int X509_get_ext_by_NID(X509 *, int, int);
 X509_NAME *X509_get_subject_name(X509 *);
 X509_NAME *X509_get_issuer_name(X509 *);
 
@@ -242,17 +178,7 @@ int X509_CRL_get_ext_count(X509_CRL *);
 
 int X509_CRL_get0_by_serial(X509_CRL *, X509_REVOKED **, ASN1_INTEGER *);
 
-/* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
-int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                          CRYPTO_EX_free *);
-int X509_set_ex_data(X509 *, int, void *);
-void *X509_get_ex_data(X509 *, int);
-
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
-
-int i2d_X509_CINF(X509_CINF *, unsigned char **);
-int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
-int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 
 /* new in 1.0.2 */
 int i2d_re_X509_tbs(X509 *, unsigned char **);
@@ -295,11 +221,6 @@ int sk_X509_CRL_num(Cryptography_STACK_OF_X509_CRL *);
 int sk_X509_CRL_push(Cryptography_STACK_OF_X509_CRL *, X509_CRL *);
 X509_CRL *sk_X509_CRL_value(Cryptography_STACK_OF_X509_CRL *, int);
 
-int i2d_RSAPublicKey(RSA *, unsigned char **);
-int i2d_RSAPrivateKey(RSA *, unsigned char **);
-int i2d_DSAPublicKey(DSA *, unsigned char **);
-int i2d_DSAPrivateKey(DSA *, unsigned char **);
-
 long X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
@@ -312,17 +233,10 @@ int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 int X509_set_notBefore(X509 *, ASN1_TIME *);
 int X509_set_notAfter(X509 *, ASN1_TIME *);
 
-int i2d_EC_PUBKEY(EC_KEY *, unsigned char **);
-EC_KEY *d2i_EC_PUBKEY(EC_KEY **, const unsigned char **, long);
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
-EC_KEY *d2i_ECPrivateKey(EC_KEY **, const unsigned char **, long);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
-int i2d_ECPrivateKey(EC_KEY *, unsigned char **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
-
-EC_KEY *o2i_ECPublicKey(EC_KEY **, const unsigned char **, long);
-int i2o_ECPublicKey(EC_KEY *, unsigned char **);
 
 // declared in safestack
 int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
