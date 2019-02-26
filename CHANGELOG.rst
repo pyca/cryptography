@@ -36,9 +36,12 @@ Changelog
   well. If you still need this deprecated path please install cryptography
   with the ``idna`` extra: ``pip install cryptography[idna]``.
 * **BACKWARDS INCOMPATIBLE:** The minimum supported PyPy version is now 5.4.
-* Numerous classes and functions have been updated to allow :term:`bytes-like`
-  types for keying material and passwords, including symmetric algorithms, AEAD
-  ciphers, KDFs, loading asymmetric keys, and one time password classes.
+* **BACKWARDS INCOMPATIBLE:** Numerous classes and functions have been
+  updated to allow :term:`bytes-like` types for keying material and
+  passwords, including symmetric algorithms, AEAD ciphers, KDFs, loading
+  asymmetric keys, and one time password classes. These functions and classes
+  no longer take lists as argument, as this was never officially supported in
+  the first place.
 * Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
   OpenSSL 1.1.1a.
 * Added support for :class:`~cryptography.hazmat.primitives.hashes.SHA512_224`
