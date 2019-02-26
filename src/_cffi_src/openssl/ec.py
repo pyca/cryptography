@@ -10,7 +10,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_EC;
 static const int Cryptography_HAS_EC2M;
 static const int Cryptography_HAS_EC_1_0_2;
 
@@ -109,8 +108,6 @@ const char *EC_curve_nid2nist(int);
 """
 
 CUSTOMIZATIONS = """
-static const long Cryptography_HAS_EC = 1;
-
 #if defined(OPENSSL_NO_EC2M)
 static const long Cryptography_HAS_EC2M = 0;
 
