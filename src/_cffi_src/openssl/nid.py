@@ -20,6 +20,9 @@ static const int NID_X25519;
 static const int NID_X448;
 static const int NID_ED25519;
 static const int NID_ED448;
+
+static const int NID_subject_alt_name;
+static const int NID_crl_reason;
 """
 
 FUNCTIONS = """
