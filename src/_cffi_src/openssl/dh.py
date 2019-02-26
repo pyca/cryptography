@@ -18,15 +18,8 @@ FUNCTIONS = """
 DH *DH_new(void);
 void DH_free(DH *);
 int DH_size(const DH *);
-int DH_check_pub_key(const DH *, const BIGNUM *, int *);
 int DH_generate_key(DH *);
 int DH_compute_key(unsigned char *, const BIGNUM *, DH *);
-int DH_set_ex_data(DH *, int, void *);
-void *DH_get_ex_data(DH *, int);
-DH *d2i_DHparams(DH **, const unsigned char **, long);
-int i2d_DHparams(const DH *, unsigned char **);
-int DHparams_print_fp(FILE *, const DH *);
-int DHparams_print(BIO *, const DH *);
 DH *DHparams_dup(DH *);
 
 /* added in 1.1.0 when the DH struct was opaqued */
