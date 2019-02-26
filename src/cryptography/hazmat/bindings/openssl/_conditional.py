@@ -150,11 +150,6 @@ def cryptography_has_tls_st():
 
 def cryptography_has_locking_callbacks():
     return [
-        "CRYPTO_LOCK",
-        "CRYPTO_UNLOCK",
-        "CRYPTO_READ",
-        "CRYPTO_LOCK_SSL",
-        "CRYPTO_lock",
         "Cryptography_setup_ssl_threads",
     ]
 
