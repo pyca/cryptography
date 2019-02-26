@@ -34,6 +34,10 @@ int CRYPTO_mem_ctrl(int);
 
 void OPENSSL_cleanup(void);
 
+/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. This function
+   is now a noop macro. We can delete this once we drop 1.0.2 support. */
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+
 /* SSLeay was removed in 1.1.0 */
 unsigned long SSLeay(void);
 const char *SSLeay_version(int);
