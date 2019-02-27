@@ -16,7 +16,7 @@ from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DSABackend, EllipticCurveBackend,
     PEMSerializationBackend, RSABackend
 )
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption, Encoding, NoEncryption,
     PrivateFormat, PublicFormat,
@@ -1269,6 +1269,42 @@ class TestECDSASSHSerialization(object):
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
             b"NTUAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
             b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support"
+)
+class TestEd25519SSHSerialization(object):
+    def test_load_ssh_public_key(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vG user@chiron.local"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ed25519.Ed25519PublicKey)
+        assert key.public_bytes(
+            Encoding.Raw, PublicFormat.Raw
+        ) == (
+            b"m\x9f\x82\x99\xa9`\xee\xb5\xa9\xe01\x19\xdd0\x81\x16\x8d\xfc"
+            b"N\x06G\xecV\xbc\x19\xaf\xc6<k\x07[\xc6"
+        )
+
+    def test_load_ssh_public_key_not_32_bytes(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI22fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vGaGVs user@chiron.local"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_trailing_data(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRa"
+            b"N/E4GR+xWvBmvxjxrB1vGdHJhaWxpbmdkYXRh user@chiron.local"
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
