@@ -20,6 +20,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
+* Added support for :doc:`/hazmat/primitives/asymmetric/ed448` when using
+  OpenSSL 1.1.1.
 * Added support for :doc:`/hazmat/primitives/asymmetric/ed25519` when using
   OpenSSL 1.1.1.
 * Add support for easily mapping an object identifier to its elliptic curve
