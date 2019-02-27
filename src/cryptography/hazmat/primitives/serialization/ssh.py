@@ -110,9 +110,6 @@ def _load_ssh_ed25519_public_key(expected_key_type, decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    if len(data) != ed25519._ED25519_KEY_SIZE:
-        raise ValueError("Public key is not 32 bytes")
-
     return ed25519.Ed25519PublicKey.from_public_bytes(data)
 
 
