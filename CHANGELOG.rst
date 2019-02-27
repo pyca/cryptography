@@ -18,10 +18,12 @@ Changelog
 * **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.1b.
 * Added support for :doc:`/hazmat/primitives/asymmetric/ed448` when using
-  OpenSSL 1.1.1.
+  OpenSSL 1.1.1b or newer.
 * Added support for :doc:`/hazmat/primitives/asymmetric/ed25519` when using
-  OpenSSL 1.1.1.
+  OpenSSL 1.1.1b or newer.
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load ``ed25519`` public keys.
 * Add support for easily mapping an object identifier to its elliptic curve
