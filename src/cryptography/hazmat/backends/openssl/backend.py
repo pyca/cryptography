@@ -38,7 +38,7 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
 from cryptography.hazmat.backends.openssl.ed25519 import (
-    _Ed25519PrivateKey, _Ed25519PublicKey
+    _ED25519_KEY_SIZE, _Ed25519PrivateKey, _Ed25519PublicKey
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
@@ -2201,7 +2201,9 @@ class Backend(object):
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
 
     def ed25519_load_public_bytes(self, data):
-        if len(data) != 32:
+        utils._check_bytes("data", data)
+
+        if len(data) != _ED25519_KEY_SIZE:
             raise ValueError("An Ed25519 public key is 32 bytes long")
 
         evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
@@ -2213,9 +2215,10 @@ class Backend(object):
         return _Ed25519PublicKey(self, evp_pkey)
 
     def ed25519_load_private_bytes(self, data):
-        if len(data) != 32:
+        if len(data) != _ED25519_KEY_SIZE:
             raise ValueError("An Ed25519 private key is 32 bytes long")
 
+        utils._check_byteslike("data", data)
         data_ptr = self._ffi.from_buffer(data)
         evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
             self._lib.NID_ED25519, self._ffi.NULL, data_ptr, len(data)

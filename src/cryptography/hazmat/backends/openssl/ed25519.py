@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 )
 
 _ED25519_KEY_SIZE = 32
+_ED25519_SIG_SIZE = 64
 
 
 @utils.register_interface(Ed25519PublicKey)
@@ -90,7 +91,8 @@ class _Ed25519PrivateKey(object):
         )
         self._backend.openssl_assert(res == 1)
         self._backend.openssl_assert(buflen[0] == _ED25519_KEY_SIZE)
-        return self._backend.ed25519_load_public_bytes(buf)
+        public_bytes = self._backend._ffi.buffer(buf)[:]
+        return self._backend.ed25519_load_public_bytes(public_bytes)
 
     def sign(self, data):
         evp_md_ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
@@ -103,13 +105,13 @@ class _Ed25519PrivateKey(object):
             self._backend._ffi.NULL, self._evp_pkey
         )
         self._backend.openssl_assert(res == 1)
-        buf = self._backend._ffi.new("unsigned char[]", 64)
+        buf = self._backend._ffi.new("unsigned char[]", _ED25519_SIG_SIZE)
         buflen = self._backend._ffi.new("size_t *", len(buf))
         res = self._backend._lib.EVP_DigestSign(
             evp_md_ctx, buf, buflen, data, len(data)
         )
         self._backend.openssl_assert(res == 1)
-        self._backend.openssl_assert(buflen[0] == 64)
+        self._backend.openssl_assert(buflen[0] == _ED25519_SIG_SIZE)
         return self._backend._ffi.buffer(buf, buflen[0])[:]
 
     def private_bytes(self, encoding, format, encryption_algorithm):

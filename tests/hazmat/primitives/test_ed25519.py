@@ -116,6 +116,14 @@ class TestEd25519Signing(object):
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
         )
 
+    def test_invalid_type_public_bytes(self, backend):
+        with pytest.raises(TypeError):
+            Ed25519PublicKey.from_public_bytes(object())
+
+    def test_invalid_type_private_bytes(self, backend):
+        with pytest.raises(TypeError):
+            Ed25519PrivateKey.from_private_bytes(object())
+
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
             Ed25519PublicKey.from_public_bytes(b"a" * 31)
