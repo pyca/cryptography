@@ -37,11 +37,11 @@ from cryptography.hazmat.backends.openssl.dsa import (
 from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
-from cryptography.hazmat.backends.openssl.ed448 import (
-    _ED448_KEY_SIZE, _Ed448PrivateKey, _Ed448PublicKey
-)
 from cryptography.hazmat.backends.openssl.ed25519 import (
     _ED25519_KEY_SIZE, _Ed25519PrivateKey, _Ed25519PublicKey
+)
+from cryptography.hazmat.backends.openssl.ed448 import (
+    _ED448_KEY_SIZE, _Ed448PrivateKey, _Ed448PublicKey
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
