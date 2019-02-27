@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-6:
 
-2.6 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.6 - 2019-02-27
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed
   ``cryptography.hazmat.primitives.asymmetric.utils.encode_rfc6979_signature``
