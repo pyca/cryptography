@@ -120,9 +120,12 @@ class NameAttribute(object):
         Format as RFC4514 Distinguished Name string.
 
         Use short attribute name if available, otherwise fall back to OID
-        dotted string.
+        name, and finally to dotted string.
         """
-        key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
+        key = _NAMEOID_TO_NAME.get(self.oid, (
+            self.oid._name if self.oid._name != "Unknown OID"
+            else self.oid.dotted_string
+        ))
         return '%s=%s' % (key, _escape_dn_value(self.value))
 
     def __eq__(self, other):
