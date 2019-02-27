@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-6-1:
+
+2.6.1 - 2019-02-27
+~~~~~~~~~~~~~~~~~~
+
+* Resolved an error in our build infrastructure that broke our Python3 wheels
+  for macOS and Linux.
+
 .. _v2-6:
 
 2.6 - 2019-02-27
