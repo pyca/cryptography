@@ -53,6 +53,7 @@ hostname
 idna
 indistinguishability
 initialisms
+interoperability
 interoperable
 introspectability
 invariants

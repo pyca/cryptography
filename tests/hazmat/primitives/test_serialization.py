@@ -1285,6 +1285,70 @@ class TestKeySerializationEncryptionTypes(object):
 
 
 @pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support"
+)
+class TestEd25519Serialization(object):
+    def test_load_der_private_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8-enc.der"),
+            lambda derfile: derfile.read(),
+            mode="rb"
+        )
+        unencrypted = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
+            lambda derfile: derfile.read(),
+            mode="rb"
+        )
+        key = load_der_private_key(data, b"password", backend)
+        assert key.private_bytes(
+            Encoding.DER, PrivateFormat.PKCS8, NoEncryption()
+        ) == unencrypted
+
+    def test_load_pem_private_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8-enc.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        unencrypted = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        key = load_pem_private_key(data, b"password", backend)
+        assert key.private_bytes(
+            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+        ) == unencrypted
+
+    @pytest.mark.parametrize(
+        ("key_path", "encoding", "loader"),
+        [
+            (
+                ["Ed25519", "ed25519-pub.pem"],
+                Encoding.PEM,
+                load_pem_public_key
+            ),
+            (
+                ["Ed25519", "ed25519-pub.der"],
+                Encoding.DER,
+                load_der_public_key
+            ),
+        ]
+    )
+    def test_load_public_key(self, key_path, encoding, loader, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        public_key = loader(data, backend)
+        assert public_key.public_bytes(
+            encoding, PublicFormat.SubjectPublicKeyInfo
+        ) == data
+
+
+@pytest.mark.supported(
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support"
 )
