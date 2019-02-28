@@ -6,6 +6,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+.. _v2-6-1:
+
+2.6.1 - 2019-02-27
+~~~~~~~~~~~~~~~~~~
+
+* Resolved an error in our build infrastructure that broke our Python3 wheels
+  for macOS and Linux.
 
 .. _v2-6:
 
