@@ -22,7 +22,6 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -3940,9 +3939,11 @@ class TestNameAttribute(object):
         assert na.rfc4514_string() == 'emailAddress=somebody@example.com'
 
         # Unknown OID
-        na = x509.NameAttribute(ObjectIdentifier('0.9.2342.19200300.100.1.5'),
-                                'Ambrosia')
-        assert na.rfc4514_sring() == r'0.9.2342.19200300.100.1.5=Ambrosia'
+        na = x509.NameAttribute(
+            x509.ObjectIdentifier('0.9.2342.19200300.100.1.5'),
+            u'Ambrosia'
+        )
+        assert na.rfc4514_string() == r'0.9.2342.19200300.100.1.5=Ambrosia'
 
 
 class TestRelativeDistinguishedName(object):
