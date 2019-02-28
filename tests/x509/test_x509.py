@@ -22,6 +22,7 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
+from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -3934,10 +3935,14 @@ class TestNameAttribute(object):
         na = x509.NameAttribute(NameOID.USER_ID, u'# escape+,;\0this ')
         assert na.rfc4514_string() == r'UID=\# escape\+\,\;\00this\ '
 
-        # Nonstandard attribute OID
+        # Nonshort-name attribute OID
         na = x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'somebody@example.com')
-        assert (na.rfc4514_string() ==
-                '1.2.840.113549.1.9.1=somebody@example.com')
+        assert na.rfc4514_string() == 'emailAddress=somebody@example.com'
+
+        # Unknown OID
+        na = x509.NameAttribute(ObjectIdentifier('0.9.2342.19200300.100.1.5'),
+                                'Ambrosia')
+        assert na.rfc4514_sring() == r'0.9.2342.19200300.100.1.5=Ambrosia'
 
 
 class TestRelativeDistinguishedName(object):
