@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.7 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v2-6-1:
 
 2.6.1 - 2019-02-27
