@@ -1,7 +1,10 @@
 [build-system]
-# Must be kept in sync with `install_requires` in `setup.py`
 requires = [
-    "setuptools>=18.5",
+    # The minimum setuptools version is specific to the PEP 517 backend,
+    # and may be stricter than the version required in `setup.py`
+    "setuptools>=40.6.0",
     "wheel",
+    # Must be kept in sync with the `install_requires` in `setup.py`
     "cffi>=1.8,!=1.11.3; python_implementation != 'PyPy'",
 ]
+build-backend = "setuptools.build_meta"
