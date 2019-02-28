@@ -1,12 +1,28 @@
 Changelog
 =========
 
-.. _v2-6:
-
-2.6 - `master`_
+2.7 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* Installing ``cryptography`` now relies on :pep`518`. In practice this means
+  that you need to either use ``pip`` 18 or newer or you must manually install
+  ``cffi`` before installing ``cryptography``.
+
+
+.. _v2-6-1:
+
+2.6.1 - 2019-02-27
+~~~~~~~~~~~~~~~~~~
+
+* Resolved an error in our build infrastructure that broke our Python3 wheels
+  for macOS and Linux.
+
+.. _v2-6:
+
+2.6 - 2019-02-27
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed
   ``cryptography.hazmat.primitives.asymmetric.utils.encode_rfc6979_signature``
@@ -20,11 +36,19 @@ Changelog
 * **BACKWARDS INCOMPATIBLE**: Removed ``cryptography.x509.Certificate.serial``,
   which had been deprecated for nearly 3 years. Use
   :attr:`~cryptography.x509.Certificate.serial_number` instead.
-* Installing ``cryptography`` now relies on :pep`518`. In practice this means
-  that you need to either use ``pip`` 18 or newer or you must manually install
-  ``cffi`` before installing ``cryptography``.
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.1b.
+* Added support for :doc:`/hazmat/primitives/asymmetric/ed448` when using
+  OpenSSL 1.1.1b or newer.
+* Added support for :doc:`/hazmat/primitives/asymmetric/ed25519` when using
+  OpenSSL 1.1.1b or newer.
+* :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
+  now load ``ed25519`` public keys.
 * Add support for easily mapping an object identifier to its elliptic curve
-  class via :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
+  class via
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.get_curve_for_oid`.
+* Add support for OpenSSL when compiled with the ``no-engine``
+  (``OPENSSL_NO_ENGINE``) flag.
 
 .. _v2-5:
 

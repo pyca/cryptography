@@ -1,18 +1,21 @@
 #!/bin/bash -ex
 
+SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
 if [[ "${TOXENV}" == "pypy" ]]; then
     PYENV_ROOT="$HOME/.pyenv"
     PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
 fi
 if [ -n "${LIBRESSL}" ]; then
-    OPENSSL=$LIBRESSL
-    export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function"
+    LIBRESSL_DIR="ossl-2/${LIBRESSL}"
+    export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function -I$HOME/$LIBRESSL_DIR/include"
+    export PATH="$HOME/$LIBRESSL_DIR/bin:$PATH"
+    export LDFLAGS="-L$HOME/$LIBRESSL_DIR/lib -Wl,-rpath=$HOME/$LIBRESSL_DIR/lib"
 fi
 
 if [ -n "${OPENSSL}" ]; then
-    OPENSSL_DIR="ossl-2/${OPENSSL}"
-
+    . "$SCRIPT_DIR/openssl_config.sh"
     export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
     export CFLAGS="${CFLAGS} -I$HOME/$OPENSSL_DIR/include"
     # rpath on linux will cause it to use an absolute path so we don't need to

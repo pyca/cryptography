@@ -37,6 +37,12 @@ from cryptography.hazmat.backends.openssl.dsa import (
 from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
+from cryptography.hazmat.backends.openssl.ed25519 import (
+    _Ed25519PrivateKey, _Ed25519PublicKey
+)
+from cryptography.hazmat.backends.openssl.ed448 import (
+    _ED448_KEY_SIZE, _Ed448PrivateKey, _Ed448PublicKey
+)
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
@@ -64,7 +70,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
 )
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
 )
@@ -119,21 +125,22 @@ class Backend(object):
         return binding._openssl_assert(self._lib, ok)
 
     def activate_builtin_random(self):
-        # Obtain a new structural reference.
-        e = self._lib.ENGINE_get_default_RAND()
-        if e != self._ffi.NULL:
-            self._lib.ENGINE_unregister_RAND(e)
-            # Reset the RNG to use the new engine.
-            self._lib.RAND_cleanup()
-            # decrement the structural reference from get_default_RAND
-            res = self._lib.ENGINE_finish(e)
-            self.openssl_assert(res == 1)
+        if self._lib.Cryptography_HAS_ENGINE:
+            # Obtain a new structural reference.
+            e = self._lib.ENGINE_get_default_RAND()
+            if e != self._ffi.NULL:
+                self._lib.ENGINE_unregister_RAND(e)
+                # Reset the RNG to use the new engine.
+                self._lib.RAND_cleanup()
+                # decrement the structural reference from get_default_RAND
+                res = self._lib.ENGINE_finish(e)
+                self.openssl_assert(res == 1)
 
     @contextlib.contextmanager
     def _get_osurandom_engine(self):
         # Fetches an engine by id and returns it. This creates a structural
         # reference.
-        e = self._lib.ENGINE_by_id(self._binding._osrandom_engine_id)
+        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
         self.openssl_assert(e != self._ffi.NULL)
         # Initialize the engine for use. This adds a functional reference.
         res = self._lib.ENGINE_init(e)
@@ -150,14 +157,15 @@ class Backend(object):
             self.openssl_assert(res == 1)
 
     def activate_osrandom_engine(self):
-        # Unregister and free the current engine.
-        self.activate_builtin_random()
-        with self._get_osurandom_engine() as e:
-            # Set the engine as the default RAND provider.
-            res = self._lib.ENGINE_set_default_RAND(e)
-            self.openssl_assert(res == 1)
-        # Reset the RNG to use the new engine.
-        self._lib.RAND_cleanup()
+        if self._lib.Cryptography_HAS_ENGINE:
+            # Unregister and free the current engine.
+            self.activate_builtin_random()
+            with self._get_osurandom_engine() as e:
+                # Set the engine as the default RAND provider.
+                res = self._lib.ENGINE_set_default_RAND(e)
+                self.openssl_assert(res == 1)
+            # Reset the RNG to use the new engine.
+            self._lib.RAND_cleanup()
 
     def osrandom_engine_implementation(self):
         buf = self._ffi.new("char[]", 64)
@@ -509,12 +517,18 @@ class Backend(object):
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
+            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+            return _Ed25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
             return _X448PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
             # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
             return _X25519PrivateKey(self, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
+            # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
+            return _Ed448PrivateKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -546,12 +560,18 @@ class Backend(object):
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPublicKey(self, dh_cdata, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
+            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+            return _Ed25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
             return _X448PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
             # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
             return _X25519PublicKey(self, evp_pkey)
+        elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
+            # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.1
+            return _Ed448PublicKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -2185,6 +2205,75 @@ class Backend(object):
 
     def x448_supported(self):
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+
+    def ed25519_supported(self):
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+
+    def ed25519_load_public_bytes(self, data):
+        utils._check_bytes("data", data)
+
+        if len(data) != ed25519._ED25519_KEY_SIZE:
+            raise ValueError("An Ed25519 public key is 32 bytes long")
+
+        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
+            self._lib.NID_ED25519, self._ffi.NULL, data, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed25519PublicKey(self, evp_pkey)
+
+    def ed25519_load_private_bytes(self, data):
+        if len(data) != ed25519._ED25519_KEY_SIZE:
+            raise ValueError("An Ed25519 private key is 32 bytes long")
+
+        utils._check_byteslike("data", data)
+        data_ptr = self._ffi.from_buffer(data)
+        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
+            self._lib.NID_ED25519, self._ffi.NULL, data_ptr, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed25519PrivateKey(self, evp_pkey)
+
+    def ed25519_generate_key(self):
+        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED25519)
+        return _Ed25519PrivateKey(self, evp_pkey)
+
+    def ed448_supported(self):
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+
+    def ed448_load_public_bytes(self, data):
+        utils._check_bytes("data", data)
+        if len(data) != _ED448_KEY_SIZE:
+            raise ValueError("An Ed448 public key is 57 bytes long")
+
+        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
+            self._lib.NID_ED448, self._ffi.NULL, data, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed448PublicKey(self, evp_pkey)
+
+    def ed448_load_private_bytes(self, data):
+        utils._check_byteslike("data", data)
+        if len(data) != _ED448_KEY_SIZE:
+            raise ValueError("An Ed448 private key is 57 bytes long")
+
+        data_ptr = self._ffi.from_buffer(data)
+        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
+            self._lib.NID_ED448, self._ffi.NULL, data_ptr, len(data)
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        return _Ed448PrivateKey(self, evp_pkey)
+
+    def ed448_generate_key(self):
+        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED448)
+        return _Ed448PrivateKey(self, evp_pkey)
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)

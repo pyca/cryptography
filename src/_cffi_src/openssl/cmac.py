@@ -11,7 +11,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_CMAC;
 typedef ... CMAC_CTX;
 """
 
@@ -25,5 +24,4 @@ void CMAC_CTX_free(CMAC_CTX *);
 """
 
 CUSTOMIZATIONS = """
-static const long Cryptography_HAS_CMAC = 1;
 """

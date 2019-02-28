@@ -170,6 +170,9 @@ class TestOpenSSL(object):
         assert backend._bn_to_int(bn) == 0
 
 
+@pytest.mark.skipif(
+    backend._lib.Cryptography_HAS_ENGINE == 0,
+    reason="Requires OpenSSL with ENGINE support")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
         # The default RAND engine is global and shared between
@@ -178,7 +181,7 @@ class TestOpenSSLRandomEngine(object):
         # that engine in teardown.
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
 
     def teardown(self):
         # we need to reset state to being default. backend is a shared global
@@ -186,7 +189,7 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
 
     @pytest.mark.skipif(sys.executable is None,
                         reason="No Python interpreter available.")
@@ -223,7 +226,7 @@ class TestOpenSSLRandomEngine(object):
             )
 
         osrandom_engine_name = backend._ffi.string(
-            backend._binding._osrandom_engine_name
+            backend._lib.Cryptography_osrandom_engine_name
         )
 
         assert engine_name.read().encode('ascii') == osrandom_engine_name
@@ -242,7 +245,7 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
@@ -250,7 +253,7 @@ class TestOpenSSLRandomEngine(object):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e != backend._ffi.NULL
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
         backend.activate_builtin_random()
@@ -283,15 +286,34 @@ class TestOpenSSLRandomEngine(object):
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
+
+
+@pytest.mark.skipif(
+    backend._lib.Cryptography_HAS_ENGINE == 1,
+    reason="Requires OpenSSL without ENGINE support")
+class TestOpenSSLNoEngine(object):
+    def test_no_engine_support(self):
+        assert backend._ffi.string(
+            backend._lib.Cryptography_osrandom_engine_id
+        ) == b"no-engine-support"
+        assert backend._ffi.string(
+            backend._lib.Cryptography_osrandom_engine_name
+        ) == b"osrandom_engine disabled due to no engine support"
+
+    def test_activate_builtin_random_does_nothing(self):
+        backend.activate_builtin_random()
+
+    def test_activate_osrandom_does_nothing(self):
+        backend.activate_osrandom_engine()
 
 
 class TestOpenSSLRSA(object):

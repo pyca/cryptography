@@ -17,6 +17,8 @@
 #include <poll.h>
 #endif
 
+#ifndef OPENSSL_NO_ENGINE
+/* OpenSSL has ENGINE support so build the engine. */
 static const char *Cryptography_osrandom_engine_id = "osrandom";
 
 /****************************************************************************
@@ -638,3 +640,16 @@ int Cryptography_add_osrandom_engine(void) {
 
     return 1;
 }
+
+#else
+/* If OpenSSL has no ENGINE support then we don't want
+ * to compile the osrandom engine, but we do need some
+ * placeholders */
+static const char *Cryptography_osrandom_engine_id = "no-engine-support";
+static const char *Cryptography_osrandom_engine_name = "osrandom_engine disabled due to no engine support";
+
+int Cryptography_add_osrandom_engine(void) {
+    return 0;
+}
+
+#endif

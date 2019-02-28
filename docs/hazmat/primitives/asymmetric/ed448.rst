@@ -1,0 +1,131 @@
+.. hazmat::
+
+Ed448 signing
+=============
+
+.. currentmodule:: cryptography.hazmat.primitives.asymmetric.ed448
+
+
+Ed448 is an elliptic curve signing algorithm using `EdDSA`_.
+
+
+Signing & Verification
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. doctest::
+
+    >>> from cryptography.hazmat.primitives.asymmetric.ed448 import Ed448PrivateKey
+    >>> private_key = Ed448PrivateKey.generate()
+    >>> signature = private_key.sign(b"my authenticated message")
+    >>> public_key = private_key.public_key()
+    >>> # Raises InvalidSignature if verification fails
+    >>> public_key.verify(signature, b"my authenticated message")
+
+Key interfaces
+~~~~~~~~~~~~~~
+
+.. class:: Ed448PrivateKey
+
+    .. versionadded:: 2.6
+
+    .. classmethod:: generate()
+
+        Generate an Ed448 private key.
+
+        :returns: :class:`Ed448PrivateKey`
+
+    .. classmethod:: from_private_bytes(data)
+
+        :param data: 57 byte private key.
+        :type data: :term:`bytes-like`
+
+        :returns: :class:`Ed448PrivateKey`
+
+    .. method:: public_key()
+
+        :returns: :class:`Ed448PublicKey`
+
+    .. method:: sign(data)
+
+        :param bytes data: The data to sign.
+
+        :returns bytes: The 64 byte signature.
+
+    .. method:: private_bytes(encoding, format, encryption_algorithm)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`, or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
+        ) are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
+            enum. If the ``encoding`` is
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+            then ``format`` must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
+            , otherwise it must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`.
+
+        :param encryption_algorithm: An instance of an object conforming to the
+            :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+            interface.
+
+        :return bytes: Serialized key.
+
+.. class:: Ed448PublicKey
+
+    .. versionadded:: 2.6
+
+    .. classmethod:: from_public_bytes(data)
+
+        :param bytes data: 57 byte public key.
+
+        :returns: :class:`Ed448PublicKey`
+
+    .. method:: public_bytes(encoding, format)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`, or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        ) are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat`
+            enum. If the ``encoding`` is
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+            then ``format`` must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+            , otherwise it must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`.
+
+        :returns bytes: The public key bytes.
+
+    .. method:: verify(signature, data)
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The data to verify.
+
+        :raises cryptography.exceptions.InvalidSignature: Raised when the
+            signature cannot be verified.
+
+
+
+.. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA

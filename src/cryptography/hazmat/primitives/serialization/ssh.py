@@ -11,7 +11,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 
 
 def load_ssh_public_key(data, backend):
@@ -31,6 +31,8 @@ def load_ssh_public_key(data, backend):
         b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384', b'ecdsa-sha2-nistp521',
     ]:
         loader = _load_ssh_ecdsa_public_key
+    elif key_type == b'ssh-ed25519':
+        loader = _load_ssh_ed25519_public_key
     else:
         raise UnsupportedAlgorithm('Key type is not supported.')
 
@@ -100,6 +102,15 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
         )
 
     return ec.EllipticCurvePublicKey.from_encoded_point(curve, data)
+
+
+def _load_ssh_ed25519_public_key(expected_key_type, decoded_data, backend):
+    data, rest = _ssh_read_next_string(decoded_data)
+
+    if rest:
+        raise ValueError('Key body contains extra bytes.')
+
+    return ed25519.Ed25519PublicKey.from_public_bytes(data)
 
 
 def _ssh_read_next_string(data):

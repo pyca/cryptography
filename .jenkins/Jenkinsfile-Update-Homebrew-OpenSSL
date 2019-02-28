@@ -9,7 +9,7 @@ def _build(label) {
                         set -xe
 
                         /usr/local/bin/brew update
-                        /usr/local/bin/brew reinstall openssl@1.1 --build-bottle
+                        /usr/local/bin/brew reinstall openssl@1.1 --build-from-source
                     """
                 }
             }

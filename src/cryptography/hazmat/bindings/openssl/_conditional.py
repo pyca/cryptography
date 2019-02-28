@@ -150,11 +150,6 @@ def cryptography_has_tls_st():
 
 def cryptography_has_locking_callbacks():
     return [
-        "CRYPTO_LOCK",
-        "CRYPTO_UNLOCK",
-        "CRYPTO_READ",
-        "CRYPTO_LOCK_SSL",
-        "CRYPTO_lock",
         "Cryptography_setup_ssl_threads",
     ]
 
@@ -341,6 +336,21 @@ def cryptography_has_evp_r_memory_limit_exceeded():
     ]
 
 
+def cryptography_has_engine():
+    return [
+        "ENGINE_by_id",
+        "ENGINE_init",
+        "ENGINE_finish",
+        "ENGINE_get_default_RAND",
+        "ENGINE_set_default_RAND",
+        "ENGINE_unregister_RAND",
+        "ENGINE_ctrl_cmd",
+        "ENGINE_free",
+        "ENGINE_get_name",
+        "Cryptography_add_osrandom_engine",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -412,4 +422,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED": (
         cryptography_has_evp_r_memory_limit_exceeded
     ),
+    "Cryptography_HAS_ENGINE": cryptography_has_engine,
 }
