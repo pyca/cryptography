@@ -25,6 +25,7 @@ static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
 static const int EVP_PKEY_X448;
 static const int EVP_PKEY_ED448;
+static const int EVP_PKEY_POLY1305;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
@@ -83,6 +84,8 @@ int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
 
 int EVP_DigestSignInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
                        ENGINE *, EVP_PKEY *);
+int EVP_DigestSignUpdate(EVP_MD_CTX *, const void *, size_t);
+int EVP_DigestSignFinal(EVP_MD_CTX *, unsigned char *, size_t *);
 int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
                          ENGINE *, EVP_PKEY *);
 
@@ -265,5 +268,11 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
    conditional to remove it. */
 #ifndef EVP_PKEY_ED448
 #define EVP_PKEY_ED448 NID_ED448
+#endif
+
+/* This is tied to poly1305 support so we reuse the Cryptography_HAS_POLY1305
+   conditional to remove it. */
+#ifndef EVP_PKEY_POLY1305
+#define EVP_PKEY_POLY1305 NID_poly1305
 #endif
 """
