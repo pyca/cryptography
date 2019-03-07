@@ -55,6 +55,9 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.ocsp import (
     _OCSPRequest, _OCSPResponse
 )
+from cryptography.hazmat.backends.openssl.poly1305 import (
+    _POLY1305_KEY_SIZE, _Poly1305Context
+)
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
@@ -2400,6 +2403,16 @@ class Backend(object):
                 additional_certificates.append(_Certificate(self, x509))
 
         return (key, cert, additional_certificates)
+
+    def poly1305_supported(self):
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+
+    def create_poly1305_ctx(self, key):
+        utils._check_byteslike("key", key)
+        if len(key) != _POLY1305_KEY_SIZE:
+            raise ValueError("An poly1305 key is 32 bytes long")
+
+        return _Poly1305Context(self, key)
 
 
 class GetCipherByName(object):

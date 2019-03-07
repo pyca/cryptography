@@ -1,0 +1,85 @@
+.. hazmat::
+
+Poly1305
+========
+
+.. currentmodule:: cryptography.hazmat.primitives.poly1305
+
+.. testsetup::
+
+    key = b"\x01" * 32
+
+Poly1305 is a one-time authenticator that takes a 32-byte one-time key and a
+message and produces a 16-byte tag.  This tag is used to authenticate the
+message. It is described in :rfc:`7539`.
+
+.. class:: Poly1305(key)
+
+    .. versionadded:: 2.7
+
+    .. warning::
+
+        Reuse of a key potentially allows forgery of authentication tags. Always
+        create a new key for each tag. If you are using this as a MAC for
+        symmetric encryption please use
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        instead.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives import poly1305
+        >>> p = poly1305.Poly1305(key)
+        >>> p.update(b"message to authenticate")
+        >>> p.finalize()
+        b'T\xae\xff3\xbdW\xef\xd5r\x01\xe2n=\xb7\xd2h'
+
+    To check that a given signature is correct use the :meth:`verify` method.
+    You will receive an exception if the signature is wrong:
+
+    .. doctest::
+
+        >>> p = poly1305.Poly1305(key)
+        >>> p.update(b"message to authenticate")
+        >>> p.verify(b"an incorrect signature")
+        Traceback (most recent call last):
+        ...
+        cryptography.exceptions.InvalidSignature: Signature did not match digest.
+
+    :param key: Secret key as ``bytes``.
+    :type key: :term:`bytes-like`
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the version of OpenSSL ``cryptography`` is compiled against does not
+        support this algorithm.
+
+    .. method:: update(data)
+
+        :param data: The bytes to hash and authenticate.
+        :type data: :term:`bytes-like`
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
+
+    .. method:: verify(signature)
+
+        Finalize the current context and securely compare the MAC to
+        ``signature``.
+
+        :param bytes signature: The bytes to compare the current CMAC
+                against.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If signature does not
+                                                                  match digest
+        :raises TypeError: This exception is raised if ``signature`` is not
+                           ``bytes``.
+
+        .. method:: finalize()
+
+        Finalize the current context and return the message authentication code
+        as bytes.
+
+        After ``finalize`` has been called this object can no longer be used
+        and :meth:`update`, :meth:`verify`, and :meth:`finalize`
+        will raise an :class:`~cryptography.exceptions.AlreadyFinalized`
+        exception.
+
+        :return bytes: The message authentication code as bytes.
+        :raises cryptography.exceptions.AlreadyFinalized:

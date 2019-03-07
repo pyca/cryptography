@@ -19,6 +19,7 @@ class _Reasons(Enum):
     UNSUPPORTED_X509 = 8
     UNSUPPORTED_EXCHANGE_ALGORITHM = 9
     UNSUPPORTED_DIFFIE_HELLMAN = 10
+    UNSUPPORTED_MAC = 11
 
 
 class UnsupportedAlgorithm(Exception):
