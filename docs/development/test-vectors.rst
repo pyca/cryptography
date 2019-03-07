@@ -607,6 +607,11 @@ CMAC
 
 * AES-128, AES-192, AES-256, 3DES from `NIST SP-800-38B`_
 
+Poly1305
+~~~~~~~~
+
+* Test vectors from :rfc:`7539`.
+
 Creating test vectors
 ---------------------
 
