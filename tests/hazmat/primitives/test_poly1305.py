@@ -84,6 +84,11 @@ class TestPoly1305(object):
         with pytest.raises(InvalidSignature):
             poly.verify(b"")
 
+        p2 = Poly1305(b"0" * 32)
+        p2.update(b"msg")
+        with pytest.raises(InvalidSignature):
+            p2.verify(b"\x00" * 16)
+
     def test_verify_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
