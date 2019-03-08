@@ -159,14 +159,13 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_cmac_ctx(algorithm)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.mac.MACContext` that
+        context that
         uses the specified ``algorithm`` to calculate a message authentication code.
 
         :param algorithm: An instance of
             :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
 
-        :returns:
-            :class:`~cryptography.hazmat.primitives.mac.MACContext`
+        :returns: CMAC object.
 
 
 .. class:: PBKDF2HMACBackend
