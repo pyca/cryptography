@@ -2410,7 +2410,7 @@ class Backend(object):
     def create_poly1305_ctx(self, key):
         utils._check_byteslike("key", key)
         if len(key) != _POLY1305_KEY_SIZE:
-            raise ValueError("An poly1305 key is 32 bytes long")
+            raise ValueError("A poly1305 key is 32 bytes long")
 
         return _Poly1305Context(self, key)
 

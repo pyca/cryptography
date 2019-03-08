@@ -85,6 +85,17 @@ class TestPoly1305(object):
         with pytest.raises(TypeError):
             poly.verify(u'')
 
+    def test_invalid_key_type(self, backend):
+        with pytest.raises(TypeError):
+            Poly1305(object())
+
+    def test_invalid_key_length(self, backend):
+        with pytest.raises(ValueError):
+            Poly1305(b"0" * 31)
+
+        with pytest.raises(ValueError):
+            Poly1305(b"0" * 33)
+
     def test_buffer_protocol(self, backend):
         key = binascii.unhexlify(
             b"1c9240a5eb55d38af333888604f6b5f0473917c1402b80099dca5cb"
