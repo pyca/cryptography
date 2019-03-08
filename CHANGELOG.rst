@@ -1,10 +1,17 @@
 Changelog
 =========
 
+.. _v2-7:
+
 2.7 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* **BACKWARDS INCOMPATIBLE:** Removed the
+  ``cryptography.hazmat.primitives.mac.MACContext`` interface. The ``CMAC`` and
+  ``HMAC`` APIs have not changed, but they are no longer registered as
+  ``MACContext`` instances.
 
 .. _v2-6-1:
 
@@ -1143,8 +1150,8 @@ Changelog
   :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
-* Added :class:`~cryptography.hazmat.primitives.mac.MACContext` as a
-  common interface for CMAC and HMAC and deprecated ``CMACContext``.
+* Added ``MACContext`` as a common interface for CMAC and HMAC and
+  deprecated ``CMACContext``.
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.
 * Added
