@@ -16,11 +16,12 @@ _POLY1305_KEY_SIZE = 32
 class _Poly1305Context(object):
     def __init__(self, backend, key):
         self._backend = backend
+        self._key = key
 
-        key_ptr = self._backend._ffi.from_buffer(key)
+        key_ptr = self._backend._ffi.from_buffer(self._key)
         evp_pkey = self._backend._lib.EVP_PKEY_new_raw_private_key(
             self._backend._lib.NID_poly1305,
-            self._backend._ffi.NULL, key_ptr, len(key)
+            self._backend._ffi.NULL, key_ptr, len(self._key)
         )
         self._backend.openssl_assert(evp_pkey != self._backend._ffi.NULL)
         self._evp_pkey = self._backend._ffi.gc(
