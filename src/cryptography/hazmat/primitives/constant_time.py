@@ -21,8 +21,8 @@ if hasattr(hmac, "compare_digest"):
 else:
     warnings.warn(
         "Support for your Python version is deprecated. The next version of "
-        "cryptography will remove support. Please upgrade to a 2.7.x "
-        "release that supports hmac.compare_digest as soon as possible.",
+        "cryptography will remove support. Please upgrade to a release "
+        "(2.7.7+) that supports hmac.compare_digest as soon as possible.",
         utils.PersistentlyDeprecated2018,
     )
 
