@@ -34,10 +34,10 @@ class Poly1305(object):
         self._ctx = None
         return mac
 
-    def verify(self, signature):
-        utils._check_bytes("signature", signature)
+    def verify(self, tag):
+        utils._check_bytes("tag", tag)
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
 
         ctx, self._ctx = self._ctx, None
-        ctx.verify(signature)
+        ctx.verify(tag)

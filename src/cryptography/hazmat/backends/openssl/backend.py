@@ -2405,7 +2405,7 @@ class Backend(object):
         return (key, cert, additional_certificates)
 
     def poly1305_supported(self):
-        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+        return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def create_poly1305_ctx(self, key):
         utils._check_byteslike("key", key)

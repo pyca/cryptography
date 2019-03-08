@@ -52,7 +52,7 @@ class _Poly1305Context(object):
         self._backend.openssl_assert(outlen[0] == _POLY1305_TAG_SIZE)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
-    def verify(self, signature):
+    def verify(self, tag):
         mac = self.finalize()
-        if not constant_time.bytes_eq(mac, signature):
+        if not constant_time.bytes_eq(mac, tag):
             raise InvalidSignature("Value did not match computed tag.")

@@ -33,17 +33,17 @@ message. It is described in :rfc:`7539`.
         >>> p.finalize()
         b'T\xae\xff3\xbdW\xef\xd5r\x01\xe2n=\xb7\xd2h'
 
-    To check that a given signature is correct use the :meth:`verify` method.
-    You will receive an exception if the signature is wrong:
+    To check that a given tag is correct use the :meth:`verify` method.
+    You will receive an exception if the tag is wrong:
 
     .. doctest::
 
         >>> p = poly1305.Poly1305(key)
         >>> p.update(b"message to authenticate")
-        >>> p.verify(b"an incorrect signature")
+        >>> p.verify(b"an incorrect tag")
         Traceback (most recent call last):
         ...
-        cryptography.exceptions.InvalidSignature: Signature did not match digest.
+        cryptography.exceptions.InvalidSignature: Value did not match computed tag.
 
     :param key: Secret key as ``bytes``.
     :type key: :term:`bytes-like`
@@ -58,17 +58,17 @@ message. It is described in :rfc:`7539`.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
-    .. method:: verify(signature)
+    .. method:: verify(tag)
 
         Finalize the current context and securely compare the MAC to
-        ``signature``.
+        ``tag``.
 
-        :param bytes signature: The bytes to compare the current CMAC
+        :param bytes tag: The bytes to compare the current CMAC
                 against.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
-        :raises cryptography.exceptions.InvalidSignature: If signature does not
-                                                                  match digest
-        :raises TypeError: This exception is raised if ``signature`` is not
+        :raises cryptography.exceptions.InvalidSignature: If tag does not
+                                                          match.
+        :raises TypeError: This exception is raised if ``tag`` is not
                            ``bytes``.
 
         .. method:: finalize()
