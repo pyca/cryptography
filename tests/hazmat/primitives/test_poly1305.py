@@ -47,7 +47,7 @@ class TestPoly1305(object):
         poly.update(msg)
         assert poly.finalize() == tag
 
-    def test_retains_key_to_avoid_potential_uaf_in_from_buffer(self, backend):
+    def test_key_with_no_additional_references(self, backend):
         poly = Poly1305(os.urandom(32))
         assert len(poly.finalize()) == 16
 
