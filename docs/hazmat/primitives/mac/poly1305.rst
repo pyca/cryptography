@@ -9,9 +9,11 @@ Poly1305
 
     key = b"\x01" * 32
 
-Poly1305 is a one-time authenticator that takes a 32-byte one-time key and a
-message and produces a 16-byte tag.  This tag is used to authenticate the
-message. It is described in :rfc:`7539`.
+Poly1305 is an authenticator that takes a 32-byte key and a message and
+produces a 16-byte tag. This tag is used to authenticate the message. Each key
+**must** only be used once. Using the same key to generate tags for multiple
+messages allows an attacker to forge tags. Poly1305 is described in
+:rfc:`7539`.
 
 .. class:: Poly1305(key)
 
@@ -19,8 +21,9 @@ message. It is described in :rfc:`7539`.
 
     .. warning::
 
-        Reuse of a key potentially allows forgery of authentication tags. Always
-        create a new key for each tag. If you are using this as a MAC for
+        Using the same key to generate tags for multiple messages allows an
+        attacker to forge tags. Always generate a new key per message you want
+        to authenticate. If you are using this as a MAC for
         symmetric encryption please use
         :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
         instead.
@@ -63,8 +66,7 @@ message. It is described in :rfc:`7539`.
         Finalize the current context and securely compare the MAC to
         ``tag``.
 
-        :param bytes tag: The bytes to compare the current CMAC
-                against.
+        :param bytes tag: The bytes to compare against.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises cryptography.exceptions.InvalidSignature: If tag does not
                                                           match.
