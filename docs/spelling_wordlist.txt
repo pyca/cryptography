@@ -1,6 +1,7 @@
 accessor
 affine
 Authenticator
+authenticator
 backend
 Backends
 backends
@@ -77,6 +78,7 @@ Parallelization
 personalization
 pickleable
 plaintext
+Poly
 pre
 precompute
 preprocessor

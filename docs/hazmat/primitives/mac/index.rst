@@ -14,5 +14,6 @@ HMAC?`_
 
     cmac
     hmac
+    poly1305
 
 .. _`Use cases for CMAC vs. HMAC?`: https://crypto.stackexchange.com/questions/15721/use-cases-for-cmac-vs-hmac

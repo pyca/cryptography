@@ -1,0 +1,87 @@
+.. hazmat::
+
+Poly1305
+========
+
+.. currentmodule:: cryptography.hazmat.primitives.poly1305
+
+.. testsetup::
+
+    key = b"\x01" * 32
+
+Poly1305 is an authenticator that takes a 32-byte key and a message and
+produces a 16-byte tag. This tag is used to authenticate the message. Each key
+**must** only be used once. Using the same key to generate tags for multiple
+messages allows an attacker to forge tags. Poly1305 is described in
+:rfc:`7539`.
+
+.. class:: Poly1305(key)
+
+    .. versionadded:: 2.7
+
+    .. warning::
+
+        Using the same key to generate tags for multiple messages allows an
+        attacker to forge tags. Always generate a new key per message you want
+        to authenticate. If you are using this as a MAC for
+        symmetric encryption please use
+        :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+        instead.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives import poly1305
+        >>> p = poly1305.Poly1305(key)
+        >>> p.update(b"message to authenticate")
+        >>> p.finalize()
+        b'T\xae\xff3\xbdW\xef\xd5r\x01\xe2n=\xb7\xd2h'
+
+    To check that a given tag is correct use the :meth:`verify` method.
+    You will receive an exception if the tag is wrong:
+
+    .. doctest::
+
+        >>> p = poly1305.Poly1305(key)
+        >>> p.update(b"message to authenticate")
+        >>> p.verify(b"an incorrect tag")
+        Traceback (most recent call last):
+        ...
+        cryptography.exceptions.InvalidSignature: Value did not match computed tag.
+
+    :param key: Secret key as ``bytes``.
+    :type key: :term:`bytes-like`
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the version of OpenSSL ``cryptography`` is compiled against does not
+        support this algorithm.
+
+    .. method:: update(data)
+
+        :param data: The bytes to hash and authenticate.
+        :type data: :term:`bytes-like`
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
+
+    .. method:: verify(tag)
+
+        Finalize the current context and securely compare the MAC to
+        ``tag``.
+
+        :param bytes tag: The bytes to compare against.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If tag does not
+                                                          match.
+        :raises TypeError: This exception is raised if ``tag`` is not
+                           ``bytes``.
+
+        .. method:: finalize()
+
+        Finalize the current context and return the message authentication code
+        as bytes.
+
+        After ``finalize`` has been called this object can no longer be used
+        and :meth:`update`, :meth:`verify`, and :meth:`finalize`
+        will raise an :class:`~cryptography.exceptions.AlreadyFinalized`
+        exception.
+
+        :return bytes: The message authentication code as bytes.
+        :raises cryptography.exceptions.AlreadyFinalized:
