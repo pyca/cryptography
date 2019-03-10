@@ -42,8 +42,9 @@ class Fernet(object):
         self._encryption_key = key[16:]
         self._backend = backend
 
-    @classmethod
-    def generate_key(cls):
+    @staticmethod
+    def generate_key():
+        """Generate a fresh 256-bit fernet key.  Returns bytes."""
         return base64.urlsafe_b64encode(os.urandom(32))
 
     def encrypt(self, data):
