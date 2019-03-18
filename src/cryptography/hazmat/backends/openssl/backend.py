@@ -1892,8 +1892,7 @@ class Backend(object):
                 ssh._ssh_write_string(b"ssh-ed25519") +
                 ssh._ssh_write_string(raw_bytes)
             )
-        else:
-            assert isinstance(key, ec.EllipticCurvePublicKey)
+        elif isinstance(key, ec.EllipticCurvePublicKey):
             public_numbers = key.public_numbers()
             try:
                 curve_name = {
@@ -1915,6 +1914,10 @@ class Backend(object):
                 ssh._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
                 ssh._ssh_write_string(curve_name) +
                 ssh._ssh_write_string(point)
+            )
+        else:
+            raise ValueError(
+                "OpenSSH encoding is not supported for this key type"
             )
 
     def _parameter_bytes(self, encoding, format, cdata):

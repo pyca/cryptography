@@ -16,7 +16,9 @@ from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DSABackend, EllipticCurveBackend,
     PEMSerializationBackend, RSABackend
 )
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa, ec, ed25519, ed448, rsa
+)
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption, Encoding, NoEncryption,
     PrivateFormat, PublicFormat,
@@ -1585,3 +1587,10 @@ class TestEd448Serialization(object):
         assert public_key.public_bytes(
             encoding, PublicFormat.SubjectPublicKeyInfo
         ) == data
+
+    def test_openssh_serialization_unsupported(self, backend):
+        key = ed448.Ed448PrivateKey.generate().public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH
+            )
