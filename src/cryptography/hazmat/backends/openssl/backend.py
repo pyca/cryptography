@@ -1885,6 +1885,13 @@ class Backend(object):
                 ssh._ssh_write_mpint(parameter_numbers.g) +
                 ssh._ssh_write_mpint(public_numbers.y)
             )
+        elif isinstance(key, ed25519.Ed25519PublicKey):
+            raw_bytes = key.public_bytes(serialization.Encoding.Raw,
+                                         serialization.PublicFormat.Raw)
+            return b"ssh-ed25519 " + base64.b64encode(
+                ssh._ssh_write_string(b"ssh-ed25519") +
+                ssh._ssh_write_string(raw_bytes)
+            )
         else:
             assert isinstance(key, ec.EllipticCurvePublicKey)
             public_numbers = key.public_numbers()

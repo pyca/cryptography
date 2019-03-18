@@ -1293,6 +1293,17 @@ class TestEd25519SSHSerialization(object):
             b"N\x06G\xecV\xbc\x19\xaf\xc6<k\x07[\xc6"
         )
 
+    def test_public_bytes_openssh(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vG"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ed25519.Ed25519PublicKey)
+        assert key.public_bytes(
+            Encoding.OpenSSH, PublicFormat.OpenSSH
+        ) == ssh_key
+
     def test_load_ssh_public_key_not_32_bytes(self, backend):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI22fgpmpYO61qeAxGd0wgRaN/E4"
