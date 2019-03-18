@@ -16,7 +16,7 @@ Changelog
   when using OpenSSL 1.1.1 or newer.
 * Support serialization with ``Encoding.OpenSSH`` and ``PublicFormat.OpenSSH``
   in
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey.public_bytes`.
+  :meth:`Ed25519PublicKey.public_bytes <cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey.public_bytes>`.
 
 .. _v2-6-1:
 
