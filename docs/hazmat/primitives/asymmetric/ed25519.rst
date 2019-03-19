@@ -122,11 +122,14 @@ Key interfaces
 
         Allows serialization of the key to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`, or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`,
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.OpenSSH`,
+        or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`
-        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`,
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.OpenSSH`
+        , or
         :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
         ) are chosen to define the exact serialization.
 
@@ -138,8 +141,12 @@ Key interfaces
             enum. If the ``encoding`` is
             :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
             then ``format`` must be
-            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
-            , otherwise it must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`.
+            If ``encoding`` is
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.OpenSSH`
+            then ``format`` must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.OpenSSH`.
+            In all other cases ``format`` must be
             :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`.
 
         :returns bytes: The public key bytes.
