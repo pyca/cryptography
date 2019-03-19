@@ -29,7 +29,7 @@
 
     #ifndef SYS_getrandom
       /* We only bother to define the constants for platforms where we ship
-       * wheels, since that's hte predominant way you get a situation where
+       * wheels, since that's the predominant way you get a situation where
        * you don't have SYS_getrandom at compile time but do have the syscall
        * at runtime */
       #if defined __x86_64__
