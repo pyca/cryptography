@@ -4391,6 +4391,28 @@ class TestOCSPNoCheckExtension(object):
         )
         assert isinstance(ext.value, x509.OCSPNoCheck)
 
+    def test_eq(self):
+        onc1 = x509.OCSPNoCheck()
+        onc2 = x509.OCSPNoCheck()
+
+        assert onc1 == onc2
+
+    def test_hash(self):
+        onc1 = x509.OCSPNoCheck()
+        onc2 = x509.OCSPNoCheck()
+
+        assert hash(onc1) == hash(onc2)
+
+    def test_ne(self):
+        onc = x509.OCSPNoCheck()
+
+        assert onc != object()
+
+    def test_repr(self):
+        onc = x509.OCSPNoCheck()
+
+        assert repr(onc) == '<OCSPNoCheck()>'
+
 
 class TestInhibitAnyPolicy(object):
     def test_not_int(self):
@@ -4893,6 +4915,28 @@ class TestPrecertPoisonExtension(object):
             ExtensionOID.PRECERT_POISON
         ).value
         assert isinstance(poison, x509.PrecertPoison)
+
+    def test_eq(self):
+        pcp1 = x509.PrecertPoison()
+        pcp2 = x509.PrecertPoison()
+
+        assert pcp1 == pcp2
+
+    def test_hash(self):
+        pcp1 = x509.PrecertPoison()
+        pcp2 = x509.PrecertPoison()
+
+        assert hash(pcp1) == hash(pcp2)
+
+    def test_ne(self):
+        pcp = x509.PrecertPoison()
+
+        assert pcp != object()
+
+    def test_repr(self):
+        pcp = x509.PrecertPoison()
+
+        assert repr(pcp) == '<PrecertPoison()>'
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
