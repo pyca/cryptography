@@ -4404,9 +4404,12 @@ class TestOCSPNoCheckExtension(object):
         assert hash(onc1) == hash(onc2)
 
     def test_ne(self):
-        onc = x509.OCSPNoCheck()
+        onc1 = x509.OCSPNoCheck()
+        onc2 = x509.OCSPNoCheck()
 
-        assert onc != object()
+        assert onc1 == onc2
+        assert (onc1 != onc2) is False
+        assert onc1 != object()
 
     def test_repr(self):
         onc = x509.OCSPNoCheck()
@@ -4929,9 +4932,13 @@ class TestPrecertPoisonExtension(object):
         assert hash(pcp1) == hash(pcp2)
 
     def test_ne(self):
-        pcp = x509.PrecertPoison()
+        pcp1 = x509.PrecertPoison()
+        pcp2 = x509.PrecertPoison()
 
-        assert pcp != object()
+        assert pcp1 == pcp2
+        assert (pcp1 != pcp2) is False
+        assert pcp1 != object()
+
 
     def test_repr(self):
         pcp = x509.PrecertPoison()

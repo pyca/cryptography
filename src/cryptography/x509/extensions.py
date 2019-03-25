@@ -865,6 +865,9 @@ class OCSPNoCheck(object):
     def __hash__(self):
         return hash(OCSPNoCheck)
 
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return "<OCSPNoCheck()>"
 
@@ -881,6 +884,9 @@ class PrecertPoison(object):
 
     def __hash__(self):
         return hash(PrecertPoison)
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         return "<PrecertPoison()>"
