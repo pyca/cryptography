@@ -856,10 +856,34 @@ class ExtendedKeyUsage(object):
 class OCSPNoCheck(object):
     oid = ExtensionOID.OCSP_NO_CHECK
 
+    def __eq__(self, other):
+        if not isinstance(other, OCSPNoCheck):
+            return NotImplemented
+
+        return True
+
+    def __hash__(self):
+        return hash(OCSPNoCheck)
+
+    def __repr__(self):
+        return "<OCSPNoCheck()>"
+
 
 @utils.register_interface(ExtensionType)
 class PrecertPoison(object):
     oid = ExtensionOID.PRECERT_POISON
+
+    def __eq__(self, other):
+        if not isinstance(other, PrecertPoison):
+            return NotImplemented
+
+        return True
+
+    def __hash__(self):
+        return hash(PrecertPoison)
+
+    def __repr__(self):
+        return "<PrecertPoison()>"
 
 
 @utils.register_interface(ExtensionType)
