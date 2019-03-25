@@ -4939,7 +4939,6 @@ class TestPrecertPoisonExtension(object):
         assert (pcp1 != pcp2) is False
         assert pcp1 != object()
 
-
     def test_repr(self):
         pcp = x509.PrecertPoison()
 
