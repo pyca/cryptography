@@ -862,11 +862,11 @@ class OCSPNoCheck(object):
 
         return True
 
-    def __hash__(self):
-        return hash(OCSPNoCheck)
-
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(OCSPNoCheck)
 
     def __repr__(self):
         return "<OCSPNoCheck()>"
@@ -882,11 +882,11 @@ class PrecertPoison(object):
 
         return True
 
-    def __hash__(self):
-        return hash(PrecertPoison)
-
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(PrecertPoison)
 
     def __repr__(self):
         return "<PrecertPoison()>"
