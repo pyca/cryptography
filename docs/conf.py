@@ -181,4 +181,6 @@ linkcheck_retries = 10
 linkcheck_ignore = [
     # Small DH key results in a TLS failure on modern OpenSSL
     "https://info.isl.ntt.co.jp/crypt/eng/camellia/",
+    # Serving an incomplete chain
+    "https://e-trust.gosuslugi.ru/MainCA",
 ]
