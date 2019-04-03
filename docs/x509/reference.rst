@@ -601,7 +601,7 @@ X.509 CRL (Certificate Revocation List) Object
 
         :type: :class:`datetime.datetime`
 
-        A naïve datetime representing when the this CRL was last updated.
+        A naïve datetime representing when this CRL was last updated.
 
         .. doctest::
 
