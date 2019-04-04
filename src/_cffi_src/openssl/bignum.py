@@ -52,6 +52,7 @@ BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
 int BN_num_bits(const BIGNUM *);
 
 int BN_cmp(const BIGNUM *, const BIGNUM *);
+int BN_is_negative(const BIGNUM *);
 int BN_add(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_sub(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_nnmod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
