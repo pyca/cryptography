@@ -14,13 +14,20 @@ from cryptography.hazmat._oid import ObjectIdentifier
 
 
 class EllipticCurveOID(object):
+    SECP160K1 = ObjectIdentifier("1.3.132.0.9")
     SECP192R1 = ObjectIdentifier("1.2.840.10045.3.1.1")
+    SECP192K1 = ObjectIdentifier("1.3.132.0.31")
     SECP224R1 = ObjectIdentifier("1.3.132.0.33")
+    SECP224K1 = ObjectIdentifier("1.3.132.0.32")
     SECP256K1 = ObjectIdentifier("1.3.132.0.10")
     SECP256R1 = ObjectIdentifier("1.2.840.10045.3.1.7")
     SECP384R1 = ObjectIdentifier("1.3.132.0.34")
     SECP521R1 = ObjectIdentifier("1.3.132.0.35")
+    BRAINPOOLP160R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.1")
+    BRAINPOOLP192R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.3")
+    BRAINPOOLP224R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.5")
     BRAINPOOLP256R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.7")
+    BRAINPOOLP320R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.9")
     BRAINPOOLP384R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.11")
     BRAINPOOLP512R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.13")
     SECT163K1 = ObjectIdentifier("1.3.132.0.1")
@@ -263,15 +270,57 @@ class SECP224R1(object):
 
 
 @utils.register_interface(EllipticCurve)
+class SECP224K1(object):
+    name = "secp224k1"
+    key_size = 224
+
+
+@utils.register_interface(EllipticCurve)
 class SECP192R1(object):
     name = "secp192r1"
     key_size = 192
 
 
 @utils.register_interface(EllipticCurve)
+class SECP192K1(object):
+    name = "secp192k1"
+    key_size = 192
+
+
+@utils.register_interface(EllipticCurve)
+class SECP160K1(object):
+    name = "secp160k1"
+    key_size = 160
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP160R1(object):
+    name = "brainpoolP160r1"
+    key_size = 160
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP192R1(object):
+    name = "brainpoolP192r1"
+    key_size = 192
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP224R1(object):
+    name = "brainpoolP224r1"
+    key_size = 224
+
+
+@utils.register_interface(EllipticCurve)
 class BrainpoolP256R1(object):
     name = "brainpoolP256r1"
     key_size = 256
+
+
+@utils.register_interface(EllipticCurve)
+class BrainpoolP320R1(object):
+    name = "brainpoolP320r1"
+    key_size = 320
 
 
 @utils.register_interface(EllipticCurve)
@@ -295,6 +344,9 @@ _CURVE_TYPES = {
     "secp256r1": SECP256R1,
     "secp384r1": SECP384R1,
     "secp521r1": SECP521R1,
+    "secp160k1": SECP160K1,
+    "secp192k1": SECP192K1,
+    "secp224k1": SECP224K1,
     "secp256k1": SECP256K1,
 
     "sect163k1": SECT163K1,
@@ -309,7 +361,11 @@ _CURVE_TYPES = {
     "sect409r1": SECT409R1,
     "sect571r1": SECT571R1,
 
+    "brainpoolP160r1": BrainpoolP160R1,
+    "brainpoolP192r1": BrainpoolP192R1,
+    "brainpoolP224r1": BrainpoolP224R1,
     "brainpoolP256r1": BrainpoolP256R1,
+    "brainpoolP320r1": BrainpoolP320R1,
     "brainpoolP384r1": BrainpoolP384R1,
     "brainpoolP512r1": BrainpoolP512R1,
 }
@@ -468,13 +524,20 @@ class ECDH(object):
 
 
 _OID_TO_CURVE = {
+    EllipticCurveOID.SECP160K1: SECP160K1,
+    EllipticCurveOID.SECP192K1: SECP192K1,
     EllipticCurveOID.SECP192R1: SECP192R1,
+    EllipticCurveOID.SECP224K1: SECP224K1,
     EllipticCurveOID.SECP224R1: SECP224R1,
     EllipticCurveOID.SECP256K1: SECP256K1,
     EllipticCurveOID.SECP256R1: SECP256R1,
     EllipticCurveOID.SECP384R1: SECP384R1,
     EllipticCurveOID.SECP521R1: SECP521R1,
+    EllipticCurveOID.BRAINPOOLP160R1: BrainpoolP160R1,
+    EllipticCurveOID.BRAINPOOLP192R1: BrainpoolP192R1,
+    EllipticCurveOID.BRAINPOOLP224R1: BrainpoolP224R1,
     EllipticCurveOID.BRAINPOOLP256R1: BrainpoolP256R1,
+    EllipticCurveOID.BRAINPOOLP320R1: BrainpoolP320R1,
     EllipticCurveOID.BRAINPOOLP384R1: BrainpoolP384R1,
     EllipticCurveOID.BRAINPOOLP512R1: BrainpoolP512R1,
     EllipticCurveOID.SECT163K1: SECT163K1,
