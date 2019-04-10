@@ -22,6 +22,7 @@ import sys
 def main(argv):
     import gc
     import json
+    import traceback
 
     import cffi
 
@@ -29,8 +30,8 @@ def main(argv):
 
     heap = {}
 
-    BACKTRACE_ENABLED = True
-    if BACKTRACE_ENABLED:
+    C_BACKTRACE_ENABLED = False
+    if C_BACKTRACE_ENABLED:
         backtrace_ffi = cffi.FFI()
         backtrace_ffi.cdef('''
             int backtrace(void **, int);
@@ -54,10 +55,10 @@ def main(argv):
             return stack
     else:
         def backtrace():
-            return None
+            return traceback.format_stack()
 
         def symbolize_backtrace(trace):
-            return None
+            return trace
 
     @ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
