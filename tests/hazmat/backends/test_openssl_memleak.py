@@ -29,7 +29,7 @@ def main(argv):
 
     heap = {}
 
-    BACKTRACE_ENABLED = False
+    BACKTRACE_ENABLED = True
     if BACKTRACE_ENABLED:
         backtrace_ffi = cffi.FFI()
         backtrace_ffi.cdef('''
