@@ -238,7 +238,7 @@ class TestOpenSSLMemoryLeaks(object):
             import cryptography_vectors
 
             with cryptography_vectors.open_vector_file(path, "rb") as f:
-                cert = x509.load_der_x509_certificate(
+                cert = x509.load_pem_x509_certificate(
                     f.read(), backend
                 )
 
