@@ -379,7 +379,14 @@ def _decode_authority_key_identifier(backend, akid):
 
 def _decode_authority_information_access(backend, aia):
     aia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia)
-    aia = backend._ffi.gc(aia, backend._lib.sk_ACCESS_DESCRIPTION_free)
+    aia = backend._ffi.gc(
+        aia,
+        lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
+            x, backend._ffi.addressof(
+                backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
+            )
+        )
+    )
     num = backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
     access_descriptions = []
     for i in range(num):
