@@ -12,3 +12,7 @@ your bug report:
   you're using
 * How you installed ``cryptography``
 * Clear steps for reproducing your bug
+
+Please do not report security issues on Github! Follow the instructions in our
+documentation for reporting security issues:
+https://cryptography.io/en/latest/security/
