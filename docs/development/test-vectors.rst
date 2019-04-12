@@ -388,6 +388,8 @@ Custom X.509 Vectors
 * ``ca/ca.pem`` - A self-signed certificate with ``basicConstraints`` set to
   true. Its private key is ``ca/ca_key.pem``. This certificate is encoded in
   several of the PKCS12 custom vectors.
+* ``negative_serial.pem`` - A certificate with a serial number that is a negative
+  number.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
