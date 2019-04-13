@@ -183,4 +183,6 @@ linkcheck_ignore = [
     "https://info.isl.ntt.co.jp/crypt/eng/camellia/",
     # Serving an incomplete chain
     "https://www.cosic.esat.kuleuven.be",
+    # 502ing
+    "http://www.secg.org/sec1-v2.pdf",
 ]
