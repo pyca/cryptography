@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is dual licensed under the terms of the Apache License, Version
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
@@ -4120,13 +4121,27 @@ class TestName(object):
         name2 = x509.Name([x509.RelativeDistinguishedName([rdn1, rdn2])])
         assert name2.rdns == [x509.RelativeDistinguishedName([rdn1, rdn2])]
 
-    def test_repr(self):
+    @pytest.mark.parametrize(
+        ("common_name", "org_name", "expected_repr"),
+        [
+            (
+                u'cryptography.io',
+                u'PyCA',
+                "<Name(CN=cryptography.io,O=PyCA)>",
+            ),
+            (
+                u'Certificación',
+                u'Certificación',
+                "<Name(CN=Certificación,O=Certificación)>",
+            ),
+        ])
+    def test_repr(self, common_name, org_name, expected_repr):
         name = x509.Name([
-            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, common_name),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, org_name),
         ])
 
-        assert repr(name) == "<Name(CN=cryptography.io,O=PyCA)>"
+        assert repr(name) == expected_repr
 
     def test_rfc4514_string(self):
         n = x509.Name([
