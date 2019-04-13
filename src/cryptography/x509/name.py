@@ -253,4 +253,7 @@ class Name(object):
         return sum(len(rdn) for rdn in self._attributes)
 
     def __repr__(self):
-        return "<Name({})>".format(self.rfc4514_string())
+        if six.PY2:
+            return "<Name({})>".format(self.rfc4514_string().encode('utf8'))
+        else:
+            return "<Name({})>".format(self.rfc4514_string())
