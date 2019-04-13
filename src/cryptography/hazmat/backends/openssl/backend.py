@@ -334,7 +334,10 @@ class Backend(object):
             bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
             # A zero length means the BN has value 0
             self.openssl_assert(bin_len >= 0)
-            return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+            val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+            if self._lib.BN_is_negative(bn):
+                val = -val
+            return val
         else:
             # Under Python 2 the best we can do is hex()
             hex_cdata = self._lib.BN_bn2hex(bn)

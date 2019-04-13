@@ -597,6 +597,14 @@ class TestRSACertificate(object):
             cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
         )
 
+    def test_negative_serial_number(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "negative_serial.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert cert.serial_number == -18008675309
+
     def test_alternate_rsa_with_sha1_oid(self, backend):
         cert = _load_cert(
             os.path.join("x509", "alternate-rsa-sha1-oid.pem"),
