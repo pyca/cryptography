@@ -904,7 +904,7 @@ Interface
 .. _`NIST SP 800-108`: https://csrc.nist.gov/publications/detail/sp/800-108/final
 .. _`NIST SP 800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
-.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
+.. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
