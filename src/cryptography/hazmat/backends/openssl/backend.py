@@ -727,11 +727,17 @@ class Backend(object):
             isinstance(private_key, rsa.RSAPrivateKey)
         ):
             raise ValueError(
-                "MD5 is not a supported hash algorithm for EC/DSA CSRs"
+                "MD5 is only (reluctantly) supported for RSA CSRs"
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+            if not isinstance(algorithm, hashes.SHA512):
+                raise ValueError("ed25519 requires SHA512 hash algorithm")
+
+            evp_md = self._ffi.NULL
+        else:
+            evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
@@ -798,6 +804,7 @@ class Backend(object):
     def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
+
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
@@ -806,11 +813,17 @@ class Backend(object):
             isinstance(private_key, rsa.RSAPrivateKey)
         ):
             raise ValueError(
-                "MD5 is not a supported hash algorithm for EC/DSA certificates"
+                "MD5 is only (reluctantly) supported for RSA certificates"
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+            if not isinstance(algorithm, hashes.SHA512):
+                raise ValueError("ed25519 requires SHA512 hash algorithm")
+
+            evp_md = self._ffi.NULL
+        else:
+            evp_md = self._evp_md_non_null_from_algorithm(algorithm)
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()

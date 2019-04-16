@@ -12,6 +12,9 @@ Changelog
   ``cryptography`` 2.9.
 * We now ship ``manylinux2010`` wheels in addition to our ``manylinux1``
   wheels.
+* Added support for ``ed25519`` keys in the
+  :class:`~cryptography.x509.CertificateBuilder` and
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
 .. _v2-7:
 
