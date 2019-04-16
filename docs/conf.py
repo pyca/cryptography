@@ -185,4 +185,6 @@ linkcheck_ignore = [
     "https://www.cosic.esat.kuleuven.be",
     # 502ing
     "http://www.secg.org/sec1-v2.pdf",
+    # 403ing from Travis
+    "https://devblogs.microsoft.com/oldnewthing/?p=4223",
 ]
