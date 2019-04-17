@@ -644,4 +644,4 @@ Serialization Encryption Types
 
 
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf
-.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
+.. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
