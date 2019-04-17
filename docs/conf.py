@@ -180,9 +180,9 @@ linkcheck_retries = 10
 
 linkcheck_ignore = [
     # Small DH key results in a TLS failure on modern OpenSSL
-    "https://info.isl.ntt.co.jp/crypt/eng/camellia/",
+    r"https://info.isl.ntt.co.jp/crypt/eng/camellia/",
     # Serving an incomplete chain
-    "https://www.cosic.esat.kuleuven.be",
+    r"https://www.cosic.esat.kuleuven.be",
     # 403ing from Travis
-    "https://devblogs.microsoft.com/oldnewthing/?p=4223",
+    r"https://devblogs.microsoft.com/oldnewthing/\?p=4223",
 ]
