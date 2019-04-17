@@ -954,4 +954,4 @@ Elliptic Curve Object Identifiers
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
 .. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
-.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
+.. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
