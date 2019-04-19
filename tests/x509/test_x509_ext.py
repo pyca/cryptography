@@ -23,7 +23,7 @@ from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
 from cryptography.x509.general_name import _lazy_import_idna
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
-    NameOID, ObjectIdentifier
+    NameOID, ObjectIdentifier, _OID_NAMES
 )
 
 from .test_x509 import _load_cert
@@ -5215,3 +5215,10 @@ class TestOCSPNonce(object):
         nonce3 = x509.OCSPNonce(b"1" * 5)
         assert hash(nonce1) == hash(nonce2)
         assert hash(nonce1) != hash(nonce3)
+
+
+def test_all_extension_oid_members_have_names_defined():
+    for oid in dir(ExtensionOID):
+        if oid[:2] == '__':
+            continue
+        assert getattr(ExtensionOID, oid) in _OID_NAMES
