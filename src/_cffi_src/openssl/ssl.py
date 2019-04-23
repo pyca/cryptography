@@ -719,17 +719,20 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+/* LibreSSL 2.9.1 added only the DTLS_*_method functions */
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
+#endif
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
 long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
-#else
-static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif
 
 static const long Cryptography_HAS_DTLS = 1;
