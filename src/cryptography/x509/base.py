@@ -9,12 +9,16 @@ import datetime
 import os
 from enum import Enum
 
+from asn1crypto.core import Asn1Value
+
 import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.x509.attributes import Attribute
 from cryptography.x509.extensions import Extension, ExtensionType
 from cryptography.x509.name import Name
+from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
@@ -388,12 +392,13 @@ class RevokedCertificate(object):
 
 
 class CertificateSigningRequestBuilder(object):
-    def __init__(self, subject_name=None, extensions=[]):
+    def __init__(self, subject_name=None, extensions=[], attributes=[]):
         """
         Creates an empty X.509 certificate request (v1).
         """
         self._subject_name = subject_name
         self._extensions = extensions
+        self._attributes = attributes
 
     def subject_name(self, name):
         """
@@ -403,7 +408,9 @@ class CertificateSigningRequestBuilder(object):
             raise TypeError('Expecting x509.Name object.')
         if self._subject_name is not None:
             raise ValueError('The subject name may only be set once.')
-        return CertificateSigningRequestBuilder(name, self._extensions)
+        return CertificateSigningRequestBuilder(
+            name, self._extensions, self._attributes,
+        )
 
     def add_extension(self, extension, critical):
         """
@@ -416,7 +423,25 @@ class CertificateSigningRequestBuilder(object):
         _reject_duplicate_extension(extension, self._extensions)
 
         return CertificateSigningRequestBuilder(
-            self._subject_name, self._extensions + [extension]
+            self._subject_name, self._extensions + [extension],
+            self._attributes
+        )
+
+    def add_attribute(self, object_identifier, value):
+        """
+        Adds an X.509 attribute to the certificate request.
+        """
+        if not isinstance(object_identifier, ObjectIdentifier):
+            raise TypeError("object_identifier must be an ObjectIdentifier")
+
+        if not isinstance(value, Asn1Value):
+            raise TypeError("value must be an Asn1Value")
+
+        attribute = Attribute(object_identifier, value)
+
+        return CertificateSigningRequestBuilder(
+            self._subject_name, self._extensions,
+            self._attributes + [attribute]
         )
 
     def sign(self, private_key, algorithm, backend):

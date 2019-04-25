@@ -778,6 +778,17 @@ class Backend(object):
         res = self._lib.X509_REQ_add_extensions(x509_req, sk_extension)
         self.openssl_assert(res == 1)
 
+        # Add attributes.
+        for attribute in builder._attributes:
+            dotted_string = self._ffi.new(
+                "char[]", attribute.oid.dotted_string.encode('utf8'))
+            value = self._ffi.new("char[]", attribute.value.contents)
+            res = self._lib.X509_REQ_add1_attr_by_txt(
+                x509_req, dotted_string, attribute.value.tag,
+                value, len(value) - 1
+            )
+            self.openssl_assert(res == 1)
+
         # Sign the request using the requester's private key.
         res = self._lib.X509_REQ_sign(
             x509_req, private_key._evp_pkey, evp_md
