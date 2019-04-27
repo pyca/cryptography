@@ -5,7 +5,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/twisted/twisted
         cd twisted
         git rev-parse HEAD
-        pip install -e ".[tls,conch,http2]"
+        pip install ".[tls,conch,http2]"
         ;;
     run)
         cd twisted
