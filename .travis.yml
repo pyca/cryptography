@@ -114,7 +114,7 @@ matrix:
         - python: 2.7
           services: docker
           env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
-          if: branch = master AND type != pull_request
+          if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
         - python: 3.4
           env: TOXENV=pep8
 
