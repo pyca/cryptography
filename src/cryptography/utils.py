@@ -23,6 +23,7 @@ class CryptographyDeprecationWarning(UserWarning):
 PersistentlyDeprecated2017 = CryptographyDeprecationWarning
 PersistentlyDeprecated2018 = CryptographyDeprecationWarning
 DeprecatedIn25 = CryptographyDeprecationWarning
+DeprecatedIn27 = CryptographyDeprecationWarning
 
 
 def _check_bytes(name, value):
