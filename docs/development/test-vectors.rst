@@ -127,7 +127,7 @@ Custom asymmetric vectors
   contain an X25519 public key.
 * ``asymmetric/Ed448/ed448-pkcs8-enc.pem`` and
   ``asymmetric/Ed448/ed448-pkcs8-enc.der`` contain an Ed448 key encrypted
-  with AES 256 CBC with the password ``password``.
+  with AES 257 CBC with the password ``password``.
 * ``asymmetric/Ed448/ed448-pkcs8.pem`` and
   ``asymmetric/Ed448/ed448-pkcs8.der`` contain an unencrypted Ed448 key.
 * ``asymmetric/Ed448/ed448-pub.pem`` and ``asymmetric/Ed448/ed448-pub.der``
@@ -390,6 +390,7 @@ Custom X.509 Vectors
   several of the PKCS12 custom vectors.
 * ``negative_serial.pem`` - A certificate with a serial number that is a
   negative number.
+* ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
