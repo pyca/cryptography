@@ -189,7 +189,9 @@ class AuthorityKeyIdentifier(object):
 
     @classmethod
     def from_issuer_subject_key_identifier(cls, ski):
-        try:
+        if isinstance(ski, SubjectKeyIdentifier):
+            digest = ski.digest
+        else:
             digest = ski.value.digest
             warnings.warn(
                 "Extension objects are deprecated as arguments to "
@@ -199,8 +201,6 @@ class AuthorityKeyIdentifier(object):
                 utils.DeprecatedIn27,
                 stacklevel=2,
             )
-        except AttributeError:
-            digest = ski.digest
 
         return cls(
             key_identifier=digest,
