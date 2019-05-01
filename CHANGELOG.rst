@@ -16,7 +16,9 @@ Changelog
   when using OpenSSL 1.1.1 or newer.
 * Support serialization with ``Encoding.OpenSSH`` and ``PublicFormat.OpenSSH``
   in
-  :meth:`Ed25519PublicKey.public_bytes <cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey.public_bytes>`.
+  :meth:`Ed25519PublicKey.public_bytes
+  <cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey.public_bytes>`
+  .
 * Correctly allow passing a ``SubjectKeyIdentifier`` to
   :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`
   and deprecate passing an ``Extension`` object. The documentation always
