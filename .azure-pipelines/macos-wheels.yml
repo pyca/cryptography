@@ -21,9 +21,11 @@ jobs:
           - script: brew install openssl@1.1
             displayName: Install OpenSSL with brew
 
-          - script: pip install -U wheel virtualenv
+          - script: virtualenv .venv
+            displayName: Create virtualenv
+          - script: .venv/bin/pip install -U wheel virtualenv
             displayName: Update wheel and virtualenv to the latest version
-          - script: pip install cffi six idna asn1crypto ipaddress enum34
+          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
 
           - script: |
@@ -38,10 +40,8 @@ jobs:
               CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
                   LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
                   CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
-                  pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
+                  .venv/bin/pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
             displayName: Build the wheel
-          - script: virtualenv .venv
-            displayName: Create virtualenv
           - script: .venv/bin/pip install --no-index -f wheelhouse cryptography
             displayName: Test installing the wheel
           - script: |
