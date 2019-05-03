@@ -21,8 +21,8 @@ jobs:
           - script: brew install openssl@1.1
             displayName: Install OpenSSL with brew
 
-          - script: pip install -U wheel
-            displayName: Update wheel to the latest version
+          - script: pip install -U wheel virtualenv
+            displayName: Update wheel and virtualenv to the latest version
           - script: pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
 
@@ -40,10 +40,12 @@ jobs:
                   CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
                   pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
             displayName: Build the wheel
-          - script: pip install --no-index -f wheelhouse cryptography
+          - script: virtualenv .venv
+            displayName: Create virtualenv
+          - script: .venv/bin/pip install --no-index -f wheelhouse cryptography
             displayName: Test installing the wheel
           - script: |
-              python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+              .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - script: otool -L `find .venv -name '_openssl*.so'`
             displayName: Print everything we link against
