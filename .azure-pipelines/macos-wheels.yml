@@ -1,0 +1,55 @@
+trigger: none
+pr: none
+
+jobs:
+    - job: 'mac'
+      pool:
+          vmImage: 'macOS-10.13'
+      strategy:
+          matrix:
+              Python27:
+                  python.version: '2.7'
+              Python3:
+                  python.version: '3.4'
+      steps:
+          - task: UsePythonVersion@0
+            inputs:
+                versionSpec: '$(python.version)'
+
+          - script: brew update
+            displayName: Update brew
+          - script: brew reinstall openssl@1.1 --build-from-source
+            displayName: Reinstall openssl 1.1 from source with brew
+
+          - script: pip install -U wheel
+            displayName: Update wheel to the latest version
+          - script: pip install cffi six idna asn1crypto ipaddress enum34
+            displayName: Install our Python dependencies
+
+          - script: |
+              set -e
+              set -x
+
+              REGEX="py3([0-9])*"
+              if [[ "$PYTHON_VERSION" =~ $REGEX ]];
+                  PY_LIMITED_API="--build-option --py-limited-api=cp3\${BASH_REMATCH[1]}"
+              fi
+
+              CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
+                  LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
+                  CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
+                  pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
+            displayName: Build the wheel
+          - script: pip install --no-index -f wheelhouse cryptography
+            displayName: Test installing the wheel
+          - script: python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+            displayName: Print the OpenSSL we built and linked against
+          - script: otool -L `find .venv -name '_openssl*.so'`
+            displayName: Print everything we link against
+          - script: lipo -info `find .venv -name '*.so'`
+            displayName: Print the architectures in our fat mach-o binary
+          - script: otool -L `find .venv -name '_openssl*.so'` | grep -vG "libcrypto\\|libssl"
+            displayName: Verify that we did not link against OpenSSL
+
+          - upload: wheelhouse/
+            displayName: Upload everything in the wheelhouse
