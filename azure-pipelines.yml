@@ -1,17 +1,27 @@
 jobs:
 - job: 'mac'
-  pool:
-    vmImage: 'macOS 10.13'
   strategy:
     matrix:
-      Python27:
+      Python27-macOS1013:
         python.version: '2.7'
         TOXENV: py27
-      Python37:
+        vmImage: 'macOS-10.13'
+        MACOS_VERSION: '10.13'
+      Python37-macOS1013:
         python.version: '3.7'
         TOXENV: py37
-    maxParallel: 2
-
+        vmImage: 'macOS-10.13'
+        MACOS_VERSION: '10.13'
+      Python27-macOS1014:
+        python.version: '2.7'
+        TOXENV: py27
+        vmImage: 'macOS-10.14'
+        MACOS_VERSION: '10.14'
+      Python37-macOS1014:
+        python.version: '3.7'
+        TOXENV: py37
+        vmImage: 'macOS-10.14'
+        MACOS_VERSION: '10.14'
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -37,6 +47,6 @@ jobs:
         tox -r --  --color=yes --wycheproof-root=wycheproof
     displayName: 'Run tests'
 
-  - script: codecov
+  - script: codecov -e MACOS_VERSION,AGENT_OS,TOXENV
     displayName: 'Submit coverage'
     condition: succeeded()
