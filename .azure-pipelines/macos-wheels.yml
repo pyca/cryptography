@@ -57,4 +57,4 @@ jobs:
             displayName: Verify that we did not link against OpenSSL
 
           - upload: wheelhouse/
-            name: cryptography-python$(python.version)
+            artifact: cryptography-python$(python.version)
