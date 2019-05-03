@@ -18,7 +18,7 @@ jobs:
 
           - script: brew update
             displayName: Update brew
-          - script: brew reinstall openssl@1.1 --build-from-source
+          - script: brew reinstall -v openssl@1.1 --build-from-source
             displayName: Reinstall openssl 1.1 from source with brew
 
           - script: pip install -U wheel
