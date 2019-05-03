@@ -31,7 +31,7 @@ jobs:
               set -x
 
               REGEX="py3([0-9])*"
-              if [[ "$PYTHON_VERSION" =~ $REGEX ]];
+              if [[ "$PYTHON_VERSION" =~ $REGEX ]]; then
                   PY_LIMITED_API="--build-option --py-limited-api=cp3\${BASH_REMATCH[1]}"
               fi
 
