@@ -42,7 +42,8 @@ jobs:
             displayName: Build the wheel
           - script: pip install --no-index -f wheelhouse cryptography
             displayName: Test installing the wheel
-          - script: python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+          - script: |
+              python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - script: otool -L `find .venv -name '_openssl*.so'`
             displayName: Print everything we link against
