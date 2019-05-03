@@ -1,5 +1,7 @@
 jobs:
 - job: 'mac'
+  pool:
+    vmImage: $[variables.vmImage]
   strategy:
     matrix:
       Python27-macOS1013:
