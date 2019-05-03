@@ -25,7 +25,7 @@ jobs:
             displayName: Install virtualenv
           - script: virtualenv .venv
             displayName: Create virtualenv
-          - script: .venv/bin/pip -U wheel
+          - script: .venv/bin/pip install -U wheel
             displayName: Update wheel to the latest version
           - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
