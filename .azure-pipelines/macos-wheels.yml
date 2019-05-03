@@ -4,7 +4,7 @@ pr: none
 jobs:
     - job: 'mac'
       pool:
-          vmImage: 'macOS-10.13'
+          vmImage: 'macOS-10.14'
       strategy:
           matrix:
               Python27:
@@ -18,8 +18,8 @@ jobs:
 
           - script: brew update
             displayName: Update brew
-          - script: brew reinstall -v openssl@1.1 --build-from-source
-            displayName: Reinstall openssl 1.1 from source with brew
+          - script: brew install openssl@1.1
+            displayName: Install OpenSSL with brew
 
           - script: pip install -U wheel
             displayName: Update wheel to the latest version
