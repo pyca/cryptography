@@ -3196,11 +3196,18 @@ class TestAuthorityKeyIdentifierExtension(object):
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
-        ski = issuer_cert.extensions.get_extension_for_class(
+        ski_ext = issuer_cert.extensions.get_extension_for_class(
             x509.SubjectKeyIdentifier
         )
+        # This was the incorrect arg we want to deprecate and remove
+        with pytest.warns(utils.CryptographyDeprecationWarning):
+            aki = x509.AuthorityKeyIdentifier.\
+                from_issuer_subject_key_identifier(ski_ext)
+            assert ext.value == aki
+
+        # Here's what we actually documented and want to do
         aki = x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(
-            ski
+            ski_ext.value
         )
         assert ext.value == aki
 
