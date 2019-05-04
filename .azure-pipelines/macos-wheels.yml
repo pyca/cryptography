@@ -17,6 +17,9 @@ jobs:
                   PYTHON_BIN_PATH: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
       steps:
           - script: |
+              set -e
+              set -x
+
               curl -O "$PYTHON_DOWNLOAD_URL" -o python.pkg
               sudo installer -pkg python.pkg -target /
             displayName: Download and install Python
