@@ -9,21 +9,29 @@ jobs:
           matrix:
               Python27:
                   python.version: '2.7'
+                  PYTHON_BIN_PATH: python
               Python3:
                   python.version: '3.4'
+                  PYTHON_BIN_PATH: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
       steps:
           - task: UsePythonVersion@0
             inputs:
                 versionSpec: '$(python.version)'
+            condition: eq(variables['python.version'], '2.7')
+          - script: |
+              curl -O "https://www.python.org/ftp/python/3.7.3/python-3.7.3-macosx10.6.pkg"
+              installer -pkg python-3.7.3-macosx10.6.pkg -target /
+            displayName: Download Python 3.7.3
+            condition: ne(variables['python.version'], '2.7')
 
           - script: brew update
             displayName: Update brew
           - script: brew install openssl@1.1
             displayName: Install OpenSSL with brew
 
-          - script: pip install -U virtualenv
+          - script: $PYTHON_BIN_PATH -m pip install -U virtualenv
             displayName: Install virtualenv
-          - script: virtualenv .venv
+          - script: $PYTHON_BIN_PATH -m virtualenv .venv
             displayName: Create virtualenv
           - script: .venv/bin/pip install -U wheel
             displayName: Update wheel to the latest version
