@@ -20,7 +20,7 @@ jobs:
             condition: eq(variables['python.version'], '2.7')
           - script: |
               curl -O "https://www.python.org/ftp/python/3.7.3/python-3.7.3-macosx10.6.pkg"
-              installer -pkg python-3.7.3-macosx10.6.pkg -target /
+              sudo installer -pkg python-3.7.3-macosx10.6.pkg -target /
             displayName: Download Python 3.7.3
             condition: ne(variables['python.version'], '2.7')
 
