@@ -20,7 +20,7 @@ jobs:
               set -e
               set -x
 
-              curl -O "$PYTHON_DOWNLOAD_URL" -o python.pkg
+              curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
               sudo installer -pkg python.pkg -target /
             displayName: Download and install Python
 
