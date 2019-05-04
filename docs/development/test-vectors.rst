@@ -390,6 +390,7 @@ Custom X.509 Vectors
   several of the PKCS12 custom vectors.
 * ``negative_serial.pem`` - A certificate with a serial number that is a
   negative number.
+* ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
