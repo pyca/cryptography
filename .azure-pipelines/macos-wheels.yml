@@ -35,7 +35,7 @@ jobs:
             displayName: Create virtualenv
           - script: .venv/bin/pip install -U wheel
             displayName: Update wheel to the latest version
-          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress enum34
+          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress "enum34; python_version < '3'"
             displayName: Install our Python dependencies
 
           - script: |
