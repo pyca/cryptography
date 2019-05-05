@@ -67,9 +67,6 @@ matrix:
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
         - python: 2.7
           services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-wheezy
-        - python: 2.7
-          services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-jessie
         - python: 3.4
           services: docker
@@ -86,6 +83,9 @@ matrix:
         - python: 3.7
           services: docker
           env: TOXENV=py37 DOCKER=pyca/cryptography-runner-sid
+        - python: 2.7
+          services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-trusty
         - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling
