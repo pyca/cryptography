@@ -14,9 +14,9 @@ Currently we test ``cryptography`` on Python 2.7, 3.4+, and
 PyPy 5.4+ on these operating systems.
 
 * x86-64 CentOS 7.x
-* macOS 10.12 Sierra, 10.11 El Capitan
+* macOS 10.12 Sierra, 10.10 Yosemite
 * x86-64 Ubuntu 14.04, 16.04, and rolling
-* x86-64 Debian Wheezy (7.x), Jessie (8.x), Stretch (9.x), and Sid (unstable)
+* x86-64 Debian Jessie (8.x), Stretch (9.x), Buster (10.x), and Sid (unstable)
 * x86-64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
