@@ -6,16 +6,19 @@ from __future__ import absolute_import, division, print_function
 
 import getpass
 import glob
-import io
+import json
 import os
 import subprocess
+import tempfile
 import time
+import zipfile
+
+from azure.devops.connection import Connection
+from azure.devops.v5_1.build.models import Build
 
 import click
 
-from clint.textui.progress import Bar as ProgressBar
-
-import requests
+from msrest.authentication import BasicAuthentication
 
 
 JENKINS_URL = (
@@ -29,64 +32,37 @@ def run(*args, **kwargs):
     subprocess.check_call(list(args), **kwargs)
 
 
-def wait_for_build_completed(session):
-    # Wait 20 seconds before actually checking if the build is complete, to
-    # ensure that it had time to really start.
-    time.sleep(20)
+def wait_for_build_completed(build_client, build_id):
     while True:
-        response = session.get(
-            "{0}/lastBuild/api/json/".format(JENKINS_URL),
-            headers={
-                "Accept": "application/json",
-            }
-        )
-        response.raise_for_status()
-        if not response.json()["building"]:
-            assert response.json()["result"] == "SUCCESS"
+        build = build_client.get_build("cryptography", build_id)
+        if build.finish_time is not None:
             break
-        time.sleep(0.1)
+        time.sleep(3)
 
 
-def download_artifacts(session):
-    response = session.get(
-        "{0}/lastBuild/api/json/".format(JENKINS_URL),
-        headers={
-            "Accept": "application/json"
-        }
-    )
-    response.raise_for_status()
-    json_response = response.json()
-    assert not json_response["building"]
-    assert json_response["result"] == "SUCCESS"
-
+def download_artifacts(build_client, build_id):
+    artifacts = build_client.get_artifacts("cryptography", build_id)
     paths = []
-
-    for artifact in json_response["artifacts"]:
-        response = session.get(
-            "{0}artifact/{1}".format(
-                json_response["url"], artifact["relativePath"]
-            ), stream=True
+    for artifact in artifacts:
+        # TODO: this does not work
+        contents = build_client.get_artifact_content_zip(
+            "cryptography", build_id, artifact.name
         )
-        assert response.headers["content-length"]
-        print("Downloading {0}".format(artifact["fileName"]))
-        bar = ProgressBar(
-            expected_size=int(response.headers["content-length"]),
-            filled_char="="
-        )
-        content = io.BytesIO()
-        for data in response.iter_content(chunk_size=8192):
-            content.write(data)
-            bar.show(content.tell())
-        assert bar.expected_size == content.tell()
-        bar.done()
-        out_path = os.path.join(
-            os.path.dirname(__file__),
-            "dist",
-            artifact["fileName"],
-        )
-        with open(out_path, "wb") as f:
-            f.write(content.getvalue())
-        paths.append(out_path)
+        with tempfile.NamedTemporaryFile() as f:
+            for chunk in contents:
+                f.write(chunk)
+            f.flush()
+            with zipfile.ZipFile(f.name) as z:
+                for name in z.namelist():
+                    p = z.open(name)
+                    out_path = os.path.join(
+                        os.path.dirname(__file__),
+                        "dist",
+                        name,
+                    )
+                    with open(out_path, "wb") as f:
+                        f.write(p.read())
+                    paths.append(out_path)
     return paths
 
 
@@ -108,20 +84,23 @@ def release(version):
     )
     run("twine", "upload", "-s", *packages)
 
-    session = requests.Session()
-
-    token = getpass.getpass("Input the Jenkins token: ")
-    response = session.get(
-        "{0}/buildWithParameters".format(JENKINS_URL),
-        params={
-            "token": token,
-            "BUILD_VERSION": version,
-            "cause": "Building wheels for {0}".format(version)
-        }
+    token = getpass.getpass("Azure personal access token: ")
+    credentials = BasicAuthentication("", token)
+    connection = Connection(
+        base_url="https://dev.azure.com/pyca", creds=credentials
     )
-    response.raise_for_status()
-    wait_for_build_completed(session)
-    paths = download_artifacts(session)
+    build_client = connection.clients.get_build_client()
+    [definition] = build_client.get_definitions(
+        "cryptography", "wheel builder"
+    )
+    build_description = Build(
+        definition=definition,
+        parameters=json.dumps({"BUILD_VERSION": version})
+    )
+    build = build_client.queue_build(project="cryptography", build=build_description)
+    wait_for_build_completed(build_client, build.id)
+    paths = download_artifacts(build_client, build.id)
+
     run("twine", "upload", *paths)
 
 
