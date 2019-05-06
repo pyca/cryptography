@@ -73,38 +73,20 @@ jobs:
       container: $[variables.container]
       strategy:
           matrix:
-              Python27m-manylinux1-32bit:
-                  container: 'pyca/cryptography-manylinux1:i686'
-                  PYTHON_VERSION: '2.7'
-                  LINUX32: 'linux32'
-                  WHEEL_NAME: 'python2.7m-32bit'
-              Python27mu-manylinux1-32bit:
-                  container: 'pyca/cryptography-manylinux1:i686'
-                  PYTHON_VERSION: '2.7'
-                  LINUX32: 'linux32'
-                  WHEEL_NAME: 'python2.7mu-32bit'
-              Python3m-manylinux1-32bit:
-                  container: 'pyca/cryptography-manylinux1:i686'
-                  PYTHON_VERSION: '3.4'
-                  LINUX32: 'linux32'
-                  WHEEL_NAME: 'python3.4m-32bit'
-              Python27m-manylinux1-64bit:
+              Python27m-manylinux1:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '2.7'
-                  LINUX32: ''
-                  WHEEL_NAME: 'python2.7m-64bit'
-              Python27mu-manylinux1-64bit:
+                  WHEEL_NAME: 'python2.7m'
+              Python27mu-manylinux1:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '2.7'
-                  LINUX32: ''
-                  WHEEL_NAME: 'python2.7mu-64bit'
-              Python3m-manylinux1-64bit:
+                  WHEEL_NAME: 'python2.7mu'
+              Python3m-manylinux1:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '3.4'
-                  LINUX32: ''
-                  WHEEL_NAME: 'python3.4m-64bit'
+                  WHEEL_NAME: 'python3.4m'
       steps:
-          - script: $LINUX32 /opt/python/$PYTHON_VERSION/bin/pip install cffi six idna asn1crypto ipaddress enum34
+          - script: /opt/python/$PYTHON_VERSION/bin/pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
           - script: |
               set -e
@@ -116,18 +98,18 @@ jobs:
               fi
               LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
                   CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
-                  $LINUX32 /opt/python/$PYTHON_VERSION/bin/pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
+                  /opt/python/$PYTHON_VERSION/bin/pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
             displayName: Build the wheel
-          - script: $LINUX32 auditwheel repair tmpwheelhouse/cryptograph*.whl -w wheelhouse/
+          - script: auditwheel repair tmpwheelhouse/cryptograph*.whl -w wheelhouse/
             displayName: Run auditwheel
           - script: unzip wheelhouse/*.whl -d execstack.check
             displayName: Unzip the wheel
           - script: (execstack execstack.check/cryptography/hazmat/bindings/*.so | grep '^X') && exit1
             displayName: Run execstack on the wheel
-          - script: $LINUX32 /opt/python/$PYTHON_VERSION/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
+          - script: /opt/python/$PYTHON_VERSION/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
             displayName: Test installing the wheel
           - script: |
-              $LINUX32 /opt/python/$PYTHON_VERSION/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+              /opt/python/$PYTHON_VERSION/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - upload: wheelhouse/
             artifact: cryptography-manylinux1-$WHEEL_NAME
