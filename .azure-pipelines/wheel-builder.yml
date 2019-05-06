@@ -70,9 +70,7 @@ jobs:
     - job: 'manylinux1'
       pool:
           vmImage: 'ubuntu-16.04'
-      container:
-          image: 'pyca/cryptography-manylinux1:x86_64'
-          options: '-u root'
+      container: 'pyca/cryptography-manylinux1:x86_64'
       strategy:
           matrix:
               Python27m:
@@ -82,7 +80,9 @@ jobs:
               Python3m:
                   PYTHON_VERSION: 'cp34-cp34m'
       steps:
-          - script: /opt/python/$PYTHON_VERSION/bin/pip install cffi six idna asn1crypto ipaddress enum34
+          - script: /opt/python/$PYTHON_VERSION/bin/python -m virtualenv .venv
+            displayName: Create virtualenv
+          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
           - script: |
               set -e
@@ -94,7 +94,7 @@ jobs:
               fi
               LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
                   CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
-                  /opt/python/$PYTHON_VERSION/bin/pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
+                  .venv/bin/pip wheel cryptography==$BUILD_VERSION --no-use-pep517 --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
             displayName: Build the wheel
           - script: auditwheel repair tmpwheelhouse/cryptograph*.whl -w wheelhouse/
             displayName: Run auditwheel
@@ -102,10 +102,10 @@ jobs:
             displayName: Unzip the wheel
           - script: (execstack execstack.check/cryptography/hazmat/bindings/*.so | grep '^X') && exit1
             displayName: Run execstack on the wheel
-          - script: /opt/python/$PYTHON_VERSION/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
+          - script: .venv/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
             displayName: Test installing the wheel
           - script: |
-              /opt/python/$PYTHON_VERSION/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+              .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - upload: wheelhouse/
             artifact: cryptography-manylinux1-$PYTHON_VERSION
