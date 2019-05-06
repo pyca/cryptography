@@ -100,7 +100,14 @@ jobs:
             displayName: Run auditwheel
           - script: unzip wheelhouse/*.whl -d execstack.check
             displayName: Unzip the wheel
-          - script: (execstack execstack.check/cryptography/hazmat/bindings/*.so | grep '^X') && exit 1
+          - script: |
+              set -e
+              set -x
+
+              count=$(execstack execstack.check/cryptography/hazmat/bindings/*.so | grep -c '^X')
+              if [ "$count" -ne 0 ]; then
+                exit 1
+              fi
             displayName: Run execstack on the wheel
           - script: .venv/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
             displayName: Test installing the wheel
