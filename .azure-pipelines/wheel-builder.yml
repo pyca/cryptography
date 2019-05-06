@@ -75,16 +75,13 @@ jobs:
           matrix:
               Python27m:
                   container: 'pyca/cryptography-manylinux1:x86_64'
-                  PYTHON_VERSION: '2.7'
-                  WHEEL_NAME: 'python2.7m'
+                  PYTHON_VERSION: 'cp27-cp27m'
               Python27mu:
                   container: 'pyca/cryptography-manylinux1:x86_64'
-                  PYTHON_VERSION: '2.7'
-                  WHEEL_NAME: 'python2.7mu'
+                  PYTHON_VERSION: 'cp27-cp27mu'
               Python3m:
                   container: 'pyca/cryptography-manylinux1:x86_64'
-                  PYTHON_VERSION: '3.4'
-                  WHEEL_NAME: 'python3.4m'
+                  PYTHON_VERSION: 'cp34-cp34m'
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/pip install cffi six idna asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
@@ -92,7 +89,7 @@ jobs:
               set -e
               set -x
 
-              REGEX="3\.([0-9])*"
+              REGEX="cp3([0-9])*"
               if [[ "$PYTHON_VERSION" =~ $REGEX ]]; then
                   PY_LIMITED_API="--build-option --py-limited-api=cp3${BASH_REMATCH[1]}"
               fi
@@ -112,4 +109,4 @@ jobs:
               /opt/python/$PYTHON_VERSION/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - upload: wheelhouse/
-            artifact: cryptography-manylinux1-$WHEEL_NAME
+            artifact: cryptography-manylinux1-$PYTHON_VERSION
