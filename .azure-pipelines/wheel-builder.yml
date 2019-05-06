@@ -2,7 +2,7 @@ trigger: none
 pr: none
 
 jobs:
-    - job: 'mac'
+    - job: 'macOS'
       pool:
           vmImage: 'macOS-10.14'
       strategy:
@@ -67,21 +67,21 @@ jobs:
           - upload: wheelhouse/
             artifact: cryptography-macos-python$(python.version)
 
-    - job: 'linux'
+    - job: 'manylinux1'
       pool:
           vmImage: 'ubuntu-16.04'
       container: $[variables.container]
       strategy:
           matrix:
-              Python27m-manylinux1:
+              Python27m:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '2.7'
                   WHEEL_NAME: 'python2.7m'
-              Python27mu-manylinux1:
+              Python27mu:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '2.7'
                   WHEEL_NAME: 'python2.7mu'
-              Python3m-manylinux1:
+              Python3m:
                   container: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: '3.4'
                   WHEEL_NAME: 'python3.4m'
