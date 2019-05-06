@@ -118,4 +118,4 @@ jobs:
               .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - upload: wheelhouse/
-            artifact: cryptography-manylinux1-$PYTHON_VERSION
+            artifact: cryptography-manylinux1-$(PYTHON_VERSION)
