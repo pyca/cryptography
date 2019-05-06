@@ -71,21 +71,15 @@ jobs:
       pool:
           vmImage: 'ubuntu-16.04'
       container:
-          image: $[variables.container]
-          options: $[variables.container_options]
+          image: 'pyca/cryptography-manylinux1:x86_64'
+          options: '-u root'
       strategy:
           matrix:
               Python27m:
-                  container: 'pyca/cryptography-manylinux1:x86_64'
-                  container_options: '-u root'
                   PYTHON_VERSION: 'cp27-cp27m'
               Python27mu:
-                  container: 'pyca/cryptography-manylinux1:x86_64'
-                  container_options: '-u root'
                   PYTHON_VERSION: 'cp27-cp27mu'
               Python3m:
-                  container: 'pyca/cryptography-manylinux1:x86_64'
-                  container_options: '-u root'
                   PYTHON_VERSION: 'cp34-cp34m'
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/pip install cffi six idna asn1crypto ipaddress enum34
