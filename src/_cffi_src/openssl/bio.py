@@ -15,6 +15,7 @@ typedef ... BIO_METHOD;
 
 FUNCTIONS = """
 int BIO_free(BIO *);
+void BIO_free_all(BIO *);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_dgram(int, int);
 size_t BIO_ctrl_pending(BIO *);
