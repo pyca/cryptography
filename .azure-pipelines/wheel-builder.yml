@@ -104,7 +104,8 @@ jobs:
               set -e
               set -x
 
-              count=$(execstack execstack.check/cryptography/hazmat/bindings/*.so | grep -c '^X')
+              results=$(execstack execstack.check/cryptography/hazmat/bindings/*.so)
+              count=$(echo "$results" | grep -c '^X' || true)
               if [ "$count" -ne 0 ]; then
                 exit 1
               else
