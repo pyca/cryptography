@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** We no longer distribute 32-bit ``manylinux1``
+  wheels. Continuing to produce them was a maintenance burden.
 * **BACKWARDS INCOMPATIBLE:** Removed the
   ``cryptography.hazmat.primitives.mac.MACContext`` interface. The ``CMAC`` and
   ``HMAC`` APIs have not changed, but they are no longer registered as
