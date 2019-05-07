@@ -44,7 +44,6 @@ def download_artifacts(build_client, build_id):
     artifacts = build_client.get_artifacts("cryptography", build_id)
     paths = []
     for artifact in artifacts:
-        # TODO: this does not work
         contents = build_client.get_artifact_content_zip(
             "cryptography", build_id, artifact.name
         )
@@ -54,16 +53,40 @@ def download_artifacts(build_client, build_id):
             f.flush()
             with zipfile.ZipFile(f.name) as z:
                 for name in z.namelist():
+                    if not name.endswith(".whl"):
+                        continue
                     p = z.open(name)
                     out_path = os.path.join(
                         os.path.dirname(__file__),
                         "dist",
-                        name,
+                        os.path.basename(name),
                     )
                     with open(out_path, "wb") as f:
                         f.write(p.read())
                     paths.append(out_path)
     return paths
+
+
+def build_wheels(version):
+    token = getpass.getpass("Azure personal access token: ")
+    credentials = BasicAuthentication("", token)
+    connection = Connection(
+        base_url="https://dev.azure.com/pyca", creds=credentials
+    )
+    build_client = connection.clients.get_build_client()
+    [definition] = build_client.get_definitions(
+        "cryptography", "wheel builder"
+    )
+    build_description = Build(
+        definition=definition,
+        parameters=json.dumps({"BUILD_VERSION": version}),
+        source_branch="azure-release",
+    )
+    build = build_client.queue_build(
+        project="cryptography", build=build_description
+    )
+    wait_for_build_completed(build_client, build.id)
+    return download_artifacts(build_client, build.id)
 
 
 @click.command()
@@ -84,23 +107,7 @@ def release(version):
     )
     run("twine", "upload", "-s", *packages)
 
-    token = getpass.getpass("Azure personal access token: ")
-    credentials = BasicAuthentication("", token)
-    connection = Connection(
-        base_url="https://dev.azure.com/pyca", creds=credentials
-    )
-    build_client = connection.clients.get_build_client()
-    [definition] = build_client.get_definitions(
-        "cryptography", "wheel builder"
-    )
-    build_description = Build(
-        definition=definition,
-        parameters=json.dumps({"BUILD_VERSION": version})
-    )
-    build = build_client.queue_build(project="cryptography", build=build_description)
-    wait_for_build_completed(build_client, build.id)
-    paths = download_artifacts(build_client, build.id)
-
+    paths = build_wheels(version)
     run("twine", "upload", *paths)
 
 
