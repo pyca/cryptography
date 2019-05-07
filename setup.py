@@ -8,7 +8,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import platform
-import subprocess
 import sys
 from distutils.command.build import build
 
@@ -39,8 +38,6 @@ about = {}
 with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
-
-VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
 setup_requirements = ["cffi>=1.8,!=1.11.3"]
