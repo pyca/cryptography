@@ -14,6 +14,9 @@ Changelog
   ``cryptography.hazmat.primitives.mac.MACContext`` interface. The ``CMAC`` and
   ``HMAC`` APIs have not changed, but they are no longer registered as
   ``MACContext`` instances.
+* Removed support for running our tests with ``setup.py test``. Users
+  interested in running our tests can continue to follow the directions in our
+  :doc:`development documentation</development/getting-started>`.
 * Add support for :class:`~cryptography.hazmat.primitives.poly1305.Poly1305`
   when using OpenSSL 1.1.1 or newer.
 * Support serialization with ``Encoding.OpenSSH`` and ``PublicFormat.OpenSSH``

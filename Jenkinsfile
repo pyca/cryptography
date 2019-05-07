@@ -221,27 +221,4 @@ for (config in configs) {
     }
 }
 
-/* Add the python setup.py test builder */
-builders["setup.py-test"] = {
-    node("docker") {
-        stage("python setup.py test") {
-            docker.image("pyca/cryptography-runner-ubuntu-rolling").inside {
-                try {
-                    checkout_git("docker")
-                    sh """#!/usr/bin/env bash
-                        set -xe
-                        cd cryptography
-                        virtualenv .venv
-                        source .venv/bin/activate
-                        python setup.py test
-                    """
-                } finally {
-                    deleteDir()
-                }
-
-            }
-        }
-    }
-}
-
 parallel builders
