@@ -17,7 +17,6 @@ import pkg_resources
 import setuptools
 from setuptools import find_packages, setup
 from setuptools.command.install import install
-from setuptools.command.test import test
 
 
 if (
@@ -52,42 +51,6 @@ if platform.python_implementation() == "PyPy":
             "cryptography is not compatible with PyPy < 5.4. Please upgrade "
             "PyPy to use this library."
         )
-
-test_requirements = [
-    "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
-    "pretend",
-    "iso8601",
-    "pytz",
-    "hypothesis>=1.11.4,!=3.79.2",
-]
-
-
-# If there's no vectors locally that probably means we are in a tarball and
-# need to go and get the matching vectors package from PyPi
-if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
-    test_requirements.append(VECTORS_DEPENDENCY)
-
-
-class PyTest(test):
-    def finalize_options(self):
-        test.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-        # This means there's a vectors/ folder with the package in here.
-        # cd into it, install the vectors package and then refresh sys.path
-        if VECTORS_DEPENDENCY not in test_requirements:
-            subprocess.check_call(
-                [sys.executable, "setup.py", "install"], cwd="vectors"
-            )
-            pkg_resources.get_distribution("cryptography_vectors").activate()
-
-    def run_tests(self):
-        # Import here because in module scope the eggs are not loaded.
-        import pytest
-        test_args = [os.path.join(base_dir, "tests")]
-        errno = pytest.main(test_args)
-        sys.exit(errno)
 
 
 def keywords_with_side_effects(argv):
@@ -183,7 +146,6 @@ def keywords_with_side_effects(argv):
             "cmdclass": {
                 "build": DummyBuild,
                 "install": DummyInstall,
-                "test": DummyPyTest,
             }
         }
     else:
@@ -195,9 +157,6 @@ def keywords_with_side_effects(argv):
 
         return {
             "setup_requires": setup_requirements,
-            "cmdclass": {
-                "test": PyTest,
-            },
             "cffi_modules": cffi_modules
         }
 
@@ -226,17 +185,6 @@ class DummyInstall(install):
     """
 
     def run(self):
-        raise RuntimeError(setup_requires_error)
-
-
-class DummyPyTest(test):
-    """
-    This class makes it very obvious when ``keywords_with_side_effects()`` has
-    incorrectly interpreted the command line arguments to ``setup.py test`` as
-    one of the 'side effect free' commands or options.
-    """
-
-    def run_tests(self):
         raise RuntimeError(setup_requires_error)
 
 
@@ -291,11 +239,16 @@ setup(
         "asn1crypto >= 0.21.0",
         "six >= 1.4.1",
     ] + setup_requirements,
-    tests_require=test_requirements,
     extras_require={
         ":python_version < '3'": ["enum34", "ipaddress"],
 
-        "test": test_requirements,
+        "test": [
+            "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
+            "pretend",
+            "iso8601",
+            "pytz",
+            "hypothesis>=1.11.4,!=3.79.2",
+        ],
         "docs": [
             "sphinx >= 1.6.5,!=1.8.0",
             "sphinx_rtd_theme",
