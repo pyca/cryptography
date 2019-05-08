@@ -151,6 +151,6 @@ jobs:
               .venv/scripts/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
           - task: PublishBuildArtifacts@1
-              inputs:
-                  pathToPublish: wheelhouse/
-                  artifactName: cryptography-windows%WINDOWS_ARCH%-python%PYTHON_VERSION%
+            inputs:
+                pathToPublish: wheelhouse/
+                artifactName: cryptography-windows%WINDOWS_ARCH%-python%PYTHON_VERSION%
