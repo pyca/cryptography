@@ -35,7 +35,7 @@ jobs:
             displayName: Create virtualenv
           - script: .venv/bin/pip install -U wheel
             displayName: Update wheel to the latest version
-          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress "enum34; python_version < '3'"
+          - script: .venv/bin/pip install cffi six asn1crypto ipaddress "enum34; python_version < '3'"
             displayName: Install our Python dependencies
 
           - script: |
@@ -82,7 +82,7 @@ jobs:
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/python -m virtualenv .venv
             displayName: Create virtualenv
-          - script: .venv/bin/pip install cffi six idna asn1crypto ipaddress enum34
+          - script: .venv/bin/pip install cffi six asn1crypto ipaddress enum34
             displayName: Install our Python dependencies
           - script: |
               set -e
@@ -137,8 +137,8 @@ jobs:
                   OPENSSL_DIR: 'OpenSSL-Win64-2010'
                   WINDOWS_ARCH: 'x86_64'
       steps:
-          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel'
-            displayName: Install wheel
+          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel cffi six asn1crypto ipaddress enum34'
+            displayName: Install wheel and our Python dependencies
           - script: |
               @set INCLUDE="C:/%OPENSSL_DIR%/include";%INCLUDE%
               @set LIB="C:/%OPENSSL_DIR%/lib";%LIB%
@@ -153,4 +153,4 @@ jobs:
           - task: PublishBuildArtifacts@1
             inputs:
                 pathToPublish: wheelhouse/
-                artifactName: cryptography-windows%WINDOWS_ARCH%-python%PYTHON_VERSION%
+                artifactName: cryptography-windows$(WINDOWS_ARCH)-python$(PYTHON_VERSION)
