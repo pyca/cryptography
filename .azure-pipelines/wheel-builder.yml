@@ -64,8 +64,10 @@ jobs:
           - script: otool -L `find .venv -name '_openssl*.so'` | grep -vG "libcrypto\\|libssl"
             displayName: Verify that we did not link against OpenSSL
 
-          - upload: wheelhouse/
-            artifact: cryptography-macos-python$(python.version)
+          - task: PublishBuildArtifacts@1
+            inputs:
+                pathToPublish: wheelhouse/
+                artifactName: cryptography-macos-python$(python.version)
 
     - job: 'manylinux1'
       pool:
@@ -117,8 +119,10 @@ jobs:
           - script: |
               .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
-          - upload: wheelhouse/
-            artifact: cryptography-manylinux1-$(PYTHON_VERSION)
+          - task: PublishBuildArtifacts@1
+            inputs:
+                pathToPublish: wheelhouse/
+                artifactName: cryptography-manylinux1-$(PYTHON_VERSION)
 
     - job: 'windows'
       pool:
