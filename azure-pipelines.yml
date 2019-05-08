@@ -87,8 +87,8 @@ jobs:
     displayName: 'Clone wycheproof'
 
   - script: |
-        set INCLUDE=C:/%OPENSSL_DIR%/include
-        set LIB=C:/%OPENSSL_DIR%/lib
+        set INCLUDE=C:/%OPENSSL_DIR%/include;%INCLUDE%
+        set LIB=C:/%OPENSSL_DIR%/lib;%LIB%
         C:/%PYTHON_DIR%/Scripts/tox -r --  --color=yes --wycheproof-root=wycheproof
         IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
     displayName: 'Run tests'
