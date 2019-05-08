@@ -61,3 +61,36 @@ jobs:
   - script: codecov -e MACOS_VERSION,AGENT_OS,TOXENV
     displayName: 'Submit coverage'
     condition: succeeded()
+- job: 'win'
+  pool:
+    vmImage: 'windows-2019'
+  container: $[variables.containerImage]
+  strategy:
+    matrix:
+      Python27-x86:
+        TOXENV: py27
+        containerImage: 'pyca/cryptography-runner-windows:py27-x86'
+        OPENSSLINCLUDE: 'C:\OpenSSL-Win32-2010\include'
+        OPENSSLLIB: 'C:\OpenSSL-Win32-2010\lib'
+      Python27-x86-64:
+        TOXENV: py27
+        containerImage: 'pyca/cryptography-runner-windows:py27-x86_64'
+        OPENSSLINCLUDE: 'C:\OpenSSL-Win64-2010\include'
+        OPENSSLLIB: 'C:\OpenSSL-Win64-2010\lib'
+  steps:
+  - script: C:/Python27/Scripts/pip install codecov
+    displayName: 'Install codecov'
+
+  - script: git clone https://github.com/google/wycheproof
+    displayName: 'Clone wycheproof'
+
+  - script: |
+        set INCLUDE=%OPENSSLINCLUDE%
+        set LIB=%OPENSSLLIB%
+        C:\Python27\Scripts\tox -r --  --color=yes --wycheproof-root=wycheproof
+        IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
+    displayName: 'Run tests'
+
+  - script: C:\Python27\Scripts\codecov -e AGENT_OS,TOXENV
+    displayName: 'Submit coverage'
+    condition: succeeded()
