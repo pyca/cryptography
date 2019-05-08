@@ -137,7 +137,7 @@ jobs:
                   OPENSSL_DIR: 'OpenSSL-Win64-2010'
                   WINDOWS_ARCH: 'x86_64'
       steps:
-          - script: "C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel
+          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel'
             displayName: Install wheel
           - script: |
               @set INCLUDE="C:/%OPENSSL_DIR%/include";%INCLUDE%
@@ -145,7 +145,7 @@ jobs:
 
               "C:/Python%PYTHON_VERSION%/Scripts/pip" wheel cryptography==%BUILD_VERSION% --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography
             displayName: Build the wheel
-          - script: "C:/Python%PYTHON_VERSION%/Scripts/pip" install -f wheelhouse cryptography --no-index
+          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install -f wheelhouse cryptography --no-index'
             displayName: Test installing teh wheel
           - script: |
               "C:/Python%PYTHON_VERSION%/Scripts/pip" -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
