@@ -152,7 +152,7 @@ jobs:
             displayName: Print the OpenSSL we built and linked against
           - script: mkdir cryptography-wheelhouse
             displayName: Create a directory for placing the final wheel in
-          - script: move wheelhouse/cryptography*.whl cryptography-wheelhouse
+          - script: move wheelhouse/cryptography*.whl cryptography-wheelhouse/
             displayName: Move the cryptography wheel into the final wheel house
           - task: PublishBuildArtifacts@1
             inputs:
