@@ -150,6 +150,8 @@ jobs:
           - script: |
               "C:/Python%PYTHON_VERSION%/python" -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
             displayName: Print the OpenSSL we built and linked against
+          - script: dir wheelhouse/
+            displayName: Print the contents of the wheelhouse
           - script: mkdir cryptography-wheelhouse
             displayName: Create a directory for placing the final wheel in
           - script: move wheelhouse/cryptography*.whl cryptography-wheelhouse/
