@@ -80,7 +80,6 @@ def build_wheels(version):
     build_description = Build(
         definition=definition,
         parameters=json.dumps({"BUILD_VERSION": version}),
-        source_branch="azure-release",
     )
     build = build_client.queue_build(
         project="cryptography", build=build_description
