@@ -89,6 +89,7 @@ jobs:
   - script: |
         set INCLUDE=C:/%OPENSSL_DIR%/include
         set LIB=C:/%OPENSSL_DIR%/lib
+        git config --get core.autocrlf
         C:/%PYTHON_DIR%/Scripts/tox -r --  --color=yes --wycheproof-root=wycheproof
         IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
     displayName: 'Run tests'
