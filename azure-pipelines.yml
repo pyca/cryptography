@@ -80,6 +80,7 @@ jobs:
         PYTHON_DIR: 'Python27'
         WINDOWS_ARCH: 'x86_64'
   steps:
+  - checkout: self # checkout in the container so we use the git inside the container and avoid autocrlf issues
   - script: C:/%PYTHON_DIR%/Scripts/pip install codecov
     displayName: 'Install codecov'
 
