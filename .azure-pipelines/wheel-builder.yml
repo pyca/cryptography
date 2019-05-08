@@ -127,10 +127,12 @@ jobs:
       strategy:
           matrix:
               Python27-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py27-x86'
                   PYTHON_VERSION: '27'
                   OPENSSL_DIR: 'OpenSSL-Win32-2010'
                   WINDOWS_ARCH: 'x86'
               Python27-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py27-x86_64'
                   PYTHON_VERSION: '27'
                   OPENSSL_DIR: 'OpenSSL-Win64-2010'
                   WINDOWS_ARCH: 'x86_64'
