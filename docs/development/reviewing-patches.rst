@@ -7,17 +7,17 @@ review is our opportunity to share knowledge, design ideas and make friends.
 
 When reviewing a patch try to keep each of these concepts in mind:
 
-Architecture
-------------
-
-* Is the proposed change being made in the correct place? Is it a fix in a
-  backend when it should be in the primitives?
-
 Intent
 ------
 
 * What is the change being proposed?
 * Do we want this feature or is the bug they're fixing really a bug?
+
+Architecture
+------------
+
+* Is the proposed change being made in the correct place? Is it a fix in a
+  backend when it should be in the primitives?
 
 Implementation
 --------------
