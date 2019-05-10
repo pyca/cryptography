@@ -49,7 +49,7 @@ Key interfaces
 
         :param bytes data: The data to sign.
 
-        :returns bytes: The 64 byte signature.
+        :returns bytes: The 114 byte signature.
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
