@@ -345,16 +345,22 @@ def _encode_authority_information_access(backend, authority_info_access):
     aia = backend._lib.sk_ACCESS_DESCRIPTION_new_null()
     backend.openssl_assert(aia != backend._ffi.NULL)
     aia = backend._ffi.gc(
-        aia, backend._lib.sk_ACCESS_DESCRIPTION_free
+        aia,
+        lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
+            x, backend._ffi.addressof(
+                backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
+            )
+        )
     )
     for access_description in authority_info_access:
         ad = backend._lib.ACCESS_DESCRIPTION_new()
         method = _txt2obj(
             backend, access_description.access_method.dotted_string
         )
-        gn = _encode_general_name(backend, access_description.access_location)
+        _encode_general_name_preallocated(
+            backend, access_description.access_location, ad.location
+        )
         ad.method = method
-        ad.location = gn
         res = backend._lib.sk_ACCESS_DESCRIPTION_push(aia, ad)
         backend.openssl_assert(res >= 1)
 
@@ -385,8 +391,13 @@ def _encode_subject_key_identifier(backend, ski):
 
 
 def _encode_general_name(backend, name):
+    gn = backend._lib.GENERAL_NAME_new()
+    _encode_general_name_preallocated(backend, name, gn)
+    return gn
+
+
+def _encode_general_name_preallocated(backend, name, gn):
     if isinstance(name, x509.DNSName):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         gn.type = backend._lib.GEN_DNS
 
@@ -400,7 +411,6 @@ def _encode_general_name(backend, name):
         backend.openssl_assert(res == 1)
         gn.d.dNSName = ia5
     elif isinstance(name, x509.RegisteredID):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         gn.type = backend._lib.GEN_RID
         obj = backend._lib.OBJ_txt2obj(
@@ -409,13 +419,11 @@ def _encode_general_name(backend, name):
         backend.openssl_assert(obj != backend._ffi.NULL)
         gn.d.registeredID = obj
     elif isinstance(name, x509.DirectoryName):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         dir_name = _encode_name(backend, name.value)
         gn.type = backend._lib.GEN_DIRNAME
         gn.d.directoryName = dir_name
     elif isinstance(name, x509.IPAddress):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         if isinstance(name.value, ipaddress.IPv4Network):
             packed = (
@@ -433,7 +441,6 @@ def _encode_general_name(backend, name):
         gn.type = backend._lib.GEN_IPADD
         gn.d.iPAddress = ipaddr
     elif isinstance(name, x509.OtherName):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         other_name = backend._lib.OTHERNAME_new()
         backend.openssl_assert(other_name != backend._ffi.NULL)
@@ -456,7 +463,6 @@ def _encode_general_name(backend, name):
         gn.type = backend._lib.GEN_OTHERNAME
         gn.d.otherName = other_name
     elif isinstance(name, x509.RFC822Name):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         # ia5strings are supposed to be ITU T.50 but to allow round-tripping
         # of broken certs that encode utf8 we'll encode utf8 here too.
@@ -465,7 +471,6 @@ def _encode_general_name(backend, name):
         gn.type = backend._lib.GEN_EMAIL
         gn.d.rfc822Name = asn1_str
     elif isinstance(name, x509.UniformResourceIdentifier):
-        gn = backend._lib.GENERAL_NAME_new()
         backend.openssl_assert(gn != backend._ffi.NULL)
         # ia5strings are supposed to be ITU T.50 but to allow round-tripping
         # of broken certs that encode utf8 we'll encode utf8 here too.
@@ -477,8 +482,6 @@ def _encode_general_name(backend, name):
         raise ValueError(
             "{} is an unknown GeneralName type".format(name)
         )
-
-    return gn
 
 
 def _encode_extended_key_usage(backend, extended_key_usage):

@@ -389,3 +389,63 @@ class TestOpenSSLMemoryLeaks(object):
                 x509.IssuingDistributionPoint
             )
         """))
+
+    def test_create_certificate_with_extensions(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            import datetime
+
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import ec
+            from cryptography.x509.oid import (
+                AuthorityInformationAccessOID, ExtendedKeyUsageOID, NameOID
+            )
+
+            private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+
+            not_valid_before = datetime.datetime.now()
+            not_valid_after = not_valid_before + datetime.timedelta(days=365)
+
+            aia = x509.AuthorityInformationAccess([
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.OCSP,
+                    x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+                ),
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.CA_ISSUERS,
+                    x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+                )
+            ])
+            sans = [u'*.example.org', u'foobar.example.net']
+            san = x509.SubjectAlternativeName(list(map(x509.DNSName, sans)))
+
+            ski = x509.SubjectKeyIdentifier.from_public_key(
+                private_key.public_key()
+            )
+            eku = x509.ExtendedKeyUsage([
+                ExtendedKeyUsageOID.CLIENT_AUTH,
+                ExtendedKeyUsageOID.SERVER_AUTH,
+                ExtendedKeyUsageOID.CODE_SIGNING,
+            ])
+
+            builder = x509.CertificateBuilder().serial_number(
+                777
+            ).issuer_name(x509.Name([
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            ])).subject_name(x509.Name([
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            ])).public_key(
+                private_key.public_key()
+            ).add_extension(
+                aia, critical=False
+            ).not_valid_before(
+                not_valid_before
+            ).not_valid_after(
+                not_valid_after
+            )
+
+            cert = builder.sign(private_key, hashes.SHA256(), backend)
+            cert.extensions
+        """))
