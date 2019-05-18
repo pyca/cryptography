@@ -490,7 +490,7 @@ class TestAESModeGCM(object):
 def test_buffer_protocol_alternate_modes(mode, backend):
     data = bytearray(b"sixteen_byte_msg")
     cipher = base.Cipher(
-        algorithms.AES(bytearray(b"\x00" * 32)), mode, backend
+        algorithms.AES(bytearray(os.urandom(32))), mode, backend
     )
     enc = cipher.encryptor()
     ct = enc.update(data) + enc.finalize()
