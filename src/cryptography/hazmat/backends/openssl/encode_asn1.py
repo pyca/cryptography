@@ -392,7 +392,8 @@ def _encode_subject_key_identifier(backend, ski):
 
 def _encode_general_name(backend, name):
     gn = backend._lib.GENERAL_NAME_new()
-    return _encode_general_name_preallocated(backend, name, gn)
+    _encode_general_name_preallocated(backend, name, gn)
+    return gn
 
 
 def _encode_general_name_preallocated(backend, name, gn):
@@ -481,8 +482,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         raise ValueError(
             "{} is an unknown GeneralName type".format(name)
         )
-
-    return gn
 
 
 def _encode_extended_key_usage(backend, extended_key_usage):
