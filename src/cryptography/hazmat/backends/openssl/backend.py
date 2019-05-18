@@ -2451,12 +2451,14 @@ class Backend(object):
                 if p12 != self._ffi.NULL:
                     p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
                 else:
+                    self._consume_errors()
                     raise ValueError("Could not create PKCS12 structure")
 
         bio = self._create_mem_bio_gc()
         if self._lib.i2d_PKCS12_bio(bio, p12):
             return self._read_mem_bio(bio)
         else:
+            self._consume_errors()
             raise ValueError("Could not serialize PKCS12 data")
 
     def poly1305_supported(self):
