@@ -12,7 +12,7 @@ from cryptography import x509
 from cryptography.hazmat.backends.interfaces import DERSerializationBackend
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
-    load_key_and_certificates
+    load_key_and_certificates, store_key_and_certificates
 )
 
 from .utils import load_vectors_from_file
@@ -121,3 +121,182 @@ class TestPKCS12(object):
         assert parsed_key is not None
         assert parsed_cert is not None
         assert parsed_more_certs == []
+
+    def test_store_pkcs12_ec_keys(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        p12buffer = store_key_and_certificates(
+            key, cert, None, b"cryptography", backend)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, b"cryptography", backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+    def test_store_pkcs12_cert_only(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        p12buffer = store_key_and_certificates(
+            None, None, [cert], None, backend)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, None, backend)
+        assert parsed_cert is None
+        assert parsed_key is None
+        assert parsed_more_certs == [cert]
+
+    def test_store_pkcs12_key_only(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        p12buffer = store_key_and_certificates(
+            key, None, None, None, backend)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, None, backend)
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_cert is None
+        assert parsed_more_certs == []
+
+    def test_store_pkcs12_friendlyname(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        fname = b'friendly_name'
+        p12buffer = store_key_and_certificates(
+            key, cert, None, b"cryptography", backend, fname)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, b"cryptography", backend)
+        assert parsed_cert == cert
+        assert parsed_cert.alias == fname
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+        fname = None
+        p12buffer = store_key_and_certificates(
+            key, cert, None, b"cryptography", backend, fname)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, b"cryptography", backend)
+        assert parsed_cert == cert
+        assert parsed_cert.alias == fname
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+    def test_store_pkcs12_nid(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        nid_key = 427  # AES_256_CBC
+        nid_cert = 427  # AES_256_CBC
+        p12buffer = store_key_and_certificates(
+            key, cert, [cert], b"cryptography", backend, nid_key=nid_key,
+            nid_cert=nid_cert)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, b"cryptography", backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == [cert]
+
+        with pytest.raises(ValueError):
+            p12buffer = store_key_and_certificates(
+                key, cert, [cert], b"cryptography", backend, nid_key=32767,
+                nid_cert=32767)
+
+    def test_store_pkcs12_no_encryption(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        nid_key = -1
+        nid_cert = -1
+        p12buffer = store_key_and_certificates(
+            key, cert, [cert], None, backend, nid_key=nid_key,
+            nid_cert=nid_cert)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, None, backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == [cert]
+
+    def test_store_pkcs12_iter(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        p12buffer = store_key_and_certificates(
+            key, cert, [cert], b"cryptography", backend, iter_=60000,
+            mac_iter=60000)
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12buffer, b"cryptography", backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == [cert]
+
+    def test_store_pkcs12_key_invalid(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            ), mode="rb"
+        )
+        with pytest.raises(AttributeError):
+            store_key_and_certificates(cert, None, [], None, backend)
+
+    def test_store_pkcs12_cert_invalid(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "ca_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        with pytest.raises(AttributeError):
+            store_key_and_certificates(None, key, [], None, backend)

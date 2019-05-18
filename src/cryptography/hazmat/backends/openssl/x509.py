@@ -162,6 +162,16 @@ class _Certificate(object):
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
+    @property
+    def alias(self):
+        len_ = self._backend._ffi.new("int *")
+        name_ptr = self._backend._lib.X509_alias_get0(self._x509, len_)
+        if len_[0]:
+            res = self._backend._ffi.buffer(name_ptr, len_[0])[:]
+        else:
+            res = None
+        return res
+
 
 @utils.register_interface(x509.RevokedCertificate)
 class _RevokedCertificate(object):

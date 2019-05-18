@@ -2417,6 +2417,51 @@ class Backend(object):
 
         return (key, cert, additional_certificates)
 
+    def store_key_and_certificates_in_pkcs12(
+        self, password, name, key, cert, additional_certificates, nid_key,
+            nid_cert, iter_, mac_iter, keytype):
+        if password is not None:
+            utils._check_byteslike('password', password)
+        if name is not None:
+            utils._check_byteslike('name', name)
+
+        if key is None:
+            evp_pkey = self._ffi.NULL
+        else:
+            evp_pkey = key._evp_pkey
+
+        if cert is None:
+            x509 = self._ffi.NULL
+        else:
+            x509 = cert._x509
+
+        if additional_certificates is None or not additional_certificates:
+            ca = self._ffi.NULL
+        else:
+            ca = self._lib.sk_X509_new_null()
+            ca = self._ffi.gc(ca, self._lib.sk_X509_free)
+            for ac in additional_certificates:
+                self._lib.sk_X509_push(ca, ac._x509)
+
+        with contextlib.ExitStack() as stack:
+            password_buf = stack.enter_context(
+                self._zeroed_null_terminated_buf(password))
+            name_buf = stack.enter_context(
+                self._zeroed_null_terminated_buf(name))
+            p12 = self._lib.PKCS12_create(
+                password_buf, name_buf, evp_pkey, x509, ca, nid_key, nid_cert,
+                iter_, mac_iter, keytype)
+            if p12 != self._ffi.NULL:
+                p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
+            else:
+                raise ValueError("Could not create PKCS12 structure")
+
+        bio = self._create_mem_bio_gc()
+        if self._lib.i2d_PKCS12_bio(bio, p12):
+            return self._read_mem_bio(bio)
+        else:
+            raise ValueError("Could not serialize PKCS12 data")
+
     def poly1305_supported(self):
         return self._lib.Cryptography_HAS_POLY1305 == 1
 
