@@ -2443,18 +2443,15 @@ class Backend(object):
             for ac in additional_certificates:
                 self._lib.sk_X509_push(ca, ac._x509)
 
-        with contextlib.ExitStack() as stack:
-            password_buf = stack.enter_context(
-                self._zeroed_null_terminated_buf(password))
-            name_buf = stack.enter_context(
-                self._zeroed_null_terminated_buf(name))
-            p12 = self._lib.PKCS12_create(
-                password_buf, name_buf, evp_pkey, x509, ca, nid_key, nid_cert,
-                iter_, mac_iter, keytype)
-            if p12 != self._ffi.NULL:
-                p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
-            else:
-                raise ValueError("Could not create PKCS12 structure")
+        with self._zeroed_null_terminated_buf(password) as password_buf:
+            with self._zeroed_null_terminated_buf(name) as name_buf:
+                p12 = self._lib.PKCS12_create(
+                    password_buf, name_buf, evp_pkey, x509, ca, nid_key,
+                    nid_cert, iter_, mac_iter, keytype)
+                if p12 != self._ffi.NULL:
+                    p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
+                else:
+                    raise ValueError("Could not create PKCS12 structure")
 
         bio = self._create_mem_bio_gc()
         if self._lib.i2d_PKCS12_bio(bio, p12):
