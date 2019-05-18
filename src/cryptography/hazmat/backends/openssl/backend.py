@@ -2455,11 +2455,8 @@ class Backend(object):
                     raise ValueError("Could not create PKCS12 structure")
 
         bio = self._create_mem_bio_gc()
-        if self._lib.i2d_PKCS12_bio(bio, p12):
-            return self._read_mem_bio(bio)
-        else:
-            self._consume_errors()
-            raise ValueError("Could not serialize PKCS12 data")
+        assert self._lib.i2d_PKCS12_bio(bio, p12)
+        return self._read_mem_bio(bio)
 
     def poly1305_supported(self):
         return self._lib.Cryptography_HAS_POLY1305 == 1
