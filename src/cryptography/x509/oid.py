@@ -196,6 +196,7 @@ _OID_NAMES = {
     ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
         "signedCertificateTimestampList"
     ),
+    ExtensionOID.PRECERT_POISON: "ctPoison",
     CRLEntryExtensionOID.CRL_REASON: "cRLReason",
     CRLEntryExtensionOID.INVALIDITY_DATE: "invalidityDate",
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
