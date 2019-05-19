@@ -5219,6 +5219,6 @@ class TestOCSPNonce(object):
 
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
-        if oid[:2] == '__':
+        if oid.startswith('__'):
             continue
         assert getattr(ExtensionOID, oid) in _OID_NAMES
