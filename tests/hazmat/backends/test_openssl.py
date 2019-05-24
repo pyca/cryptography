@@ -275,11 +275,7 @@ class TestOpenSSLRandomEngine(object):
         if sys.platform.startswith('linux'):
             assert name in ['getrandom', '/dev/urandom']
         if sys.platform == 'darwin':
-            # macOS 10.12+ supports getentropy
-            if parse_version(os.uname()[2]) >= parse_version("16.0"):
-                assert name == 'getentropy'
-            else:
-                assert name == '/dev/urandom'
+            assert name in ['getentropy', '/dev/urandom']
         if sys.platform == 'win32':
             assert name == 'CryptGenRandom'
 
