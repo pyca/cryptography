@@ -10,8 +10,6 @@ import subprocess
 import sys
 import textwrap
 
-from pkg_resources import parse_version
-
 import pytest
 
 from cryptography import x509
