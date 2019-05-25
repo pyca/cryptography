@@ -81,37 +81,37 @@ jobs:
         WINDOWS_ARCH: 'x86_64'
       Python35-x86:
         TOXENV: py35
-        containerImage: 'pyca/cryptography-runner-windows:py35-x86'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86'
         OPENSSL_DIR: 'OpenSSL-Win32-2010'
         PYTHON_DIR: 'Python35'
         WINDOWS_ARCH: 'x86'
       Python35-x86-64:
         TOXENV: py35
-        containerImage: 'pyca/cryptography-runner-windows:py35-x86_64'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86_64'
         OPENSSL_DIR: 'OpenSSL-Win64-2010'
         PYTHON_DIR: 'Python35'
         WINDOWS_ARCH: 'x86_64'
       Python36-x86:
         TOXENV: py36
-        containerImage: 'pyca/cryptography-runner-windows:py36-x86'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86'
         OPENSSL_DIR: 'OpenSSL-Win32-2010'
         PYTHON_DIR: 'Python36'
         WINDOWS_ARCH: 'x86'
       Python36-x86-64:
         TOXENV: py36
-        containerImage: 'pyca/cryptography-runner-windows:py36-x86_64'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86_64'
         OPENSSL_DIR: 'OpenSSL-Win64-2010'
         PYTHON_DIR: 'Python36'
         WINDOWS_ARCH: 'x86_64'
       Python37-x86:
         TOXENV: py37
-        containerImage: 'pyca/cryptography-runner-windows:py37-x86'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86'
         OPENSSL_DIR: 'OpenSSL-Win32-2010'
         PYTHON_DIR: 'Python37'
         WINDOWS_ARCH: 'x86'
       Python37-x86-64:
         TOXENV: py37
-        containerImage: 'pyca/cryptography-runner-windows:py37-x86_64'
+        containerImage: 'pyca/cryptography-runner-windows:py3-x86_64'
         OPENSSL_DIR: 'OpenSSL-Win64-2010'
         PYTHON_DIR: 'Python37'
         WINDOWS_ARCH: 'x86_64'
