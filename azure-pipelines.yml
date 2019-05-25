@@ -93,6 +93,6 @@ jobs:
         IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
     displayName: 'Run tests'
 
-  - script: set PATH=C:/%PYTHON_DIR%/Scripts; & codecov -e AGENT_OS,TOXENV,WINDOWS_ARCH
+  - script: set PATH=%PATH%;C:/%PYTHON_DIR%/Scripts; & codecov -e AGENT_OS,TOXENV,WINDOWS_ARCH
     displayName: 'Submit coverage'
     condition: succeeded()
