@@ -9,9 +9,9 @@ Infrastructure
 --------------
 
 In addition to ``cryptography``'s code, we're also concerned with the security
-of the infrastructure we run (primarily ``cryptography.io`` and
-``ci.cryptography.io``). If you discover a security vulnerability in our
-infrastructure, we ask you to report it using the same procedure.
+of the infrastructure we run (primarily ``cryptography.io``).  If you discover
+a security vulnerability in our infrastructure, we ask you to report it using
+the same procedure.
 
 What is a security issue?
 -------------------------

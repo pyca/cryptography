@@ -14,11 +14,12 @@ Currently we test ``cryptography`` on Python 2.7, 3.4+, and
 PyPy 5.4+ on these operating systems.
 
 * x86-64 CentOS 7.x
-* macOS 10.12 Sierra, 10.10 Yosemite
+* x86-64 Fedora (latest)
+* macOS 10.13 High Sierra, 10.14 Mojave
 * x86-64 Ubuntu 14.04, 16.04, and rolling
 * x86-64 Debian Jessie (8.x), Stretch (9.x), Buster (10.x), and Sid (unstable)
 * x86-64 Alpine (latest)
-* 32-bit and 64-bit Python on 64-bit Windows Server 2012
+* 32-bit and 64-bit Python on 64-bit Windows Server 2019
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
@@ -47,7 +48,7 @@ just run
 
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use the binaries we build for our
-release infrastructure (`openssl-release`_). Be sure to download the proper
+own `infrastructure`_. Be sure to download the proper
 version for your architecture and Python (2010 works for Python 2.7, 3.3,
 and 3.4 while 2015 is required for 3.5 and above). Wherever you place your copy
 of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE`` environment variables
@@ -279,7 +280,7 @@ local `wheel cache`_.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`openssl-release`: https://ci.cryptography.io/job/cryptography-support-jobs/job/openssl-release-1.1/
+.. _`infrastructure`: https://github.com/pyca/infra/tree/master/windows/openssl
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
