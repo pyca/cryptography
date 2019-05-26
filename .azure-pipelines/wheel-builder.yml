@@ -123,3 +123,81 @@ jobs:
             inputs:
                 pathToPublish: wheelhouse/
                 artifactName: cryptography-manylinux1-$(PYTHON_VERSION)
+
+    - job: 'windows'
+      pool:
+          vmImage: 'windows-2019'
+      container: $[variables.containerImage]
+      strategy:
+          matrix:
+              Python27-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py27-x86'
+                  PYTHON_VERSION: '27'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2010'
+                  WINDOWS_ARCH: 'x86'
+              Python27-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py27-x86_64'
+                  PYTHON_VERSION: '27'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2010'
+                  WINDOWS_ARCH: 'x86_64'
+              Python34-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py34-x86'
+                  PYTHON_VERSION: '34'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2010'
+                  WINDOWS_ARCH: 'x86'
+              Python34-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py34-x86_64'
+                  PYTHON_VERSION: '34'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2010'
+                  WINDOWS_ARCH: 'x86_64'
+              Python35-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py35-x86'
+                  PYTHON_VERSION: '35'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2015'
+                  WINDOWS_ARCH: 'x86'
+              Python35-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py35-x86_64'
+                  PYTHON_VERSION: '35'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2015'
+                  WINDOWS_ARCH: 'x86_64'
+              Python36-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py3-x86'
+                  PYTHON_VERSION: '36'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2015'
+                  WINDOWS_ARCH: 'x86'
+              Python36-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py3-x86_64'
+                  PYTHON_VERSION: '36'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2015'
+                  WINDOWS_ARCH: 'x86_64'
+              Python37-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py3-x86'
+                  PYTHON_VERSION: '37'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2015'
+                  WINDOWS_ARCH: 'x86'
+              Python37-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py3-x86_64'
+                  PYTHON_VERSION: '37'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2015'
+                  WINDOWS_ARCH: 'x86_64'
+      steps:
+          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel cffi six asn1crypto ipaddress enum34'
+            displayName: Install wheel and our Python dependencies
+          - script: |
+              set INCLUDE=C:/%OPENSSL_DIR%/include;%INCLUDE%
+              set LIB=C:/%OPENSSL_DIR%/lib;%LIB%
+              C:/Python%PYTHON_VERSION%/Scripts/pip wheel cryptography==%BUILD_VERSION% --no-use-pep517 --wheel-dir=wheelhouse --no-binary cryptography
+            displayName: Build the wheel
+          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install -f wheelhouse cryptography --no-index'
+            displayName: Test installing the wheel
+          - script: |
+              "C:/Python%PYTHON_VERSION%/python" -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+            displayName: Print the OpenSSL we built and linked against
+          - script: mkdir cryptography-wheelhouse
+            displayName: Create a directory for placing the final wheel in
+          - script: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
+            displayName: Move the cryptography wheel into the final wheel house
+          - task: PublishBuildArtifacts@1
+            inputs:
+                pathToPublish: cryptography-wheelhouse/
+                artifactName: cryptography-windows-$(WINDOWS_ARCH)-python$(PYTHON_VERSION)
