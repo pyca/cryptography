@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import getpass
 import glob
-import io
 import json
 import os
 import subprocess
@@ -20,8 +19,6 @@ from azure.devops.v5_1.build.models import Build
 import click
 
 from msrest.authentication import BasicAuthentication
-
-import requests
 
 
 def run(*args, **kwargs):
