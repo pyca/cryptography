@@ -64,5 +64,5 @@ pip install virtualenv
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-# If we pin coverage it must be kept in sync with tox.ini and Jenkinsfile
+# If we pin coverage it must be kept in sync with tox.ini and azure-pipelines.yml
 pip install tox codecov coverage
