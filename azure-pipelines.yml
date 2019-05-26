@@ -91,6 +91,18 @@ jobs:
         OPENSSL_DIR: 'OpenSSL-Win64-2010'
         PYTHON_DIR: 'Python34'
         WINDOWS_ARCH: 'x86_64'
+      Python35-x86:
+        TOXENV: py35
+        containerImage: 'pyca/cryptography-runner-windows:py35-x86'
+        OPENSSL_DIR: 'OpenSSL-Win32-2015'
+        PYTHON_DIR: 'Python35'
+        WINDOWS_ARCH: 'x86'
+      Python35-x86-64:
+        TOXENV: py35
+        containerImage: 'pyca/cryptography-runner-windows:py35-x86_64'
+        OPENSSL_DIR: 'OpenSSL-Win64-2015'
+        PYTHON_DIR: 'Python35'
+        WINDOWS_ARCH: 'x86_64'
       Python36-x86:
         TOXENV: py36
         containerImage: 'pyca/cryptography-runner-windows:py3-x86'
