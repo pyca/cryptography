@@ -150,6 +150,16 @@ jobs:
                   PYTHON_VERSION: '34'
                   OPENSSL_DIR: 'OpenSSL-Win64-2010'
                   WINDOWS_ARCH: 'x86_64'
+              Python35-x86:
+                  containerImage: 'pyca/cryptography-runner-windows:py35-x86'
+                  PYTHON_VERSION: '35'
+                  OPENSSL_DIR: 'OpenSSL-Win32-2015'
+                  WINDOWS_ARCH: 'x86'
+              Python35-x86-64:
+                  containerImage: 'pyca/cryptography-runner-windows:py35-x86_64'
+                  PYTHON_VERSION: '35'
+                  OPENSSL_DIR: 'OpenSSL-Win64-2015'
+                  WINDOWS_ARCH: 'x86_64'
               Python36-x86:
                   containerImage: 'pyca/cryptography-runner-windows:py3-x86'
                   PYTHON_VERSION: '36'
