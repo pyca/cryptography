@@ -19,4 +19,4 @@ exclude .azure-pipelines.yml .travis.yml
 recursive-exclude .azure-pipelines *
 recursive-exclude .travis *
 
-excude .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
+exclude .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
