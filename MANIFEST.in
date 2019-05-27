@@ -4,6 +4,7 @@ include CONTRIBUTING.rst
 include LICENSE
 include LICENSE.APACHE
 include LICENSE.BSD
+include LICENSE.PDF
 include README.rst
 
 include pyproject.toml
@@ -13,3 +14,9 @@ recursive-include src/_cffi_src *.py *.c *.h
 prune docs/_build
 recursive-include tests *.py
 recursive-exclude vectors *
+
+exclude .azure-pipelines.yml .travis.yml
+recursive-exclude .azure-pipelines *
+recursive-exclude .travis *
+
+excude .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
