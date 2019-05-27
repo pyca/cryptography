@@ -4,7 +4,7 @@ include CONTRIBUTING.rst
 include LICENSE
 include LICENSE.APACHE
 include LICENSE.BSD
-include LICENSE.PDF
+include LICENSE.PSF
 include README.rst
 
 include pyproject.toml
@@ -13,9 +13,10 @@ recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
 prune docs/_build
 recursive-include tests *.py
+exclude vectors
 recursive-exclude vectors *
 
-exclude .azure-pipelines.yml .travis.yml
+exclude azure-pipelines.yml .azure-pipelines .travis.yml .travis
 recursive-exclude .azure-pipelines *
 recursive-exclude .travis *
 
