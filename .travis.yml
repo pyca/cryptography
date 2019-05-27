@@ -117,6 +117,8 @@ matrix:
           if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
         - python: 3.4
           env: TOXENV=pep8
+        - python: 3.7
+          env: TOXENV=packaging
 
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
