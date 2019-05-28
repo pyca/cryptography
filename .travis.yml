@@ -44,15 +44,15 @@ matrix:
         - python: 3.7
           env: TOXENV=py37 OPENSSL=1.0.1u
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0j
+          env: TOXENV=py27 OPENSSL=1.1.0k
         - python: 3.5
-          env: TOXENV=py35 OPENSSL=1.1.0j
+          env: TOXENV=py35 OPENSSL=1.1.0k
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.1b
+          env: TOXENV=py27 OPENSSL=1.1.1c
         - python: 3.7
-          env: TOXENV=py37 OPENSSL=1.1.1b
+          env: TOXENV=py37 OPENSSL=1.1.1c
         - python: 3.7
-          env: TOXENV=py37 OPENSSL=1.1.1b OPENSSL_CONFIG_FLAGS=no-engine
+          env: TOXENV=py37 OPENSSL=1.1.1c OPENSSL_CONFIG_FLAGS=no-engine
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.6.5
         - python: 3.7
@@ -131,9 +131,9 @@ matrix:
         - python: 2.7
           # BOTO_CONFIG works around this boto issue on travis:
           # https://github.com/boto/boto/issues/3717
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0j BOTO_CONFIG=/dev/null
+          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0k BOTO_CONFIG=/dev/null
         - python: 2.7
-          env: DOWNSTREAM=certbot OPENSSL=1.1.0j
+          env: DOWNSTREAM=certbot OPENSSL=1.1.0k
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
