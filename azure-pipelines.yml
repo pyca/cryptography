@@ -39,6 +39,9 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  - script: brew update
+    displayName: 'brew update'
+
   - script: brew install openssl@1.1
     displayName: 'Install OpenSSL'
 
