@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-7:
 
-2.7 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.7 - 2019-05-30
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** We no longer distribute 32-bit ``manylinux1``
   wheels. Continuing to produce them was a maintenance burden.
