@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v2-8:
+
+2.8 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v2-7:
 
 2.7 - 2019-05-30
@@ -12,6 +19,8 @@ Changelog
   ``cryptography.hazmat.primitives.mac.MACContext`` interface. The ``CMAC`` and
   ``HMAC`` APIs have not changed, but they are no longer registered as
   ``MACContext`` instances.
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.1c.
 * Removed support for running our tests with ``setup.py test``. Users
   interested in running our tests can continue to follow the directions in our
   :doc:`development documentation</development/getting-started>`.
