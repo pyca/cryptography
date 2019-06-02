@@ -136,6 +136,8 @@ jobs:
                 exit 0
               fi
             displayName: Run execstack on the wheel
+          - script: .venv/bin/pip install -U pip
+            displayName: Upgrade pip again so we can actually use manylinux2010
           - script: .venv/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
             displayName: Test installing the wheel
           - script: |
