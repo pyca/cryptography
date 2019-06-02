@@ -80,21 +80,27 @@ jobs:
               Python27m-manylinux1:
                   containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp27-cp27m'
+                  MANYLINUX: 'manylinux1'
               Python27mu-manylinux1:
                   containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp27-cp27mu'
+                  MANYLINUX: 'manylinux1'
               Python3m-manylinux1:
                   containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp34-cp34m'
+                  MANYLINUX: 'manylinux1'
               Python27m-manylinux2010:
                   containerImage: 'pyca/cryptography-manylinux2010:x86_64'
                   PYTHON_VERSION: 'cp27-cp27m'
+                  MANYLINUX: 'manylinux2010'
               Python27mu-manylinux2010:
                   containerImage: 'pyca/cryptography-manylinux2010:x86_64'
                   PYTHON_VERSION: 'cp27-cp27mu'
+                  MANYLINUX: 'manylinux2010'
               Python3m-manylinux2010:
                   containerImage: 'pyca/cryptography-manylinux2010:x86_64'
                   PYTHON_VERSION: 'cp34-cp34m'
+                  MANYLINUX: 'manylinux2010'
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/python -m virtualenv .venv
             displayName: Create virtualenv
@@ -138,7 +144,7 @@ jobs:
           - task: PublishBuildArtifacts@1
             inputs:
                 pathToPublish: wheelhouse/
-                artifactName: cryptography-manylinux1-$(PYTHON_VERSION)
+                artifactName: cryptography-$(MANYLINUX)-$(PYTHON_VERSION)
 
     - job: 'windows'
       pool:

@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* We now ship ``manylinux2010`` wheels in addition to our ``manylinux1``
+  wheels.
+
 .. _v2-7:
 
 2.7 - 2019-05-30
