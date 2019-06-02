@@ -3,5 +3,6 @@
 - [ ] macOS
     - [ ] Send a pull request to `homebrew` upgrading the `openssl@1.1` formula
     - [ ] Wait for it to be merged
-- [ ] manylinux1
-    - [ ] Send a pull request to `pyca/infra` updating the [version and hash](https://github.com/pyca/infra/blob/master/cryptography-manylinux1/install_openssl.sh#L5-L6)
+- [ ] manylinux
+    - [ ] Send a pull request to `pyca/infra` updating the [version and hash](https://github.com/pyca/infra/blob/master/cryptography-manylinux1/install_openssl.sh#L5-L6) for `manylinux1`
+    - [ ] Send a pull request to `pyca/infra` updating the [version and hash](https://github.com/pyca/infra/blob/master/cryptography-manylinux2010/install_openssl.sh#L5-L6) for `manylinux2010`
