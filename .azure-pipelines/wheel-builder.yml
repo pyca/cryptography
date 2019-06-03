@@ -71,18 +71,36 @@ jobs:
                 pathToPublish: wheelhouse/
                 artifactName: cryptography-macos-python$(python.version)
 
-    - job: 'manylinux1'
+    - job: 'manylinux'
       pool:
           vmImage: 'ubuntu-16.04'
-      container: 'pyca/cryptography-manylinux1:x86_64'
+      container: $[variables.containerImage]
       strategy:
           matrix:
-              Python27m:
+              Python27m-manylinux1:
+                  containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp27-cp27m'
-              Python27mu:
+                  PLATFORM: 'manylinux1_x86_64'
+              Python27mu-manylinux1:
+                  containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp27-cp27mu'
-              Python3m:
+                  PLATFORM: 'manylinux1_x86_64'
+              Python3m-manylinux1:
+                  containerImage: 'pyca/cryptography-manylinux1:x86_64'
                   PYTHON_VERSION: 'cp34-cp34m'
+                  PLATFORM: 'manylinux1_x86_64'
+              Python27m-manylinux2010:
+                  containerImage: 'pyca/cryptography-manylinux2010:x86_64'
+                  PYTHON_VERSION: 'cp27-cp27m'
+                  PLATFORM: 'manylinux2010_x86_64'
+              Python27mu-manylinux2010:
+                  containerImage: 'pyca/cryptography-manylinux2010:x86_64'
+                  PYTHON_VERSION: 'cp27-cp27mu'
+                  PLATFORM: 'manylinux2010_x86_64'
+              Python3m-manylinux2010:
+                  containerImage: 'pyca/cryptography-manylinux2010:x86_64'
+                  PYTHON_VERSION: 'cp34-cp34m'
+                  PLATFORM: 'manylinux2010_x86_64'
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/python -m virtualenv .venv
             displayName: Create virtualenv
@@ -102,7 +120,7 @@ jobs:
                   CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
                   .venv/bin/pip wheel cryptography==$BUILD_VERSION --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
             displayName: Build the wheel
-          - script: auditwheel repair tmpwheelhouse/cryptograph*.whl -w wheelhouse/
+          - script: auditwheel repair --plat $PLATFORM tmpwheelhouse/cryptograph*.whl -w wheelhouse/
             displayName: Run auditwheel
           - script: unzip wheelhouse/*.whl -d execstack.check
             displayName: Unzip the wheel
@@ -118,6 +136,8 @@ jobs:
                 exit 0
               fi
             displayName: Run execstack on the wheel
+          - script: .venv/bin/pip install -U pip
+            displayName: Upgrade pip again so we can actually use manylinux2010
           - script: .venv/bin/pip install cryptography==$BUILD_VERSION --no-index -f wheelhouse/
             displayName: Test installing the wheel
           - script: |
@@ -126,7 +146,7 @@ jobs:
           - task: PublishBuildArtifacts@1
             inputs:
                 pathToPublish: wheelhouse/
-                artifactName: cryptography-manylinux1-$(PYTHON_VERSION)
+                artifactName: cryptography-$(PLATFORM)-$(PYTHON_VERSION)
 
     - job: 'windows'
       pool:

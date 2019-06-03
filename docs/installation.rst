@@ -75,10 +75,10 @@ local `wheel cache`_.
 Building cryptography on Linux
 ------------------------------
 
-``cryptography`` ships a ``manylinux1`` wheel (as of 2.0) so all dependencies
-are included. For users on pip 8.1 or above running on a ``manylinux1``
-compatible distribution (almost everything except Alpine) all you should
-need to do is:
+``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
+are included. For users on pip 8.1 or above running on a ``manylinux1`` or
+``manylinux2010`` compatible distribution (almost everything except Alpine)
+all you should need to do is:
 
 .. code-block:: console
 
@@ -122,8 +122,8 @@ Building
 ~~~~~~~~
 
 You should now be able to build and install cryptography. To avoid getting
-the pre-built wheel on ``manylinux1`` distributions you'll need to use
-``--no-binary``.
+the pre-built wheel on ``manylinux`` compatible distributions you'll need to
+use ``--no-binary``.
 
 .. code-block:: console
 
@@ -163,9 +163,9 @@ Static Wheels
 ~~~~~~~~~~~~~
 
 Cryptography ships statically-linked wheels for macOS, Windows, and Linux (via
-``manylinux1``). This allows compatible environments to use the most recent
+``manylinux``). This allows compatible environments to use the most recent
 OpenSSL, regardless of what is shipped by default on those platforms. Some
-Linux distributions (most notably Alpine) are not ``manylinux1`` compatible so
+Linux distributions (most notably Alpine) are not ``manylinux`` compatible so
 we cannot distribute wheels for them.
 
 However, you can build your own statically-linked wheels that will work on your
