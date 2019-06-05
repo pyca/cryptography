@@ -839,12 +839,12 @@ class Backend(object):
 
         # Set the "not before" time.
         self._set_asn1_time(
-            self._lib.X509_get_notBefore(x509_cert), builder._not_valid_before
+            self._lib.X509_getm_notBefore(x509_cert), builder._not_valid_before
         )
 
         # Set the "not after" time.
         self._set_asn1_time(
-            self._lib.X509_get_notAfter(x509_cert), builder._not_valid_after
+            self._lib.X509_getm_notAfter(x509_cert), builder._not_valid_after
         )
 
         # Add extensions.
