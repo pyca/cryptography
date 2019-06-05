@@ -49,10 +49,11 @@ def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
         )
         backend.openssl_assert(res != 0)
-    else:
+    elif cipher_name.endswith(b"-ccm"):
         res = backend._lib.EVP_CIPHER_CTX_ctrl(
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, tag_len, backend._ffi.NULL
         )
+        backend.openssl_assert(res != 0)
 
     nonce_ptr = backend._ffi.from_buffer(nonce)
     key_ptr = backend._ffi.from_buffer(key)
