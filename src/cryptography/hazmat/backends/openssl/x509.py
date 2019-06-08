@@ -80,12 +80,12 @@ class _Certificate(object):
 
     @property
     def not_valid_before(self):
-        asn1_time = self._backend._lib.X509_get_notBefore(self._x509)
+        asn1_time = self._backend._lib.X509_getm_notBefore(self._x509)
         return _parse_asn1_time(self._backend, asn1_time)
 
     @property
     def not_valid_after(self):
-        asn1_time = self._backend._lib.X509_get_notAfter(self._x509)
+        asn1_time = self._backend._lib.X509_getm_notAfter(self._x509)
         return _parse_asn1_time(self._backend, asn1_time)
 
     @property

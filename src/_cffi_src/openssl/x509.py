@@ -193,6 +193,8 @@ long X509_get_version(X509 *);
 
 ASN1_TIME *X509_get_notBefore(X509 *);
 ASN1_TIME *X509_get_notAfter(X509 *);
+ASN1_TIME *X509_getm_notBefore(X509 *);
+ASN1_TIME *X509_getm_notAfter(X509 *);
 
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
@@ -232,6 +234,8 @@ int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 int X509_set_notBefore(X509 *, ASN1_TIME *);
 int X509_set_notAfter(X509 *, ASN1_TIME *);
+int X509_set1_notBefore(X509 *, ASN1_TIME *);
+int X509_set1_notAfter(X509 *, ASN1_TIME *);
 
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
@@ -351,6 +355,11 @@ const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
 {
     return x->serialNumber;
 }
+
+#define X509_set1_notBefore X509_set_notBefore
+#define X509_set1_notAfter X509_set_notAfter
+#define X509_getm_notAfter X509_get_notAfter
+#define X509_getm_notBefore X509_get_notBefore
 #endif
 #endif
 """
