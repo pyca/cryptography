@@ -31,6 +31,38 @@ def cryptography_has_ssl3_method():
     ]
 
 
+def cryptography_has_tls1_method():
+    return [
+        "TLSv1_method",
+        "TLSv1_client_method",
+        "TLSv1_server_method",
+    ]
+
+
+def cryptography_has_tls1_1_method():
+    return [
+        "TLSv1_1_method",
+        "TLSv1_1_client_method",
+        "TLSv1_1_server_method",
+    ]
+
+
+def cryptography_has_tls1_2_method():
+    return [
+        "TLSv1_2_method",
+        "TLSv1_2_client_method",
+        "TLSv1_2_server_method",
+    ]
+
+
+def cryptography_has_dtls1_method():
+    return [
+        "DTLSv1_method",
+        "DTLSv1_client_method",
+        "DTLSv1_server_method",
+    ]
+
+
 def cryptography_has_102_verification():
     return [
         "X509_V_ERR_SUITE_B_INVALID_VERSION",
@@ -280,6 +312,10 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
     "Cryptography_HAS_RSA_OAEP_LABEL": cryptography_has_rsa_oaep_label,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
+    "Cryptography_HAS_TLS1_METHOD": cryptography_has_tls1_method,
+    "Cryptography_HAS_TLS1_1_METHOD": cryptography_has_tls1_1_method,
+    "Cryptography_HAS_TLS1_2_METHOD": cryptography_has_tls1_2_method,
+    "Cryptography_HAS_DTLS1_METHOD": cryptography_has_dtls1_method,
     "Cryptography_HAS_102_VERIFICATION": cryptography_has_102_verification,
     "Cryptography_HAS_110_VERIFICATION_PARAMS": (
         cryptography_has_110_verification_params

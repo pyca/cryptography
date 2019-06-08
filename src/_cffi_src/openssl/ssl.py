@@ -13,12 +13,14 @@ TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_SSL3_METHOD;
-static const long Cryptography_HAS_TLSv1_1;
-static const long Cryptography_HAS_TLSv1_2;
+static const long Cryptography_HAS_TLS1_METHOD;
+static const long Cryptography_HAS_TLS1_1_METHOD;
+static const long Cryptography_HAS_TLS1_2_METHOD;
 static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
+static const long Cryptography_HAS_DTLS1_METHOD;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
@@ -548,8 +550,43 @@ static const long Cryptography_HAS_SSL3_METHOD = 1;
 
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
-static const long Cryptography_HAS_TLSv1_1 = 1;
-static const long Cryptography_HAS_TLSv1_2 = 1;
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_TLS1_METHOD = 0;
+const SSL_METHOD* (*TLSv1_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_server_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_client_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLS1_METHOD = 1;
+#endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_TLS1_1_METHOD = 0;
+const SSL_METHOD* (*TLSv1_1_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_1_client_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLS1_1_METHOD = 1;
+#endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_TLS1_2_METHOD = 0;
+const SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
+const SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLS1_2_METHOD = 1;
+#endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_DTLS1_METHOD = 0;
+const SSL_METHOD* (*DTLSv1_method)(void) = NULL;
+const SSL_METHOD* (*DTLSv1_server_method)(void) = NULL;
+const SSL_METHOD* (*DTLSv1_client_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_DTLS1_METHOD = 1;
+#endif
+
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
