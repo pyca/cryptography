@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated support for OpenSSL 1.0.1. Support will be removed in
+  ``cryptography`` 2.9.
 * We now ship ``manylinux2010`` wheels in addition to our ``manylinux1``
   wheels.
 
