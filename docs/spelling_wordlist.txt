@@ -23,6 +23,7 @@ crypto
 cryptographic
 cryptographically
 Debian
+deallocated
 decrypt
 decrypts
 Decrypts
