@@ -1,8 +1,8 @@
 Known security limitations
---------------------------
+==========================
 
 Secure memory wiping
-====================
+--------------------
 
 `Memory wiping`_ is used to protect secret data or key material from attackers
 with access to deallocated memory. This is a defense-in-depth measure against
