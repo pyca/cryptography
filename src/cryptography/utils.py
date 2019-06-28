@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import abc
 import binascii
 import inspect
+import six
 import sys
 import warnings
 
@@ -64,9 +65,12 @@ if hasattr(int, "from_bytes"):
 else:
     def int_from_bytes(data, byteorder, signed=False):
         assert byteorder == 'big'
-        assert not signed
-
-        return int(binascii.hexlify(data), 16)
+        ret = int(binascii.hexlify(data), 16)
+        if signed:
+            data = memoryview(data)
+            if len(data) > 0 and six.indexbytes(data, 0) & 0x80 != 0:
+                ret -= 1 << (8 * len(data))
+        return ret
 
 
 if hasattr(int, "to_bytes"):
