@@ -489,9 +489,10 @@ class TestAESModeGCM(object):
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_buffer_protocol_alternate_modes(mode, backend):
     data = bytearray(b"sixteen_byte_msg")
-    cipher = base.Cipher(
-        algorithms.AES(bytearray(os.urandom(32))), mode, backend
-    )
+    key = algorithms.AES(bytearray(os.urandom(32)))
+    if not backend.cipher_supported(key, mode):
+        pytest.skip("AES in {} mode not supported".format(mode.name))
+    cipher = base.Cipher(key, mode, backend)
     enc = cipher.encryptor()
     ct = enc.update(data) + enc.finalize()
     dec = cipher.decryptor()

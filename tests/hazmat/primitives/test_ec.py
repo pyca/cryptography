@@ -1070,11 +1070,12 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             load_nist_vectors
         )
     )
-    def test_from_encoded_point_compressed(self, vector):
+    def test_from_encoded_point_compressed(self, vector, backend):
         curve = {
             b"SECP256R1": ec.SECP256R1(),
             b"SECP256K1": ec.SECP256K1(),
         }[vector["curve"]]
+        _skip_curve_unsupported(backend, curve)
         point = binascii.unhexlify(vector["point"])
         pn = ec.EllipticCurvePublicKey.from_encoded_point(curve, point)
         public_num = pn.public_numbers()
@@ -1155,6 +1156,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             b"SECP256R1": ec.SECP256R1(),
             b"SECP256K1": ec.SECP256K1(),
         }[vector["curve"]]
+        _skip_curve_unsupported(backend, curve)
         point = binascii.unhexlify(vector["point"])
         key = ec.EllipticCurvePublicKey.from_encoded_point(curve, point)
         key2 = ec.EllipticCurvePublicKey.from_encoded_point(
