@@ -10,7 +10,6 @@ import os
 import pytest
 
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x448 import (
     X448PrivateKey, X448PublicKey
@@ -25,7 +24,6 @@ from ...utils import (
     only_if=lambda backend: not backend.x448_supported(),
     skip_message="Requires OpenSSL without X448 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x448_unsupported(backend):
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X448PublicKey.from_public_bytes(b"0" * 56)
@@ -41,7 +39,6 @@ def test_x448_unsupported(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestX448Exchange(object):
     @pytest.mark.parametrize(
         "vector",

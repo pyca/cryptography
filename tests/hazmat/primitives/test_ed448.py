@@ -10,7 +10,6 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidSignature, _Reasons
-from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed448 import (
     Ed448PrivateKey, Ed448PublicKey
@@ -25,7 +24,6 @@ from ...utils import (
     only_if=lambda backend: not backend.ed448_supported(),
     skip_message="Requires OpenSSL without Ed448 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_ed448_unsupported(backend):
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -47,7 +45,6 @@ def test_ed448_unsupported(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestEd448Signing(object):
     @pytest.mark.parametrize(
         "vector",
