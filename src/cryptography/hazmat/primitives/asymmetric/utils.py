@@ -14,12 +14,10 @@ from cryptography.hazmat.primitives import hashes
 
 
 def decode_dss_signature(signature):
-    reader = DERReader(signature)
-    seq = reader.read_element(SEQUENCE)
+    seq = DERReader(signature).read_single_element(SEQUENCE)
     r = seq.read_element(INTEGER).as_integer()
     s = seq.read_element(INTEGER).as_integer()
     seq.check_empty()
-    reader.check_empty()
     return r, s
 
 

@@ -206,9 +206,8 @@ class _X509ExtensionParser(object):
             if oid == ExtensionOID.TLS_FEATURE:
                 # The extension contents are a SEQUENCE OF INTEGERs.
                 data = backend._lib.X509_EXTENSION_get_data(ext)
-                reader = DERReader(_asn1_string_to_bytes(backend, data))
-                features = reader.read_element(SEQUENCE)
-                reader.check_empty()
+                data_bytes = _asn1_string_to_bytes(backend, data)
+                features = DERReader(data_bytes).read_single_element(SEQUENCE)
                 parsed = []
                 while not features.is_empty():
                     parsed.append(features.read_element(INTEGER).as_integer())

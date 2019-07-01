@@ -58,6 +58,14 @@ def test_der():
     assert tag == SEQUENCE
     assert outer2.data.tobytes() == der[2:]
 
+    # Parse the outer element with read_single_element.
+    outer3 = DERReader(der).read_single_element(SEQUENCE)
+    assert outer3.data.tobytes() == der[2:]
+
+    # read_single_element rejects trailing data.
+    with pytest.raises(ValueError):
+        DERReader(der + der).read_single_element(SEQUENCE)
+
     # Continue parsing the structure.
     inner = outer.read_element(SEQUENCE)
     outer.check_empty()

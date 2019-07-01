@@ -67,10 +67,7 @@ def _load_cert(filename, loader, backend):
 
 def _parse_cert(der):
   # See the Certificate structured, defined in RFC 5280.
-  reader = DERReader(der)
-  cert = reader.read_element(SEQUENCE)
-  reader.check_empty()
-
+  cert = DERReader(der).read_single_element(SEQUENCE)
   tbs_cert = cert.read_element(SEQUENCE)
   sigalg = cert.read_element(SEQUENCE)
   signature = cert.read_element(BIT_STRING)

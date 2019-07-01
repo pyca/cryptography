@@ -98,6 +98,11 @@ class DERReader(object):
             raise ValueError("Invalid DER input: unexpected tag")
         return body
 
+    def read_single_element(self, expected_tag):
+        ret = self.read_element(expected_tag)
+        self.check_empty()
+        return ret
+
     def read_optional_element(self, expected_tag):
         if len(self.data) > 0 and six.indexbytes(self.data, 0) == expected_tag:
             return self.read_element(expected_tag)
