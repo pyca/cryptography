@@ -239,7 +239,6 @@ setup(
         ":python_version < '3'": ["enum34", "ipaddress"],
 
         "test": [
-            "asn1crypto >= 0.21.0",
             "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
             "pretend",
             "iso8601",
