@@ -106,7 +106,7 @@ seeded from the same pool as ``/dev/random``.
 +------------------------------------------+------------------------------+
 | Windows                                  | ``CryptGenRandom()``         |
 +------------------------------------------+------------------------------+
-| Linux >= 3.17 with working               | ``getrandom(GRND_NONBLOCK)`` |
+| Linux >= 3.17 with working               | ``getrandom()``              |
 | ``SYS_getrandom`` syscall                |                              |
 +------------------------------------------+------------------------------+
 | OpenBSD >= 5.6                           | ``getentropy()``             |
