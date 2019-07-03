@@ -231,6 +231,8 @@ X.509
   UTCTime in its validity->not_after.
 * ``letsencryptx3.pem`` - A subordinate certificate used by Let's Encrypt to
   issue end entity certificates.
+* ``ed25519-rfc8410.pem`` - A certificate containing an ``ed25519ph`` signature
+  taken from :rfc:`8410`.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
