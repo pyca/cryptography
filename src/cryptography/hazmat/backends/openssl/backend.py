@@ -735,6 +735,8 @@ class Backend(object):
             if not isinstance(algorithm, hashes.SHA512):
                 raise ValueError("ed25519 requires SHA512 hash algorithm")
 
+            # OpenSSL requires us to pass NULL for EVP_MD at this time, but
+            # will do ed25519ph (SHA512 hashing)
             evp_md = self._ffi.NULL
         else:
             evp_md = self._evp_md_non_null_from_algorithm(algorithm)
@@ -821,6 +823,8 @@ class Backend(object):
             if not isinstance(algorithm, hashes.SHA512):
                 raise ValueError("ed25519 requires SHA512 hash algorithm")
 
+            # OpenSSL requires us to pass NULL for EVP_MD at this time, but
+            # will do ed25519ph (SHA512 hashing)
             evp_md = self._ffi.NULL
         else:
             evp_md = self._evp_md_non_null_from_algorithm(algorithm)
