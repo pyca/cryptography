@@ -235,7 +235,7 @@ X.509
   an ``ed25519ph`` signature taken from :rfc:`8410`.
 * ``root-ed25519.pem`` - An ``ed25519`` root certificate (``ed25519`` signature
   with ``ed25519`` public key) from the OpenSSL test suite.
-  (`ed25519-root.pem`_)
+  (`root-ed25519.pem`_)
 * ``server-ed25519-cert.pem`` - An ``ed25519`` server certificate (``ed25519``
   signature with ``ed25519`` public key) from the OpenSSL test suite.
   (`server-ed25519-cert.pem`_)
