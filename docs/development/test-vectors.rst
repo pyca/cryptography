@@ -231,8 +231,14 @@ X.509
   UTCTime in its validity->not_after.
 * ``letsencryptx3.pem`` - A subordinate certificate used by Let's Encrypt to
   issue end entity certificates.
-* ``ed25519-rfc8410.pem`` - A certificate containing an ``ed25519ph`` signature
-  taken from :rfc:`8410`.
+* ``ed25519-rfc8410.pem`` - A certificate containing an X25519 public key with
+  an ``ed25519ph`` signature taken from :rfc:`8410`.
+* ``root-ed25519.pem`` - An ``ed25519`` root certificate (``ed25519`` signature
+  with ``ed25519`` public key) from the OpenSSL test suite.
+  (`ed25519-root.pem`_)
+* ``server-ed25519-cert.pem`` - An ``ed25519`` server certificate (``ed25519``
+  signature with ``ed25519`` public key) from the OpenSSL test suite.
+  (`server-ed25519-cert.pem`_)
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -688,3 +694,5 @@ header format (substituting the correct information):
 .. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec
 .. _`DHKE`: https://sandilands.info/sgordon/diffie-hellman-secret-key-exchange-with-openssl
 .. _`Botan's key wrap vectors`: https://github.com/randombit/botan/blob/737f33c09a18500e044dca3e2ae13bd2c08bafdd/src/tests/data/keywrap/nist_key_wrap.vec
+.. _`root-ed25519.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/root-ed25519.pem
+.. _`server-ed25519-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed25519-cert.pem
