@@ -24,7 +24,9 @@ from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa, ec, ed25519, padding, rsa
+)
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature
 )
@@ -2130,7 +2132,13 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_with_unsupported_hash(self, backend):
+    @pytest.mark.parametrize(
+        "algorithm",
+        [
+            object(), None
+        ]
+    )
+    def test_sign_with_unsupported_hash(self, algorithm, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
         builder = builder.subject_name(
@@ -2148,7 +2156,7 @@ class TestCertificateBuilder(object):
         )
 
         with pytest.raises(TypeError):
-            builder.sign(private_key, object(), backend)
+            builder.sign(private_key, algorithm, backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2304,6 +2312,97 @@ class TestCertificateBuilder(object):
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
         ]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_ed25519(self, backend):
+        issuer_private_key = ed25519.Ed25519PrivateKey.generate()
+        subject_private_key = ed25519.Ed25519PrivateKey.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None), True,
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, None, backend)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes
+        )
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
+        assert cert.signature_hash_algorithm is None
+        assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName(u"cryptography.io"),
+        ]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_cert_with_public_ed25519_rsa_sig(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = ed25519.Ed25519PrivateKey.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes, padding.PKCS1v15(),
+            cert.signature_hash_algorithm
+        )
+        assert cert.signature_algorithm_oid == (
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+        assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -4199,6 +4298,26 @@ class TestName(object):
             b"30383127302506035504031e1e00630072007900700074006f00670072006100"
             b"7000680079002e0069006f310d300b060355040a0c0450794341"
         )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support"
+)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestEd25519Certificate(object):
+    def test_load_pem_cert(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ed25519", "root-ed25519.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        # self-signed, so this will work
+        cert.public_key().verify(cert.signature, cert.tbs_certificate_bytes)
+        assert isinstance(cert, x509.Certificate)
+        assert cert.serial_number == 9579446940964433301
+        assert cert.signature_hash_algorithm is None
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
 
 
 def test_random_serial_number(monkeypatch):

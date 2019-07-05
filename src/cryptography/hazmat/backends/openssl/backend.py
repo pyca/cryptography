@@ -798,7 +798,12 @@ class Backend(object):
     def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
-        if not isinstance(algorithm, hashes.HashAlgorithm):
+        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+            if algorithm is not None:
+                raise ValueError(
+                    "algorithm must be None when signing via ed25519"
+                )
+        elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
         if (
@@ -806,11 +811,11 @@ class Backend(object):
             isinstance(private_key, rsa.RSAPrivateKey)
         ):
             raise ValueError(
-                "MD5 is not a supported hash algorithm for EC/DSA certificates"
+                "MD5 is only (reluctantly) supported for RSA certificates"
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        evp_md = self._evp_md_x509_null_if_ed25519(private_key, algorithm)
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()
@@ -877,6 +882,13 @@ class Backend(object):
             raise ValueError("Digest too big for RSA key")
 
         return _Certificate(self, x509_cert)
+
+    def _evp_md_x509_null_if_ed25519(self, private_key, algorithm):
+        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+            # OpenSSL requires us to pass NULL for EVP_MD for ed25519 signing
+            return self._ffi.NULL
+        else:
+            return self._evp_md_non_null_from_algorithm(algorithm)
 
     def _set_asn1_time(self, asn1_time, time):
         if time.year >= 2050:

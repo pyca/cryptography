@@ -338,7 +338,8 @@ X.509 Certificate Object
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
 
         .. doctest::
 
@@ -727,8 +728,10 @@ X.509 Certificate Builder
 
         :param public_key: The subject's public key. This can be one of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
 
     .. method:: serial_number(serial_number)
 
@@ -781,13 +784,20 @@ X.509 Certificate Builder
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            , or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
             that will be used to sign the certificate.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
-            will be used to generate the signature.
+            will be used to generate the signature. This must be ``None`` if
+            the ``private_key`` is a
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            and an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            otherwise.
 
         :param backend: Backend that will be used to build the certificate.
             Must support the
@@ -2835,6 +2845,13 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.2"``. This is
         a SHA256 digest signed by a DSA key.
+
+    .. attribute:: ED25519
+
+        .. versionadded:: 2.8
+
+        Corresponds to the dotted string ``"1.3.101.112"``. This is a signature
+        using an ed25519 key.
 
 
 .. class:: ExtendedKeyUsageOID
