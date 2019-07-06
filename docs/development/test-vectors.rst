@@ -236,7 +236,7 @@ X.509
 * ``root-ed25519.pem`` - An ``ed25519`` root certificate (``ed25519`` signature
   with ``ed25519`` public key) from the OpenSSL test suite.
   (`root-ed25519.pem`_)
-* ``server-ed25519-cert.pem`` - An ``ed25519`` server certificate (``ed25519``
+* ``server-ed25519-cert.pem`` - An ``ed25519`` server certificate (RSA
   signature with ``ed25519`` public key) from the OpenSSL test suite.
   (`server-ed25519-cert.pem`_)
 
