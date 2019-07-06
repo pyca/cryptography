@@ -2895,7 +2895,12 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 2.0
 
         Corresponds to the dotted string ``"2.5.29.37.0"``. This is used to
-        denote that a certificate may be used for _any_ purposes.
+        denote that a certificate may be used for _any_ purposes. However,
+        :rfc:`5280` additionally notes that applications that require the
+        presence of a particular purpose _MAY_ reject certificates that include
+        the ``anyExtendedKeyUsage`` OID but not the particular OID expected for
+        the application. Therefore, the presence of this OID does not mean a
+        given application will accept the certificate for all purposes.
 
 
 .. class:: AuthorityInformationAccessOID
