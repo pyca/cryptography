@@ -793,7 +793,7 @@ X.509 Certificate Builder
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature. This must be ``None`` if
-            the ``private_key`` is a
+            the ``private_key`` is an
             :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`

@@ -477,7 +477,7 @@ class CertificateBuilder(object):
                                 ec.EllipticCurvePublicKey,
                                 ed25519.Ed25519PublicKey)):
             raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
-                            ', EllipticCurvePublicKey, or Ed25519PublicKey.')
+                            ' EllipticCurvePublicKey, or Ed25519PublicKey.')
         if self._public_key is not None:
             raise ValueError('The public key may only be set once.')
         return CertificateBuilder(
