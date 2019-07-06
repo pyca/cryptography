@@ -232,7 +232,7 @@ X.509
 * ``letsencryptx3.pem`` - A subordinate certificate used by Let's Encrypt to
   issue end entity certificates.
 * ``ed25519-rfc8410.pem`` - A certificate containing an X25519 public key with
-  an ``ed25519ph`` signature taken from :rfc:`8410`.
+  an ``ed25519`` signature taken from :rfc:`8410`.
 * ``root-ed25519.pem`` - An ``ed25519`` root certificate (``ed25519`` signature
   with ``ed25519`` public key) from the OpenSSL test suite.
   (`root-ed25519.pem`_)
