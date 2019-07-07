@@ -85,3 +85,48 @@ messages allows an attacker to forge tags. Poly1305 is described in
 
         :return bytes: The message authentication code as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
+
+    .. classmethod:: generate_tag(key, data)
+
+        A single step alternative to do sign operations. Returns the message
+        authentication code as ``bytes`` for the given ``key`` and ``data``.
+
+        :param key: Secret key as ``bytes``.
+        :type key: :term:`bytes-like`
+        :param data: The bytes to hash and authenticate.
+        :type data: :term:`bytes-like`
+        :return bytes: The message authentication code as bytes.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the version of OpenSSL ``cryptography`` is compiled against does not
+            support this algorithm.
+        :raises TypeError: This exception is raised if ``key`` or ``data`` are
+            not ``bytes``.
+
+        .. doctest::
+
+            >>> poly1305.Poly1305.generate_tag(key, b"message to authenticate")
+            b'T\xae\xff3\xbdW\xef\xd5r\x01\xe2n=\xb7\xd2h'
+
+    .. classmethod:: verify_tag(key, data, tag)
+
+        A single step alternative to do verify operations. Securely compares the
+        MAC to ``tag``, using the given ``key`` and ``data``.
+
+        :param key: Secret key as ``bytes``.
+        :type key: :term:`bytes-like`
+        :param data: The bytes to hash and authenticate.
+        :type data: :term:`bytes-like`
+        :param bytes tag: The bytes to compare against.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the version of OpenSSL ``cryptography`` is compiled against does not
+            support this algorithm.
+        :raises TypeError: This exception is raised if ``key``, ``data`` or
+            ``tag`` are not ``bytes``.
+        :raises cryptography.exceptions.InvalidSignature: If tag does not match.
+
+        .. doctest::
+
+            >>> poly1305.Poly1305.verify_tag(key, b"message to authenticate", b"an incorrect tag")
+            Traceback (most recent call last):
+            ...
+            cryptography.exceptions.InvalidSignature: Value did not match computed tag.
