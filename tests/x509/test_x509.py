@@ -2158,6 +2158,30 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(private_key, algorithm, backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_unsupported_hash_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        builder = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_sign_rsa_with_md5(self, backend):
