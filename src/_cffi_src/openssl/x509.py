@@ -29,6 +29,7 @@ typedef struct {
     ...;
 } X509_ALGOR;
 
+typedef ... X509_ATTRIBUTE;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
@@ -258,6 +259,12 @@ int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
 int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
 void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
                              const X509_ALGOR **);
+X509_ATTRIBUTE *X509_REQ_get_attr(const X509_REQ *, int);
+int X509_REQ_get_attr_by_OBJ(const X509_REQ *, const ASN1_OBJECT *, int);
+void *X509_ATTRIBUTE_get0_data(X509_ATTRIBUTE *, int, int, void *);
+ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *, int);
+int X509_REQ_add1_attr_by_txt(X509_REQ *, const char *, int,
+                              const unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """
