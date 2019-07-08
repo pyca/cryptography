@@ -41,3 +41,15 @@ class Poly1305(object):
 
         ctx, self._ctx = self._ctx, None
         ctx.verify(tag)
+
+    @classmethod
+    def generate_tag(cls, key, data):
+        p = Poly1305(key)
+        p.update(data)
+        return p.finalize()
+
+    @classmethod
+    def verify_tag(cls, key, data, tag):
+        p = Poly1305(key)
+        p.update(data)
+        p.verify(tag)

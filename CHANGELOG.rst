@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added class methods
+  :meth:`Poly1305.generate_tag
+  <cryptography.hazmat.primitives.poly1305.Poly1305.generate_tag>`
+  and
+  :meth:`Poly1305.verify_tag
+  <cryptography.hazmat.primitives.poly1305.Poly1305.verify_tag>`
+  for Poly1305 sign and verify operations.
 * Deprecated support for OpenSSL 1.0.1. Support will be removed in
   ``cryptography`` 2.9.
 * We now ship ``manylinux2010`` wheels in addition to our ``manylinux1``

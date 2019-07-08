@@ -47,6 +47,9 @@ class TestPoly1305(object):
         poly.update(msg)
         assert poly.finalize() == tag
 
+        assert Poly1305.generate_tag(key, msg) == tag
+        Poly1305.verify_tag(key, msg, tag)
+
     def test_key_with_no_additional_references(self, backend):
         poly = Poly1305(os.urandom(32))
         assert len(poly.finalize()) == 16
@@ -66,6 +69,9 @@ class TestPoly1305(object):
         with pytest.raises(TypeError):
             poly.update(u'')
 
+        with pytest.raises(TypeError):
+            Poly1305.generate_tag(b"0" * 32, u'')
+
     def test_verify(self, backend):
         poly = Poly1305(b"0" * 32)
         poly.update(b"msg")
@@ -78,6 +84,8 @@ class TestPoly1305(object):
         poly2.update(b"msg")
         poly2.verify(tag)
 
+        Poly1305.verify_tag(b"0" * 32, b"msg", tag)
+
     def test_invalid_verify(self, backend):
         poly = Poly1305(b"0" * 32)
         poly.update(b"msg")
@@ -89,21 +97,36 @@ class TestPoly1305(object):
         with pytest.raises(InvalidSignature):
             p2.verify(b"\x00" * 16)
 
+        with pytest.raises(InvalidSignature):
+            Poly1305.verify_tag(b"0" * 32, b"msg", b"\x00" * 16)
+
     def test_verify_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
             poly.verify(u'')
 
+        with pytest.raises(TypeError):
+            Poly1305.verify_tag(b"0" * 32, b"msg", u'')
+
     def test_invalid_key_type(self, backend):
         with pytest.raises(TypeError):
             Poly1305(object())
+
+        with pytest.raises(TypeError):
+            Poly1305.generate_tag(object(), b"msg")
 
     def test_invalid_key_length(self, backend):
         with pytest.raises(ValueError):
             Poly1305(b"0" * 31)
 
         with pytest.raises(ValueError):
+            Poly1305.generate_tag(b"0" * 31, b"msg")
+
+        with pytest.raises(ValueError):
             Poly1305(b"0" * 33)
+
+        with pytest.raises(ValueError):
+            Poly1305.generate_tag(b"0" * 33, b"msg")
 
     def test_buffer_protocol(self, backend):
         key = binascii.unhexlify(
@@ -121,5 +144,9 @@ class TestPoly1305(object):
         poly = Poly1305(key)
         poly.update(bytearray(msg))
         assert poly.finalize() == binascii.unhexlify(
+            b"4541669a7eaaee61e708dc7cbcc5eb62"
+        )
+
+        assert Poly1305.generate_tag(key, msg) == binascii.unhexlify(
             b"4541669a7eaaee61e708dc7cbcc5eb62"
         )
