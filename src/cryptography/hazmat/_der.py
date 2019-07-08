@@ -73,7 +73,8 @@ class DERReader(object):
             length_byte &= 0x7f
             if length_byte == 0:
                 raise ValueError(
-                    "Invalid DER input: indefinite length form is not allowed in DER"
+                    "Invalid DER input: indefinite length form is not allowed "
+                    "in DER"
                 )
             length = 0
             for i in range(length_byte):
@@ -120,7 +121,9 @@ class DERReader(object):
                 (first == 0 and second & 0x80 == 0) or
                 (first == 0xff and second & 0x80 == 0x80)
             ):
-                raise ValueError("Invalid DER input: integer not minimally-encoded")
+                raise ValueError(
+                    "Invalid DER input: integer not minimally-encoded"
+                )
         return int_from_bytes(self.data, "big", signed=True)
 
 

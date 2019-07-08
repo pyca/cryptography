@@ -15,7 +15,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat._der import (
-    DERReader, BIT_STRING, OBJECT_IDENTIFIER, SEQUENCE
+    BIT_STRING, DERReader, OBJECT_IDENTIFIER, SEQUENCE
 )
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey

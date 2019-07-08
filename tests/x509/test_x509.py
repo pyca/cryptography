@@ -19,7 +19,7 @@ import six
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat._der import (
-    DERReader, BIT_STRING, CONSTRUCTED, CONTEXT_SPECIFIC, GENERALIZED_TIME,
+    BIT_STRING, CONSTRUCTED, CONTEXT_SPECIFIC, DERReader, GENERALIZED_TIME,
     INTEGER, OBJECT_IDENTIFIER, PRINTABLE_STRING, SEQUENCE, SET, UTC_TIME
 )
 from cryptography.hazmat.backends.interfaces import (
@@ -66,42 +66,44 @@ def _load_cert(filename, loader, backend):
 
 
 def _parse_cert(der):
-  # See the Certificate structured, defined in RFC 5280.
-  cert = DERReader(der).read_single_element(SEQUENCE)
-  tbs_cert = cert.read_element(SEQUENCE)
-  sigalg = cert.read_element(SEQUENCE)
-  signature = cert.read_element(BIT_STRING)
-  cert.check_empty()
+    # See the Certificate structured, defined in RFC 5280.
+    cert = DERReader(der).read_single_element(SEQUENCE)
+    tbs_cert = cert.read_element(SEQUENCE)
+    # Skip outer signature algorithm
+    _ = cert.read_element(SEQUENCE)
+    # Skip signature
+    _ = cert.read_element(BIT_STRING)
+    cert.check_empty()
 
-  # Skip version
-  _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC|CONSTRUCTED|0)
-  # Skip serialNumber
-  _ = tbs_cert.read_element(INTEGER)
-  # Skip inner signature algorithm
-  _ = tbs_cert.read_element(SEQUENCE)
-  issuer = tbs_cert.read_element(SEQUENCE)
-  validity = tbs_cert.read_element(SEQUENCE)
-  subject = tbs_cert.read_element(SEQUENCE)
-  # Skip subjectPublicKeyInfo
-  _ = tbs_cert.read_element(SEQUENCE)
-  # Skip issuerUniqueID
-  _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC|CONSTRUCTED|1)
-  # Skip subjectUniqueID
-  _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC|CONSTRUCTED|2)
-  # Skip extensions
-  _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC|CONSTRUCTED|3)
-  tbs_cert.check_empty()
+    # Skip version
+    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 0)
+    # Skip serialNumber
+    _ = tbs_cert.read_element(INTEGER)
+    # Skip inner signature algorithm
+    _ = tbs_cert.read_element(SEQUENCE)
+    issuer = tbs_cert.read_element(SEQUENCE)
+    validity = tbs_cert.read_element(SEQUENCE)
+    subject = tbs_cert.read_element(SEQUENCE)
+    # Skip subjectPublicKeyInfo
+    _ = tbs_cert.read_element(SEQUENCE)
+    # Skip issuerUniqueID
+    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 1)
+    # Skip subjectUniqueID
+    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 2)
+    # Skip extensions
+    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
+    tbs_cert.check_empty()
 
-  not_before_tag, _ = validity.read_any_element()
-  not_after_tag, _ = validity.read_any_element()
-  validity.check_empty()
+    not_before_tag, _ = validity.read_any_element()
+    not_after_tag, _ = validity.read_any_element()
+    validity.check_empty()
 
-  return {
-      "not_before_tag": not_before_tag,
-      "not_after_tag": not_after_tag,
-      "issuer": issuer,
-      "subject": subject,
-  }
+    return {
+        "not_before_tag": not_before_tag,
+        "not_after_tag": not_after_tag,
+        "issuer": issuer,
+        "subject": subject,
+    }
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)

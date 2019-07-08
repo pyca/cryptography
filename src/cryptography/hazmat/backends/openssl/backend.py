@@ -16,7 +16,7 @@ from six.moves import range
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._der import (
-    SEQUENCE, INTEGER, encode_der_integer, encode_der
+    INTEGER, SEQUENCE, encode_der, encode_der_integer
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,

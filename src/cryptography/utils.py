@@ -7,9 +7,10 @@ from __future__ import absolute_import, division, print_function
 import abc
 import binascii
 import inspect
-import six
 import sys
 import warnings
+
+import six
 
 
 # We use a UserWarning subclass, instead of DeprecationWarning, because CPython

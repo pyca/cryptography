@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography.hazmat._der import (
-    DERReader, INTEGER, NULL, OCTET_STRING, SEQUENCE, encode_der_integer,
-    encode_der
+    DERReader, INTEGER, NULL, OCTET_STRING, SEQUENCE, encode_der,
+    encode_der_integer
 )
 
 
@@ -176,7 +176,8 @@ def test_der_reader_wrong_tag():
         (3, b'\x03'),
         (127, b'\x7f'),
         (128, b'\x00\x80'),
-        (0x112233445566778899aabbccddeeff, b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff'),
+        (0x112233445566778899aabbccddeeff,
+         b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff'),
         (-1, b'\xff'),
         (-2, b'\xfe'),
         (-3, b'\xfd'),
@@ -184,7 +185,8 @@ def test_der_reader_wrong_tag():
         (-127, b'\x81'),
         (-128, b'\x80'),
         (-129, b'\xff\x7f'),
-        (-0x112233445566778899aabbccddeeff, b'\xee\xdd\xcc\xbb\xaa\x99\x88\x77\x66\x55\x44\x33\x22\x11\x01'),
+        (-0x112233445566778899aabbccddeeff,
+         b'\xee\xdd\xcc\xbb\xaa\x99\x88\x77\x66\x55\x44\x33\x22\x11\x01'),
     ]
 )
 def test_integer(value, der):
