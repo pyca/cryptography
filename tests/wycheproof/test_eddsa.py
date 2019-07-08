@@ -9,7 +9,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey
 )
@@ -19,7 +18,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.wycheproof_tests(
     "eddsa_test.json",
 )

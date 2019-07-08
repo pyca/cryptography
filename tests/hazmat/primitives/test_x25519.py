@@ -11,7 +11,6 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.backends.interfaces import DHBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey, X25519PublicKey
@@ -26,7 +25,6 @@ from ...utils import (
     only_if=lambda backend: not backend.x25519_supported(),
     skip_message="Requires OpenSSL without X25519 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 def test_x25519_unsupported(backend):
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X25519PublicKey.from_public_bytes(b"0" * 32)
@@ -42,7 +40,6 @@ def test_x25519_unsupported(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support"
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestX25519Exchange(object):
     @pytest.mark.parametrize(
         "vector",
