@@ -112,27 +112,25 @@ class DERReader(object):
     def as_integer(self):
         if len(self.data) == 0:
             raise ValueError("Invalid DER input: empty integer contents")
+        first = six.indexbytes(self.data, 0)
+        if first & 0x80 == 0x80:
+            raise ValueError("Negative DER integers are not supported")
         # The first 9 bits must not all be zero or all be ones. Otherwise, the
         # encoding should have been one byte shorter.
         if len(self.data) > 1:
-            first = six.indexbytes(self.data, 0)
             second = six.indexbytes(self.data, 1)
-            if (
-                (first == 0 and second & 0x80 == 0) or
-                (first == 0xff and second & 0x80 == 0x80)
-            ):
+            if first == 0 and second & 0x80 == 0:
                 raise ValueError(
                     "Invalid DER input: integer not minimally-encoded"
                 )
-        return int_from_bytes(self.data, "big", signed=True)
+        return int_from_bytes(self.data, "big")
 
 
 def encode_der_integer(x):
     if not isinstance(x, six.integer_types):
         raise ValueError("Value must be an integer")
     if x < 0:
-        n = (-x - 1).bit_length() // 8 + 1
-        return int_to_bytes(x + (1 << (8 * n)), n)
+        raise ValueError("Negative integers are not supported")
     n = x.bit_length() // 8 + 1
     return int_to_bytes(x, n)
 

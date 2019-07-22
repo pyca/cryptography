@@ -10,8 +10,6 @@ import inspect
 import sys
 import warnings
 
-import six
-
 
 # We use a UserWarning subclass, instead of DeprecationWarning, because CPython
 # decided deprecation warnings should be invisble by default.
@@ -66,12 +64,9 @@ if hasattr(int, "from_bytes"):
 else:
     def int_from_bytes(data, byteorder, signed=False):
         assert byteorder == 'big'
-        ret = int(binascii.hexlify(data), 16)
-        if signed:
-            data = memoryview(data)
-            if len(data) > 0 and six.indexbytes(data, 0) & 0x80 != 0:
-                ret -= 1 << (8 * len(data))
-        return ret
+        assert not signed
+
+        return int(binascii.hexlify(data), 16)
 
 
 if hasattr(int, "to_bytes"):

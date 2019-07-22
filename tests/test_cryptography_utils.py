@@ -11,11 +11,6 @@ from cryptography import utils
 
 def test_int_from_bytes_bytearray():
     assert utils.int_from_bytes(bytearray(b"\x02\x10"), "big") == 528
-    assert (utils.int_from_bytes(bytearray(b"\x02\x10"), "big", signed=True) ==
-            528)
-    assert utils.int_from_bytes(bytearray(b"\x82\x10"), "big") == 33296
-    assert (utils.int_from_bytes(bytearray(b"\x82\x10"), "big", signed=True) ==
-            -32240)
     with pytest.raises(TypeError):
         utils.int_from_bytes(["list", "is", "not", "bytes"], "big")
 

@@ -178,15 +178,6 @@ def test_der_reader_wrong_tag():
         (128, b'\x00\x80'),
         (0x112233445566778899aabbccddeeff,
          b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff'),
-        (-1, b'\xff'),
-        (-2, b'\xfe'),
-        (-3, b'\xfd'),
-        (-4, b'\xfc'),
-        (-127, b'\x81'),
-        (-128, b'\x80'),
-        (-129, b'\xff\x7f'),
-        (-0x112233445566778899aabbccddeeff,
-         b'\xee\xdd\xcc\xbb\xaa\x99\x88\x77\x66\x55\x44\x33\x22\x11\x01'),
     ]
 )
 def test_integer(value, der):
@@ -205,9 +196,22 @@ def test_integer(value, der):
         # Too many leading ones.
         b"\xff\xff",
         b"\xff\x80",
+        # Negative integers are not supported.
+        b"\x80",
+        b"\x81",
+        b"\x80\x00\x00",
+        b"\xff",
     ]
 )
 def test_invalid_integer(bad_input):
     reader = DERReader(bad_input)
     with pytest.raises(ValueError):
         reader.as_integer()
+
+
+def test_invalid_integer_encode():
+    with pytest.raises(ValueError):
+        encode_der_integer(-1)
+
+    with pytest.raises(ValueError):
+        encode_der_integer("not an integer")

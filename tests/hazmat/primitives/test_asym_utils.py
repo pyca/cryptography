@@ -31,10 +31,6 @@ def test_dss_signature():
     assert sig3 == b"0\x06\x02\x01\x00\x02\x01\x00"
     assert decode_dss_signature(sig3) == (0, 0)
 
-    sig4 = encode_dss_signature(-1, 0)
-    assert sig4 == b"0\x06\x02\x01\xFF\x02\x01\x00"
-    assert decode_dss_signature(sig4) == (-1, 0)
-
 
 def test_encode_dss_non_integer():
     with pytest.raises(ValueError):
@@ -51,6 +47,11 @@ def test_encode_dss_non_integer():
 
     with pytest.raises(ValueError):
         encode_dss_signature("hello", "world")
+
+
+def test_encode_dss_negative():
+    with pytest.raises(ValueError):
+        encode_dss_signature(-1, 0)
 
 
 def test_decode_dss_trailing_bytes():
