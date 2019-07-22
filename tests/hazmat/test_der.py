@@ -142,7 +142,7 @@ def test_der_lengths(length, header):
         # The input ended before the body.
         b"\x30\x01",
         # The length used long form when it should be short form.
-        b"\x30\x81\x00",
+        b"\x30\x81\x01\x00",
         # The length was not minimally-encoded.
         b"\x30\x82\x00\x80" + (0x80 * b"a"),
         # Indefinite-length encoding is not valid DER.
