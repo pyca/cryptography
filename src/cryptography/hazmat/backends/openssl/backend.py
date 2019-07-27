@@ -170,6 +170,7 @@ class Backend(object):
                 self.openssl_assert(res == 1)
             # Reset the RNG to use the engine
             res = self._lib.RAND_set_rand_method(self._ffi.NULL)
+            self.openssl_assert(res == 1)
 
     def osrandom_engine_implementation(self):
         buf = self._ffi.new("char[]", 64)
