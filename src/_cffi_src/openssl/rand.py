@@ -9,10 +9,13 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... RAND_METHOD;
+
 static const long Cryptography_HAS_EGD;
 """
 
 FUNCTIONS = """
+int RAND_set_rand_method(const RAND_METHOD *);
 void RAND_add(const void *, int, double);
 int RAND_status(void);
 int RAND_bytes(unsigned char *, int);
@@ -21,9 +24,6 @@ int RAND_bytes(unsigned char *, int);
    1 we'll just lie about the signature to preserve compatibility for
    pyOpenSSL (which calls this in its rand.py as of mid-2016) */
 void ERR_load_RAND_strings(void);
-
-/* RAND_cleanup became a macro in 1.1.0 */
-void RAND_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
