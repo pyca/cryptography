@@ -133,8 +133,9 @@ class Backend(object):
             e = self._lib.ENGINE_get_default_RAND()
             if e != self._ffi.NULL:
                 self._lib.ENGINE_unregister_RAND(e)
-                # Reset the RNG to use the new engine.
-                self._lib.RAND_cleanup()
+                # Reset the RNG to use the built-in.
+                res = self._lib.RAND_set_rand_method(self._ffi.NULL)
+                self.openssl_assert(res == 1)
                 # decrement the structural reference from get_default_RAND
                 res = self._lib.ENGINE_finish(e)
                 self.openssl_assert(res == 1)
@@ -167,8 +168,9 @@ class Backend(object):
                 # Set the engine as the default RAND provider.
                 res = self._lib.ENGINE_set_default_RAND(e)
                 self.openssl_assert(res == 1)
-            # Reset the RNG to use the new engine.
-            self._lib.RAND_cleanup()
+            # Reset the RNG to use the engine
+            res = self._lib.RAND_set_rand_method(self._ffi.NULL)
+            self.openssl_assert(res == 1)
 
     def osrandom_engine_implementation(self):
         buf = self._ffi.new("char[]", 64)
