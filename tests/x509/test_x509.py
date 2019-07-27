@@ -2184,6 +2184,10 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_rsa_with_md5(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
@@ -2205,6 +2209,10 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_dsa_with_md5(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
@@ -2226,6 +2234,10 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_ec_with_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = EC_KEY_SECP256R1.private_key(backend)
@@ -2891,6 +2903,10 @@ class TestCertificateSigningRequestBuilder(object):
             builder.sign(private_key, 'NotAHash', backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_rsa_with_md5(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -2903,6 +2919,10 @@ class TestCertificateSigningRequestBuilder(object):
         assert isinstance(request.signature_hash_algorithm, hashes.MD5)
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_dsa_with_md5(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder().subject_name(
@@ -2914,6 +2934,10 @@ class TestCertificateSigningRequestBuilder(object):
             builder.sign(private_key, hashes.MD5(), backend)
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
+        skip_message="Requires OpenSSL with MD5 support"
+    )
     def test_sign_ec_with_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = EC_KEY_SECP256R1.private_key(backend)
@@ -3375,7 +3399,7 @@ class TestCertificateSigningRequestBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_rsa_key_too_small(self, backend):
-        private_key = rsa.generate_private_key(65537, 512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
