@@ -7,21 +7,16 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import ipaddress
 
-import asn1crypto.core
-
 import six
 
 from cryptography import x509
+from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
     CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID,
     OCSPExtensionOID,
 )
-
-
-class _Integers(asn1crypto.core.SequenceOf):
-    _child_spec = asn1crypto.core.Integer
 
 
 def _obj2txt(backend, obj):
@@ -209,20 +204,25 @@ class _X509ExtensionParser(object):
             # to support them in all versions of OpenSSL so we decode them
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
+                # The extension contents are a SEQUENCE OF INTEGERs.
                 data = backend._lib.X509_EXTENSION_get_data(ext)
-                parsed = _Integers.load(_asn1_string_to_bytes(backend, data))
+                data_bytes = _asn1_string_to_bytes(backend, data)
+                features = DERReader(data_bytes).read_single_element(SEQUENCE)
+                parsed = []
+                while not features.is_empty():
+                    parsed.append(features.read_element(INTEGER).as_integer())
+                # Map the features to their enum value.
                 value = x509.TLSFeature(
-                    [_TLS_FEATURE_TYPE_TO_ENUM[x.native] for x in parsed]
+                    [_TLS_FEATURE_TYPE_TO_ENUM[x] for x in parsed]
                 )
                 extensions.append(x509.Extension(oid, critical, value))
                 seen_oids.add(oid)
                 continue
             elif oid == ExtensionOID.PRECERT_POISON:
                 data = backend._lib.X509_EXTENSION_get_data(ext)
-                parsed = asn1crypto.core.Null.load(
-                    _asn1_string_to_bytes(backend, data)
-                )
-                assert parsed == asn1crypto.core.Null()
+                # The contents of the extension must be an ASN.1 NULL.
+                reader = DERReader(_asn1_string_to_bytes(backend, data))
+                reader.read_single_element(NULL).check_empty()
                 extensions.append(x509.Extension(
                     oid, critical, x509.PrecertPoison()
                 ))

@@ -11,11 +11,12 @@ import ipaddress
 import warnings
 from enum import Enum
 
-from asn1crypto.keys import PublicKeyInfo
-
 import six
 
 from cryptography import utils
+from cryptography.hazmat._der import (
+    BIT_STRING, DERReader, OBJECT_IDENTIFIER, SEQUENCE
+)
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
@@ -47,7 +48,24 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        data = bytes(PublicKeyInfo.load(serialized)['public_key'])
+        public_key_info = DERReader(serialized).read_single_element(SEQUENCE)
+        algorithm = public_key_info.read_element(SEQUENCE)
+        public_key = public_key_info.read_element(BIT_STRING)
+        public_key_info.check_empty()
+
+        # Double-check the algorithm structure.
+        algorithm.read_element(OBJECT_IDENTIFIER)
+        if not algorithm.is_empty():
+            # Skip the optional parameters field.
+            algorithm.read_any_element()
+        algorithm.check_empty()
+
+        # BIT STRING contents begin with the number of padding bytes added. It
+        # must be zero for SubjectPublicKeyInfo structures.
+        if public_key.read_byte() != 0:
+            raise ValueError('Invalid public key encoding')
+
+        data = public_key.data
 
     return hashlib.sha1(data).digest()
 

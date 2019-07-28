@@ -4,27 +4,27 @@
 
 from __future__ import absolute_import, division, print_function
 
-from asn1crypto.algos import DSASignature
-
-import six
-
 from cryptography import utils
+from cryptography.hazmat._der import (
+    DERReader, INTEGER, SEQUENCE, encode_der, encode_der_integer
+)
 from cryptography.hazmat.primitives import hashes
 
 
 def decode_dss_signature(signature):
-    data = DSASignature.load(signature, strict=True).native
-    return data['r'], data['s']
+    seq = DERReader(signature).read_single_element(SEQUENCE)
+    r = seq.read_element(INTEGER).as_integer()
+    s = seq.read_element(INTEGER).as_integer()
+    seq.check_empty()
+    return r, s
 
 
 def encode_dss_signature(r, s):
-    if (
-        not isinstance(r, six.integer_types) or
-        not isinstance(s, six.integer_types)
-    ):
-        raise ValueError("Both r and s must be integers")
-
-    return DSASignature({'r': r, 's': s}).dump()
+    return encode_der(
+        SEQUENCE,
+        encode_der(INTEGER, encode_der_integer(r)),
+        encode_der(INTEGER, encode_der_integer(s)),
+    )
 
 
 class Prehashed(object):
