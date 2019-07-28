@@ -18,6 +18,8 @@ branches:
 
 matrix:
     include:
+        - python: 3.4
+          env: TOXENV=pep8
         # these are just to make travis's UI a bit prettier
         - python: 2.7
           env: TOXENV=py27
@@ -115,8 +117,6 @@ matrix:
           services: docker
           env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
           if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
-        - python: 3.4
-          env: TOXENV=pep8
         - python: 3.7
           env: TOXENV=packaging
 
