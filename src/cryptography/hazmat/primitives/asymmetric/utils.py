@@ -23,7 +23,7 @@ def encode_dss_signature(r, s):
     return encode_der(
         SEQUENCE,
         encode_der(INTEGER, encode_der_integer(r)),
-        encode_der(INTEGER, encode_der_integer(s))
+        encode_der(INTEGER, encode_der_integer(s)),
     )
 
 
