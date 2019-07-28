@@ -10,7 +10,7 @@ import ipaddress
 import six
 
 from cryptography import x509
-from cryptography.hazmat._der import DERReader, INTEGER, SEQUENCE
+from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
@@ -221,10 +221,8 @@ class _X509ExtensionParser(object):
             elif oid == ExtensionOID.PRECERT_POISON:
                 data = backend._lib.X509_EXTENSION_get_data(ext)
                 # The contents of the extension must be an ASN.1 NULL.
-                if _asn1_string_to_bytes(backend, data) != b"\x05\x00":
-                    raise ValueError(
-                        "Invalid precertificate poison extension contents"
-                    )
+                reader = DERReader(_asn1_string_to_bytes(backend, data))
+                reader.read_single_element(NULL).check_empty()
                 extensions.append(x509.Extension(
                     oid, critical, x509.PrecertPoison()
                 ))
