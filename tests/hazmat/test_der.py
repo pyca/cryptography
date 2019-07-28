@@ -50,6 +50,10 @@ def test_der():
         with reader:
             pass
 
+    with pytest.raises(ZeroDivisionError):
+        with DERReader(der) as r:
+            raise ZeroDivisionError
+
     # Parse the outer element.
     outer = reader.read_element(SEQUENCE)
     reader.check_empty()
