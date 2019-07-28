@@ -55,6 +55,10 @@ def _key_identifier_from_public_key(public_key):
 
         # Double-check the algorithm structure.
         algorithm.read_element(OBJECT_IDENTIFIER)
+        if not algorithm.is_empty():
+            # Skip the optional parameters field.
+            algorithm.read_any_element()
+        algorithm.check_empty()
 
         # BIT STRING contents begin with the number of padding bytes added. It
         # must be zero for SubjectPublicKeyInfo structures.

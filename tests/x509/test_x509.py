@@ -6,6 +6,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import collections
 import datetime
 import ipaddress
 import os
@@ -65,6 +66,12 @@ def _load_cert(filename, loader, backend):
     return cert
 
 
+ParsedCertificate = collections.namedtuple(
+    "ParsedCertificate",
+    ["not_before_tag", "not_after_tag", "issuer", "subject"]
+)
+
+
 def _parse_cert(der):
     # See the Certificate structured, defined in RFC 5280.
     cert = DERReader(der).read_single_element(SEQUENCE)
@@ -98,12 +105,12 @@ def _parse_cert(der):
     not_after_tag, _ = validity.read_any_element()
     validity.check_empty()
 
-    return {
-        "not_before_tag": not_before_tag,
-        "not_after_tag": not_after_tag,
-        "issuer": issuer,
-        "subject": subject,
-    }
+    return ParsedCertificate(
+        not_before_tag=not_before_tag,
+        not_after_tag=not_after_tag,
+        issuer=issuer,
+        subject=subject,
+    )
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -1629,8 +1636,8 @@ class TestRSACertificateRequest(object):
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        subject = parsed['subject']
-        issuer = parsed['issuer']
+        subject = parsed.subject
+        issuer = parsed.issuer
 
         def read_next_rdn_value_tag(reader):
             rdn = reader.read_element(SET)
@@ -1792,8 +1799,8 @@ class TestCertificateBuilder(object):
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed['not_before_tag'] == UTC_TIME
-        assert parsed['not_after_tag'] == GENERALIZED_TIME
+        assert parsed.not_before_tag == UTC_TIME
+        assert parsed.not_after_tag == GENERALIZED_TIME
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2088,8 +2095,8 @@ class TestCertificateBuilder(object):
         assert cert.not_valid_before == time
         assert cert.not_valid_after == time
         parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed['not_before_tag'] == UTC_TIME
-        assert parsed['not_after_tag'] == UTC_TIME
+        assert parsed.not_before_tag == UTC_TIME
+        assert parsed.not_after_tag == UTC_TIME
 
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):

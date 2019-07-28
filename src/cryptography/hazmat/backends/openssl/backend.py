@@ -16,7 +16,7 @@ from six.moves import range
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._der import (
-    INTEGER, SEQUENCE, encode_der, encode_der_integer
+    INTEGER, NULL, SEQUENCE, encode_der, encode_der_integer
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DHBackend, DSABackend,
@@ -1005,9 +1005,7 @@ class Backend(object):
             value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.PrecertPoison):
-            # The contents are an ASN.1 NULL.
-            asn1 = b'\x05\x00'
-            value = _encode_asn1_str_gc(self, asn1)
+            value = _encode_asn1_str_gc(self, encode_der(NULL))
             return self._create_raw_x509_extension(extension, value)
         else:
             try:
