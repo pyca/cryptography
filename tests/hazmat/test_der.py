@@ -46,6 +46,10 @@ def test_der():
     with pytest.raises(ValueError):
         reader.check_empty()
 
+    with pytest.raises(ValueError):
+        with reader:
+            pass
+
     # Parse the outer element.
     outer = reader.read_element(SEQUENCE)
     reader.check_empty()

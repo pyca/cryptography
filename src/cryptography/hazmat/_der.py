@@ -36,6 +36,13 @@ class DERReader(object):
     def __init__(self, data):
         self.data = memoryview(data)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_value is None:
+            self.check_empty()
+
     def is_empty(self):
         return len(self.data) == 0
 
@@ -100,9 +107,8 @@ class DERReader(object):
         return body
 
     def read_single_element(self, expected_tag):
-        ret = self.read_element(expected_tag)
-        self.check_empty()
-        return ret
+        with self:
+            return self.read_element(expected_tag)
 
     def read_optional_element(self, expected_tag):
         if len(self.data) > 0 and six.indexbytes(self.data, 0) == expected_tag:
