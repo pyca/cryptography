@@ -48,7 +48,8 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        with DERReader(serialized).read_single_element(SEQUENCE) as public_key_info:
+        reader = DERReader(serialized)
+        with reader.read_single_element(SEQUENCE) as public_key_info:
             algorithm = public_key_info.read_element(SEQUENCE)
             public_key = public_key_info.read_element(BIT_STRING)
 

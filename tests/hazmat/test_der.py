@@ -51,7 +51,7 @@ def test_der():
             pass
 
     with pytest.raises(ZeroDivisionError):
-        with DERReader(der) as r:
+        with DERReader(der):
             raise ZeroDivisionError
 
     # Parse the outer element.
