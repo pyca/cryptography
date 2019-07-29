@@ -11,7 +11,7 @@ if [ -n "${TOXENV}" ]; then
         docs);;
         *)
             source ~/.venv/bin/activate
-            codecov --env TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER
+            codecov --env TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER,OPENSSL_FORCE_FIPS_MODE
             ;;
     esac
 fi

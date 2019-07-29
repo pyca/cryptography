@@ -71,6 +71,9 @@ matrix:
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
         - python: 2.7
           services: docker
+          env: TOXENV=py27 OPENSSL_FORCE_FIPS_MODE=1 DOCKER=pyca/cryptography-runner-centos7
+        - python: 2.7
+          services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-jessie
         - python: 3.4
           services: docker

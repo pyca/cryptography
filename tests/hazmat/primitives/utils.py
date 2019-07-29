@@ -17,6 +17,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers.modes import GCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation, KBKDFHMAC, Mode
@@ -80,6 +81,14 @@ def generate_aead_test(param_loader, path, file_names, cipher_factory,
 
 
 def aead_test(backend, cipher_factory, mode_factory, params):
+    if (
+        mode_factory is GCM and backend._fips_enabled() and
+        len(params["iv"]) != 24
+    ):
+        # Red Hat disables non-96-bit IV support as part of its FIPS
+        # patches.
+        pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
     if params.get("pt") is not None:
         plaintext = params["pt"]
     ciphertext = params["ct"]
