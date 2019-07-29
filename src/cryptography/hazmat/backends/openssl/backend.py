@@ -8,6 +8,7 @@ import base64
 import collections
 import contextlib
 import itertools
+import warnings
 from contextlib import contextmanager
 
 import six
@@ -122,13 +123,23 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self.activate_osrandom_engine()
+        if self._fips_enabled():
+            warnings.warn(
+                "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
+                UserWarning
+            )
+        else:
+            self.activate_osrandom_engine()
         self._dh_types = [self._lib.EVP_PKEY_DH]
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
+
+    def _fips_enabled(self):
+        fips_mode = getattr(self._lib, "FIPS_mode", lambda: 0)
+        return fips_mode() == 1
 
     def activate_builtin_random(self):
         if self._lib.Cryptography_HAS_ENGINE:
@@ -218,6 +229,12 @@ class Backend(object):
         return evp_md
 
     def hash_supported(self, algorithm):
+        # FIPS doesn't allow MD5, but the algorithm is still present in
+        # OpenSSL, it just errors if you try to use it. To avoid that we
+        # return False here explicitly.
+        if self._fips_enabled() and isinstance(algorithm, hashes.MD5):
+            return False
+
         evp_md = self._evp_md_from_algorithm(algorithm)
         return evp_md != self._ffi.NULL
 

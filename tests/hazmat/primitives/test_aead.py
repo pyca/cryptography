@@ -378,9 +378,15 @@ class TestAESGCM(object):
             aesgcm.encrypt(nonce, b"", FakeData())
 
     @pytest.mark.parametrize("vector", _load_gcm_vectors())
-    def test_vectors(self, vector):
-        key = binascii.unhexlify(vector["key"])
+    def test_vectors(self, backend, vector):
         nonce = binascii.unhexlify(vector["iv"])
+
+        if backend._fips_enabled() and len(nonce) != 12:
+            # Red Hat disables non-96-bit IV support as part of its FIPS
+            # patches.
+            pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
+        key = binascii.unhexlify(vector["key"])
         aad = binascii.unhexlify(vector["aad"])
         ct = binascii.unhexlify(vector["ct"])
         pt = binascii.unhexlify(vector.get("pt", b""))

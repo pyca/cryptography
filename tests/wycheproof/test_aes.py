@@ -55,6 +55,10 @@ def test_aes_gcm(backend, wycheproof):
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     ct = binascii.unhexlify(wycheproof.testcase["ct"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if backend._fips_enabled() and len(iv) != 12:
+        # Red Hat disables non-96-bit IV support as part of its FIPS
+        # patches.
+        pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
     if wycheproof.valid or wycheproof.acceptable:
         enc = Cipher(algorithms.AES(key), modes.GCM(iv), backend).encryptor()
         enc.authenticate_additional_data(aad)

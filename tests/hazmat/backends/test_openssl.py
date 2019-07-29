@@ -171,6 +171,9 @@ class TestOpenSSL(object):
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_ENGINE == 0,
     reason="Requires OpenSSL with ENGINE support")
+@pytest.mark.skipif(
+    backend._fips_enabled(),
+    reason="osrandom engine disabled for FIPS")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
         # The default RAND engine is global and shared between

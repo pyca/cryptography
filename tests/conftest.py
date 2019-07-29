@@ -14,7 +14,10 @@ from .utils import (
 
 
 def pytest_report_header(config):
-    return "OpenSSL: {}".format(openssl_backend.openssl_version_text())
+    return "\n".join([
+        "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
+        "FIPS Enabled: {}".format(openssl_backend._fips_enabled()),
+    ])
 
 
 def pytest_addoption(parser):

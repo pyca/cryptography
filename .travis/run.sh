@@ -32,6 +32,7 @@ if [ -n "${DOCKER}" ]; then
         -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
         -w "${TRAVIS_BUILD_DIR}" \
+        -e OPENSSL_FORCE_FIPS_MODE \
         -e TOXENV "${DOCKER}" \
         /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then
