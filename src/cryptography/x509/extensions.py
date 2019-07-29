@@ -48,17 +48,17 @@ def _key_identifier_from_public_key(public_key):
             serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        public_key_info = DERReader(serialized).read_single_element(SEQUENCE)
-        algorithm = public_key_info.read_element(SEQUENCE)
-        public_key = public_key_info.read_element(BIT_STRING)
-        public_key_info.check_empty()
+        reader = DERReader(serialized)
+        with reader.read_single_element(SEQUENCE) as public_key_info:
+            algorithm = public_key_info.read_element(SEQUENCE)
+            public_key = public_key_info.read_element(BIT_STRING)
 
         # Double-check the algorithm structure.
-        algorithm.read_element(OBJECT_IDENTIFIER)
-        if not algorithm.is_empty():
-            # Skip the optional parameters field.
-            algorithm.read_any_element()
-        algorithm.check_empty()
+        with algorithm:
+            algorithm.read_element(OBJECT_IDENTIFIER)
+            if not algorithm.is_empty():
+                # Skip the optional parameters field.
+                algorithm.read_any_element()
 
         # BIT STRING contents begin with the number of padding bytes added. It
         # must be zero for SubjectPublicKeyInfo structures.

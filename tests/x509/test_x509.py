@@ -76,36 +76,35 @@ ParsedCertificate = collections.namedtuple(
 
 def _parse_cert(der):
     # See the Certificate structured, defined in RFC 5280.
-    cert = DERReader(der).read_single_element(SEQUENCE)
-    tbs_cert = cert.read_element(SEQUENCE)
-    # Skip outer signature algorithm
-    _ = cert.read_element(SEQUENCE)
-    # Skip signature
-    _ = cert.read_element(BIT_STRING)
-    cert.check_empty()
+    with DERReader(der).read_single_element(SEQUENCE) as cert:
+        tbs_cert = cert.read_element(SEQUENCE)
+        # Skip outer signature algorithm
+        _ = cert.read_element(SEQUENCE)
+        # Skip signature
+        _ = cert.read_element(BIT_STRING)
 
-    # Skip version
-    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 0)
-    # Skip serialNumber
-    _ = tbs_cert.read_element(INTEGER)
-    # Skip inner signature algorithm
-    _ = tbs_cert.read_element(SEQUENCE)
-    issuer = tbs_cert.read_element(SEQUENCE)
-    validity = tbs_cert.read_element(SEQUENCE)
-    subject = tbs_cert.read_element(SEQUENCE)
-    # Skip subjectPublicKeyInfo
-    _ = tbs_cert.read_element(SEQUENCE)
-    # Skip issuerUniqueID
-    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 1)
-    # Skip subjectUniqueID
-    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 2)
-    # Skip extensions
-    _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
-    tbs_cert.check_empty()
+    with tbs_cert:
+        # Skip version
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 0)
+        # Skip serialNumber
+        _ = tbs_cert.read_element(INTEGER)
+        # Skip inner signature algorithm
+        _ = tbs_cert.read_element(SEQUENCE)
+        issuer = tbs_cert.read_element(SEQUENCE)
+        validity = tbs_cert.read_element(SEQUENCE)
+        subject = tbs_cert.read_element(SEQUENCE)
+        # Skip subjectPublicKeyInfo
+        _ = tbs_cert.read_element(SEQUENCE)
+        # Skip issuerUniqueID
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 1)
+        # Skip subjectUniqueID
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 2)
+        # Skip extensions
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
 
-    not_before_tag, _ = validity.read_any_element()
-    not_after_tag, _ = validity.read_any_element()
-    validity.check_empty()
+    with validity:
+        not_before_tag, _ = validity.read_any_element()
+        not_after_tag, _ = validity.read_any_element()
 
     return ParsedCertificate(
         not_before_tag=not_before_tag,
@@ -1642,15 +1641,14 @@ class TestRSACertificateRequest(object):
         issuer = parsed.issuer
 
         def read_next_rdn_value_tag(reader):
-            rdn = reader.read_element(SET)
-            attribute = rdn.read_element(SEQUENCE)
             # Assume each RDN has a single attribute.
-            rdn.check_empty()
+            with reader.read_element(SET) as rdn:
+                attribute = rdn.read_element(SEQUENCE)
 
-            _ = attribute.read_element(OBJECT_IDENTIFIER)
-            tag, value = attribute.read_any_element()
-            attribute.check_empty()
-            return tag
+            with attribute:
+                _ = attribute.read_element(OBJECT_IDENTIFIER)
+                tag, value = attribute.read_any_element()
+                return tag
 
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
