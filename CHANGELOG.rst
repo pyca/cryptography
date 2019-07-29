@@ -21,6 +21,7 @@ Changelog
   wheels.
 * Added support for ``ed25519`` keys in the
   :class:`~cryptography.x509.CertificateBuilder`.
+* ``cryptography`` no longer depends on ``asn1crypto``.
 
 .. _v2-7:
 
