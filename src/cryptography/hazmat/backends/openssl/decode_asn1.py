@@ -642,7 +642,7 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
-def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+def _decode_scts(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp
     )
@@ -654,7 +654,19 @@ def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
         sct = backend._lib.sk_SCT_value(asn1_scts, i)
 
         scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
-    return x509.PrecertificateSignedCertificateTimestamps(scts)
+    return scts
+
+
+def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+    return x509.PrecertificateSignedCertificateTimestamps(
+        _decode_scts(backend, asn1_scts)
+    )
+
+
+def _decode_signed_certificate_timestamps(backend, asn1_scts):
+    return x509.SignedCertificateTimestamps(
+        _decode_scts(backend, asn1_scts)
+    )
 
 
 #    CRLReason ::= ENUMERATED {
@@ -829,6 +841,9 @@ _EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
 _EXTENSION_HANDLERS[
     ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 ] = _decode_precert_signed_certificate_timestamps
+_EXTENSION_HANDLERS[
+    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
+] = _decode_signed_certificate_timestamps
 
 
 _REVOKED_EXTENSION_HANDLERS = {

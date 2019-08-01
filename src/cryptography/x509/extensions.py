@@ -1435,10 +1435,7 @@ class InvalidityDate(object):
     invalidity_date = utils.read_only_property("_invalidity_date")
 
 
-@utils.register_interface(ExtensionType)
-class PrecertificateSignedCertificateTimestamps(object):
-    oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
-
+class SCTBase(object):
     def __init__(self, signed_certificate_timestamps):
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
@@ -1481,6 +1478,16 @@ class PrecertificateSignedCertificateTimestamps(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+@utils.register_interface(ExtensionType)
+class PrecertificateSignedCertificateTimestamps(SCTBase):
+    oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+
+
+@utils.register_interface(ExtensionType)
+class SignedCertificateTimestamps(SCTBase):
+    oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
 
 
 @utils.register_interface(ExtensionType)

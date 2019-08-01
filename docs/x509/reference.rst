@@ -3040,6 +3040,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
 
+    .. attribute:: SIGNED_CERTIFICATE_TIMESTAMPS
+
+        .. versionadded:: 2.8
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.5"``.
+
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the

@@ -767,3 +767,12 @@ class TestOCSPResponse(object):
         assert len(resp.single_extensions) == 1
         ext = resp.single_extensions[0]
         assert ext.oid == x509.ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
+        assert len(ext.value) == 2
+        log_ids = [
+            base64.b64encode(sct.log_id).decode('ascii')
+            for sct in ext.value
+        ]
+        assert log_ids == [
+            "pLkJkLQYWBSHuxOizGdwCjw1mAT5G9+443fNDsgN3BA=",
+            "VhQGmi/XwuzT9eG9RLI+x0Z2ubyZEVzA75SYVdaJ0N0=",
+        ]
