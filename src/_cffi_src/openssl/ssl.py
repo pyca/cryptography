@@ -31,6 +31,7 @@ static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_CIPHER_DETAILS;
+static const long Cryptography_HAS_VERIFIED_CHAIN;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -208,9 +209,7 @@ int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
                     unsigned char *);
 
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
-#endif
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 int SSL_get_error(const SSL *, int);
@@ -560,6 +559,13 @@ CUSTOMIZATIONS = """
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
 }
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
+Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
+#else
+static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older

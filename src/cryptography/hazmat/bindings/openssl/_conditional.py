@@ -358,6 +358,12 @@ def cryptography_has_engine():
     ]
 
 
+def cryptography_has_verified_chain():
+    return [
+        "SSL_get0_verified_chain",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -431,4 +437,5 @@ CONDITIONAL_NAMES = {
         cryptography_has_evp_r_memory_limit_exceeded
     ),
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
+    "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
 }
