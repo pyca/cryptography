@@ -15,13 +15,25 @@ jobs:
                   python.version: '3.4'
                   PYTHON_DOWNLOAD_URL: "https://www.python.org/ftp/python/3.7.3/python-3.7.3-macosx10.6.pkg"
                   PYTHON_BIN_PATH: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+              PyPy:
+                  python.version: 'pypy2'
+                  BREW_PYTHON: 'pypy'
+                  PYTHON_BIN_PATH: /usr/local/opt/pypy/bin/pypy
+              PyPy3:
+                  python.version: 'pypy3'
+                  BREW_PYTHON: 'pypy3'
+                  PYTHON_BIN_PATH: /usr/local/opt/pypy3/bin/pypy3
       steps:
           - script: |
               set -e
               set -x
 
-              curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
-              sudo installer -pkg python.pkg -target /
+              [[ -e "$PYTHON_DOWNLOAD_URL" ]] && {
+                curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
+                sudo installer -pkg python.pkg -target /
+              } || {
+                brew install "$BREW_PYTHON"
+              }
             displayName: Download and install Python
 
           - script: brew update
