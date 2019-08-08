@@ -208,6 +208,9 @@ int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
                     unsigned char *);
 
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
+#endif
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 int SSL_get_error(const SSL *, int);
