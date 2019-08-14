@@ -621,9 +621,9 @@ static const long Cryptography_HAS_SSL2 = 0;
 
 #ifdef OPENSSL_NO_SSL3_METHOD
 static const long Cryptography_HAS_SSL3_METHOD = 0;
-SSL_METHOD* (*SSLv3_method)(void) = NULL;
-SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
-SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
+const SSL_METHOD* (*SSLv3_method)(void) = NULL;
+const SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
+const SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_SSL3_METHOD = 1;
 #endif

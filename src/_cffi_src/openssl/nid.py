@@ -23,8 +23,12 @@ static const int NID_ED25519;
 static const int NID_ED448;
 static const int NID_poly1305;
 
+static const int NID_info_access;
 static const int NID_subject_alt_name;
+static const int NID_crl_distribution_points;
 static const int NID_crl_reason;
+static const int NID_ad_OCSP;
+static const int NID_ad_ca_issuers;
 """
 
 FUNCTIONS = """

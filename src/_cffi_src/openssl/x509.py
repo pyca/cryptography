@@ -77,6 +77,8 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
 
+int i2d_X509(X509 *, unsigned char **);
+
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
@@ -163,6 +165,7 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 /* These became const X509 in 1.1.0 */
 int X509_get_ext_count(X509 *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
+int X509_get_ext_by_NID(X509 *, int, int);
 X509_NAME *X509_get_subject_name(X509 *);
 X509_NAME *X509_get_issuer_name(X509 *);
 

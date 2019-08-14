@@ -41,6 +41,12 @@ typedef struct {
 
 typedef void * (*X509V3_EXT_D2I)(void *, const unsigned char **, long);
 
+typedef struct {
+    ASN1_ITEM_EXP *it;
+    X509V3_EXT_D2I d2i;
+    ...;
+} X509V3_EXT_METHOD;
+
 static const int GEN_OTHERNAME;
 static const int GEN_EMAIL;
 static const int GEN_X400;
@@ -240,6 +246,7 @@ void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
 
+const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);

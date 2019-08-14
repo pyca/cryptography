@@ -59,6 +59,7 @@ int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
 int EVP_DigestFinalXOF(EVP_MD_CTX *, unsigned char *, size_t);
 const EVP_MD *EVP_get_digestbyname(const char *);
+int EVP_MD_size(const EVP_MD *);
 
 EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);

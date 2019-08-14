@@ -33,6 +33,10 @@ typedef struct {
 } ASN1_TYPE;
 typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
+typedef ... ASN1_ITEM;
+typedef ... ASN1_VALUE;
+
+typedef ... ASN1_ITEM_EXP;
 typedef ... ASN1_NULL;
 
 static const int V_ASN1_GENERALIZEDTIME;
@@ -74,6 +78,8 @@ ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
 void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
 int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
 
+ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
+                          const ASN1_ITEM *);
 int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 /* These became const ASN1_* in 1.1.0 */
 int ASN1_STRING_type(ASN1_STRING *);
@@ -90,9 +96,12 @@ void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
 ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
 void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
+const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
+
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 
+int ASN1_TIME_print(BIO *, ASN1_TIME *);
 int ASN1_STRING_length(ASN1_STRING *);
 int ASN1_STRING_set_default_mask_asc(char *);
 
