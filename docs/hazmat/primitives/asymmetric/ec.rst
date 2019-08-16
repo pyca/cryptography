@@ -64,7 +64,7 @@ Elliptic Curve Signature Algorithms
         ...     ec.ECDSA(hashes.SHA256())
         ... )
 
-    The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
+    The ``signature`` is a ``bytes`` object, whose contents are DER encoded as
     described in :rfc:`3279`. This can be decoded using
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
@@ -86,12 +86,17 @@ Elliptic Curve Signature Algorithms
         ... )
 
 
-    Verification requires the public key, the signature itself, the signed
-    data, and knowledge of the hashing algorithm that was used when producing
-    the signature:
+    Verification requires the public key, the DER-encoded signature itself, the
+    signed data, and knowledge of the hashing algorithm that was used when
+    producing the signature:
 
     >>> public_key = private_key.public_key()
     >>> public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
+
+    As above, the ``signature`` is a ``bytes`` object whose contents are DER
+    encoded as described in :rfc:`3279`. It can be created from a raw ``(r,s)``
+    pair by using
+    :func:`~cryptography.hazmat.primitives.asymmetric.utils.encode_dss_signature`.
 
     If the signature is not valid, an
     :class:`~cryptography.exceptions.InvalidSignature` exception will be raised.
@@ -601,7 +606,10 @@ Key Interfaces
         :param signature_algorithm: An instance of
             :class:`EllipticCurveSignatureAlgorithm`, such as :class:`ECDSA`.
 
-        :return bytes: Signature.
+        :return bytes: The signature as a ``bytes`` object, whose contents are
+            DER encoded as described in :rfc:`3279`. This can be decoded using
+            :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`,
+            which returns the decoded tuple ``(r, s)``.
 
     .. attribute:: key_size
 
@@ -704,7 +712,10 @@ Key Interfaces
         Verify one block of data was signed by the private key associated
         with this public key.
 
-        :param bytes signature: The signature to verify.
+        :param bytes signature: The DER-encoded signature to verify.
+            A raw signature may be DER-encoded by splitting it into the ``r``
+            and ``s`` components and passing them into
+            :func:`~cryptography.hazmat.primitives.asymmetric.utils.encode_dss_signature`.
 
         :param bytes data: The message string that was signed.
 
