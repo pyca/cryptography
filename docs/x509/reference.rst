@@ -335,11 +335,12 @@ X.509 Certificate Object
 
         The public key associated with the certificate.
 
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+        :returns: One of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`
 
         .. doctest::
 
@@ -394,7 +395,10 @@ X.509 Certificate Object
 
         Returns the
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
-        was used in signing this certificate.
+        was used in signing this certificate.  Can be ``None`` if signature
+        did not use separate hash
+        (:attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED25519`,
+        :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED448`).
 
         .. doctest::
 
@@ -552,7 +556,10 @@ X.509 CRL (Certificate Revocation List) Object
 
         Returns the
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
-        was used in signing this CRL.
+        was used in signing this CRL.  Can be ``None`` if signature
+        did not use separate hash
+        (:attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED25519`,
+        :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED448`).
 
         .. doctest::
 
@@ -729,9 +736,9 @@ X.509 Certificate Builder
         :param public_key: The subject's public key. This can be one of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-            or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
 
     .. method:: serial_number(serial_number)
 
@@ -785,9 +792,9 @@ X.509 Certificate Builder
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-            , or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             that will be used to sign the certificate.
 
         :param algorithm: The
@@ -795,6 +802,8 @@ X.509 Certificate Builder
             will be used to generate the signature. This must be ``None`` if
             the ``private_key`` is an
             :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            or an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
@@ -818,10 +827,12 @@ X.509 CSR (Certificate Signing Request) Object
 
         The public key associated with the request.
 
-        :returns:
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        :returns: One of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
 
         .. doctest::
 
@@ -842,7 +853,10 @@ X.509 CSR (Certificate Signing Request) Object
 
         Returns the
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
-        was used in signing this request.
+        was used in signing this request.  Can be ``None`` if signature
+        did not use separate hash
+        (:attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED25519`,
+        :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED448`).
 
         .. doctest::
 
@@ -1010,13 +1024,22 @@ X.509 Certificate Revocation List Builder
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             that will be used to sign the certificate.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature.
+            This must be ``None`` if the ``private_key`` is an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            or an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            and an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            otherwise.
 
         :param backend: Backend that will be used to build the CRL.
             Must support the
@@ -1182,8 +1205,10 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             that will be used to sign the request.  When the request is
             signed by a certificate authority, the private key's associated
             public key will be stored in the resulting certificate.
@@ -1191,6 +1216,13 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the request signature.
+            This must be ``None`` if the ``private_key`` is an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            or an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            and an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            otherwise.
 
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.
@@ -1863,11 +1895,11 @@ X.509 Extensions
         section 4.2.1.2.
 
         :param public_key: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-            ,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
-            , or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
 
         .. doctest::
 
@@ -1941,11 +1973,11 @@ X.509 Extensions
         recommendation in :rfc:`5280` section 4.2.1.2.
 
         :param public_key: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-            ,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
-            , or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
 
         .. doctest::
 
@@ -2852,6 +2884,13 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.101.112"``. This is a signature
         using an ed25519 key.
+
+    .. attribute:: ED448
+
+        .. versionadded:: 2.8
+
+        Corresponds to the dotted string ``"1.3.101.113"``. This is a signature
+        using an ed448 key.
 
 
 .. class:: ExtendedKeyUsageOID

@@ -292,14 +292,23 @@ Creating Responses
         :attr:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` response.
 
         :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-            or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             that will be used to sign the certificate.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
-            will be used to generate the signature.
+            will be used to generate the signature.  This must be ``None`` if
+            the ``private_key`` is an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+            or an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            and an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            otherwise.
 
         :returns: A new :class:`~cryptography.x509.ocsp.OCSPResponse`.
 
@@ -434,7 +443,10 @@ Interfaces
 
         Returns the
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
-        was used in signing this response.
+        was used in signing this response.  Can be ``None`` if signature
+        did not use separate hash
+        (:attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED25519`,
+        :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ED448`).
 
     .. attribute:: signature
 
