@@ -724,6 +724,8 @@ class Backend(object):
         return _CMACContext(self, algorithm)
 
     def create_x509_csr(self, builder, private_key, algorithm):
+        if not isinstance(builder, x509.CertificateSigningRequestBuilder):
+            raise TypeError('Builder type mismatch.')
 
         if isinstance(private_key,
                       (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
