@@ -97,6 +97,7 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
     ED25519 = ObjectIdentifier("1.3.101.112")
+    ED448 = ObjectIdentifier("1.3.101.113")
 
 
 _SIG_OIDS_TO_HASH = {
@@ -116,6 +117,7 @@ _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.DSA_WITH_SHA224: hashes.SHA224(),
     SignatureAlgorithmOID.DSA_WITH_SHA256: hashes.SHA256(),
     SignatureAlgorithmOID.ED25519: None,
+    SignatureAlgorithmOID.ED448: None,
 }
 
 
@@ -184,6 +186,7 @@ _OID_NAMES = {
     SignatureAlgorithmOID.DSA_WITH_SHA224: "dsa-with-sha224",
     SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
     SignatureAlgorithmOID.ED25519: "ed25519",
+    SignatureAlgorithmOID.ED448: "ed448",
     ExtendedKeyUsageOID.SERVER_AUTH: "serverAuth",
     ExtendedKeyUsageOID.CLIENT_AUTH: "clientAuth",
     ExtendedKeyUsageOID.CODE_SIGNING: "codeSigning",

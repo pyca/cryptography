@@ -74,7 +74,9 @@ from cryptography.hazmat.backends.openssl.x509 import (
 )
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa, ec, ed25519, ed448, rsa
+)
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
 )
@@ -723,10 +725,11 @@ class Backend(object):
 
     def create_x509_csr(self, builder, private_key, algorithm):
 
-        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+        if isinstance(private_key,
+                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
             if algorithm is not None:
                 raise ValueError(
-                    "algorithm must be None when signing via ed25519"
+                    "algorithm must be None when signing via ed25519 or ed448"
                 )
         elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
@@ -739,7 +742,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._evp_md_x509_null_if_ed25519(private_key, algorithm)
+        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
@@ -806,10 +809,11 @@ class Backend(object):
     def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
-        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+        if isinstance(private_key,
+                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
             if algorithm is not None:
                 raise ValueError(
-                    "algorithm must be None when signing via ed25519"
+                    "algorithm must be None when signing via ed25519 or ed448"
                 )
         elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
@@ -823,7 +827,7 @@ class Backend(object):
             )
 
         # Resolve the signature algorithm.
-        evp_md = self._evp_md_x509_null_if_ed25519(private_key, algorithm)
+        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()
@@ -891,9 +895,10 @@ class Backend(object):
 
         return _Certificate(self, x509_cert)
 
-    def _evp_md_x509_null_if_ed25519(self, private_key, algorithm):
-        if isinstance(private_key, ed25519.Ed25519PrivateKey):
-            # OpenSSL requires us to pass NULL for EVP_MD for ed25519 signing
+    def _evp_md_x509_null_if_eddsa(self, private_key, algorithm):
+        if isinstance(private_key,
+                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
+            # OpenSSL requires us to pass NULL for EVP_MD for ed25519/ed448
             return self._ffi.NULL
         else:
             return self._evp_md_non_null_from_algorithm(algorithm)
@@ -916,10 +921,11 @@ class Backend(object):
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
             raise TypeError('Builder type mismatch.')
-        if isinstance(private_key, ed25519.Ed25519PrivateKey):
+        if isinstance(private_key,
+                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
             if algorithm is not None:
                 raise ValueError(
-                    "algorithm must be None when signing via ed25519"
+                    "algorithm must be None when signing via ed25519 or ed448"
                 )
         elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
@@ -932,7 +938,7 @@ class Backend(object):
                 "MD5 is not a supported hash algorithm for EC/DSA CRLs"
             )
 
-        evp_md = self._evp_md_x509_null_if_ed25519(private_key, algorithm)
+        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
 
         # Create an empty CRL.
         x509_crl = self._lib.X509_CRL_new()
