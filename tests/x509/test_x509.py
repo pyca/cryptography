@@ -2234,6 +2234,20 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_request_with_unsupported_hash_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     @pytest.mark.supported(
@@ -3164,6 +3178,36 @@ class TestCertificateSigningRequestBuilder(object):
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_ca_request_with_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(private_key, None, backend)
+
+        assert request.signature_hash_algorithm is None
+        public_key = request.public_key()
+        assert isinstance(public_key, ed25519.Ed25519PublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [

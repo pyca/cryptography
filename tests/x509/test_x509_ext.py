@@ -1609,6 +1609,26 @@ class TestSubjectKeyIdentifierExtension(object):
         )
         assert ext.value == ski
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_from_ed25519_public_key(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ed25519", "root-ed25519.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
+        )
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            cert.public_key()
+        )
+        assert ext.value == ski
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
