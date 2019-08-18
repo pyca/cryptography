@@ -1594,7 +1594,7 @@ class Backend(object):
         )
         self.openssl_assert(res != self._ffi.NULL)
         # okay, now sign the basic structure
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
+        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
         responder_cert, responder_encoding = builder._responder_id
         flags = self._lib.OCSP_NOCERTS
         if responder_encoding is ocsp.OCSPResponderEncoding.HASH:

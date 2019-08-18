@@ -12,6 +12,7 @@ import six
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ed25519, ed448
 from cryptography.x509.base import (
     _EARLIEST_UTC_TIME, _convert_to_naive_utc_time, _reject_duplicate_extension
 )
@@ -241,7 +242,13 @@ class OCSPResponseBuilder(object):
         if self._responder_id is None:
             raise ValueError("You must add a responder_id before signing")
 
-        if not isinstance(algorithm, hashes.HashAlgorithm):
+        if isinstance(private_key,
+                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
+            if algorithm is not None:
+                raise ValueError(
+                    "algorithm must be None when signing via ed25519 or ed448"
+                )
+        elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError("Algorithm must be a registered hash algorithm.")
 
         return backend.create_ocsp_response(
