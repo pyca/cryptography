@@ -640,6 +640,7 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
     ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
+    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {

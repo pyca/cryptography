@@ -846,6 +846,7 @@ _CRL_EXTENSION_HANDLERS = {
         _decode_authority_information_access
     ),
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
+    ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
 }
 
 _OCSP_REQ_EXTENSION_HANDLERS = {

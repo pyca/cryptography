@@ -290,6 +290,39 @@ class TestCertificateRevocationListBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_freshestcrl_extension(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        freshest = x509.FreshestCRL([
+            x509.DistributionPoint([
+                x509.UniformResourceIdentifier(u"http://d.om/delta"),
+            ], None, None, None)
+        ])
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        ).add_extension(
+            freshest, False
+        )
+
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert len(crl) == 0
+        assert len(crl.extensions) == 1
+        ext1 = crl.extensions.get_extension_for_class(x509.FreshestCRL)
+        assert ext1.critical is False
+        assert isinstance(ext1.value[0], x509.DistributionPoint)
+        uri = ext1.value[0].full_name[0]
+        assert isinstance(uri, x509.UniformResourceIdentifier)
+        assert uri.value == u"http://d.om/delta"
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_add_unsupported_extension(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
