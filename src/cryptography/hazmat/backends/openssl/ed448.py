@@ -126,7 +126,7 @@ class _Ed448PrivateKey(object):
             ):
                 raise ValueError(
                     "When using Raw both encoding and format must be Raw "
-                    "and encryption_algorithm must be NoEncryption"
+                    "and encryption_algorithm must be NoEncryption()"
                 )
 
             return self._raw_private_bytes()
