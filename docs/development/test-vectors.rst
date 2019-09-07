@@ -86,6 +86,11 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/dsa_public_key.pem`` and
   ``asymmetric/DER_Serialization/dsa_public_key.der`` - Contains a DSA 2048 bit
   key generated using OpenSSL from ``dsa_private_key.pem``.
+* ``asymmetric/DER_Serialization/dsa_public_key_no_params.der`` - Contains a
+  DSA public key with the optional parameters removed.
+* ``asymmetric/DER_Serialization/dsa_public_key_invalid_bit_string.der`` -
+  Contains a DSA public key with the bit string padding value set to 2 rather
+  than the required 0.
 * ``asymmetric/PKCS8/unenc-dsa-pkcs8.pem`` and
   ``asymmetric/DER_Serialization/unenc-dsa-pkcs8.der`` - Contains a DSA 1024
   bit key generated using OpenSSL.

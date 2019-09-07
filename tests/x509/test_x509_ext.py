@@ -9,6 +9,8 @@ import datetime
 import ipaddress
 import os
 
+import pretend
+
 import pytest
 
 import six
@@ -20,6 +22,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
+from cryptography.x509.extensions import _key_identifier_from_public_key
 from cryptography.x509.general_name import _lazy_import_idna
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
@@ -29,6 +32,7 @@ from cryptography.x509.oid import (
 from .test_x509 import _load_cert
 from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..utils import load_vectors_from_file
 
 
 def _make_certbuilder(private_key):
@@ -1590,6 +1594,34 @@ class TestSubjectKeyIdentifierExtension(object):
             cert.public_key()
         )
         assert ext.value == ski
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_invalid_bit_string_padding_from_public_key(self, backend):
+        data = load_vectors_from_file(
+            filename=os.path.join(
+                "asymmetric", "DER_Serialization",
+                "dsa_public_key_invalid_bit_string.der"
+            ), loader=lambda data: data.read(), mode="rb"
+        )
+        pretend_key = pretend.stub(public_bytes=lambda x, y: data)
+        with pytest.raises(ValueError):
+            _key_identifier_from_public_key(pretend_key)
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_optional_params_allowed_from_public_key(self, backend):
+        data = load_vectors_from_file(
+            filename=os.path.join(
+                "asymmetric", "DER_Serialization",
+                "dsa_public_key_no_params.der"
+            ), loader=lambda data: data.read(), mode="rb"
+        )
+        pretend_key = pretend.stub(public_bytes=lambda x, y: data)
+        key_identifier = _key_identifier_from_public_key(pretend_key)
+        assert key_identifier == binascii.unhexlify(
+            b"24c0133a6a492f2c48a18c7648e515db5ac76749"
+        )
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
