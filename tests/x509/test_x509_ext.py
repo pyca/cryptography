@@ -9,11 +9,11 @@ import datetime
 import ipaddress
 import os
 
+import pretend
+
 import pytest
 
 import six
-
-import pretend
 
 from cryptography import utils, x509
 from cryptography.hazmat.backends.interfaces import (
