@@ -73,14 +73,15 @@ def _key_identifier_from_public_key(public_key):
 def _make_sequence_methods(field_name):
     def len_method(self):
         return len(getattr(self, field_name))
-    
+
     def iter_method(self):
         return iter(getattr(self, field_name))
-    
+
     def getitem_method(self, idx):
         return getattr(self, field_name)[idx]
-    
+
     return len_method, iter_method, getitem_method
+
 
 class DuplicateExtension(Exception):
     def __init__(self, msg, oid):
@@ -452,7 +453,9 @@ class CRLDistributionPoints(object):
 
         self._distribution_points = distribution_points
 
-    __len__, __iter__, __getitem__ = _make_sequence_methods("_distribution_points")
+    __len__, __iter__, __getitem__ = _make_sequence_methods(
+        "_distribution_points"
+    )
 
     def __repr__(self):
         return "<CRLDistributionPoints({})>".format(self._distribution_points)
@@ -486,7 +489,9 @@ class FreshestCRL(object):
 
         self._distribution_points = distribution_points
 
-    __len__, __iter__, __getitem__ = _make_sequence_methods("_distribution_points")
+    __len__, __iter__, __getitem__ = _make_sequence_methods(
+        "_distribution_points"
+    )
 
     def __repr__(self):
         return "<FreshestCRL({})>".format(self._distribution_points)
@@ -1388,7 +1393,9 @@ class PrecertificateSignedCertificateTimestamps(object):
             )
         self._signed_certificate_timestamps = signed_certificate_timestamps
 
-    __len__, __iter__, __getitem__ = _make_sequence_methods("_signed_certificate_timestamps")
+    __len__, __iter__, __getitem__ = _make_sequence_methods(
+        "_signed_certificate_timestamps"
+    )
 
     def __repr__(self):
         return (
