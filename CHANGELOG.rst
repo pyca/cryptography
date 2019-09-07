@@ -22,6 +22,8 @@ Changelog
 * Added support for ``ed25519`` keys in the
   :class:`~cryptography.x509.CertificateBuilder`.
 * ``cryptography`` no longer depends on ``asn1crypto``.
+* :class:`~cryptography.x509.FreshestCRL` is now allowed as a
+  :class:`~cryptography.x509.CertificateRevocationList` extension.
 
 .. _v2-7:
 
