@@ -269,7 +269,7 @@ def cryptography_has_evp_pkey_get_set_tls_encodedpoint():
 
 def cryptography_has_fips():
     return [
-        "FIPS_set_mode",
+        "FIPS_mode_set",
         "FIPS_mode",
     ]
 
