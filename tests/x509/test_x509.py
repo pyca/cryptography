@@ -28,7 +28,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    dsa, ec, ed25519, padding, rsa
+    dsa, ec, ed25519, ed448, padding, rsa
 )
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature
@@ -2234,6 +2234,58 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_request_with_unsupported_hash_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires OpenSSL with Ed448 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_unsupported_hash_ed448(self, backend):
+        private_key = ed448.Ed448PrivateKey.generate()
+        builder = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires OpenSSL with Ed448 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_request_with_unsupported_hash_ed448(self, backend):
+        private_key = ed448.Ed448PrivateKey.generate()
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     @pytest.mark.supported(
@@ -2491,6 +2543,97 @@ class TestCertificateBuilder(object):
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires OpenSSL with Ed448 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_ed448(self, backend):
+        issuer_private_key = ed448.Ed448PrivateKey.generate()
+        subject_private_key = ed448.Ed448PrivateKey.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None), True,
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, None, backend)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes
+        )
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
+        assert cert.signature_hash_algorithm is None
+        assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName(u"cryptography.io"),
+        ]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires OpenSSL with Ed448 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_cert_with_public_ed448_rsa_sig(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = ed448.Ed448PrivateKey.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes, padding.PKCS1v15(),
+            cert.signature_hash_algorithm
+        )
+        assert cert.signature_algorithm_oid == (
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+        assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -3164,6 +3307,66 @@ class TestCertificateSigningRequestBuilder(object):
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_ca_request_with_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(private_key, None, backend)
+
+        assert request.signature_hash_algorithm is None
+        public_key = request.public_key()
+        assert isinstance(public_key, ed25519.Ed25519PublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires OpenSSL with Ed448 support"
+    )
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_ca_request_with_ed448(self, backend):
+        private_key = ed448.Ed448PrivateKey.generate()
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(private_key, None, backend)
+
+        assert request.signature_hash_algorithm is None
+        public_key = request.public_key()
+        assert isinstance(public_key, ed448.Ed448PublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -4418,6 +4621,26 @@ class TestEd25519Certificate(object):
         assert cert.serial_number == 9579446940964433301
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed448_supported(),
+    skip_message="Requires OpenSSL with Ed448 support"
+)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestEd448Certificate(object):
+    def test_load_pem_cert(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ed448", "root-ed448.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        # self-signed, so this will work
+        cert.public_key().verify(cert.signature, cert.tbs_certificate_bytes)
+        assert isinstance(cert, x509.Certificate)
+        assert cert.serial_number == 448
+        assert cert.signature_hash_algorithm is None
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
 
 
 def test_random_serial_number(monkeypatch):

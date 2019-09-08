@@ -12,7 +12,9 @@ from enum import Enum
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa, ec, ed25519, ed448, rsa
+)
 from cryptography.x509.extensions import Extension, ExtensionType
 from cryptography.x509.name import Name
 
@@ -475,9 +477,11 @@ class CertificateBuilder(object):
         """
         if not isinstance(key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
                                 ec.EllipticCurvePublicKey,
-                                ed25519.Ed25519PublicKey)):
+                                ed25519.Ed25519PublicKey,
+                                ed448.Ed448PublicKey)):
             raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
-                            ' EllipticCurvePublicKey, or Ed25519PublicKey.')
+                            ' EllipticCurvePublicKey, Ed25519PublicKey or'
+                            ' Ed448PublicKey.')
         if self._public_key is not None:
             raise ValueError('The public key may only be set once.')
         return CertificateBuilder(

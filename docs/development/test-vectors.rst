@@ -244,6 +244,9 @@ X.509
 * ``server-ed25519-cert.pem`` - An ``ed25519`` server certificate (RSA
   signature with ``ed25519`` public key) from the OpenSSL test suite.
   (`server-ed25519-cert.pem`_)
+* ``server-ed448-cert.pem`` - An ``ed448`` server certificate (RSA
+  signature with ``ed448`` public key) from the OpenSSL test suite.
+  (`server-ed448-cert.pem`_)
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -404,6 +407,8 @@ Custom X.509 Vectors
 * ``negative_serial.pem`` - A certificate with a serial number that is a
   negative number.
 * ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
+* ``root-ed448.pem`` - An ``ed448`` self-signed CA certificate
+  using ``ed448-pkcs8.pem`` as key.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -703,3 +708,4 @@ header format (substituting the correct information):
 .. _`Botan's key wrap vectors`: https://github.com/randombit/botan/blob/737f33c09a18500e044dca3e2ae13bd2c08bafdd/src/tests/data/keywrap/nist_key_wrap.vec
 .. _`root-ed25519.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/root-ed25519.pem
 .. _`server-ed25519-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed25519-cert.pem
+.. _`server-ed448-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed448-cert.pem
