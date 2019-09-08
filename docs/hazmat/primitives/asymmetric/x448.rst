@@ -56,6 +56,8 @@ present.
 Key interfaces
 ~~~~~~~~~~~~~~
 
+.. note:: This module uses *little endian* as its byte-level encoding, as per :rfc:`7748`.
+
 .. class:: X448PrivateKey
 
     .. versionadded:: 2.5
