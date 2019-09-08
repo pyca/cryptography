@@ -766,7 +766,7 @@ class TestOCSPEdDSA(object):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         private_key = ed25519.Ed25519PrivateKey.generate()
-        root_cert, private_key = _generate_root(private_key, None)
+        root_cert, _ = _generate_root(private_key, None)
         current_time = datetime.datetime.utcnow().replace(microsecond=0)
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
@@ -799,7 +799,7 @@ class TestOCSPEdDSA(object):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         private_key = ed448.Ed448PrivateKey.generate()
-        root_cert = _generate_root(private_key, None)[0]
+        root_cert, _ = _generate_root(private_key, None)
         current_time = datetime.datetime.utcnow().replace(microsecond=0)
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
