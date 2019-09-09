@@ -762,6 +762,29 @@ class TestOCSPEdDSA(object):
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 support / OCSP"
     )
+    def test_invalid_algorithm(self, backend):
+        builder = ocsp.OCSPResponseBuilder()
+        cert, issuer = _cert_and_issuer()
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        root_cert, _ = _generate_root(private_key, None)
+        current_time = datetime.datetime.utcnow().replace(microsecond=0)
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+        revoked_date = this_update - datetime.timedelta(days=300)
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.NAME, root_cert
+        ).add_response(
+            cert, issuer, hashes.SHA1(), ocsp.OCSPCertStatus.REVOKED,
+            this_update, next_update, revoked_date,
+            x509.ReasonFlags.key_compromise
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256())
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support / OCSP"
+    )
     def test_sign_ed25519(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
