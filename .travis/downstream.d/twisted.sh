@@ -9,7 +9,7 @@ case "${1}" in
         ;;
     run)
         cd twisted
-        python -m twisted.trial twisted.protocols.test.test_tls.TLSMemoryBIOTests.test_disorderlyShutdown
+        python -m twisted.trial src/twisted
         ;;
     *)
         exit 1
