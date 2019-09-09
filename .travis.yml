@@ -37,9 +37,11 @@ matrix:
           env: TOXENV=pypy-nocoverage
           # PyPy 5.4 isn't available for xenial
           dist: trusty
-        - python: pypy2.7-5.10.0
+        - python: pypy2.7-7.1.1
+          # I don't know how to enumerate pypy versions in Travis other than to look at
+          # https://github.com/travis-ci/travis-nightly-builder/blob/build/Rakefile#L74-L106
           env: TOXENV=pypy-nocoverage
-        - python: pypy3.5-5.10.1
+        - python: pypy3.5-7.0
           env: TOXENV=pypy3-nocoverage
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.0.1u
@@ -62,7 +64,7 @@ matrix:
         - python: 3.7
           env: TOXENV=py37 LIBRESSL=2.8.3
         - python: 3.7
-          env: TOXENV=py37 LIBRESSL=2.9.1
+          env: TOXENV=py37 LIBRESSL=2.9.2
 
         - python: 2.7
           services: docker
