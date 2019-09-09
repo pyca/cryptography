@@ -183,6 +183,8 @@ linkcheck_timeout = 5
 linkcheck_ignore = [
     # Small DH key results in a TLS failure on modern OpenSSL
     r"https://info.isl.ntt.co.jp/crypt/eng/camellia/",
+    # Inconsistent small DH params they seem incapable of fixing
+    r"https://www.secg.org/sec1-v2.pdf",
     # 403ing from Travis
     r"https://devblogs.microsoft.com/oldnewthing/\?p=4223",
 ]
