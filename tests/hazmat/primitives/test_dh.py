@@ -157,8 +157,15 @@ class TestDH(object):
             dh.generate_parameters(7, 512, backend)
 
     def test_dh_parameters_supported(self, backend):
-        assert backend.dh_parameters_supported(23, 5)
-        assert not backend.dh_parameters_supported(23, 18)
+        valid_p = int(
+            b"907c7211ae61aaaba1825ff53b6cb71ac6df9f1a424c033f4a0a41ac42fad3a9"
+            b"bcfc7f938a269710ed69e330523e4039029b7900977c740990d46efed79b9bbe"
+            b"73505ae878808944ce4d9c6c52daecc0a87dc889c53499be93db8551ee685f30"
+            b"349bf1b443d4ebaee0d5e8b441a40d4e8178f8f612f657a5eb91e0a8e"
+            b"107755f", 16
+        )
+        assert backend.dh_parameters_supported(valid_p, 5)
+        assert not backend.dh_parameters_supported(23, 22)
 
     @pytest.mark.parametrize(
         "vector",
