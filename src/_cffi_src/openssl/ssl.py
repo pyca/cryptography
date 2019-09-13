@@ -219,6 +219,9 @@ int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+Cryptography_STACK_OF_SSL_CIPHER *SSL_get1_supported_ciphers(const SSL *);
+#endif
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
