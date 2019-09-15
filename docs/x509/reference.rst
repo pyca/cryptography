@@ -1863,7 +1863,7 @@ X.509 Extensions
 
         :type: A list of :class:`GeneralName` instances or None
 
-        The :class:`Name` of the issuer's issuer.
+        The :class:`GeneralName` (one or multiple) of the issuer's issuer.
 
     .. attribute:: authority_cert_serial_number
 
