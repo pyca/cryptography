@@ -41,7 +41,10 @@ def _ec_key_curve_sn(backend, ec_key):
     # This is like the above check, but it also catches the case where you
     # explicitly encoded a curve with the same parameters as a named curve.
     # Don't do that.
-    if backend._lib.EC_GROUP_get_asn1_flag(group) == 0:
+    if (
+        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER and
+        backend._lib.EC_GROUP_get_asn1_flag(group) == 0
+    ):
         raise NotImplementedError(
             "ECDSA keys with unnamed curves are unsupported "
             "at this time"
