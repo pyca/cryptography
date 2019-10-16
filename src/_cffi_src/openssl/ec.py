@@ -105,6 +105,8 @@ int EC_POINT_mul(const EC_GROUP *, EC_POINT *, const BIGNUM *,
 int EC_METHOD_get_field_type(const EC_METHOD *);
 
 const char *EC_curve_nid2nist(int);
+
+int EC_GROUP_get_asn1_flag(const EC_GROUP *);
 """
 
 CUSTOMIZATIONS = """
