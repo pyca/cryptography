@@ -4602,6 +4602,23 @@ class TestName(object):
             b"7000680079002e0069006f310d300b060355040a0c0450794341"
         )
 
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_universalstring_bytes(self, backend):
+        # UniversalString is UCS-4
+        name = x509.Name([
+            x509.NameAttribute(
+                NameOID.COMMON_NAME,
+                u'cryptography.io',
+                _ASN1Type.UniversalString
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+        ])
+        assert name.public_bytes(backend) == binascii.unhexlify(
+            b"30563145304306035504031c3c00000063000000720000007900000070000000"
+            b"740000006f000000670000007200000061000000700000006800000079000000"
+            b"2e000000690000006f310d300b060355040a0c0450794341"
+        )
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed25519_supported(),
