@@ -251,7 +251,13 @@ static int osrandom_init(ENGINE *e) {
 #if !defined(__APPLE__)
     getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
 #else
+
+    // clang will complain that use of `getentropy` is not guarded, but the
+    // symbol is already weakly imported
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
     if (&getentropy != NULL) {
+#pragma clang diagnostic pop
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
     } else {
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
@@ -277,7 +283,10 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         while (size > 0) {
             /* OpenBSD and macOS restrict maximum buffer size to 256. */
             len = size > 256 ? 256 : size;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
             res = getentropy(buffer, (size_t)len);
+#pragma clang diagnostic pop
             if (res < 0) {
                 ERR_Cryptography_OSRandom_error(
                     CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
