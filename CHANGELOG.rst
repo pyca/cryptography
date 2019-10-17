@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-8:
 
-2.8 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.8 - 2019-10-16
+~~~~~~~~~~~~~~~~
 
 * Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
   OpenSSL 1.1.1d.
