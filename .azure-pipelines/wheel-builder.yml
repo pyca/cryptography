@@ -106,7 +106,7 @@ jobs:
             displayName: Create virtualenv
           - script: .venv/bin/pip install -U pip==10.0.1
             displayName: Downgrade pip lol
-          - script: .venv/bin/pip install cffi six ipaddress enum34
+          - script: .venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'"
             displayName: Install our Python dependencies
           - script: |
               set -e
@@ -215,9 +215,8 @@ jobs:
                   OPENSSL_DIR: 'OpenSSL-Win64-2015'
                   WINDOWS_ARCH: 'x86_64'
       steps:
-          - script: '"C:/Python%PYTHON_VERSION%/python.exe" -m pip install -U pip==10.0.1'
-            displayName: Downgrade pip lol
-          - script: '"C:/Python%PYTHON_VERSION%/Scripts/pip" install wheel cffi six ipaddress enum34'
+          - script: |
+              "C:/Python%PYTHON_VERSION%/Scripts/pip" install cffi six ipaddress "enum34; python_version < '3'"
             displayName: Install wheel and our Python dependencies
           - script: |
               set INCLUDE=C:/%OPENSSL_DIR%/include;%INCLUDE%
