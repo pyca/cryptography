@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+  OpenSSL 1.1.1d.
+* Added support for Python 3.8.
 * Added class methods
   :meth:`Poly1305.generate_tag
   <cryptography.hazmat.primitives.poly1305.Poly1305.generate_tag>`
