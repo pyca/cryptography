@@ -1,12 +1,19 @@
 Changelog
 =========
 
+.. _v2-9:
+
+2.9 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v2-8:
 
 2.8 - 2019-10-16
 ~~~~~~~~~~~~~~~~
 
-* Updated Windows, macOS, and ``manylinux1`` wheels to be compiled with
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
   OpenSSL 1.1.1d.
 * Added support for Python 3.8.
 * Added class methods
