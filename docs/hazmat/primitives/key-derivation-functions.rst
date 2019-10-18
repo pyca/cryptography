@@ -674,12 +674,12 @@ Different KDFs are suitable for different tasks such as:
         and ``context`` is ignored.
 
     :param backend: A cryptography backend
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     :raises TypeError: This exception is raised if ``label`` or ``context``
         is not ``bytes``. Also raised if ``rlen`` or ``llen`` is not ``int``.
