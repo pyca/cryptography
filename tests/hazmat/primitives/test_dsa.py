@@ -28,6 +28,7 @@ from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
+from .utils import skip_fips_traditional_openssl
 
 
 def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
@@ -696,6 +697,7 @@ class TestDSASerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        skip_fips_traditional_openssl(backend, fmt)
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
             lambda pemfile: pemfile.read().encode()
@@ -790,6 +792,9 @@ class TestDSASerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL key format is not supported in FIPS mode."
+    )
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader_func"),
         [

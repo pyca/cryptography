@@ -33,7 +33,8 @@ from .fixtures_rsa import (
     RSA_KEY_745, RSA_KEY_768,
 )
 from .utils import (
-    _check_rsa_private_numbers, generate_rsa_verification_test
+    _check_rsa_private_numbers, generate_rsa_verification_test,
+    skip_fips_traditional_openssl
 )
 from ...doubles import (
     DummyAsymmetricPadding, DummyHashAlgorithm, DummyKeySerializationEncryption
@@ -2048,6 +2049,7 @@ class TestRSAPrivateKeySerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        skip_fips_traditional_openssl(backend, fmt)
         key = RSA_KEY_2048.private_key(backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
@@ -2134,6 +2136,9 @@ class TestRSAPrivateKeySerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL key format is not supported in FIPS mode."
+    )
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader_func"),
         [

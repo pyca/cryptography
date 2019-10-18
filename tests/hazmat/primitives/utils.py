@@ -14,7 +14,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, AlreadyUpdated, InvalidSignature, InvalidTag,
     NotYetFinalized
 )
-from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.modes import GCM
@@ -479,3 +479,13 @@ def _check_dsa_private_numbers(skey):
     pkey = skey.public_numbers
     params = pkey.parameter_numbers
     assert pow(params.g, skey.x, params.p) == pkey.y
+
+
+def skip_fips_traditional_openssl(backend, fmt):
+    if (
+            fmt is serialization.PrivateFormat.TraditionalOpenSSL and
+            backend._fips_enabled
+    ):
+        pytest.skip(
+            "Traditional OpenSSL key format is not supported in FIPS mode."
+        )

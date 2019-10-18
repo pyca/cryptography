@@ -116,13 +116,14 @@ class Backend(object):
     """
     name = "openssl"
 
-    # non-FIPS approved algorithms
+    # FIPS doesn't allow several algorithms or weak key sizes, but the
+    # algorithms are still present in OpenSSL. They just errors if you try
+    # to use them. To avoid that we return from methods like hash_supported.
     _non_fips_aead = {b'chacha20-poly1305'}
     _non_fips_ciphers = (
-        ARC4, Blowfish, CAST5, Camellia, ChaCha20, IDEA, SEED)
+        ARC4, Blowfish, CAST5, Camellia, ChaCha20, IDEA, SEED
+    )
     _non_fips_hashes = (hashes.MD5, hashes.BLAKE2b, hashes.BLAKE2s)
-
-    # crypto policy settings
     _rsa_min_key_size = 2048
     _rsa_min_public_exponent = 65537
     _dsa_min_modulus = 1 << 2048
@@ -247,9 +248,6 @@ class Backend(object):
         return evp_md
 
     def hash_supported(self, algorithm):
-        # FIPS doesn't allow MD5, but the algorithm is still present in
-        # OpenSSL, it just errors if you try to use it. To avoid that we
-        # return False here explicitly.
         if self._fips_enabled and isinstance(algorithm, self._non_fips_hashes):
             return False
 
@@ -1830,6 +1828,16 @@ class Backend(object):
                 key = evp_pkey
             else:
                 assert format is serialization.PrivateFormat.TraditionalOpenSSL
+                if (
+                        self._fips_enabled and
+                        not isinstance(
+                            encryption_algorithm, serialization.NoEncryption
+                        )
+                ):
+                    raise ValueError(
+                        "Encrypted traditional OpenSSL format is not "
+                        "supported in FIPS mode."
+                    )
                 if key_type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
                 elif key_type == self._lib.EVP_PKEY_DSA:

@@ -21,15 +21,17 @@ from .utils import load_vectors_from_file
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestPKCS12(object):
     @pytest.mark.parametrize(
-        ("filename", "password"),
+        ("filename", "password", "fips"),
         [
-            ("cert-key-aes256cbc.p12", b"cryptography"),
-            ("cert-none-key-none.p12", b"cryptography"),
-            ("cert-rc2-key-3des.p12", b"cryptography"),
-            ("no-password.p12", None),
+            ("cert-key-aes256cbc.p12", b"cryptography", True),
+            ("cert-none-key-none.p12", b"cryptography", True),
+            ("cert-rc2-key-3des.p12", b"cryptography", False),
+            ("no-password.p12", None, False),
         ]
     )
-    def test_load_pkcs12_ec_keys(self, filename, password, backend):
+    def test_load_pkcs12_ec_keys(self, filename, password, fips, backend):
+        if backend._fips_enabled and not fips:
+            pytest.skip("Not supported in FIPS mode")
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
             lambda pemfile: x509.load_pem_x509_certificate(
