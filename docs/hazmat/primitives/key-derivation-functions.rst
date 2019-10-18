@@ -789,6 +789,8 @@ Different KDFs are suitable for different tasks such as:
         power of 2.
     :param int r: Block size parameter.
     :param int p: Parallelization parameter.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
 
     The computational and memory cost of Scrypt can be adjusted by manipulating
     the 3 parameters: ``n``, ``r``, and ``p``. In general, the memory cost of
@@ -801,9 +803,6 @@ Different KDFs are suitable for different tasks such as:
     to a number appropriate for your system. `The scrypt paper`_ suggests a
     minimum value of ``n=2**14`` for interactive logins (t < 100ms), or
     ``n=2**20`` for more sensitive files (t < 5s).
-
-    :param backend: An instance of
-        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
