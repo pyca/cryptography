@@ -166,7 +166,7 @@ def _verify_openssl_version(lib):
         else:
             raise RuntimeError(
                 "You are linking against OpenSSL 1.0.1, which is no longer "
-                "support by the OpenSSL project. You need to upgrade to a "
+                "supported by the OpenSSL project. You need to upgrade to a "
                 "newer version of OpenSSL."
             )
 
