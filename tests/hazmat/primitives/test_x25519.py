@@ -9,7 +9,6 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
@@ -95,17 +94,10 @@ class TestX25519Exchange(object):
         with pytest.raises(ValueError):
             private_key.exchange(public_key)
 
-    def test_deprecated_public_bytes(self, backend):
-        key = X25519PrivateKey.generate().public_key()
-        with pytest.warns(utils.DeprecatedIn25):
-            key.public_bytes()
-
     def test_public_bytes_bad_args(self, backend):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(None, serialization.PublicFormat.Raw)
-        with pytest.raises(ValueError):
-            key.public_bytes(serialization.Encoding.Raw)
 
     # These vectors are also from RFC 7748
     # https://tools.ietf.org/html/rfc7748#section-6.1

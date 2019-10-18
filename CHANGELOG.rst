@@ -10,6 +10,14 @@ Changelog
 
 * Support for OpenSSL 1.0.1 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* **BACKWARDS INCOMPATIBLE**: ``EllipticCurvePublicNumbers.from_encoded_point``
+  has been removed in accordance with our :doc:`/api-stability` policy. Use
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`
+  instead.
+* **BACKWARDS INCOMPATIBLE**: ``EllipticCurvePublicNumbers.encode_point`` has
+  been removed in accordance with our :doc:`/api-stability` policy. Encoding
+  points can be done with
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`.
 
 .. _v2-8:
 
