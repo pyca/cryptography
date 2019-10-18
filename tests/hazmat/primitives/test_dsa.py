@@ -66,6 +66,8 @@ class TestDSA(object):
         )
     )
     def test_generate_dsa_keys(self, vector, backend):
+        if backend._fips_enabled and vector['p'] < backend._dsa_min_modulus:
+            pytest.skip("Small modulus blocked in FIPS mode")
         parameters = dsa.DSAParameterNumbers(
             p=vector['p'],
             q=vector['q'],
@@ -92,7 +94,11 @@ class TestDSA(object):
         )
 
     def test_generate_dsa_private_key_and_parameters(self, backend):
-        skey = dsa.generate_private_key(1024, backend)
+        if backend._fips_enabled:
+            key_size = backend._dh_min_key_size
+        else:
+            key_size = 1024
+        skey = dsa.generate_private_key(key_size, backend)
         assert skey
         numbers = skey.private_numbers()
         skey_parameters = numbers.public_numbers.parameter_numbers

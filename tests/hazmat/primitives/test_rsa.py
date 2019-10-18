@@ -154,6 +154,11 @@ class TestRSA(object):
         )
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
+        if backend._fips_enabled:
+            if key_size < backend._rsa_min_key_size:
+                pytest.skip("Small key size blocked by crypto policy")
+            if public_exponent < backend._rsa_min_public_exponent:
+                pytest.skip("Small exponent blocked by crypto policy")
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
