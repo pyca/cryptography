@@ -29,6 +29,30 @@ def _skip_dhx_unsupported(backend, is_dhx):
         )
 
 
+FFDH3072_P = int_from_bytes(
+    binascii.unhexlify(
+        "ffffffffffffffffadf85458a2bb4a9aafdc5620273d3cf1d8b9c583ce2d3695a9e"
+        "13641146433fbcc939dce249b3ef97d2fe363630c75d8f681b202aec4617ad3df1e"
+        "d5d5fd65612433f51f5f066ed0856365553ded1af3b557135e7f57c935984f0c70e"
+        "0e68b77e2a689daf3efe8721df158a136ade73530acca4f483a797abc0ab182b324"
+        "fb61d108a94bb2c8e3fbb96adab760d7f4681d4f42a3de394df4ae56ede76372bb1"
+        "90b07a7c8ee0a6d709e02fce1cdf7e2ecc03404cd28342f619172fe9ce98583ff8e"
+        "4f1232eef28183c3fe3b1b4c6fad733bb5fcbc2ec22005c58ef1837d1683b2c6f34"
+        "a26c1b2effa886b4238611fcfdcde355b3b6519035bbc34f4def99c023861b46fc9"
+        "d6e6c9077ad91d2691f7f7ee598cb0fac186d91caefe130985139270b4130c93bc4"
+        "37944f4fd4452e2d74dd364f2e21e71f54bff5cae82ab9c9df69ee86d2bc522363a"
+        "0dabc521979b0deada1dbf9a42d5c4484e0abcd06bfa53ddef3c1b20ee3fd59d7c2"
+        "5e41d2b66c62e37ffffffffffffffff"
+    ),
+    'big'
+)
+
+
+@pytest.fixture()
+def parameters(backend):
+    return dh.DHParameterNumbers(FFDH3072_P, 2,).parameters(backend)
+
+
 def test_dh_parameternumbers():
     params = dh.DHParameterNumbers(
         65537, 2
@@ -195,6 +219,7 @@ class TestDH(object):
                                                int(vector["g"], 16),
                                                int(vector["q"], 16))
 
+    @pytest.mark.skip_fips(reason="modulus too small for FIPS")
     @pytest.mark.parametrize("with_q", [False, True])
     def test_convert_to_numbers(self, backend, with_q):
         if with_q:
@@ -241,6 +266,7 @@ class TestDH(object):
         with pytest.raises(ValueError):
             private.private_key(backend)
 
+    @pytest.mark.skip_fips(reason="FIPS requires key size >= 2048")
     @pytest.mark.parametrize("with_q", [False, True])
     def test_generate_dh(self, backend, with_q):
         if with_q:
@@ -280,8 +306,7 @@ class TestDH(object):
         assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
         assert isinstance(key.parameters(), dh.DHParameters)
 
-    def test_exchange(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_exchange(self, parameters):
         assert isinstance(parameters, dh.DHParameters)
 
         key1 = parameters.generate_private_key()
@@ -289,14 +314,12 @@ class TestDH(object):
 
         symkey1 = key1.exchange(key2.public_key())
         assert symkey1
-        assert len(symkey1) == 512 // 8
+        assert len(symkey1) == 3072 // 8
 
         symkey2 = key2.exchange(key1.public_key())
         assert symkey1 == symkey2
 
-    def test_exchange_algorithm(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
-
+    def test_exchange_algorithm(self, parameters):
         key1 = parameters.generate_private_key()
         key2 = parameters.generate_private_key()
 
@@ -309,6 +332,7 @@ class TestDH(object):
 
         assert symkey == symkey_manual
 
+    @pytest.mark.skip_fips(reason="key_size too small for FIPS")
     def test_symmetric_key_padding(self, backend):
         """
         This test has specific parameters that produce a symmetric key
@@ -339,6 +363,11 @@ class TestDH(object):
             os.path.join("asymmetric", "DH", "bad_exchange.txt"),
             load_nist_vectors))
     def test_bad_exchange(self, backend, vector):
+        if (
+                backend._fips_enabled and
+                int(vector["p1"]) < backend._dh_min_modulus
+        ):
+            pytest.skip("modulus too small for FIPS mode")
         parameters1 = dh.DHParameterNumbers(int(vector["p1"]),
                                             int(vector["g"]))
         public1 = dh.DHPublicNumbers(int(vector["y1"]), parameters1)
@@ -370,6 +399,8 @@ class TestDH(object):
             os.path.join("asymmetric", "DH", "vec.txt"),
             load_nist_vectors))
     def test_dh_vectors(self, backend, vector):
+        if backend._fips_enabled and int(vector["p"]) < backend._dh_min_modulus:
+            pytest.skip("modulus too small for FIPS mode")
         parameters = dh.DHParameterNumbers(int(vector["p"]),
                                            int(vector["g"]))
         public = dh.DHPublicNumbers(int(vector["y"]), parameters)
@@ -419,9 +450,8 @@ class TestDHPrivateKeySerialization(object):
             ],
         ]
     )
-    def test_private_bytes_unencrypted(self, backend, encoding,
+    def test_private_bytes_unencrypted(self, backend, parameters, encoding,
                                        loader_func):
-        parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key()
         serialized = key.private_bytes(
             encoding, serialization.PrivateFormat.PKCS8,
@@ -441,8 +471,7 @@ class TestDHPrivateKeySerialization(object):
             (serialization.Encoding.X962, serialization.PrivateFormat.PKCS8),
         ]
     )
-    def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_rejects_invalid(self, encoding, fmt, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
@@ -535,8 +564,7 @@ class TestDHPrivateKeySerialization(object):
         else:
             assert private_numbers.public_numbers.parameter_numbers.q is None
 
-    def test_private_bytes_traditional_openssl_invalid(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_traditional_openssl_invalid(self, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -545,8 +573,7 @@ class TestDHPrivateKeySerialization(object):
                 serialization.NoEncryption()
             )
 
-    def test_private_bytes_invalid_encoding(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_invalid_encoding(self, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -555,8 +582,7 @@ class TestDHPrivateKeySerialization(object):
                 serialization.NoEncryption()
             )
 
-    def test_private_bytes_invalid_format(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_invalid_format(self, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -565,8 +591,7 @@ class TestDHPrivateKeySerialization(object):
                 serialization.NoEncryption()
             )
 
-    def test_private_bytes_invalid_encryption_algorithm(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_invalid_encryption_algorithm(self, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -575,8 +600,7 @@ class TestDHPrivateKeySerialization(object):
                 "notanencalg"
             )
 
-    def test_private_bytes_unsupported_encryption_type(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_private_bytes_unsupported_encryption_type(self, parameters):
         key = parameters.generate_private_key()
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -604,9 +628,8 @@ class TestDHPublicKeySerialization(object):
             ],
         ]
     )
-    def test_public_bytes(self, backend, encoding,
+    def test_public_bytes(self, backend, parameters, encoding,
                           loader_func):
-        parameters = dh.generate_parameters(2, 512, backend)
         key = parameters.generate_private_key().public_key()
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo
@@ -700,8 +723,7 @@ class TestDHPublicKeySerialization(object):
         else:
             assert public_numbers.parameter_numbers.q is None
 
-    def test_public_bytes_invalid_encoding(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_public_bytes_invalid_encoding(self, parameters):
         key = parameters.generate_private_key().public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
@@ -709,8 +731,7 @@ class TestDHPublicKeySerialization(object):
                 serialization.PublicFormat.SubjectPublicKeyInfo
             )
 
-    def test_public_bytes_pkcs1_unsupported(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_public_bytes_pkcs1_unsupported(self, parameters):
         key = parameters.generate_private_key().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -736,9 +757,8 @@ class TestDHParameterSerialization(object):
             ],
         ]
     )
-    def test_parameter_bytes(self, backend, encoding,
+    def test_parameter_bytes(self, backend, parameters, encoding,
                              loader_func):
-        parameters = dh.generate_parameters(2, 512, backend)
         serialized = parameters.parameter_bytes(
             encoding, serialization.ParameterFormat.PKCS3
         )
@@ -851,30 +871,26 @@ class TestDHParameterSerialization(object):
             ]
         ))
     )
-    def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_public_bytes_rejects_invalid(self, encoding, fmt, parameters):
         key = parameters.generate_private_key().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(encoding, fmt)
 
-    def test_parameter_bytes_invalid_encoding(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_parameter_bytes_invalid_encoding(self, parameters):
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 "notencoding",
                 serialization.ParameterFormat.PKCS3
             )
 
-    def test_parameter_bytes_invalid_format(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_parameter_bytes_invalid_format(self, parameters):
         with pytest.raises(ValueError):
             parameters.parameter_bytes(
                 serialization.Encoding.PEM,
                 "notformat"
             )
 
-    def test_parameter_bytes_openssh_unsupported(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_parameter_bytes_openssh_unsupported(self, parameters):
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 serialization.Encoding.OpenSSH,
