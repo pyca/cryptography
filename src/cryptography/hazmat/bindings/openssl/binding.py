@@ -156,7 +156,7 @@ def _verify_openssl_version(lib):
         lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
         not lib.CRYPTOGRAPHY_IS_LIBRESSL
     ):
-        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_101")
+        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_101"):
             warnings.warn(
                 "OpenSSL version 1.0.1 is no longer supported by the OpenSSL "
                 "project, please upgrade. The next version of cryptography "
@@ -169,6 +169,7 @@ def _verify_openssl_version(lib):
                 "supported by the OpenSSL project. You need to upgrade to a "
                 "newer version of OpenSSL."
             )
+
 
 def _verify_package_version(version):
     # Occasionally we run into situations where the version of the Python
