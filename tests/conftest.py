@@ -16,7 +16,7 @@ from .utils import (
 def pytest_report_header(config):
     return "\n".join([
         "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
-        "FIPS Enabled: {}".format(openssl_backend._fips_enabled()),
+        "FIPS Enabled: {}".format(openssl_backend._fips_enabled),
     ])
 
 
@@ -34,6 +34,15 @@ def pytest_generate_tests(metafunc):
         for path in marker.args:
             testcases.extend(load_wycheproof_tests(wycheproof, path))
         metafunc.parametrize("wycheproof", testcases)
+
+
+def pytest_runtest_setup(item):
+    if openssl_backend._fips_enabled:
+        for marker in item.iter_markers(name="skip_fips"):
+            if "reason" in marker.kwargs:
+                pytest.skip(marker.kwargs["reason"])
+            else:
+                pytest.skip("Test is disabled in FIPS mode.")
 
 
 @pytest.fixture()
