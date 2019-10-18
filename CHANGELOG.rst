@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for OpenSSL 1.0.1 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
+
 .. _v2-8:
 
 2.8 - 2019-10-16
