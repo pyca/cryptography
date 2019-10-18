@@ -273,7 +273,7 @@ class TestOpenSSLRandomEngine(object):
         if sys.platform.startswith('linux'):
             assert name in ['getrandom', '/dev/urandom']
         if sys.platform == 'darwin':
-            assert name in ['getentropy', '/dev/urandom']
+            assert name == 'getentropy'
         if sys.platform == 'win32':
             assert name == 'CryptGenRandom'
 

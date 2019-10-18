@@ -10,6 +10,8 @@ Changelog
 
 * Support for OpenSSL 1.0.1 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* Support for macOS older than 10.12 has been removed. Users on older versions
+  of macOS will need to update.
 
 .. _v2-8:
 
