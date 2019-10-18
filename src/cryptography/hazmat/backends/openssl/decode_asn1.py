@@ -162,20 +162,24 @@ def _decode_general_name(backend, gn):
         )
 
 
-def _decode_ocsp_no_check(backend, ext):
-    return x509.OCSPNoCheck()
+def _decode_ocsp_no_check(backend, ext, asn1value):
+    return x509.OCSPNoCheck(asn1value=asn1value)
 
 
-def _decode_crl_number(backend, ext):
+def _decode_crl_number(backend, ext, asn1value):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    return x509.CRLNumber(_asn1_integer_to_int(backend, asn1_int))
+    return x509.CRLNumber(
+        _asn1_integer_to_int(backend, asn1_int), asn1value=asn1value
+    )
 
 
-def _decode_delta_crl_indicator(backend, ext):
+def _decode_delta_crl_indicator(backend, ext, asn1value):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    return x509.DeltaCRLIndicator(_asn1_integer_to_int(backend, asn1_int))
+    return x509.DeltaCRLIndicator(
+        _asn1_integer_to_int(backend, asn1_int), asn1value=asn1value
+    )
 
 
 class _X509ExtensionParser(object):
@@ -200,31 +204,33 @@ class _X509ExtensionParser(object):
                     "Duplicate {} extension found".format(oid), oid
                 )
 
+            data = backend._lib.X509_EXTENSION_get_data(ext)
+            backend.openssl_assert(data != backend._ffi.NULL)
+            data_bytes = _asn1_string_to_bytes(backend, data)
+
             # These OIDs are only supported in OpenSSL 1.1.0+ but we want
             # to support them in all versions of OpenSSL so we decode them
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
                 # The extension contents are a SEQUENCE OF INTEGERs.
-                data = backend._lib.X509_EXTENSION_get_data(ext)
-                data_bytes = _asn1_string_to_bytes(backend, data)
                 features = DERReader(data_bytes).read_single_element(SEQUENCE)
                 parsed = []
                 while not features.is_empty():
                     parsed.append(features.read_element(INTEGER).as_integer())
                 # Map the features to their enum value.
                 value = x509.TLSFeature(
-                    [_TLS_FEATURE_TYPE_TO_ENUM[x] for x in parsed]
+                    [_TLS_FEATURE_TYPE_TO_ENUM[x] for x in parsed],
+                    asn1value=data_bytes
                 )
                 extensions.append(x509.Extension(oid, critical, value))
                 seen_oids.add(oid)
                 continue
             elif oid == ExtensionOID.PRECERT_POISON:
-                data = backend._lib.X509_EXTENSION_get_data(ext)
                 # The contents of the extension must be an ASN.1 NULL.
-                reader = DERReader(_asn1_string_to_bytes(backend, data))
+                reader = DERReader(data_bytes)
                 reader.read_single_element(NULL).check_empty()
                 extensions.append(x509.Extension(
-                    oid, critical, x509.PrecertPoison()
+                    oid, critical, x509.PrecertPoison(asn1value=data_bytes),
                 ))
                 seen_oids.add(oid)
                 continue
@@ -233,10 +239,7 @@ class _X509ExtensionParser(object):
                 handler = self.handlers[oid]
             except KeyError:
                 # Dump the DER payload into an UnrecognizedExtension object
-                data = backend._lib.X509_EXTENSION_get_data(ext)
-                backend.openssl_assert(data != backend._ffi.NULL)
-                der = backend._ffi.buffer(data.data, data.length)[:]
-                unrecognized = x509.UnrecognizedExtension(oid, der)
+                unrecognized = x509.UnrecognizedExtension(oid, data_bytes)
                 extensions.append(
                     x509.Extension(oid, critical, unrecognized)
                 )
@@ -249,7 +252,7 @@ class _X509ExtensionParser(object):
                         "parsed".format(oid)
                     )
 
-                value = handler(backend, ext_data)
+                value = handler(backend, ext_data, data_bytes)
                 extensions.append(x509.Extension(oid, critical, value))
 
             seen_oids.add(oid)
@@ -257,7 +260,7 @@ class _X509ExtensionParser(object):
         return x509.Extensions(extensions)
 
 
-def _decode_certificate_policies(backend, cp):
+def _decode_certificate_policies(backend, cp, asn1value):
     cp = backend._ffi.cast("Cryptography_STACK_OF_POLICYINFO *", cp)
     cp = backend._ffi.gc(cp, backend._lib.CERTIFICATEPOLICIES_free)
 
@@ -293,7 +296,7 @@ def _decode_certificate_policies(backend, cp):
             x509.PolicyInformation(oid, qualifiers)
         )
 
-    return x509.CertificatePolicies(certificate_policies)
+    return x509.CertificatePolicies(certificate_policies, asn1value=asn1value)
 
 
 def _decode_user_notice(backend, un):
@@ -326,7 +329,7 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_basic_constraints(backend, bc_st):
+def _decode_basic_constraints(backend, bc_st, asn1value):
     basic_constraints = backend._ffi.cast("BASIC_CONSTRAINTS *", bc_st)
     basic_constraints = backend._ffi.gc(
         basic_constraints, backend._lib.BASIC_CONSTRAINTS_free
@@ -339,20 +342,21 @@ def _decode_basic_constraints(backend, bc_st):
         backend, basic_constraints.pathlen
     )
 
-    return x509.BasicConstraints(ca, path_length)
+    return x509.BasicConstraints(ca, path_length, asn1value=asn1value)
 
 
-def _decode_subject_key_identifier(backend, asn1_string):
+def _decode_subject_key_identifier(backend, asn1_string, asn1value):
     asn1_string = backend._ffi.cast("ASN1_OCTET_STRING *", asn1_string)
     asn1_string = backend._ffi.gc(
         asn1_string, backend._lib.ASN1_OCTET_STRING_free
     )
     return x509.SubjectKeyIdentifier(
-        backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+        backend._ffi.buffer(asn1_string.data, asn1_string.length)[:],
+        asn1value=asn1value
     )
 
 
-def _decode_authority_key_identifier(backend, akid):
+def _decode_authority_key_identifier(backend, akid, asn1value):
     akid = backend._ffi.cast("AUTHORITY_KEYID *", akid)
     akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
     key_identifier = None
@@ -373,11 +377,12 @@ def _decode_authority_key_identifier(backend, akid):
     )
 
     return x509.AuthorityKeyIdentifier(
-        key_identifier, authority_cert_issuer, authority_cert_serial_number
+        key_identifier, authority_cert_issuer, authority_cert_serial_number,
+        asn1value=asn1value
     )
 
 
-def _decode_authority_information_access(backend, aia):
+def _decode_authority_information_access(backend, aia, asn1value):
     aia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia)
     aia = backend._ffi.gc(
         aia,
@@ -397,10 +402,12 @@ def _decode_authority_information_access(backend, aia):
         gn = _decode_general_name(backend, ad.location)
         access_descriptions.append(x509.AccessDescription(oid, gn))
 
-    return x509.AuthorityInformationAccess(access_descriptions)
+    return x509.AuthorityInformationAccess(
+        access_descriptions, asn1value=asn1value
+    )
 
 
-def _decode_key_usage(backend, bit_string):
+def _decode_key_usage(backend, bit_string, asn1value):
     bit_string = backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
     bit_string = backend._ffi.gc(bit_string, backend._lib.ASN1_BIT_STRING_free)
     get_bit = backend._lib.ASN1_BIT_STRING_get_bit
@@ -422,7 +429,8 @@ def _decode_key_usage(backend, bit_string):
         key_cert_sign,
         crl_sign,
         encipher_only,
-        decipher_only
+        decipher_only,
+        asn1value=asn1value
     )
 
 
@@ -433,25 +441,26 @@ def _decode_general_names_extension(backend, gns):
     return general_names
 
 
-def _decode_subject_alt_name(backend, ext):
+def _decode_subject_alt_name(backend, ext, asn1value):
     return x509.SubjectAlternativeName(
-        _decode_general_names_extension(backend, ext)
+        _decode_general_names_extension(backend, ext), asn1value=asn1value
     )
 
 
-def _decode_issuer_alt_name(backend, ext):
+def _decode_issuer_alt_name(backend, ext, asn1value):
     return x509.IssuerAlternativeName(
-        _decode_general_names_extension(backend, ext)
+        _decode_general_names_extension(backend, ext), asn1value=asn1value
     )
 
 
-def _decode_name_constraints(backend, nc):
+def _decode_name_constraints(backend, nc, asn1value):
     nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
     nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
     permitted = _decode_general_subtrees(backend, nc.permittedSubtrees)
     excluded = _decode_general_subtrees(backend, nc.excludedSubtrees)
     return x509.NameConstraints(
-        permitted_subtrees=permitted, excluded_subtrees=excluded
+        permitted_subtrees=permitted, excluded_subtrees=excluded,
+        asn1value=asn1value
     )
 
 
@@ -471,7 +480,7 @@ def _decode_general_subtrees(backend, stack_subtrees):
     return subtrees
 
 
-def _decode_issuing_dist_point(backend, idp):
+def _decode_issuing_dist_point(backend, idp, asn1value):
     idp = backend._ffi.cast("ISSUING_DIST_POINT *", idp)
     idp = backend._ffi.gc(idp, backend._lib.ISSUING_DIST_POINT_free)
     if idp.distpoint != backend._ffi.NULL:
@@ -491,11 +500,11 @@ def _decode_issuing_dist_point(backend, idp):
 
     return x509.IssuingDistributionPoint(
         full_name, relative_name, only_user, only_ca, only_some_reasons,
-        indirect_crl, only_attr
+        indirect_crl, only_attr, asn1value=asn1value
     )
 
 
-def _decode_policy_constraints(backend, pc):
+def _decode_policy_constraints(backend, pc, asn1value):
     pc = backend._ffi.cast("POLICY_CONSTRAINTS *", pc)
     pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
 
@@ -507,11 +516,11 @@ def _decode_policy_constraints(backend, pc):
     )
 
     return x509.PolicyConstraints(
-        require_explicit_policy, inhibit_policy_mapping
+        require_explicit_policy, inhibit_policy_mapping, asn1value=asn1value
     )
 
 
-def _decode_extended_key_usage(backend, sk):
+def _decode_extended_key_usage(backend, sk, asn1value):
     sk = backend._ffi.cast("Cryptography_STACK_OF_ASN1_OBJECT *", sk)
     sk = backend._ffi.gc(sk, backend._lib.sk_ASN1_OBJECT_free)
     num = backend._lib.sk_ASN1_OBJECT_num(sk)
@@ -523,7 +532,7 @@ def _decode_extended_key_usage(backend, sk):
         oid = x509.ObjectIdentifier(_obj2txt(backend, obj))
         ekus.append(oid)
 
-    return x509.ExtendedKeyUsage(ekus)
+    return x509.ExtendedKeyUsage(ekus, asn1value=asn1value)
 
 
 _DISTPOINT_TYPE_FULLNAME = 0
@@ -625,24 +634,25 @@ def _decode_distpoint(backend, distpoint):
     return None, relative_name
 
 
-def _decode_crl_distribution_points(backend, cdps):
+def _decode_crl_distribution_points(backend, cdps, asn1value):
     dist_points = _decode_dist_points(backend, cdps)
-    return x509.CRLDistributionPoints(dist_points)
+    return x509.CRLDistributionPoints(dist_points, asn1value=asn1value)
 
 
-def _decode_freshest_crl(backend, cdps):
+def _decode_freshest_crl(backend, cdps, asn1value):
     dist_points = _decode_dist_points(backend, cdps)
-    return x509.FreshestCRL(dist_points)
+    return x509.FreshestCRL(dist_points, asn1value=asn1value)
 
 
-def _decode_inhibit_any_policy(backend, asn1_int):
+def _decode_inhibit_any_policy(backend, asn1_int, asn1value):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", asn1_int)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
     skip_certs = _asn1_integer_to_int(backend, asn1_int)
-    return x509.InhibitAnyPolicy(skip_certs)
+    return x509.InhibitAnyPolicy(skip_certs, asn1value=asn1value)
 
 
-def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
+def _decode_precert_signed_certificate_timestamps(backend, asn1_scts,
+                                                  asn1value):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp
     )
@@ -654,7 +664,9 @@ def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
         sct = backend._lib.sk_SCT_value(asn1_scts, i)
 
         scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
-    return x509.PrecertificateSignedCertificateTimestamps(scts)
+    return x509.PrecertificateSignedCertificateTimestamps(
+        scts, asn1value=asn1value
+    )
 
 
 #    CRLReason ::= ENUMERATED {
@@ -697,18 +709,20 @@ _CRL_ENTRY_REASON_ENUM_TO_CODE = {
 }
 
 
-def _decode_crl_reason(backend, enum):
+def _decode_crl_reason(backend, enum, asn1value):
     enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
     enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
     code = backend._lib.ASN1_ENUMERATED_get(enum)
 
     try:
-        return x509.CRLReason(_CRL_ENTRY_REASON_CODE_TO_ENUM[code])
+        return x509.CRLReason(
+            _CRL_ENTRY_REASON_CODE_TO_ENUM[code], asn1value=asn1value
+        )
     except KeyError:
         raise ValueError("Unsupported reason code: {}".format(code))
 
 
-def _decode_invalidity_date(backend, inv_date):
+def _decode_invalidity_date(backend, inv_date, asn1value):
     generalized_time = backend._ffi.cast(
         "ASN1_GENERALIZEDTIME *", inv_date
     )
@@ -716,15 +730,16 @@ def _decode_invalidity_date(backend, inv_date):
         generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
     )
     return x509.InvalidityDate(
-        _parse_asn1_generalized_time(backend, generalized_time)
+        _parse_asn1_generalized_time(backend, generalized_time),
+        asn1value=asn1value
     )
 
 
-def _decode_cert_issuer(backend, gns):
+def _decode_cert_issuer(backend, gns, asn1value):
     gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     general_names = _decode_general_names(backend, gns)
-    return x509.CertificateIssuer(general_names)
+    return x509.CertificateIssuer(general_names, asn1value=asn1value)
 
 
 def _asn1_to_der(backend, asn1_type):
@@ -800,10 +815,12 @@ def _parse_asn1_generalized_time(backend, generalized_time):
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
-def _decode_nonce(backend, nonce):
+def _decode_nonce(backend, nonce, asn1value):
     nonce = backend._ffi.cast("ASN1_OCTET_STRING *", nonce)
     nonce = backend._ffi.gc(nonce, backend._lib.ASN1_OCTET_STRING_free)
-    return x509.OCSPNonce(_asn1_string_to_bytes(backend, nonce))
+    return x509.OCSPNonce(
+        _asn1_string_to_bytes(backend, nonce), asn1value=asn1value
+    )
 
 
 _EXTENSION_HANDLERS_NO_SCT = {

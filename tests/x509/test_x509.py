@@ -49,6 +49,7 @@ from ..utils import load_vectors_from_file
 @utils.register_interface(x509.ExtensionType)
 class DummyExtension(object):
     oid = x509.ObjectIdentifier("1.2.3.4")
+    asn1value = None
 
 
 @utils.register_interface(x509.GeneralName)

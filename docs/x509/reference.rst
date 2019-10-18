@@ -1583,13 +1583,15 @@ X.509 Extensions
     This is the interface against which all the following extension types are
     registered.
 
-.. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
+.. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only, asn1value=None)
 
     .. versionadded:: 0.9
 
     The key usage extension defines the purpose of the key contained in the
     certificate.  The usage restriction might be employed when a key that could
     be used for more than one operation is to be restricted.
+
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 
@@ -1598,6 +1600,16 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.KEY_USAGE`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: digital_signature
 
@@ -1682,13 +1694,15 @@ X.509 Extensions
             is false.
 
 
-.. class:: BasicConstraints(ca, path_length)
+.. class:: BasicConstraints(ca, path_length, asn1value=None)
 
     .. versionadded:: 0.9
 
     Basic constraints is an X.509 extension type that defines whether a given
     certificate is allowed to sign additional certificates and what path
     length restrictions may exist.
+
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 
@@ -1697,6 +1711,16 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.BASIC_CONSTRAINTS`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: ca
 
@@ -1717,7 +1741,7 @@ X.509 Extensions
         means the certificate can sign a subordinate CA, but the subordinate CA
         is not allowed to create subordinates with ``ca`` set to true.
 
-.. class:: ExtendedKeyUsage(usages)
+.. class:: ExtendedKeyUsage(usages, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -1730,6 +1754,8 @@ X.509 Extensions
     :param list usages: A list of
         :class:`~cryptography.x509.oid.ExtendedKeyUsageOID` OIDs.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1738,8 +1764,18 @@ X.509 Extensions
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.EXTENDED_KEY_USAGE`.
 
+    .. attribute:: asn1value
 
-.. class:: OCSPNoCheck()
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
+
+.. class:: OCSPNoCheck(asn1value=None)
 
     .. versionadded:: 1.0
 
@@ -1752,6 +1788,8 @@ X.509 Extensions
     extension is only relevant when the certificate is an authorized OCSP
     responder.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1760,8 +1798,18 @@ X.509 Extensions
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.OCSP_NO_CHECK`.
 
+    .. attribute:: asn1value
 
-.. class:: TLSFeature(features)
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
+
+.. class:: TLSFeature(features, asn1value=None)
 
     .. versionadded:: 2.1
 
@@ -1773,11 +1821,23 @@ X.509 Extensions
         :class:`~cryptography.x509.TLSFeatureType` enum. At this time only
         ``status_request`` or ``status_request_v2`` are allowed.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.TLS_FEATURE`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
 .. class:: TLSFeatureType
 
@@ -1799,7 +1859,7 @@ X.509 Extensions
         use ``status_request``.
 
 
-.. class:: NameConstraints(permitted_subtrees, excluded_subtrees)
+.. class:: NameConstraints(permitted_subtrees, excluded_subtrees, asn1value=None)
 
     .. versionadded:: 1.0
 
@@ -1808,6 +1868,8 @@ X.509 Extensions
     beneath the CA certificate must (or must not) be in. For specific details
     on the way this extension should be processed see :rfc:`5280`.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1815,6 +1877,16 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.NAME_CONSTRAINTS`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: permitted_subtrees
 
@@ -1833,7 +1905,7 @@ X.509 Extensions
         ``permitted_subtrees``. At least one of ``permitted_subtrees`` and
         ``excluded_subtrees`` will be non-None.
 
-.. class:: AuthorityKeyIdentifier(key_identifier, authority_cert_issuer, authority_cert_serial_number)
+.. class:: AuthorityKeyIdentifier(key_identifier, authority_cert_issuer, authority_cert_serial_number, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -1843,6 +1915,8 @@ X.509 Extensions
     certificate chain. For more information about generation and use of this
     extension see `RFC 5280 section 4.2.1.1`_.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1851,6 +1925,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.AUTHORITY_KEY_IDENTIFIER`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: key_identifier
 
@@ -1940,12 +2024,14 @@ X.509 Extensions
             >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski)
             <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
-.. class:: SubjectKeyIdentifier(digest)
+.. class:: SubjectKeyIdentifier(digest, asn1value=None)
 
     .. versionadded:: 0.9
 
     The subject key identifier extension provides a means of identifying
     certificates that contain a particular public key.
+
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 
@@ -1955,6 +2041,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_KEY_IDENTIFIER`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: digest
 
@@ -1987,7 +2083,7 @@ X.509 Extensions
             >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
             <SubjectKeyIdentifier(digest=b'\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
 
-.. class:: SubjectAlternativeName(general_names)
+.. class:: SubjectAlternativeName(general_names, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -1998,6 +2094,8 @@ X.509 Extensions
 
     :param list general_names: A list of :class:`GeneralName` instances.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -2006,6 +2104,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. method:: get_values_for_type(type)
 
@@ -2028,7 +2136,7 @@ X.509 Extensions
             ['www.cryptography.io', 'cryptography.io']
 
 
-.. class:: IssuerAlternativeName(general_names)
+.. class:: IssuerAlternativeName(general_names, asn1value=None)
 
     .. versionadded:: 1.0
 
@@ -2039,6 +2147,8 @@ X.509 Extensions
 
     :param list general_names: A list of :class:`GeneralName` instances.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -2048,6 +2158,16 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.ISSUER_ALTERNATIVE_NAME`.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
     .. method:: get_values_for_type(type)
 
         :param type: A :class:`GeneralName` instance. This is one of the
@@ -2056,7 +2176,7 @@ X.509 Extensions
         :returns: A list of values extracted from the matched general names.
 
 
-.. class:: PrecertificateSignedCertificateTimestamps(scts)
+.. class:: PrecertificateSignedCertificateTimestamps(scts, asn1value=None)
 
     .. versionadded:: 2.0
 
@@ -2074,6 +2194,8 @@ X.509 Extensions
         :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
         objects.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -2081,8 +2203,18 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS`.
 
+    .. attribute:: asn1value
 
-.. class:: PrecertPoison()
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
+
+.. class:: PrecertPoison(asn1value=None)
 
     .. versionadded:: 2.4
 
@@ -2092,14 +2224,26 @@ X.509 Extensions
     embedded in a :class:`PrecertificateSignedCertificateTimestamps` extension
     on the final certificate.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
 
+    .. attribute:: asn1value
 
-.. class:: DeltaCRLIndicator(crl_number)
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
+
+.. class:: DeltaCRLIndicator(crl_number, asn1value=None)
 
     .. versionadded:: 2.1
 
@@ -2111,6 +2255,8 @@ X.509 Extensions
     :param int crl_number: The CRL number of the complete CRL that the
         delta CRL is updating.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -2118,12 +2264,22 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.DELTA_CRL_INDICATOR`.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
     .. attribute:: crl_number
 
         :type: int
 
 
-.. class:: AuthorityInformationAccess(descriptions)
+.. class:: AuthorityInformationAccess(descriptions, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -2136,6 +2292,8 @@ X.509 Extensions
 
     :param list descriptions: A list of :class:`AccessDescription` objects.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -2144,6 +2302,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.AUTHORITY_INFORMATION_ACCESS`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
 
 .. class:: AccessDescription(access_method, access_location)
@@ -2172,7 +2340,7 @@ X.509 Extensions
 
         Where to access the information defined by the access method.
 
-.. class:: FreshestCRL(distribution_points)
+.. class:: FreshestCRL(distribution_points, asn1value=None)
 
     .. versionadded:: 2.1
 
@@ -2183,6 +2351,8 @@ X.509 Extensions
     :param list distribution_points: A list of :class:`DistributionPoint`
         instances.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -2190,7 +2360,17 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.FRESHEST_CRL`.
 
-.. class:: CRLDistributionPoints(distribution_points)
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
+.. class:: CRLDistributionPoints(distribution_points, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -2201,6 +2381,8 @@ X.509 Extensions
     :param list distribution_points: A list of :class:`DistributionPoint`
         instances.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -2209,6 +2391,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CRL_DISTRIBUTION_POINTS`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
 .. class:: DistributionPoint(full_name, relative_name, reasons, crl_issuer)
 
@@ -2297,7 +2489,7 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
-.. class:: InhibitAnyPolicy(skip_certs)
+.. class:: InhibitAnyPolicy(skip_certs, asn1value=None)
 
     .. versionadded:: 1.0
 
@@ -2313,6 +2505,8 @@ X.509 Extensions
     processed in certificates issued by the subject of this certificate, but
     not in additional certificates in the path.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -2322,11 +2516,21 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.INHIBIT_ANY_POLICY`.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
     .. attribute:: skip_certs
 
         :type: int
 
-.. class:: PolicyConstraints
+.. class:: PolicyConstraints(require_explicit_policy, inhibit_policy_mapping, asn1value=None)
 
     .. versionadded:: 1.3
 
@@ -2335,11 +2539,23 @@ X.509 Extensions
     identifier. For more information about the use of this extension see
     :rfc:`5280`.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.POLICY_CONSTRAINTS`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: require_explicit_policy
 
@@ -2364,7 +2580,7 @@ X.509 Extensions
         mapping may be processed in certificates issued by the subject of this
         certificate, but not in additional certificates in the chain.
 
-.. class:: CRLNumber(crl_number)
+.. class:: CRLNumber(crl_number, asn1value=None)
 
     .. versionadded:: 1.2
 
@@ -2373,6 +2589,8 @@ X.509 Extensions
     users to easily determine when a particular CRL supersedes another CRL.
     :rfc:`5280` requires that this extension be present in conforming CRLs.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -2380,13 +2598,23 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CRL_NUMBER`.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
     .. attribute:: crl_number
 
         :type: int
 
 .. class:: IssuingDistributionPoint(full_name, relative_name,\
            only_contains_user_certs, only_contains_ca_certs, only_some_reasons,\
-           indirect_crl, only_contains_attribute_certs)
+           indirect_crl, only_contains_attribute_certs, asn1value=None)
 
     .. versionadded:: 2.5
 
@@ -2397,12 +2625,24 @@ X.509 Extensions
     specific details on the way this extension should be processed see
     :rfc:`5280`.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.ISSUING_DISTRIBUTION_POINT`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: only_contains_user_certs
 
@@ -2455,12 +2695,14 @@ X.509 Extensions
         issuer. At most one of ``full_name`` or ``relative_name`` will be
         non-None.
 
-.. class:: UnrecognizedExtension
+.. class:: UnrecognizedExtension(oid, value)
 
     .. versionadded:: 1.2
 
     A generic extension class used to hold the raw value of extensions that
     ``cryptography`` does not know how to parse.
+
+    :param bytes value: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 
@@ -2468,13 +2710,21 @@ X.509 Extensions
 
         Returns the OID associated with this extension.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension.
+
     .. attribute:: value
 
         :type: bytes
 
         Returns the DER encoded bytes payload of the extension.
 
-.. class:: CertificatePolicies(policies)
+.. class:: CertificatePolicies(policies, asn1value=None)
 
     .. versionadded:: 0.9
 
@@ -2482,6 +2732,8 @@ X.509 Extensions
     :class:`PolicyInformation` instances.
 
     :param list policies: A list of :class:`PolicyInformation` instances.
+
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 
@@ -2491,6 +2743,16 @@ X.509 Extensions
 
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CERTIFICATE_POLICIES`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2567,7 +2829,7 @@ CRL Entry Extensions
 
 These extensions are only valid within a :class:`RevokedCertificate` object.
 
-.. class:: CertificateIssuer(general_names)
+.. class:: CertificateIssuer(general_names, asn1value=None)
 
     .. versionadded:: 1.2
 
@@ -2580,12 +2842,24 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
     :param list general_names: A list of :class:`GeneralName` instances.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns
         :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.CERTIFICATE_ISSUER`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. method:: get_values_for_type(type)
 
@@ -2595,7 +2869,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
         :returns: A list of values extracted from the matched general names.
             The type of the returned values depends on the :class:`GeneralName`.
 
-.. class:: CRLReason(reason)
+.. class:: CRLReason(reason, asn1value=None)
 
     .. versionadded:: 1.2
 
@@ -2605,6 +2879,8 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
     :param reason: An element from :class:`~cryptography.x509.ReasonFlags`.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -2612,11 +2888,21 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
         Returns
         :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.CRL_REASON`.
 
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
+
     .. attribute:: reason
 
         :type: An element from :class:`~cryptography.x509.ReasonFlags`
 
-.. class:: InvalidityDate(invalidity_date)
+.. class:: InvalidityDate(invalidity_date, asn1value=None)
 
     .. versionadded:: 1.2
 
@@ -2630,12 +2916,24 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
     :param invalidity_date: The :class:`datetime.datetime` when it is known
         or suspected that the private key was compromised.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns
         :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.INVALIDITY_DATE`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: invalidity_date
 
@@ -2644,7 +2942,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 OCSP Extensions
 ~~~~~~~~~~~~~~~
 
-.. class:: OCSPNonce(nonce)
+.. class:: OCSPNonce(nonce, asn1value=None)
 
     .. versionadded:: 2.4
 
@@ -2655,12 +2953,24 @@ OCSP Extensions
     In practice nonces are rarely used in OCSP due to the desire to precompute
     OCSP responses at large scale.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
         Returns
         :attr:`~cryptography.x509.oid.OCSPExtensionOID.NONCE`.
+
+    .. attribute:: asn1value
+
+        .. versionadded:: 2.9.0
+
+        :type: bytes
+
+        Returns the DER encoded bytes payload of the extension, if available. Returns
+        ``None`` otherwise. For extensions obtained from loaded objects, the DER
+        encoded bytes are guaranteed to be there.
 
     .. attribute:: nonce
 
@@ -3151,6 +3461,8 @@ Exceptions
     This is raised when more than one X.509 extension of the same type is
     found within a certificate.
 
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
+
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
@@ -3161,6 +3473,8 @@ Exceptions
 
     This is raised when calling :meth:`Extensions.get_extension_for_oid` with
     an extension OID that is not present in the certificate.
+
+    :param bytes asn1values: The DER encoded bytes payload of the extension.
 
     .. attribute:: oid
 

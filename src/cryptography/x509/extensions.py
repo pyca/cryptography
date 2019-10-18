@@ -103,6 +103,17 @@ class ExtensionType(object):
         Returns the oid associated with the given extension type.
         """
 
+    @abc.abstractproperty
+    def asn1value(self):
+        """
+        Returns the ASN.1 encoding as a byte string for this extension, if
+        available.
+
+        Returns None if the ASN.1 encoding is not available. For all
+        extensions obtained from loaded objects, the ASN.1 encoding is
+        guaranteed to be available.
+        """
+
 
 class Extensions(object):
     def __init__(self, extensions):
@@ -143,11 +154,12 @@ class Extensions(object):
 class CRLNumber(object):
     oid = ExtensionOID.CRL_NUMBER
 
-    def __init__(self, crl_number):
+    def __init__(self, crl_number, asn1value=None):
         if not isinstance(crl_number, six.integer_types):
             raise TypeError("crl_number must be an integer")
 
         self._crl_number = crl_number
+        self._asn1value = asn1value
 
     def __eq__(self, other):
         if not isinstance(other, CRLNumber):
@@ -165,6 +177,7 @@ class CRLNumber(object):
         return "<CRLNumber({})>".format(self.crl_number)
 
     crl_number = utils.read_only_property("_crl_number")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
@@ -172,7 +185,7 @@ class AuthorityKeyIdentifier(object):
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
     def __init__(self, key_identifier, authority_cert_issuer,
-                 authority_cert_serial_number):
+                 authority_cert_serial_number, asn1value=None):
         if (authority_cert_issuer is None) != (
             authority_cert_serial_number is None
         ):
@@ -201,6 +214,7 @@ class AuthorityKeyIdentifier(object):
         self._key_identifier = key_identifier
         self._authority_cert_issuer = authority_cert_issuer
         self._authority_cert_serial_number = authority_cert_serial_number
+        self._asn1value = asn1value
 
     @classmethod
     def from_issuer_public_key(cls, public_key):
@@ -268,20 +282,23 @@ class AuthorityKeyIdentifier(object):
     authority_cert_serial_number = utils.read_only_property(
         "_authority_cert_serial_number"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
 class SubjectKeyIdentifier(object):
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
-    def __init__(self, digest):
+    def __init__(self, digest, asn1value=None):
         self._digest = digest
+        self._asn1value = asn1value
 
     @classmethod
     def from_public_key(cls, public_key):
         return cls(_key_identifier_from_public_key(public_key))
 
     digest = utils.read_only_property("_digest")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
@@ -303,7 +320,7 @@ class SubjectKeyIdentifier(object):
 class AuthorityInformationAccess(object):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
-    def __init__(self, descriptions):
+    def __init__(self, descriptions, asn1value=None):
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -312,8 +329,10 @@ class AuthorityInformationAccess(object):
             )
 
         self._descriptions = descriptions
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<AuthorityInformationAccess({})>".format(self._descriptions)
@@ -365,13 +384,14 @@ class AccessDescription(object):
 
     access_method = utils.read_only_property("_access_method")
     access_location = utils.read_only_property("_access_location")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
 class BasicConstraints(object):
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
-    def __init__(self, ca, path_length):
+    def __init__(self, ca, path_length, asn1value=None):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
@@ -388,9 +408,11 @@ class BasicConstraints(object):
 
         self._ca = ca
         self._path_length = path_length
+        self._asn1value = asn1value
 
     ca = utils.read_only_property("_ca")
     path_length = utils.read_only_property("_path_length")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return ("<BasicConstraints(ca={0.ca}, "
@@ -413,13 +435,15 @@ class BasicConstraints(object):
 class DeltaCRLIndicator(object):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
-    def __init__(self, crl_number):
+    def __init__(self, crl_number, asn1value=None):
         if not isinstance(crl_number, six.integer_types):
             raise TypeError("crl_number must be an integer")
 
         self._crl_number = crl_number
+        self._asn1value = asn1value
 
     crl_number = utils.read_only_property("_crl_number")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __eq__(self, other):
         if not isinstance(other, DeltaCRLIndicator):
@@ -441,7 +465,7 @@ class DeltaCRLIndicator(object):
 class CRLDistributionPoints(object):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
-    def __init__(self, distribution_points):
+    def __init__(self, distribution_points, asn1value=None):
         distribution_points = list(distribution_points)
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
@@ -452,10 +476,12 @@ class CRLDistributionPoints(object):
             )
 
         self._distribution_points = distribution_points
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods(
         "_distribution_points"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<CRLDistributionPoints({})>".format(self._distribution_points)
@@ -477,7 +503,7 @@ class CRLDistributionPoints(object):
 class FreshestCRL(object):
     oid = ExtensionOID.FRESHEST_CRL
 
-    def __init__(self, distribution_points):
+    def __init__(self, distribution_points, asn1value=None):
         distribution_points = list(distribution_points)
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
@@ -488,10 +514,12 @@ class FreshestCRL(object):
             )
 
         self._distribution_points = distribution_points
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods(
         "_distribution_points"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<FreshestCRL({})>".format(self._distribution_points)
@@ -600,6 +628,7 @@ class DistributionPoint(object):
     relative_name = utils.read_only_property("_relative_name")
     reasons = utils.read_only_property("_reasons")
     crl_issuer = utils.read_only_property("_crl_issuer")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 class ReasonFlags(Enum):
@@ -619,7 +648,8 @@ class ReasonFlags(Enum):
 class PolicyConstraints(object):
     oid = ExtensionOID.POLICY_CONSTRAINTS
 
-    def __init__(self, require_explicit_policy, inhibit_policy_mapping):
+    def __init__(self, require_explicit_policy, inhibit_policy_mapping,
+                 asn1value=None):
         if require_explicit_policy is not None and not isinstance(
             require_explicit_policy, six.integer_types
         ):
@@ -643,6 +673,7 @@ class PolicyConstraints(object):
 
         self._require_explicit_policy = require_explicit_policy
         self._inhibit_policy_mapping = inhibit_policy_mapping
+        self._asn1value = asn1value
 
     def __repr__(self):
         return (
@@ -674,13 +705,14 @@ class PolicyConstraints(object):
     inhibit_policy_mapping = utils.read_only_property(
         "_inhibit_policy_mapping"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
 class CertificatePolicies(object):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
-    def __init__(self, policies):
+    def __init__(self, policies, asn1value=None):
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
@@ -689,8 +721,10 @@ class CertificatePolicies(object):
             )
 
         self._policies = policies
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_policies")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<CertificatePolicies({})>".format(self._policies)
@@ -835,7 +869,7 @@ class NoticeReference(object):
 class ExtendedKeyUsage(object):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
-    def __init__(self, usages):
+    def __init__(self, usages, asn1value=None):
         usages = list(usages)
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
             raise TypeError(
@@ -843,8 +877,10 @@ class ExtendedKeyUsage(object):
             )
 
         self._usages = usages
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_usages")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<ExtendedKeyUsage({})>".format(self._usages)
@@ -866,6 +902,9 @@ class ExtendedKeyUsage(object):
 class OCSPNoCheck(object):
     oid = ExtensionOID.OCSP_NO_CHECK
 
+    def __init__(self, asn1value=None):
+        self._asn1value = asn1value
+
     def __eq__(self, other):
         if not isinstance(other, OCSPNoCheck):
             return NotImplemented
@@ -881,10 +920,15 @@ class OCSPNoCheck(object):
     def __repr__(self):
         return "<OCSPNoCheck()>"
 
+    asn1value = utils.read_only_property("_asn1value")
+
 
 @utils.register_interface(ExtensionType)
 class PrecertPoison(object):
     oid = ExtensionOID.PRECERT_POISON
+
+    def __init__(self, asn1value=None):
+        self._asn1value = asn1value
 
     def __eq__(self, other):
         if not isinstance(other, PrecertPoison):
@@ -901,12 +945,14 @@ class PrecertPoison(object):
     def __repr__(self):
         return "<PrecertPoison()>"
 
+    asn1value = utils.read_only_property("_asn1value")
+
 
 @utils.register_interface(ExtensionType)
 class TLSFeature(object):
     oid = ExtensionOID.TLS_FEATURE
 
-    def __init__(self, features):
+    def __init__(self, features, asn1value=None):
         features = list(features)
         if (
             not all(isinstance(x, TLSFeatureType) for x in features) or
@@ -918,8 +964,10 @@ class TLSFeature(object):
             )
 
         self._features = features
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_features")
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return "<TLSFeature(features={0._features})>".format(self)
@@ -955,7 +1003,7 @@ _TLS_FEATURE_TYPE_TO_ENUM = dict((x.value, x) for x in TLSFeatureType)
 class InhibitAnyPolicy(object):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
-    def __init__(self, skip_certs):
+    def __init__(self, skip_certs, asn1value=None):
         if not isinstance(skip_certs, six.integer_types):
             raise TypeError("skip_certs must be an integer")
 
@@ -963,6 +1011,7 @@ class InhibitAnyPolicy(object):
             raise ValueError("skip_certs must be a non-negative integer")
 
         self._skip_certs = skip_certs
+        self._asn1value = asn1value
 
     def __repr__(self):
         return "<InhibitAnyPolicy(skip_certs={0.skip_certs})>".format(self)
@@ -980,6 +1029,7 @@ class InhibitAnyPolicy(object):
         return hash(self.skip_certs)
 
     skip_certs = utils.read_only_property("_skip_certs")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
@@ -988,7 +1038,7 @@ class KeyUsage(object):
 
     def __init__(self, digital_signature, content_commitment, key_encipherment,
                  data_encipherment, key_agreement, key_cert_sign, crl_sign,
-                 encipher_only, decipher_only):
+                 encipher_only, decipher_only, asn1value=None):
         if not key_agreement and (encipher_only or decipher_only):
             raise ValueError(
                 "encipher_only and decipher_only can only be true when "
@@ -1004,6 +1054,7 @@ class KeyUsage(object):
         self._crl_sign = crl_sign
         self._encipher_only = encipher_only
         self._decipher_only = decipher_only
+        self._asn1value = asn1value
 
     digital_signature = utils.read_only_property("_digital_signature")
     content_commitment = utils.read_only_property("_content_commitment")
@@ -1012,6 +1063,7 @@ class KeyUsage(object):
     key_agreement = utils.read_only_property("_key_agreement")
     key_cert_sign = utils.read_only_property("_key_cert_sign")
     crl_sign = utils.read_only_property("_crl_sign")
+    asn1value = utils.read_only_property("_asn1value")
 
     @property
     def encipher_only(self):
@@ -1081,7 +1133,7 @@ class KeyUsage(object):
 class NameConstraints(object):
     oid = ExtensionOID.NAME_CONSTRAINTS
 
-    def __init__(self, permitted_subtrees, excluded_subtrees):
+    def __init__(self, permitted_subtrees, excluded_subtrees, asn1value=None):
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
             if not all(
@@ -1114,6 +1166,7 @@ class NameConstraints(object):
 
         self._permitted_subtrees = permitted_subtrees
         self._excluded_subtrees = excluded_subtrees
+        self._asn1value = asn1value
 
     def __eq__(self, other):
         if not isinstance(other, NameConstraints):
@@ -1157,6 +1210,7 @@ class NameConstraints(object):
 
     permitted_subtrees = utils.read_only_property("_permitted_subtrees")
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 class Extension(object):
@@ -1239,10 +1293,12 @@ class GeneralNames(object):
 class SubjectAlternativeName(object):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
-    def __init__(self, general_names):
+    def __init__(self, general_names, asn1value=None):
         self._general_names = GeneralNames(general_names)
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
+    asn1value = utils.read_only_property("_asn1value")
 
     def get_values_for_type(self, type):
         return self._general_names.get_values_for_type(type)
@@ -1267,10 +1323,12 @@ class SubjectAlternativeName(object):
 class IssuerAlternativeName(object):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
-    def __init__(self, general_names):
+    def __init__(self, general_names, asn1value=None):
         self._general_names = GeneralNames(general_names)
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
+    asn1value = utils.read_only_property("_asn1value")
 
     def get_values_for_type(self, type):
         return self._general_names.get_values_for_type(type)
@@ -1295,10 +1353,12 @@ class IssuerAlternativeName(object):
 class CertificateIssuer(object):
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
-    def __init__(self, general_names):
+    def __init__(self, general_names, asn1value=None):
         self._general_names = GeneralNames(general_names)
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
+    asn1value = utils.read_only_property("_asn1value")
 
     def get_values_for_type(self, type):
         return self._general_names.get_values_for_type(type)
@@ -1323,11 +1383,12 @@ class CertificateIssuer(object):
 class CRLReason(object):
     oid = CRLEntryExtensionOID.CRL_REASON
 
-    def __init__(self, reason):
+    def __init__(self, reason, asn1value=None):
         if not isinstance(reason, ReasonFlags):
             raise TypeError("reason must be an element from ReasonFlags")
 
         self._reason = reason
+        self._asn1value = asn1value
 
     def __repr__(self):
         return "<CRLReason(reason={})>".format(self._reason)
@@ -1345,17 +1406,19 @@ class CRLReason(object):
         return hash(self.reason)
 
     reason = utils.read_only_property("_reason")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
 class InvalidityDate(object):
     oid = CRLEntryExtensionOID.INVALIDITY_DATE
 
-    def __init__(self, invalidity_date):
+    def __init__(self, invalidity_date, asn1value=None):
         if not isinstance(invalidity_date, datetime.datetime):
             raise TypeError("invalidity_date must be a datetime.datetime")
 
         self._invalidity_date = invalidity_date
+        self._asn1value = asn1value
 
     def __repr__(self):
         return "<InvalidityDate(invalidity_date={})>".format(
@@ -1375,13 +1438,14 @@ class InvalidityDate(object):
         return hash(self.invalidity_date)
 
     invalidity_date = utils.read_only_property("_invalidity_date")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
 class PrecertificateSignedCertificateTimestamps(object):
     oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 
-    def __init__(self, signed_certificate_timestamps):
+    def __init__(self, signed_certificate_timestamps, asn1value=None):
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
             isinstance(sct, SignedCertificateTimestamp)
@@ -1392,10 +1456,12 @@ class PrecertificateSignedCertificateTimestamps(object):
                 "a SignedCertificateTimestamp"
             )
         self._signed_certificate_timestamps = signed_certificate_timestamps
+        self._asn1value = asn1value
 
     __len__, __iter__, __getitem__ = _make_sequence_methods(
         "_signed_certificate_timestamps"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
     def __repr__(self):
         return (
@@ -1424,11 +1490,12 @@ class PrecertificateSignedCertificateTimestamps(object):
 class OCSPNonce(object):
     oid = OCSPExtensionOID.NONCE
 
-    def __init__(self, nonce):
+    def __init__(self, nonce, asn1value=None):
         if not isinstance(nonce, bytes):
             raise TypeError("nonce must be bytes")
 
         self._nonce = nonce
+        self._asn1value = asn1value
 
     def __eq__(self, other):
         if not isinstance(other, OCSPNonce):
@@ -1446,6 +1513,7 @@ class OCSPNonce(object):
         return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
 
     nonce = utils.read_only_property("_nonce")
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
@@ -1454,7 +1522,7 @@ class IssuingDistributionPoint(object):
 
     def __init__(self, full_name, relative_name, only_contains_user_certs,
                  only_contains_ca_certs, only_some_reasons, indirect_crl,
-                 only_contains_attribute_certs):
+                 only_contains_attribute_certs, asn1value=None):
         if (
             only_some_reasons and (
                 not isinstance(only_some_reasons, frozenset) or not all(
@@ -1521,6 +1589,7 @@ class IssuingDistributionPoint(object):
         self._only_some_reasons = only_some_reasons
         self._full_name = full_name
         self._relative_name = relative_name
+        self._asn1value = asn1value
 
     def __repr__(self):
         return (
@@ -1576,6 +1645,7 @@ class IssuingDistributionPoint(object):
     only_contains_attribute_certs = utils.read_only_property(
         "_only_contains_attribute_certs"
     )
+    asn1value = utils.read_only_property("_asn1value")
 
 
 @utils.register_interface(ExtensionType)
@@ -1588,6 +1658,7 @@ class UnrecognizedExtension(object):
 
     oid = utils.read_only_property("_oid")
     value = utils.read_only_property("_value")
+    asn1value = utils.read_only_property("_value")
 
     def __repr__(self):
         return (
