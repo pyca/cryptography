@@ -160,6 +160,7 @@ def skip_if_memtesting_not_supported():
     )
 
 
+@pytest.mark.skip_fips(reason="FIPS self-test sets allow_customize = 0")
 @skip_if_memtesting_not_supported()
 class TestAssertNoMemoryLeaks(object):
     def test_no_leak_no_malloc(self):
@@ -205,6 +206,7 @@ class TestAssertNoMemoryLeaks(object):
             """))
 
 
+@pytest.mark.skip_fips(reason="FIPS self-test sets allow_customize = 0")
 @skip_if_memtesting_not_supported()
 class TestOpenSSLMemoryLeaks(object):
     @pytest.mark.parametrize("path", [
