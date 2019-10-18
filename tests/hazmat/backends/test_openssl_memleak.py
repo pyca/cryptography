@@ -298,6 +298,7 @@ class TestOpenSSLMemoryLeaks(object):
             ec.derive_private_key(1, ec.SECP256R1(), backend)
         """))
 
+    @pytest.mark.skip_fips
     def test_x25519_pubkey_from_private_key(self):
         assert_no_memory_leaks(textwrap.dedent("""
         def func():

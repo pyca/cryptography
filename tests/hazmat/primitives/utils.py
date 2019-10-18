@@ -82,7 +82,7 @@ def generate_aead_test(param_loader, path, file_names, cipher_factory,
 
 def aead_test(backend, cipher_factory, mode_factory, params):
     if (
-        mode_factory is GCM and backend._fips_enabled() and
+        mode_factory is GCM and backend._fips_enabled and
         len(params["iv"]) != 24
     ):
         # Red Hat disables non-96-bit IV support as part of its FIPS

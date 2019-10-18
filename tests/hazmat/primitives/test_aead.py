@@ -381,7 +381,7 @@ class TestAESGCM(object):
     def test_vectors(self, backend, vector):
         nonce = binascii.unhexlify(vector["iv"])
 
-        if backend._fips_enabled() and len(nonce) != 12:
+        if backend._fips_enabled and len(nonce) != 12:
             # Red Hat disables non-96-bit IV support as part of its FIPS
             # patches.
             pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")

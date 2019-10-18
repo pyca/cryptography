@@ -172,7 +172,7 @@ class TestOpenSSL(object):
     backend._lib.Cryptography_HAS_ENGINE == 0,
     reason="Requires OpenSSL with ENGINE support")
 @pytest.mark.skipif(
-    backend._fips_enabled(),
+    backend._fips_enabled,
     reason="osrandom engine disabled for FIPS")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
