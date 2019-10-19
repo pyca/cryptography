@@ -45,6 +45,7 @@ from cryptography.hazmat.backends.openssl.ed448 import (
     _ED448_KEY_SIZE, _Ed448PrivateKey, _Ed448PublicKey
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
+    _ALL_EXTENSIONS_ENCODE_HANDLERS,
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
     _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
@@ -1055,6 +1056,39 @@ class Backend(object):
             return self._lib.X509V3_EXT_i2d(
                 nid, 1 if extension.critical else 0, ext_struct
             )
+
+    def serialize_x509_extension(self, extension):
+        if isinstance(extension.value, x509.UnrecognizedExtension):
+            return extension.value.value
+        elif isinstance(extension.value, x509.TLSFeature):
+            return encode_der(
+                SEQUENCE,
+                *[
+                    encode_der(INTEGER, encode_der_integer(x.value))
+                    for x in extension.value
+                ]
+            )
+        elif isinstance(extension.value, x509.PrecertPoison):
+            return encode_der(NULL)
+        else:
+            try:
+                encode = _ALL_EXTENSIONS_ENCODE_HANDLERS[extension.oid]
+            except KeyError:
+                raise NotImplementedError(
+                    'Extension not supported: {}'.format(extension.oid)
+                )
+
+            ext_struct = encode(self, extension.value)
+            nid = self._lib.OBJ_txt2nid(
+                extension.oid.dotted_string.encode("ascii")
+            )
+            backend.openssl_assert(nid != self._lib.NID_undef)
+            ext = self._lib.X509V3_EXT_i2d(
+                nid, 1 if extension.critical else 0, ext_struct
+            )
+            data = self._lib.X509_EXTENSION_get_data(ext)
+            backend.openssl_assert(data != self._ffi.NULL)
+            return self._ffi.buffer(data.data, data.length)[:]
 
     def create_x509_revoked_certificate(self, builder):
         if not isinstance(builder, x509.RevokedCertificateBuilder):

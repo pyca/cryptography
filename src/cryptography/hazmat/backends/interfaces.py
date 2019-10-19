@@ -330,6 +330,12 @@ class X509Backend(object):
         Compute the DER encoded bytes of an X509 Name object.
         """
 
+    @abc.abstractmethod
+    def serialize_x509_extension(self, extension):
+        """
+        Compute the DER encoded bytes of an X509 extension's value.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):

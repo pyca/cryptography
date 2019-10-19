@@ -608,6 +608,14 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :return bytes: The DER encoded bytes.
 
+    .. method:: serialize_x509_extension(extension)
+
+        .. versionadded:: 2.9
+
+        :param extension: An instance of :class:`~cryptography.x509.Extension`.
+
+        :return bytes: The DER encoded bytes.
+
 .. class:: DHBackend
 
     .. versionadded:: 0.9

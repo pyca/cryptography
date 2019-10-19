@@ -658,3 +658,31 @@ _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS = {
 _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS = {
     OCSPExtensionOID.NONCE: _encode_nonce,
 }
+
+_ALL_EXTENSIONS_ENCODE_HANDLERS = {
+    ExtensionOID.BASIC_CONSTRAINTS: _encode_basic_constraints,
+    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
+    ExtensionOID.KEY_USAGE: _encode_key_usage,
+    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
+    ExtensionOID.EXTENDED_KEY_USAGE: _encode_extended_key_usage,
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
+    ExtensionOID.CERTIFICATE_POLICIES: _encode_certificate_policies,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
+        _encode_authority_information_access
+    ),
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
+    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
+    ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
+    ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
+    ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
+    ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
+    ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
+    ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
+    ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
+    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
+    CRLEntryExtensionOID.CRL_REASON: _encode_crl_reason,
+    CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
+    OCSPExtensionOID.NONCE: _encode_nonce,
+}

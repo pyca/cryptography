@@ -1197,6 +1197,9 @@ class Extension(object):
     def __hash__(self):
         return hash((self.oid, self.critical, self.value))
 
+    def serialize_value(self, backend):
+        return backend.serialize_x509_extension(self.value)
+
 
 class GeneralNames(object):
     def __init__(self, general_names):

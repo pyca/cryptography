@@ -1576,6 +1576,16 @@ X.509 Extensions
 
         Returns an instance of the extension type corresponding to the OID.
 
+    .. method:: serialize_value(backend)
+
+        .. versiondded:: 2.9
+
+        :param backend: A backend supporting the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :return bytes: The DER encoded bytes of the extension's value.
+
 .. class:: ExtensionType
 
     .. versionadded:: 1.0
