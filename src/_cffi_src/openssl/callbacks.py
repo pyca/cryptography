@@ -81,7 +81,7 @@ static inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
 #endif
 
 
-static unsigned int _ssl_locks_count = 0;
+static int _ssl_locks_count = 0;
 static Cryptography_mutex *_ssl_locks = NULL;
 
 static void _ssl_thread_locking_function(int mode, int n, const char *file,
@@ -101,7 +101,7 @@ static void _ssl_thread_locking_function(int mode, int n, const char *file,
     */
 
     if ((_ssl_locks == NULL) ||
-        (n < 0) || ((unsigned)n >= _ssl_locks_count)) {
+        (n < 0) || (n >= _ssl_locks_count)) {
         return;
     }
 
