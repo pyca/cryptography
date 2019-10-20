@@ -1197,7 +1197,8 @@ class Extension(object):
     def __hash__(self):
         return hash((self.oid, self.critical, self.value))
 
-    def serialize_value(self, backend):
+    def serialize_value(self):
+        from cryptography.hazmat.backends.openssl.backend import backend
         return backend.serialize_x509_extension(self.value)
 
 
