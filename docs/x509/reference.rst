@@ -1578,7 +1578,7 @@ X.509 Extensions
 
     .. method:: serialize_value(backend)
 
-        .. versiondded:: 2.9
+        .. versionadded:: 2.9
 
         :param backend: A backend supporting the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
