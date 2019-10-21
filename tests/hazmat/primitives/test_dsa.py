@@ -23,12 +23,12 @@ from cryptography.utils import CryptographyDeprecationWarning
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 )
+from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyHashAlgorithm, DummyKeySerializationEncryption
 from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
-from .utils import skip_fips_traditional_openssl
 
 
 def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):

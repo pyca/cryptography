@@ -23,13 +23,13 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_ec import EC_KEY_SECP384R1
+from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_kasvs_ecdh_vectors, load_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
 )
-from .utils import skip_fips_traditional_openssl
 
 _HASH_TYPES = {
     "SHA-1": hashes.SHA1,

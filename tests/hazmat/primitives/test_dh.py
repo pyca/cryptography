@@ -399,7 +399,10 @@ class TestDH(object):
             os.path.join("asymmetric", "DH", "vec.txt"),
             load_nist_vectors))
     def test_dh_vectors(self, backend, vector):
-        if backend._fips_enabled and int(vector["p"]) < backend._dh_min_modulus:
+        if (
+                backend._fips_enabled and
+                int(vector["p"]) < backend._dh_min_modulus
+        ):
             pytest.skip("modulus too small for FIPS mode")
         parameters = dh.DHParameterNumbers(int(vector["p"]),
                                            int(vector["g"]))
