@@ -119,6 +119,62 @@ seeded from the same pool as ``/dev/random``.
 +------------------------------------------+------------------------------+
 
 
+FIPS mode
+---------
+
+Federal Information Processing Standards is a public standard for use by
+US American government agencies. OpenSSL in FIPS mode prohibits the use of
+non-approved algorithms and parameters.
+
+Key restrictions
+~~~~~~~~~~~~~~~~
+
+* _`Diffie-Hellman key exchange` requires key size equal or greater than
+  2048 bits.
+* _`DSA` requires key size equal or greater than 2048 bits.
+* _`RSA`  requires key size equal or greater than 2048 bits and the
+  public exponent must be 65537.
+
+Prohibited message digests
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :class:`~cryptography.hazmat.primitives.hashes.MD5`
+* :class:`~cryptography.hazmat.primitives.hashes.BLAKE2b`
+* :class:`~cryptography.hazmat.primitives.hashes.BLAKE2s`
+
+Prohibited symmetric encryption algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ARC4`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Camellia`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`
+
+Prohibited AEAD algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :class:`~cryptography.hazmat.primitives.poly1305.Poly1305`
+
+Prohibited asymmetric algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* _`Ed448 signing`
+* _`Ed25519 signing`
+* _`X448 key exchange`
+* _`X25519 key exchange`
+
+Blocked features
+~~~~~~~~~~~~~~~~
+
+* Encryption with
+  :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`
+  format
+* OpenSSL's DRBG cannot be replaced with `OS random engine`_.
+
+
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_private_keys_.28Debian-specific.29
 .. _`Fortuna`: https://en.wikipedia.org/wiki/Fortuna_(PRNG)
