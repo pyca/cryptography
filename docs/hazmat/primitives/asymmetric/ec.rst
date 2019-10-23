@@ -773,9 +773,8 @@ This sample demonstrates how to generate a private key and serialize it.
 .. doctest::
 
     >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import ec
     >>> from cryptography.hazmat.primitives import serialization
+    >>> from cryptography.hazmat.primitives.asymmetric import ec
 
     >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
 
