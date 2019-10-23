@@ -251,7 +251,7 @@ static int osrandom_init(ENGINE *e) {
 #if !defined(__APPLE__)
     getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
 #else
-    if (&getentropy != NULL) {
+    if (__builtin_available(macOS 10.12, *)) {
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
     } else {
         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
@@ -277,7 +277,11 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         while (size > 0) {
             /* OpenBSD and macOS restrict maximum buffer size to 256. */
             len = size > 256 ? 256 : size;
+/* on mac, availability is already checked using `__builtin_available` above */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
             res = getentropy(buffer, (size_t)len);
+#pragma clang diagnostic pop
             if (res < 0) {
                 ERR_Cryptography_OSRandom_error(
                     CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
