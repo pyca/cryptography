@@ -7,8 +7,11 @@ from __future__ import absolute_import, division, print_function
 import base64
 import calendar
 import datetime
+from filecmp import cmp
 import json
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory, mkstemp
 import time
 
 import iso8601
@@ -17,7 +20,7 @@ import pytest
 
 import six
 
-from cryptography.fernet import Fernet, InvalidToken, MultiFernet
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet, StreamFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
@@ -218,3 +221,67 @@ class TestMultiFernet(object):
 
         with pytest.raises(InvalidToken):
             mf2.rotate(mf1.encrypt(b"abc"))
+
+
+class TestStreamFernetFile(object):
+    def test_file_8192B(self):
+        with TemporaryDirectory() as d:
+            original = self._add_file(d, 8192)
+            encrypted = original.with_suffix('.enc')
+            unencrypted = original.with_suffix('.unenc')
+            c = StreamFernet(StreamFernet.generate_key())
+            c.encrypt_file(original, encrypted)
+            c.decrypt_file(encrypted, unencrypted)
+            assert cmp(original, unencrypted)
+
+    @staticmethod
+    def _add_file(working_directory, size=1):
+        file_data = b'a' * size
+        file_handle, file_path = mkstemp(dir=working_directory, text=True)
+        with open(file_handle, 'wb') as f:
+            f.write(file_data)
+
+        return Path(file_path)
+
+
+class TestStreamFernet(object):
+    def _body_stream(self, size : int, block_size : int = 1):
+        def plaintext_generator(buffer):
+            while buffer:
+                yield buffer[:block_size]
+                buffer = buffer[block_size:]
+
+        def ciphertext_generator(buffer):
+            while buffer:
+                yield buffer[:block_size]
+                buffer = buffer[block_size:]
+
+        c = StreamFernet(StreamFernet.generate_key())
+
+        plaintext = b'a' * size
+        encryptor = c.encrypt_stream(plaintext_generator(plaintext))
+        encrypted = b''
+        for data in encryptor:
+            encrypted += data
+
+        decryptor = c.decrypt_stream(ciphertext_generator(encrypted))
+        decrypted = b''
+        for data in decryptor:
+            decrypted += data
+
+        assert plaintext, decrypted
+
+    def test_stream_1B(self):
+        self._body_stream(1)
+
+    def test_stream_16B(self):
+        self._body_stream(16)
+
+    def test_stream_4KB(self):
+        self._body_stream(4096)
+
+    def test_stream_4KB_128B(self):
+        self._body_stream(4096, 128)
+
+    def test_stream_8KB_4KB(self):
+        self._body_stream(8192, 4096)
