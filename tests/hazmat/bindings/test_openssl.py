@@ -25,7 +25,7 @@ class TestOpenSSL(object):
     def test_crypto_lock_init(self):
         b = Binding()
 
-        b.init_static_locks()
+        b._init_static_locks()
         lock_cb = b.lib.CRYPTO_get_locking_callback()
         if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
             assert lock_cb == b.ffi.NULL
