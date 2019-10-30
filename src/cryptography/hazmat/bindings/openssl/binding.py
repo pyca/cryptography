@@ -80,7 +80,7 @@ def _openssl_assert(lib, ok):
         )
 
 
-def build_conditional_library(lib, conditional_names):
+def _build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib
     excluded_names = set()
@@ -124,7 +124,7 @@ class Binding(object):
     def _ensure_ffi_initialized(cls):
         with cls._init_lock:
             if not cls._lib_loaded:
-                cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
+                cls.lib = _build_conditional_library(lib, CONDITIONAL_NAMES)
                 cls._lib_loaded = True
                 # initialize the SSL library
                 cls.lib.SSL_library_init()
@@ -135,7 +135,7 @@ class Binding(object):
                 cls._register_osrandom_engine()
 
     @classmethod
-    def init_static_locks(cls):
+    def _init_static_locks(cls):
         with cls._lock_init_lock:
             cls._ensure_ffi_initialized()
             # Use Python's implementation if available, importing _ssl triggers
@@ -200,6 +200,6 @@ _verify_package_version(cryptography.__version__)
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
-Binding.init_static_locks()
+Binding._init_static_locks()
 
 _verify_openssl_version(Binding.lib)
