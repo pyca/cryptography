@@ -11,6 +11,10 @@ from _cffi_src.utils import (
     build_ffi_for_binding, compiler_type, extra_link_args
 )
 
+from distutils.ccompiler import get_default_compiler
+from distutils import dist
+from distutils.command.config import config
+
 
 def _get_openssl_libraries(platform):
     if os.environ.get("CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS", None):
@@ -46,7 +50,15 @@ def _extra_compile_args(platform):
     When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
     revisit this.
     """
-    if platform not in ["win32", "hp-ux11", "sunos5"]:
+    # make sure the compiler used supports the flags to be added
+    is_gcc = False
+    if get_default_compiler() == "unix":
+        d = dist.Distribution()
+        cmd = config(d)
+        cmd._check_compiler()
+        is_gcc = cmd.compiler.compiler[0].startswith("gcc")
+    if is_gcc or not (platform in ["win32", "hp-ux11", "sunos5"] or
+                      platform.startswith("aix")):
         return ["-Wconversion", "-Wno-error=sign-conversion"]
     else:
         return []
