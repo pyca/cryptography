@@ -22,6 +22,7 @@ def _get_openssl_libraries(platform):
         )
         if windows_link_legacy_openssl is None:
             # Link against the 1.1.0 names
+            # CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
             libs = ["libssl", "libcrypto"]
         else:
             # Link against the 1.0.2 and lower names
