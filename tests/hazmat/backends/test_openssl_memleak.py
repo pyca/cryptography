@@ -80,7 +80,10 @@ def main(argv):
             lib.Cryptography_free_wrapper(ptr, path, line)
 
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
-    assert result == 1
+    if result != 1:
+        from cryptography.hazmat.bindings.openssl.binding import _consume_errors
+        errors = _consume_errors(lib)
+        raise Exception(errors)
 
     # Trigger a bunch of initialization stuff.
     import cryptography.hazmat.backends.openssl
