@@ -11,7 +11,7 @@ Changelog
 * Support for OpenSSL 1.0.1 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Removed support for calling
-  :meth`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
   with no arguments, as per our deprecation policy. You must now pass
   ``encoding`` and ``format``.
 
