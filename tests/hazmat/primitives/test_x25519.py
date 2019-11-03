@@ -95,11 +95,6 @@ class TestX25519Exchange(object):
         with pytest.raises(ValueError):
             private_key.exchange(public_key)
 
-    def test_deprecated_public_bytes(self, backend):
-        key = X25519PrivateKey.generate().public_key()
-        with pytest.warns(utils.DeprecatedIn25):
-            key.public_bytes()
-
     def test_public_bytes_bad_args(self, backend):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
