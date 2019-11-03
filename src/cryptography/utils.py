@@ -22,7 +22,7 @@ class CryptographyDeprecationWarning(UserWarning):
 # cycle ends.
 PersistentlyDeprecated2017 = CryptographyDeprecationWarning
 PersistentlyDeprecated2018 = CryptographyDeprecationWarning
-DeprecatedIn25 = CryptographyDeprecationWarning
+PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn27 = CryptographyDeprecationWarning
 
 

@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 from cryptography import utils
 from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
 from cryptography.hazmat.primitives import serialization
@@ -23,19 +21,7 @@ class _X25519PublicKey(object):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
-    def public_bytes(self, encoding=None, format=None):
-        if encoding is None or format is None:
-            if encoding is not None or format is not None:
-                raise ValueError("Both encoding and format are required")
-            else:
-                warnings.warn(
-                    "public_bytes now requires encoding and format arguments. "
-                    "Support for calling without arguments will be removed in "
-                    "cryptography 2.7",
-                    utils.DeprecatedIn25,
-                )
-                encoding = serialization.Encoding.Raw
-                format = serialization.PublicFormat.Raw
+    def public_bytes(self, encoding, format):
         if (
             encoding is serialization.Encoding.Raw or
             format is serialization.PublicFormat.Raw
