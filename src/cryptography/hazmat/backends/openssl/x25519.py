@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 from cryptography import utils
 from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
 from cryptography.hazmat.primitives import serialization

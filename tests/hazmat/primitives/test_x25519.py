@@ -9,7 +9,6 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
@@ -99,7 +98,7 @@ class TestX25519Exchange(object):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(None, serialization.PublicFormat.Raw)
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.public_bytes(serialization.Encoding.Raw)
 
     # These vectors are also from RFC 7748
