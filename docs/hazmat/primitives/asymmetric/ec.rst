@@ -613,9 +613,9 @@ Key Interfaces
 
     .. attribute:: curve
 
-            :type: :class:`EllipticCurve`
+        :type: :class:`EllipticCurve`
 
-            The EllipticCurve that this key is on.
+        The EllipticCurve that this key is on.
 
     .. attribute:: key_size
 
