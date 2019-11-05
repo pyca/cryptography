@@ -103,9 +103,6 @@ matrix:
         - python: 2.7
           services: docker
           env: TOXENV=py27-randomorder DOCKER=pyca/cryptography-runner-ubuntu-rolling
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-fedora
         - python: 3.7
           services: docker
           env: TOXENV=py37 DOCKER=pyca/cryptography-runner-fedora
