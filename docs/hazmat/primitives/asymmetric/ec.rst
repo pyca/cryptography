@@ -611,6 +611,12 @@ Key Interfaces
             :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`,
             which returns the decoded tuple ``(r, s)``.
 
+    .. attribute:: curve
+
+        :type: :class:`EllipticCurve`
+
+        The EllipticCurve that this key is on.
+
     .. attribute:: key_size
 
         .. versionadded:: 1.9
