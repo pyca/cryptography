@@ -25,7 +25,7 @@ class X25519PublicKey(object):
         return backend.x25519_load_public_bytes(data)
 
     @abc.abstractmethod
-    def public_bytes(self, encoding=None, format=None):
+    def public_bytes(self, encoding, format):
         """
         The serialized bytes of the public key.
         """

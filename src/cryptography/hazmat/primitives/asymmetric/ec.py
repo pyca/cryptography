@@ -364,7 +364,7 @@ class EllipticCurvePublicNumbers(object):
             " and will be removed in a future version. Please use "
             "EllipticCurvePublicKey.public_bytes to obtain both "
             "compressed and uncompressed point encoding.",
-            utils.DeprecatedIn25,
+            utils.PersistentlyDeprecated2019,
             stacklevel=2,
         )
         # key_size is in bits. Convert to bytes and round up
@@ -383,7 +383,7 @@ class EllipticCurvePublicNumbers(object):
             "Support for unsafe construction of public numbers from "
             "encoded data will be removed in a future version. "
             "Please use EllipticCurvePublicKey.from_encoded_point",
-            utils.DeprecatedIn25,
+            utils.PersistentlyDeprecated2019,
             stacklevel=2,
         )
 
