@@ -31,7 +31,7 @@ def should_verify(backend, wycheproof):
         if (
             (
                 backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
-                backend._lib.CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER
+                backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
             ) and wycheproof.has_flag("MissingNull")
         ):
             return False
@@ -44,7 +44,7 @@ def should_verify(backend, wycheproof):
 @pytest.mark.supported(
     only_if=lambda backend: (
         not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-        backend._lib.CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER
+        backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
     ),
     skip_message=(
         "Many of these tests fail on OpenSSL < 1.0.2 and since upstream isn't"
