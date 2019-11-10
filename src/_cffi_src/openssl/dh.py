@@ -39,7 +39,7 @@ int Cryptography_i2d_DHxparams_bio(BIO *bp, DH *x);
 
 CUSTOMIZATIONS = """
 /* These functions were added in OpenSSL 1.1.0 */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
 void DH_get0_pqg(const DH *dh,
                  const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
 {
