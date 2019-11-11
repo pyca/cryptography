@@ -2483,6 +2483,18 @@ X.509 Extensions
 
     :param list policies: A list of :class:`PolicyInformation` instances.
 
+    As an example of how ``CertificatePolicies`` might be used, if you wanted
+    to check if a certificated contained the CAB Forum's "domain-validated"
+    policy, you might write code like:
+
+    .. code-block:: python
+
+        def contains_domain_validated(policies):
+            return any(
+                policy.oid.dotted_string == "2.23.140.1.2.1"
+                for policy in policies
+            )
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
