@@ -270,7 +270,7 @@ void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
 CUSTOMIZATIONS = """
 /* Added in 1.0.2 beta but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
 /* from x509/x_x509.c version 1.0.2 */
 void X509_get0_signature(const ASN1_BIT_STRING **psig,
                          const X509_ALGOR **palg, const X509 *x)
@@ -327,7 +327,7 @@ int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
     return i2d_X509_CRL_INFO(crl->crl, pp);
 }
 
-#if !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+#if !CRYPTOGRAPHY_IS_LIBRESSL
 int X509_up_ref(X509 *x) {
    return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
 }

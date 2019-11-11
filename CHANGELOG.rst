@@ -10,6 +10,7 @@ Changelog
 
 * Support for OpenSSL 1.0.1 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* Support for LibreSSL 2.6.x has been removed.
 * Removed support for calling
   :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
   with no arguments, as per our deprecation policy. You must now pass
