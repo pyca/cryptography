@@ -2460,7 +2460,9 @@ X.509 Extensions
     .. versionadded:: 1.2
 
     A generic extension class used to hold the raw value of extensions that
-    ``cryptography`` does not know how to parse.
+    ``cryptography`` does not know how to parse. This can also be used when
+    creating new certificates, CRLs, or OCSP requests and responses to encode
+    extensions that ``cryptography`` does not know how to generate.
 
     .. attribute:: oid
 
