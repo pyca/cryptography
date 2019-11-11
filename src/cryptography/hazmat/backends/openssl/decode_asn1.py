@@ -857,6 +857,12 @@ _OCSP_BASICRESP_EXTENSION_HANDLERS = {
     OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
+_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT = _REVOKED_EXTENSION_HANDLERS.copy()
+_OCSP_SINGLERESP_EXTENSION_HANDLERS = _REVOKED_EXTENSION_HANDLERS.copy()
+_OCSP_SINGLERESP_EXTENSION_HANDLERS[
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
+] = _decode_precert_signed_certificate_timestamps
+
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -902,11 +908,11 @@ _OCSP_BASICRESP_EXT_PARSER = _X509ExtensionParser(
 _OCSP_SINGLERESP_EXT_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS_NO_SCT
+    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT
 )
 
 _OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS,
+    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS,
 )

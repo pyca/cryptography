@@ -403,14 +403,6 @@ Interfaces
 
         The extensions encoded in the request.
 
-    .. attribute:: single_extensions
-
-        .. versionadded:: 2.8
-
-        :type: :class:`~cryptography.x509.Extensions`
-
-        The single extensions encoded in the request.
-
     .. method:: public_bytes(encoding)
 
         :param encoding: The encoding to use. Only
@@ -608,6 +600,14 @@ Interfaces
         :type: :class:`~cryptography.x509.Extensions`
 
         The extensions encoded in the response.
+
+    .. attribute:: single_extensions
+
+        .. versionadded:: 2.9
+
+        :type: :class:`~cryptography.x509.Extensions`
+
+        The single extensions encoded in the response.
 
     .. method:: public_bytes(encoding)
 

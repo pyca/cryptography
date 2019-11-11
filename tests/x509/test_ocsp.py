@@ -761,14 +761,24 @@ class TestOCSPResponse(object):
             backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER),
         skip_message="Requires OpenSSL 1.1.0f+",
     )
-    def test_single_extensions(self, backend):
+    def test_single_extensions_sct(self, backend):
         resp = _load_data(
-            os.path.join("x509", "ocsp", "resp-single-extension.der"),
+            os.path.join("x509", "ocsp", "resp-single-extension-sct.der"),
             ocsp.load_der_ocsp_response,
         )
         assert len(resp.single_extensions) == 1
         ext = resp.single_extensions[0]
         assert ext.oid == x509.ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
+
+    def test_single_extensions(self, backend):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-single-extension-reason.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert len(resp.single_extensions) == 1
+        ext = resp.single_extensions[0]
+        assert ext.oid == x509.CRLReason.oid
+        assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
 
 
 class TestOCSPEdDSA(object):

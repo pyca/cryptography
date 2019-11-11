@@ -15,6 +15,9 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
   with no arguments, as per our deprecation policy. You must now pass
   ``encoding`` and ``format``.
+* Added support for parsing
+  :attr:`~cryptography.x509.ocsp.OCSPResponse.single_extensions` in an OCSP
+  response.
 
 .. _v2-8:
 
