@@ -857,6 +857,8 @@ _OCSP_BASICRESP_EXTENSION_HANDLERS = {
     OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
+# All revoked extensions are valid single response extensions, see:
+# https://tools.ietf.org/html/rfc6960#section-4.4.5
 _OCSP_SINGLERESP_EXTENSION_HANDLERS = _REVOKED_EXTENSION_HANDLERS.copy()
 
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
