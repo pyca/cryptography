@@ -857,6 +857,10 @@ _OCSP_BASICRESP_EXTENSION_HANDLERS = {
     OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
+# All revoked extensions are valid single response extensions, see:
+# https://tools.ietf.org/html/rfc6960#section-4.4.5
+_OCSP_SINGLERESP_EXTENSION_HANDLERS = _REVOKED_EXTENSION_HANDLERS.copy()
+
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -897,4 +901,10 @@ _OCSP_BASICRESP_EXT_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_BASICRESP_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_BASICRESP_get_ext(x, i),
     handlers=_OCSP_BASICRESP_EXTENSION_HANDLERS,
+)
+
+_OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
+    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS,
 )

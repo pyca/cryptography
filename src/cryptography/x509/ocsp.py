@@ -427,3 +427,9 @@ class OCSPResponse(object):
         """
         The list of response extensions. Not single response extensions.
         """
+
+    @abc.abstractproperty
+    def single_extensions(self):
+        """
+        The list of single response extensions. Not response extensions.
+        """

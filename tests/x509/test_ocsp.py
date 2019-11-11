@@ -756,6 +756,16 @@ class TestOCSPResponse(object):
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)
 
+    def test_single_extensions(self, backend):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-single-extension-reason.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        assert len(resp.single_extensions) == 1
+        ext = resp.single_extensions[0]
+        assert ext.oid == x509.CRLReason.oid
+        assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
+
 
 class TestOCSPEdDSA(object):
     @pytest.mark.supported(
