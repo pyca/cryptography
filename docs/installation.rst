@@ -47,12 +47,11 @@ just run
     $ pip install cryptography
 
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
-You can compile OpenSSL yourself as well or use the binaries we build for our
-own `infrastructure`_. Be sure to download the proper
-version for your architecture and Python (2010 works for Python 2.7, 3.3,
-and 3.4 while 2015 is required for 3.5 and above). Wherever you place your copy
-of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE`` environment variables
-to include the proper locations. For example:
+You can compile OpenSSL yourself as well or use `a binary distribution`_.
+Be sure to download the proper version for your architecture and Python
+(VC2010 works for Python 2.7, 3.3, and 3.4 while VC2015 is required for 3.5 and above).
+Wherever you place your copy of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE``
+environment variables to include the proper locations. For example:
 
 .. code-block:: console
 
@@ -280,7 +279,7 @@ local `wheel cache`_.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`infrastructure`: https://github.com/pyca/infra/tree/master/windows/openssl
+.. _`a binary distribution`: https://wiki.openssl.org/index.php/Binaries
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
