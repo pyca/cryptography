@@ -338,6 +338,7 @@ const COMP_METHOD *SSL_get_current_expansion(SSL *);
 const char *SSL_COMP_get_name(const COMP_METHOD *);
 
 unsigned long SSL_set_mode(SSL *, unsigned long);
+unsigned long SSL_clear_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
 
 unsigned long SSL_set_options(SSL *, unsigned long);
@@ -359,6 +360,7 @@ unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_options(SSL_CTX *);
 unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
+unsigned long SSL_CTX_clear_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_mode(SSL_CTX *);
 unsigned long SSL_CTX_set_session_cache_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_session_cache_mode(SSL_CTX *);
