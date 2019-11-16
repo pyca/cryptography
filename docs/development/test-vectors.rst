@@ -519,6 +519,8 @@ X.509 OCSP Test Vectors
   modified to contain an MD2 signature algorithm object identifier.
 * ``x509/ocsp/resp-single-extension-reason.der`` - An OCSP response that
   contains a ``CRLReason`` single extension.
+* ``x509/ocsp/resp-sct-extension.der`` - An OCSP response containing a
+  ``CT Certificate SCTs`` single extension, from the SwissSign OCSP responder.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
