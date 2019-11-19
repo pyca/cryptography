@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
-
 from distutils import dist
 from distutils.ccompiler import get_default_compiler
 from distutils.command.config import config
@@ -56,7 +55,8 @@ def _extra_compile_args(platform):
         d = dist.Distribution()
         cmd = config(d)
         cmd._check_compiler()
-        is_gcc = cmd.compiler.compiler[0].startswith("gcc")
+        is_gcc = "gcc" in cmd.compiler.compiler[0] or
+        "clang" in cmd.compiler.compiler[0]
     if is_gcc or not (platform in ["win32", "hp-ux11", "sunos5"] or
                       platform.startswith("aix")):
         return ["-Wconversion", "-Wno-error=sign-conversion"]
