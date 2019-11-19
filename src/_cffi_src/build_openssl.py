@@ -55,8 +55,8 @@ def _extra_compile_args(platform):
         d = dist.Distribution()
         cmd = config(d)
         cmd._check_compiler()
-        is_gcc = "gcc" in cmd.compiler.compiler[0] or
-        "clang" in cmd.compiler.compiler[0]
+        is_gcc = ("gcc" in cmd.compiler.compiler[0] or
+                  "clang" in cmd.compiler.compiler[0])
     if is_gcc or not (platform in ["win32", "hp-ux11", "sunos5"] or
                       platform.startswith("aix")):
         return ["-Wconversion", "-Wno-error=sign-conversion"]
