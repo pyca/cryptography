@@ -99,6 +99,7 @@ def cryptography_has_102_verification_params():
         "X509_VERIFY_PARAM_set1_ip_asc",
         "X509_VERIFY_PARAM_set_hostflags",
         "SSL_get0_param",
+        "SSL_CTX_get0_param",
         "X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT",
         "X509_CHECK_FLAG_NO_WILDCARDS",
         "X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS",
