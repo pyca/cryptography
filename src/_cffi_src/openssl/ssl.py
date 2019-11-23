@@ -196,6 +196,7 @@ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
 /* Added in 1.0.2 */
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
+X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
 
 int SSL_use_certificate(SSL *, X509 *);
 int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
@@ -655,6 +656,7 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 /* SSL_get0_param was added in OpenSSL 1.0.2. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
 X509_VERIFY_PARAM *(*SSL_get0_param)(SSL *) = NULL;
+X509_VERIFY_PARAM *(*SSL_CTX_get0_param)(SSL_CTX *) = NULL;
 #else
 #endif
 
