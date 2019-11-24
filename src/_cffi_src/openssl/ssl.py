@@ -214,6 +214,7 @@ Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 int SSL_get_error(const SSL *, int);
+long SSL_get_verify_result(const SSL *ssl);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 int SSL_renegotiate(SSL *);
