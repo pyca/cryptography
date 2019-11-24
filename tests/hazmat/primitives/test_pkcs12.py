@@ -10,6 +10,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import DERSerializationBackend
+from cryptography.hazmat.backends.openssl.backend import _RC2
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     load_key_and_certificates
@@ -20,16 +21,7 @@ from .utils import load_vectors_from_file
 
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestPKCS12(object):
-    @pytest.mark.parametrize(
-        ("filename", "password"),
-        [
-            ("cert-key-aes256cbc.p12", b"cryptography"),
-            ("cert-none-key-none.p12", b"cryptography"),
-            ("cert-rc2-key-3des.p12", b"cryptography"),
-            ("no-password.p12", None),
-        ]
-    )
-    def test_load_pkcs12_ec_keys(self, filename, password, backend):
+    def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
             lambda pemfile: x509.load_pem_x509_certificate(
@@ -51,6 +43,30 @@ class TestPKCS12(object):
         assert parsed_cert == cert
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
+
+    @pytest.mark.parametrize(
+        ("filename", "password"),
+        [
+            ("cert-key-aes256cbc.p12", b"cryptography"),
+            ("cert-none-key-none.p12", b"cryptography"),
+        ]
+    )
+    def test_load_pkcs12_ec_keys(self, filename, password, backend):
+        self._test_load_pkcs12_ec_keys(filename, password, backend)
+
+    @pytest.mark.parametrize(
+        ("filename", "password"),
+        [
+            ("cert-rc2-key-3des.p12", b"cryptography"),
+            ("no-password.p12", None),
+        ]
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(_RC2(), None),
+        skip_message="Does not support RC2"
+    )
+    def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
+        self._test_load_pkcs12_ec_keys(filename, password, backend)
 
     def test_load_pkcs12_cert_only(self, backend):
         cert = load_vectors_from_file(
