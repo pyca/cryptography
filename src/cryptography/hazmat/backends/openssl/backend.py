@@ -94,6 +94,11 @@ from cryptography.x509 import ocsp
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
+# Not actually supported, just used as a marker for some serialization tests.
+class _RC2(object):
+    pass
+
+
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
@@ -291,6 +296,10 @@ class Backend(object):
             ARC4,
             type(None),
             GetCipherByName("rc4")
+        )
+        # We don't actually support RC2, this is just used by some tests.
+        self.register_cipher_adapter(
+            _RC2, type(None), GetCipherByName("rc2")
         )
         self.register_cipher_adapter(
             ChaCha20,
