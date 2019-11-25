@@ -79,7 +79,6 @@ def main(argv):
             del heap[ptr]
             lib.Cryptography_free_wrapper(ptr, path, line)
 
-    lib.SSL_library_init()
     result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
     assert result == 1
 
