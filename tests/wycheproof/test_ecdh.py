@@ -21,6 +21,7 @@ _CURVES = {
     "secp256r1": ec.SECP256R1(),
     "secp384r1": ec.SECP384R1(),
     "secp521r1": ec.SECP521R1(),
+    "secp224k1": None,
     "secp256k1": ec.SECP256K1(),
     "brainpoolP224r1": None,
     "brainpoolP256r1": ec.BrainpoolP256R1(),
