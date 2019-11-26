@@ -20,6 +20,13 @@ _DIGESTS = {
     "SHA-256": hashes.SHA256(),
     "SHA-384": hashes.SHA384(),
     "SHA-512": hashes.SHA512(),
+    # Not supported by OpenSSL for RSA signing
+    "SHA-512/224": None,
+    "SHA-512/256": None,
+    "SHA3-224": hashes.SHA3_224(),
+    "SHA3-256": hashes.SHA3_256(),
+    "SHA3-384": hashes.SHA3_384(),
+    "SHA3-512": hashes.SHA3_512(),
 }
 
 
@@ -55,18 +62,33 @@ def should_verify(backend, wycheproof):
     "rsa_signature_test.json",
     "rsa_signature_2048_sha224_test.json",
     "rsa_signature_2048_sha256_test.json",
+    "rsa_signature_2048_sha384_test.json",
     "rsa_signature_2048_sha512_test.json",
+    "rsa_signature_2048_sha512_224_test.json",
+    "rsa_signature_2048_sha512_256_test.json",
+    "rsa_signature_2048_sha3_224_test.json",
+    "rsa_signature_2048_sha3_256_test.json",
+    "rsa_signature_2048_sha3_384_test.json",
+    "rsa_signature_2048_sha3_512_test.json",
     "rsa_signature_3072_sha256_test.json",
     "rsa_signature_3072_sha384_test.json",
     "rsa_signature_3072_sha512_test.json",
+    "rsa_signature_3072_sha512_256_test.json",
+    "rsa_signature_3072_sha3_256_test.json",
+    "rsa_signature_3072_sha3_384_test.json",
+    "rsa_signature_3072_sha3_512_test.json",
     "rsa_signature_4096_sha384_test.json",
     "rsa_signature_4096_sha512_test.json",
+    "rsa_signature_4096_sha512_256_test.json",
 )
 def test_rsa_pkcs1v15_signature(backend, wycheproof):
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
+
+    if digest is None or not backend.hash_supported(digest):
+        pytest.skip("Hash {} not supported".format(digest))
 
     if should_verify(backend, wycheproof):
         key.verify(
