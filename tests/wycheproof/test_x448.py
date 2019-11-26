@@ -33,7 +33,7 @@ def test_x448(backend, wycheproof):
     assert wycheproof.valid or wycheproof.acceptable
 
     expected = binascii.unhexlify(wycheproof.testcase["shared"])
-    if expected == b"\x00" * 32:
+    if expected == b"\x00" * 54:
         assert wycheproof.acceptable
         # OpenSSL returns an error on all zeros shared key
         with pytest.raises(ValueError):
