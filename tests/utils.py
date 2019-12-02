@@ -783,7 +783,7 @@ def load_nist_kbkdf_vectors(vector_data):
 
             tag.update({name.lower(): value.lower()})
         elif line.startswith("COUNT="):
-            test_data = dict()
+            test_data = {}
             test_data.update(tag)
             vectors.append(test_data)
         elif line.startswith("L"):

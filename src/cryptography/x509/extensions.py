@@ -948,7 +948,7 @@ class TLSFeatureType(Enum):
     status_request_v2 = 17
 
 
-_TLS_FEATURE_TYPE_TO_ENUM = dict((x.value, x) for x in TLSFeatureType)
+_TLS_FEATURE_TYPE_TO_ENUM = {x.value: x for x in TLSFeatureType}
 
 
 @utils.register_interface(ExtensionType)
