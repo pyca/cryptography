@@ -12,7 +12,7 @@ jobs:
                   PYTHON_DOWNLOAD_URL: "https://www.python.org/ftp/python/2.7.16/python-2.7.16-macosx10.6.pkg"
                   PYTHON_BIN_PATH: /Library/Frameworks/Python.framework/Versions/2.7/bin/python
               Python3:
-                  python.version: '3.4'
+                  python.version: '3.5'
                   PYTHON_DOWNLOAD_URL: "https://www.python.org/ftp/python/3.7.3/python-3.7.3-macosx10.6.pkg"
                   PYTHON_BIN_PATH: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
       steps:
@@ -87,7 +87,7 @@ jobs:
                   PLATFORM: 'manylinux1_x86_64'
               Python3m-manylinux1:
                   containerImage: 'pyca/cryptography-manylinux1:x86_64'
-                  PYTHON_VERSION: 'cp34-cp34m'
+                  PYTHON_VERSION: 'cp35-cp35m'
                   PLATFORM: 'manylinux1_x86_64'
               Python27m-manylinux2010:
                   containerImage: 'pyca/cryptography-manylinux2010:x86_64'
@@ -99,7 +99,7 @@ jobs:
                   PLATFORM: 'manylinux2010_x86_64'
               Python3m-manylinux2010:
                   containerImage: 'pyca/cryptography-manylinux2010:x86_64'
-                  PYTHON_VERSION: 'cp34-cp34m'
+                  PYTHON_VERSION: 'cp35-cp35m'
                   PLATFORM: 'manylinux2010_x86_64'
       steps:
           - script: /opt/python/$PYTHON_VERSION/bin/python -m virtualenv .venv
@@ -162,16 +162,6 @@ jobs:
               Python27-x86-64:
                   containerImage: 'pyca/cryptography-runner-windows:py27-x86_64'
                   PYTHON_VERSION: '27'
-                  OPENSSL_DIR: 'OpenSSL-Win64-2010'
-                  WINDOWS_ARCH: 'x86_64'
-              Python34-x86:
-                  containerImage: 'pyca/cryptography-runner-windows:py34-x86'
-                  PYTHON_VERSION: '34'
-                  OPENSSL_DIR: 'OpenSSL-Win32-2010'
-                  WINDOWS_ARCH: 'x86'
-              Python34-x86-64:
-                  containerImage: 'pyca/cryptography-runner-windows:py34-x86_64'
-                  PYTHON_VERSION: '34'
                   OPENSSL_DIR: 'OpenSSL-Win64-2010'
                   WINDOWS_ARCH: 'x86_64'
               Python35-x86:
