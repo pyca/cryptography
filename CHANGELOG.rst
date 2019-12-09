@@ -8,7 +8,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Support for Python 3.4 has been dropped due to
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.4 has been removed due to
   low usage and maintenance burden.
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.0.1 has been removed.
   Users on older version of OpenSSL will need to upgrade.
