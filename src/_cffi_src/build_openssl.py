@@ -37,7 +37,10 @@ def _get_openssl_libraries(platform):
         # specified on the linker command-line is significant;
         # libssl must come before libcrypto
         # (https://marc.info/?l=openssl-users&m=135361825921871)
-        return ["ssl", "crypto"]
+        # -lpthread required due to usage of pthread an potential
+        # existance of a static part containing e.g. pthread_atfork
+        # (https://github.com/pyca/cryptography/issues/5084)
+        return ["ssl", "crypto", "pthread"]
 
 
 def _extra_compile_args(platform):
