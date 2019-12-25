@@ -29,7 +29,6 @@ typedef struct {
     ...;
 } X509_ALGOR;
 
-typedef ... X509_ATTRIBUTE;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
@@ -90,12 +89,6 @@ EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-X509_ATTRIBUTE *X509_REQ_get_attr(const X509_REQ *, int);
-int X509_REQ_get_attr_by_OBJ(const X509_REQ *, const ASN1_OBJECT *, int);
-void *X509_ATTRIBUTE_get0_data(X509_ATTRIBUTE *, int, int, void *);
-ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *, int);
-int X509_REQ_add1_attr_by_txt(X509_REQ *, const char *, int,
-                              const unsigned char *, int);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -244,8 +237,6 @@ int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 int X509_set_notBefore(X509 *, ASN1_TIME *);
 int X509_set_notAfter(X509 *, ASN1_TIME *);
-int X509_set1_notBefore(X509 *, ASN1_TIME *);
-int X509_set1_notAfter(X509 *, ASN1_TIME *);
 
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
@@ -365,7 +356,6 @@ const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
 {
     return x->serialNumber;
 }
-
 #define X509_set1_notBefore X509_set_notBefore
 #define X509_set1_notAfter X509_set_notAfter
 #define X509_getm_notAfter X509_get_notAfter
