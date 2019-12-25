@@ -29,6 +29,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     padding
 )
 from cryptography.x509.base import _PUBLIC_KEY_TYPES
+from cryptography.x509.graph import Graph
 from cryptography.x509.name import _ASN1Type
 
 
@@ -205,6 +206,35 @@ class _Certificate(x509.Certificate):
 
     def is_issuer_of(self, issued_candidate):
         return issued_candidate.is_issued_by(self)
+
+    def verify(self, intermediates, trusted_roots, cert_verif_cb):
+
+        g = Graph()
+        all_certs = intermediates + trusted_roots
+        all_certs.append(self)
+        for cert in all_certs:
+            g.add_vertex(cert)
+        for cert in all_certs:
+            issuer_name = cert.issuer
+            issuer = None
+            for issuer_candidate in all_certs:
+                if issuer_candidate.subject == issuer_name:
+                    issuer = issuer_candidate
+                    break
+            if issuer:
+                g.add_edge(cert, issuer)
+        g.add_vertex('Fake Top')
+        for cert in trusted_roots:
+            g.add_edge(cert, 'Fake Top')
+
+        trust_chains = []
+        for c in g.all_paths(self, 'Fake Top'):
+            del c[-1]       # Remove 'Fake Top'
+            trust_chains.append(c)
+
+        if len(trust_chains) == 0:
+            raise x509.base.NoValidTrustChain
+        return trust_chains
 
 
 class _RevokedCertificate(x509.RevokedCertificate):

@@ -86,6 +86,10 @@ class InvalidIssuer(Exception):
         self.received = received
 
 
+class NoValidTrustChain(Exception):
+    pass
+
+
 class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def fingerprint(self, algorithm: hashes.HashAlgorithm) -> bytes:
@@ -216,6 +220,17 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
     def revocation_date(self) -> datetime.datetime:
         """
         Returns the date of when this certificate was revoked.
+        """
+
+    def verify(self, intermediates, trusted_roots, cert_verif_cb):
+        """
+        Find chains of trust from `self` to any certificate in `trusted_roots`,
+        using certificates from `intermediates`.
+        :param intermediates: list of Certificate objects to build chains from
+        :param trusted_roots: list of Certificate objects which are trusted
+        :param cert_verif_cb: ignored for now. Will take (chain: List(Certificate), position: int)
+        :return: Iterable of lists of Certificate objects. Each list is a trust
+            chain starting with `self` and ending with one of `trusted_roots`.
         """
 
     @abc.abstractproperty
