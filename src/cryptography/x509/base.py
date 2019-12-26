@@ -20,7 +20,8 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed448,
     rsa,
 )
-from cryptography.x509.extensions import Extension, ExtensionType, Extensions
+
+from cryptography.x509.extensions import Extension, ExtensionType, Extensions, ExtensionOID
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
@@ -228,7 +229,7 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
         using certificates from `intermediates`.
         :param intermediates: list of Certificate objects to build chains from
         :param trusted_roots: list of Certificate objects which are trusted
-        :param cert_verif_cb: ignored for now. Will take (chain: List(Certificate), position: int)
+        :param cert_verif_cb: Will take (chain: List(Certificate), position: int)
         :return: Iterable of lists of Certificate objects. Each list is a trust
             chain starting with `self` and ending with one of `trusted_roots`.
         """
@@ -238,6 +239,41 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
         """
         Returns an Extensions object containing a list of Revoked extensions.
         """
+
+def default_cert_verif_cb(chain, i):
+    """
+    Reasonable minimal default for the callback, applied to each certificate in the
+    trust chain.
+    For the chain to be valid, the callback must return True for all its certificates.
+    This example checks validity time, CA bits and path length.
+
+    :param chain: list of Certificate objects such as for i in range(len(chain) - 1),
+                  issuer(chain[i]) == subject(chain[i+1].
+                  The last (chain[-1]) certificate can be self-signed or not.
+    :param i: index of the checked certificate in the chain
+    :return: True if the certificate passes checks, False otherwise
+    """
+    cert = chain[i]
+
+    # Check that CA bit is set for all certs but the leaf
+    if i > 0:
+        bc = cert.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        if bc is not None:
+            if not bc.value.ca:
+                return False
+
+            # Check that path length constraint, if present, is fulfilled
+            if bc.value.path_length is not None and bc.value.path_length > i:
+                return False
+
+    # Check validity period
+    now = datetime.datetime.now()
+    if cert.not_valid_before > now or cert.not_valid_after < now:
+        return False
+
+    return True
 
 
 class CertificateRevocationList(metaclass=abc.ABCMeta):

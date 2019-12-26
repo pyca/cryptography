@@ -9,6 +9,7 @@ import os
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from freezegun import freeze_time
 
 
 def load_test_pem(filename):
@@ -28,7 +29,20 @@ class TestCorrectChainVerifies(object):
 
         chains = leaf.verify(intermediates=[intermediate],
                              trusted_roots=[trusted_root],
-                             cert_verif_cb=lambda: True)
+                             cert_verif_cb=lambda c, i: True)
+
+        assert len(chains) == 1
+        chain = chains[0]
+        assert len(chain) == 3
+        assert chain[0] == leaf
+        assert chain[1] == intermediate
+        assert chain[2] == trusted_root
+
+        # Let the test pass also after expiration of the certificates
+        with freeze_time("2019-12-26"):
+            chains = leaf.verify(intermediates=[intermediate],
+                                 trusted_roots=[trusted_root],
+                                 cert_verif_cb=x509.base.default_cert_verif_cb)
 
         assert len(chains) == 1
         chain = chains[0]

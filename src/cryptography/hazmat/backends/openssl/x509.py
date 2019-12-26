@@ -215,10 +215,9 @@ class _Certificate(x509.Certificate):
         for cert in all_certs:
             g.add_vertex(cert)
         for cert in all_certs:
-            issuer_name = cert.issuer
             issuer = None
             for issuer_candidate in all_certs:
-                if issuer_candidate.subject == issuer_name:
+                if cert.is_issued_by(issuer_candidate):
                     issuer = issuer_candidate
                     break
             if issuer:
@@ -230,7 +229,9 @@ class _Certificate(x509.Certificate):
         trust_chains = []
         for c in g.all_paths(self, 'Fake Top'):
             del c[-1]       # Remove 'Fake Top'
-            trust_chains.append(c)
+            chain_is_good = all([cert_verif_cb(c, i) for i in range(len(c))])
+            if chain_is_good:
+                trust_chains.append(c)
 
         if len(trust_chains) == 0:
             raise x509.base.NoValidTrustChain
