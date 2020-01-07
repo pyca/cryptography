@@ -11,8 +11,33 @@ from distutils.ccompiler import get_default_compiler
 from distutils.command.config import config
 
 from _cffi_src.utils import (
-    build_ffi_for_binding, compiler_type, extra_link_args
+    build_ffi, build_ffi_for_binding, compiler_type, extra_link_args
 )
+
+
+# Link against the 1.1.0 names
+_WIN_SSL_LIBRARIES = ("libssl", "libcrypto")
+# Link against the 1.0.2 and lower names
+_WIN_LEGACY_SSL_LIBRARIES = ("libeay32", "ssleay32")
+
+
+def _detect_windows_openssl_libraries():
+    ffi = build_ffi(
+        "_win_ssl_test",
+        "\nstatic const long SSL_OP_NO_SSLv3;\n",
+        """
+        #include <openssl/ssl.h>
+        int main(int argc, char* argv[]) {
+            return (int) SSL_OP_NO_SSLv3;
+        }
+        """,
+        libraries=list(_WIN_SSL_LIBRARIES),
+    )
+    try:
+        ffi.compile(verbose=True)
+        return _WIN_SSL_LIBRARIES
+    except Exception:
+        return _WIN_LEGACY_SSL_LIBRARIES
 
 
 def _get_openssl_libraries(platform):
@@ -26,10 +51,10 @@ def _get_openssl_libraries(platform):
         if windows_link_legacy_openssl is None:
             # Link against the 1.1.0 names
             # CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-            libs = ["libssl", "libcrypto"]
+            libs = list(_detect_windows_openssl_libraries())
         else:
             # Link against the 1.0.2 and lower names
-            libs = ["libeay32", "ssleay32"]
+            libs = list(_WIN_LEGACY_SSL_LIBRARIES)
         return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
     else:
         # darwin, linux, mingw all use this path
