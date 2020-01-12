@@ -48,7 +48,9 @@ def build_vectors(mode, filename):
             elif line.startswith("PLAINTEXT"):
                 name, plaintext = line.split(" = ")
                 output.append("PLAINTEXT = {}".format(plaintext))
-        output.append("CIPHERTEXT = {}".format(encrypt(mode, key, iv, plaintext)))
+        output.append(
+            "CIPHERTEXT = {}".format(encrypt(mode, key, iv, plaintext))
+        )
     return "\n".join(output)
 
 
