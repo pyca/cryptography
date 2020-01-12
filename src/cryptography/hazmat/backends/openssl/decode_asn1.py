@@ -64,7 +64,7 @@ def _decode_x509_name(backend, x509_name):
         attribute = _decode_x509_name_entry(backend, entry)
         set_id = backend._lib.Cryptography_X509_NAME_ENTRY_set(entry)
         if set_id != prev_set_id:
-            attributes.append(set([attribute]))
+            attributes.append({attribute})
         else:
             # is in the same RDN a previous entry
             attributes[-1].add(attribute)

@@ -25,7 +25,7 @@ class _ASN1Type(Enum):
     BMPString = 30
 
 
-_ASN1_TYPE_TO_ENUM = dict((i.value, i) for i in _ASN1Type)
+_ASN1_TYPE_TO_ENUM = {i.value: i for i in _ASN1Type}
 _SENTINEL = object()
 _NAMEOID_DEFAULT_TYPE = {
     NameOID.COUNTRY_NAME: _ASN1Type.PrintableString,
