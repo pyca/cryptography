@@ -26,9 +26,15 @@ def test_x448(backend, wycheproof):
     private_key = X448PrivateKey.from_private_bytes(
         binascii.unhexlify(wycheproof.testcase["private"])
     )
-    public_key = X448PublicKey.from_public_bytes(
-        binascii.unhexlify(wycheproof.testcase["public"])
-    )
+    public_key_bytes = binascii.unhexlify(wycheproof.testcase["public"])
+    if len(public_key_bytes) == 57:
+        assert wycheproof.acceptable
+        assert wycheproof.has_flag("NonCanonicalPublic")
+        with pytest.raises(ValueError):
+            X448PublicKey.from_public_bytes(public_key_bytes)
+        return
+
+    public_key = X448PublicKey.from_public_bytes(public_key_bytes)
 
     assert wycheproof.valid or wycheproof.acceptable
 
