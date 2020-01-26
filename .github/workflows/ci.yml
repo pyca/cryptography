@@ -36,6 +36,10 @@ jobs:
       - run: python -m pip install codecov
       - run: "git clone https://github.com/google/wycheproof"
 
-      - run: docker run --rm -v "${GITHUB_WORKSPACE}":"${GITHUB_WORKSPACE}" -w "${GITHUB_WORKSPACE}" -e TOXENV -e OPENSSL_DIR -e PYTHON_DIR "${DOCKER_IMAGE}" cmd /V /C "set INCLUDE=C:/!OPENSSL_DIR!/include;!INCLUDE! && set LIB=C:/!OPENSSL_DIR!/lib;!LIB! && C:/!PYTHON_DIR!/Scripts/tox -r -- --color=yes --wycheproof-root=wycheproof"
+      - run: docker run --rm -v "${GITHUB_WORKSPACE}":"${GITHUB_WORKSPACE}" -w "${GITHUB_WORKSPACE}" -e TOXENV -e OPENSSL_DIR -e PYTHON_DIR ${{ matrix.DOCKER_IMAGE }} cmd /V /C "set INCLUDE=C:/!OPENSSL_DIR!/include;!INCLUDE! && set LIB=C:/!OPENSSL_DIR!/lib;!LIB! && C:/!PYTHON_DIR!/Scripts/tox -r -- --color=yes --wycheproof-root=wycheproof"
         shell: bash
+        env:
+          TOXENV: ${{ matrix.TOXENV }}
+          OPENSSL_DIR: ${{ matrix.OPENSSL_DIR }}
+          PYTHON_DIR: ${{ matrix.PYTHON_DIR }}
       - run: python -m codecov -e TOXENV,WINDOWS_ARCH
