@@ -12,8 +12,10 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
+        # TODO: Fill the rest of these in!
+        TOXENV: ["py27", "py38"]
+        WINDOWS_ARCH: ["x86"]
         include:
-          # TODO: Fill the rest of these in!
           - TOXENV: py27
             DOCKER_IMAGE: 'pyca/cryptography-runner-windows:py27-x86'
             OPENSSL_DIR: 'OpenSSL-Win32-2010'
