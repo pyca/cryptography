@@ -54,6 +54,9 @@ _NAMEOID_TO_NAME = {
 def _escape_dn_value(val):
     """Escape special characters in RFC4514 Distinguished Name value."""
 
+    if not val:
+        return ''
+
     # See https://tools.ietf.org/html/rfc4514#section-2.4
     val = val.replace('\\', '\\\\')
     val = val.replace('"', '\\"')
@@ -92,9 +95,6 @@ class NameAttribute(object):
                 raise ValueError(
                     "Country name must be a 2 character country code"
                 )
-
-        if len(value) == 0:
-            raise ValueError("Value cannot be an empty string")
 
         # The appropriate ASN1 string type varies by OID and is defined across
         # multiple RFCs including 2459, 3280, and 5280. In general UTF8String
