@@ -22,7 +22,7 @@ jobs:
             PYTHON_DIR: 'Python27'
             WINDOWS_ARCH: 'x86'
           - TOXENV: py38
-            DOCKER_IMAGE: 'pyca/cryptography-runner-windows:py38-x86'
+            DOCKER_IMAGE: 'pyca/cryptography-runner-windows:py3-x86'
             OPENSSL_DIR: 'OpenSSL-Win32-2015'
             PYTHON_DIR: 'Python38'
             WINDOWS_ARCH: 'x86'
