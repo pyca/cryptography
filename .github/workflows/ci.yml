@@ -1,0 +1,39 @@
+on:
+  pull_request: {}
+  push:
+    branches:
+      - master
+      - "*.x"
+    tags:
+      - "*"
+
+jobs:
+  windows-ci:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          # TODO: Fill the rest of these in!
+          - TOXENV: py27
+            DOCKER_IMAGE: 'pyca/cryptography-runner-windows:py27-x86'
+            OPENSSL_DIR: 'OpenSSL-Win32-2010'
+            PYTHON_DIR: 'Python27'
+            WINDOWS_ARCH: 'x86'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+
+      - run: python -m pip install codecov
+      - run: "git clone https://github.com/google/wycheproof"
+
+      - run: |
+          docker run --rm -u 2000:2000 \
+            -v "${GITHUB_WORKSPACE}":"${GITHUB_WORKSPACE}" \
+            -w "${GITHUB_WORKSPACE}" \
+            -e TOXENV -e OPENSSL_DIR -e PYTHON_DIR \
+            "${DOCKER_IMAGE}" \
+            cmd /V /C "set INCLUDE=C:/!OPENSSL_DIR!/include;!INCLUDE! && set LIB=C:/!OPENSSL_DIR!/lib;!LIB! && C:/!PYTHON_DIR!/Scripts/tox -r -- --color=yes --wycheproof-root=wycheproof"
+      - run: python -m codecov -e TOXENV,WINDOWS_ARCH
