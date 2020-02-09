@@ -22,6 +22,12 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _txt2obj_gc,
 )
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa as asym_dsa,
+    ec as asym_ec,
+    rsa as asym_rsa,
+    padding
+)
 from cryptography.x509.base import _PUBLIC_KEY_TYPES
 from cryptography.x509.name import _ASN1Type
 
@@ -165,6 +171,40 @@ class _Certificate(x509.Certificate):
 
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
+
+    def is_issued_by(self, issuer_candidate):
+        if issuer_candidate.subject != self.issuer:
+            raise x509.base.InvalidIssuer(
+                expected=self.issuer, received=issuer_candidate.subject)
+
+        pkey = issuer_candidate.public_key()
+        signature = self.signature
+        data = self.tbs_certificate_bytes
+        if isinstance(pkey, asym_rsa.RSAPublicKeyWithSerialization):
+            pkey.verify(
+                signature, data,
+                padding=padding.PKCS1v15(),
+                algorithm=self.signature_hash_algorithm,
+            )
+        elif isinstance(pkey, asym_dsa.DSAPublicKeyWithSerialization):
+            pkey.verify(
+                signature, data,
+                algorithm=self.signature_hash_algorithm,
+            )
+        elif isinstance(pkey, asym_ec.EllipticCurvePublicKeyWithSerialization):
+            # EC verify() requires instance of ec.ECDSA
+            pkey.verify(
+                signature, data,
+                signature_algorithm=asym_ec.ECDSA(self.signature_hash_algorithm))
+        else:
+            raise UnsupportedAlgorithm(
+                '{} verification is not implemented'
+                    .format(pkey.__class__)
+            )
+        return True
+
+    def is_issuer_of(self, issued_candidate):
+        return issued_candidate.is_issued_by(self)
 
 
 class _RevokedCertificate(x509.RevokedCertificate):

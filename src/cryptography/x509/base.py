@@ -79,6 +79,13 @@ class InvalidVersion(Exception):
         self.parsed_version = parsed_version
 
 
+class InvalidIssuer(Exception):
+    def __init__(self, expected, received):
+        super(InvalidIssuer, self).__init__()
+        self.expected = expected
+        self.received = received
+
+
 class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def fingerprint(self, algorithm: hashes.HashAlgorithm) -> bytes:
@@ -183,6 +190,18 @@ class Certificate(metaclass=abc.ABCMeta):
     def public_bytes(self, encoding: serialization.Encoding) -> bytes:
         """
         Serializes the certificate to PEM or DER format.
+        """
+
+    @abc.abstractmethod
+    def is_issued_by(self, issuer_candidate):
+        """
+        Returns whether the certificate is issued by `issuer_candidate`.
+        """
+
+    @abc.abstractmethod
+    def is_issuer_of(self, issued_candidate):
+        """
+        Returns whether the `issued_candidate` is issued by the certificate.
         """
 
 

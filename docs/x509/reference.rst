@@ -454,36 +454,7 @@ X.509 Certificate Object
         :type: bytes
 
         The DER encoded bytes payload (as defined by :rfc:`5280`) that is hashed
-        and then signed by the private key of the certificate's issuer. This
-        data may be used to validate a signature, but use extreme caution as
-        certificate validation is a complex problem that involves much more
-        than just signature checks.
-
-        To validate the signature on a certificate you can do the following.
-        Note: This only verifies that the certificate was signed with the
-        private key associated with the public key provided and does not
-        perform any of the other checks needed for secure certificate
-        validation. Additionally, this example will only work for RSA public
-        keys with ``PKCS1v15`` signatures, and so it can't be used for general
-        purpose signature verification.
-
-        .. doctest::
-
-           >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
-           >>> from cryptography.hazmat.primitives.asymmetric import padding
-           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key)
-           >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check)
-           >>> issuer_public_key.verify(
-           ...     cert_to_check.signature,
-           ...     cert_to_check.tbs_certificate_bytes,
-           ...     # Depends on the algorithm used to create the certificate
-           ...     padding.PKCS1v15(),
-           ...     cert_to_check.signature_hash_algorithm,
-           ... )
-
-           An
-           :class:`~cryptography.exceptions.InvalidSignature`
-           exception will be raised if the signature fails to verify.
+        and then signed by the private key of the certificate's issuer.
 
     .. method:: public_bytes(encoding)
 
@@ -495,6 +466,34 @@ X.509 Certificate Object
 
         :return bytes: The data that can be written to a file or sent
             over the network to be verified by clients.
+
+    .. method:: is_issued_by(certificate)
+    .. method:: is_issuer_of(certificate)
+
+        .. versionadded:: 3.1
+
+        These two methods are reciprocal, i.e. ``child.is_issued_by(parent)``
+        is ``True`` if and only if ``parent.is_issuer_of(child)`` is ``True``.
+
+        :param certifcate:
+            :class:`~cryptography.x509.Certificate` that is checked to be
+            correspondingly the issuer or an issued certificate.
+
+        :return Boolean: These methods can only return ``True`` on successful
+            operation. Otherwise, the following exceptions are raised:
+
+            * :class:`~cryptography.exceptions.InvalidSignature`:
+              the signature fails to verify.
+            * :class:`~cryptography.x509.base.InvalidIssuer`:
+              the issuer of the child certificate is not the same as the
+              subject of the parent certificate.
+            * :class:`~cryptography.exceptions.UnsupportedAlgorithm`:
+              signature is made with an algorithm which is not supported.
+
+        :Note: The user of these functions may wish to perform other tests
+            subject to policies, for example check ``CA`` bit of the issuer
+            or presence and agreement of ``authorityKeyIdentifier`` /
+            ``subjectKeyIdentifier`` extensions.
 
 X.509 CRL (Certificate Revocation List) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
