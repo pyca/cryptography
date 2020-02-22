@@ -14,6 +14,9 @@ from cryptography.hazmat.primitives.serialization.ssh import (
     load_ssh_public_key
 )
 
+from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    load_key_and_certificates
+)
 
 _PEM_DER = (Encoding.PEM, Encoding.DER)
 
