@@ -236,7 +236,7 @@ setup(
         "six >= 1.4.1",
     ] + setup_requirements,
     extras_require={
-        ":python_version < '3'": ["enum34", "ipaddress"],
+        ":python_version < '3'": ["enum34!=1.1.8", "ipaddress"],
 
         "test": [
             "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
