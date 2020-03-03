@@ -22,7 +22,7 @@ Changelog
   response.
 * **BACKWARDS INCOMPATIBLE:** Reversed the order in which
   :meth:`~cryptography.x509.Name.rfc4514_string` returns the RDNs as required by
-  RFC4514.
+  :rfc:`4514`.
 
 .. _v2-8:
 
