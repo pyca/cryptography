@@ -4556,14 +4556,14 @@ class TestName(object):
     def test_rfc4514_string(self):
         n = x509.Name([
             x509.RelativeDistinguishedName([
-                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'Sales'),
-                x509.NameAttribute(NameOID.COMMON_NAME, u'J.  Smith'),
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'net'),
             ]),
             x509.RelativeDistinguishedName([
                 x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'example'),
             ]),
             x509.RelativeDistinguishedName([
-                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'net'),
+                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'Sales'),
+                x509.NameAttribute(NameOID.COMMON_NAME, u'J.  Smith'),
             ]),
         ])
         assert (n.rfc4514_string() ==

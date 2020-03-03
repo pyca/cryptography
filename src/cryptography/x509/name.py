@@ -216,9 +216,11 @@ class Name(object):
         An X.509 name is a two-level structure: a list of sets of attributes.
         Each list element is separated by ',' and within each list element, set
         elements are separated by '+'. The latter is almost never used in
-        real world certificates.
+        real world certificates. According to RFC4514 section 2.1 the
+        RDNSequence must be reversed when converting to string representation.
         """
-        return ','.join(attr.rfc4514_string() for attr in self._attributes)
+        return ','.join(
+            attr.rfc4514_string() for attr in reversed(self._attributes))
 
     def get_attributes_for_oid(self, oid):
         return [i for i in self if i.oid == oid]
@@ -253,7 +255,9 @@ class Name(object):
         return sum(len(rdn) for rdn in self._attributes)
 
     def __repr__(self):
+        rdns = ','.join(attr.rfc4514_string() for attr in self._attributes)
+
         if six.PY2:
-            return "<Name({})>".format(self.rfc4514_string().encode('utf8'))
+            return "<Name({})>".format(rdns.encode('utf8'))
         else:
-            return "<Name({})>".format(self.rfc4514_string())
+            return "<Name({})>".format(rdns)
