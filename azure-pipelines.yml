@@ -13,16 +13,6 @@ jobs:
     vmImage: $[variables.vmImage]
   strategy:
     matrix:
-      Python27-macOS1013:
-        python.version: '2.7'
-        TOXENV: py27
-        vmImage: 'macOS-10.13'
-        MACOS_VERSION: '10.13'
-      Python38-macOS1013:
-        python.version: '3.8'
-        TOXENV: py38
-        vmImage: 'macOS-10.13'
-        MACOS_VERSION: '10.13'
       Python27-macOS1014:
         python.version: '2.7'
         TOXENV: py27
@@ -33,6 +23,16 @@ jobs:
         TOXENV: py38
         vmImage: 'macOS-10.14'
         MACOS_VERSION: '10.14'
+      Python27-macOS1015:
+        python.version: '2.7'
+        TOXENV: py27
+        vmImage: 'macOS-10.15'
+        MACOS_VERSION: '10.15'
+      Python38-macOS1015:
+        python.version: '3.8'
+        TOXENV: py38
+        vmImage: 'macOS-10.15'
+        MACOS_VERSION: '10.15'
   steps:
   - task: UsePythonVersion@0
     inputs:
