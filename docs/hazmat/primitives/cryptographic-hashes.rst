@@ -231,6 +231,20 @@ SHA-1
     vulnerable to practical collision attacks, and collisions have been
     demonstrated.
 
+MD4
+~~~
+
+.. warning::
+
+    MD4 is a deprecated hash algorithm that has practical known collision
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
+
+.. class:: MD4()
+
+    MD4 is a deprecated cryptographic hash function. It produces a 128-bit
+    message digest and has practical known collision attacks.
+
 MD5
 ~~~
 

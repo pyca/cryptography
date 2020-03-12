@@ -213,6 +213,11 @@ class SHAKE256(object):
 
     digest_size = utils.read_only_property("_digest_size")
 
+@utils.register_interface(HashAlgorithm)
+class MD4(object):
+    name = "md4"
+    digest_size = 16
+    block_size = 64
 
 @utils.register_interface(HashAlgorithm)
 class MD5(object):

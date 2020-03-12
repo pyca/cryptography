@@ -117,6 +117,17 @@ class TestMD5(object):
         digest_size=16,
     )
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.MD4()),
+    skip_message="Does not support MD4",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestMD5(object):
+    test_md5 = generate_base_hash_test(
+        hashes.MD4(),
+        digest_size=16,
+    )
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
