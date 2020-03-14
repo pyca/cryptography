@@ -79,8 +79,8 @@ Different KDFs are suitable for different tasks such as:
     :param int iterations: The number of iterations to perform of the hash
         function. This can be used to control the length of time the operation
         takes. Higher numbers help mitigate brute force attacks against derived
-        keys. See OWASP's `Password Storage Cheat Sheet`_ for more
-        detailed recommendations if you intend to use this for password storage.
+        keys. A `more detailed description`_ can be consulted for additional
+        information.
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`.
 
@@ -904,7 +904,7 @@ Interface
 .. _`NIST SP 800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
-.. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
+.. _`more detailed description`: https://security.stackexchange.com/a/3993/43116
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
 .. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
 .. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
