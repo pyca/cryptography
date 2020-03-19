@@ -1,3 +1,6 @@
+variables:
+  agent.preferPowerShellOnContainers: true
+
 trigger:
   branches:
     include:
@@ -6,6 +9,8 @@ trigger:
   tags:
     include:
       - "*"
+pr:
+  - "*"
 
 jobs:
 - job: 'mac'
