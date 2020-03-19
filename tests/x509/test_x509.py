@@ -4581,7 +4581,7 @@ class TestName(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ])
-        assert (n.rfc4514_string() == 'C=US,ST=,L=,O=PyCA,CN=cryptography.io')
+        assert (n.rfc4514_string() == 'CN=cryptography.io,O=PyCA,L=,ST=,C=US')
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
