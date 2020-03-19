@@ -4281,6 +4281,10 @@ class TestNameAttribute(object):
                 b'bytes'
             )
 
+    def test_init_none_value(self):
+        with pytest.raises(TypeError):
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, None)
+
     def test_init_bad_country_code_value(self):
         with pytest.raises(ValueError):
             x509.NameAttribute(
@@ -4294,10 +4298,6 @@ class TestNameAttribute(object):
                 NameOID.COUNTRY_NAME,
                 u'\U0001F37A\U0001F37A'
             )
-
-    def test_init_empty_value(self):
-        with pytest.raises(ValueError):
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'')
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
@@ -4349,6 +4349,10 @@ class TestNameAttribute(object):
         na = x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'somebody@example.com')
         assert (na.rfc4514_string() ==
                 '1.2.840.113549.1.9.1=somebody@example.com')
+
+    def test_empty_value(self):
+        na = x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'')
+        assert na.rfc4514_string() == r'ST='
 
 
 class TestRelativeDistinguishedName(object):
@@ -4568,6 +4572,16 @@ class TestName(object):
         ])
         assert (n.rfc4514_string() ==
                 'OU=Sales+CN=J.  Smith,DC=example,DC=net')
+
+    def test_rfc4514_string_empty_values(self):
+        n = x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u''),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u''),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+        ])
+        assert (n.rfc4514_string() == 'CN=cryptography.io,O=PyCA,L=,ST=,C=US')
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
