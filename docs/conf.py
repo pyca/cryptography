@@ -188,5 +188,5 @@ linkcheck_ignore = [
     # 403ing from Travis
     r"https://devblogs.microsoft.com/oldnewthing/\?p=4223",
     # Expired certificate
-    r"https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors",
+    r"https://www.cosic.esat.kuleuven.be/.*",
 ]
