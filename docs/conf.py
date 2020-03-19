@@ -187,4 +187,6 @@ linkcheck_ignore = [
     r"https://www.secg.org/sec1-v2.pdf",
     # 403ing from Travis
     r"https://devblogs.microsoft.com/oldnewthing/\?p=4223",
+    # Expired certificate
+    r"https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors",
 ]
