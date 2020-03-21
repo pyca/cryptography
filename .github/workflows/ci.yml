@@ -8,6 +8,43 @@ on:
       - '*.*.*'
 
 jobs:
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - {VERSION: "2.7", TOXENV: "py27"}
+          - {VERSION: "3.5", TOXENV: "py35"}
+          - {VERSION: "3.6", TOXENV: "py36"}
+          - {VERSION: "3.7", TOXENV: "py37"}
+          - {VERSION: "3.8", TOXENV: "py38"}
+    name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+
+      - run: brew update
+      - run: brew install openssl@1.1
+      - run: python -m pip install tox coverage
+
+      - run: git clone https://github.com/google/wycheproof
+
+      - run: |
+          CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
+            LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
+            CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+
+      - name: Upload coverage
+        run: |
+          curl -o codecov.sh -f https://codecov.io/bash
+          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on macOS" -Z
+
   windows:
     runs-on: windows-latest
     strategy:
@@ -37,7 +74,7 @@ jobs:
             Remove-Item VCForPython27.msi -Force
         shell: powershell
         if: matrix.PYTHON.VERSION == '2.7'
-      - run: pip install tox requests coverage
+      - run: python -m pip install tox requests coverage
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
@@ -51,7 +88,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
 
-      - uses: codecov/codecov-action@v1
-        with:
-          name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
-          fail_ci_if_error: true
+      - name: Upload coverage
+        run: |
+          curl -o codecov.sh -f https://codecov.io/bash
+          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}" -Z
