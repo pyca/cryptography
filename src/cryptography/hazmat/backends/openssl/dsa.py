@@ -10,7 +10,7 @@ from cryptography.hazmat.backends.openssl.utils import (
     _calculate_digest_and_algorithm, _check_not_prehashed,
     _warn_sign_verify_deprecated
 )
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
 )
@@ -249,11 +249,6 @@ class _DSAPublicKey(object):
         return _DSAParameters(self._backend, dsa_cdata)
 
     def public_bytes(self, encoding, format):
-        if format is serialization.PublicFormat.PKCS1:
-            raise ValueError(
-                "DSA public keys do not support PKCS1 serialization"
-            )
-
         return self._backend._public_key_bytes(
             encoding,
             format,

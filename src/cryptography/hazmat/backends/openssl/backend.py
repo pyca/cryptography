@@ -1860,63 +1860,52 @@ class Backend(object):
     def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
-
-        # Compressed/UncompressedPoint are only valid for EC keys and those
-        # cases are handled by the ECPublicKey public_bytes method before this
-        # method is called
-        if format in (serialization.PublicFormat.UncompressedPoint,
-                      serialization.PublicFormat.CompressedPoint):
-            raise ValueError("Point formats are not valid for this key type")
-
-        # Raw format and encoding are only valid for X25519, Ed25519, X448, and
-        # Ed448 keys. We capture those cases before this method is called so if
-        # we see those enum values here it means the caller has passed them to
-        # a key that doesn't support raw type
-        if format is serialization.PublicFormat.Raw:
-            raise ValueError("raw format is invalid with this key or encoding")
-
-        if encoding is serialization.Encoding.Raw:
-            raise ValueError("raw encoding is invalid with this key or format")
-
-        if (
-            format is serialization.PublicFormat.OpenSSH or
-            encoding is serialization.Encoding.OpenSSH
-        ):
-            if (
-                format is not serialization.PublicFormat.OpenSSH or
-                encoding is not serialization.Encoding.OpenSSH
-            ):
-                raise ValueError(
-                    "OpenSSH format must be used with OpenSSH encoding"
-                )
-            return self._openssh_public_key_bytes(key)
-        elif format is serialization.PublicFormat.SubjectPublicKeyInfo:
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_PUBKEY
-            else:
-                assert encoding is serialization.Encoding.DER
-                write_bio = self._lib.i2d_PUBKEY_bio
-
-            key = evp_pkey
-        elif format is serialization.PublicFormat.PKCS1:
-            # Only RSA is supported here.
-            assert self._lib.EVP_PKEY_id(evp_pkey) == self._lib.EVP_PKEY_RSA
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_RSAPublicKey
-            else:
-                assert encoding is serialization.Encoding.DER
-                write_bio = self._lib.i2d_RSAPublicKey_bio
-
-            key = cdata
-        else:
+        if not isinstance(format, serialization.PublicFormat):
             raise TypeError(
                 "format must be an item from the PublicFormat enum"
             )
 
-        bio = self._create_mem_bio_gc()
-        res = write_bio(bio, key)
-        self.openssl_assert(res == 1)
-        return self._read_mem_bio(bio)
+        # SubjectPublicKeyInfo + PEM/DER
+        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
+            if encoding is serialization.Encoding.PEM:
+                write_bio = self._lib.PEM_write_bio_PUBKEY
+            elif encoding is serialization.Encoding.DER:
+                write_bio = self._lib.i2d_PUBKEY_bio
+            else:
+                raise ValueError(
+                    "SubjectPublicKeyInfo works only with PEM or DER encoding"
+                )
+            return self._bio_func_output(write_bio, evp_pkey)
+
+        # PKCS1 + PEM/DER
+        if format is serialization.PublicFormat.PKCS1:
+            # Only RSA is supported here.
+            key_type = self._lib.EVP_PKEY_id(evp_pkey)
+            if key_type != self._lib.EVP_PKEY_RSA:
+                raise ValueError("PKCS1 format is supported only for RSA keys")
+
+            if encoding is serialization.Encoding.PEM:
+                write_bio = self._lib.PEM_write_bio_RSAPublicKey
+            elif encoding is serialization.Encoding.DER:
+                write_bio = self._lib.i2d_RSAPublicKey_bio
+            else:
+                raise ValueError(
+                    "PKCS1 works only with PEM or DER encoding"
+                )
+            return self._bio_func_output(write_bio, cdata)
+
+        # OpenSSH + OpenSSH
+        if format is serialization.PublicFormat.OpenSSH:
+            if encoding is serialization.Encoding.OpenSSH:
+                return self._openssh_public_key_bytes(key)
+
+            raise ValueError(
+                "OpenSSH format must be used with OpenSSH encoding"
+            )
+
+        # Anything that key-specific code was supposed to handle earlier,
+        # like Raw, CompressedPoint, UncompressedPoint
+        raise ValueError("format is invalid with this key")
 
     def _openssh_public_key_bytes(self, key):
         if isinstance(key, rsa.RSAPublicKey):

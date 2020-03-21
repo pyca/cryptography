@@ -35,15 +35,6 @@ class _X448PublicKey(object):
 
             return self._raw_public_bytes()
 
-        if (
-            encoding in serialization._PEM_DER and
-            format is not serialization.PublicFormat.SubjectPublicKeyInfo
-        ):
-            raise ValueError(
-                "format must be SubjectPublicKeyInfo when encoding is PEM or "
-                "DER"
-            )
-
         return self._backend._public_key_bytes(
             encoding, format, self, self._evp_pkey, None
         )

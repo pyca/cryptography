@@ -313,10 +313,6 @@ class _EllipticCurvePublicKey(object):
         return self._backend._ffi.buffer(buf)[:]
 
     def public_bytes(self, encoding, format):
-        if format is serialization.PublicFormat.PKCS1:
-            raise ValueError(
-                "EC public keys do not support PKCS1 serialization"
-            )
 
         if (
             encoding is serialization.Encoding.X962 or
