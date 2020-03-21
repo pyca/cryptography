@@ -33,11 +33,8 @@ def main(target):
     for artifact in response["artifacts"]:
         if artifact["name"] == target:
             print("Found artifact")
-            response = get_response(artifact["url"], token).json()
-            # response["archive_download_url"] serves a redirect, which urllib
-            # automatically follows
             response = get_response(
-                response["archive_download_url"], token
+                artifact["archive_download_url"], token
             )
             zipfile.ZipFile(io.BytesIO(response.content)).extractall(
                 "C:/{}".format(artifact["name"])
