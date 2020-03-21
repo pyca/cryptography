@@ -1,0 +1,54 @@
+on:
+  repository_dispatch:
+    types: [wheel-builder]
+
+jobs:
+  windows:
+    strategy:
+      matrix:
+        WINDOWS:
+          - {ARCH: 'x86', WINDOWS: 'win32'}
+          - {ARCH: 'x64', WINDOWS: 'win64'}
+        PYTHON:
+          - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010"}
+          - {VERSION: "3.5", TOXENV: "py35", MSVC_VERSION: "2019"}
+          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019"}
+          - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019"}
+          - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019"}
+    name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          architecture: ${{ matrix.WINDOWS.ARCH }}
+      - name: Install MSVC for Python 2.7
+        run: |
+            Invoke-WebRequest -Uri https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/VCForPython27.msi -OutFile VCForPython27.msi
+            Start-Process msiexec -Wait -ArgumentList @('/i', 'VCForPython27.msi', '/qn', 'ALLUSERS=1')
+            Remove-Item VCForPython27.msi -Force
+        shell: powershell
+        if: matrix.PYTHON.VERSION == '2.7'
+      - run: pip install requests
+      - name: Download OpenSSL
+        run: |
+            python .github/workflows/download_openssl.py openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
+            echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
+            echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: pip install cffi six ipaddress "enum34; python_version < '3'"
+      - run: pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography
+      - run: pip install -f wheelhouse --no-index cryptography
+      - name: Print the OpenSSL we built and linked against
+        run: |
+            python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+
+      - run: mkdir cryptography-wheelhouse
+      - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
+      - uses: actions/upload-artifact@v1
+        with:
+          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
+          path: cryptography-wheelhouse\
