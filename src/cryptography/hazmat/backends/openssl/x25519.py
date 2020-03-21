@@ -106,16 +106,8 @@ class _X25519PrivateKey(object):
 
             return self._raw_private_bytes()
 
-        if (
-            encoding in serialization._PEM_DER and
-            format is not serialization.PrivateFormat.PKCS8
-        ):
-            raise ValueError(
-                "format must be PKCS8 when encoding is PEM or DER"
-            )
-
         return self._backend._private_key_bytes(
-            encoding, format, encryption_algorithm, self._evp_pkey, None
+            encoding, format, encryption_algorithm, self, self._evp_pkey, None
         )
 
     def _raw_private_bytes(self):

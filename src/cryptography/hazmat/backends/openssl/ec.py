@@ -225,6 +225,7 @@ class _EllipticCurvePrivateKey(object):
             encoding,
             format,
             encryption_algorithm,
+            self,
             self._evp_pkey,
             self._ec_key
         )
