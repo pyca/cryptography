@@ -1,5 +1,5 @@
 - [ ] Windows
-    - [ ] Run the `windows-openssl` Azure Pipelines job
+    - [ ] Run `build-openssl.sh` in the `pyca/infra` repository
 - [ ] macOS
     - [ ] Send a pull request to `homebrew` upgrading the `openssl@1.1` formula
     - [ ] Wait for it to be merged
