@@ -37,7 +37,7 @@ jobs:
             Remove-Item VCForPython27.msi -Force
         shell: powershell
         if: matrix.PYTHON.VERSION == '2.7'
-      - run: pip install tox requests
+      - run: pip install tox requests coverage
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
