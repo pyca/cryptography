@@ -6,11 +6,9 @@ import zipfile
 import requests
 
 
-# TODO: Switch to master
-BRANCH = "openssl-windows-github-actions"
 RUNS_URL = (
     "https://api.github.com/repos/pyca/infra/actions/workflows/"
-    "build-openssl.yml/runs?branch={}&status=success".format(BRANCH)
+    "build-openssl.yml/runs?branch=master&status=success"
 )
 
 
