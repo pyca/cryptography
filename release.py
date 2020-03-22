@@ -149,6 +149,8 @@ def build_github_actions_wheels(token, version):
     )
     response.raise_for_status()
 
+    # Give it a few seconds for the run to kick off.
+    time.sleep(5)
     response = session.get(
         (
             "https://api.github.com/repos/pyca/cryptography/actions/workflows/"
