@@ -1650,6 +1650,13 @@ class TestEd448Serialization(object):
                 Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
             )
 
+    def test_openssh_serialization_unsupported(self, backend):
+        key = ed448.Ed448PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH,
+            )
+
 
 class TestDHSerialization(object):
     """Test all options with least-supported key type.
