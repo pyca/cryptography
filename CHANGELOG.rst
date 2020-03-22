@@ -17,12 +17,13 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey.public_bytes`
   with no arguments, as per our deprecation policy. You must now pass
   ``encoding`` and ``format``.
-* Added support for parsing
-  :attr:`~cryptography.x509.ocsp.OCSPResponse.single_extensions` in an OCSP
-  response.
 * **BACKWARDS INCOMPATIBLE:** Reversed the order in which
   :meth:`~cryptography.x509.Name.rfc4514_string` returns the RDNs
   as required by :rfc:`4514`.
+* Added support for parsing
+  :attr:`~cryptography.x509.ocsp.OCSPResponse.single_extensions` in an OCSP
+  response.
+* :class:`~cryptography.x509.NameAttribute` values can now be empty strings.
 
 .. _v2-8:
 
