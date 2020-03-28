@@ -126,7 +126,7 @@ class AESCCM(object):
         # https://tools.ietf.org/html/rfc3610#section-2.1
         l_val = 15 - len(nonce)
         if 2 ** (8 * l_val) < data_len:
-            raise ValueError("Nonce too long for data")
+            raise ValueError("Data too long for nonce")
 
     def _check_params(self, nonce, data, associated_data):
         utils._check_byteslike("nonce", nonce)
