@@ -119,7 +119,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
         - python: 2.7
-          env: DOWNSTREAM=twisted
+          env: DOWNSTREAM=twisted OPENSSL=1.1.1d
         - python: 2.7
           env: DOWNSTREAM=paramiko
         - python: 2.7
