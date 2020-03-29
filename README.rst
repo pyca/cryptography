@@ -12,8 +12,8 @@ pyca/cryptography
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
-.. image:: https://dev.azure.com/pyca/cryptography/_apis/build/status/Azure%20CI?branchName=master
-    :target: https://dev.azure.com/pyca/cryptography/_build/latest?definitionId=3&branchName=master
+.. image:: https://github.com/pyca/cryptography/workflows/.github/workflows/ci.yml/badge.svg
+    :target: https://github.com/pyca/cryptography/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml+branch%3Amaster
 
 .. image:: https://codecov.io/github/pyca/cryptography/coverage.svg?branch=master
     :target: https://codecov.io/github/pyca/cryptography?branch=master
