@@ -12,7 +12,7 @@ pyca/cryptography
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
-.. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg
+.. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=master
     :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amaster
 
 .. image:: https://codecov.io/github/pyca/cryptography/coverage.svg?branch=master
