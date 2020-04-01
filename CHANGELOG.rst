@@ -20,6 +20,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Reversed the order in which
   :meth:`~cryptography.x509.Name.rfc4514_string` returns the RDNs
   as required by :rfc:`4514`.
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1f.
 * Added support for parsing
   :attr:`~cryptography.x509.ocsp.OCSPResponse.single_extensions` in an OCSP
   response.
