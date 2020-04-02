@@ -3,10 +3,8 @@ Changelog
 
 .. _v2-9:
 
-2.9 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+2.9 - 2020-04-02
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.4 has been removed due to
   low usage and maintenance burden.
