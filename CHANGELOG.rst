@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v3-0:
+
+3.0 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v2-9:
 
 2.9 - 2020-04-02
