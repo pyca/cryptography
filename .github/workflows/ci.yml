@@ -29,6 +29,7 @@ jobs:
 
       - run: brew update
       - run: brew upgrade openssl@1.1
+      - run: python -c "import ssl; print(ssl.get_default_verify_paths())"
       - run: python -m pip install tox coverage
 
       - run: git clone https://github.com/google/wycheproof
