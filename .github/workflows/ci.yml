@@ -28,7 +28,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
 
       - run: brew update
-      - run: brew install openssl@1.1
+      - run: brew upgrade openssl@1.1
       - run: python -m pip install tox coverage
 
       - run: git clone https://github.com/google/wycheproof
