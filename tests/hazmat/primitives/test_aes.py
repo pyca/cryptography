@@ -352,25 +352,14 @@ class TestAESModeGCM(object):
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
 
-        if (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            with pytest.raises(NotImplementedError):
-                decryptor = base.Cipher(
-                    algorithms.AES(key),
-                    modes.GCM(iv),
-                    backend=backend
-                ).decryptor()
-        else:
-            decryptor = base.Cipher(
-                algorithms.AES(key),
-                modes.GCM(iv),
-                backend=backend
-            ).decryptor()
-            decryptor.authenticate_additional_data(aad)
-            with pytest.raises(ValueError):
-                decryptor.finalize()
+        decryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).decryptor()
+        decryptor.authenticate_additional_data(aad)
+        with pytest.raises(ValueError):
+            decryptor.finalize()
 
     def test_gcm_tag_decrypt_mode(self, backend):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
@@ -408,46 +397,15 @@ class TestAESModeGCM(object):
         encryptor.finalize()
         tag = encryptor.tag
 
-        if (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            with pytest.raises(NotImplementedError):
-                decryptor = base.Cipher(
-                    algorithms.AES(key),
-                    modes.GCM(iv),
-                    backend=backend
-                ).decryptor()
-            decryptor = base.Cipher(
-                algorithms.AES(key),
-                modes.GCM(iv, tag=encryptor.tag),
-                backend=backend
-            ).decryptor()
-        else:
-            decryptor = base.Cipher(
-                algorithms.AES(key),
-                modes.GCM(iv),
-                backend=backend
-            ).decryptor()
+        decryptor = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        ).decryptor()
         decryptor.authenticate_additional_data(aad)
 
-        if (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            with pytest.raises(NotImplementedError):
-                decryptor.finalize_with_tag(tag)
-            decryptor.finalize()
-        else:
-            decryptor.finalize_with_tag(tag)
+        decryptor.finalize_with_tag(tag)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
-            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ),
-        skip_message="Not supported on OpenSSL 1.0.1",
-    )
     def test_gcm_tag_decrypt_finalize_tag_length(self, backend):
         decryptor = base.Cipher(
             algorithms.AES(b"0" * 16),

@@ -5,10 +5,8 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
 import threading
 import types
-import warnings
 
 import cryptography
 from cryptography import utils
@@ -152,26 +150,6 @@ class Binding(object):
             _openssl_assert(cls.lib, res == 1)
 
 
-def _verify_openssl_version(lib):
-    if (
-        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-        not lib.CRYPTOGRAPHY_IS_LIBRESSL
-    ):
-        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_101"):
-            warnings.warn(
-                "OpenSSL version 1.0.1 is no longer supported by the OpenSSL "
-                "project, please upgrade. The next version of cryptography "
-                "will completely remove support for it.",
-                utils.CryptographyDeprecationWarning
-            )
-        else:
-            raise RuntimeError(
-                "You are linking against OpenSSL 1.0.1, which is no longer "
-                "supported by the OpenSSL project. You need to upgrade to a "
-                "newer version of OpenSSL."
-            )
-
-
 def _verify_package_version(version):
     # Occasionally we run into situations where the version of the Python
     # package does not match the version of the shared object that is loaded.
@@ -201,5 +179,3 @@ _verify_package_version(cryptography.__version__)
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
-
-_verify_openssl_version(Binding.lib)

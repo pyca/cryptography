@@ -50,7 +50,7 @@ def should_verify(backend, wycheproof):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.supported(
     only_if=lambda backend: (
-        not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 or
+        not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL or
         backend._lib.CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER
     ),
     skip_message=(

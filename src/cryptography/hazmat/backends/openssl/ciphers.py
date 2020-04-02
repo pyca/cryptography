@@ -94,15 +94,6 @@ class _CipherContext(object):
                 )
                 self._backend.openssl_assert(res != 0)
                 self._tag = mode.tag
-            elif (
-                self._operation == self._DECRYPT and
-                self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-                not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            ):
-                raise NotImplementedError(
-                    "delayed passing of GCM tag requires OpenSSL >= 1.0.2."
-                    " To use this feature please update OpenSSL"
-                )
 
         # pass key/iv
         res = self._backend._lib.EVP_CipherInit_ex(
@@ -197,14 +188,6 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize_with_tag(self, tag):
-        if (
-            self._backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 and
-            not self._backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            raise NotImplementedError(
-                "finalize_with_tag requires OpenSSL >= 1.0.2. To use this "
-                "method please update OpenSSL"
-            )
         if len(tag) < self._mode._min_tag_length:
             raise ValueError(
                 "Authentication tag must be {} bytes or longer.".format(

@@ -185,6 +185,7 @@ int X509_CRL_get_ext_count(X509_CRL *);
 
 int X509_CRL_get0_by_serial(X509_CRL *, X509_REVOKED **, ASN1_INTEGER *);
 
+X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 /* new in 1.0.2 */
@@ -268,30 +269,7 @@ void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
 """
 
 CUSTOMIZATIONS = """
-/* Added in 1.0.2 beta but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
-/* from x509/x_x509.c version 1.0.2 */
-void X509_get0_signature(const ASN1_BIT_STRING **psig,
-                         const X509_ALGOR **palg, const X509 *x)
-{
-    if (psig)
-        *psig = x->signature;
-    if (palg)
-        *palg = x->sig_alg;
-}
-
-int X509_get_signature_nid(const X509 *x)
-{
-    return OBJ_obj2nid(x->sig_alg->algorithm);
-}
-
-#endif
-
-/* Added in 1.0.2 but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
-/* from x509/x_x509.c */
+#if CRYPTOGRAPHY_IS_LIBRESSL
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
     /* in 1.0.2+ this function also sets x->cert_info->enc.modified = 1
@@ -303,17 +281,10 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 }
 #endif
 
-/* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
-   IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
-   it available on all OpenSSLs. */
+/* Being kept around for pyOpenSSL */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
-    return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
-#else
     return X509_REVOKED_dup(rev);
-#endif
 }
-
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110

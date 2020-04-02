@@ -194,7 +194,7 @@ class Backend(object):
         Friendly string name of the loaded OpenSSL library. This is not
         necessarily the same version as it was compiled against.
 
-        Example: OpenSSL 1.0.1e 11 Feb 2013
+        Example: OpenSSL 1.1.1d  10 Sep 2019
         """
         return self._ffi.string(
             self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
@@ -988,9 +988,7 @@ class Backend(object):
         for revoked_cert in builder._revoked_certificates:
             # Duplicating because the X509_CRL takes ownership and will free
             # this memory when X509_CRL_free is called.
-            revoked = self._lib.Cryptography_X509_REVOKED_dup(
-                revoked_cert._x509_revoked
-            )
+            revoked = self._lib.X509_REVOKED_dup(revoked_cert._x509_revoked)
             self.openssl_assert(revoked != self._ffi.NULL)
             res = self._lib.X509_CRL_add0_revoked(x509_crl, revoked)
             self.openssl_assert(res == 1)
