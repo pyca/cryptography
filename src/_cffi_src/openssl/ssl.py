@@ -31,6 +31,7 @@ static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_CIPHER_DETAILS;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
+static const long Cryptography_HAS_KEYLOG;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -284,6 +285,10 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
+
+void SSL_CTX_set_keylog_callback(SSL_CTX *,
+                                 void (*)(const SSL *, const char *));
+void (*SSL_CTX_get_keylog_callback(SSL_CTX *))(const SSL *, const char *);
 
 long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
 
@@ -566,6 +571,19 @@ static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 #else
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+static const long Cryptography_HAS_KEYLOG = 0;
+void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
+                                    void (*) (const SSL *, const char *)
+                                    ) = NULL;
+void (*(*SSL_CTX_get_keylog_callback)(SSL_CTX *))(
+                                                  const SSL *,
+                                                  const char *
+                                                  ) = NULL;
+#else
+static const long Cryptography_HAS_KEYLOG = 1;
 #endif
 
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
