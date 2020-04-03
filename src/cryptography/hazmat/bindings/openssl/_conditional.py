@@ -329,6 +329,13 @@ def cryptography_has_tlsv13():
     ]
 
 
+def cryptography_has_keylog():
+    return [
+        "SSL_CTX_set_keylog_callback",
+        "SSL_CTX_get_keylog_callback",
+    ]
+
+
 def cryptography_has_raw_key():
     return [
         "EVP_PKEY_new_raw_private_key",
@@ -430,6 +437,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
+    "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
         cryptography_has_evp_digestfinal_xof
