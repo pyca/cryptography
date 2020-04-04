@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import itertools
-import math
 import os
 
 import pytest
@@ -434,7 +433,7 @@ class TestRSASignature(object):
             ),
             hashes.SHA1()
         )
-        assert len(signature) == math.ceil(private_key.key_size / 8.0)
+        assert len(signature) == (private_key.key_size + 7) // 8
         # PSS signatures contain randomness so we can't do an exact
         # signature check. Instead we'll verify that the signature created
         # successfully verifies.
@@ -1428,7 +1427,7 @@ class TestRSADecryption(object):
             )
         ).private_key(backend)
         ciphertext = binascii.unhexlify(example["encryption"])
-        assert len(ciphertext) == math.ceil(skey.key_size / 8.0)
+        assert len(ciphertext) == (skey.key_size + 7) // 8
         message = skey.decrypt(ciphertext, padding.PKCS1v15())
         assert message == binascii.unhexlify(example["message"])
 
@@ -1684,7 +1683,7 @@ class TestRSAEncryption(object):
         public_key = private_key.public_key()
         ct = public_key.encrypt(pt, pad)
         assert ct != pt
-        assert len(ct) == math.ceil(public_key.key_size / 8.0)
+        assert len(ct) == (public_key.key_size + 7) // 8
         recovered_pt = private_key.decrypt(ct, pad)
         assert recovered_pt == pt
 
@@ -1725,7 +1724,7 @@ class TestRSAEncryption(object):
         public_key = private_key.public_key()
         ct = public_key.encrypt(pt, pad)
         assert ct != pt
-        assert len(ct) == math.ceil(public_key.key_size / 8.0)
+        assert len(ct) == (public_key.key_size + 7) // 8
         recovered_pt = private_key.decrypt(ct, pad)
         assert recovered_pt == pt
 
@@ -1750,7 +1749,7 @@ class TestRSAEncryption(object):
         public_key = private_key.public_key()
         ct = public_key.encrypt(pt, pad)
         assert ct != pt
-        assert len(ct) == math.ceil(public_key.key_size / 8.0)
+        assert len(ct) == (public_key.key_size + 7) // 8
         recovered_pt = private_key.decrypt(ct, pad)
         assert recovered_pt == pt
 

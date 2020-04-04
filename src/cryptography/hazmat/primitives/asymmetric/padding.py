@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import math
 
 import six
 
@@ -73,7 +72,7 @@ def calculate_max_pss_salt_length(key, hash_algorithm):
     if not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):
         raise TypeError("key must be an RSA public or private key")
     # bit length - 1 per RFC 3447
-    emlen = int(math.ceil((key.key_size - 1) / 8.0))
+    emlen = (key.key_size + 6) // 8
     salt_length = emlen - hash_algorithm.digest_size - 2
     assert salt_length >= 0
     return salt_length

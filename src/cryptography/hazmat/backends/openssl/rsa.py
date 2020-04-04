@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import math
-
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
@@ -352,7 +350,7 @@ class _RSAPrivateKey(object):
         return _RSASignatureContext(self._backend, self, padding, algorithm)
 
     def decrypt(self, ciphertext, padding):
-        key_size_bytes = int(math.ceil(self.key_size / 8.0))
+        key_size_bytes = (self.key_size + 7) // 8
         if key_size_bytes != len(ciphertext):
             raise ValueError("Ciphertext length must be equal to key size.")
 
