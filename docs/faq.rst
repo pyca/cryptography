@@ -82,24 +82,11 @@ Your ``pip`` and/or ``setuptools`` are outdated. Please upgrade to the latest
 versions with ``pip install -U pip setuptools`` (or on Windows
 ``python -m pip install -U pip setuptools``).
 
-Importing cryptography causes a ``RuntimeError`` about OpenSSL 1.0.1
---------------------------------------------------------------------
+Installing cryptography with OpenSSL 0.9.8, 1.0.0, 1.0.1 fails
+--------------------------------------------------------------
 
-The OpenSSL project has dropped support for the 1.0.1 release series. Since it
-is no longer receiving security patches from upstream, ``cryptography`` is also
-dropping support for it. To fix this issue you should upgrade to a newer
-version of OpenSSL (1.0.2 or later). This may require you to upgrade to a newer
-operating system.
-
-For the 2.9 release, you can set the ``CRYPTOGRAPHY_ALLOW_OPENSSL_101``
-environment variable. Please note that this is *temporary* and will be removed
-in ``cryptography`` 3.0.
-
-Installing cryptography with OpenSSL 0.9.8 or 1.0.0 fails
----------------------------------------------------------
-
-The OpenSSL project has dropped support for the 0.9.8 and 1.0.0 release series.
-Since they are no longer receiving security patches from upstream,
+The OpenSSL project has dropped support for the 0.9.8, 1.0.0, and 1.0.1 release
+series. Since they are no longer receiving security patches from upstream,
 ``cryptography`` is also dropping support for them. To fix this issue you
 should upgrade to a newer version of OpenSSL (1.0.2 or later). This may require
 you to upgrade to a newer operating system.

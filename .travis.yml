@@ -33,20 +33,12 @@ matrix:
           env: TOXENV=py38
         - python: 3.8
           env: TOXENV=py38-idna
-        - python: pypy-5.4
-          env: TOXENV=pypy-nocoverage
-          # PyPy 5.4 isn't available for xenial
-          dist: trusty
         - python: pypy2.7-7.1.1
           # I don't know how to enumerate pypy versions in Travis other than to look at
           # https://github.com/travis-ci/travis-nightly-builder/blob/build/Rakefile#L74-L106
           env: TOXENV=pypy-nocoverage
         - python: pypy3.5-7.0
           env: TOXENV=pypy3-nocoverage
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.0.1u
-        - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.0.1u
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0l
         - python: 3.8
@@ -71,9 +63,6 @@ matrix:
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
         - python: 2.7
           services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-jessie
-        - python: 2.7
-          services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-stretch
         - python: 3.5
           services: docker
@@ -84,9 +73,6 @@ matrix:
         - python: 3.8
           services: docker
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-sid
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-trusty
         - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling

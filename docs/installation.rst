@@ -24,16 +24,9 @@ PyPy 5.4+ on these operating systems.
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 1.0.1``
-* ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
-* ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
-
-.. warning::
-    Cryptography 2.9 has dropped support for OpenSSL 1.0.1, see the
-    :doc:`FAQ </faq>` for more details
 
 Building cryptography on Windows
 --------------------------------

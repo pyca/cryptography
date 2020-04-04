@@ -4,14 +4,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _consume_errors, _openssl_assert, _verify_openssl_version,
-    _verify_package_version
+    Binding, _consume_errors, _openssl_assert, _verify_package_version
 )
 
 
@@ -125,12 +122,3 @@ class TestOpenSSL(object):
     def test_version_mismatch(self):
         with pytest.raises(ImportError):
             _verify_package_version("nottherightversion")
-
-    def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_101", raising=False)
-        lib = pretend.stub(
-            CRYPTOGRAPHY_OPENSSL_LESS_THAN_102=True,
-            CRYPTOGRAPHY_IS_LIBRESSL=False
-        )
-        with pytest.raises(RuntimeError):
-            _verify_openssl_version(lib)

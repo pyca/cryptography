@@ -62,9 +62,9 @@ def test_ecdsa_signature(backend, wycheproof):
             binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
         )
     except (UnsupportedAlgorithm, ValueError):
-        # In OpenSSL 1.0.1, some keys fail to load with ValueError, instead of
-        # Unsupported Algorithm. We can remove handling for that exception
-        # when we drop support.
+        # In some OpenSSL 1.0.2s, some keys fail to load with ValueError,
+        # instead of  Unsupported Algorithm. We can remove handling for that
+        # exception when we drop support.
         pytest.skip(
             "unable to load key (curve {})".format(
                 wycheproof.testgroup["key"]["curve"]

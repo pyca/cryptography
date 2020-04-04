@@ -23,7 +23,6 @@ static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
-static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
@@ -556,10 +555,7 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
-/* Added in 1.0.2 but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
-/* from ssl/ssl_lib.c */
+#if CRYPTOGRAPHY_IS_LIBRESSL
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
 }
@@ -653,45 +649,15 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
-
-/* SSL_get0_param was added in OpenSSL 1.0.2. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
-X509_VERIFY_PARAM *(*SSL_get0_param)(SSL *) = NULL;
-X509_VERIFY_PARAM *(*SSL_CTX_get0_param)(SSL_CTX *) = NULL;
-#else
-#endif
-
-/* ALPN was added in OpenSSL 1.0.2. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
-int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
-                               const unsigned char *,
-                               unsigned) = NULL;
-int (*SSL_set_alpn_protos)(SSL *, const unsigned char *, unsigned) = NULL;
-void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX *,
-                                   int (*) (SSL *,
-                                            const unsigned char **,
-                                            unsigned char *,
-                                            const unsigned char *,
-                                            unsigned int,
-                                            void *),
-                                   void *) = NULL;
-void (*SSL_get0_alpn_selected)(const SSL *,
-                               const unsigned char **,
-                               unsigned *) = NULL;
-static const long Cryptography_HAS_ALPN = 0;
-#else
 static const long Cryptography_HAS_ALPN = 1;
-#endif
 
-/* SSL_CTX_set_cert_cb was added in OpenSSL 1.0.2. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_IS_LIBRESSL
 void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
 void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
 static const long Cryptography_HAS_SET_CERT_CB = 0;
 #else
 static const long Cryptography_HAS_SET_CERT_CB = 1;
 #endif
-
 
 /* In OpenSSL 1.0.2i+ the handling of COMP_METHOD when OPENSSL_NO_COMP was
    changed and we no longer need to typedef void */
@@ -701,13 +667,6 @@ static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
-#endif
-
-#if defined(SSL_CTRL_GET_SERVER_TMP_KEY)
-static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 1;
-#else
-static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
-long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
@@ -734,7 +693,7 @@ static const long TLS_ST_OK = 0;
 #endif
 
 /* LibreSSL 2.9.1 added only the DTLS_*_method functions */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER
+#if CRYPTOGRAPHY_IS_LIBRESSL && !CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
 const SSL_METHOD *(*DTLS_method)(void) = NULL;
 const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
@@ -742,7 +701,7 @@ const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
 #endif
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
 long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
@@ -769,7 +728,7 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
     return r;
 }
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SIGALGS = 0;
 const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
                              unsigned char *) = NULL;
@@ -801,41 +760,31 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
 static const long Cryptography_HAS_PSK = 1;
 #endif
 
-/*
- * Custom extensions were added in 1.0.2. 1.1.1 is adding a more general
- * SSL_CTX_add_custom_ext function, but we're not binding that yet.
- */
-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
+#if !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_CUSTOM_EXT = 1;
 #else
 static const long Cryptography_HAS_CUSTOM_EXT = 0;
-
 typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
                                  const unsigned char **,
                                  size_t *, int *,
                                  void *);
-
 typedef void (*custom_ext_free_cb)(SSL *, unsigned int,
                                    const unsigned char *,
                                    void *);
-
 typedef int (*custom_ext_parse_cb)(SSL *, unsigned int,
                                    const unsigned char *,
                                    size_t, int *,
                                    void *);
-
 int (*SSL_CTX_add_client_custom_ext)(SSL_CTX *, unsigned int,
                                      custom_ext_add_cb,
                                      custom_ext_free_cb, void *,
                                      custom_ext_parse_cb,
                                      void *) = NULL;
-
 int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
                                      custom_ext_add_cb,
                                      custom_ext_free_cb, void *,
                                      custom_ext_parse_cb,
                                      void *) = NULL;
-
 int (*SSL_extension_supported)(unsigned int) = NULL;
 #endif
 

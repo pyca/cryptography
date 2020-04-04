@@ -17,8 +17,8 @@ def _dh_params_dup(dh_cdata, backend):
     param_cdata = lib.DHparams_dup(dh_cdata)
     backend.openssl_assert(param_cdata != ffi.NULL)
     param_cdata = ffi.gc(param_cdata, lib.DH_free)
-    if lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102:
-        # In OpenSSL versions < 1.0.2 or libressl DHparams_dup don't copy q
+    if lib.CRYPTOGRAPHY_IS_LIBRESSL:
+        # In libressl DHparams_dup don't copy q
         q = ffi.new("BIGNUM **")
         lib.DH_get0_pqg(dh_cdata, ffi.NULL, q, ffi.NULL)
         q_dup = lib.BN_dup(q[0])

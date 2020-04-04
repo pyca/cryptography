@@ -19,11 +19,8 @@ typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
-static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
+static const long Cryptography_HAS_102_VERIFICATION;
 static const long Cryptography_HAS_110_VERIFICATION_PARAMS;
-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
@@ -222,64 +219,19 @@ void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2+ verification parameters and error codes */
-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
+#if !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_102_VERIFICATION = 1;
 #else
-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
-
+static const long Cryptography_HAS_102_VERIFICATION = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_VERSION = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED = 0;
 static const long X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 = 0;
-/* These 3 defines are unavailable in LibreSSL 2.5.x, but may be added
-   in the future... */
-#ifndef X509_V_ERR_HOSTNAME_MISMATCH
-static const long X509_V_ERR_HOSTNAME_MISMATCH = 0;
-#endif
-#ifndef X509_V_ERR_EMAIL_MISMATCH
-static const long X509_V_ERR_EMAIL_MISMATCH = 0;
-#endif
-#ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
-static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
-#endif
-#ifndef X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
-static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT = 0;
-#endif
-#ifndef X509_CHECK_FLAG_NO_WILDCARDS
-static const long X509_CHECK_FLAG_NO_WILDCARDS = 0;
-#endif
-#ifndef X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
-static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS = 0;
-#endif
-#ifndef X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
-static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS = 0;
-#endif
-#ifndef X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
-static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS = 0;
-#endif
-
-/* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
-   below because it shows up in some earlier 3rd party OpenSSL packages. */
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
-
-#if !CRYPTOGRAPHY_IS_LIBRESSL
-int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
-                                   size_t) = NULL;
-int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
-                                    size_t) = NULL;
-int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
-                                 size_t) = NULL;
-int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
-void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
-                                        unsigned int) = NULL;
-#endif
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
@@ -289,22 +241,6 @@ static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
 #endif
 #else
 static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 1;
-#endif
-
-/* OpenSSL 1.0.2+ or Solaris's backport */
-#ifdef X509_V_FLAG_PARTIAL_CHAIN
-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 1;
-#else
-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 0;
-static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
-#endif
-
-/* OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e... */
-#ifdef X509_V_FLAG_TRUSTED_FIRST
-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
-#else
-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
-static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
