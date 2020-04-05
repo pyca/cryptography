@@ -10,6 +10,11 @@ Changelog
 
 .. _v2-9:
 
+* **BACKWARDS INCOMPATIBLE:** Removed support for passing an
+  :class:`~cryptography.x509.Extension` instance to
+  :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`,
+  as per our deprecation policy.
+
 2.9 - 2020-04-02
 ~~~~~~~~~~~~~~~~
 
