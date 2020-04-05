@@ -16,7 +16,7 @@ PyPy 5.4+ on these operating systems.
 * x86-64 CentOS 7.x
 * x86-64 Fedora (latest)
 * macOS 10.15 Catalina
-* x86-64 Ubuntu 18.04 and rolling
+* x86-64 Ubuntu 16.04 and rolling
 * x86-64 Debian Stretch (9.x), Buster (10.x), and Sid (unstable)
 * x86-64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2019
