@@ -1936,8 +1936,8 @@ X.509 Extensions
             >>> from cryptography import x509
             >>> from cryptography.hazmat.backends import default_backend
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-            >>> ski = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
-            >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski)
+            >>> ski_ext = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
+            >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski_ext.value)
             <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
 .. class:: SubjectKeyIdentifier(digest)
