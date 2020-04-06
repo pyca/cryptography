@@ -134,14 +134,6 @@ class _CipherContext(object):
         return outlen[0]
 
     def finalize(self):
-        # OpenSSL 1.0.1 on Ubuntu 12.04 (and possibly other distributions)
-        # appears to have a bug where you must make at least one call to update
-        # even if you are only using authenticate_additional_data or the
-        # GCM tag will be wrong. An (empty) call to update resolves this
-        # and is harmless for all other versions of OpenSSL.
-        if isinstance(self._mode, modes.GCM):
-            self.update(b"")
-
         if (
             self._operation == self._DECRYPT and
             isinstance(self._mode, modes.ModeWithAuthenticationTag) and
