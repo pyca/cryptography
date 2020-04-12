@@ -58,6 +58,17 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.0.2
 
+        # Non-x86_64 builds
+        - python: 3.8
+          env: TOXENV=py38
+          arch: arm64
+        - python: 3.8
+          env: TOXENV=py38
+          arch: ppc64le
+        - python: 3.8
+          env: TOXENV=py38
+          arch: s390x
+
         - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
