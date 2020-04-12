@@ -58,16 +58,19 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.0.2
 
-        # Non-x86_64 builds
+        # Non-x86_64 builds - cache disabled because it's broken ATM
         - python: 3.8
           env: TOXENV=py38
           arch: arm64
+          cache: false
         - python: 3.8
           env: TOXENV=py38
           arch: ppc64le
+          cache: false
         - python: 3.8
           env: TOXENV=py38
           arch: s390x
+          cache: false
 
         - python: 2.7
           services: docker
