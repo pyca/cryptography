@@ -145,3 +145,66 @@ def test_rsa_pss_signature(backend, wycheproof):
                 ),
                 digest
             )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.supported(
+    only_if=lambda backend: (
+        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
+        backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+    ),
+    skip_message=(
+        "A handful of these tests fail on OpenSSL 1.0.2 and since upstream "
+        "isn't maintaining it, they'll never be fixed."
+    ),
+)
+@pytest.mark.wycheproof_tests(
+    "rsa_oaep_2048_sha1_mgf1sha1_test.json",
+    "rsa_oaep_2048_sha224_mgf1sha1_test.json",
+    "rsa_oaep_2048_sha224_mgf1sha224_test.json",
+    "rsa_oaep_2048_sha256_mgf1sha1_test.json",
+    "rsa_oaep_2048_sha256_mgf1sha256_test.json",
+    "rsa_oaep_2048_sha384_mgf1sha1_test.json",
+    "rsa_oaep_2048_sha384_mgf1sha384_test.json",
+    "rsa_oaep_2048_sha512_mgf1sha1_test.json",
+    "rsa_oaep_2048_sha512_mgf1sha512_test.json",
+    "rsa_oaep_3072_sha256_mgf1sha1_test.json",
+    "rsa_oaep_3072_sha256_mgf1sha256_test.json",
+    "rsa_oaep_3072_sha512_mgf1sha1_test.json",
+    "rsa_oaep_3072_sha512_mgf1sha512_test.json",
+    "rsa_oaep_4096_sha256_mgf1sha1_test.json",
+    "rsa_oaep_4096_sha256_mgf1sha256_test.json",
+    "rsa_oaep_4096_sha512_mgf1sha1_test.json",
+    "rsa_oaep_4096_sha512_mgf1sha512_test.json",
+    "rsa_oaep_misc_test.json",
+)
+def test_rsa_oaep_encryption(backend, wycheproof):
+    key = serialization.load_pem_private_key(
+        wycheproof.testgroup["privateKeyPem"].encode("ascii"),
+        password=None,
+        backend=backend,
+    )
+    digest = _DIGESTS[wycheproof.testgroup["sha"]]
+    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+
+    padding_algo = padding.OAEP(
+        mgf=padding.MGF1(algorithm=mgf_digest),
+        algorithm=digest,
+        label=binascii.unhexlify(wycheproof.testcase["label"])
+    )
+
+    if not backend.rsa_padding_supported(padding_algo):
+        pytest.skip("Padding {} not supported".format(padding_algo))
+
+    if wycheproof.valid or wycheproof.acceptable:
+        pt = key.decrypt(
+            binascii.unhexlify(wycheproof.testcase["ct"]),
+            padding_algo
+        )
+        assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
+    else:
+        with pytest.raises(ValueError):
+            key.decrypt(
+                binascii.unhexlify(wycheproof.testcase["ct"]),
+                padding_algo
+            )
