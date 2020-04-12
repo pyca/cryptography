@@ -60,17 +60,14 @@ matrix:
 
         # Non-x86_64 builds - cache disabled because it's broken ATM
         - python: 3.8
-          env: TOXENV=py38
+          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
           arch: arm64
-          cache: false
         - python: 3.8
-          env: TOXENV=py38
+          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
           arch: ppc64le
-          cache: false
         - python: 3.8
           env: TOXENV=py38
-          arch: s390x
-          cache: false
+          arch: s390x PIP_NO_CACHE_DIR=off
 
         - python: 2.7
           services: docker
