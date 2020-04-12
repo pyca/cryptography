@@ -886,13 +886,17 @@ def load_nist_ccm_vectors(vector_data):
 
 
 class WycheproofTest(object):
-    def __init__(self, testgroup, testcase):
+    def __init__(self, testfiledata, testgroup, testcase):
+        self.testfiledata = testfiledata
         self.testgroup = testgroup
         self.testcase = testcase
 
     def __repr__(self):
-        return "<WycheproofTest({!r}, {!r}, tcId={})>".format(
-            self.testgroup, self.testcase, self.testcase["tcId"],
+        return "<WycheproofTest({!r}, {!r}, {!r}, tcId={})>".format(
+            self.testfiledata,
+            self.testgroup,
+            self.testcase,
+            self.testcase["tcId"],
         )
 
     @property
@@ -922,7 +926,7 @@ def load_wycheproof_tests(wycheproof, test_file):
     path = os.path.join(wycheproof, "testvectors", test_file)
     with open(path) as f:
         data = json.load(f)
-        for group in data["testGroups"]:
+        for group in data.pop("testGroups"):
             cases = group.pop("tests")
             for c in cases:
-                yield WycheproofTest(group, c)
+                yield WycheproofTest(data, group, c)
