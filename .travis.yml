@@ -44,11 +44,11 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 OPENSSL=1.1.0l
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.1d
+          env: TOXENV=py27 OPENSSL=1.1.1f
         - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1d
+          env: TOXENV=py38 OPENSSL=1.1.1f
         - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1d OPENSSL_CONFIG_FLAGS="no-engine no-rc2"
+          env: TOXENV=py38 OPENSSL=1.1.1f OPENSSL_CONFIG_FLAGS="no-engine no-rc2"
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=2.7.5
         - python: 3.8
@@ -57,6 +57,20 @@ matrix:
           env: TOXENV=py38 LIBRESSL=2.9.2
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.0.2
+
+        # Non-x86_64 builds - cache disabled because it's broken ATM
+        - python: 3.8
+          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
+          arch: arm64
+        - python: 3.8
+          env: TOXENV=py38 OPENSSL=1.1.1f PIP_NO_CACHE_DIR=off
+          arch: arm64
+        - python: 3.8
+          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
+          arch: ppc64le
+        - python: 3.8
+          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
+          arch: s390x
 
         - python: 2.7
           services: docker
