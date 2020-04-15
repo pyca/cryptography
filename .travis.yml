@@ -86,6 +86,9 @@ matrix:
           env: TOXENV=py37 DOCKER=pyca/cryptography-runner-buster
         - python: 3.8
           services: docker
+          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-bullseye
+        - python: 3.8
+          services: docker
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-sid
         - python: 2.7
           services: docker
