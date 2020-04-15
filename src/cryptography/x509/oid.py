@@ -76,6 +76,9 @@ class NameOID(object):
     BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
     POSTAL_ADDRESS = ObjectIdentifier("2.5.4.16")
     POSTAL_CODE = ObjectIdentifier("2.5.4.17")
+    INN = ObjectIdentifier("1.2.643.3.131.1.1")
+    OGRN = ObjectIdentifier("1.2.643.100.1")
+    SNILS = ObjectIdentifier("1.2.643.100.3")
 
 
 class SignatureAlgorithmOID(object):
@@ -98,6 +101,13 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
     ED25519 = ObjectIdentifier("1.3.101.112")
     ED448 = ObjectIdentifier("1.3.101.113")
+    GOSTR3411_94_WITH_3410_2001 = ObjectIdentifier("1.2.643.2.2.3")
+    GOSTR3410_2012_WITH_3411_2012_256 = ObjectIdentifier(
+        "1.2.643.7.1.1.3.2"
+    )
+    GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier(
+        "1.2.643.7.1.1.3.3"
+    )
 
 
 _SIG_OIDS_TO_HASH = {
@@ -118,6 +128,9 @@ _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.DSA_WITH_SHA256: hashes.SHA256(),
     SignatureAlgorithmOID.ED25519: None,
     SignatureAlgorithmOID.ED448: None,
+    SignatureAlgorithmOID.GOSTR3411_94_WITH_3410_2001: None,
+    SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_256: None,
+    SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: None,
 }
 
 
@@ -169,6 +182,9 @@ _OID_NAMES = {
     NameOID.BUSINESS_CATEGORY: "businessCategory",
     NameOID.POSTAL_ADDRESS: "postalAddress",
     NameOID.POSTAL_CODE: "postalCode",
+    NameOID.INN: "INN",
+    NameOID.OGRN: "OGRN",
+    NameOID.SNILS: "SNILS",
 
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
@@ -187,6 +203,15 @@ _OID_NAMES = {
     SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
     SignatureAlgorithmOID.ED25519: "ed25519",
     SignatureAlgorithmOID.ED448: "ed448",
+    SignatureAlgorithmOID.GOSTR3411_94_WITH_3410_2001: (
+        "GOST R 34.11-94 with GOST R 34.10-2001"
+    ),
+    SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_256: (
+        "GOST R 34.10-2012 with GOST R 34.11-2012 (256 bit)"
+    ),
+    SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: (
+        "GOST R 34.10-2012 with GOST R 34.11-2012 (512 bit)"
+    ),
     ExtendedKeyUsageOID.SERVER_AUTH: "serverAuth",
     ExtendedKeyUsageOID.CLIENT_AUTH: "clientAuth",
     ExtendedKeyUsageOID.CODE_SIGNING: "codeSigning",
