@@ -126,7 +126,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=paramiko
         - python: 2.7
-          env: DOWNSTREAM=aws-encryption-sdk
+          env: DOWNSTREAM=aws-encryption-sdk AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID=arn: AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID_2=arn:
         - python: 2.7
           # BOTO_CONFIG works around this boto issue on travis:
           # https://github.com/boto/boto/issues/3717
