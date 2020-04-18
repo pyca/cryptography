@@ -1,5 +1,5 @@
 sudo: true
-dist: xenial
+dist: bionic
 
 language: python
 
