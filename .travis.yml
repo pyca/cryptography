@@ -37,8 +37,10 @@ matrix:
           # I don't know how to enumerate pypy versions in Travis other than to look at
           # https://github.com/travis-ci/travis-nightly-builder/blob/build/Rakefile#L74-L106
           env: TOXENV=pypy-nocoverage
+          dist: xenial
         - python: pypy3.5-7.0
           env: TOXENV=pypy3-nocoverage
+          dist: xenial
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0l
         - python: 3.8
@@ -130,13 +132,15 @@ matrix:
         - python: 2.7
           # BOTO_CONFIG works around this boto issue on travis:
           # https://github.com/boto/boto/issues/3717
-          env: DOWNSTREAM=dynamodb-encryption-sdk OPENSSL=1.1.0l BOTO_CONFIG=/dev/null
+          env: DOWNSTREAM=dynamodb-encryption-sdk BOTO_CONFIG=/dev/null
         - python: 2.7
-          env: DOWNSTREAM=certbot OPENSSL=1.1.0l
+          env: DOWNSTREAM=certbot
         - python: 2.7
           env: DOWNSTREAM=certbot-josepy
         - python: 2.7
           env: DOWNSTREAM=urllib3
+          # Tests hangs when run under bionic
+          dist: xenial
 
 install:
     - ./.travis/install.sh
