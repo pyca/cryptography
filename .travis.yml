@@ -107,7 +107,7 @@ matrix:
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-alpine:latest
 
         - python: 3.8
-          env: TOXENV=docs OPENSSL=1.1.1d
+          env: TOXENV=docs OPENSSL=1.1.1f
           addons:
               apt:
                   packages:
@@ -122,7 +122,7 @@ matrix:
         - python: 2.7
           env: DOWNSTREAM=pyopenssl
         - python: 3.7
-          env: DOWNSTREAM=twisted OPENSSL=1.1.1d
+          env: DOWNSTREAM=twisted OPENSSL=1.1.1f
         - python: 2.7
           env: DOWNSTREAM=paramiko
         - python: 2.7
