@@ -10,6 +10,7 @@ Blowfish
 boolean
 Botan
 Brainpool
+Bullseye
 Capitan
 changelog
 Changelog
