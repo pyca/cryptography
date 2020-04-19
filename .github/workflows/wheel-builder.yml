@@ -52,6 +52,60 @@ jobs:
           name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
           path: cryptography-wheelhouse/
 
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - VERSION: '2.7',
+            ABI_VERSION: '2.7',
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/2.7.17/python-2.7.17-macosx10.9.pkg',
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+          - VERSION: '3.8',
+            ABI_VERSION: '3.5',
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg',
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
+    name: "Python ${{ matrix.PYTHON.VERSION }} for ABI ${{ matrix.PYTHON.ABI_VERSION }} on macOS"
+    steps:
+      - run: |
+          curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
+          sudo installer -pkg python.pkg -target /
+        env:
+          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
+
+      - run: brew update
+      - run: brew upgrade openssl@1.1
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m virtualenv venv
+      # Downgrade pip, I can't remember why
+      - run: venv/bin/pip install -U pip==10.0.1
+      - run: venv/bin/pip install -U wheel
+      - run: venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'"
+
+      - name: Build the wheel
+        run: |
+          REGEX="3\.([0-9])*"
+          if [[ "$PYTHON_VERSION" =~ $REGEX ]]; then
+              PY_LIMITED_API="--build-option --py-limited-api=cp3${BASH_REMATCH[1]}"
+          fi
+
+          CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
+              LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
+              CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
+              venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
+        env:
+          PYTHON_VERSION: ${{ matrix.PYTHON.ABI_VERSION }}
+      - run: venv/bin/pip install -f wheelhouse --no-index cryptography
+      - run: |
+          venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+
+      - run: mkdir cryptography-wheelhouse
+      - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
+      - uses: actions/upload-artifact@v1
+        with:
+          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-macOS-${{ matrix.PYTHON.ABI_VERSION }}"
+          path: cryptography-wheelhouse/
+
   windows:
     runs-on: windows-latest
     strategy:
