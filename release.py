@@ -14,9 +14,6 @@ import tempfile
 import time
 import zipfile
 
-from azure.devops.connection import Connection
-from azure.devops.v5_1.build.models import Build
-
 import click
 
 from msrest.authentication import BasicAuthentication
@@ -27,61 +24,6 @@ import requests
 def run(*args, **kwargs):
     print("[running] {0}".format(list(args)))
     subprocess.check_call(list(args), **kwargs)
-
-
-def wait_for_build_completed_azure(build_client, build_id):
-    while True:
-        build = build_client.get_build("cryptography", build_id)
-        if build.finish_time is not None:
-            break
-        time.sleep(3)
-
-
-def download_artifacts_azure(build_client, build_id):
-    artifacts = build_client.get_artifacts("cryptography", build_id)
-    paths = []
-    for artifact in artifacts:
-        contents = build_client.get_artifact_content_zip(
-            "cryptography", build_id, artifact.name
-        )
-        with tempfile.NamedTemporaryFile() as f:
-            for chunk in contents:
-                f.write(chunk)
-            f.flush()
-            with zipfile.ZipFile(f.name) as z:
-                for name in z.namelist():
-                    if not name.endswith(".whl"):
-                        continue
-                    p = z.open(name)
-                    out_path = os.path.join(
-                        os.path.dirname(__file__),
-                        "dist",
-                        os.path.basename(name),
-                    )
-                    with open(out_path, "wb") as f:
-                        f.write(p.read())
-                    paths.append(out_path)
-    return paths
-
-
-def build_wheels_azure(token, version):
-    credentials = BasicAuthentication("", token)
-    connection = Connection(
-        base_url="https://dev.azure.com/pyca", creds=credentials
-    )
-    build_client = connection.clients.get_build_client()
-    [definition] = build_client.get_definitions(
-        "cryptography", "wheel builder"
-    )
-    build_description = Build(
-        definition=definition,
-        parameters=json.dumps({"BUILD_VERSION": version}),
-    )
-    build = build_client.queue_build(
-        project="cryptography", build=build_description
-    )
-    wait_for_build_completed_azure(build_client, build.id)
-    return download_artifacts_azure(build_client, build.id)
 
 
 def wait_for_build_complete_github_actions(session, token, run_url):
@@ -173,7 +115,6 @@ def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
-    azure_token = getpass.getpass("Azure personal access token: ")
     github_token = getpass.getpass("Github person access token: ")
 
     run("git", "tag", "-s", version, "-m", "{0} release".format(version))
@@ -188,11 +129,10 @@ def release(version):
     )
     run("twine", "upload", "-s", *packages)
 
-    azure_wheel_paths = build_wheels_azure(azure_token, version)
     github_actions_wheel_paths = build_github_actions_wheels(
         github_token, version
     )
-    run("twine", "upload", *(azure_wheel_paths, github_actions_wheel_paths))
+    run("twine", "upload", *github_actions_wheel_paths)
 
 
 if __name__ == "__main__":

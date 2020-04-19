@@ -16,8 +16,7 @@ recursive-include tests *.py
 exclude vectors
 recursive-exclude vectors *
 
-exclude azure-pipelines.yml .azure-pipelines .travis.yml .travis
-recursive-exclude .azure-pipelines *
+exclude .travis.yml .travis
 recursive-exclude .travis *
 
 exclude release.py .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
