@@ -1,8 +1,57 @@
+name: Wheel Builder
 on:
   repository_dispatch:
     types: [wheel-builder]
 
 jobs:
+  manylinux:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.MANYLINUX.CONTAINER }}
+    strategy:
+      matrix:
+        PYTHON: ["cp27-cp27m", "cp27-cp27mu", "cp35-cp35m"]
+        MANYLINUX:
+          - NAME: manylinux1_x86_64
+            CONTAINER: "pyca/cryptography-manylinux1:x86_64"
+          - NAME: manylinux2010_x86_64
+            CONTAINER: "pyca/cryptography-manylinux2010:x86_64"
+    name: "Python ${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
+    steps:
+      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv
+      - name: Downgrade pip, can't remember why
+        run: .venv/bin/pip install -U pip==10.0.1
+      - name: Install Python dependencies
+        run: .venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'"
+      - run: |
+          REGEX="cp3([0-9])*"
+          if [[ "${{ matrix.PYTHON }}" =~ $REGEX ]]; then
+              PY_LIMITED_API="--build-option --py-limited-api=cp3${BASH_REMATCH[1]}"
+          fi
+          LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
+              CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
+              .venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
+      - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptograph*.whl -w wheelhouse/
+      - run: unzip wheelhouse/*.whl -d execstack.check
+      - run: |
+          results=$(execstack execstack.check/cryptography/hazmat/bindings/*.so)
+          count=$(echo "$results" | grep -c '^X' || true)
+          if [ "$count" -ne 0 ]; then
+            exit 1
+          else
+            exit 0
+          fi
+      - name: Upgrade pip again so we can actually use manylinux2010
+        run: .venv/bin/pip install -U pip
+      - run: .venv/bin/pip install cryptography --no-index -f wheelhouse/
+      - run: |
+          .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+      - run: mkdir cryptography-wheelhouse
+      - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
+      - uses: actions/upload-artifact@v1
+        with:
+          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
+          path: cryptography-wheelhouse/
+
   windows:
     runs-on: windows-latest
     strategy:
