@@ -16,8 +16,6 @@ import zipfile
 
 import click
 
-from msrest.authentication import BasicAuthentication
-
 import requests
 
 

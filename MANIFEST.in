@@ -18,5 +18,6 @@ recursive-exclude vectors *
 
 exclude .travis.yml .travis
 recursive-exclude .travis *
+recursive-exclude .github *
 
 exclude release.py .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
