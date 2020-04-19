@@ -57,24 +57,17 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {
-              VERSION: '2.7',
-              ABI_VERSION: '2.7',
-              DOWNLOAD_URL: 'https://www.python.org/ftp/python/2.7.17/python-2.7.17-macosx10.9.pkg',
-              BIN_PATH: '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
-          }
-          - {
-              VERSION: '3.8',
-              ABI_VERSION: '3.5',
-              DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg',
-              BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
-          }
+          - VERSION: '2.7',
+            ABI_VERSION: '2.7',
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/2.7.17/python-2.7.17-macosx10.9.pkg',
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+          - VERSION: '3.8',
+            ABI_VERSION: '3.5',
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg',
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
     name: "Python ${{ matrix.PYTHON.VERSION }} for ABI ${{ matrix.PYTHON.ABI_VERSION }} on macOS"
     steps:
       - run: |
-          set -e
-          set -x
-
           curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
           sudo installer -pkg python.pkg -target /
         env:
