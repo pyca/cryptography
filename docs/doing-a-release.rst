@@ -21,11 +21,10 @@ Verifying OpenSSL version
 -------------------------
 
 The release process creates wheels bundling OpenSSL for Windows, macOS, and
-Linux. Check that the Windows and macOS Azure Pipelines builders have the latest
-version of OpenSSL installed and verify that the latest version is present in
-both the ``pyca/cryptography-manylinux1`` and
-``pyca/cryptography-manylinux2010`` docker containers. If anything is out
-of date follow the instructions for upgrading OpenSSL.
+Linux. Check that the Windows, macOS, and Linux builders (both
+``pyca/cryptography-manylinux1`` and ``pyca/cryptography-manylinux2010``) have
+the latest OpenSSL. If anything is out of date follow the instructions for
+upgrading OpenSSL.
 
 Upgrading OpenSSL
 -----------------
