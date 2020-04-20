@@ -33,18 +33,24 @@ class Fernet(object):
             backend = default_backend()
 
         key = base64.urlsafe_b64decode(key)
-        if len(key) != 32:
-            raise ValueError(
-                "Fernet key must be 32 url-safe base64-encoded bytes."
-            )
+        Fernet._verify_key_size(len(key))
 
         self._signing_key = key[:16]
         self._encryption_key = key[16:]
         self._backend = backend
 
     @classmethod
-    def generate_key(cls):
-        return base64.urlsafe_b64encode(os.urandom(32))
+    def _verify_key_size(cls, key_size):
+        if key_size not in frozenset([32, 40, 48]):
+            raise ValueError(
+                "Fernet key must be 32, 40, or 48 url-safe base64-encoded"
+                " bytes."
+            )
+
+    @classmethod
+    def generate_key(cls, key_size=32):
+        Fernet._verify_key_size(key_size)
+        return base64.urlsafe_b64encode(os.urandom(key_size))
 
     def encrypt(self, data):
         current_time = int(time.time())
