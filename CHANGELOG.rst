@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-9-1:
+
+2.9.1 - 2020-04-21
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1g.
+
 .. _v2-9:
 
 2.9 - 2020-04-02
