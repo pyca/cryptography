@@ -72,10 +72,13 @@ jobs:
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv requests
+      - name: Download OpenSSL
+        run: |
+            ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: brew update
-      - run: brew upgrade openssl@1.1
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m virtualenv venv
       # Downgrade pip, I can't remember why
       - run: venv/bin/pip install -U pip==10.0.1
@@ -90,8 +93,8 @@ jobs:
           fi
 
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
-              LDFLAGS="/usr/local/opt/openssl@1.1/lib/libcrypto.a /usr/local/opt/openssl@1.1/lib/libssl.a" \
-              CFLAGS="-I/usr/local/opt/openssl@1.1/include -mmacosx-version-min=10.9" \
+              LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
+              CFLAGS="-I${HOME}/openssl-macos/include -mmacosx-version-min=10.9 -march=core2" \
               venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
         env:
           PYTHON_VERSION: ${{ matrix.PYTHON.ABI_VERSION }}
@@ -137,7 +140,7 @@ jobs:
       - run: pip install requests
       - name: Download OpenSSL
         run: |
-            python .github/workflows/download_openssl.py openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
+            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
             echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
             echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
         env:
