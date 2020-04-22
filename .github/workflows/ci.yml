@@ -34,6 +34,8 @@ jobs:
       - name: Download OpenSSL
         run: |
           python .github/workflows/download_openssl.py macos openssl-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tests
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
