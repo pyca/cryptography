@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
 
-      - run: python -m pip install tox coverage
+      - run: python -m pip install tox requests coverage
 
       - run: git clone https://github.com/google/wycheproof
 
