@@ -27,16 +27,20 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
 
-      - run: brew update
-      - run: brew install openssl@1.1
-      - run: python -m pip install tox coverage
+      - run: python -m pip install tox requests coverage
 
       - run: git clone https://github.com/google/wycheproof
 
-      - run: |
+      - name: Download OpenSSL
+        run: |
+          python .github/workflows/download_openssl.py macos openssl-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tests
+        run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-            LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-            CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
+            LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
+            CFLAGS="-I${HOME}/openssl-macos/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9 -march=core2" \
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
@@ -78,7 +82,7 @@ jobs:
       - run: python -m pip install tox requests coverage
       - name: Download OpenSSL
         run: |
-            python .github/workflows/download_openssl.py openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
+            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
             echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
             echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
         env:

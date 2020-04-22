@@ -6,12 +6,6 @@ import zipfile
 import requests
 
 
-RUNS_URL = (
-    "https://api.github.com/repos/pyca/infra/actions/workflows/"
-    "build-openssl.yml/runs?branch=master&status=success"
-)
-
-
 def get_response(url, token):
     response = requests.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
@@ -21,11 +15,24 @@ def get_response(url, token):
     return response
 
 
-def main(target):
+def main(platform, target):
+    if platform == "windows":
+        workflow = "build-openssl.yml"
+        path = "C:/"
+    elif platform == "macos":
+        workflow = "build-macos-openssl.yml"
+        path = os.environ["HOME"]
+    else:
+        raise ValueError("Invalid platform")
+
     token = os.environ["GITHUB_TOKEN"]
     print("Looking for: {}".format(target))
+    runs_url = (
+        "https://api.github.com/repos/pyca/infra/actions/workflows/"
+        "{}/runs?branch=master&status=success".format(workflow)
+    )
 
-    response = get_response(RUNS_URL, token).json()
+    response = get_response(runs_url, token).json()
     artifacts_url = response["workflow_runs"][0]["artifacts_url"]
     response = get_response(artifacts_url, token).json()
     for artifact in response["artifacts"]:
@@ -35,10 +42,10 @@ def main(target):
                 artifact["archive_download_url"], token
             )
             zipfile.ZipFile(io.BytesIO(response.content)).extractall(
-                "C:/{}".format(artifact["name"])
+                os.path.join(path, artifact["name"])
             )
             return
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
