@@ -10,7 +10,7 @@ def get_response(url, token):
     response = requests.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
         raise ValueError("Got HTTP {} fetching {}: ".format(
-            response.code, url, response.content
+            response.status_code, url, response.content
         ))
     return response
 
