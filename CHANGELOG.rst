@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v2-9-2:
+
+2.9.2 - 2020-04-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated the macOS wheel to fix an issue where it would not run on macOS
+  versions older than 10.15.
+
 .. _v2-9-1:
 
 2.9.1 - 2020-04-21
