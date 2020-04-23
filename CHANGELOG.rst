@@ -13,6 +13,14 @@ Changelog
   :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`,
   as per our deprecation policy.
 
+.. _v2-9-2:
+
+2.9.2 - 2020-04-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated the macOS wheel to fix an issue where it would not run on macOS
+  versions older than 10.15.
+
 .. _v2-9-1:
 
 2.9.1 - 2020-04-21
