@@ -240,6 +240,7 @@ class TestAESModeCTR(object):
     skip_message="Does not support AES GCM",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.slow
 class TestAESModeGCM(object):
     test_gcm = generate_aead_test(
         load_nist_vectors,

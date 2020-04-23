@@ -33,9 +33,9 @@ if [ -n "${DOCKER}" ]; then
         -v "${HOME}/wycheproof":/wycheproof \
         -w "${TRAVIS_BUILD_DIR}" \
         -e TOXENV "${DOCKER}" \
-        /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
+        /bin/sh -c "tox -- --wycheproof-root='/wycheproof' ${TOX_ARGS}"
 elif [ -n "${TOXENV}" ]; then
-    tox -- --wycheproof-root="$HOME/wycheproof"
+    tox -- --wycheproof-root="$HOME/wycheproof" ${TOX_ARGS}
 else
     downstream_script="${TRAVIS_BUILD_DIR}/.travis/downstream.d/${DOWNSTREAM}.sh"
     if [ ! -x "$downstream_script" ]; then
