@@ -102,18 +102,6 @@ def cryptography_has_scrypt():
     ]
 
 
-def cryptography_has_generic_dtls_method():
-    return [
-        "DTLS_method",
-        "DTLS_server_method",
-        "DTLS_client_method",
-        "SSL_OP_NO_DTLSv1",
-        "SSL_OP_NO_DTLSv1_2",
-        "DTLS_set_link_mtu",
-        "DTLS_get_link_min_mtu",
-    ]
-
-
 def cryptography_has_evp_pkey_dhx():
     return [
         "EVP_PKEY_DHX",
@@ -336,9 +324,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
     "Cryptography_HAS_LOCKING_CALLBACKS": cryptography_has_locking_callbacks,
     "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
-    "Cryptography_HAS_GENERIC_DTLS_METHOD": (
-        cryptography_has_generic_dtls_method
-    ),
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
     "Cryptography_HAS_SCT": cryptography_has_sct,

@@ -12,6 +12,8 @@ Changelog
   :class:`~cryptography.x509.Extension` instance to
   :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`,
   as per our deprecation policy.
+* **BACKWARDS INCOMPATIBLE:** Support for LibreSSL 2.7.x, 2.8.x, and 2.9.0 has
+  been removed (2.9.1+ is still supported).
 
 .. _v2-9-2:
 

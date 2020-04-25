@@ -183,20 +183,6 @@ class TestChaCha20Poly1305(object):
         assert computed_pt2 == pt
 
 
-@pytest.mark.skipif(
-    _aead_supported(AESCCM),
-    reason="Requires OpenSSL without AES-CCM support"
-)
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
-def test_aesccm_unsupported_on_older_openssl(backend):
-    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-        AESCCM(AESCCM.generate_key(128))
-
-
-@pytest.mark.skipif(
-    not _aead_supported(AESCCM),
-    reason="Does not support AESCCM"
-)
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESCCM(object):
     def test_data_too_large(self):
