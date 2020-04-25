@@ -12,6 +12,7 @@ from .utils import (
     check_backend_support, load_wycheproof_tests, skip_if_wycheproof_none
 )
 
+_SKIP_SLOW = pytest.mark.skip("skipped via --skip-slow")
 
 def pytest_report_header(config):
     return "OpenSSL: {}".format(openssl_backend.openssl_version_text())
@@ -19,6 +20,7 @@ def pytest_report_header(config):
 
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
+    parser.addoption("--skip-slow", action="store_true", default=False)
 
 
 def pytest_generate_tests(metafunc):
@@ -31,6 +33,13 @@ def pytest_generate_tests(metafunc):
         for path in marker.args:
             testcases.extend(load_wycheproof_tests(wycheproof, path))
         metafunc.parametrize("wycheproof", testcases)
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--skip-slow"):
+        for item in items:
+            if "slow" in item.keywords:
+                item.add_marker(_SKIP_SLOW)
 
 
 @pytest.fixture()
