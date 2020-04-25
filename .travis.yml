@@ -60,20 +60,6 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.0.2
 
-        # Non-x86_64 builds - cache disabled because it's broken ATM
-        - python: 3.8
-          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
-          arch: arm64
-        - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1g PIP_NO_CACHE_DIR=off
-          arch: arm64
-        - python: 3.8
-          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
-          arch: ppc64le
-        - python: 3.8
-          env: TOXENV=py38 PIP_NO_CACHE_DIR=off
-          arch: s390x
-
         - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
