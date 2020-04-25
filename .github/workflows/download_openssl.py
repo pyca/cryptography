@@ -17,7 +17,7 @@ def get_response(url, token):
 
 def main(platform, target):
     if platform == "windows":
-        workflow = "build-openssl.yml"
+        workflow = "build-windows-openssl.yml"
         path = "C:/"
     elif platform == "macos":
         workflow = "build-macos-openssl.yml"
