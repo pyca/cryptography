@@ -48,7 +48,7 @@ jobs:
       - name: Upload coverage
         run: |
           curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on macOS" -Z
+          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on macOS"
 
   windows:
     runs-on: windows-latest
@@ -96,4 +96,4 @@ jobs:
       - name: Upload coverage
         run: |
           curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}" -Z
+          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
