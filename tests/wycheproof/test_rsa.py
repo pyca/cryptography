@@ -78,7 +78,9 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if digest is None or not backend.hash_supported(digest):
-        pytest.skip("Hash {} not supported".format(digest))
+        pytest.skip(
+            "Hash {} not supported".format(wycheproof.testgroup["sha"])
+        )
 
     if should_verify(backend, wycheproof):
         key.verify(
@@ -184,7 +186,11 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     )
 
     if not backend.rsa_padding_supported(padding_algo):
-        pytest.skip("Padding {} not supported".format(padding_algo))
+        pytest.skip(
+            "OAEP with digest={} and MGF digest={} not supported".format(
+                wycheproof.testgroup["sha"], wycheproof.testgroup["mgfSha"],
+            )
+        )
 
     if wycheproof.valid or wycheproof.acceptable:
         pt = key.decrypt(
@@ -197,4 +203,30 @@ def test_rsa_oaep_encryption(backend, wycheproof):
             key.decrypt(
                 binascii.unhexlify(wycheproof.testcase["ct"]),
                 padding_algo
+            )
+
+
+@pytest.mark.wycheproof_tests(
+    "rsa_pkcs1_2048_test.json",
+    "rsa_pkcs1_3072_test.json",
+    "rsa_pkcs1_4096_test.json",
+)
+def test_rsa_pkcs1_encryption(backend, wycheproof):
+    key = serialization.load_pem_private_key(
+        wycheproof.testgroup["privateKeyPem"].encode("ascii"),
+        password=None,
+        backend=backend,
+    )
+
+    if wycheproof.valid:
+        pt = key.decrypt(
+            binascii.unhexlify(wycheproof.testcase["ct"]),
+            padding.PKCS1v15()
+        )
+        assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
+    else:
+        with pytest.raises(ValueError):
+            key.decrypt(
+                binascii.unhexlify(wycheproof.testcase["ct"]),
+                padding.PKCS1v15()
             )
