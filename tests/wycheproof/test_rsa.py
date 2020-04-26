@@ -99,11 +99,32 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
             )
 
 
+@pytest.mark.wycheproof_tests(
+    "rsa_sig_gen_misc_test.json"
+)
+def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
+    key = serialization.load_pem_private_key(
+        wycheproof.testgroup["privateKeyPem"].encode(),
+        password=None,
+        backend=backend,
+    )
+    digest = _DIGESTS[wycheproof.testgroup["sha"]]
+
+    sig = key.sign(
+        binascii.unhexlify(wycheproof.testcase["msg"]),
+        padding.PKCS1v15(),
+        digest,
+    )
+    assert sig == binascii.unhexlify(wycheproof.testcase["sig"])
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.wycheproof_tests(
     "rsa_pss_2048_sha1_mgf1_20_test.json",
     "rsa_pss_2048_sha256_mgf1_0_test.json",
     "rsa_pss_2048_sha256_mgf1_32_test.json",
+    "rsa_pss_2048_sha512_256_mgf1_28_test.json",
+    "rsa_pss_2048_sha512_256_mgf1_32_test.json",
     "rsa_pss_3072_sha256_mgf1_32_test.json",
     "rsa_pss_4096_sha256_mgf1_32_test.json",
     "rsa_pss_4096_sha512_mgf1_32_test.json",
@@ -115,6 +136,13 @@ def test_rsa_pss_signature(backend, wycheproof):
     )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+
+    if digest is None or mgf_digest is None:
+        pytest.skip(
+            "PSS with digest={} and MGF digest={} not supported".format(
+                wycheproof.testgroup["sha"], wycheproof.testgroup["mgfSha"],
+            )
+        )
 
     if wycheproof.valid or wycheproof.acceptable:
         key.verify(
