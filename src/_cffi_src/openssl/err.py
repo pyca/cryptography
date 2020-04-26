@@ -100,6 +100,7 @@ static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
+static const int RSA_R_BAD_PAD_BYTE_COUNT;
 static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
 static const int RSA_R_DATA_TOO_LARGE_FOR_MODULUS;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;

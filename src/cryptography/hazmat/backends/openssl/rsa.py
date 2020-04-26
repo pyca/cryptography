@@ -136,6 +136,7 @@ def _handle_rsa_enc_dec_error(backend, key):
         )
     else:
         decoding_errors = [
+            backend._lib.RSA_R_BAD_PAD_BYTE_COUNT,
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01,
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02,
             backend._lib.RSA_R_OAEP_DECODING_ERROR,
