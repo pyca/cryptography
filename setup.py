@@ -148,7 +148,6 @@ def keywords_with_side_effects(argv):
     else:
         cffi_modules = [
             "src/_cffi_src/build_openssl.py:ffi",
-            "src/_cffi_src/build_constant_time.py:ffi",
             "src/_cffi_src/build_padding.py:ffi",
         ]
 
