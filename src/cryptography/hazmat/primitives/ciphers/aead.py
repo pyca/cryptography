@@ -80,12 +80,6 @@ class AESCCM(object):
 
         self._tag_length = tag_length
 
-        if not backend.aead_cipher_supported(self):
-            raise exceptions.UnsupportedAlgorithm(
-                "AESCCM is not supported by this version of OpenSSL",
-                exceptions._Reasons.UNSUPPORTED_CIPHER
-            )
-
     @classmethod
     def generate_key(cls, bit_length):
         if not isinstance(bit_length, int):
