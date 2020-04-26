@@ -5,9 +5,11 @@ import zipfile
 
 import requests
 
+from urllib3.util.retry import Retry
 
-def get_response(url, token):
-    response = requests.get(url, headers={"Authorization": "token " + token})
+
+def get_response(session, url, token):
+    response = session.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
         raise ValueError("Got HTTP {} fetching {}: ".format(
             response.status_code, url, response.content
@@ -25,6 +27,13 @@ def main(platform, target):
     else:
         raise ValueError("Invalid platform")
 
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(
+        max_retries=Retry()
+    )
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
     token = os.environ["GITHUB_TOKEN"]
     print("Looking for: {}".format(target))
     runs_url = (
@@ -32,14 +41,14 @@ def main(platform, target):
         "{}/runs?branch=master&status=success".format(workflow)
     )
 
-    response = get_response(runs_url, token).json()
+    response = get_response(session, runs_url, token).json()
     artifacts_url = response["workflow_runs"][0]["artifacts_url"]
-    response = get_response(artifacts_url, token).json()
+    response = get_response(session, artifacts_url, token).json()
     for artifact in response["artifacts"]:
         if artifact["name"] == target:
             print("Found artifact")
             response = get_response(
-                artifact["archive_download_url"], token
+                session, artifact["archive_download_url"], token
             )
             zipfile.ZipFile(io.BytesIO(response.content)).extractall(
                 os.path.join(path, artifact["name"])
