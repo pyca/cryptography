@@ -44,7 +44,7 @@ it fits your needs before implementing anything using this module.**
         >>> decryptor.update(ct) + decryptor.finalize()
         b'a secret message'
 
-    :param algorithms: A
+    :param algorithm: A
         :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
         instance such as those described
         :ref:`below <symmetric-encryption-algorithms>`.
