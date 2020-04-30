@@ -44,7 +44,7 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 OPENSSL=1.1.1g OPENSSL_CONFIG_FLAGS="no-engine no-rc2"
         - python: 3.8
-          env: TOXENV=py38 OPENSSL=3.0.0-alpha1.
+          env: TOXENV=py38 OPENSSL=3.0.0-alpha1
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=2.9.2
         - python: 3.8
