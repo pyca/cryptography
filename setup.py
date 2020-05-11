@@ -83,7 +83,8 @@ try:
         setup_requires=setup_requirements,
         extras_require={
             "test": [
-                "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
+                "pytest>=4.4.0",
+                "pytest-subtests",
                 "pretend",
                 "iso8601",
                 "pytz",
