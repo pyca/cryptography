@@ -5,7 +5,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/certbot/josepy
         cd josepy
         git rev-parse HEAD
-        pip install -e ".[tests]"
+        pip install -e ".[tests]" -c constraints.txt
         ;;
     run)
         cd josepy
