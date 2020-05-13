@@ -12,7 +12,7 @@ def get_response(session, url, token):
     response = session.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
         raise ValueError("Got HTTP {} fetching {}: ".format(
-            response.status_code, url, response.content
+            response.status_code, url
         ))
     return response
 
