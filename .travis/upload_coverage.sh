@@ -12,8 +12,10 @@ if [ -n "${TOXENV}" ]; then
         docs);;
         *)
             source ~/.venv/bin/activate
-            codecov --required --env TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER || \
-                codecov --required --env TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER
+            curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
+
+            bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER || \
+                bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER
             ;;
     esac
 fi
