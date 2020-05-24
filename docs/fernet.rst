@@ -23,9 +23,10 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> f.decrypt(token)
         b'my deep dark secret'
 
-    :param bytes key: A URL-safe base64-encoded 32-byte key. This **must** be
-                      kept secret. Anyone with this key is able to create and
-                      read messages.
+    :param key: A URL-safe base64-encoded 32-byte key. This **must** be
+                kept secret. Anyone with this key is able to create and
+                read messages.
+    :type key: bytes or str
 
     .. classmethod:: generate_key()
 
