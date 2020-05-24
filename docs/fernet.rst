@@ -35,12 +35,15 @@ has support for implementing key rotation via :class:`MultiFernet`.
         they'll also be able forge arbitrary messages that will be
         authenticated and decrypted.
 
-    .. method:: encrypt(data)
+    .. method:: encrypt(data, current_time=None)
 
         Encrypts data passed. The result of this encryption is known as a
         "Fernet token" and has strong privacy and authenticity guarantees.
 
         :param bytes data: The message you would like to encrypt.
+        :param int current_time: The current time to be used instead of
+                                 the value returned by time.time()
+                                 (can used in unit tests for example).
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
@@ -53,7 +56,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
             generated in *plaintext*, the time a message was created will
             therefore be visible to a possible attacker.
 
-    .. method:: decrypt(token, ttl=None)
+    .. method:: decrypt(token, ttl=None, current_time=None)
 
         Decrypts a Fernet token. If successfully decrypted you will receive the
         original plaintext as the result, otherwise an exception will be
@@ -68,6 +71,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
                         created) an exception will be raised. If ``ttl`` is not
                         provided (or is ``None``), the age of the message is
                         not considered.
+        :param int current_time: The current time to be used instead of
+                                 the value returned by time.time()
+                                 (can used in unit tests for example).
         :returns bytes: The original plaintext.
         :raises cryptography.fernet.InvalidToken: If the ``token`` is in any
                                                   way invalid, this exception
@@ -134,7 +140,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
     using that new key, and then retire the old fernet key(s) to which the
     employee had access.
 
-    .. method:: rotate(msg)
+    .. method:: rotate(msg, current_time=None)
 
         .. versionadded:: 2.2
 
@@ -162,6 +168,9 @@ has support for implementing key rotation via :class:`MultiFernet`.
            b'Secret message!'
 
         :param bytes msg: The token to re-encrypt.
+        :param int current_time: The current time to be used instead of
+                                 the value returned by time.time()
+                                 (can used in unit tests for example).
         :returns bytes: A secure message that cannot be read or altered without
            the key. This is URL-safe base64-encoded. This is referred to as a
            "Fernet token".

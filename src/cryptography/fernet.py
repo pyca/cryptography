@@ -46,8 +46,9 @@ class Fernet(object):
     def generate_key(cls):
         return base64.urlsafe_b64encode(os.urandom(32))
 
-    def encrypt(self, data):
-        current_time = int(time.time())
+    def encrypt(self, data, current_time=None):
+        if current_time is None:
+            current_time = int(time.time())
         iv = os.urandom(16)
         return self._encrypt_from_parts(data, current_time, iv)
 
@@ -70,9 +71,9 @@ class Fernet(object):
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(self, token, ttl=None):
+    def decrypt(self, token, ttl=None, current_time=None):
         timestamp, data = Fernet._get_unverified_token_data(token)
-        return self._decrypt_data(data, timestamp, ttl)
+        return self._decrypt_data(data, timestamp, ttl, current_time)
 
     def extract_timestamp(self, token):
         timestamp, data = Fernet._get_unverified_token_data(token)
@@ -105,8 +106,9 @@ class Fernet(object):
         except InvalidSignature:
             raise InvalidToken
 
-    def _decrypt_data(self, data, timestamp, ttl):
-        current_time = int(time.time())
+    def _decrypt_data(self, data, timestamp, ttl, current_time):
+        if current_time is None:
+            current_time = int(time.time())
         if ttl is not None:
             if timestamp + ttl < current_time:
                 raise InvalidToken
@@ -148,11 +150,11 @@ class MultiFernet(object):
     def encrypt(self, msg):
         return self._fernets[0].encrypt(msg)
 
-    def rotate(self, msg):
+    def rotate(self, msg, current_time=None):
         timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
-                p = f._decrypt_data(data, timestamp, None)
+                p = f._decrypt_data(data, timestamp, None, current_time)
                 break
             except InvalidToken:
                 pass
@@ -162,10 +164,10 @@ class MultiFernet(object):
         iv = os.urandom(16)
         return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
-    def decrypt(self, msg, ttl=None):
+    def decrypt(self, msg, ttl=None, current_time=None):
         for f in self._fernets:
             try:
-                return f.decrypt(msg, ttl)
+                return f.decrypt(msg, ttl, current_time)
             except InvalidToken:
                 pass
         raise InvalidToken

@@ -70,6 +70,8 @@ class TestFernet(object):
                     monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec, current_time=current_time)
+        assert payload == src.encode("ascii")
         monkeypatch.setattr(time, "time", lambda: current_time)
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
@@ -78,6 +80,8 @@ class TestFernet(object):
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        with pytest.raises(InvalidToken):
+            f.decrypt(token.encode("ascii"), ttl=ttl_sec, current_time=current_time)
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
@@ -110,6 +114,7 @@ class TestFernet(object):
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        assert f.decrypt(token, ttl=None, current_time=current_time) == pt
         monkeypatch.setattr(time, "time", lambda: current_time)
         assert f.decrypt(token, ttl=None) == pt
 
