@@ -209,6 +209,7 @@ class _DHPrivateKey(object):
             encoding,
             format,
             encryption_algorithm,
+            self,
             self._evp_pkey,
             self._dh_cdata
         )

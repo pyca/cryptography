@@ -17,7 +17,7 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend
 )
 from cryptography.hazmat.primitives.asymmetric import (
-    dsa, ec, ed25519, ed448, rsa
+    dsa, ec, ed25519, ed448, rsa, x25519, x448
 )
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption, Encoding, NoEncryption,
@@ -573,6 +573,24 @@ class TestPEMSerialization(object):
                     pemfile.read().encode(), password, backend
                 )
             )
+
+    def test_invalid_encoding_with_traditional(self, backend):
+        key_file = os.path.join(
+            "asymmetric", "Traditional_OpenSSL_Serialization", "testrsa.pem"
+        )
+        key = load_vectors_from_file(
+            key_file,
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ),
+            mode="rb"
+        )
+
+        for enc in (Encoding.OpenSSH, Encoding.Raw, Encoding.X962):
+            with pytest.raises(ValueError):
+                key.private_bytes(
+                    enc, PrivateFormat.TraditionalOpenSSL, NoEncryption()
+                )
 
     @pytest.mark.parametrize(
         "key_path",
@@ -1396,6 +1414,17 @@ class TestEd25519Serialization(object):
             encoding, PublicFormat.SubjectPublicKeyInfo
         ) == data
 
+    def test_openssl_serialization_unsupported(self, backend):
+        key = ed25519.Ed25519PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.x448_supported(),
@@ -1459,6 +1488,17 @@ class TestX448Serialization(object):
         assert public_key.public_bytes(
             encoding, PublicFormat.SubjectPublicKeyInfo
         ) == data
+
+    def test_openssl_serialization_unsupported(self, backend):
+        key = x448.X448PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
 
 
 @pytest.mark.supported(
@@ -1524,6 +1564,17 @@ class TestX25519Serialization(object):
             encoding, PublicFormat.SubjectPublicKeyInfo
         ) == data
 
+    def test_openssl_serialization_unsupported(self, backend):
+        key = x25519.X25519PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed448_supported(),
@@ -1588,9 +1639,73 @@ class TestEd448Serialization(object):
             encoding, PublicFormat.SubjectPublicKeyInfo
         ) == data
 
-    def test_openssh_serialization_unsupported(self, backend):
-        key = ed448.Ed448PrivateKey.generate().public_key()
+    def test_openssl_serialization_unsupported(self, backend):
+        key = ed448.Ed448PrivateKey.generate()
         with pytest.raises(ValueError):
-            key.public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
+            key.private_bytes(
+                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
             )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+            )
+
+    def test_openssh_serialization_unsupported(self, backend):
+        key = ed448.Ed448PrivateKey.generate()
+        with pytest.raises(ValueError):
+            key.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH,
+            )
+
+
+class TestDHSerialization(object):
+    """Test all options with least-supported key type.
+    """
+    def test_dh_public_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        public_key = load_pem_private_key(data, None, backend).public_key()
+        for enc in (
+            Encoding.PEM, Encoding.DER, Encoding.OpenSSH,
+            Encoding.Raw, Encoding.X962
+        ):
+            for fmt in (
+                PublicFormat.SubjectPublicKeyInfo, PublicFormat.PKCS1,
+                PublicFormat.OpenSSH, PublicFormat.Raw,
+                PublicFormat.CompressedPoint, PublicFormat.UncompressedPoint,
+            ):
+                if (
+                    enc in (Encoding.PEM, Encoding.DER) and
+                    fmt == PublicFormat.SubjectPublicKeyInfo
+                ):
+                    # tested elsewhere
+                    continue
+                with pytest.raises(ValueError):
+                    public_key.public_bytes(enc, fmt)
+
+    def test_dh_private_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        private_key = load_pem_private_key(data, None, backend)
+        for enc in (
+            Encoding.PEM, Encoding.DER, Encoding.OpenSSH,
+            Encoding.Raw, Encoding.X962
+        ):
+            for fmt in (
+                PrivateFormat.PKCS8, PrivateFormat.TraditionalOpenSSL,
+                PrivateFormat.Raw
+            ):
+                if (
+                    enc in (Encoding.PEM, Encoding.DER) and
+                    fmt is PrivateFormat.PKCS8
+                ):
+                    # tested elsewhere
+                    continue
+                with pytest.raises(ValueError):
+                    private_key.private_bytes(enc, fmt, NoEncryption())
