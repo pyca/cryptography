@@ -73,7 +73,8 @@ Key interfaces
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`, or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`,
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`
         or
         :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
         ) are chosen to define the exact serialization.
@@ -88,7 +89,8 @@ Key interfaces
             then ``format`` must be
             :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
             , otherwise it must be
-            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`.
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8` or
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`.
 
         :param encryption_algorithm: An instance of an object conforming to the
             :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
