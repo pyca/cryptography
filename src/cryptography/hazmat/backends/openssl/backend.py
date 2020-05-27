@@ -842,7 +842,7 @@ class Backend(object):
 
         # Create an empty certificate.
         x509_cert = self._lib.X509_new()
-        x509_cert = self._ffi.gc(x509_cert, backend._lib.X509_free)
+        x509_cert = self._ffi.gc(x509_cert, self._lib.X509_free)
 
         # Set the x509 version.
         res = self._lib.X509_set_version(x509_cert, builder._version.value)
@@ -953,7 +953,7 @@ class Backend(object):
 
         # Create an empty CRL.
         x509_crl = self._lib.X509_CRL_new()
-        x509_crl = self._ffi.gc(x509_crl, backend._lib.X509_CRL_free)
+        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
 
         # Set the x509 CRL version. We only support v2 (integer value 1).
         res = self._lib.X509_CRL_set_version(x509_crl, 1)
@@ -1058,7 +1058,7 @@ class Backend(object):
             nid = self._lib.OBJ_txt2nid(
                 extension.oid.dotted_string.encode("ascii")
             )
-            backend.openssl_assert(nid != self._lib.NID_undef)
+            self.openssl_assert(nid != self._lib.NID_undef)
             return self._lib.X509V3_EXT_i2d(
                 nid, 1 if extension.critical else 0, ext_struct
             )
@@ -2166,11 +2166,11 @@ class Backend(object):
 
         evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
-        backend.openssl_assert(res == 1)
+        self.openssl_assert(res == 1)
         res = self._lib.EVP_PKEY_set1_tls_encodedpoint(
             evp_pkey, data, len(data)
         )
-        backend.openssl_assert(res == 1)
+        self.openssl_assert(res == 1)
         return _X25519PublicKey(self, evp_pkey)
 
     def x25519_load_private_bytes(self, data):
@@ -2198,7 +2198,7 @@ class Backend(object):
             ba[0:16] = pkcs8_prefix
             ba[16:] = data
             bio = self._bytes_to_bio(ba)
-            evp_pkey = backend._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
+            evp_pkey = self._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
 
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
