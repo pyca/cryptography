@@ -5,8 +5,8 @@ case "${1}" in
         git clone --depth=1 https://github.com/certbot/certbot
         cd certbot
         git rev-parse HEAD
-        pip install -e ./acme[dev]
-        pip install -e ./certbot[dev]
+        tools/pip_install_editable.py ./acme[dev]
+        tools/pip_install_editable.py ./certbot[dev]
         ;;
     run)
         cd certbot
