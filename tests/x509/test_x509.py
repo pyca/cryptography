@@ -4674,6 +4674,61 @@ class TestEd448Certificate(object):
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestSignatureRejection(object):
+    """Test if signing rejects DH keys properly.
+    """
+    def load_key(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb"
+        )
+        return serialization.load_pem_private_key(data, None, backend)
+
+    def test_crt_signing_check(self, backend):
+        issuer_private_key = self.load_key(backend)
+        public_key = RSA_KEY_2048.private_key(backend).public_key()
+        not_valid_before = datetime.datetime(2020, 1, 1, 1, 1)
+        not_valid_after = datetime.datetime(2050, 12, 31, 8, 30)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            public_key
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        with pytest.raises(TypeError):
+            builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+    def test_csr_signing_check(self, backend):
+        private_key = self.load_key(backend)
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(TypeError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_crl_signing_check(self, backend):
+        private_key = self.load_key(backend)
+        last_time = datetime.datetime.utcnow().replace(microsecond=0)
+        next_time = last_time
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u"CA")])
+        ).last_update(last_time).next_update(next_time)
+
+        with pytest.raises(TypeError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+
 def test_random_serial_number(monkeypatch):
     sample_data = os.urandom(20)
 
