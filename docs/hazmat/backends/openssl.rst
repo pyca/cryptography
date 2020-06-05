@@ -68,6 +68,11 @@ greater.
 OS random engine
 ----------------
 
+.. note::
+
+    As of OpenSSL 1.1.1d the CSPRNG is fork-safe by default. ``cryptography``
+    does not compile or load the custom engine on these versions.
+
 By default OpenSSL uses a user-space CSPRNG that is seeded from system random (
 ``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded
 automatically when a process calls ``fork()``. This can result in situations

@@ -46,6 +46,8 @@ Changelog
   :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
 * Added support for encoding attributes in certificate signing requests via
   :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
+* The OS random engine for OpenSSL is now disabled on OpenSSL 1.1.1d and
+  higher because these versions now properly reseed the RNG on fork.
 
 .. _v2-9-2:
 
