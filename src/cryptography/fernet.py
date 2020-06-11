@@ -150,11 +150,11 @@ class MultiFernet(object):
     def encrypt(self, msg):
         return self._fernets[0].encrypt(msg)
 
-    def rotate(self, msg, current_time=None):
+    def rotate(self, msg):
         timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
-                p = f._decrypt_data(data, timestamp, None, current_time)
+                p = f._decrypt_data(data, timestamp, None, None)
                 break
             except InvalidToken:
                 pass
