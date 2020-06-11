@@ -220,6 +220,7 @@ int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
+int ssl3_send_alert(SSL *, int, int);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
