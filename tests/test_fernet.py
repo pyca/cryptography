@@ -70,7 +70,7 @@ class TestFernet(object):
                     monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
-        payload = f.decrypt(
+        payload = f.decrypt_at_time(
             token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
         )
         assert payload == src.encode("ascii")
@@ -83,7 +83,7 @@ class TestFernet(object):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         with pytest.raises(InvalidToken):
-            f.decrypt(
+            f.decrypt_at_time(
                 token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
             )
         monkeypatch.setattr(time, "time", lambda: current_time)
@@ -118,7 +118,8 @@ class TestFernet(object):
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        assert f.decrypt(token, ttl=None, current_time=current_time) == pt
+        assert f.decrypt_at_time(
+            token, ttl=None, current_time=current_time) == pt
         monkeypatch.setattr(time, "time", lambda: current_time)
         assert f.decrypt(token, ttl=None) == pt
 
@@ -134,7 +135,7 @@ class TestFernet(object):
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         current_time = 1526138327
-        token = f.encrypt(b'encrypt me', current_time)
+        token = f.encrypt_at_time(b'encrypt me', current_time)
         assert f.extract_timestamp(token) == current_time
         with pytest.raises(InvalidToken):
             f.extract_timestamp(b"nonsensetoken")

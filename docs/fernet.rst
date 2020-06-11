@@ -35,15 +35,12 @@ has support for implementing key rotation via :class:`MultiFernet`.
         they'll also be able forge arbitrary messages that will be
         authenticated and decrypted.
 
-    .. method:: encrypt(data, current_time=None)
+    .. method:: encrypt(data)
 
         Encrypts data passed. The result of this encryption is known as a
         "Fernet token" and has strong privacy and authenticity guarantees.
 
         :param bytes data: The message you would like to encrypt.
-        :param int current_time: The current time to be used instead of
-                                 the value returned by time.time()
-                                 (can used in unit tests for example).
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
@@ -56,7 +53,27 @@ has support for implementing key rotation via :class:`MultiFernet`.
             generated in *plaintext*, the time a message was created will
             therefore be visible to a possible attacker.
 
-    .. method:: decrypt(token, ttl=None, current_time=None)
+    .. method:: encrypt_at_time(data, current_time)
+
+       Encrypts data passed using explicitly passed current time. See
+       :meth:`encrypt` for the documentaiton of the ``data`` parameter, the
+       return type and the exceptions raised.
+
+       The motivation behind this method is for the client code to be able to
+       test token expiration. Since this method can be used in an insecure
+       manner one should make sure the correct time (``int(time.time())``)
+       is passed as ``current_time`` outside testing.
+
+       :param int current_time: The current time.
+
+       .. note::
+
+            Similarly to :meth:`encrypt` the encrypted message contains the
+            timestamp in *plaintext*, in this case the timestamp is the value
+            of the ``current_time`` parameter.
+
+
+    .. method:: decrypt(token, ttl=None)
 
         Decrypts a Fernet token. If successfully decrypted you will receive the
         original plaintext as the result, otherwise an exception will be
@@ -71,9 +88,6 @@ has support for implementing key rotation via :class:`MultiFernet`.
                         created) an exception will be raised. If ``ttl`` is not
                         provided (or is ``None``), the age of the message is
                         not considered.
-        :param int current_time: The current time to be used instead of
-                                 the value returned by time.time()
-                                 (can used in unit tests for example).
         :returns bytes: The original plaintext.
         :raises cryptography.fernet.InvalidToken: If the ``token`` is in any
                                                   way invalid, this exception
@@ -85,6 +99,21 @@ has support for implementing key rotation via :class:`MultiFernet`.
                                                   signature.
         :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
+
+    .. method:: dectypy_at_time(token, ttl, current_time)
+
+       Decrypts a token using explicitly passed current time. See
+       :meth:`decrypt` for the documentation of the ``token`` and ``ttl``
+       parameters (``ttl`` is required here), the return type and the exceptions
+       raised.
+
+       The motivation behind this method is for the client code to be able to
+       test token expiration. Since this method can be used in an insecure
+       manner one should make sure the correct time (``int(time.time())``)
+       is passed as ``current_time`` outside testing.
+
+       :param int current_time: The current time.
+
 
     .. method:: extract_timestamp(token)
 
@@ -140,7 +169,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
     using that new key, and then retire the old fernet key(s) to which the
     employee had access.
 
-    .. method:: rotate(msg, current_time=None)
+    .. method:: rotate(msg)
 
         .. versionadded:: 2.2
 
@@ -168,9 +197,6 @@ has support for implementing key rotation via :class:`MultiFernet`.
            b'Secret message!'
 
         :param bytes msg: The token to re-encrypt.
-        :param int current_time: The current time to be used instead of
-                                 the value returned by time.time()
-                                 (can used in unit tests for example).
         :returns bytes: A secure message that cannot be read or altered without
            the key. This is URL-safe base64-encoded. This is referred to as a
            "Fernet token".
