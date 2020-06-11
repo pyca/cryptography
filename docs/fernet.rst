@@ -100,7 +100,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
         :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
 
-    .. method:: dectypy_at_time(token, ttl, current_time)
+    .. method:: decrypt_at_time(token, ttl, current_time)
 
        Decrypts a token using explicitly passed current time. See
        :meth:`decrypt` for the documentation of the ``token`` and ``ttl``
