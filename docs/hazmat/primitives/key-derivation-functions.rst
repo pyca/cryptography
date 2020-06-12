@@ -205,6 +205,11 @@ Different KDFs are suitable for different tasks such as:
         :return bytes: The derived key.
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.
