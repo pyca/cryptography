@@ -302,7 +302,7 @@ Different KDFs are suitable for different tasks such as:
                                                           :meth:`derive` or
                                                           :meth:`verify` is
                                                           called more than
-                                                          once.                           
+                                                          once.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.
@@ -397,7 +397,7 @@ Different KDFs are suitable for different tasks such as:
                                                           :meth:`verify` is
                                                           called more than
                                                           once.
-        
+
         Derives a new key from the input key material.
 
     .. method:: verify(key_material, expected_key)
@@ -495,7 +495,7 @@ Different KDFs are suitable for different tasks such as:
                                                           :meth:`verify` is
                                                           called more than
                                                           once.
-                                                          
+
         Derives a new key from the input key material.
 
     .. method:: verify(key_material, expected_key)
@@ -593,7 +593,7 @@ Different KDFs are suitable for different tasks such as:
                                                           :meth:`verify` is
                                                           called more than
                                                           once.
-        
+
         Derives a new key from the input key material.
 
     .. method:: verify(key_material, expected_key)
