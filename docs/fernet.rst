@@ -56,7 +56,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
     .. method:: encrypt_at_time(data, current_time)
 
        Encrypts data passed using explicitly passed current time. See
-       :meth:`encrypt` for the documentaiton of the ``data`` parameter, the
+       :meth:`encrypt` for the documentation of the ``data`` parameter, the
        return type and the exceptions raised.
 
        The motivation behind this method is for the client code to be able to
