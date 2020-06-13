@@ -204,18 +204,14 @@ class TestMultiFernet(object):
         mf2 = MultiFernet([f2, f1])
 
         plaintext = b"abc"
-        mf1_ciphertext = mf1.encrypt(plaintext)
+        original_time = int(time.time()) - 5 * 60
+        mf1_ciphertext = mf1.encrypt_at_time(plaintext, original_time)
 
-        later = datetime.datetime.now() + datetime.timedelta(minutes=5)
-        later_time = time.mktime(later.timetuple())
-        monkeypatch.setattr(time, "time", lambda: later_time)
-
-        original_time, _ = Fernet._get_unverified_token_data(mf1_ciphertext)
         rotated_time, _ = Fernet._get_unverified_token_data(
             mf2.rotate(mf1_ciphertext)
         )
 
-        assert later_time != rotated_time
+        assert int(time.time()) != rotated_time
         assert original_time == rotated_time
 
     def test_rotate_decrypt_no_shared_keys(self, backend):
