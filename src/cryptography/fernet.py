@@ -150,10 +150,10 @@ class MultiFernet(object):
         self._fernets = fernets
 
     def encrypt(self, msg):
-        return self._fernets[0].encrypt(msg)
+        return self.encrypt_at_time(msg, int(time.time()))
 
     def encrypt_at_time(self, msg, current_time):
-        return self._fernets[0].encrypt(msg, current_time)
+        return self._fernets[0].encrypt_at_time(msg, current_time)
 
     def rotate(self, msg):
         timestamp, data = Fernet._get_unverified_token_data(msg)
