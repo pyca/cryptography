@@ -55,6 +55,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
     .. method:: encrypt_at_time(data, current_time)
 
+       .. versionadded:: 3.0
+
        Encrypts data passed using explicitly passed current time. See
        :meth:`encrypt` for the documentation of the ``data`` parameter, the
        return type and the exceptions raised.
@@ -101,6 +103,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
                            ``bytes``.
 
     .. method:: decrypt_at_time(token, ttl, current_time)
+
+       .. versionadded:: 3.0
 
        Decrypts a token using explicitly passed current time. See
        :meth:`decrypt` for the documentation of the ``token`` and ``ttl``
