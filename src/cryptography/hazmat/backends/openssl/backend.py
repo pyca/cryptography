@@ -732,25 +732,32 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def create_x509_csr(self, builder, private_key, algorithm):
-        if not isinstance(builder, x509.CertificateSigningRequestBuilder):
-            raise TypeError('Builder type mismatch.')
-
+    def _x509_check_signature_params(self, private_key, algorithm):
         if isinstance(private_key,
                       (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
             if algorithm is not None:
                 raise ValueError(
                     "algorithm must be None when signing via ed25519 or ed448"
                 )
+        elif not isinstance(private_key, (rsa.RSAPrivateKey, dsa.DSAPrivateKey,
+                            ec.EllipticCurvePrivateKey)):
+            raise TypeError(
+                "Key must be rsa, dsa, ec, ed25519 or ed448 private key."
+            )
         elif not isinstance(algorithm, hashes.HashAlgorithm):
-            raise TypeError('Algorithm must be a registered hash algorithm.')
+            raise TypeError("Algorithm must be a registered hash algorithm.")
         elif (
             isinstance(algorithm, hashes.MD5) and not
             isinstance(private_key, rsa.RSAPrivateKey)
         ):
             raise ValueError(
-                "MD5 is not a supported hash algorithm for EC/DSA CSRs"
+                "MD5 hash algorithm is only supported with RSA keys"
             )
+
+    def create_x509_csr(self, builder, private_key, algorithm):
+        if not isinstance(builder, x509.CertificateSigningRequestBuilder):
+            raise TypeError('Builder type mismatch.')
+        self._x509_check_signature_params(private_key, algorithm)
 
         # Resolve the signature algorithm.
         evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
@@ -820,22 +827,7 @@ class Backend(object):
     def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
-        if isinstance(private_key,
-                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
-            if algorithm is not None:
-                raise ValueError(
-                    "algorithm must be None when signing via ed25519 or ed448"
-                )
-        elif not isinstance(algorithm, hashes.HashAlgorithm):
-            raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if (
-            isinstance(algorithm, hashes.MD5) and not
-            isinstance(private_key, rsa.RSAPrivateKey)
-        ):
-            raise ValueError(
-                "MD5 is only (reluctantly) supported for RSA certificates"
-            )
+        self._x509_check_signature_params(private_key, algorithm)
 
         # Resolve the signature algorithm.
         evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
@@ -932,22 +924,7 @@ class Backend(object):
     def create_x509_crl(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
             raise TypeError('Builder type mismatch.')
-        if isinstance(private_key,
-                      (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)):
-            if algorithm is not None:
-                raise ValueError(
-                    "algorithm must be None when signing via ed25519 or ed448"
-                )
-        elif not isinstance(algorithm, hashes.HashAlgorithm):
-            raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if (
-            isinstance(algorithm, hashes.MD5) and not
-            isinstance(private_key, rsa.RSAPrivateKey)
-        ):
-            raise ValueError(
-                "MD5 is not a supported hash algorithm for EC/DSA CRLs"
-            )
+        self._x509_check_signature_params(private_key, algorithm)
 
         evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
 
@@ -1559,6 +1536,8 @@ class Backend(object):
         return _OCSPRequest(self, ocsp_req)
 
     def _create_ocsp_basic_response(self, builder, private_key, algorithm):
+        self._x509_check_signature_params(private_key, algorithm)
+
         basic = self._lib.OCSP_BASICRESP_new()
         self.openssl_assert(basic != self._ffi.NULL)
         basic = self._ffi.gc(basic, self._lib.OCSP_BASICRESP_free)
