@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import calendar
-import datetime
 import json
 import os
 import time
@@ -70,6 +69,10 @@ class TestFernet(object):
                     monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        payload = f.decrypt_at_time(
+            token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
+        )
+        assert payload == src.encode("ascii")
         monkeypatch.setattr(time, "time", lambda: current_time)
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
@@ -78,6 +81,10 @@ class TestFernet(object):
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        with pytest.raises(InvalidToken):
+            f.decrypt_at_time(
+                token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
+            )
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
@@ -110,6 +117,8 @@ class TestFernet(object):
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        assert f.decrypt_at_time(
+            token, ttl=None, current_time=current_time) == pt
         monkeypatch.setattr(time, "time", lambda: current_time)
         assert f.decrypt(token, ttl=None) == pt
 
@@ -125,8 +134,7 @@ class TestFernet(object):
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         current_time = 1526138327
-        monkeypatch.setattr(time, "time", lambda: current_time)
-        token = f.encrypt(b'encrypt me')
+        token = f.encrypt_at_time(b'encrypt me', current_time)
         assert f.extract_timestamp(token) == current_time
         with pytest.raises(InvalidToken):
             f.extract_timestamp(b"nonsensetoken")
@@ -195,18 +203,14 @@ class TestMultiFernet(object):
         mf2 = MultiFernet([f2, f1])
 
         plaintext = b"abc"
-        mf1_ciphertext = mf1.encrypt(plaintext)
+        original_time = int(time.time()) - 5 * 60
+        mf1_ciphertext = mf1.encrypt_at_time(plaintext, original_time)
 
-        later = datetime.datetime.now() + datetime.timedelta(minutes=5)
-        later_time = time.mktime(later.timetuple())
-        monkeypatch.setattr(time, "time", lambda: later_time)
-
-        original_time, _ = Fernet._get_unverified_token_data(mf1_ciphertext)
         rotated_time, _ = Fernet._get_unverified_token_data(
             mf2.rotate(mf1_ciphertext)
         )
 
-        assert later_time != rotated_time
+        assert int(time.time()) != rotated_time
         assert original_time == rotated_time
 
     def test_rotate_decrypt_no_shared_keys(self, backend):

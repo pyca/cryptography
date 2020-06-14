@@ -54,6 +54,28 @@ has support for implementing key rotation via :class:`MultiFernet`.
             generated in *plaintext*, the time a message was created will
             therefore be visible to a possible attacker.
 
+    .. method:: encrypt_at_time(data, current_time)
+
+       .. versionadded:: 3.0
+
+       Encrypts data passed using explicitly passed current time. See
+       :meth:`encrypt` for the documentation of the ``data`` parameter, the
+       return type and the exceptions raised.
+
+       The motivation behind this method is for the client code to be able to
+       test token expiration. Since this method can be used in an insecure
+       manner one should make sure the correct time (``int(time.time())``)
+       is passed as ``current_time`` outside testing.
+
+       :param int current_time: The current time.
+
+       .. note::
+
+            Similarly to :meth:`encrypt` the encrypted message contains the
+            timestamp in *plaintext*, in this case the timestamp is the value
+            of the ``current_time`` parameter.
+
+
     .. method:: decrypt(token, ttl=None)
 
         Decrypts a Fernet token. If successfully decrypted you will receive the
@@ -80,6 +102,23 @@ has support for implementing key rotation via :class:`MultiFernet`.
                                                   signature.
         :raises TypeError: This exception is raised if ``token`` is not
                            ``bytes``.
+
+    .. method:: decrypt_at_time(token, ttl, current_time)
+
+       .. versionadded:: 3.0
+
+       Decrypts a token using explicitly passed current time. See
+       :meth:`decrypt` for the documentation of the ``token`` and ``ttl``
+       parameters (``ttl`` is required here), the return type and the exceptions
+       raised.
+
+       The motivation behind this method is for the client code to be able to
+       test token expiration. Since this method can be used in an insecure
+       manner one should make sure the correct time (``int(time.time())``)
+       is passed as ``current_time`` outside testing.
+
+       :param int current_time: The current time.
+
 
     .. method:: extract_timestamp(token)
 
