@@ -245,7 +245,7 @@ setup(
             "hypothesis>=1.11.4,!=3.79.2",
         ],
         "docs": [
-            "sphinx >= 1.6.5,!=1.8.0,!=3.1.0",
+            "sphinx >= 1.6.5,!=1.8.0,!=3.1.0,!=3.1.1",
             "sphinx_rtd_theme",
         ],
         "docstest": [
