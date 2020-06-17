@@ -177,7 +177,7 @@ class TestMultiFernet(object):
         f = MultiFernet([f1])
         pt = b"encrypt me"
         token = f.encrypt_at_time(pt, current_time=100)
-        assert f.decrypt_at_time(token, ttl=1, current_time=100)
+        assert f.decrypt_at_time(token, ttl=1, current_time=100) == pt
         with pytest.raises(InvalidToken):
             f.decrypt_at_time(token, ttl=1, current_time=102)
         with pytest.raises(ValueError):
