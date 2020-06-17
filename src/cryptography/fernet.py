@@ -73,9 +73,12 @@ class Fernet(object):
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
     def decrypt(self, token, ttl=None):
-        return self.decrypt_at_time(token, ttl, int(time.time()))
+        timestamp, data = Fernet._get_unverified_token_data(token)
+        return self._decrypt_data(data, timestamp, ttl, int(time.time()))
 
     def decrypt_at_time(self, token, ttl, current_time):
+        if ttl is None:
+            raise ValueError("decrypt_at_time() can only be used with a non-None ttl")
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl, current_time)
 
@@ -170,7 +173,12 @@ class MultiFernet(object):
         return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
     def decrypt(self, msg, ttl=None):
-        return self.decrypt_at_time(msg, ttl, int(time.time()))
+        for f in self._fernets:
+            try:
+                return f.decrypt(msg, ttl)
+            except InvalidToken:
+                pass
+        raise InvalidToken
 
     def decrypt_at_time(self, msg, ttl, current_time):
         for f in self._fernets:
