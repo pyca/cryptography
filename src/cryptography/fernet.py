@@ -78,7 +78,9 @@ class Fernet(object):
 
     def decrypt_at_time(self, token, ttl, current_time):
         if ttl is None:
-            raise ValueError("decrypt_at_time() can only be used with a non-None ttl")
+            raise ValueError(
+                "decrypt_at_time() can only be used with a non-None ttl"
+            )
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl, current_time)
 
