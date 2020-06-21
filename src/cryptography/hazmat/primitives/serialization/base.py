@@ -48,6 +48,7 @@ class PrivateFormat(Enum):
     PKCS8 = "PKCS8"
     TraditionalOpenSSL = "TraditionalOpenSSL"
     Raw = "Raw"
+    OpenSSH = "OpenSSH"
 
 
 class PublicFormat(Enum):

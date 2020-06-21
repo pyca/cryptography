@@ -373,10 +373,12 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     .. versionadded:: 0.7
 
-    Deserialize a public key from OpenSSH (:rfc:`4253`) encoded data to an
+    Deserialize a public key from OpenSSH (:rfc:`4253` and
+    `PROTOCOL.certkeys`_) encoded data to an
     instance of the public key type for the specified backend.
 
-    :param bytes data: The OpenSSH encoded key data.
+    :param data: The OpenSSH encoded key data.
+    :type data: :term:`bytes-like`
 
     :param backend: A backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
@@ -394,6 +396,58 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     :raises ValueError: If the OpenSSH data could not be properly decoded or
         if the key is not in the proper format.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
+        key is of a type that is not supported.
+
+OpenSSH Private Key
+~~~~~~~~~~~~~~~~~~~
+
+The format used by OpenSSH to store private keys, as approximately specified
+in `PROTOCOL.key`_.
+
+An example ECDSA key in OpenSSH format::
+
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAaAAAABNlY2RzYS
+    1zaGEyLW5pc3RwMjU2AAAACG5pc3RwMjU2AAAAQQRI0fWnI1CxX7qYqp0ih6bxjhGmUrZK
+    /Axf8vhM8Db3oH7CFR+JdL715lUdu4XCWvQZKVf60/h3kBFhuxQC23XjAAAAqKPzVaOj81
+    WjAAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEjR9acjULFfupiq
+    nSKHpvGOEaZStkr8DF/y+EzwNvegfsIVH4l0vvXmVR27hcJa9BkpV/rT+HeQEWG7FALbde
+    MAAAAga/VGV2asRlL3kXXao0aochQ59nXHA2xEGeAoQd952r0AAAAJbWFya29AdmZmAQID
+    BAUGBw==
+    -----END OPENSSH PRIVATE KEY-----
+
+.. function:: load_ssh_private_key(data, password, backend)
+
+    .. versionadded:: 3.0
+
+    Deserialize a private key from OpenSSH encoded data to an
+    instance of the private key type for the specified backend.
+
+    :param data: The PEM encoded OpenSSH private key data.
+    :type data: :term:`bytes-like`
+
+    :param bytes password: Password bytes to use to decrypt
+        password-protected key. Or ``None`` if not needed.
+
+    :param backend: A backend which implements
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
+        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
+        depending on the key's type.
+
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+        depending on the contents of ``data``.
+
+    :raises ValueError: If the OpenSSH data could not be properly decoded,
+        if the key is not in the proper format or the incorrect password
+        was provided.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
@@ -482,6 +536,22 @@ Serialization Formats
 
         A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
+
+    .. attribute:: OpenSSH
+
+        .. versionadded:: 3.0
+
+        Custom private key format for OpenSSH, internals are based on SSH protocol
+        and not ASN1.  Requires
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`
+        encoding.
+
+        A PEM encoded OpenSSH key will look like::
+
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            ...
+            -----END OPENSSH PRIVATE KEY-----
+
 
 .. class:: PublicFormat
 
@@ -645,3 +715,5 @@ Serialization Encryption Types
 
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
+.. _`PROTOCOL.key`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
+.. _`PROTOCOL.certkeys`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys

@@ -259,6 +259,9 @@ setup(
             "flake8-import-order",
             "pep8-naming",
         ],
+        # This extra is for OpenSSH private keys that use bcrypt KDF
+        # Versions: v3.1.3 - ignore_few_rounds, v3.1.5 - abi3
+        "ssh": ["bcrypt >= 3.1.5"],
         # This extra is for the U-label support that was deprecated in
         # cryptography 2.1. If you need this deprecated path install with
         # pip install cryptography[idna]
