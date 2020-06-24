@@ -307,7 +307,7 @@ class TestCertificateRevocationList(object):
             ExtensionOID.DELTA_CRL_INDICATOR
         )
         assert dci.value == x509.DeltaCRLIndicator(12345678901234567890)
-        assert dci.critical is False
+        assert dci.critical is True
 
     def test_signature(self, backend):
         crl = _load_cert(
