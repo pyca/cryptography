@@ -30,9 +30,8 @@ matrix:
           # https://github.com/travis-ci/travis-nightly-builder/blob/build/Rakefile#L74-L106
           env: TOXENV=pypy-nocoverage
           dist: xenial
-        - python: pypy3.5-7.0
+        - python: pypy3.6-7.2.0
           env: TOXENV=pypy3-nocoverage
-          dist: xenial
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.1.0l
         - python: 2.7
