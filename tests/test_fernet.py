@@ -117,10 +117,15 @@ class TestFernet(object):
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
         current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        assert f.decrypt_at_time(
-            token, ttl=None, current_time=current_time) == pt
         monkeypatch.setattr(time, "time", lambda: current_time)
         assert f.decrypt(token, ttl=None) == pt
+
+    def test_ttl_required_in_decrypt_at_time(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        pt = b"encrypt me"
+        token = f.encrypt(pt)
+        with pytest.raises(ValueError):
+            f.decrypt_at_time(token, ttl=None, current_time=int(time.time()))
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
@@ -166,6 +171,17 @@ class TestMultiFernet(object):
 
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00" * 16)
+
+    def test_decrypt_at_time(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = MultiFernet([f1])
+        pt = b"encrypt me"
+        token = f.encrypt_at_time(pt, current_time=100)
+        assert f.decrypt_at_time(token, ttl=1, current_time=100) == pt
+        with pytest.raises(InvalidToken):
+            f.decrypt_at_time(token, ttl=1, current_time=102)
+        with pytest.raises(ValueError):
+            f.decrypt_at_time(token, ttl=None, current_time=100)
 
     def test_no_fernets(self, backend):
         with pytest.raises(ValueError):
