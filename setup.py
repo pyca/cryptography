@@ -252,7 +252,7 @@ setup(
             "doc8",
             "pyenchant >= 1.6.11",
             "twine >= 1.12.0",
-            "sphinxcontrib-spelling >= 4.0.1,!=5.1.2",
+            "sphinxcontrib-spelling >= 4.0.1",
         ],
         "pep8test": [
             "flake8",
