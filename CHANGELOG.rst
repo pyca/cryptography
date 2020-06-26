@@ -14,6 +14,8 @@ Changelog
   as per our deprecation policy.
 * **BACKWARDS INCOMPATIBLE:** Support for LibreSSL 2.7.x, 2.8.x, and 2.9.0 has
   been removed (2.9.1+ is still supported).
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.9, macOS users must
+  upgrade to 10.10 or newer.
 * Deprecated support for Python 2. At the time there is no time table for
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2 no longer receives support from the Python core
