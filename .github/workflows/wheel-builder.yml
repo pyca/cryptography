@@ -95,7 +95,7 @@ jobs:
 
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
               LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
-              CFLAGS="-I${HOME}/openssl-macos/include -mmacosx-version-min=10.9 -march=core2" \
+              CFLAGS="-I${HOME}/openssl-macos/include -mmacosx-version-min=10.10 -march=core2" \
               venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
         env:
           PYTHON_VERSION: ${{ matrix.PYTHON.ABI_VERSION }}
