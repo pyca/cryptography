@@ -120,8 +120,11 @@ def generate_private_key(public_exponent, key_size, backend):
 
 
 def _verify_rsa_parameters(public_exponent, key_size):
-    if public_exponent < 3:
-        raise ValueError("public_exponent must be >= 3.")
+    if public_exponent != 3 and public_exponent < 65537:
+        raise ValueError(
+            "public_exponent must be either 3 (for legacy compatibility) or "
+            ">= 65537. Almost everyone should choose 65537 here!"
+        )
 
     if public_exponent & 1 == 0:
         raise ValueError("public_exponent must be odd.")
