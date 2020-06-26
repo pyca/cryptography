@@ -147,7 +147,7 @@ class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
         itertools.product(
-            (3, 65537, 65539),
+            (3, 65537),
             (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048)
         )
     )
@@ -171,7 +171,7 @@ class TestRSA(object):
                                      backend=backend)
 
         with pytest.raises(ValueError):
-            rsa.generate_private_key(public_exponent=65538,
+            rsa.generate_private_key(public_exponent=65535,
                                      key_size=2048,
                                      backend=backend)
 

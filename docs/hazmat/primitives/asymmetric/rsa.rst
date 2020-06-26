@@ -18,6 +18,8 @@ mathematical properties`_.
 
     .. versionadded:: 0.5
 
+    .. versionchanged:: 3.0
+
     Generates a new RSA private key using the provided ``backend``.
     ``key_size`` describes how many :term:`bits` long the key should be. Larger
     keys provide more security; currently ``1024`` and below are considered
@@ -37,8 +39,8 @@ mathematical properties`_.
         ... )
 
     :param int public_exponent: The public exponent of the new key.
-        Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
-        doubt you should `use 65537`_.
+        Either 65537 or 3 (for legacy purposes). Almost everyone should
+        `use 65537`_.
 
     :param int key_size: The length of the modulus in :term:`bits`. For keys
         generated in 2015 it is strongly recommended to be
