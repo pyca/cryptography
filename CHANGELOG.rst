@@ -26,6 +26,9 @@ Changelog
   for writing.
 * Added support for ``OpenSSH`` certificates to
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
+* Added :meth:`~cryptography.fernet.Fernet.encrypt_at_time` and
+  :meth:`~cryptography.fernet.Fernet.decrypt_at_time` to
+  :class:`~cryptography.fernet.Fernet`.
 
 .. _v2-9-2:
 
