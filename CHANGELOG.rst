@@ -16,6 +16,10 @@ Changelog
   been removed (2.9.1+ is still supported).
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.9, macOS users must
   upgrade to 10.10 or newer.
+* **BACKWARDS INCOMPATIBLE:** RSA
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
+  no longer accepts ``public_exponent`` values except 65537 and 3 (the latter
+  for legacy purposes).
 * Deprecated support for Python 2. At the time there is no time table for
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2 no longer receives support from the Python core
