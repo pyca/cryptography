@@ -20,6 +20,8 @@ mathematical properties`_.
 
     .. versionchanged:: 3.0
 
+        Tightened restrictions on ``public_exponent``.
+
     Generates a new RSA private key using the provided ``backend``.
     ``key_size`` describes how many :term:`bits` long the key should be. Larger
     keys provide more security; currently ``1024`` and below are considered
