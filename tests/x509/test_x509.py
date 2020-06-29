@@ -1000,11 +1000,18 @@ class TestRSACertificate(object):
         assert cert.version is x509.Version.v3
 
     def test_invalid_version_cert(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "custom", "invalid_version.pem"),
-            x509.load_pem_x509_certificate,
-            backend
-        )
+        try:
+            cert = _load_cert(
+                os.path.join("x509", "custom", "invalid_version.pem"),
+                x509.load_pem_x509_certificate,
+                backend
+            )
+        except ValueError:
+            # OpenSSL 1.1.1 accepts certificates with an invalid version, but
+            # future versions or other libraries may reject this. _load_cert
+            # will then fail to parse. Consider that a passing result.
+            return
+
         with pytest.raises(x509.InvalidVersion) as exc:
             cert.version
 
