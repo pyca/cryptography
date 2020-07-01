@@ -377,27 +377,37 @@ def _decode_authority_key_identifier(backend, akid):
     )
 
 
-def _decode_authority_information_access(backend, aia):
-    aia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia)
-    aia = backend._ffi.gc(
-        aia,
+def _decode_information_access(backend, ia):
+    ia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", ia)
+    ia = backend._ffi.gc(
+        ia,
         lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
             x, backend._ffi.addressof(
                 backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
             )
         )
     )
-    num = backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
+    num = backend._lib.sk_ACCESS_DESCRIPTION_num(ia)
     access_descriptions = []
     for i in range(num):
-        ad = backend._lib.sk_ACCESS_DESCRIPTION_value(aia, i)
+        ad = backend._lib.sk_ACCESS_DESCRIPTION_value(ia, i)
         backend.openssl_assert(ad.method != backend._ffi.NULL)
         oid = x509.ObjectIdentifier(_obj2txt(backend, ad.method))
         backend.openssl_assert(ad.location != backend._ffi.NULL)
         gn = _decode_general_name(backend, ad.location)
         access_descriptions.append(x509.AccessDescription(oid, gn))
 
+    return access_descriptions
+
+
+def _decode_authority_information_access(backend, aia):
+    access_descriptions = _decode_information_access(backend, aia)
     return x509.AuthorityInformationAccess(access_descriptions)
+
+
+def _decode_subject_information_access(backend, aia):
+    access_descriptions = _decode_information_access(backend, aia)
+    return x509.SubjectInformationAccess(access_descriptions)
 
 
 def _decode_key_usage(backend, bit_string):
@@ -815,6 +825,9 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _decode_authority_information_access
+    ),
+    ExtensionOID.SUBJECT_INFORMATION_ACCESS: (
+        _decode_subject_information_access
     ),
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,

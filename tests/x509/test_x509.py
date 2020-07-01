@@ -36,7 +36,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
-    NameOID, SignatureAlgorithmOID
+    NameOID, SignatureAlgorithmOID, SubjectInformationAccessOID,
 )
 
 from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
@@ -1717,6 +1717,40 @@ class TestCertificateBuilder(object):
         )
 
         builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_encode_nonstandard_sia(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                x509.ObjectIdentifier("2.999.7"),
+                x509.UniformResourceIdentifier(u"http://example.com")
+            ),
+        ])
+
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(2015, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2040, 1, 1)
+        ).add_extension(
+            sia, False
+        )
+
+        cert = builder.sign(private_key, hashes.SHA256(), backend)
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_INFORMATION_ACCESS
+        )
+        assert ext.value == sia
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -3707,6 +3741,45 @@ class TestCertificateSigningRequestBuilder(object):
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext.value == aia
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_sia(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+        ])
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            sia, critical=False
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_INFORMATION_ACCESS
+        )
+        assert ext.value == sia
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

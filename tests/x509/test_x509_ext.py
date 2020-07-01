@@ -26,7 +26,7 @@ from cryptography.x509.extensions import _key_identifier_from_public_key
 from cryptography.x509.general_name import _lazy_import_idna
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
-    NameOID, ObjectIdentifier, _OID_NAMES
+    NameOID, ObjectIdentifier, SubjectInformationAccessOID, _OID_NAMES
 )
 
 from .test_x509 import _load_cert
@@ -3050,6 +3050,198 @@ class TestAuthorityInformationAccess(object):
         ])
         assert hash(aia) == hash(aia2)
         assert hash(aia) != hash(aia3)
+
+
+class TestSubjectInformationAccess(object):
+    def test_invalid_descriptions(self):
+        with pytest.raises(TypeError):
+            x509.SubjectInformationAccess(["notanAccessDescription"])
+
+    def test_iter_len(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            )
+        ])
+        assert len(sia) == 2
+        assert list(sia) == [
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            )
+        ]
+
+    def test_iter_input(self):
+        desc = [
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            )
+        ]
+        sia = x509.SubjectInformationAccess(iter(desc))
+        assert list(sia) == desc
+
+    def test_repr(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            )
+        ])
+        if not six.PY2:
+            assert repr(sia) == (
+                "<SubjectInformationAccess([<AccessDescription(access_method"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepository)>, acces"
+                "s_location=<UniformResourceIdentifier(value='http://ca"
+                ".domain.com')>)>])>"
+            )
+        else:
+            assert repr(sia) == (
+                "<SubjectInformationAccess([<AccessDescription(access_method"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepository)>, acces"
+                "s_location=<UniformResourceIdentifier(value=u'http://ca"
+                "sp.domain.com')>)>])>"
+            )
+
+    def test_eq(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            )
+        ])
+        sia2 = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            )
+        ])
+        assert sia == sia2
+
+    def test_ne(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            )
+        ])
+        sia2 = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+        ])
+
+        assert sia != sia2
+        assert sia != object()
+
+    def test_indexing(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca3.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca4.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca5.domain.com")
+            ),
+        ])
+        assert sia[-1] == sia[4]
+        assert sia[2:6:2] == [sia[2], sia[4]]
+
+    def test_hash(self):
+        sia = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            ),
+        ])
+        sia2 = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca2.domain.com")
+            ),
+        ])
+        sia3 = x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca.domain.com")
+            ),
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"http://ca3.domain.com")
+            ),
+        ])
+        assert hash(sia) == hash(sia2)
+        assert hash(sia) != hash(sia3)
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestSubjectInformationAccessExtension(object):
+    def test_sia(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "sia.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_INFORMATION_ACCESS
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value == x509.SubjectInformationAccess([
+            x509.AccessDescription(
+                SubjectInformationAccessOID.CA_REPOSITORY,
+                x509.UniformResourceIdentifier(u"https://my.ca.issuer/")
+            ),
+            x509.AccessDescription(
+                x509.ObjectIdentifier("2.999.7"),
+                x509.UniformResourceIdentifier(u"gopher://info-mac-archive")
+            ),
+        ])
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

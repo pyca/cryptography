@@ -317,6 +317,38 @@ class AuthorityInformationAccess(object):
         return hash(tuple(self._descriptions))
 
 
+@utils.register_interface(ExtensionType)
+class SubjectInformationAccess(object):
+    oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
+
+    def __init__(self, descriptions):
+        descriptions = list(descriptions)
+        if not all(isinstance(x, AccessDescription) for x in descriptions):
+            raise TypeError(
+                "Every item in the descriptions list must be an "
+                "AccessDescription"
+            )
+
+        self._descriptions = descriptions
+
+    __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
+
+    def __repr__(self):
+        return "<SubjectInformationAccess({})>".format(self._descriptions)
+
+    def __eq__(self, other):
+        if not isinstance(other, SubjectInformationAccess):
+            return NotImplemented
+
+        return self._descriptions == other._descriptions
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(tuple(self._descriptions))
+
+
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
         if not isinstance(access_method, ObjectIdentifier):

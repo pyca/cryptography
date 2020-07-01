@@ -343,7 +343,7 @@ def _encode_basic_constraints(backend, basic_constraints):
     return constraints
 
 
-def _encode_authority_information_access(backend, authority_info_access):
+def _encode_information_access(backend, info_access):
     aia = backend._lib.sk_ACCESS_DESCRIPTION_new_null()
     backend.openssl_assert(aia != backend._ffi.NULL)
     aia = backend._ffi.gc(
@@ -354,7 +354,7 @@ def _encode_authority_information_access(backend, authority_info_access):
             )
         )
     )
-    for access_description in authority_info_access:
+    for access_description in info_access:
         ad = backend._lib.ACCESS_DESCRIPTION_new()
         method = _txt2obj(
             backend, access_description.access_method.dotted_string
@@ -622,9 +622,8 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.EXTENDED_KEY_USAGE: _encode_extended_key_usage,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.CERTIFICATE_POLICIES: _encode_certificate_policies,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _encode_authority_information_access
-    ),
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
+    ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
@@ -636,9 +635,7 @@ _EXTENSION_ENCODE_HANDLERS = {
 _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _encode_authority_information_access
-    ),
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
     ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
