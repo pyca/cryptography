@@ -3013,12 +3013,6 @@ instances. The following common OIDs are available as constants.
         identifier for CA repository data in
         :class:`~cryptography.x509.AccessDescription` objects.
 
-    .. attribute:: CA_ISSUERS
-
-        Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.2"``. Used as the
-        identifier for CA issuer data in
-        :class:`~cryptography.x509.AccessDescription` objects.
-
 
 .. class:: CertificatePoliciesOID
 

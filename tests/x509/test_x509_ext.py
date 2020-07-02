@@ -3100,16 +3100,16 @@ class TestSubjectInformationAccess(object):
         if not six.PY2:
             assert repr(sia) == (
                 "<SubjectInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepository)>, acces"
-                "s_location=<UniformResourceIdentifier(value='http://ca"
-                ".domain.com')>)>])>"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepositor"
+                "y)>, access_location=<UniformResourceIdentifier(value='http"
+                "://ca.domain.com')>)>])>"
             )
         else:
             assert repr(sia) == (
                 "<SubjectInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepository)>, acces"
-                "s_location=<UniformResourceIdentifier(value=u'http://ca"
-                "sp.domain.com')>)>])>"
+                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepositor"
+                "y)>, access_location=<UniformResourceIdentifier(value=u'htt"
+                "p://ca.domain.com')>)>])>"
             )
 
     def test_eq(self):
