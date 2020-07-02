@@ -35,6 +35,8 @@ Changelog
 * Added :meth:`~cryptography.fernet.Fernet.encrypt_at_time` and
   :meth:`~cryptography.fernet.Fernet.decrypt_at_time` to
   :class:`~cryptography.fernet.Fernet`.
+* Added support for the :class:`~cryptography.x509.SubjectInformationAccess`
+  X.509 extension.
 
 .. _v2-9-2:
 

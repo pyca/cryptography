@@ -2146,6 +2146,29 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.AUTHORITY_INFORMATION_ACCESS`.
 
 
+.. class:: SubjectInformationAccess(descriptions)
+
+    .. versionadded:: 3.0
+
+    The subject information access extension indicates how to access
+    information and services for the subject of the certificate in which
+    the extension appears. When the subject is a CA, information and
+    services may include certificate validation services and CA policy
+    data. When the subject is an end entity, the information describes
+    the type of services offered and how to access them. It is an iterable,
+    containing one or more :class:`~cryptography.x509.AccessDescription`
+    instances.
+
+    :param list descriptions: A list of :class:`AccessDescription` objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_INFORMATION_ACCESS`.
+
+
 .. class:: AccessDescription(access_method, access_location)
 
     .. versionadded:: 0.9
@@ -2155,16 +2178,23 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         The access method defines what the ``access_location`` means. It must
-        be either
+        be
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.OCSP` or
-        :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`.
+        :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`
+        when used with :class:`~cryptography.x509.AuthorityInformationAccess`
+        or
+        :attr:`~cryptography.x509.oid.SubjectInformationAccessOID.CA_REPOSITORY`
+        when used with :class:`~cryptography.x509.SubjectInformationAccess`.
+
         If it is
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.OCSP`
         the access location will be where to obtain OCSP
         information for the certificate. If it is
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`
         the access location will provide additional information about the
-        issuing certificate.
+        issuing certificate. Finally, if it is
+        :attr:`~cryptography.x509.oid.SubjectInformationAccessOID.CA_REPOSITORY`
+        the access location will be the location of the CA's repository.
 
     .. attribute:: access_location
 
@@ -2973,6 +3003,17 @@ instances. The following common OIDs are available as constants.
         :class:`~cryptography.x509.AccessDescription` objects.
 
 
+.. class:: SubjectInformationAccessOID
+
+    .. versionadded:: 3.0
+
+    .. attribute:: CA_REPOSITORY
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.5"``. Used as the
+        identifier for CA repository data in
+        :class:`~cryptography.x509.AccessDescription` objects.
+
+
 .. class:: CertificatePoliciesOID
 
     .. versionadded:: 1.0
@@ -3049,6 +3090,14 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.1"``. The identifier
         for the :class:`~cryptography.x509.AuthorityInformationAccess` extension
         type.
+
+    .. attribute:: SUBJECT_INFORMATION_ACCESS
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.11"``. The
+        identifier for the :class:`~cryptography.x509.SubjectInformationAccess`
+        extension type.
 
     .. attribute:: INHIBIT_ANY_POLICY
 

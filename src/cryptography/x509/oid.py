@@ -149,6 +149,10 @@ class AuthorityInformationAccessOID(object):
     OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
 
 
+class SubjectInformationAccessOID(object):
+    CA_REPOSITORY = ObjectIdentifier("1.3.6.1.5.5.7.48.5")
+
+
 class CertificatePoliciesOID(object):
     CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
     CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
@@ -251,6 +255,7 @@ _OID_NAMES = {
     ExtensionOID.TLS_FEATURE: "TLSFeature",
     AuthorityInformationAccessOID.OCSP: "OCSP",
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
+    SubjectInformationAccessOID.CA_REPOSITORY: "caRepository",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
     CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
     OCSPExtensionOID.NONCE: "OCSPNonce",
