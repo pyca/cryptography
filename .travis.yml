@@ -60,6 +60,12 @@ matrix:
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
         - python: 2.7
           services: docker
+          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos8
+        - python: 3.6
+          services: docker
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-centos8
+        - python: 2.7
+          services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-stretch
         - python: 3.5
           services: docker
