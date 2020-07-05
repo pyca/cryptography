@@ -20,6 +20,9 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
   no longer accepts ``public_exponent`` values except 65537 and 3 (the latter
   for legacy purposes).
+* **BACKWARDS INCOMPATIBLE:** X.509 certificate parsing now enforces that the
+  ``version`` field contains a valid value, rather than deferring this check
+  until :attr:`~cryptography.x509.Certificate.version` is accessed.
 * Deprecated support for Python 2. At the time there is no time table for
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2 no longer receives support from the Python core
