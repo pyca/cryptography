@@ -2106,7 +2106,7 @@ X.509 Extensions
     This extension contains
     :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
     instances. These can be used to verify that the certificate is included
-    in a public Certificate Transparency log. This extension is typically found
+    in a public Certificate Transparency log. This extension is only found
     in OCSP responses. For SCTs in an X.509 certificate see
     :class:`~cryptography.x509.PrecertificateSignedCertificateTimestamps`.
 

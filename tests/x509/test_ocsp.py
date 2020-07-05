@@ -635,8 +635,6 @@ class TestSignedCertificateTimestampsExtension(object):
         assert hash(sct1) != hash(sct3)
 
 
-
-
 class TestOCSPResponse(object):
     def test_bad_response(self):
         with pytest.raises(ValueError):
