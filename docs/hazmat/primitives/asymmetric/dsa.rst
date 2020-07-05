@@ -5,6 +5,12 @@ DSA
 
 .. module:: cryptography.hazmat.primitives.asymmetric.dsa
 
+.. note::
+
+    DSA is a **legacy algorithm** and should generally be avoided in favor of
+    choices like :doc:`ECDSA</hazmat/primitives/asymmetric/ec>` or
+    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>`.
+
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 
 Generation
@@ -14,15 +20,18 @@ Generation
 
     .. versionadded:: 0.5
 
+    .. versionchanged:: 3.0
+
+        Added support for 4096-bit keys for some legacy applications that
+        continue to use DSA despite the wider cryptographic community's
+        ongoing protestations.
+
     Generate a DSA private key from the given key size. This function will
     generate a new set of parameters and key in one step.
 
     :param int key_size: The length of the modulus in :term:`bits`. It should
-        be either 1024, 2048 or 3072. For keys generated in 2015 this should
-        be `at least 2048`_ (See page 41).  Note that some applications
-        (such as SSH) have not yet gained support for larger key sizes
-        specified in FIPS 186-3 and are still restricted to only the
-        1024-bit keys specified in FIPS 186-2.
+        be either 1024, 2048, 3072, or 4096. For keys generated in 2015 this
+        should be `at least 2048`_ (See page 41).
 
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
@@ -38,14 +47,17 @@ Generation
 
     .. versionadded:: 0.5
 
+    .. versionchanged:: 3.0
+
+        Added support for 4096-bit keys for some legacy applications that
+        continue to use DSA despite the wider cryptographic community's
+        ongoing protestations.
+
     Generate DSA parameters using the provided ``backend``.
 
     :param int key_size: The length of :attr:`~DSAParameterNumbers.q`. It
-        should be either 1024, 2048 or 3072. For keys generated in 2015 this
-        should be `at least 2048`_ (See page 41).  Note that some applications
-        (such as SSH) have not yet gained support for larger key sizes
-        specified in FIPS 186-3 and are still restricted to only the
-        1024-bit keys specified in FIPS 186-2.
+        should be either 1024, 2048, 3072, or 4096. For keys generated in 2015
+        this should be `at least 2048`_ (See page 41).
 
     :param backend: An instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
