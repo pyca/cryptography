@@ -894,6 +894,13 @@ X.509 CSR (Certificate Signing Request) Object
         :raises UnicodeError: If an extension contains IDNA encoding that is
             invalid or not compliant with IDNA 2008.
 
+    .. attribute:: challenge_password
+
+        .. versionadded:: 3.0
+
+        :type: bytes
+
+        The challenge password in the certificate signing request or ``None``.
 
     .. method:: public_bytes(encoding)
 
@@ -3216,6 +3223,15 @@ instances. The following common OIDs are available as constants.
     .. attribute:: NONCE
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.2"``.
+
+
+.. class:: AttributeOID
+
+    .. versionadded:: 3.0
+
+    .. attribute:: CHALLENGE_PASSWORD
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.7"``.
 
 Helper Functions
 ~~~~~~~~~~~~~~~~

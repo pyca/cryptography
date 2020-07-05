@@ -367,6 +367,12 @@ class CertificateSigningRequest(object):
         Verifies signature of signing request.
         """
 
+    @abc.abstractproperty
+    def challenge_password(self):
+        """
+        The challenge password for the CSR or None.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class RevokedCertificate(object):

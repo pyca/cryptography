@@ -18,7 +18,7 @@ import pytz
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import InternalError, UnsupportedAlgorithm
 from cryptography.hazmat._der import (
     BIT_STRING, CONSTRUCTED, CONTEXT_SPECIFIC, DERReader, GENERALIZED_TIME,
     INTEGER, OBJECT_IDENTIFIER, PRINTABLE_STRING, SEQUENCE, SET, UTC_TIME
@@ -1231,6 +1231,37 @@ class TestRSACertificateRequest(object):
         extensions = request.extensions
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
+
+    def test_challenge_password(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "challenge.pem"
+            ), x509.load_pem_x509_csr, backend
+        )
+        assert request.challenge_password == b"challenge me!"
+
+    def test_invalid_challenge_password(self, backend):
+        """
+        This test deliberately triggers an InternalError because to parse
+        challenge passwords we need to do a C cast. If we're wrong about the
+        type that would be Very Bad so this test confirms we properly explode
+        in the presence of the wrong types.
+        """
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "challenge-invalid.der"
+            ), x509.load_der_x509_csr, backend
+        )
+        with pytest.raises(InternalError):
+            request.challenge_password
+
+    def test_no_challenge_password(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "rsa_sha256.pem"
+            ), x509.load_pem_x509_csr, backend
+        )
+        assert request.challenge_password is None
 
     @pytest.mark.parametrize(
         "loader_func",
