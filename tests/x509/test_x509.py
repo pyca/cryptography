@@ -1000,13 +1000,12 @@ class TestRSACertificate(object):
         assert cert.version is x509.Version.v3
 
     def test_invalid_version_cert(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "custom", "invalid_version.pem"),
-            x509.load_pem_x509_certificate,
-            backend
-        )
         with pytest.raises(x509.InvalidVersion) as exc:
-            cert.version
+            _load_cert(
+                os.path.join("x509", "custom", "invalid_version.pem"),
+                x509.load_pem_x509_certificate,
+                backend
+            )
 
         assert exc.value.parsed_version == 7
 

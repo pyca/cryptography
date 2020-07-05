@@ -24,9 +24,19 @@ from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 @utils.register_interface(x509.Certificate)
 class _Certificate(object):
-    def __init__(self, backend, x509):
+    def __init__(self, backend, x509_cert):
         self._backend = backend
-        self._x509 = x509
+        self._x509 = x509_cert
+
+        version = self._backend._lib.X509_get_version(self._x509)
+        if version == 0:
+            self._version = x509.Version.v1
+        elif version == 2:
+            self._version = x509.Version.v3
+        else:
+            raise x509.InvalidVersion(
+                "{} is not a valid X509 version".format(version), version
+            )
 
     def __repr__(self):
         return "<Certificate(subject={}, ...)>".format(self.subject)
@@ -49,17 +59,7 @@ class _Certificate(object):
         h.update(self.public_bytes(serialization.Encoding.DER))
         return h.finalize()
 
-    @property
-    def version(self):
-        version = self._backend._lib.X509_get_version(self._x509)
-        if version == 0:
-            return x509.Version.v1
-        elif version == 2:
-            return x509.Version.v3
-        else:
-            raise x509.InvalidVersion(
-                "{} is not a valid X509 version".format(version), version
-            )
+    version = utils.read_only_property("_version")
 
     @property
     def serial_number(self):
