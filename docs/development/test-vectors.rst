@@ -446,6 +446,9 @@ Custom X.509 Request Vectors
   1024 bit key containing an invalid signature with correct padding.
 * ``challenge.pem`` - A certificate signing request for an RSA 2048 bit key
   containing a challenge password.
+* ``challenge-invalid.der`` - A certificate signing request for an RSA 2048 bit
+  key containing a challenge password attribute that has been encoded as an
+  ASN.1 integer rather than a string.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
