@@ -2099,6 +2099,33 @@ X.509 Extensions
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
 
 
+.. class:: SignedCertificateTimestamps(scts)
+
+    .. versionadded:: 3.0
+
+    This extension contains
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    instances. These can be used to verify that the certificate is included
+    in a public Certificate Transparency log. This extension is only found
+    in OCSP responses. For SCTs in an X.509 certificate see
+    :class:`~cryptography.x509.PrecertificateSignedCertificateTimestamps`.
+
+    It is an iterable containing one or more
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    objects.
+
+    :param list scts: A ``list`` of
+        :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+        objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS`.
+
+
 .. class:: DeltaCRLIndicator(crl_number)
 
     .. versionadded:: 2.1
@@ -3141,6 +3168,12 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 2.4
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
+
+    .. attribute:: SIGNED_CERTIFICATE_TIMESTAMPS
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.5"``.
 
     .. attribute:: POLICY_CONSTRAINTS
 
