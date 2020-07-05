@@ -37,6 +37,8 @@ Changelog
   :class:`~cryptography.fernet.Fernet`.
 * Added support for the :class:`~cryptography.x509.SubjectInformationAccess`
   X.509 extension.
+* Added support for parsing
+  :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
 
 .. _v2-9-2:
 
