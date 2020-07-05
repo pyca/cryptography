@@ -354,7 +354,7 @@ class TestDSA(object):
             os.path.join("asymmetric", "PEM_Serialization", "dsa_4096.pem"),
             lambda pemfile: serialization.load_pem_private_key(
                 pemfile.read(), None, backend
-            ) , mode="rb"
+            ), mode="rb"
         )
         pn = key.private_numbers()
         assert pn.public_numbers.parameter_numbers.p.bit_length() == 4096
