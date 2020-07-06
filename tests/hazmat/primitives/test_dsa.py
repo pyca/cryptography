@@ -349,6 +349,28 @@ class TestDSA(object):
                 y=y
             ).public_key(backend)
 
+    def test_large_p(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PEM_Serialization", "dsa_4096.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read(), None, backend
+            ), mode="rb"
+        )
+        pn = key.private_numbers()
+        assert pn.public_numbers.parameter_numbers.p.bit_length() == 4096
+        # Turn it back into a key to confirm that values this large pass
+        # verification
+        dsa.DSAPrivateNumbers(
+            public_numbers=dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=pn.public_numbers.parameter_numbers.p,
+                    q=pn.public_numbers.parameter_numbers.q,
+                    g=pn.public_numbers.parameter_numbers.g,
+                ),
+                y=pn.public_numbers.y
+            ), x=pn.x
+        ).private_key(backend)
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSAVerification(object):

@@ -78,6 +78,8 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/rsa_public_key.pem`` and
   ``asymmetric/DER_Serialization/rsa_public_key.der``- Contains an RSA 2048
   bit public generated using OpenSSL from ``rsa_private_key.pem``.
+* ``asymmetric/PEM_Serialization/dsa_4096.pem`` - Contains a 4096-bit DSA
+  private key generated using OpenSSL.
 * ``asymmetric/PEM_Serialization/dsaparam.pem`` - Contains 2048-bit DSA
   parameters generated using OpenSSL; contains no keys.
 * ``asymmetric/PEM_Serialization/dsa_private_key.pem`` - Contains a DSA 2048
