@@ -25,7 +25,7 @@ Generation
 
         Added support for 4096-bit keys for some legacy applications that
         continue to use DSA despite the wider cryptographic community's
-        ongoing protestations.
+        `ongoing protestations`_.
 
     Generate a DSA private key from the given key size. This function will
     generate a new set of parameters and key in one step.
@@ -52,7 +52,7 @@ Generation
 
         Added support for 4096-bit keys for some legacy applications that
         continue to use DSA despite the wider cryptographic community's
-        ongoing protestations.
+        `ongoing protestations`_.
 
     Generate DSA parameters using the provided ``backend``.
 
@@ -459,3 +459,4 @@ Key interfaces
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
 .. _`at least 2048`: https://www.cosic.esat.kuleuven.be/ecrypt/ecrypt2/documents/D.SPA.20.pdf
+.. _`ongoing protestations`: https://buttondown.email/cryptography-dispatches/archive/cryptography-dispatches-dsa-is-past-its-prime/
