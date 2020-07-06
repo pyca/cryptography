@@ -8,8 +8,9 @@ DSA
 .. note::
 
     DSA is a **legacy algorithm** and should generally be avoided in favor of
-    choices like :doc:`ECDSA</hazmat/primitives/asymmetric/ec>` or
-    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>`.
+    choices like
+    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>` or
+    :doc:`ECDSA</hazmat/primitives/asymmetric/ec>`.
 
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 
