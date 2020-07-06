@@ -894,13 +894,17 @@ X.509 CSR (Certificate Signing Request) Object
         :raises UnicodeError: If an extension contains IDNA encoding that is
             invalid or not compliant with IDNA 2008.
 
-    .. attribute:: challenge_password
+    .. method:: get_attribute_for_oid(oid)
 
         .. versionadded:: 3.0
 
-        :type: bytes
+        :param oid: An :class:`ObjectIdentifier` instance.
 
-        The challenge password in the certificate signing request or ``None``.
+        :returns: The bytes value of the attribute or an exception if not
+            found.
+
+        :raises cryptography.x509.AttributeNotFound: If the request does
+            not have the attribute requested.
 
     .. method:: public_bytes(encoding)
 
@@ -3273,6 +3277,18 @@ Exceptions
 
     This is raised when calling :meth:`Extensions.get_extension_for_oid` with
     an extension OID that is not present in the certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID.
+
+.. class:: AttributeNotFound
+
+    This is raised when calling
+    :meth:`CertificateSigningRequest.get_attribute_for_oid` with
+    an attribute OID that is not present in the request.
 
     .. attribute:: oid
 

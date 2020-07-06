@@ -486,17 +486,15 @@ class _CertificateSigningRequest(object):
 
         return True
 
-    @property
-    def challenge_password(self):
-        obj = _txt2obj_gc(
-            self._backend,
-            x509.oid.AttributeOID.CHALLENGE_PASSWORD.dotted_string
-        )
+    def get_attribute_for_oid(self, oid):
+        obj = _txt2obj_gc(self._backend, oid.dotted_string)
         pos = self._backend._lib.X509_REQ_get_attr_by_OBJ(
             self._x509_req, obj, -1
         )
         if pos == -1:
-            return None
+            raise x509.AttributeNotFound(
+                "No {} attribute was found".format(oid), oid
+            )
 
         attr = self._backend._lib.X509_REQ_get_attr(self._x509_req, pos)
         self._backend.openssl_assert(attr != self._backend._ffi.NULL)
@@ -506,8 +504,8 @@ class _CertificateSigningRequest(object):
         # Also this should always be a sane string type, but we'll see if
         # that is true in the real world...
         self._backend.openssl_assert(asn1_type.type in (
-            _ASN1Type.PrintableString.value,
             _ASN1Type.UTF8String.value,
+            _ASN1Type.PrintableString.value,
             _ASN1Type.IA5String.value,
         ))
         data = self._backend._lib.X509_ATTRIBUTE_get0_data(

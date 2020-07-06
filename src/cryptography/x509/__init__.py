@@ -6,8 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.x509 import certificate_transparency
 from cryptography.x509.base import (
-    Certificate, CertificateBuilder, CertificateRevocationList,
-    CertificateRevocationListBuilder,
+    AttributeNotFound, Certificate, CertificateBuilder,
+    CertificateRevocationList, CertificateRevocationListBuilder,
     CertificateSigningRequest, CertificateSigningRequestBuilder,
     InvalidVersion, RevokedCertificate, RevokedCertificateBuilder,
     Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
@@ -121,6 +121,7 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "AttributeNotFound",
     "InvalidVersion",
     "DeltaCRLIndicator",
     "DuplicateExtension",

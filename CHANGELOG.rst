@@ -42,9 +42,8 @@ Changelog
   X.509 extension.
 * Added support for parsing
   :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
-* Added support for parsing the
-  :attr:`~cryptography.x509.CertificateSigningRequest.challenge_password` in
-  certificate signing requests.
+* Added support for parsing attributes in certificate signing requests via
+  :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
 
 .. _v2-9-2:
 
