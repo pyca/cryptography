@@ -1244,7 +1244,7 @@ class TestRSACertificateRequest(object):
 
     def test_invalid_attribute_for_oid(self, backend):
         """
-        This test deliberately triggers an InternalError because to parse
+        This test deliberately triggers a ValueError because to parse
         CSR attributes we need to do a C cast. If we're wrong about the
         type that would be Very Bad so this test confirms we properly explode
         in the presence of the wrong types.
@@ -1254,7 +1254,7 @@ class TestRSACertificateRequest(object):
                 "x509", "requests", "challenge-invalid.der"
             ), x509.load_der_x509_csr, backend
         )
-        with pytest.raises(InternalError):
+        with pytest.raises(ValueError):
             request.get_attribute_for_oid(
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD
             )

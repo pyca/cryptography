@@ -500,14 +500,18 @@ class _CertificateSigningRequest(object):
         self._backend.openssl_assert(attr != self._backend._ffi.NULL)
         asn1_type = self._backend._lib.X509_ATTRIBUTE_get0_type(attr, pos)
         self._backend.openssl_assert(asn1_type != self._backend._ffi.NULL)
-        # We need this assert to ensure that our C type cast is safe.
+        # We need this to ensure that our C type cast is safe.
         # Also this should always be a sane string type, but we'll see if
         # that is true in the real world...
-        self._backend.openssl_assert(asn1_type.type in (
+        if asn1_type.type not in (
             _ASN1Type.UTF8String.value,
             _ASN1Type.PrintableString.value,
             _ASN1Type.IA5String.value,
-        ))
+        ):
+            raise ValueError("OID {} has a disallowed ASN.1 type: {}".format(
+                oid, asn1_type.type
+            ))
+
         data = self._backend._lib.X509_ATTRIBUTE_get0_data(
             attr, pos, asn1_type.type, self._backend._ffi.NULL
         )
