@@ -22,22 +22,20 @@ X.509 Reference
 
     pem_req_data = b"""
     -----BEGIN CERTIFICATE REQUEST-----
-    MIIC0zCCAbsCAQAwWTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw
-    DgYDVQQHDAdDaGljYWdvMREwDwYDVQQKDAhyNTA5IExMQzESMBAGA1UEAwwJaGVs
-    bG8uY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqhZx+Mo9VRd9
-    vsnWWa6NBCws21rZ0+1B/JGgB4hDsZS7iDE4Bj5z4idheFRtl8bBbdjPknq7BfoF
-    8v15Zq/Zv7i2xMSDL+LUrTBZezRd4bRTGqCm6YJ5EYkhqdcqeZleHCFImguHoq1J
-    Fh0+kObQrTHXw3ZP57a3o1IvyIUA3nNoCBL0QQhwBXaDXOojMKNR+bqB5ve8GS1y
-    Elr0AM/+cJsfaIahNQUgFKx3Eu3GeEOMKYOAG1lycgdQdmTUybLrT3U7vkClTseM
-    xHg1r5En7ALjONIhqRuq3rddYahrP8HXozb3zUy3cJ7P6IeaosuvNzvMXOX9P6HD
-    Ha9urDAJ1wIDAQABoDUwMwYJKoZIhvcNAQkOMSYwJDAiBgNVHREEGzAZggl3b3Js
-    ZC5jb22CDHdoYXRldmVyLmNvbTANBgkqhkiG9w0BAQUFAAOCAQEAS4Ro6h+z52SK
-    YSLCYARpnEu/rmh4jdqndt8naqcNb6uLx9mlKZ2W9on9XDjnSdQD9q+ZP5aZfESw
-    R0+rJhW9ZrNa/g1pt6M24ihclHYDAxYMWxT1z/TXXGM3TmZZ6gfYlNE1kkBuODHa
-    UYsR/1Ht1E1EsmmUimt2n+zQR2K8T9Coa+boaUW/GsTEuz1aaJAkj5ZvTDiIhRG4
-    AOCqFZOLAQmCCNgJnnspD9hDz/Ons085LF5wnYjN4/Nsk5tS6AGs3xjZ3jPoOGGn
-    82WQ9m4dBGoVDZXsobVTaN592JEYwN5iu72zRn7Einb4V4H5y3yD2dD4yWPlt4pk
-    5wFkeYsZEA==
+    MIICcDCCAVgCAQAwDTELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+    DwAwggEKAoIBAQCb+ec0zYAYLzk/MDdDJYvzdvEO2ZUrBYM6z1r8NedwpJfxUWqC
+    hvK1cpc9EbQeCwS1eooTIGoNveeCrwL+pWdmf1sh6gz7SsxdN/07nyhSM8M6Xkec
+    +tGrjyi1H/N1afwWXox3WcvBNbxu3Df5RKLDb0yt9aqhmJylbl/tbvgJesXymwmp
+    Rc1vXL0fOedUtuAJ3xQ15M0pgLF8qDn4lySJz25x76pMYPeN5/a7x+SR/jj81kep
+    VaVpuh/2hePV5uwUX3uWoj5sAkrBCifi4NPge0Npd6KeKVvXytLOymH/4+WvV719
+    wCO+MyrkhpdHSakJDTIaQIxsqVeVVKdPLAPJAgMBAAGgHjAcBgkqhkiG9w0BCQcx
+    DwwNY2hhbGxlbmdlIG1lITANBgkqhkiG9w0BAQsFAAOCAQEAMmgeSa8szbjPFD/4
+    vcPBr/vBEROFGgL8mX3o5pF9gpr7nRjhLKBkgJvlRm6Ma3Xvdfc/r5Hp2ZBTA7sZ
+    ZYhyeezGfCQN/Qhda1v+sCwG58IjvGfCSS7Y5tGlEBQ4MDf0Q7PYPSxaNUEBH7vo
+    +M7U+nFuNSmyWlt6SFBSkohZkWoVSGx3KsAO+SAHYZ7JtqsAS/dm7Dflp8KxeDg7
+    wzGBDQRpGF4CpI1VQjGSJQXSEdD+J7mtvBEOD34abRfV6zOUGzOOo3NWE6wNpYgt
+    0A7gVlzSYpdwqjBdvACfXR2r/mu+4KkAvYh8WwCiTcYgGjl2pT1bO4hEmcJ0RSWy
+    /fGD8Q==
     -----END CERTIFICATE REQUEST-----
     """.strip()
 
@@ -263,7 +261,7 @@ Loading Certificate Signing Requests
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
-        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
         True
 
 .. function:: load_der_x509_csr(data, backend)
@@ -861,7 +859,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import hashes
-            >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+            >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
             True
 
     .. attribute:: signature_algorithm_oid
@@ -877,7 +875,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. doctest::
 
             >>> csr.signature_algorithm_oid
-            <ObjectIdentifier(oid=1.2.840.113549.1.1.5, name=sha1WithRSAEncryption)>
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
 
     .. attribute:: extensions
 
@@ -1996,7 +1994,7 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
             >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
-            <SubjectKeyIdentifier(digest=b'\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
+            <SubjectKeyIdentifier(digest=b'\x8c"\x98\xe2\xb5\xbf]\xe8*2\xf8\xd2\'?\x00\xd2\xc7#\xe4c')>
 
 .. class:: SubjectAlternativeName(general_names)
 
