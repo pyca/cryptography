@@ -139,8 +139,6 @@ static const long SSL3_RANDOM_SIZE;
 static const long TLS_ST_BEFORE;
 static const long TLS_ST_OK;
 
-static const long OPENSSL_NPN_NEGOTIATED;
-
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
@@ -440,25 +438,9 @@ SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
 
 long SSL_session_reused(SSL *);
 
-void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
-                                           int (*)(SSL *,
-                                                   const unsigned char **,
-                                                   unsigned int *,
-                                                   void *),
-                                           void *);
-void SSL_CTX_set_next_proto_select_cb(SSL_CTX *,
-                                      int (*)(SSL *,
-                                              unsigned char **,
-                                              unsigned char *,
-                                              const unsigned char *,
-                                              unsigned int,
-                                              void *),
-                                      void *);
 int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int,
                           const unsigned char *, unsigned int);
-void SSL_get0_next_proto_negotiated(const SSL *,
-                                    const unsigned char **, unsigned *);
 
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
 const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
@@ -665,7 +647,7 @@ static const long Cryptography_HAS_TLSv1_2 = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
-static const long Cryptography_HAS_NEXTPROTONEG = 1;
+static const long Cryptography_HAS_NEXTPROTONEG = 0;
 static const long Cryptography_HAS_ALPN = 1;
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
