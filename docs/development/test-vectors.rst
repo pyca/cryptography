@@ -449,6 +449,9 @@ Custom X.509 Request Vectors
 * ``challenge-invalid.der`` - A certificate signing request for an RSA 2048 bit
   key containing a challenge password attribute that has been encoded as an
   ASN.1 integer rather than a string.
+* ``challenge-unstructured.pem`` - A certificate signing request for an RSA
+  2048 bit key containing a challenge password attribute and an unstructured
+  name attribute.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
