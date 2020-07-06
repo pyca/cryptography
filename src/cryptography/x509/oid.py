@@ -162,6 +162,10 @@ class CertificatePoliciesOID(object):
     ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 
+class AttributeOID(object):
+    CHALLENGE_PASSWORD = ObjectIdentifier("1.2.840.113549.1.9.7")
+
+
 _OID_NAMES = {
     NameOID.COMMON_NAME: "commonName",
     NameOID.COUNTRY_NAME: "countryName",
@@ -265,4 +269,5 @@ _OID_NAMES = {
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
     CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
     OCSPExtensionOID.NONCE: "OCSPNonce",
+    AttributeOID.CHALLENGE_PASSWORD: "challengePassword",
 }

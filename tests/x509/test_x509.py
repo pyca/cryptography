@@ -1232,6 +1232,45 @@ class TestRSACertificateRequest(object):
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
 
+    def test_get_attribute_for_oid(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "challenge.pem"
+            ), x509.load_pem_x509_csr, backend
+        )
+        assert request.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        ) == b"challenge me!"
+
+    def test_invalid_attribute_for_oid(self, backend):
+        """
+        This test deliberately triggers a ValueError because to parse
+        CSR attributes we need to do a C cast. If we're wrong about the
+        type that would be Very Bad so this test confirms we properly explode
+        in the presence of the wrong types.
+        """
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "challenge-invalid.der"
+            ), x509.load_der_x509_csr, backend
+        )
+        with pytest.raises(ValueError):
+            request.get_attribute_for_oid(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD
+            )
+
+    def test_no_challenge_password(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "rsa_sha256.pem"
+            ), x509.load_pem_x509_csr, backend
+        )
+        with pytest.raises(x509.AttributeNotFound) as exc:
+            request.get_attribute_for_oid(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD
+            )
+        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
+
     @pytest.mark.parametrize(
         "loader_func",
         [x509.load_pem_x509_csr, x509.load_der_x509_csr]

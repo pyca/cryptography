@@ -16,10 +16,11 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_int_gc
+    _encode_asn1_int_gc, _txt2obj_gc
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.x509.name import _ASN1Type
 
 
 @utils.register_interface(x509.Certificate)
@@ -484,6 +485,41 @@ class _CertificateSigningRequest(object):
             return False
 
         return True
+
+    def get_attribute_for_oid(self, oid):
+        obj = _txt2obj_gc(self._backend, oid.dotted_string)
+        pos = self._backend._lib.X509_REQ_get_attr_by_OBJ(
+            self._x509_req, obj, -1
+        )
+        if pos == -1:
+            raise x509.AttributeNotFound(
+                "No {} attribute was found".format(oid), oid
+            )
+
+        attr = self._backend._lib.X509_REQ_get_attr(self._x509_req, pos)
+        self._backend.openssl_assert(attr != self._backend._ffi.NULL)
+        asn1_type = self._backend._lib.X509_ATTRIBUTE_get0_type(attr, pos)
+        self._backend.openssl_assert(asn1_type != self._backend._ffi.NULL)
+        # We need this to ensure that our C type cast is safe.
+        # Also this should always be a sane string type, but we'll see if
+        # that is true in the real world...
+        if asn1_type.type not in (
+            _ASN1Type.UTF8String.value,
+            _ASN1Type.PrintableString.value,
+            _ASN1Type.IA5String.value,
+        ):
+            raise ValueError("OID {} has a disallowed ASN.1 type: {}".format(
+                oid, asn1_type.type
+            ))
+
+        data = self._backend._lib.X509_ATTRIBUTE_get0_data(
+            attr, pos, asn1_type.type, self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(data != self._backend._ffi.NULL)
+        # This cast is safe iff we assert on the type above to ensure
+        # that it is always a type of ASN1_STRING
+        data = self._backend._ffi.cast("ASN1_STRING *", data)
+        return _asn1_string_to_bytes(self._backend, data)
 
 
 @utils.register_interface(

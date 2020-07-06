@@ -22,6 +22,12 @@ from cryptography.x509.name import Name
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
 
+class AttributeNotFound(Exception):
+    def __init__(self, msg, oid):
+        super(AttributeNotFound, self).__init__(msg)
+        self.oid = oid
+
+
 def _reject_duplicate_extension(extension, extensions):
     # This is quadratic in the number of extensions
     for e in extensions:
@@ -365,6 +371,12 @@ class CertificateSigningRequest(object):
     def is_signature_valid(self):
         """
         Verifies signature of signing request.
+        """
+
+    @abc.abstractproperty
+    def get_attribute_for_oid(self):
+        """
+        Get the attribute value for a given OID.
         """
 
 
