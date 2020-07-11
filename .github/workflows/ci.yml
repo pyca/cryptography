@@ -42,7 +42,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.1"}}
           - {VERSION: "3.10", TOXENV: "py310"}
           # Latest commit on the main-with-bazel branch, as of October 11, 2021
-          - {VERSION: "3.10", TOXENV: "backend-import", OPENSSL: {TYPE: "boringssl", VERSION: "1285d5305ad69ceb519de76cd74e743aed1efd89"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "1285d5305ad69ceb519de76cd74e743aed1efd89"}}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
