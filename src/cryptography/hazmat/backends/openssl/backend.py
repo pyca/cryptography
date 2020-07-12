@@ -741,7 +741,7 @@ class Backend(object):
                     "algorithm must be None when signing via ed25519 or ed448"
                 )
         elif not isinstance(private_key, (rsa.RSAPrivateKey, dsa.DSAPrivateKey,
-                            ec.EllipticCurvePrivateKey)):
+                                          ec.EllipticCurvePrivateKey)):
             raise TypeError(
                 "Key must be rsa, dsa, ec, ed25519 or ed448 private key."
             )
@@ -2396,6 +2396,88 @@ class Backend(object):
                 additional_certificates.append(_Certificate(self, x509))
 
         return (key, cert, additional_certificates)
+
+    def generate_pkcs12(self, password, name, key, cert, cas, key_encryption,
+                        cert_encryption):
+        if password is not None:
+            utils._check_byteslike("password", password)
+        if name is not None:
+            utils._check_byteslike("name", name)
+        if key is not None and not isinstance(
+            key, (rsa.RSAPrivateKeyWithSerialization,
+                  dsa.DSAPrivateKeyWithSerialization,
+                  ec.EllipticCurvePrivateKeyWithSerialization)):
+            raise TypeError(
+                "Key must be RSA, DSA, or EllipticCurve private key."
+            )
+        if cert is not None and not isinstance(cert, x509.Certificate):
+            raise TypeError("cert must be a certificate")
+
+        if key is None:
+            nid_key = 0
+        else:
+            if not isinstance(key_encryption,
+                              serialization.KeySerializationEncryption):
+                raise TypeError(
+                    "Key encryption algorithm must be a "
+                    "KeySerializationEncryption instance"
+                )
+            if isinstance(key_encryption, serialization.NoEncryption):
+                nid_key = -1
+            elif isinstance(key_encryption,
+                            serialization.BestAvailableEncryption):
+                nid_key = 0  # sensible default will be used
+            else:
+                raise ValueError("Unsupported key encryption type")
+
+        if cert is None:
+            nid_cert = 0
+        else:
+            if not isinstance(cert_encryption,
+                              serialization.KeySerializationEncryption):
+                raise TypeError(
+                    "Certificate encryption algorithm must be a "
+                    "KeySerializationEncryption instance"
+                )
+            if isinstance(cert_encryption, serialization.NoEncryption):
+                nid_cert = -1
+            elif isinstance(cert_encryption,
+                            serialization.BestAvailableEncryption):
+                nid_cert = 0  # sensible default will be used
+            else:
+                raise ValueError("Unsupported certificate encryption type")
+
+        if cas is None:
+            sk_x509 = self._ffi.NULL
+        else:
+            if not isinstance(cas, list):
+                raise TypeError("cas must be a list")
+            sk_x509 = self._lib.sk_X509_new_null()
+            sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
+            for ca in cas:
+                if not isinstance(ca, x509.Certificate):
+                    raise TypeError(
+                        "cert in cas must be a certificate")
+            for ca in cas:
+                res = self._lib.sk_X509_push(sk_x509, ca._x509)
+                backend.openssl_assert(res >= 1)
+
+        with self._zeroed_null_terminated_buf(password) as password_buf:
+            with self._zeroed_null_terminated_buf(name) as name_buf:
+                p12 = self._lib.PKCS12_create(
+                    password_buf, name_buf,
+                    key._evp_pkey if key else self._ffi.NULL,
+                    cert._x509 if cert else self._ffi.NULL,
+                    sk_x509, nid_key, nid_cert, 0, 0, 0)
+
+        if p12 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Could not deserialize PKCS12 data")
+
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_PKCS12_bio(bio, p12)
+        self.openssl_assert(res > 0)
+        return self._read_mem_bio(bio)
 
     def poly1305_supported(self):
         return self._lib.Cryptography_HAS_POLY1305 == 1
