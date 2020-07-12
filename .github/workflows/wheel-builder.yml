@@ -2,6 +2,7 @@ name: Wheel Builder
 on:
   repository_dispatch:
     types: [wheel-builder]
+  pull_request: {}
 
 jobs:
   manylinux:
@@ -27,7 +28,7 @@ jobs:
           fi
           LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
               CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
-              .venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
+              .venv/bin/pip wheel cryptography==2.9.2 --no-binary cryptography --no-deps --wheel-dir=tmpwheelhouse $PY_LIMITED_API
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptograph*.whl -w wheelhouse/
       - run: unzip wheelhouse/*.whl -d execstack.check
       - run: |
@@ -47,7 +48,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - uses: actions/upload-artifact@v1
         with:
-          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
+          name: "cryptography-2.9.2-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
           path: cryptography-wheelhouse/
 
   macos:
@@ -92,7 +93,7 @@ jobs:
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
               LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
               CFLAGS="-I${HOME}/openssl-macos/include -mmacosx-version-min=10.10 -march=core2" \
-              venv/bin/pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
+              venv/bin/pip wheel cryptography==2.9.2 --wheel-dir=wheelhouse --no-binary cryptography --no-deps $PY_LIMITED_API
         env:
           PYTHON_VERSION: ${{ matrix.PYTHON.ABI_VERSION }}
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
@@ -103,7 +104,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - uses: actions/upload-artifact@v1
         with:
-          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-macOS-${{ matrix.PYTHON.ABI_VERSION }}"
+          name: "cryptography-2.9.2-macOS-${{ matrix.PYTHON.ABI_VERSION }}"
           path: cryptography-wheelhouse/
 
   windows:
@@ -144,7 +145,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: pip install cffi six ipaddress "enum34; python_version < '3'"
-      - run: pip wheel cryptography==${{ github.event.client_payload.BUILD_VERSION }} --wheel-dir=wheelhouse --no-binary cryptography
+      - run: pip wheel cryptography==2.9.2 --wheel-dir=wheelhouse --no-binary cryptography
       - run: pip install -f wheelhouse --no-index cryptography
       - name: Print the OpenSSL we built and linked against
         run: |
@@ -154,5 +155,5 @@ jobs:
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
       - uses: actions/upload-artifact@v1
         with:
-          name: "cryptography-${{ github.event.client_payload.BUILD_VERSION }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
+          name: "cryptography-2.9.2-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
           path: cryptography-wheelhouse\
