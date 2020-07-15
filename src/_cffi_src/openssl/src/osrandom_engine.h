@@ -6,7 +6,9 @@
   #include <fcntl.h>
   #include <unistd.h>
    /* for defined(BSD) */
-  #include <sys/param.h>
+  #ifndef __MVS__
+    #include <sys/param.h>
+  #endif
 
   #ifdef BSD
     /* for SYS_getentropy */

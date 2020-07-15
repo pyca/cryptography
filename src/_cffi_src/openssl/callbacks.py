@@ -20,6 +20,10 @@ INCLUDES = """
 #include <stdlib.h>
 #include <pthread.h>
 #endif
+
+#ifdef __MVS__
+#include <errno.h>
+#endif
 """
 
 TYPES = """
@@ -66,11 +70,23 @@ typedef pthread_mutex_t Cryptography_mutex;
         perror("Fatal error in callback initialization: " #call);       \
         abort();                                                        \
     }
+#ifdef __MVS__
+/*  When pthread_mutex_init is called more than once on the same mutex,
+    on z/OS this throws an EBUSY error.
+*/
+#define ASSERT_STATUS_INIT(call)                                        \
+    if ((call) != 0 && errno != EBUSY) {                                \
+        perror("Fatal error in callback initialization: " #call);       \
+        abort();                                                        \
+    }
+#else
+#define ASSERT_STATUS_INIT ASSERT_STATUS
+#endif
 static inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
 #if !defined(pthread_mutexattr_default)
 #  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
 #endif
-    ASSERT_STATUS(pthread_mutex_init(mutex, pthread_mutexattr_default));
+    ASSERT_STATUS_INIT(pthread_mutex_init(mutex, pthread_mutexattr_default));
 }
 static inline void cryptography_mutex_lock(Cryptography_mutex *mutex) {
     ASSERT_STATUS(pthread_mutex_lock(mutex));

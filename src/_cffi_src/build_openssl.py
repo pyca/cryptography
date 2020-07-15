@@ -40,7 +40,10 @@ def _get_openssl_libraries(platform):
         # -lpthread required due to usage of pthread an potential
         # existance of a static part containing e.g. pthread_atfork
         # (https://github.com/pyca/cryptography/issues/5084)
-        return ["ssl", "crypto", "pthread"]
+        if sys.platform == 'zos':
+            return ["ssl", "crypto"]
+        else:
+            return ["ssl", "crypto", "pthread"]
 
 
 def _extra_compile_args(platform):
