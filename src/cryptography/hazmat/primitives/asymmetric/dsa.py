@@ -128,9 +128,9 @@ def generate_private_key(key_size, backend):
 
 
 def _check_dsa_parameters(parameters):
-    if parameters.p.bit_length() not in [1024, 2048, 3072, 4096]:
+    if parameters.p.bit_length() not in [512, 1024, 2048, 3072, 4096]:
         raise ValueError(
-            "p must be exactly 1024, 2048, 3072, or 4096 bits long"
+            f"p must be exactly 512, 1024, 2048, 3072, or 4096 bits long current='{parameters.p.bit_length()}'"
         )
     if parameters.q.bit_length() not in [160, 224, 256]:
         raise ValueError("q must be exactly 160, 224, or 256 bits long")
