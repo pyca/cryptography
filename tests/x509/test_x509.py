@@ -1232,7 +1232,7 @@ class TestRSACertificateRequest(object):
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
 
-    def test_get_attribute_for_oid(self, backend):
+    def test_get_attribute_for_oid_challenge(self, backend):
         request = _load_cert(
             os.path.join(
                 "x509", "requests", "challenge.pem"
@@ -1241,6 +1241,19 @@ class TestRSACertificateRequest(object):
         assert request.get_attribute_for_oid(
             x509.oid.AttributeOID.CHALLENGE_PASSWORD
         ) == b"challenge me!"
+
+    def test_get_attribute_for_oid_multiple(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "challenge-unstructured.pem"
+            ), x509.load_pem_x509_csr, backend
+        )
+        assert request.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        ) == b"beauty"
+        assert request.get_attribute_for_oid(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME
+        ) == b"an unstructured field"
 
     def test_invalid_attribute_for_oid(self, backend):
         """
