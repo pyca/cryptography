@@ -92,6 +92,7 @@ X509_ATTRIBUTE *X509_REQ_get_attr(const X509_REQ *, int);
 int X509_REQ_get_attr_by_OBJ(const X509_REQ *, const ASN1_OBJECT *, int);
 void *X509_ATTRIBUTE_get0_data(X509_ATTRIBUTE *, int, int, void *);
 ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *, int);
+int X509_ATTRIBUTE_count(const X509_ATTRIBUTE *);
 int X509_REQ_add1_attr_by_txt(X509_REQ *, const char *, int,
                               const unsigned char *, int);
 
