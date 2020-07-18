@@ -1054,8 +1054,11 @@ class KeyUsage(object):
             encipher_only = self.encipher_only
             decipher_only = self.decipher_only
         except ValueError:
-            encipher_only = None
-            decipher_only = None
+            # Users found None confusing because even though encipher/decipher
+            # have no meaning unless key_agreement is true, to construct an
+            # instance of the class you still need to pass False.
+            encipher_only = False
+            decipher_only = False
 
         return ("<KeyUsage(digital_signature={0.digital_signature}, "
                 "content_commitment={0.content_commitment}, "
