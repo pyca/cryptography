@@ -44,6 +44,8 @@ Changelog
   :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
 * Added support for parsing attributes in certificate signing requests via
   :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
+* Added support for encoding attributes in certificate signing requests via
+  :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
 
 .. _v2-9-2:
 

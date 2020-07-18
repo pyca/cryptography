@@ -3622,6 +3622,36 @@ class TestCertificateSigningRequestBuilder(object):
         )
         assert list(ext.value) == [x509.DNSName(u"cryptography.io")]
 
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_add_attributes(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        challenge_password = b"challenge me!"
+        unstructured_name = b"no structure, for shame"
+        locality = b"this shouldn't even be an X509 attribute"
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            ])
+        ).add_attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD, challenge_password
+        ).add_attribute(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME, unstructured_name
+        ).add_attribute(
+            x509.oid.NameOID.LOCALITY_NAME, locality
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        assert request.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        ) == challenge_password
+        assert request.get_attribute_for_oid(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME
+        ) == unstructured_name
+        assert request.get_attribute_for_oid(
+            x509.oid.NameOID.LOCALITY_NAME
+        ) == locality
+
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
