@@ -498,7 +498,11 @@ class _CertificateSigningRequest(object):
 
         attr = self._backend._lib.X509_REQ_get_attr(self._x509_req, pos)
         self._backend.openssl_assert(attr != self._backend._ffi.NULL)
-        asn1_type = self._backend._lib.X509_ATTRIBUTE_get0_type(attr, pos)
+        # We don't support multiple valued attributes for now.
+        self._backend.openssl_assert(
+            self._backend._lib.X509_ATTRIBUTE_count(attr) == 1
+        )
+        asn1_type = self._backend._lib.X509_ATTRIBUTE_get0_type(attr, 0)
         self._backend.openssl_assert(asn1_type != self._backend._ffi.NULL)
         # We need this to ensure that our C type cast is safe.
         # Also this should always be a sane string type, but we'll see if
@@ -513,7 +517,7 @@ class _CertificateSigningRequest(object):
             ))
 
         data = self._backend._lib.X509_ATTRIBUTE_get0_data(
-            attr, pos, asn1_type.type, self._backend._ffi.NULL
+            attr, 0, asn1_type.type, self._backend._ffi.NULL
         )
         self._backend.openssl_assert(data != self._backend._ffi.NULL)
         # This cast is safe iff we assert on the type above to ensure
