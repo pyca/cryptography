@@ -896,8 +896,8 @@ class TestKeyUsage(object):
         assert repr(ku) == (
             "<KeyUsage(digital_signature=True, content_commitment=True, key_en"
             "cipherment=False, data_encipherment=False, key_agreement=False, k"
-            "ey_cert_sign=True, crl_sign=False, encipher_only=None, decipher_o"
-            "nly=None)>"
+            "ey_cert_sign=True, crl_sign=False, encipher_only=False, decipher_"
+            "only=False)>"
         )
 
     def test_repr_key_agreement_true(self):
