@@ -2874,6 +2874,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.17"``.
 
+    .. attribute:: UNSTRUCTURED_NAME
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.2"``.
+
 
 .. class:: SignatureAlgorithmOID
 
@@ -3234,6 +3240,10 @@ instances. The following common OIDs are available as constants.
     .. attribute:: CHALLENGE_PASSWORD
 
         Corresponds to the dotted string ``"1.2.840.113549.1.9.7"``.
+
+    .. attribute:: UNSTRUCTURED_NAME
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.2"``.
 
 Helper Functions
 ~~~~~~~~~~~~~~~~

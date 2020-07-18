@@ -82,6 +82,7 @@ class NameOID(object):
     INN = ObjectIdentifier("1.2.643.3.131.1.1")
     OGRN = ObjectIdentifier("1.2.643.100.1")
     SNILS = ObjectIdentifier("1.2.643.100.3")
+    UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
 
 
 class SignatureAlgorithmOID(object):
@@ -164,6 +165,7 @@ class CertificatePoliciesOID(object):
 
 class AttributeOID(object):
     CHALLENGE_PASSWORD = ObjectIdentifier("1.2.840.113549.1.9.7")
+    UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
 
 
 _OID_NAMES = {
@@ -196,6 +198,7 @@ _OID_NAMES = {
     NameOID.INN: "INN",
     NameOID.OGRN: "OGRN",
     NameOID.SNILS: "SNILS",
+    NameOID.UNSTRUCTURED_NAME: "unstructuredName",
 
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
