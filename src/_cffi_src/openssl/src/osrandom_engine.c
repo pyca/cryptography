@@ -528,7 +528,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void)) 
             ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_INVALID_ARGUMENT);
             return 0;
         }
-        strncpy((char *)p, name, len);
+        strcpy((char *)p, name);
         return (int)len;
     default:
         ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED);
