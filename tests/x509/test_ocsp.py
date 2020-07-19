@@ -695,6 +695,13 @@ class TestOCSPResponse(object):
         assert resp.serial_number == 271024907440004808294641238224534273948400
         assert len(resp.extensions) == 0
 
+    def test_load_multi_valued_response(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+                ocsp.load_der_ocsp_response,
+            )
+
     def test_load_unauthorized(self):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-unauthorized.der"),

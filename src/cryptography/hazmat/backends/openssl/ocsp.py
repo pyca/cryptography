@@ -104,9 +104,13 @@ class _OCSPResponse(object):
             self._basic = self._backend._ffi.gc(
                 basic, self._backend._lib.OCSP_BASICRESP_free
             )
-            self._backend.openssl_assert(
-                self._backend._lib.OCSP_resp_count(self._basic) == 1
-            )
+            num_resp = self._backend._lib.OCSP_resp_count(self._basic)
+            if num_resp != 1:
+                raise ValueError(
+                    "OCSP response contains more than one SINGLERESP structure"
+                    ", which this library does not support. "
+                    "{} found".format(num_resp)
+                )
             self._single = self._backend._lib.OCSP_resp_get0(self._basic, 0)
             self._backend.openssl_assert(
                 self._single != self._backend._ffi.NULL
