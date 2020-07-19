@@ -14,11 +14,11 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27"}
-          - {VERSION: "3.5", TOXENV: "py35"}
-          - {VERSION: "3.6", TOXENV: "py36"}
-          - {VERSION: "3.7", TOXENV: "py37"}
-          - {VERSION: "3.8", TOXENV: "py38"}
+          - {VERSION: "2.7", TOXENV: "py27", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.5", TOXENV: "py35", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.7", TOXENV: "py37", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.8", TOXENV: "py38", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
     steps:
       - uses: actions/checkout@master
@@ -40,10 +40,11 @@ jobs:
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
-            CFLAGS="-I${HOME}/openssl-macos/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2" \
+            CFLAGS="-I${HOME}/openssl-macos/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
 
       - name: Upload coverage
         run: |
@@ -58,11 +59,11 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010"}
-          - {VERSION: "3.5", TOXENV: "py35", MSVC_VERSION: "2019"}
-          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019"}
-          - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019"}
-          - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019"}
+          - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010", CL_FLAGS: ""}
+          - {VERSION: "3.5", TOXENV: "py35", MSVC_VERSION: "2019", CL_FLAGS: ""}
+          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
+          - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019", CL_FLAGS: ""}
+          - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
     steps:
       - uses: actions/checkout@master
@@ -85,6 +86,7 @@ jobs:
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
             echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
             echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
+            echo "::set-env name=CL::${{ matrix.WINDOWS.CL_FLAGS }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: git clone https://github.com/google/wycheproof
