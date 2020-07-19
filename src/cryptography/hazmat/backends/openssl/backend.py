@@ -741,7 +741,7 @@ class Backend(object):
                     "algorithm must be None when signing via ed25519 or ed448"
                 )
         elif not isinstance(private_key, (rsa.RSAPrivateKey, dsa.DSAPrivateKey,
-                                          ec.EllipticCurvePrivateKey)):
+                            ec.EllipticCurvePrivateKey)):
             raise TypeError(
                 "Key must be an rsa, dsa, ec, ed25519, or ed448 private key."
             )
@@ -2397,8 +2397,9 @@ class Backend(object):
 
         return (key, cert, additional_certificates)
 
-    def generate_pkcs12(self, password, name, key, cert, cas, key_encryption,
-                        cert_encryption):
+    def serialize_key_and_certificates_to_pkcs12(self, password, name, key,
+                                                 cert, cas, key_encryption,
+                                                 cert_encryption):
         if password is not None:
             utils._check_byteslike("password", password)
         if name is not None:
@@ -2450,14 +2451,13 @@ class Backend(object):
         if cas is None:
             sk_x509 = self._ffi.NULL
         else:
-            if not isinstance(cas, list):
-                raise TypeError("cas must be a list")
+            cas = list(cas)
+            if not all(isinstance(ca, x509.Certificate) for ca in cas):
+                raise TypeError("cert in cas must be a certificate")
+
             sk_x509 = self._lib.sk_X509_new_null()
             sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
-            for ca in cas:
-                if not isinstance(ca, x509.Certificate):
-                    raise TypeError(
-                        "cert in cas must be a certificate")
+
             for ca in cas:
                 res = self._lib.sk_X509_push(sk_x509, ca._x509)
                 backend.openssl_assert(res >= 1)
@@ -2472,7 +2472,7 @@ class Backend(object):
 
         if p12 == self._ffi.NULL:
             self._consume_errors()
-            raise ValueError("Could not deserialize PKCS12 data")
+            raise ValueError("Could not serialize PKCS12 data")
 
         bio = self._create_mem_bio_gc()
         res = self._lib.i2d_PKCS12_bio(bio, p12)

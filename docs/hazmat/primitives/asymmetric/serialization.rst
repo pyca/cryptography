@@ -489,8 +489,10 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: generate_pkcs12(password, name, key, cert, cas, key_encryption,
-                              cert_encryption)
+.. function:: serialize_key_and_certificates(password, name, key, cert, cas,
+                                             key_encryption, cert_encryption)
+
+    .. versionadded:: 3.0
 
     Serialize a PKCS12 blob.
 
@@ -510,12 +512,14 @@ file suffix.
     :param cas: An optional set of certificates to also include in the structure.
     :type cas: :term:`bytes-like`
 
-    :param key_encryption: The encryption algorithms that should be used for the key.
-        An instance of an object conforming to the :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+    :param key_encryption: The encryption algorithms that should be used for the
+        key. An instance of an object conforming to the :
+        class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
         interface.
 
-    :param cert_encryption: The encryption algorithms that should be used for the certificate.
-        An instance of an object conforming to the :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+    :param cert_encryption: The encryption algorithms that should be used for
+        the certificate. An instance of an object conforming to the
+        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
         interface.
 
     :return bytes: Serialized PKCS12.

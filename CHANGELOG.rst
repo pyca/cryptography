@@ -49,6 +49,8 @@ Changelog
 * On OpenSSL 1.1.1d and higher ``cryptography`` now uses OpenSSL's
   built-in CSPRNG instead of its own OS random engine because these versions of
   OpenSSL properly reseed on fork.
+* Added initial support for creating PKCS12 files with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`.
 
 .. _v2-9-2:
 
