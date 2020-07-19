@@ -169,8 +169,9 @@ class TestOpenSSL(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_ENGINE == 0,
-    reason="Requires OpenSSL with ENGINE support")
+    backend._lib.Cryptography_HAS_ENGINE == 0 or
+    not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D,
+    reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
         # The default RAND engine is global and shared between
@@ -292,8 +293,9 @@ class TestOpenSSLRandomEngine(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_ENGINE == 1,
-    reason="Requires OpenSSL without ENGINE support")
+    backend._lib.Cryptography_HAS_ENGINE == 1 and
+    backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D,
+    reason="Requires OpenSSL without ENGINE support or OpenSSL >=1.1.1d")
 class TestOpenSSLNoEngine(object):
     def test_no_engine_support(self):
         assert backend._ffi.string(
@@ -301,7 +303,7 @@ class TestOpenSSLNoEngine(object):
         ) == b"no-engine-support"
         assert backend._ffi.string(
             backend._lib.Cryptography_osrandom_engine_name
-        ) == b"osrandom_engine disabled due to no engine support"
+        ) == b"osrandom_engine disabled"
 
     def test_activate_builtin_random_does_nothing(self):
         backend.activate_builtin_random()
