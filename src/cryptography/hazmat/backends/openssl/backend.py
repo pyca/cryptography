@@ -135,7 +135,7 @@ class Backend(object):
         return binding._openssl_assert(self._lib, ok)
 
     def activate_builtin_random(self):
-        if self._lib.Cryptography_HAS_ENGINE:
+        if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             # Obtain a new structural reference.
             e = self._lib.ENGINE_get_default_RAND()
             if e != self._ffi.NULL:
@@ -168,7 +168,7 @@ class Backend(object):
             self.openssl_assert(res == 1)
 
     def activate_osrandom_engine(self):
-        if self._lib.Cryptography_HAS_ENGINE:
+        if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             # Unregister and free the current engine.
             self.activate_builtin_random()
             with self._get_osurandom_engine() as e:
