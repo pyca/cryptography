@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import collections
+import copy
 import datetime
 import ipaddress
 import os
@@ -4806,6 +4807,14 @@ class TestEd25519Certificate(object):
         assert cert.serial_number == 9579446940964433301
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
+
+    def test_deepcopy(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ed25519", "root-ed25519.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert copy.deepcopy(cert) is cert
 
 
 @pytest.mark.supported(

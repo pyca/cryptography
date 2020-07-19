@@ -55,6 +55,9 @@ class _Certificate(object):
     def __hash__(self):
         return hash(self.public_bytes(serialization.Encoding.DER))
 
+    def __deepcopy__(self, memo):
+        return self
+
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
         h.update(self.public_bytes(serialization.Encoding.DER))
