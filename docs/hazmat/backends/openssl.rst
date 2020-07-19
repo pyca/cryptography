@@ -70,7 +70,7 @@ OS random engine
 
 .. note::
 
-    As of OpenSSL 1.1.1d the built-in CSPRNG is fork-safe by default.
+    As of OpenSSL 1.1.1d its CSPRNG is fork-safe by default.
     ``cryptography`` does not compile or load the custom engine on
     these versions.
 
