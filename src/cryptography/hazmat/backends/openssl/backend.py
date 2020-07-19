@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import contextlib
 import itertools
+import warnings
 from contextlib import contextmanager
 
 import six
@@ -119,20 +120,58 @@ class Backend(object):
     """
     name = "openssl"
 
+    # FIPS doesn't allow several algorithms or weak key sizes, but the
+    # algorithms are still present in OpenSSL. They just errors if you try
+    # to use them. To avoid that we allowlist the algorithms in FIPS 140-2.
+    # This isn't ideal, but FIPS 140-2 is trash so here we are.
+    _fips_aead = {
+        b'aes-128-ccm', b'aes-192-ccm', b'aes-256-ccm',
+        b'aes-128-gcm', b'aes-192-gcm', b'aes-256-gcm',
+    }
+    _fips_ciphers = (
+        AES, TripleDES
+    )
+    _fips_hashes = (
+        hashes.SHA1, hashes.SHA224, hashes.SHA256, hashes.SHA384,
+        hashes.SHA512, hashes.SHA512_224, hashes.SHA512_256, hashes.SHA3_224,
+        hashes.SHA3_256, hashes.SHA3_384, hashes.SHA3_512, hashes.SHAKE128,
+        hashes.SHAKE256,
+    )
+    _rsa_min_key_size = 2048
+    _rsa_min_public_exponent = 65537
+    _dsa_min_modulus = 1 << 2048
+    _dh_min_key_size = 2048
+    _dh_min_modulus = 1 << _dh_min_key_size
+
     def __init__(self):
         self._binding = binding.Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
+        self._fips_enabled = self._is_fips_enabled()
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self.activate_osrandom_engine()
+        if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
+            warnings.warn(
+                "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
+                UserWarning
+            )
+        else:
+            self.activate_osrandom_engine()
         self._dh_types = [self._lib.EVP_PKEY_DH]
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
+
+    def _is_fips_enabled(self):
+        fips_mode = getattr(self._lib, "FIPS_mode", lambda: 0)
+        mode = fips_mode()
+        if mode == 0:
+            # OpenSSL without FIPS pushes an error on the error stack
+            self._lib.ERR_clear_error()
+        return bool(mode)
 
     def activate_builtin_random(self):
         if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
@@ -222,6 +261,9 @@ class Backend(object):
         return evp_md
 
     def hash_supported(self, algorithm):
+        if self._fips_enabled and not isinstance(algorithm, self._fips_hashes):
+            return False
+
         evp_md = self._evp_md_from_algorithm(algorithm)
         return evp_md != self._ffi.NULL
 
@@ -232,6 +274,8 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
+        if self._fips_enabled and not isinstance(cipher, self._fips_ciphers):
+            return False
         try:
             adapter = self._cipher_registry[type(cipher), type(mode)]
         except KeyError:
@@ -1380,6 +1424,11 @@ class Backend(object):
                 errors[0]._lib_reason_match(
                     self._lib.ERR_LIB_EC,
                     self._lib.EC_R_UNKNOWN_GROUP
+                ) or
+                # This occurs in FIPS mode for unsupported curves on RHEL
+                errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_EC,
+                    self._lib.EC_R_NOT_A_NIST_PRIME
                 )
             )
             return False
@@ -1777,6 +1826,16 @@ class Backend(object):
 
         # TraditionalOpenSSL + PEM/DER
         if format is serialization.PrivateFormat.TraditionalOpenSSL:
+            if (
+                    self._fips_enabled and
+                    not isinstance(
+                        encryption_algorithm, serialization.NoEncryption
+                    )
+            ):
+                raise ValueError(
+                    "Encrypted traditional OpenSSL format is not "
+                    "supported in FIPS mode."
+                )
             key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
             if encoding is serialization.Encoding.PEM:
@@ -1936,6 +1995,13 @@ class Backend(object):
     def generate_dh_parameters(self, generator, key_size):
         if key_size < 512:
             raise ValueError("DH key_size must be at least 512 bits")
+
+        if False and self._fips_enabled and key_size < self._dh_min_key_size:
+            raise ValueError(
+                "DH key_size must be at least {} bits in FIPS mode.".format(
+                    self._dh_min_key_size
+                )
+            )
 
         if generator not in (2, 5):
             raise ValueError("DH generator must be 2 or 5")
@@ -2170,6 +2236,8 @@ class Backend(object):
         return _X25519PrivateKey(self, evp_pkey)
 
     def x25519_supported(self):
+        if self._fips_enabled:
+            return False
         return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
 
     def x448_load_public_bytes(self, data):
@@ -2200,9 +2268,13 @@ class Backend(object):
         return _X448PrivateKey(self, evp_pkey)
 
     def x448_supported(self):
+        if self._fips_enabled:
+            return False
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 
     def ed25519_supported(self):
+        if self._fips_enabled:
+            return False
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
 
     def ed25519_load_public_bytes(self, data):
@@ -2238,6 +2310,8 @@ class Backend(object):
         return _Ed25519PrivateKey(self, evp_pkey)
 
     def ed448_supported(self):
+        if self._fips_enabled:
+            return False
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
 
     def ed448_load_public_bytes(self, data):
@@ -2304,6 +2378,8 @@ class Backend(object):
 
     def aead_cipher_supported(self, cipher):
         cipher_name = aead._aead_cipher_name(cipher)
+        if self._fips_enabled and cipher_name not in self._fips_aead:
+            return False
         return (
             self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
         )
@@ -2453,6 +2529,8 @@ class Backend(object):
         return self._read_mem_bio(bio)
 
     def poly1305_supported(self):
+        if self._fips_enabled:
+            return 0
         return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def create_poly1305_ctx(self, key):

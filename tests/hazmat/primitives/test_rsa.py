@@ -32,7 +32,8 @@ from .fixtures_rsa import (
     RSA_KEY_745, RSA_KEY_768,
 )
 from .utils import (
-    _check_rsa_private_numbers, generate_rsa_verification_test
+    _check_rsa_private_numbers, generate_rsa_verification_test,
+    skip_fips_traditional_openssl
 )
 from ...doubles import (
     DummyAsymmetricPadding, DummyHashAlgorithm, DummyKeySerializationEncryption
@@ -152,6 +153,13 @@ class TestRSA(object):
         )
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
+        if backend._fips_enabled:
+            if key_size < backend._rsa_min_key_size:
+                pytest.skip("Key size not FIPS compliant: {}".format(key_size))
+            if public_exponent < backend._rsa_min_public_exponent:
+                pytest.skip("Exponent not FIPS compliant: {}".format(
+                    public_exponent)
+                )
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
@@ -2052,6 +2060,7 @@ class TestRSAPrivateKeySerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        skip_fips_traditional_openssl(backend, fmt)
         key = RSA_KEY_2048.private_key(backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
@@ -2138,6 +2147,9 @@ class TestRSAPrivateKeySerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL key format is not supported in FIPS mode."
+    )
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader_func"),
         [

@@ -81,6 +81,7 @@ static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
 static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 
 static const int EC_R_UNKNOWN_GROUP;
+static const int EC_R_NOT_A_NIST_PRIME;
 
 static const int PEM_R_BAD_BASE64_DECODE;
 static const int PEM_R_BAD_DECRYPT;

@@ -57,17 +57,21 @@ class TestPKCS12Loading(object):
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
     @pytest.mark.parametrize(
-        ("filename", "password"),
+        ("filename", "password", "supported_in_fips_mode"),
         [
-            ("cert-rc2-key-3des.p12", b"cryptography"),
-            ("no-password.p12", None),
+            ("cert-rc2-key-3des.p12", b"cryptography", False),
+            ("no-password.p12", None, False),
         ]
     )
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(_RC2(), None),
         skip_message="Does not support RC2"
     )
-    def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
+    def test_load_pkcs12_ec_keys_rc2(self, filename, password,
+                                     supported_in_fips_mode, backend):
+        if backend._fips_enabled and not supported_in_fips_mode:
+            pytest.skip("Not supported in FIPS mode.")
+
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
     def test_load_pkcs12_cert_only(self, backend):

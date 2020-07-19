@@ -23,6 +23,7 @@ from cryptography.utils import CryptographyDeprecationWarning
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 )
+from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyHashAlgorithm, DummyKeySerializationEncryption
 from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
@@ -40,6 +41,13 @@ def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
         )
 
 
+def _min_key_size(backend):
+    if backend._fips_enabled:
+        return backend._dh_min_key_size
+    else:
+        return 1024
+
+
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 def test_skip_if_dsa_not_supported(backend):
     with pytest.raises(pytest.skip.Exception):
@@ -49,7 +57,8 @@ def test_skip_if_dsa_not_supported(backend):
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
-        parameters = dsa.generate_parameters(1024, backend)
+        key_size = _min_key_size(backend)
+        parameters = dsa.generate_parameters(key_size, backend)
         assert isinstance(parameters, dsa.DSAParameters)
 
     def test_generate_invalid_dsa_parameters(self, backend):
@@ -65,6 +74,8 @@ class TestDSA(object):
         )
     )
     def test_generate_dsa_keys(self, vector, backend):
+        if backend._fips_enabled and vector['p'] < backend._dsa_min_modulus:
+            pytest.skip("Small modulus blocked in FIPS mode")
         parameters = dsa.DSAParameterNumbers(
             p=vector['p'],
             q=vector['q'],
@@ -91,7 +102,8 @@ class TestDSA(object):
         )
 
     def test_generate_dsa_private_key_and_parameters(self, backend):
-        skey = dsa.generate_private_key(1024, backend)
+        key_size = _min_key_size(backend)
+        skey = dsa.generate_private_key(key_size, backend)
         assert skey
         numbers = skey.private_numbers()
         skey_parameters = numbers.public_numbers.parameter_numbers
@@ -718,6 +730,7 @@ class TestDSASerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        skip_fips_traditional_openssl(backend, fmt)
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
             lambda pemfile: pemfile.read().encode()
@@ -812,6 +825,9 @@ class TestDSASerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL key format is not supported in FIPS mode."
+    )
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader_func"),
         [
