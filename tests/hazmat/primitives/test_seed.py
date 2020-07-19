@@ -46,7 +46,7 @@ class TestSEEDModeCBC(object):
         os.path.join("ciphers", "SEED"),
         ["rfc-4196.txt"],
         lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
 
@@ -63,7 +63,7 @@ class TestSEEDModeOFB(object):
         os.path.join("ciphers", "SEED"),
         ["seed-ofb.txt"],
         lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
@@ -80,5 +80,5 @@ class TestSEEDModeCFB(object):
         os.path.join("ciphers", "SEED"),
         ["seed-cfb.txt"],
         lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

@@ -31,11 +31,15 @@ class TestAESModeXTS(object):
         # data unit length that is divisible by 8. The NIST vectors include
         # tests for implementations that support encryption of data that is
         # not divisible modulo 8, but OpenSSL is not such an implementation.
-        [x for x in _load_all_params(
-            os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
-            ["XTSGenAES128.rsp", "XTSGenAES256.rsp"],
-            load_nist_vectors
-        ) if int(x["dataunitlen"]) / 8.0 == int(x["dataunitlen"]) // 8]
+        [
+            x
+            for x in _load_all_params(
+                os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
+                ["XTSGenAES128.rsp", "XTSGenAES256.rsp"],
+                load_nist_vectors,
+            )
+            if int(x["dataunitlen"]) / 8.0 == int(x["dataunitlen"]) // 8
+        ],
     )
     def test_xts_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
@@ -263,9 +267,7 @@ class TestAESModeGCM(object):
         tag = binascii.unhexlify(b"0f247e7f9c2505de374006738018493b")
 
         cipher = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         )
         encryptor = cipher.encryptor()
         encryptor.authenticate_additional_data(aad)
@@ -280,9 +282,7 @@ class TestAESModeGCM(object):
         pt = binascii.unhexlify(b"28286a321293253c3e0aa2704a278032")
 
         cipher = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         )
         encryptor = cipher.encryptor()
         computed_ct = encryptor.update(pt) + encryptor.finalize()
@@ -293,13 +293,11 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
-            backend=backend
+            backend=backend,
         ).encryptor()
         encryptor._bytes_processed = modes.GCM._MAX_ENCRYPTED_BYTES - 16
         encryptor.update(b"0" * 16)
-        assert (
-            encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
-        )
+        assert encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
         with pytest.raises(ValueError):
             encryptor.update(b"0")
 
@@ -307,7 +305,7 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
-            backend=backend
+            backend=backend,
         ).encryptor()
         encryptor._aad_bytes_processed = modes.GCM._MAX_AAD_BYTES - 16
         encryptor.authenticate_additional_data(b"0" * 16)
@@ -319,7 +317,7 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
-            backend=backend
+            backend=backend,
         ).encryptor()
         encryptor.update(b"0" * 8)
         assert encryptor._bytes_processed == 8
@@ -332,7 +330,7 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
-            backend=backend
+            backend=backend,
         ).encryptor()
         encryptor.authenticate_additional_data(b"0" * 8)
         assert encryptor._aad_bytes_processed == 8
@@ -345,17 +343,13 @@ class TestAESModeGCM(object):
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
         encryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
 
         decryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         ).decryptor()
         decryptor.authenticate_additional_data(aad)
         with pytest.raises(ValueError):
@@ -367,18 +361,14 @@ class TestAESModeGCM(object):
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
         encryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
 
         decryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv, tag),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv, tag), backend=backend
         ).decryptor()
         decryptor.authenticate_additional_data(aad)
         decryptor.finalize()
@@ -389,18 +379,14 @@ class TestAESModeGCM(object):
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
         encryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
 
         decryptor = base.Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=backend
+            algorithms.AES(key), modes.GCM(iv), backend=backend
         ).decryptor()
         decryptor.authenticate_additional_data(aad)
 
@@ -408,9 +394,7 @@ class TestAESModeGCM(object):
 
     def test_gcm_tag_decrypt_finalize_tag_length(self, backend):
         decryptor = base.Cipher(
-            algorithms.AES(b"0" * 16),
-            modes.GCM(b"0" * 12),
-            backend=backend
+            algorithms.AES(b"0" * 16), modes.GCM(b"0" * 12), backend=backend
         ).decryptor()
         with pytest.raises(ValueError):
             decryptor.finalize_with_tag(b"tagtooshort")
@@ -420,14 +404,14 @@ class TestAESModeGCM(object):
         enc = base.Cipher(
             algorithms.AES(bytearray(b"\x00" * 16)),
             modes.GCM(bytearray(b"\x00" * 12)),
-            backend
+            backend,
         ).encryptor()
         enc.authenticate_additional_data(bytearray(b"foo"))
         ct = enc.update(data) + enc.finalize()
         dec = base.Cipher(
             algorithms.AES(bytearray(b"\x00" * 16)),
             modes.GCM(bytearray(b"\x00" * 12), enc.tag),
-            backend
+            backend,
         ).decryptor()
         dec.authenticate_additional_data(bytearray(b"foo"))
         pt = dec.update(ct) + dec.finalize()
@@ -445,7 +429,7 @@ class TestAESModeGCM(object):
         modes.XTS(bytearray(b"\x00" * 16)),
         # Add a dummy mode for coverage of the cipher_supported check.
         DummyMode(),
-    ]
+    ],
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_buffer_protocol_alternate_modes(mode, backend):

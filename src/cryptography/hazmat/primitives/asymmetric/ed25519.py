@@ -20,10 +20,11 @@ class Ed25519PublicKey(object):
     @classmethod
     def from_public_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed25519_supported():
             raise UnsupportedAlgorithm(
                 "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
         return backend.ed25519_load_public_bytes(data)
@@ -46,10 +47,11 @@ class Ed25519PrivateKey(object):
     @classmethod
     def generate(cls):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed25519_supported():
             raise UnsupportedAlgorithm(
                 "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
         return backend.ed25519_generate_key()
@@ -57,10 +59,11 @@ class Ed25519PrivateKey(object):
     @classmethod
     def from_private_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed25519_supported():
             raise UnsupportedAlgorithm(
                 "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
         return backend.ed25519_load_private_bytes(data)

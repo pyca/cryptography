@@ -10,13 +10,20 @@ import operator
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CERTIFICATE_EXTENSION_PARSER, _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
-    _CRL_EXTENSION_PARSER, _CSR_EXTENSION_PARSER,
-    _REVOKED_CERTIFICATE_EXTENSION_PARSER, _asn1_integer_to_int,
-    _asn1_string_to_bytes, _decode_x509_name, _obj2txt, _parse_asn1_time
+    _CERTIFICATE_EXTENSION_PARSER,
+    _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
+    _CRL_EXTENSION_PARSER,
+    _CSR_EXTENSION_PARSER,
+    _REVOKED_CERTIFICATE_EXTENSION_PARSER,
+    _asn1_integer_to_int,
+    _asn1_string_to_bytes,
+    _decode_x509_name,
+    _obj2txt,
+    _parse_asn1_time,
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_int_gc, _txt2obj_gc
+    _encode_asn1_int_gc,
+    _txt2obj_gc,
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -195,7 +202,7 @@ class _RevokedCertificate(object):
             self._backend,
             self._backend._lib.X509_REVOKED_get0_revocationDate(
                 self._x509_revoked
-            )
+            ),
         )
 
     @utils.cached_property
@@ -224,9 +231,7 @@ class _CertificateRevocationList(object):
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
         bio = self._backend._create_mem_bio_gc()
-        res = self._backend._lib.i2d_X509_CRL_bio(
-            bio, self._x509_crl
-        )
+        res = self._backend._lib.i2d_X509_CRL_bio(bio, self._x509_crl)
         self._backend.openssl_assert(res == 1)
         der = self._backend._read_mem_bio(bio)
         h.update(der)
@@ -251,9 +256,7 @@ class _CertificateRevocationList(object):
         if res == 0:
             return None
         else:
-            self._backend.openssl_assert(
-                revoked[0] != self._backend._ffi.NULL
-            )
+            self._backend.openssl_assert(revoked[0] != self._backend._ffi.NULL)
             return _RevokedCertificate(
                 self._backend, self._sorted_crl, revoked[0]
             )
@@ -363,10 +366,14 @@ class _CertificateRevocationList(object):
         return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
 
     def is_signature_valid(self, public_key):
-        if not isinstance(public_key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
-                                       ec.EllipticCurvePublicKey)):
-            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
-                            ' or EllipticCurvePublicKey.')
+        if not isinstance(
+            public_key,
+            (dsa.DSAPublicKey, rsa.RSAPublicKey, ec.EllipticCurvePublicKey),
+        ):
+            raise TypeError(
+                "Expecting one of DSAPublicKey, RSAPublicKey,"
+                " or EllipticCurvePublicKey."
+            )
         res = self._backend._lib.X509_CRL_verify(
             self._x509_crl, public_key._evp_pkey
         )
@@ -436,10 +443,11 @@ class _CertificateSigningRequest(object):
         x509_exts = self._backend._ffi.gc(
             x509_exts,
             lambda x: self._backend._lib.sk_X509_EXTENSION_pop_free(
-                x, self._backend._ffi.addressof(
+                x,
+                self._backend._ffi.addressof(
                     self._backend._lib._original_lib, "X509_EXTENSION_free"
-                )
-            )
+                ),
+            ),
         )
         return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
 
@@ -515,9 +523,11 @@ class _CertificateSigningRequest(object):
             _ASN1Type.PrintableString.value,
             _ASN1Type.IA5String.value,
         ):
-            raise ValueError("OID {} has a disallowed ASN.1 type: {}".format(
-                oid, asn1_type.type
-            ))
+            raise ValueError(
+                "OID {} has a disallowed ASN.1 type: {}".format(
+                    oid, asn1_type.type
+                )
+            )
 
         data = self._backend._lib.X509_ATTRIBUTE_get0_data(
             attr, 0, asn1_type.type, self._backend._ffi.NULL
@@ -556,9 +566,9 @@ class _SignedCertificateTimestamp(object):
     def timestamp(self):
         timestamp = self._backend._lib.SCT_get_timestamp(self._sct)
         milliseconds = timestamp % 1000
-        return datetime.datetime.utcfromtimestamp(
-            timestamp // 1000
-        ).replace(microsecond=milliseconds * 1000)
+        return datetime.datetime.utcfromtimestamp(timestamp // 1000).replace(
+            microsecond=milliseconds * 1000
+        )
 
     @property
     def entry_type(self):

@@ -17,7 +17,7 @@ from ..hazmat.primitives.test_aead import _aead_supported
 
 @pytest.mark.skipif(
     not _aead_supported(ChaCha20Poly1305),
-    reason="Requires OpenSSL with ChaCha20Poly1305 support"
+    reason="Requires OpenSSL with ChaCha20Poly1305 support",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.wycheproof_tests("chacha20_poly1305_test.json")

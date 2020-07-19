@@ -62,9 +62,8 @@ def build_vectors(mgf1alg, hashalg, filename):
             dmq1=private["dmq1"],
             iqmp=private["iqmp"],
             public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"],
-                n=private["modulus"]
-            )
+                e=private["public_exponent"], n=private["modulus"]
+            ),
         ).private_key(backend)
         count = 1
 
@@ -74,8 +73,8 @@ def build_vectors(mgf1alg, hashalg, filename):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
             assert message == binascii.unhexlify(example["message"])
             ct = pkey.encrypt(
@@ -83,8 +82,8 @@ def build_vectors(mgf1alg, hashalg, filename):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=mgf1alg),
                     algorithm=hashalg,
-                    label=None
-                )
+                    label=None,
+                ),
             )
             output.append(
                 b"# OAEP Example {0} alg={1} mgf1={2}".format(
@@ -116,13 +115,12 @@ hashalgs = [
     hashes.SHA512(),
 ]
 for hashtuple in itertools.product(hashalgs, hashalgs):
-    if (
-        isinstance(hashtuple[0], hashes.SHA1) and
-        isinstance(hashtuple[1], hashes.SHA1)
+    if isinstance(hashtuple[0], hashes.SHA1) and isinstance(
+        hashtuple[1], hashes.SHA1
     ):
         continue
 
     write_file(
         build_vectors(hashtuple[0], hashtuple[1], oaep_path),
-        "oaep-{0}-{1}.txt".format(hashtuple[0].name, hashtuple[1].name)
+        "oaep-{0}-{1}.txt".format(hashtuple[0].name, hashtuple[1].name),
     )

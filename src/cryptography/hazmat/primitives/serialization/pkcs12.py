@@ -16,12 +16,14 @@ def load_key_and_certificates(data, password, backend):
 
 def serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm):
     if key is not None and not isinstance(
-        key, (rsa.RSAPrivateKeyWithSerialization,
-              dsa.DSAPrivateKeyWithSerialization,
-              ec.EllipticCurvePrivateKeyWithSerialization)):
-        raise TypeError(
-            "Key must be RSA, DSA, or EllipticCurve private key."
-        )
+        key,
+        (
+            rsa.RSAPrivateKeyWithSerialization,
+            dsa.DSAPrivateKeyWithSerialization,
+            ec.EllipticCurvePrivateKeyWithSerialization,
+        ),
+    ):
+        raise TypeError("Key must be RSA, DSA, or EllipticCurve private key.")
     if cert is not None and not isinstance(cert, x509.Certificate):
         raise TypeError("cert must be a certificate")
 

@@ -15,9 +15,7 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
-from cryptography.hazmat.backends.openssl.backend import (
-    Backend, backend
-)
+from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dh, dsa, padding
@@ -27,16 +25,21 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...doubles import (
-    DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
+    DummyAsymmetricPadding,
+    DummyCipherAlgorithm,
+    DummyHashAlgorithm,
+    DummyMode,
 )
 from ...utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 from ...x509.test_x509 import _load_cert
 
 
 def skip_if_libre_ssl(openssl_version):
-    if u'LibreSSL' in openssl_version:
+    if u"LibreSSL" in openssl_version:
         pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
 
 
@@ -66,10 +69,9 @@ class TestOpenSSL(object):
         if it starts with OpenSSL or LibreSSL as that appears
         to be true for every OpenSSL-alike.
         """
-        assert (
-            backend.openssl_version_text().startswith("OpenSSL") or
-            backend.openssl_version_text().startswith("LibreSSL")
-        )
+        assert backend.openssl_version_text().startswith(
+            "OpenSSL"
+        ) or backend.openssl_version_text().startswith("LibreSSL")
 
     def test_openssl_version_number(self):
         assert backend.openssl_version_number() > 0
@@ -87,11 +89,9 @@ class TestOpenSSL(object):
         b.register_cipher_adapter(
             DummyCipherAlgorithm,
             type(mode),
-            lambda backend, cipher, mode: backend._ffi.NULL
+            lambda backend, cipher, mode: backend._ffi.NULL,
         )
-        cipher = Cipher(
-            DummyCipherAlgorithm(), mode, backend=b,
-        )
+        cipher = Cipher(DummyCipherAlgorithm(), mode, backend=b,)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
@@ -102,8 +102,9 @@ class TestOpenSSL(object):
 
     def test_consume_errors(self):
         for i in range(10):
-            backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
-                                       b"test_openssl.py", -1)
+            backend._lib.ERR_put_error(
+                backend._lib.ERR_LIB_EVP, 0, 0, b"test_openssl.py", -1
+            )
 
         assert backend._lib.ERR_peek_error() != 0
 
@@ -131,8 +132,7 @@ class TestOpenSSL(object):
         cipher = Cipher(AES(b"\0" * 16), CBC(b"\0" * 16), backend=backend)
         enc = cipher.encryptor()
         enc.update(b"\0")
-        backend._lib.ERR_put_error(0, 0, 1,
-                                   b"test_openssl.py", -1)
+        backend._lib.ERR_put_error(0, 0, 1, b"test_openssl.py", -1)
         with pytest.raises(InternalError):
             enc.finalize()
 
@@ -170,7 +170,8 @@ class TestOpenSSL(object):
 
 @pytest.mark.skipif(
     not backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
-    reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d")
+    reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d",
+)
 @pytest.mark.skip_fips(reason="osrandom engine disabled for FIPS")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
@@ -190,8 +191,9 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    @pytest.mark.skipif(sys.executable is None,
-                        reason="No Python interpreter available.")
+    @pytest.mark.skipif(
+        sys.executable is None, reason="No Python interpreter available."
+    )
     def test_osrandom_engine_is_default(self, tmpdir):
         engine_printer = textwrap.dedent(
             """
@@ -205,7 +207,7 @@ class TestOpenSSLRandomEngine(object):
             assert res == 1
             """
         )
-        engine_name = tmpdir.join('engine_name')
+        engine_name = tmpdir.join("engine_name")
 
         # If we're running tests via ``python setup.py test`` in a clean
         # environment then all of our dependencies are going to be installed
@@ -216,7 +218,7 @@ class TestOpenSSLRandomEngine(object):
         env = os.environ.copy()
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
 
-        with engine_name.open('w') as out:
+        with engine_name.open("w") as out:
             subprocess.check_call(
                 [sys.executable, "-c", engine_printer],
                 env=env,
@@ -228,7 +230,7 @@ class TestOpenSSLRandomEngine(object):
             backend._lib.Cryptography_osrandom_engine_name
         )
 
-        assert engine_name.read().encode('ascii') == osrandom_engine_name
+        assert engine_name.read().encode("ascii") == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
@@ -269,14 +271,18 @@ class TestOpenSSLRandomEngine(object):
 
     def test_osrandom_engine_implementation(self):
         name = backend.osrandom_engine_implementation()
-        assert name in ['/dev/urandom', 'CryptGenRandom', 'getentropy',
-                        'getrandom']
-        if sys.platform.startswith('linux'):
-            assert name in ['getrandom', '/dev/urandom']
-        if sys.platform == 'darwin':
-            assert name in ['getentropy', '/dev/urandom']
-        if sys.platform == 'win32':
-            assert name == 'CryptGenRandom'
+        assert name in [
+            "/dev/urandom",
+            "CryptGenRandom",
+            "getentropy",
+            "getrandom",
+        ]
+        if sys.platform.startswith("linux"):
+            assert name in ["getrandom", "/dev/urandom"]
+        if sys.platform == "darwin":
+            assert name in ["getentropy", "/dev/urandom"]
+        if sys.platform == "win32":
+            assert name == "CryptGenRandom"
 
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
@@ -294,15 +300,18 @@ class TestOpenSSLRandomEngine(object):
 
 @pytest.mark.skipif(
     backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
-    reason="Requires OpenSSL without ENGINE support or OpenSSL >=1.1.1d")
+    reason="Requires OpenSSL without ENGINE support or OpenSSL >=1.1.1d",
+)
 class TestOpenSSLNoEngine(object):
     def test_no_engine_support(self):
-        assert backend._ffi.string(
-            backend._lib.Cryptography_osrandom_engine_id
-        ) == b"no-engine-support"
-        assert backend._ffi.string(
-            backend._lib.Cryptography_osrandom_engine_name
-        ) == b"osrandom_engine disabled"
+        assert (
+            backend._ffi.string(backend._lib.Cryptography_osrandom_engine_id)
+            == b"no-engine-support"
+        )
+        assert (
+            backend._ffi.string(backend._lib.Cryptography_osrandom_engine_name)
+            == b"osrandom_engine disabled"
+        )
 
     def test_activate_builtin_random_does_nothing(self):
         backend.activate_builtin_random()
@@ -327,17 +336,24 @@ class TestOpenSSLRSA(object):
 
     def test_cant_generate_insecure_tiny_key(self):
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=65537,
-                                             key_size=511)
+            backend.generate_rsa_private_key(
+                public_exponent=65537, key_size=511
+            )
 
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=65537,
-                                             key_size=256)
+            backend.generate_rsa_private_key(
+                public_exponent=65537, key_size=256
+            )
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
-        assert backend.rsa_padding_supported(
-            padding.PSS(mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0)
-        ) is False
+        assert (
+            backend.rsa_padding_supported(
+                padding.PSS(
+                    mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0
+                )
+            )
+            is False
+        )
 
     def test_rsa_padding_unsupported(self):
         assert backend.rsa_padding_supported(DummyAsymmetricPadding()) is False
@@ -346,22 +362,28 @@ class TestOpenSSLRSA(object):
         assert backend.rsa_padding_supported(padding.PKCS1v15()) is True
 
     def test_rsa_padding_supported_pss(self):
-        assert backend.rsa_padding_supported(
-            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
-        ) is True
+        assert (
+            backend.rsa_padding_supported(
+                padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+            )
+            is True
+        )
 
     def test_rsa_padding_supported_oaep(self):
-        assert backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                algorithm=hashes.SHA1(),
-                label=None
-            ),
-        ) is True
+        assert (
+            backend.rsa_padding_supported(
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None,
+                ),
+            )
+            is True
+        )
 
     @pytest.mark.skipif(
         backend._lib.Cryptography_HAS_RSA_OAEP_MD == 0,
-        reason="Requires OpenSSL with rsa_oaep_md (1.0.2+)"
+        reason="Requires OpenSSL with rsa_oaep_md (1.0.2+)",
     )
     def test_rsa_padding_supported_oaep_sha2_combinations(self):
         hashalgs = [
@@ -372,30 +394,37 @@ class TestOpenSSLRSA(object):
             hashes.SHA512(),
         ]
         for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
-            assert backend.rsa_padding_supported(
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=mgf1alg),
-                    algorithm=oaepalg,
-                    label=None
-                ),
-            ) is True
+            assert (
+                backend.rsa_padding_supported(
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=mgf1alg),
+                        algorithm=oaepalg,
+                        label=None,
+                    ),
+                )
+                is True
+            )
 
     def test_rsa_padding_unsupported_mgf(self):
-        assert backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=DummyMGF(),
-                algorithm=hashes.SHA1(),
-                label=None
-            ),
-        ) is False
+        assert (
+            backend.rsa_padding_supported(
+                padding.OAEP(
+                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                ),
+            )
+            is False
+        )
 
-        assert backend.rsa_padding_supported(
-            padding.PSS(mgf=DummyMGF(), salt_length=0)
-        ) is False
+        assert (
+            backend.rsa_padding_supported(
+                padding.PSS(mgf=DummyMGF(), salt_length=0)
+            )
+            is False
+        )
 
     @pytest.mark.skipif(
         backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)"
+        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
     )
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
@@ -405,13 +434,13 @@ class TestOpenSSLRSA(object):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
 
     @pytest.mark.skipif(
         backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)"
+        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
     )
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
@@ -421,8 +450,8 @@ class TestOpenSSLRSA(object):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA256(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
 
     def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self):
@@ -433,8 +462,8 @@ class TestOpenSSLRSA(object):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
                     algorithm=hashes.MD5(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
 
 
@@ -519,14 +548,15 @@ class TestOpenSSLSerializationWithOpenSSL(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join(
-                    "asymmetric", "Traditional_OpenSSL_Serialization",
-                    "key1.pem"
+                    "asymmetric",
+                    "Traditional_OpenSSL_Serialization",
+                    "key1.pem",
                 ),
                 lambda pemfile: (
                     backend.load_pem_private_key(
                         pemfile.read().encode(), password
                     )
-                )
+                ),
             )
 
 
@@ -545,7 +575,7 @@ class TestRSAPEMSerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
-                serialization.BestAvailableEncryption(password)
+                serialization.BestAvailableEncryption(password),
             )
 
 
@@ -554,7 +584,7 @@ class TestGOSTCertificate(object):
         cert = _load_cert(
             os.path.join("x509", "e-trust.ru.der"),
             x509.load_der_x509_certificate,
-            backend
+            backend,
         )
         if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I:
             with pytest.raises(ValueError) as exc:
@@ -565,42 +595,49 @@ class TestGOSTCertificate(object):
             # erroneously pass.
             assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
         else:
-            assert cert.subject.get_attributes_for_oid(
-                x509.ObjectIdentifier("1.2.643.3.131.1.1")
-            )[0].value == "007710474375"
+            assert (
+                cert.subject.get_attributes_for_oid(
+                    x509.ObjectIdentifier("1.2.643.3.131.1.1")
+                )[0].value
+                == "007710474375"
+            )
 
 
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
-    reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)")
+    reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
+)
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestOpenSSLDHSerialization(object):
-
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "RFC5114.txt"),
-            load_nist_vectors))
+            os.path.join("asymmetric", "DH", "RFC5114.txt"), load_nist_vectors
+        ),
+    )
     def test_dh_serialization_with_q_unsupported(self, backend, vector):
-        parameters = dh.DHParameterNumbers(int(vector["p"], 16),
-                                           int(vector["g"], 16),
-                                           int(vector["q"], 16))
+        parameters = dh.DHParameterNumbers(
+            int(vector["p"], 16), int(vector["g"], 16), int(vector["q"], 16)
+        )
         public = dh.DHPublicNumbers(int(vector["ystatcavs"], 16), parameters)
         private = dh.DHPrivateNumbers(int(vector["xstatcavs"], 16), public)
         private_key = private.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            private_key.private_bytes(serialization.Encoding.PEM,
-                                      serialization.PrivateFormat.PKCS8,
-                                      serialization.NoEncryption())
+            private_key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+            )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             public_key.public_bytes(
                 serialization.Encoding.PEM,
-                serialization.PublicFormat.SubjectPublicKeyInfo)
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             parameters.parameters(backend).parameter_bytes(
-                serialization.Encoding.PEM,
-                serialization.ParameterFormat.PKCS3)
+                serialization.Encoding.PEM, serialization.ParameterFormat.PKCS3
+            )
 
     @pytest.mark.parametrize(
         ("key_path", "loader_func"),
@@ -612,14 +649,14 @@ class TestOpenSSLDHSerialization(object):
             (
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
                 serialization.load_der_private_key,
-            )
-        ]
+            ),
+        ],
     )
-    def test_private_load_dhx_unsupported(self, key_path, loader_func,
-                                          backend):
+    def test_private_load_dhx_unsupported(
+        self, key_path, loader_func, backend
+    ):
         key_bytes = load_vectors_from_file(
-            key_path,
-            lambda pemfile: pemfile.read(), mode="rb"
+            key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         with pytest.raises(ValueError):
             loader_func(key_bytes, None, backend)
@@ -634,14 +671,12 @@ class TestOpenSSLDHSerialization(object):
             (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
                 serialization.load_der_public_key,
-            )
-        ]
+            ),
+        ],
     )
-    def test_public_load_dhx_unsupported(self, key_path, loader_func,
-                                         backend):
+    def test_public_load_dhx_unsupported(self, key_path, loader_func, backend):
         key_bytes = load_vectors_from_file(
-            key_path,
-            lambda pemfile: pemfile.read(), mode="rb"
+            key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         with pytest.raises(ValueError):
             loader_func(key_bytes, backend)

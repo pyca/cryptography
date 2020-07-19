@@ -12,17 +12,20 @@ import pytest
 from cryptography.exceptions import InvalidSignature, _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed448 import (
-    Ed448PrivateKey, Ed448PublicKey
+    Ed448PrivateKey,
+    Ed448PublicKey,
 )
 
 from ...utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: not backend.ed448_supported(),
-    skip_message="Requires OpenSSL without Ed448 support"
+    skip_message="Requires OpenSSL without Ed448 support",
 )
 def test_ed448_unsupported(backend):
     with raises_unsupported_algorithm(
@@ -43,15 +46,15 @@ def test_ed448_unsupported(backend):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed448_supported(),
-    skip_message="Requires OpenSSL with Ed448 support"
+    skip_message="Requires OpenSSL with Ed448 support",
 )
 class TestEd448Signing(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
             os.path.join("asymmetric", "Ed448", "rfc8032.txt"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_sign_input(self, vector, backend):
         if vector.get("context") is not None:
@@ -65,9 +68,12 @@ class TestEd448Signing(object):
         computed_sig = private_key.sign(message)
         assert computed_sig == signature
         public_key = private_key.public_key()
-        assert public_key.public_bytes(
-            serialization.Encoding.Raw, serialization.PublicFormat.Raw
-        ) == pk
+        assert (
+            public_key.public_bytes(
+                serialization.Encoding.Raw, serialization.PublicFormat.Raw
+            )
+            == pk
+        )
         public_key.verify(signature, message)
 
     def test_invalid_signature(self, backend):
@@ -88,25 +94,34 @@ class TestEd448Signing(object):
         "vector",
         load_vectors_from_file(
             os.path.join("asymmetric", "Ed448", "rfc8032.txt"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_pub_priv_bytes_raw(self, vector, backend):
         sk = binascii.unhexlify(vector["secret"])
         pk = binascii.unhexlify(vector["public"])
         private_key = Ed448PrivateKey.from_private_bytes(sk)
-        assert private_key.private_bytes(
-            serialization.Encoding.Raw,
-            serialization.PrivateFormat.Raw,
-            serialization.NoEncryption()
-        ) == sk
-        assert private_key.public_key().public_bytes(
-            serialization.Encoding.Raw, serialization.PublicFormat.Raw
-        ) == pk
+        assert (
+            private_key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                serialization.NoEncryption(),
+            )
+            == sk
+        )
+        assert (
+            private_key.public_key().public_bytes(
+                serialization.Encoding.Raw, serialization.PublicFormat.Raw
+            )
+            == pk
+        )
         public_key = Ed448PublicKey.from_public_bytes(pk)
-        assert public_key.public_bytes(
-            serialization.Encoding.Raw, serialization.PublicFormat.Raw
-        ) == pk
+        assert (
+            public_key.public_bytes(
+                serialization.Encoding.Raw, serialization.PublicFormat.Raw
+            )
+            == pk
+        )
 
     @pytest.mark.parametrize(
         ("encoding", "fmt", "encryption", "passwd", "load_func"),
@@ -116,33 +131,34 @@ class TestEd448Signing(object):
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(b"password"),
                 b"password",
-                serialization.load_pem_private_key
+                serialization.load_pem_private_key,
             ),
             (
                 serialization.Encoding.DER,
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(b"password"),
                 b"password",
-                serialization.load_der_private_key
+                serialization.load_der_private_key,
             ),
             (
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
                 None,
-                serialization.load_pem_private_key
+                serialization.load_pem_private_key,
             ),
             (
                 serialization.Encoding.DER,
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
                 None,
-                serialization.load_der_private_key
+                serialization.load_der_private_key,
             ),
-        ]
+        ],
     )
-    def test_round_trip_private_serialization(self, encoding, fmt, encryption,
-                                              passwd, load_func, backend):
+    def test_round_trip_private_serialization(
+        self, encoding, fmt, encryption, passwd, load_func, backend
+    ):
         key = Ed448PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
@@ -174,21 +190,21 @@ class TestEd448Signing(object):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None
+                None,
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None
+                None,
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.Raw,
-                serialization.NoEncryption()
+                serialization.NoEncryption(),
             )
 
     def test_invalid_public_bytes(self, backend):
@@ -196,29 +212,30 @@ class TestEd448Signing(object):
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.Raw,
-                serialization.PublicFormat.SubjectPublicKeyInfo
+                serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
         with pytest.raises(ValueError):
             key.public_bytes(
-                serialization.Encoding.PEM,
-                serialization.PublicFormat.PKCS1
+                serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )
 
         with pytest.raises(ValueError):
             key.public_bytes(
-                serialization.Encoding.PEM,
-                serialization.PublicFormat.Raw
+                serialization.Encoding.PEM, serialization.PublicFormat.Raw
             )
 
     def test_buffer_protocol(self, backend):
         private_bytes = os.urandom(57)
         key = Ed448PrivateKey.from_private_bytes(bytearray(private_bytes))
-        assert key.private_bytes(
-            serialization.Encoding.Raw,
-            serialization.PrivateFormat.Raw,
-            serialization.NoEncryption()
-        ) == private_bytes
+        assert (
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                serialization.NoEncryption(),
+            )
+            == private_bytes
+        )
 
     def test_malleability(self, backend):
         # This is a signature where r > the group order. It should be

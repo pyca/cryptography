@@ -102,7 +102,7 @@ class Fernet(object):
             raise InvalidToken
 
         try:
-            timestamp, = struct.unpack(">Q", data[1:9])
+            (timestamp,) = struct.unpack(">Q", data[1:9])
         except struct.error:
             raise InvalidToken
         return timestamp, data

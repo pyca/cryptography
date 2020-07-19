@@ -12,13 +12,17 @@ import pytest
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import (
-    AESCCM, AESGCM, ChaCha20Poly1305
+    AESCCM,
+    AESGCM,
+    ChaCha20Poly1305,
 )
 
 from .utils import _load_all_params
 from ...utils import (
-    load_nist_ccm_vectors, load_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
+    load_nist_ccm_vectors,
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
 
@@ -37,7 +41,7 @@ def _aead_supported(cls):
 
 @pytest.mark.skipif(
     _aead_supported(ChaCha20Poly1305),
-    reason="Requires OpenSSL without ChaCha20Poly1305 support"
+    reason="Requires OpenSSL without ChaCha20Poly1305 support",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_chacha20poly1305_unsupported_on_older_openssl(backend):
@@ -47,7 +51,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 
 @pytest.mark.skipif(
     not _aead_supported(ChaCha20Poly1305),
-    reason="Does not support ChaCha20Poly1305"
+    reason="Does not support ChaCha20Poly1305",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20Poly1305(object):
@@ -78,11 +82,12 @@ class TestChaCha20Poly1305(object):
         [
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
-            [b"0" * 12, b"data", object()]
-        ]
+            [b"0" * 12, b"data", object()],
+        ],
     )
-    def test_params_not_bytes_encrypt(self, nonce, data, associated_data,
-                                      backend):
+    def test_params_not_bytes_encrypt(
+        self, nonce, data, associated_data, backend
+    ):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(TypeError):
@@ -121,8 +126,8 @@ class TestChaCha20Poly1305(object):
         "vector",
         load_vectors_from_file(
             os.path.join("ciphers", "ChaCha20Poly1305", "openssl.txt"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_openssl_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
@@ -145,8 +150,8 @@ class TestChaCha20Poly1305(object):
         "vector",
         load_vectors_from_file(
             os.path.join("ciphers", "ChaCha20Poly1305", "boringssl.txt"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_boringssl_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
@@ -231,22 +236,30 @@ class TestAESCCM(object):
         _load_all_params(
             os.path.join("ciphers", "AES", "CCM"),
             [
-                "DVPT128.rsp", "DVPT192.rsp", "DVPT256.rsp",
-                "VADT128.rsp", "VADT192.rsp", "VADT256.rsp",
-                "VNT128.rsp", "VNT192.rsp", "VNT256.rsp",
-                "VPT128.rsp", "VPT192.rsp", "VPT256.rsp",
+                "DVPT128.rsp",
+                "DVPT192.rsp",
+                "DVPT256.rsp",
+                "VADT128.rsp",
+                "VADT192.rsp",
+                "VADT256.rsp",
+                "VNT128.rsp",
+                "VNT192.rsp",
+                "VNT256.rsp",
+                "VPT128.rsp",
+                "VPT192.rsp",
+                "VPT256.rsp",
             ],
-            load_nist_ccm_vectors
-        )
+            load_nist_ccm_vectors,
+        ),
     )
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        adata = binascii.unhexlify(vector["adata"])[:vector["alen"]]
+        adata = binascii.unhexlify(vector["adata"])[: vector["alen"]]
         ct = binascii.unhexlify(vector["ct"])
-        pt = binascii.unhexlify(vector["payload"])[:vector["plen"]]
+        pt = binascii.unhexlify(vector["payload"])[: vector["plen"]]
         aesccm = AESCCM(key, vector["tlen"])
-        if vector.get('fail'):
+        if vector.get("fail"):
             with pytest.raises(InvalidTag):
                 aesccm.decrypt(nonce, ct, adata)
         else:
@@ -279,7 +292,7 @@ class TestAESCCM(object):
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
             [b"0" * 12, b"data", object()],
-        ]
+        ],
     )
     def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESCCM.generate_key(128)
@@ -345,7 +358,7 @@ def _load_gcm_vectors():
             "gcmEncryptExtIV192.rsp",
             "gcmEncryptExtIV256.rsp",
         ],
-        load_nist_vectors
+        load_nist_vectors,
     )
     return [x for x in vectors if len(x["tag"]) == 32]
 
@@ -393,8 +406,8 @@ class TestAESGCM(object):
         [
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
-            [b"0" * 12, b"data", object()]
-        ]
+            [b"0" * 12, b"data", object()],
+        ],
     )
     def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESGCM.generate_key(128)

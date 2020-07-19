@@ -31,15 +31,11 @@ class ExtensionOID(object):
     TLS_FEATURE = ObjectIdentifier("1.3.6.1.5.5.7.1.24")
     CRL_NUMBER = ObjectIdentifier("2.5.29.20")
     DELTA_CRL_INDICATOR = ObjectIdentifier("2.5.29.27")
-    PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
-        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.2")
+    PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = ObjectIdentifier(
+        "1.3.6.1.4.1.11129.2.4.2"
     )
-    PRECERT_POISON = (
-        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.3")
-    )
-    SIGNED_CERTIFICATE_TIMESTAMPS = (
-        ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
-    )
+    PRECERT_POISON = ObjectIdentifier("1.3.6.1.4.1.11129.2.4.3")
+    SIGNED_CERTIFICATE_TIMESTAMPS = ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
 
 
 class OCSPExtensionOID(object):
@@ -106,12 +102,8 @@ class SignatureAlgorithmOID(object):
     ED25519 = ObjectIdentifier("1.3.101.112")
     ED448 = ObjectIdentifier("1.3.101.113")
     GOSTR3411_94_WITH_3410_2001 = ObjectIdentifier("1.2.643.2.2.3")
-    GOSTR3410_2012_WITH_3411_2012_256 = ObjectIdentifier(
-        "1.2.643.7.1.1.3.2"
-    )
-    GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier(
-        "1.2.643.7.1.1.3.3"
-    )
+    GOSTR3410_2012_WITH_3411_2012_256 = ObjectIdentifier("1.2.643.7.1.1.3.2")
+    GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
 
 
 _SIG_OIDS_TO_HASH = {
@@ -199,7 +191,6 @@ _OID_NAMES = {
     NameOID.OGRN: "OGRN",
     NameOID.SNILS: "SNILS",
     NameOID.UNSTRUCTURED_NAME: "unstructuredName",
-
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA224: "sha224WithRSAEncryption",
@@ -257,9 +248,7 @@ _OID_NAMES = {
     ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
     ExtensionOID.FRESHEST_CRL: "freshestCRL",
     ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
-    ExtensionOID.ISSUING_DISTRIBUTION_POINT: (
-        "issuingDistributionPoint"
-    ),
+    ExtensionOID.ISSUING_DISTRIBUTION_POINT: ("issuingDistributionPoint"),
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",

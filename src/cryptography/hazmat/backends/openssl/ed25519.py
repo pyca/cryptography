@@ -7,7 +7,10 @@ from __future__ import absolute_import, division, print_function
 from cryptography import exceptions, utils
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
-    Ed25519PrivateKey, Ed25519PublicKey, _ED25519_KEY_SIZE, _ED25519_SIG_SIZE
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+    _ED25519_KEY_SIZE,
+    _ED25519_SIG_SIZE,
 )
 
 
@@ -19,12 +22,12 @@ class _Ed25519PublicKey(object):
 
     def public_bytes(self, encoding, format):
         if (
-            encoding is serialization.Encoding.Raw or
-            format is serialization.PublicFormat.Raw
+            encoding is serialization.Encoding.Raw
+            or format is serialization.PublicFormat.Raw
         ):
             if (
-                encoding is not serialization.Encoding.Raw or
-                format is not serialization.PublicFormat.Raw
+                encoding is not serialization.Encoding.Raw
+                or format is not serialization.PublicFormat.Raw
             ):
                 raise ValueError(
                     "When using Raw both encoding and format must be Raw"
@@ -53,8 +56,11 @@ class _Ed25519PublicKey(object):
             evp_md_ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_DigestVerifyInit(
-            evp_md_ctx, self._backend._ffi.NULL, self._backend._ffi.NULL,
-            self._backend._ffi.NULL, self._evp_pkey
+            evp_md_ctx,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL,
+            self._evp_pkey,
         )
         self._backend.openssl_assert(res == 1)
         res = self._backend._lib.EVP_DigestVerify(
@@ -89,8 +95,11 @@ class _Ed25519PrivateKey(object):
             evp_md_ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_DigestSignInit(
-            evp_md_ctx, self._backend._ffi.NULL, self._backend._ffi.NULL,
-            self._backend._ffi.NULL, self._evp_pkey
+            evp_md_ctx,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL,
+            self._evp_pkey,
         )
         self._backend.openssl_assert(res == 1)
         buf = self._backend._ffi.new("unsigned char[]", _ED25519_SIG_SIZE)
@@ -104,13 +113,15 @@ class _Ed25519PrivateKey(object):
 
     def private_bytes(self, encoding, format, encryption_algorithm):
         if (
-            encoding is serialization.Encoding.Raw or
-            format is serialization.PublicFormat.Raw
+            encoding is serialization.Encoding.Raw
+            or format is serialization.PublicFormat.Raw
         ):
             if (
-                format is not serialization.PrivateFormat.Raw or
-                encoding is not serialization.Encoding.Raw or not
-                isinstance(encryption_algorithm, serialization.NoEncryption)
+                format is not serialization.PrivateFormat.Raw
+                or encoding is not serialization.Encoding.Raw
+                or not isinstance(
+                    encryption_algorithm, serialization.NoEncryption
+                )
             ):
                 raise ValueError(
                     "When using Raw both encoding and format must be Raw "

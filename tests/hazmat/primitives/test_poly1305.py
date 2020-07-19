@@ -10,18 +10,22 @@ import os
 import pytest
 
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, _Reasons
+    AlreadyFinalized,
+    InvalidSignature,
+    _Reasons,
 )
 from cryptography.hazmat.primitives.poly1305 import Poly1305
 
 from ...utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: not backend.poly1305_supported(),
-    skip_message="Requires OpenSSL without poly1305 support"
+    skip_message="Requires OpenSSL without poly1305 support",
 )
 def test_poly1305_unsupported(backend):
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MAC):
@@ -30,14 +34,14 @@ def test_poly1305_unsupported(backend):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.poly1305_supported(),
-    skip_message="Requires OpenSSL with poly1305 support"
+    skip_message="Requires OpenSSL with poly1305 support",
 )
 class TestPoly1305(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
             os.path.join("poly1305", "rfc7539.txt"), load_nist_vectors
-        )
+        ),
     )
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
@@ -67,10 +71,10 @@ class TestPoly1305(object):
     def test_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
-            poly.update(u'')
+            poly.update(u"")
 
         with pytest.raises(TypeError):
-            Poly1305.generate_tag(b"0" * 32, u'')
+            Poly1305.generate_tag(b"0" * 32, u"")
 
     def test_verify(self, backend):
         poly = Poly1305(b"0" * 32)
@@ -103,10 +107,10 @@ class TestPoly1305(object):
     def test_verify_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
-            poly.verify(u'')
+            poly.verify(u"")
 
         with pytest.raises(TypeError):
-            Poly1305.verify_tag(b"0" * 32, b"msg", u'')
+            Poly1305.verify_tag(b"0" * 32, b"msg", u"")
 
     def test_invalid_key_type(self, backend):
         with pytest.raises(TypeError):

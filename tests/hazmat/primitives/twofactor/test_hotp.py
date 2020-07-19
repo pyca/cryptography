@@ -16,16 +16,17 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 from ....utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
-vectors = load_vectors_from_file(
-    "twofactor/rfc-4226.txt", load_nist_vectors)
+vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-    skip_message="Does not support HMAC-SHA1."
+    skip_message="Does not support HMAC-SHA1.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHOTP(object):
@@ -102,12 +103,14 @@ class TestHOTP(object):
 
         assert hotp.get_provisioning_uri("Alice Smith", 1, None) == (
             "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
-            "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1")
+            "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1"
+        )
 
-        assert hotp.get_provisioning_uri("Alice Smith", 1, 'Foo') == (
+        assert hotp.get_provisioning_uri("Alice Smith", 1, "Foo") == (
             "otpauth://hotp/Foo:Alice%20Smith?digits=6&secret=GEZD"
             "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
-            "&counter=1")
+            "&counter=1"
+        )
 
     def test_buffer_protocol(self, backend):
         key = bytearray(b"a long key with lots of entropy goes here")

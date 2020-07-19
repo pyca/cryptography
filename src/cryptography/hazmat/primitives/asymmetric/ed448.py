@@ -16,10 +16,11 @@ class Ed448PublicKey(object):
     @classmethod
     def from_public_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed448_supported():
             raise UnsupportedAlgorithm(
                 "ed448 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
         return backend.ed448_load_public_bytes(data)
@@ -42,20 +43,22 @@ class Ed448PrivateKey(object):
     @classmethod
     def generate(cls):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed448_supported():
             raise UnsupportedAlgorithm(
                 "ed448 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
         return backend.ed448_generate_key()
 
     @classmethod
     def from_private_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.ed448_supported():
             raise UnsupportedAlgorithm(
                 "ed448 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
         return backend.ed448_load_private_bytes(data)

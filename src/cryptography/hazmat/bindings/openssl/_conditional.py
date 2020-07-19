@@ -14,9 +14,7 @@ def cryptography_has_ec2m():
 
 
 def cryptography_has_rsa_r_pkcs_decoding_error():
-    return [
-        "RSA_R_PKCS_DECODING_ERROR"
-    ]
+    return ["RSA_R_PKCS_DECODING_ERROR"]
 
 
 def cryptography_has_rsa_oaep_md():
@@ -49,12 +47,12 @@ def cryptography_has_compression():
 
 def cryptography_has_102_verification():
     return [
-        'X509_V_ERR_SUITE_B_INVALID_VERSION',
-        'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
-        'X509_V_ERR_SUITE_B_INVALID_CURVE',
-        'X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM',
-        'X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED',
-        'X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256',
+        "X509_V_ERR_SUITE_B_INVALID_VERSION",
+        "X509_V_ERR_SUITE_B_INVALID_ALGORITHM",
+        "X509_V_ERR_SUITE_B_INVALID_CURVE",
+        "X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM",
+        "X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED",
+        "X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256",
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
@@ -62,9 +60,7 @@ def cryptography_has_102_verification():
 
 
 def cryptography_has_110_verification_params():
-    return [
-        "X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"
-    ]
+    return ["X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"]
 
 
 def cryptography_has_set_cert_cb():

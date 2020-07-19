@@ -9,7 +9,9 @@ import pytest
 import six
 
 from cryptography.utils import (
-    InterfaceNotImplemented, register_interface_if, verify_interface
+    InterfaceNotImplemented,
+    register_interface_if,
+    verify_interface,
 )
 
 

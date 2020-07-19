@@ -19,6 +19,8 @@ FFDH3072_P = dh.DHParameterNumbers(
         "d6e6c9077ad91d2691f7f7ee598cb0fac186d91caefe130985139270b4130c93bc4"
         "37944f4fd4452e2d74dd364f2e21e71f54bff5cae82ab9c9df69ee86d2bc522363a"
         "0dabc521979b0deada1dbf9a42d5c4484e0abcd06bfa53ddef3c1b20ee3fd59d7c2"
-        "5e41d2b66c62e37ffffffffffffffff", 16
-    ), g=2
+        "5e41d2b66c62e37ffffffffffffffff",
+        16,
+    ),
+    g=2,
 )

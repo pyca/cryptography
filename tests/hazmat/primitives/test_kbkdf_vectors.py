@@ -19,5 +19,5 @@ class TestCounterKDFCounterMode(object):
     test_kbkdfctr = generate_kbkdf_counter_mode_test(
         load_nist_kbkdf_vectors,
         os.path.join("KDF"),
-        ["nist-800-108-KBKDF-CTR.txt"]
+        ["nist-800-108-KBKDF-CTR.txt"],
     )

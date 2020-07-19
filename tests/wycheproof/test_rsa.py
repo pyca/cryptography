@@ -36,11 +36,9 @@ def should_verify(backend, wycheproof):
 
     if wycheproof.acceptable:
         if (
-            (
-                backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
-                backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            ) and wycheproof.has_flag("MissingNull")
-        ):
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+            or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ) and wycheproof.has_flag("MissingNull"):
             return False
         return True
 
@@ -99,9 +97,7 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
             )
 
 
-@pytest.mark.wycheproof_tests(
-    "rsa_sig_gen_misc_test.json"
-)
+@pytest.mark.wycheproof_tests("rsa_sig_gen_misc_test.json")
 def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     key = serialization.load_pem_private_key(
         wycheproof.testgroup["privateKeyPem"].encode(),
@@ -150,9 +146,9 @@ def test_rsa_pss_signature(backend, wycheproof):
             binascii.unhexlify(wycheproof.testcase["msg"]),
             padding.PSS(
                 mgf=padding.MGF1(mgf_digest),
-                salt_length=wycheproof.testgroup["sLen"]
+                salt_length=wycheproof.testgroup["sLen"],
             ),
-            digest
+            digest,
         )
     else:
         with pytest.raises(InvalidSignature):
@@ -161,17 +157,17 @@ def test_rsa_pss_signature(backend, wycheproof):
                 binascii.unhexlify(wycheproof.testcase["msg"]),
                 padding.PSS(
                     mgf=padding.MGF1(mgf_digest),
-                    salt_length=wycheproof.testgroup["sLen"]
+                    salt_length=wycheproof.testgroup["sLen"],
                 ),
-                digest
+                digest,
             )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.supported(
     only_if=lambda backend: (
-        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER or
-        backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+        or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
     ),
     skip_message=(
         "A handful of these tests fail on OpenSSL 1.0.2 and since upstream "
@@ -210,7 +206,7 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     padding_algo = padding.OAEP(
         mgf=padding.MGF1(algorithm=mgf_digest),
         algorithm=digest,
-        label=binascii.unhexlify(wycheproof.testcase["label"])
+        label=binascii.unhexlify(wycheproof.testcase["label"]),
     )
 
     if not backend.rsa_padding_supported(padding_algo):
@@ -222,15 +218,13 @@ def test_rsa_oaep_encryption(backend, wycheproof):
 
     if wycheproof.valid or wycheproof.acceptable:
         pt = key.decrypt(
-            binascii.unhexlify(wycheproof.testcase["ct"]),
-            padding_algo
+            binascii.unhexlify(wycheproof.testcase["ct"]), padding_algo
         )
         assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
     else:
         with pytest.raises(ValueError):
             key.decrypt(
-                binascii.unhexlify(wycheproof.testcase["ct"]),
-                padding_algo
+                binascii.unhexlify(wycheproof.testcase["ct"]), padding_algo
             )
 
 
@@ -248,13 +242,12 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
 
     if wycheproof.valid:
         pt = key.decrypt(
-            binascii.unhexlify(wycheproof.testcase["ct"]),
-            padding.PKCS1v15()
+            binascii.unhexlify(wycheproof.testcase["ct"]), padding.PKCS1v15()
         )
         assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
     else:
         with pytest.raises(ValueError):
             key.decrypt(
                 binascii.unhexlify(wycheproof.testcase["ct"]),
-                padding.PKCS1v15()
+                padding.PKCS1v15(),
             )

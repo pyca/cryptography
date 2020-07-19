@@ -17,16 +17,22 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
-    Encoding, NoEncryption, PrivateFormat, PublicFormat,
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+    PublicFormat,
 )
+
 try:
     from bcrypt import kdf as _bcrypt_kdf
+
     _bcrypt_supported = True
 except ImportError:
     _bcrypt_supported = False
 
     def _bcrypt_kdf(*args, **kwargs):
         raise UnsupportedAlgorithm("Need bcrypt module")
+
 
 try:
     from base64 import encodebytes as _base64_encode
@@ -140,7 +146,7 @@ def _get_mpint(data):
     val, data = _get_sshstr(data)
     if val and six.indexbytes(val, 0) > 0x7F:
         raise ValueError("Invalid data")
-    return utils.int_from_bytes(val, 'big'), data
+    return utils.int_from_bytes(val, "big"), data
 
 
 def _to_mpint(val):
@@ -157,6 +163,7 @@ def _to_mpint(val):
 class _FragList(object):
     """Build recursive structure without data copy.
     """
+
     def __init__(self, init=None):
         self.flist = []
         if init:
@@ -479,7 +486,7 @@ def load_ssh_private_key(data, password, backend):
     data = binascii.a2b_base64(memoryview(data)[p1:p2])
     if not data.startswith(_SK_MAGIC):
         raise ValueError("Not OpenSSH private key format")
-    data = memoryview(data)[len(_SK_MAGIC):]
+    data = memoryview(data)[len(_SK_MAGIC) :]
 
     # parse header
     ciphername, data = _get_sshstr(data)
@@ -532,7 +539,7 @@ def load_ssh_private_key(data, password, backend):
 
     # yes, SSH does padding check *after* all other parsing is done.
     # need to follow as it writes zero-byte padding too.
-    if edata != _PADDING[:len(edata)]:
+    if edata != _PADDING[: len(edata)]:
         raise ValueError("Corrupt data: invalid padding")
 
     return private_key
@@ -591,7 +598,7 @@ def serialize_ssh_private_key(private_key, password=None):
     f_secrets.put_sshstr(key_type)
     kformat.encode_private(private_key, f_secrets)
     f_secrets.put_sshstr(comment)
-    f_secrets.put_raw(_PADDING[:blklen - (f_secrets.size() % blklen)])
+    f_secrets.put_raw(_PADDING[: blklen - (f_secrets.size() % blklen)])
 
     # top-level structure
     f_main = _FragList()
@@ -630,9 +637,9 @@ def load_ssh_public_key(data, backend):
     key_type = orig_key_type = m.group(1)
     key_body = m.group(2)
     with_cert = False
-    if _CERT_SUFFIX == key_type[-len(_CERT_SUFFIX):]:
+    if _CERT_SUFFIX == key_type[-len(_CERT_SUFFIX) :]:
         with_cert = True
-        key_type = key_type[:-len(_CERT_SUFFIX)]
+        key_type = key_type[: -len(_CERT_SUFFIX)]
     kformat = _lookup_kformat(key_type)
 
     try:

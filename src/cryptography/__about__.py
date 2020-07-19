@@ -5,13 +5,21 @@
 from __future__ import absolute_import, division, print_function
 
 __all__ = [
-    "__title__", "__summary__", "__uri__", "__version__", "__author__",
-    "__email__", "__license__", "__copyright__",
+    "__title__",
+    "__summary__",
+    "__uri__",
+    "__version__",
+    "__author__",
+    "__email__",
+    "__license__",
+    "__copyright__",
 ]
 
 __title__ = "cryptography"
-__summary__ = ("cryptography is a package which provides cryptographic recipes"
-               " and primitives to Python developers.")
+__summary__ = (
+    "cryptography is a package which provides cryptographic recipes"
+    " and primitives to Python developers."
+)
 __uri__ = "https://github.com/pyca/cryptography"
 
 __version__ = "3.0.dev1"

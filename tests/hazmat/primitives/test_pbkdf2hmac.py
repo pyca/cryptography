@@ -6,9 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, _Reasons
-)
+from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC

@@ -4,9 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.exceptions import (
-    UnsupportedAlgorithm, _Reasons
-)
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -15,12 +13,19 @@ from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
 class TOTP(object):
-    def __init__(self, key, length, algorithm, time_step, backend,
-                 enforce_key_length=True):
+    def __init__(
+        self,
+        key,
+        length,
+        algorithm,
+        time_step,
+        backend,
+        enforce_key_length=True,
+    ):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
+                _Reasons.BACKEND_MISSING_INTERFACE,
             )
 
         self._time_step = time_step
@@ -35,6 +40,10 @@ class TOTP(object):
             raise InvalidToken("Supplied TOTP value does not match.")
 
     def get_provisioning_uri(self, account_name, issuer):
-        return _generate_uri(self._hotp, "totp", account_name, issuer, [
-            ("period", int(self._time_step)),
-        ])
+        return _generate_uri(
+            self._hotp,
+            "totp",
+            account_name,
+            issuer,
+            [("period", int(self._time_step))],
+        )

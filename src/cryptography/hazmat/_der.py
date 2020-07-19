@@ -68,7 +68,7 @@ class DERReader(object):
         tag = self.read_byte()
         # Tag numbers 31 or higher are stored in multiple bytes. No supported
         # ASN.1 types use such tags, so reject these.
-        if tag & 0x1f == 0x1f:
+        if tag & 0x1F == 0x1F:
             raise ValueError("Invalid DER input: unexpected high tag number")
         length_byte = self.read_byte()
         if length_byte & 0x80 == 0:
@@ -77,7 +77,7 @@ class DERReader(object):
         else:
             # If the high bit is set, the first length byte encodes the length
             # of the length.
-            length_byte &= 0x7f
+            length_byte &= 0x7F
             if length_byte == 0:
                 raise ValueError(
                     "Invalid DER input: indefinite length form is not allowed "

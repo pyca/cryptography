@@ -74,7 +74,7 @@ def _openssl_assert(lib, ok):
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
             "this. ({0!r})".format(errors_with_text),
-            errors_with_text
+            errors_with_text,
         )
 
 
@@ -97,6 +97,7 @@ class Binding(object):
     """
     OpenSSL API wrapper.
     """
+
     lib = None
     ffi = ffi
     _lib_loaded = False
@@ -140,8 +141,10 @@ class Binding(object):
             # the setup for this.
             __import__("_ssl")
 
-            if (not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS or
-                    cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL):
+            if (
+                not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS
+                or cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL
+            ):
                 return
 
             # If nothing else has setup a locking callback already, we set up

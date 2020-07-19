@@ -86,8 +86,9 @@ class PBKDF2HMACBackend(object):
         """
 
     @abc.abstractmethod
-    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
-                           key_material):
+    def derive_pbkdf2_hmac(
+        self, algorithm, length, salt, iterations, key_material
+    ):
         """
         Return length bytes derived from provided PBKDF2 parameters.
         """

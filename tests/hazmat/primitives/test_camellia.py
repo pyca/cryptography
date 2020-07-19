@@ -13,9 +13,7 @@ from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
-from ...utils import (
-    load_cryptrec_vectors, load_nist_vectors
-)
+from ...utils import load_cryptrec_vectors, load_nist_vectors
 
 
 @pytest.mark.supported(
@@ -32,7 +30,7 @@ class TestCamelliaModeECB(object):
         [
             "camellia-128-ecb.txt",
             "camellia-192-ecb.txt",
-            "camellia-256-ecb.txt"
+            "camellia-256-ecb.txt",
         ],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),

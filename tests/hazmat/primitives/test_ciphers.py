@@ -14,20 +14,28 @@ from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
+    AES,
+    ARC4,
+    Blowfish,
+    CAST5,
+    Camellia,
+    IDEA,
+    SEED,
+    TripleDES,
 )
 
 from ...utils import (
-    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
 
 class TestAES(object):
-    @pytest.mark.parametrize(("key", "keysize"), [
-        (b"0" * 32, 128),
-        (b"0" * 48, 192),
-        (b"0" * 64, 256),
-    ])
+    @pytest.mark.parametrize(
+        ("key", "keysize"),
+        [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
+    )
     def test_key_size(self, key, keysize):
         cipher = AES(binascii.unhexlify(key))
         assert cipher.key_size == keysize
@@ -44,8 +52,7 @@ class TestAES(object):
 class TestAESXTS(object):
     @pytest.mark.requires_backend_interface(interface=CipherBackend)
     @pytest.mark.parametrize(
-        "mode",
-        (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
+        "mode", (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
     )
     def test_invalid_key_size_with_mode(self, mode, backend):
         with pytest.raises(ValueError):
@@ -66,11 +73,10 @@ class TestAESXTS(object):
 
 
 class TestCamellia(object):
-    @pytest.mark.parametrize(("key", "keysize"), [
-        (b"0" * 32, 128),
-        (b"0" * 48, 192),
-        (b"0" * 64, 256),
-    ])
+    @pytest.mark.parametrize(
+        ("key", "keysize"),
+        [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
+    )
     def test_key_size(self, key, keysize):
         cipher = Camellia(binascii.unhexlify(key))
         assert cipher.key_size == keysize
@@ -85,11 +91,7 @@ class TestCamellia(object):
 
 
 class TestTripleDES(object):
-    @pytest.mark.parametrize("key", [
-        b"0" * 16,
-        b"0" * 32,
-        b"0" * 48,
-    ])
+    @pytest.mark.parametrize("key", [b"0" * 16, b"0" * 32, b"0" * 48])
     def test_key_size(self, key):
         cipher = TripleDES(binascii.unhexlify(key))
         assert cipher.key_size == 192
@@ -104,9 +106,10 @@ class TestTripleDES(object):
 
 
 class TestBlowfish(object):
-    @pytest.mark.parametrize(("key", "keysize"), [
-        (b"0" * (keysize // 4), keysize) for keysize in range(32, 449, 8)
-    ])
+    @pytest.mark.parametrize(
+        ("key", "keysize"),
+        [(b"0" * (keysize // 4), keysize) for keysize in range(32, 449, 8)],
+    )
     def test_key_size(self, key, keysize):
         cipher = Blowfish(binascii.unhexlify(key))
         assert cipher.key_size == keysize
@@ -121,9 +124,10 @@ class TestBlowfish(object):
 
 
 class TestCAST5(object):
-    @pytest.mark.parametrize(("key", "keysize"), [
-        (b"0" * (keysize // 4), keysize) for keysize in range(40, 129, 8)
-    ])
+    @pytest.mark.parametrize(
+        ("key", "keysize"),
+        [(b"0" * (keysize // 4), keysize) for keysize in range(40, 129, 8)],
+    )
     def test_key_size(self, key, keysize):
         cipher = CAST5(binascii.unhexlify(key))
         assert cipher.key_size == keysize
@@ -138,15 +142,18 @@ class TestCAST5(object):
 
 
 class TestARC4(object):
-    @pytest.mark.parametrize(("key", "keysize"), [
-        (b"0" * 10, 40),
-        (b"0" * 14, 56),
-        (b"0" * 16, 64),
-        (b"0" * 20, 80),
-        (b"0" * 32, 128),
-        (b"0" * 48, 192),
-        (b"0" * 64, 256),
-    ])
+    @pytest.mark.parametrize(
+        ("key", "keysize"),
+        [
+            (b"0" * 10, 40),
+            (b"0" * 14, 56),
+            (b"0" * 16, 64),
+            (b"0" * 20, 80),
+            (b"0" * 32, 128),
+            (b"0" * 48, 192),
+            (b"0" * 64, 256),
+        ],
+    )
     def test_key_size(self, key, keysize):
         cipher = ARC4(binascii.unhexlify(key))
         assert cipher.key_size == keysize
@@ -207,8 +214,8 @@ class TestCipherUpdateInto(object):
         "params",
         load_vectors_from_file(
             os.path.join("ciphers", "AES", "ECB", "ECBGFSbox128.rsp"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_update_into(self, params, backend):
         key = binascii.unhexlify(params["key"])
@@ -272,8 +279,8 @@ class TestCipherUpdateInto(object):
         "params",
         load_vectors_from_file(
             os.path.join("ciphers", "AES", "ECB", "ECBGFSbox128.rsp"),
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_update_into_multiple_calls(self, params, backend):
         key = binascii.unhexlify(params["key"])

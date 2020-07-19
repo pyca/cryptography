@@ -35,8 +35,10 @@ class PSS(object):
     def __init__(self, mgf, salt_length):
         self._mgf = mgf
 
-        if (not isinstance(salt_length, six.integer_types) and
-                salt_length is not self.MAX_LENGTH):
+        if (
+            not isinstance(salt_length, six.integer_types)
+            and salt_length is not self.MAX_LENGTH
+        ):
             raise TypeError("salt_length must be an integer.")
 
         if salt_length is not self.MAX_LENGTH and salt_length < 0:

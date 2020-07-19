@@ -13,8 +13,11 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 IKM = binascii.unhexlify(b"0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b")
 L = 1200
 OKM = HKDF(
-    algorithm=hashes.SHA256(), length=L, salt=None, info=None,
-    backend=default_backend()
+    algorithm=hashes.SHA256(),
+    length=L,
+    salt=None,
+    info=None,
+    backend=default_backend(),
 ).derive(IKM)
 
 
@@ -23,7 +26,8 @@ def _build_vectors():
         "COUNT = 0",
         "Hash = SHA-256",
         "IKM = " + binascii.hexlify(IKM).decode("ascii"),
-        "salt = ", "info = ",
+        "salt = ",
+        "info = ",
         "L = {}".format(L),
         "OKM = " + binascii.hexlify(OKM).decode("ascii"),
     ]
@@ -31,9 +35,9 @@ def _build_vectors():
 
 
 def _write_file(data, filename):
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write(data)
 
 
-if __name__ == '__main__':
-    _write_file(_build_vectors(), 'hkdf.txt')
+if __name__ == "__main__":
+    _write_file(_build_vectors(), "hkdf.txt")

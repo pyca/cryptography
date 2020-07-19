@@ -18,10 +18,9 @@ from setuptools import find_packages, setup
 from setuptools.command.install import install
 
 
-if (
-    pkg_resources.parse_version(setuptools.__version__) <
-    pkg_resources.parse_version("18.5")
-):
+if pkg_resources.parse_version(
+    setuptools.__version__
+) < pkg_resources.parse_version("18.5"):
     raise RuntimeError(
         "cryptography requires setuptools 18.5 or newer, please upgrade to a "
         "newer version of setuptools"
@@ -36,7 +35,7 @@ sys.path.insert(0, src_dir)
 
 about = {}
 with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
+    exec (f.read(), about)
 
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
@@ -76,47 +75,52 @@ def keywords_with_side_effects(argv):
     .. _setup.py script: https://github.com/scipy/scipy/blob/master/setup.py
     """
     no_setup_requires_arguments = (
-        '-h', '--help',
-        '-n', '--dry-run',
-        '-q', '--quiet',
-        '-v', '--verbose',
-        '-V', '--version',
-        '--author',
-        '--author-email',
-        '--classifiers',
-        '--contact',
-        '--contact-email',
-        '--description',
-        '--egg-base',
-        '--fullname',
-        '--help-commands',
-        '--keywords',
-        '--licence',
-        '--license',
-        '--long-description',
-        '--maintainer',
-        '--maintainer-email',
-        '--name',
-        '--no-user-cfg',
-        '--obsoletes',
-        '--platforms',
-        '--provides',
-        '--requires',
-        '--url',
-        'clean',
-        'egg_info',
-        'register',
-        'sdist',
-        'upload',
+        "-h",
+        "--help",
+        "-n",
+        "--dry-run",
+        "-q",
+        "--quiet",
+        "-v",
+        "--verbose",
+        "-V",
+        "--version",
+        "--author",
+        "--author-email",
+        "--classifiers",
+        "--contact",
+        "--contact-email",
+        "--description",
+        "--egg-base",
+        "--fullname",
+        "--help-commands",
+        "--keywords",
+        "--licence",
+        "--license",
+        "--long-description",
+        "--maintainer",
+        "--maintainer-email",
+        "--name",
+        "--no-user-cfg",
+        "--obsoletes",
+        "--platforms",
+        "--provides",
+        "--requires",
+        "--url",
+        "clean",
+        "egg_info",
+        "register",
+        "sdist",
+        "upload",
     )
 
     def is_short_option(argument):
         """Check whether a command line argument is a short option."""
-        return len(argument) >= 2 and argument[0] == '-' and argument[1] != '-'
+        return len(argument) >= 2 and argument[0] == "-" and argument[1] != "-"
 
     def expand_short_options(argument):
         """Expand combined short options into canonical short options."""
-        return ('-' + char for char in argument[1:])
+        return ("-" + char for char in argument[1:])
 
     def argument_without_setup_requirements(argv, i):
         """Check whether a command line argument needs setup requirements."""
@@ -124,27 +128,25 @@ def keywords_with_side_effects(argv):
             # Simple case: An argument which is either an option or a command
             # which doesn't need setup requirements.
             return True
-        elif (is_short_option(argv[i]) and
-              all(option in no_setup_requires_arguments
-                  for option in expand_short_options(argv[i]))):
+        elif is_short_option(argv[i]) and all(
+            option in no_setup_requires_arguments
+            for option in expand_short_options(argv[i])
+        ):
             # Not so simple case: Combined short options none of which need
             # setup requirements.
             return True
-        elif argv[i - 1:i] == ['--egg-base']:
+        elif argv[i - 1 : i] == ["--egg-base"]:
             # Tricky case: --egg-info takes an argument which should not make
             # us use setup_requires (defeating the purpose of this code).
             return True
         else:
             return False
 
-    if all(argument_without_setup_requirements(argv, i)
-           for i in range(1, len(argv))):
-        return {
-            "cmdclass": {
-                "build": DummyBuild,
-                "install": DummyInstall,
-            }
-        }
+    if all(
+        argument_without_setup_requirements(argv, i)
+        for i in range(1, len(argv))
+    ):
+        return {"cmdclass": {"build": DummyBuild, "install": DummyInstall}}
     else:
         cffi_modules = [
             "src/_cffi_src/build_openssl.py:ffi",
@@ -153,13 +155,15 @@ def keywords_with_side_effects(argv):
 
         return {
             "setup_requires": setup_requirements,
-            "cffi_modules": cffi_modules
+            "cffi_modules": cffi_modules,
         }
 
 
-setup_requires_error = ("Requested setup command that needs 'setup_requires' "
-                        "while command line arguments implied a side effect "
-                        "free command or option.")
+setup_requires_error = (
+    "Requested setup command that needs 'setup_requires' "
+    "while command line arguments implied a side effect "
+    "free command or option."
+)
 
 
 class DummyBuild(build):
@@ -191,16 +195,13 @@ with open(os.path.join(base_dir, "README.rst")) as f:
 setup(
     name=about["__title__"],
     version=about["__version__"],
-
     description=about["__summary__"],
     long_description=long_description,
     long_description_content_type="text/x-rst",
     license=about["__license__"],
     url=about["__uri__"],
-
     author=about["__author__"],
     author_email=about["__email__"],
-
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -224,19 +225,13 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Security :: Cryptography",
     ],
-
     package_dir={"": "src"},
     packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
-
-    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
-
-    install_requires=[
-        "six >= 1.4.1",
-    ] + setup_requirements,
+    python_requires=">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*",
+    install_requires=["six >= 1.4.1"] + setup_requirements,
     extras_require={
         ":python_version < '3'": ["enum34", "ipaddress"],
-
         "test": [
             "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
             "pretend",
@@ -254,22 +249,15 @@ setup(
             "twine >= 1.12.0",
             "sphinxcontrib-spelling >= 4.0.1",
         ],
-        "pep8test": [
-            "flake8",
-            "flake8-import-order",
-            "pep8-naming",
-        ],
+        "pep8test": ["black", "flake8", "flake8-import-order", "pep8-naming"],
         # This extra is for OpenSSH private keys that use bcrypt KDF
         # Versions: v3.1.3 - ignore_few_rounds, v3.1.5 - abi3
         "ssh": ["bcrypt >= 3.1.5"],
         # This extra is for the U-label support that was deprecated in
         # cryptography 2.1. If you need this deprecated path install with
         # pip install cryptography[idna]
-        "idna": [
-            "idna >= 2.1",
-        ]
+        "idna": ["idna >= 2.1"],
     },
-
     # for cffi
     zip_safe=False,
     ext_package="cryptography.hazmat.bindings",

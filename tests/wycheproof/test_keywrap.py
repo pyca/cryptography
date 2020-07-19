@@ -44,11 +44,9 @@ def test_keywrap(backend, wycheproof):
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
     expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
-    if (
-        wycheproof.valid or (
-            wycheproof.acceptable and
-            wycheproof.testcase["comment"] != "invalid size of wrapped key"
-        )
+    if wycheproof.valid or (
+        wycheproof.acceptable
+        and wycheproof.testcase["comment"] != "invalid size of wrapped key"
     ):
         result = keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
         assert result == expected
