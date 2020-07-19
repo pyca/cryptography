@@ -86,7 +86,7 @@ jobs:
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
             echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
             echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
-            echo "::set-env name=CL::${{ matrix.WINDOWS.CL_FLAGS }}"
+            echo "::set-env name=CL::${{ matrix.PYTHON.CL_FLAGS }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: git clone https://github.com/google/wycheproof
