@@ -1170,7 +1170,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
-        >>> from cryptography.x509.oid import NameOID
+        >>> from cryptography.x509.oid import AttributeOID, NameOID
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
         ...     key_size=2048,
@@ -1182,6 +1182,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ... ]))
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
+        ... )
+        >>> builder = builder.add_attribute(
+        ...     AttributeOID.CHALLENGE_PASSWORD, b"changeit"
         ... )
         >>> request = builder.sign(
         ...     private_key, hashes.SHA256(), default_backend()
@@ -1202,6 +1205,16 @@ X.509 CSR (Certificate Signing Request) Builder Object
             :class:`~cryptography.x509.ExtensionType` interface.
         :param critical: Set to `True` if the extension must be understood and
              handled by whoever reads the certificate.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+    .. method:: add_attribute(oid, value)
+
+        .. versionadded:: 3.0
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+        :param value: The value of the attribute.
+        :type value: bytes
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 

@@ -93,8 +93,8 @@ int X509_REQ_get_attr_by_OBJ(const X509_REQ *, const ASN1_OBJECT *, int);
 void *X509_ATTRIBUTE_get0_data(X509_ATTRIBUTE *, int, int, void *);
 ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *, int);
 int X509_ATTRIBUTE_count(const X509_ATTRIBUTE *);
-int X509_REQ_add1_attr_by_txt(X509_REQ *, const char *, int,
-                              const unsigned char *, int);
+int X509_REQ_add1_attr_by_OBJ(X509_REQ *, const ASN1_OBJECT *,
+                              int, const unsigned char *, int);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);

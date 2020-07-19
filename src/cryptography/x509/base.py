@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 from cryptography.x509.extensions import Extension, ExtensionType
 from cryptography.x509.name import Name
+from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
@@ -402,12 +403,13 @@ class RevokedCertificate(object):
 
 
 class CertificateSigningRequestBuilder(object):
-    def __init__(self, subject_name=None, extensions=[]):
+    def __init__(self, subject_name=None, extensions=[], attributes=[]):
         """
         Creates an empty X.509 certificate request (v1).
         """
         self._subject_name = subject_name
         self._extensions = extensions
+        self._attributes = attributes
 
     def subject_name(self, name):
         """
@@ -417,7 +419,9 @@ class CertificateSigningRequestBuilder(object):
             raise TypeError('Expecting x509.Name object.')
         if self._subject_name is not None:
             raise ValueError('The subject name may only be set once.')
-        return CertificateSigningRequestBuilder(name, self._extensions)
+        return CertificateSigningRequestBuilder(
+            name, self._extensions, self._attributes
+        )
 
     def add_extension(self, extension, critical):
         """
@@ -430,7 +434,23 @@ class CertificateSigningRequestBuilder(object):
         _reject_duplicate_extension(extension, self._extensions)
 
         return CertificateSigningRequestBuilder(
-            self._subject_name, self._extensions + [extension]
+            self._subject_name, self._extensions + [extension],
+            self._attributes
+        )
+
+    def add_attribute(self, oid, value):
+        """
+        Adds an X.509 attribute with an OID and associated value.
+        """
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError("oid must be an ObjectIdentifier")
+
+        if not isinstance(value, bytes):
+            raise TypeError("value must be bytes")
+
+        return CertificateSigningRequestBuilder(
+            self._subject_name, self._extensions,
+            self._attributes + [(oid, value)]
         )
 
     def sign(self, private_key, algorithm, backend):

@@ -808,6 +808,14 @@ class Backend(object):
         res = self._lib.X509_REQ_add_extensions(x509_req, sk_extension)
         self.openssl_assert(res == 1)
 
+        # Add attributes (all bytes encoded as ASN1 UTF8_STRING)
+        for attr_oid, attr_val in builder._attributes:
+            obj = _txt2obj_gc(self, attr_oid.dotted_string)
+            res = self._lib.X509_REQ_add1_attr_by_OBJ(
+                x509_req, obj, x509.name._ASN1Type.UTF8String.value,
+                attr_val, len(attr_val))
+            self.openssl_assert(res == 1)
+
         # Sign the request using the requester's private key.
         res = self._lib.X509_REQ_sign(
             x509_req, private_key._evp_pkey, evp_md
