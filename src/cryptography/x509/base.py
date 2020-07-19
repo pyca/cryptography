@@ -36,6 +36,13 @@ def _reject_duplicate_extension(extension, extensions):
             raise ValueError('This extension has already been set.')
 
 
+def _reject_duplicate_attribute(oid, attributes):
+    # This is quadratic in the number of attributes
+    for attr_oid, _ in attributes:
+        if attr_oid == oid:
+            raise ValueError('This attribute has already been set.')
+
+
 def _convert_to_naive_utc_time(time):
     """Normalizes a datetime to a naive datetime in UTC.
 
@@ -447,6 +454,8 @@ class CertificateSigningRequestBuilder(object):
 
         if not isinstance(value, bytes):
             raise TypeError("value must be bytes")
+
+        _reject_duplicate_attribute(oid, self._attributes)
 
         return CertificateSigningRequestBuilder(
             self._subject_name, self._extensions,

@@ -3652,6 +3652,27 @@ class TestCertificateSigningRequestBuilder(object):
             x509.oid.NameOID.LOCALITY_NAME
         ) == locality
 
+    def test_add_attribute_bad_types(self, backend):
+        request = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(TypeError):
+            request.add_attribute(
+                b"not an oid", b"val"
+            )
+
+        with pytest.raises(TypeError):
+            request.add_attribute(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD, 383
+            )
+
+    def test_duplicate_attribute(self, backend):
+        request = x509.CertificateSigningRequestBuilder().add_attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD, b"val"
+        )
+        with pytest.raises(ValueError):
+            request.add_attribute(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD, b"val2"
+            )
+
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
