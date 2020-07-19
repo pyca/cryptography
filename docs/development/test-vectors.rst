@@ -532,6 +532,8 @@ X.509 OCSP Test Vectors
   contains a ``CRLReason`` single extension.
 * ``x509/ocsp/resp-sct-extension.der`` - An OCSP response containing a
   ``CT Certificate SCTs`` single extension, from the SwissSign OCSP responder.
+* ``x509/ocsp/ocsp-army.deps.mil-resp.der`` - An OCSP response containing
+  multiple ``SINGLERESP`` values.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
