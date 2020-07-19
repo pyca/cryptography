@@ -46,7 +46,7 @@ Changelog
   :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
 * Added support for encoding attributes in certificate signing requests via
   :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
-* On OpenSSL 1.1.1d and higher ``cryptography`` now uses the OpenSSL's
+* On OpenSSL 1.1.1d and higher ``cryptography`` now uses OpenSSL's
   built-in CSPRNG instead of its own OS random engine because these versions of
   OpenSSL properly reseed on fork.
 
