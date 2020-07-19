@@ -743,7 +743,7 @@ class Backend(object):
         elif not isinstance(private_key, (rsa.RSAPrivateKey, dsa.DSAPrivateKey,
                             ec.EllipticCurvePrivateKey)):
             raise TypeError(
-                "Key must be rsa, dsa, ec, ed25519 or ed448 private key."
+                "Key must be an rsa, dsa, ec, ed25519, or ed448 private key."
             )
         elif not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError("Algorithm must be a registered hash algorithm.")
