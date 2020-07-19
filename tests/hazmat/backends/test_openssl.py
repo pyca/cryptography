@@ -169,8 +169,7 @@ class TestOpenSSL(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_ENGINE == 0 or
-    not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D,
+    not backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
     reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d")
 class TestOpenSSLRandomEngine(object):
     def setup(self):
@@ -293,8 +292,7 @@ class TestOpenSSLRandomEngine(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_ENGINE == 1 and
-    backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D,
+    backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
     reason="Requires OpenSSL without ENGINE support or OpenSSL >=1.1.1d")
 class TestOpenSSLNoEngine(object):
     def test_no_engine_support(self):
