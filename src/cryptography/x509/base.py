@@ -16,8 +16,8 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa, ec, ed25519, ed448, rsa
 )
 from cryptography.x509.extensions import Extension, ExtensionType
-from cryptography.x509.oid import ObjectIdentifier
 from cryptography.x509.name import Name
+from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
