@@ -123,7 +123,7 @@ class Backend(object):
     # FIPS has opinions about acceptable algorithms and key sizes, but the
     # disallowed algorithms are still present in OpenSSL. They just error if
     # you try to use them. To avoid that we allowlist the algorithms in
-    # FIPS 140-2. This isn't ideal, but FIPS 140-2 is trash so here we are.
+    # FIPS 140-3. This isn't ideal, but FIPS 140-3 is trash so here we are.
     _fips_aead = {
         b'aes-128-ccm', b'aes-192-ccm', b'aes-256-ccm',
         b'aes-128-gcm', b'aes-192-gcm', b'aes-256-gcm',
@@ -137,11 +137,11 @@ class Backend(object):
         hashes.SHA3_256, hashes.SHA3_384, hashes.SHA3_512, hashes.SHAKE128,
         hashes.SHAKE256,
     )
-    _rsa_min_key_size = 2048
-    _rsa_min_public_exponent = 65537
-    _dsa_min_modulus = 1 << 2048
-    _dh_min_key_size = 2048
-    _dh_min_modulus = 1 << _dh_min_key_size
+    _fips_rsa_min_key_size = 2048
+    _fips_rsa_min_public_exponent = 65537
+    _fips_dsa_min_modulus = 1 << 2048
+    _fips_dh_min_key_size = 2048
+    _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
 
     def __init__(self):
         self._binding = binding.Binding()

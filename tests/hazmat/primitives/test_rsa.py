@@ -154,9 +154,9 @@ class TestRSA(object):
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
         if backend._fips_enabled:
-            if key_size < backend._rsa_min_key_size:
+            if key_size < backend._fips_rsa_min_key_size:
                 pytest.skip("Key size not FIPS compliant: {}".format(key_size))
-            if public_exponent < backend._rsa_min_public_exponent:
+            if public_exponent < backend._fips_rsa_min_public_exponent:
                 pytest.skip("Exponent not FIPS compliant: {}".format(
                     public_exponent)
                 )

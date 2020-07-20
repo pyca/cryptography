@@ -344,7 +344,7 @@ class TestDH(object):
     def test_bad_exchange(self, backend, vector):
         if (
                 backend._fips_enabled and
-                int(vector["p1"]) < backend._dh_min_modulus
+                int(vector["p1"]) < backend._fips_dh_min_modulus
         ):
             pytest.skip("modulus too small for FIPS mode")
         parameters1 = dh.DHParameterNumbers(int(vector["p1"]),
@@ -380,7 +380,7 @@ class TestDH(object):
     def test_dh_vectors(self, backend, vector):
         if (
                 backend._fips_enabled and
-                int(vector["p"]) < backend._dh_min_modulus
+                int(vector["p"]) < backend._fips_dh_min_modulus
         ):
             pytest.skip("modulus too small for FIPS mode")
         parameters = dh.DHParameterNumbers(int(vector["p"]),

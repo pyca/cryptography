@@ -43,7 +43,7 @@ def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
 
 def _min_key_size(backend):
     if backend._fips_enabled:
-        return backend._dh_min_key_size
+        return backend._fips_dh_min_key_size
     else:
         return 1024
 
@@ -74,7 +74,10 @@ class TestDSA(object):
         )
     )
     def test_generate_dsa_keys(self, vector, backend):
-        if backend._fips_enabled and vector['p'] < backend._dsa_min_modulus:
+        if (
+            backend._fips_enabled and
+            vector['p'] < backend._fips_dsa_min_modulus
+        ):
             pytest.skip("Small modulus blocked in FIPS mode")
         parameters = dsa.DSAParameterNumbers(
             p=vector['p'],
