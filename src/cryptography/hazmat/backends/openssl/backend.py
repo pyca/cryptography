@@ -120,10 +120,10 @@ class Backend(object):
     """
     name = "openssl"
 
-    # FIPS doesn't allow several algorithms or weak key sizes, but the
-    # algorithms are still present in OpenSSL. They just errors if you try
-    # to use them. To avoid that we allowlist the algorithms in FIPS 140-2.
-    # This isn't ideal, but FIPS 140-2 is trash so here we are.
+    # FIPS has opinions about acceptable algorithms and key sizes, but the
+    # disallowed algorithms are still present in OpenSSL. They just error if
+    # you try to use them. To avoid that we allowlist the algorithms in
+    # FIPS 140-2. This isn't ideal, but FIPS 140-2 is trash so here we are.
     _fips_aead = {
         b'aes-128-ccm', b'aes-192-ccm', b'aes-256-ccm',
         b'aes-128-gcm', b'aes-192-gcm', b'aes-256-gcm',
