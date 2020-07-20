@@ -22,7 +22,6 @@ static const int NID_X448;
 static const int NID_ED25519;
 static const int NID_ED448;
 static const int NID_poly1305;
-static const int NID_aes_256_cbc;
 
 static const int NID_subject_alt_name;
 static const int NID_crl_reason;

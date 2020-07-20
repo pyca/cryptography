@@ -494,6 +494,13 @@ file suffix.
 
     .. versionadded:: 3.0
 
+    .. warning::
+
+        PKCS12 encryption is not secure and should not be used as a security
+        mechanism. Wrap a PKCS12 blob in a more secure envelope if you need
+        to store or send it safely. Encryption is provided for compatibility
+        reasons only.
+
     Serialize a PKCS12 blob.
 
     :param name: The friendly name to use for the supplied certificate and key.
@@ -517,7 +524,8 @@ file suffix.
     :param encryption_algorithm: The encryption algorithm that should be used
         for the key and certificate. An instance of an object conforming to the
         :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface.
+        interface. PKCS12 encryption is **very weak** and should not be used
+        as a security boundary.
 
     :return bytes: Serialized PKCS12.
 

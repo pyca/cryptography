@@ -2410,12 +2410,15 @@ class Backend(object):
             mac_iter = 0
         elif isinstance(encryption_algorithm,
                         serialization.BestAvailableEncryption):
-            # These are curated values we will (hopefully) update over time
-            nid_cert = self._lib.NID_aes_256_cbc
-            nid_key = self._lib.NID_aes_256_cbc
+            # PKCS12 encryption is hopeless trash and can never be fixed.
+            # This is the least terrible option.
+            nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            # At least we can set this higher than OpenSSL's default
             pkcs12_iter = 20000
             # mac_iter chosen for compatibility reasons, see:
             # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
+            # Did we mention how lousy PKCS12 encryption is?
             mac_iter = 1
             password = encryption_algorithm.password
         else:
@@ -2427,7 +2430,9 @@ class Backend(object):
             sk_x509 = self._lib.sk_X509_new_null()
             sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
 
-            for ca in cas:
+            # reverse the list when building the stack so that they're encoded
+            # in the order they were originally provided. it is a mystery
+            for ca in reversed(cas):
                 res = self._lib.sk_X509_push(sk_x509, ca._x509)
                 backend.openssl_assert(res >= 1)
 
