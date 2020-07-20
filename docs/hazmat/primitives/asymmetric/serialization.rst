@@ -489,7 +489,7 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: serialize_key_and_certificates(password, name, key, cert, cas,
+.. function:: serialize_key_and_certificates(name, key, cert, cas,
                                              key_encryption, cert_encryption)
 
     .. versionadded:: 3.0
@@ -497,30 +497,34 @@ file suffix.
     Serialize a PKCS12 blob.
 
     :param name: The friendly name to use for the supplied certificate and key.
-    :type name: :term:`bytes-like`
-
-    :param password: The password to use to encrypt the data. ``None``
-        if the PKCS12 should not be encrypted.
-    :type password: :term:`bytes-like`
+    :type name: :term:`bytes`
 
     :param key: The private key to include in the structure.
-    :type key: :term:`bytes-like`
+    :type key: An
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization
+        ,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+        , or
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
+        object.
 
     :param cert: The private-key's certificates.
     :type cert: :class:`~cryptography.x509.Certificate`
 
     :param cas: An optional set of certificates to also include in the structure.
-    :type cas: :term:`bytes-like`
+    :type cas: list of :class:`~cryptography.x509.Certificate`
 
     :param key_encryption: The encryption algorithms that should be used for the
         key. An instance of an object conforming to the :
         class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface.
+        interface. When using both ``key_encryption`` and ``cert_encryption``
+        the passwords **must** be the same.
 
     :param cert_encryption: The encryption algorithms that should be used for
         the certificate. An instance of an object conforming to the
         :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface.
+        interface. When using both ``key_encryption`` and ``cert_encryption``
+        the passwords **must** be the same.
 
     :return bytes: Serialized PKCS12.
 

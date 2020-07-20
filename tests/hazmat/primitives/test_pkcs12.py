@@ -167,20 +167,15 @@ class TestPKCS12(object):
             ), mode='rb'
         )
 
-    @pytest.mark.parametrize('password', [None, b'password'])
     @pytest.mark.parametrize('name', [None, b'name'])
-    @pytest.mark.parametrize('key_encryption', [
-        serialization.BestAvailableEncryption(b'password'),
-        serialization.NoEncryption()
+    @pytest.mark.parametrize(('key_encryption', 'password'), [
+        (serialization.BestAvailableEncryption(b'password'), b'password'),
+        (serialization.NoEncryption(), None)
     ])
-    @pytest.mark.parametrize('cert_encryption', [
-        serialization.BestAvailableEncryption(b'password'),
-        serialization.NoEncryption()
-    ])
-    def test_generate(self, backend, password, name, key, cert, key_encryption,
-                      cert_encryption):
+    def test_generate(self, backend, name, key, cert, key_encryption,
+                      password):
         p12 = serialize_key_and_certificates(
-            password, name, key, cert, None, key_encryption, cert_encryption)
+            name, key, cert, None, key_encryption)
 
         parsed_key, parsed_cert, parsed_more_certs = \
             load_key_and_certificates(p12, password, backend)
@@ -191,7 +186,7 @@ class TestPKCS12(object):
     def test_generate_with_ca(self, backend, key, cert, cert2):
         encryption = serialization.NoEncryption()
         p12 = serialize_key_and_certificates(
-            None, None, key, cert, [cert2], encryption, encryption)
+            None, key, cert, [cert2], encryption)
 
         parsed_key, parsed_cert, parsed_more_certs = \
             load_key_and_certificates(p12, None, backend)
@@ -200,44 +195,34 @@ class TestPKCS12(object):
         assert parsed_more_certs == [cert2]
 
         with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(
-                None, None, key, cert, cert2, encryption, encryption)
+            serialize_key_and_certificates(None, key, cert, cert2, encryption)
 
         with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(
-                None, None, key, cert, [key], encryption, encryption)
+            serialize_key_and_certificates(None, key, cert, [key], encryption)
         assert str(exc.value) == 'cert in cas must be a certificate'
 
     def test_generate_wrong_types(self, key, cert):
         encryption = serialization.NoEncryption()
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(
-                b'password', b'name', cert, cert, None, encryption, encryption)
+                b'name', cert, cert, None, encryption)
         assert str(exc.value) == \
             'Key must be RSA, DSA, or EllipticCurve private key.'
 
         with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(
-                b'password', b'name', key, key, None, encryption, encryption)
+            serialize_key_and_certificates(b'name', key, key, None, encryption)
         assert str(exc.value) == 'cert must be a certificate'
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(
-                b'password', b'name', key, cert, None, key, encryption)
+                b'name', key, cert, None, key)
         assert str(
             exc.value) == ('Key encryption algorithm must be a '
                            'KeySerializationEncryption instance')
 
-        with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(
-                b'password', b'name', key, cert, None, encryption, key)
-        assert str(
-            exc.value) == ('Certificate encryption algorithm must be a '
-                           'KeySerializationEncryption instance')
-
     def test_generate_no_cert(self, backend, key):
         p12 = serialize_key_and_certificates(
-            None, None, key, None, None, serialization.NoEncryption(), None)
+            None, key, None, None, serialization.NoEncryption())
         parsed_key, parsed_cert, parsed_more_certs = \
             load_key_and_certificates(p12, None, backend)
         assert parsed_cert is None
@@ -247,30 +232,14 @@ class TestPKCS12(object):
     def test_generate_no_cert_and_key(self):
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
-                None, None, None, None, None,
-                serialization.NoEncryption(), None
+                None, None, None, None, serialization.NoEncryption()
             )
         assert str(exc.value) == 'Could not serialize PKCS12 data'
 
     def test_generate_unsupported_encryption_type(self, key, cert):
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
-                None, None, key, cert, None,
+                None, key, cert, None,
                 DummyKeySerializationEncryption(),
-                serialization.NoEncryption()
             )
         assert str(exc.value) == 'Unsupported key encryption type'
-        with pytest.raises(ValueError) as exc:
-            serialize_key_and_certificates(
-                None, None, key, cert, None,
-                serialization.NoEncryption(),
-                DummyKeySerializationEncryption()
-            )
-        assert str(exc.value) == 'Unsupported certificate encryption type'
-
-    def test_generate_no_data(self):
-        with pytest.raises(ValueError) as exc:
-            serialize_key_and_certificates(
-                None, None, None, None, None, None, None
-            )
-        assert str(exc.value) == 'Could not serialize PKCS12 data'

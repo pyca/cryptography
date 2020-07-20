@@ -2397,13 +2397,11 @@ class Backend(object):
 
         return (key, cert, additional_certificates)
 
-    def serialize_key_and_certificates_to_pkcs12(self, password, name, key,
-                                                 cert, cas, key_encryption,
-                                                 cert_encryption):
-        if password is not None:
-            utils._check_byteslike("password", password)
+    def serialize_key_and_certificates_to_pkcs12(self, name, key, cert, cas,
+                                                 key_encryption):
+        password = None
         if name is not None:
-            utils._check_byteslike("name", name)
+            utils._check_bytes("name", name)
         if key is not None and not isinstance(
             key, (rsa.RSAPrivateKeyWithSerialization,
                   dsa.DSAPrivateKeyWithSerialization,
@@ -2414,39 +2412,22 @@ class Backend(object):
         if cert is not None and not isinstance(cert, x509.Certificate):
             raise TypeError("cert must be a certificate")
 
-        if key is None:
-            nid_key = 0
+        if key_encryption is not None and not isinstance(
+                key_encryption, serialization.KeySerializationEncryption):
+            raise TypeError(
+                "Key encryption algorithm must be a "
+                "KeySerializationEncryption instance"
+            )
+        if isinstance(key_encryption, serialization.NoEncryption):
+            nid_cert = -1
+            nid_key = -1
+        elif isinstance(key_encryption,
+                        serialization.BestAvailableEncryption):
+            nid_cert = 0  # OpenSSL's default will be used
+            nid_key = 0  # OpenSSL's default will be used
+            password = key_encryption.password
         else:
-            if not isinstance(key_encryption,
-                              serialization.KeySerializationEncryption):
-                raise TypeError(
-                    "Key encryption algorithm must be a "
-                    "KeySerializationEncryption instance"
-                )
-            if isinstance(key_encryption, serialization.NoEncryption):
-                nid_key = -1
-            elif isinstance(key_encryption,
-                            serialization.BestAvailableEncryption):
-                nid_key = 0  # sensible default will be used
-            else:
-                raise ValueError("Unsupported key encryption type")
-
-        if cert is None:
-            nid_cert = 0
-        else:
-            if not isinstance(cert_encryption,
-                              serialization.KeySerializationEncryption):
-                raise TypeError(
-                    "Certificate encryption algorithm must be a "
-                    "KeySerializationEncryption instance"
-                )
-            if isinstance(cert_encryption, serialization.NoEncryption):
-                nid_cert = -1
-            elif isinstance(cert_encryption,
-                            serialization.BestAvailableEncryption):
-                nid_cert = 0  # sensible default will be used
-            else:
-                raise ValueError("Unsupported certificate encryption type")
+            raise ValueError("Unsupported key encryption type")
 
         if cas is None:
             sk_x509 = self._ffi.NULL
