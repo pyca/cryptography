@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated OpenSSL 1.0.2 support. OpenSSL 1.0.2 is no longer supported by
+  the OpenSSL project. At this time there is no time table for dropping
+  support, however we strongly encourage all users to upgrade or install
+  ``cryptography`` from a wheel.
+
 .. _v3-0:
 
 3.0 - 2020-07-20
