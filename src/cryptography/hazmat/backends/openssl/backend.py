@@ -1996,13 +1996,6 @@ class Backend(object):
         if key_size < 512:
             raise ValueError("DH key_size must be at least 512 bits")
 
-        if False and self._fips_enabled and key_size < self._dh_min_key_size:
-            raise ValueError(
-                "DH key_size must be at least {} bits in FIPS mode.".format(
-                    self._dh_min_key_size
-                )
-            )
-
         if generator not in (2, 5):
             raise ValueError("DH generator must be 2 or 5")
 
