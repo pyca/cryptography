@@ -22,7 +22,7 @@ from ...doubles import DummyKeySerializationEncryption
 
 
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestPKCS12(object):
+class TestPKCS12Loading(object):
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
@@ -140,40 +140,41 @@ class TestPKCS12(object):
         assert parsed_cert is not None
         assert parsed_more_certs == []
 
-    @pytest.fixture(scope='function')
-    def cert(self, backend):
-        return load_vectors_from_file(
-            os.path.join('x509', 'custom', 'ca', 'ca.pem'),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            ), mode='rb'
-        )
 
-    @pytest.fixture(scope='function')
-    def cert2(self, backend):
-        return load_vectors_from_file(
-            os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem'),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            ), mode='rb'
-        )
+def _load_cert(backend, path):
+    return load_vectors_from_file(
+        path,
+        lambda pemfile: x509.load_pem_x509_certificate(
+            pemfile.read(), backend
+        ), mode='rb'
+    )
 
-    @pytest.fixture(scope='function')
-    def key(self, backend):
-        return load_vectors_from_file(
-            os.path.join('x509', 'custom', 'ca', 'ca_key.pem'),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ), mode='rb'
-        )
 
+def _load_ca(backend):
+    cert = _load_cert(backend, os.path.join('x509', 'custom', 'ca', 'ca.pem'))
+    key = load_vectors_from_file(
+        os.path.join('x509', 'custom', 'ca', 'ca_key.pem'),
+        lambda pemfile: load_pem_private_key(
+            pemfile.read(), None, backend
+        ), mode='rb'
+    )
+    return cert, key
+
+
+def _load_alt_cert(backend):
+    return _load_cert(
+        backend, os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem')
+    )
+
+
+class TestPKCS12Creation(object):
     @pytest.mark.parametrize('name', [None, b'name'])
     @pytest.mark.parametrize(('key_encryption', 'password'), [
         (serialization.BestAvailableEncryption(b'password'), b'password'),
         (serialization.NoEncryption(), None)
     ])
-    def test_generate(self, backend, name, key, cert, key_encryption,
-                      password):
+    def test_generate(self, backend, name, key_encryption, password):
+        cert, key = _load_ca(backend)
         p12 = serialize_key_and_certificates(
             name, key, cert, None, key_encryption)
 
@@ -183,7 +184,9 @@ class TestPKCS12(object):
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
-    def test_generate_with_ca(self, backend, key, cert, cert2):
+    def test_generate_with_ca(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_alt_cert(backend)
         encryption = serialization.NoEncryption()
         p12 = serialize_key_and_certificates(
             None, key, cert, [cert2], encryption)
@@ -201,7 +204,8 @@ class TestPKCS12(object):
             serialize_key_and_certificates(None, key, cert, [key], encryption)
         assert str(exc.value) == 'cert in cas must be a certificate'
 
-    def test_generate_wrong_types(self, key, cert):
+    def test_generate_wrong_types(self, backend):
+        cert, key = _load_ca(backend)
         encryption = serialization.NoEncryption()
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(
@@ -220,7 +224,8 @@ class TestPKCS12(object):
             exc.value) == ('Key encryption algorithm must be a '
                            'KeySerializationEncryption instance')
 
-    def test_generate_no_cert(self, backend, key):
+    def test_generate_no_cert(self, backend):
+        _, key = _load_ca(backend)
         p12 = serialize_key_and_certificates(
             None, key, None, None, serialization.NoEncryption())
         parsed_key, parsed_cert, parsed_more_certs = \
@@ -236,7 +241,8 @@ class TestPKCS12(object):
             )
         assert str(exc.value) == 'Could not serialize PKCS12 data'
 
-    def test_generate_unsupported_encryption_type(self, key, cert):
+    def test_generate_unsupported_encryption_type(self, backend):
+        cert, key = _load_ca(backend)
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
                 None, key, cert, None,

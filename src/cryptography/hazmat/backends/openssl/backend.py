@@ -2421,10 +2421,17 @@ class Backend(object):
         if isinstance(key_encryption, serialization.NoEncryption):
             nid_cert = -1
             nid_key = -1
+            pkcs12_iter = 0
+            mac_iter = 0
         elif isinstance(key_encryption,
                         serialization.BestAvailableEncryption):
-            nid_cert = 0  # OpenSSL's default will be used
-            nid_key = 0  # OpenSSL's default will be used
+            # These are curated values we will (hopefully) update over time
+            nid_cert = self._lib.NID_aes_256_cbc
+            nid_key = self._lib.NID_aes_256_cbc
+            pkcs12_iter = 20000
+            # mac_iter chosen for compatibility reasons, see:
+            # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
+            mac_iter = 1
             password = key_encryption.password
         else:
             raise ValueError("Unsupported key encryption type")
@@ -2449,7 +2456,7 @@ class Backend(object):
                     password_buf, name_buf,
                     key._evp_pkey if key else self._ffi.NULL,
                     cert._x509 if cert else self._ffi.NULL,
-                    sk_x509, nid_key, nid_cert, 0, 0, 0)
+                    sk_x509, nid_key, nid_cert, pkcs12_iter, mac_iter, 0)
 
         if p12 == self._ffi.NULL:
             self._consume_errors()
