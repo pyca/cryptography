@@ -41,13 +41,6 @@ def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
         )
 
 
-def _min_key_size(backend):
-    if backend._fips_enabled:
-        return backend._fips_dh_min_key_size
-    else:
-        return 1024
-
-
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 def test_skip_if_dsa_not_supported(backend):
     with pytest.raises(pytest.skip.Exception):
@@ -57,7 +50,7 @@ def test_skip_if_dsa_not_supported(backend):
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
-        key_size = _min_key_size(backend)
+        key_size = 2048
         parameters = dsa.generate_parameters(key_size, backend)
         assert isinstance(parameters, dsa.DSAParameters)
 
@@ -105,7 +98,7 @@ class TestDSA(object):
         )
 
     def test_generate_dsa_private_key_and_parameters(self, backend):
-        key_size = _min_key_size(backend)
+        key_size = 2048
         skey = dsa.generate_private_key(key_size, backend)
         assert skey
         numbers = skey.private_numbers()
