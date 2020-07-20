@@ -514,7 +514,7 @@ file suffix.
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
         object.
 
-    :param cert: The private-key's certificates.
+    :param cert: The certificate associated with the private key.
     :type cert: :class:`~cryptography.x509.Certificate` or ``None``
 
     :param cas: An optional set of certificates to also include in the structure.

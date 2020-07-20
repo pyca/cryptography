@@ -38,7 +38,7 @@ def serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm):
             "KeySerializationEncryption instance"
         )
 
-    if key is None and cert is None and (cas is None or not cas):
+    if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
     return default_backend().serialize_key_and_certificates_to_pkcs12(
