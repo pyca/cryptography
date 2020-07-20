@@ -449,3 +449,38 @@ class TestOpenSSLMemoryLeaks(object):
             cert = builder.sign(private_key, hashes.SHA256(), backend)
             cert.extensions
         """))
+
+    def test_write_pkcs12_key_and_certificates(self):
+        assert_no_memory_leaks(textwrap.dedent("""
+        def func():
+            import os
+            from cryptography import x509
+            from cryptography.hazmat.backends.openssl import backend
+            from cryptography.hazmat.primitives import serialization
+            from cryptography.hazmat.primitives.serialization import pkcs12
+            import cryptography_vectors
+
+            path = os.path.join('x509', 'custom', 'ca', 'ca.pem')
+            with cryptography_vectors.open_vector_file(path, "rb") as f:
+                cert = x509.load_pem_x509_certificate(
+                    f.read(), backend
+                )
+            path2 = os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem')
+            with cryptography_vectors.open_vector_file(path2, "rb") as f:
+                cert2 = x509.load_pem_x509_certificate(
+                    f.read(), backend
+                )
+            path3 = os.path.join('x509', 'letsencryptx3.pem')
+            with cryptography_vectors.open_vector_file(path3, "rb") as f:
+                cert3 = x509.load_pem_x509_certificate(
+                    f.read(), backend
+                )
+            key_path = os.path.join("x509", "custom", "ca", "ca_key.pem")
+            with cryptography_vectors.open_vector_file(key_path, "rb") as f:
+                key = serialization.load_pem_private_key(
+                    f.read(), None, backend
+                )
+            encryption = serialization.NoEncryption()
+            pkcs12.serialize_key_and_certificates(
+                b"name", key, cert, [cert2, cert3], encryption)
+        """))

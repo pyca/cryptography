@@ -4,17 +4,43 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
 def load_key_and_certificates(data, password, backend):
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
-def serialize_key_and_certificates(name, key, cert, cas, key_encryption):
-    # TODO: this should probably just determine backend from key/cert/whatever
-    # TODO: what is the minimum to generate a PKCS12 structure? Users must
-    # provide one of key/cert/cas minimally right?
+def serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm):
+    if key is not None and not isinstance(
+        key, (rsa.RSAPrivateKeyWithSerialization,
+              dsa.DSAPrivateKeyWithSerialization,
+              ec.EllipticCurvePrivateKeyWithSerialization)):
+        raise TypeError(
+            "Key must be RSA, DSA, or EllipticCurve private key."
+        )
+    if cert is not None and not isinstance(cert, x509.Certificate):
+        raise TypeError("cert must be a certificate")
+
+    if cas is not None:
+        cas = list(cas)
+        if not all(isinstance(val, x509.Certificate) for val in cas):
+            raise TypeError("all values in cas must be certificates")
+
+    if not isinstance(
+        encryption_algorithm, serialization.KeySerializationEncryption
+    ):
+        raise TypeError(
+            "Key encryption algorithm must be a "
+            "KeySerializationEncryption instance"
+        )
+
+    if key is None and cert is None and (cas is None or not cas):
+        raise ValueError("You must supply at least one of key, cert, or cas")
+
     return default_backend().serialize_key_and_certificates_to_pkcs12(
-        name, key, cert, cas, key_encryption
+        name, key, cert, cas, encryption_algorithm
     )

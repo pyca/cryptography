@@ -490,7 +490,7 @@ file suffix.
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
 .. function:: serialize_key_and_certificates(name, key, cert, cas,
-                                             key_encryption, cert_encryption)
+                                             encryption_algorithm)
 
     .. versionadded:: 3.0
 
@@ -509,22 +509,15 @@ file suffix.
         object.
 
     :param cert: The private-key's certificates.
-    :type cert: :class:`~cryptography.x509.Certificate`
+    :type cert: :class:`~cryptography.x509.Certificate` or ``None``
 
     :param cas: An optional set of certificates to also include in the structure.
-    :type cas: list of :class:`~cryptography.x509.Certificate`
+    :type cas: list of :class:`~cryptography.x509.Certificate` or ``None``
 
-    :param key_encryption: The encryption algorithms that should be used for the
-        key. An instance of an object conforming to the :
-        class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface. When using both ``key_encryption`` and ``cert_encryption``
-        the passwords **must** be the same.
-
-    :param cert_encryption: The encryption algorithms that should be used for
-        the certificate. An instance of an object conforming to the
+    :param encryption_algorithm: The encryption algorithm that should be used
+        for the key and certificate. An instance of an object conforming to the
         :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface. When using both ``key_encryption`` and ``cert_encryption``
-        the passwords **must** be the same.
+        interface.
 
     :return bytes: Serialized PKCS12.
 

@@ -161,22 +161,16 @@ def _load_ca(backend):
     return cert, key
 
 
-def _load_alt_cert(backend):
-    return _load_cert(
-        backend, os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem')
-    )
-
-
 class TestPKCS12Creation(object):
     @pytest.mark.parametrize('name', [None, b'name'])
-    @pytest.mark.parametrize(('key_encryption', 'password'), [
+    @pytest.mark.parametrize(('encryption_algorithm', 'password'), [
         (serialization.BestAvailableEncryption(b'password'), b'password'),
         (serialization.NoEncryption(), None)
     ])
-    def test_generate(self, backend, name, key_encryption, password):
+    def test_generate(self, backend, name, encryption_algorithm, password):
         cert, key = _load_ca(backend)
         p12 = serialize_key_and_certificates(
-            name, key, cert, None, key_encryption)
+            name, key, cert, None, encryption_algorithm)
 
         parsed_key, parsed_cert, parsed_more_certs = \
             load_key_and_certificates(p12, password, backend)
@@ -184,28 +178,25 @@ class TestPKCS12Creation(object):
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
-    def test_generate_with_ca(self, backend):
+    def test_generate_with_cert_key_ca(self, backend):
         cert, key = _load_ca(backend)
-        cert2 = _load_alt_cert(backend)
+        cert2 = _load_cert(
+            backend, os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem')
+        )
+        cert3 = _load_cert(backend, os.path.join('x509', 'letsencryptx3.pem'))
         encryption = serialization.NoEncryption()
         p12 = serialize_key_and_certificates(
-            None, key, cert, [cert2], encryption)
+            None, key, cert, [cert2, cert3], encryption)
 
         parsed_key, parsed_cert, parsed_more_certs = \
             load_key_and_certificates(p12, None, backend)
         assert parsed_cert == cert
         assert parsed_key.private_numbers() == key.private_numbers()
-        assert parsed_more_certs == [cert2]
-
-        with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(None, key, cert, cert2, encryption)
-
-        with pytest.raises(TypeError) as exc:
-            serialize_key_and_certificates(None, key, cert, [key], encryption)
-        assert str(exc.value) == 'cert in cas must be a certificate'
+        assert parsed_more_certs == [cert2, cert3]
 
     def test_generate_wrong_types(self, backend):
         cert, key = _load_ca(backend)
+        cert2 = _load_cert(backend, os.path.join('x509', 'letsencryptx3.pem'))
         encryption = serialization.NoEncryption()
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(
@@ -224,6 +215,13 @@ class TestPKCS12Creation(object):
             exc.value) == ('Key encryption algorithm must be a '
                            'KeySerializationEncryption instance')
 
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(None, key, cert, cert2, encryption)
+
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(None, key, cert, [key], encryption)
+        assert str(exc.value) == 'all values in cas must be certificates'
+
     def test_generate_no_cert(self, backend):
         _, key = _load_ca(backend)
         p12 = serialize_key_and_certificates(
@@ -234,12 +232,14 @@ class TestPKCS12Creation(object):
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
-    def test_generate_no_cert_and_key(self):
+    def test_must_supply_something(self):
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
                 None, None, None, None, serialization.NoEncryption()
             )
-        assert str(exc.value) == 'Could not serialize PKCS12 data'
+        assert str(exc.value) == (
+            'You must supply at least one of key, cert, or cas'
+        )
 
     def test_generate_unsupported_encryption_type(self, backend):
         cert, key = _load_ca(backend)

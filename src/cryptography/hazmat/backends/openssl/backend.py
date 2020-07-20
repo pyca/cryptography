@@ -2398,32 +2398,17 @@ class Backend(object):
         return (key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(self, name, key, cert, cas,
-                                                 key_encryption):
+                                                 encryption_algorithm):
         password = None
         if name is not None:
             utils._check_bytes("name", name)
-        if key is not None and not isinstance(
-            key, (rsa.RSAPrivateKeyWithSerialization,
-                  dsa.DSAPrivateKeyWithSerialization,
-                  ec.EllipticCurvePrivateKeyWithSerialization)):
-            raise TypeError(
-                "Key must be RSA, DSA, or EllipticCurve private key."
-            )
-        if cert is not None and not isinstance(cert, x509.Certificate):
-            raise TypeError("cert must be a certificate")
 
-        if key_encryption is not None and not isinstance(
-                key_encryption, serialization.KeySerializationEncryption):
-            raise TypeError(
-                "Key encryption algorithm must be a "
-                "KeySerializationEncryption instance"
-            )
-        if isinstance(key_encryption, serialization.NoEncryption):
+        if isinstance(encryption_algorithm, serialization.NoEncryption):
             nid_cert = -1
             nid_key = -1
             pkcs12_iter = 0
             mac_iter = 0
-        elif isinstance(key_encryption,
+        elif isinstance(encryption_algorithm,
                         serialization.BestAvailableEncryption):
             # These are curated values we will (hopefully) update over time
             nid_cert = self._lib.NID_aes_256_cbc
@@ -2432,17 +2417,13 @@ class Backend(object):
             # mac_iter chosen for compatibility reasons, see:
             # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
             mac_iter = 1
-            password = key_encryption.password
+            password = encryption_algorithm.password
         else:
             raise ValueError("Unsupported key encryption type")
 
-        if cas is None:
+        if cas is None or len(cas) == 0:
             sk_x509 = self._ffi.NULL
         else:
-            cas = list(cas)
-            if not all(isinstance(ca, x509.Certificate) for ca in cas):
-                raise TypeError("cert in cas must be a certificate")
-
             sk_x509 = self._lib.sk_X509_new_null()
             sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
 
@@ -2458,9 +2439,8 @@ class Backend(object):
                     cert._x509 if cert else self._ffi.NULL,
                     sk_x509, nid_key, nid_cert, pkcs12_iter, mac_iter, 0)
 
-        if p12 == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Could not serialize PKCS12 data")
+        self.openssl_assert(p12 != self._ffi.NULL)
+        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
 
         bio = self._create_mem_bio_gc()
         res = self._lib.i2d_PKCS12_bio(bio, p12)
