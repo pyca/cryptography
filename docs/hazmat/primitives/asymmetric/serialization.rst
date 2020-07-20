@@ -489,8 +489,7 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: serialize_key_and_certificates(name, key, cert, cas,
-                                             encryption_algorithm)
+.. function:: serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm)
 
     .. versionadded:: 3.0
 
@@ -504,11 +503,11 @@ file suffix.
     Serialize a PKCS12 blob.
 
     :param name: The friendly name to use for the supplied certificate and key.
-    :type name: :term:`bytes`
+    :type name: bytes
 
     :param key: The private key to include in the structure.
     :type key: An
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
         ,
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
         , or
