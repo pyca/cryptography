@@ -123,6 +123,19 @@ matrix:
           # Tests hangs when run under bionic
           dist: xenial
 
+        - python: 3.8
+          env: TOXENV=py38 OPENSSL=1.1.1g
+          arch: arm64
+        - python: 3.8
+          env: TOXENV=py38 OPENSSL=1.1.1g
+          arch: ppc64le
+        - python: 3.8
+          env: TOXENV=py38 LIBRESSL=3.2.0
+          arch: arm64
+        - python: 3.8
+          env: TOXENV=py38 LIBRESSL=3.2.0
+          arch: ppc64le
+
 install:
     - ./.travis/install.sh
 
