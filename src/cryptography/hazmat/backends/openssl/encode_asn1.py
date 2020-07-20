@@ -11,12 +11,15 @@ import six
 
 from cryptography import utils, x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
-    _DISTPOINT_TYPE_RELATIVENAME
+    _CRL_ENTRY_REASON_ENUM_TO_CODE,
+    _DISTPOINT_TYPE_FULLNAME,
+    _DISTPOINT_TYPE_RELATIVENAME,
 )
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, ExtensionOID, OCSPExtensionOID,
+    CRLEntryExtensionOID,
+    ExtensionOID,
+    OCSPExtensionOID,
 )
 
 
@@ -94,7 +97,8 @@ def _encode_name(backend, name):
                 name_entry, backend._lib.X509_NAME_ENTRY_free
             )
             res = backend._lib.X509_NAME_add_entry(
-                subject, name_entry, -1, set_flag)
+                subject, name_entry, -1, set_flag
+            )
             backend.openssl_assert(res == 1)
             set_flag = -1
     return subject
@@ -120,11 +124,11 @@ def _encode_sk_name_entry(backend, attributes):
 
 def _encode_name_entry(backend, attribute):
     if attribute._type is _ASN1Type.BMPString:
-        value = attribute.value.encode('utf_16_be')
+        value = attribute.value.encode("utf_16_be")
     elif attribute._type is _ASN1Type.UniversalString:
-        value = attribute.value.encode('utf_32_be')
+        value = attribute.value.encode("utf_32_be")
     else:
-        value = attribute.value.encode('utf8')
+        value = attribute.value.encode("utf8")
 
     obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
 
@@ -174,9 +178,8 @@ def _encode_crl_reason(backend, crl_reason):
 
 def _encode_invalidity_date(backend, invalidity_date):
     time = backend._lib.ASN1_GENERALIZEDTIME_set(
-        backend._ffi.NULL, calendar.timegm(
-            invalidity_date.invalidity_date.timetuple()
-        )
+        backend._ffi.NULL,
+        calendar.timegm(invalidity_date.invalidity_date.timetuple()),
     )
     backend.openssl_assert(time != backend._ffi.NULL)
     time = backend._ffi.gc(time, backend._lib.ASN1_GENERALIZEDTIME_free)
@@ -208,8 +211,7 @@ def _encode_certificate_policies(backend, certificate_policies):
                         backend, x509.OID_CPS_QUALIFIER.dotted_string
                     )
                     pqi.d.cpsuri = _encode_asn1_str(
-                        backend,
-                        qualifier.encode("ascii"),
+                        backend, qualifier.encode("ascii"),
                     )
                 else:
                     assert isinstance(qualifier, x509.UserNotice)
@@ -257,7 +259,7 @@ def _txt2obj(backend, name):
     Converts a Python string with an ASN.1 object ID in dotted form to a
     ASN1_OBJECT.
     """
-    name = name.encode('ascii')
+    name = name.encode("ascii")
     obj = backend._lib.OBJ_txt2obj(name, 1)
     backend.openssl_assert(obj != backend._ffi.NULL)
     return obj
@@ -311,10 +313,7 @@ def _encode_authority_key_identifier(backend, authority_keyid):
     backend.openssl_assert(akid != backend._ffi.NULL)
     akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
     if authority_keyid.key_identifier is not None:
-        akid.keyid = _encode_asn1_str(
-            backend,
-            authority_keyid.key_identifier,
-        )
+        akid.keyid = _encode_asn1_str(backend, authority_keyid.key_identifier,)
 
     if authority_keyid.authority_cert_issuer is not None:
         akid.issuer = _encode_general_names(
@@ -349,10 +348,11 @@ def _encode_information_access(backend, info_access):
     aia = backend._ffi.gc(
         aia,
         lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
-            x, backend._ffi.addressof(
+            x,
+            backend._ffi.addressof(
                 backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
-            )
-        )
+            ),
+        ),
     )
     for access_description in info_access:
         ad = backend._lib.ACCESS_DESCRIPTION_new()
@@ -416,7 +416,7 @@ def _encode_general_name_preallocated(backend, name, gn):
         backend.openssl_assert(gn != backend._ffi.NULL)
         gn.type = backend._lib.GEN_RID
         obj = backend._lib.OBJ_txt2obj(
-            name.value.dotted_string.encode('ascii'), 1
+            name.value.dotted_string.encode("ascii"), 1
         )
         backend.openssl_assert(obj != backend._ffi.NULL)
         gn.d.registeredID = obj
@@ -428,14 +428,12 @@ def _encode_general_name_preallocated(backend, name, gn):
     elif isinstance(name, x509.IPAddress):
         backend.openssl_assert(gn != backend._ffi.NULL)
         if isinstance(name.value, ipaddress.IPv4Network):
-            packed = (
-                name.value.network_address.packed +
-                utils.int_to_bytes(((1 << 32) - name.value.num_addresses), 4)
+            packed = name.value.network_address.packed + utils.int_to_bytes(
+                ((1 << 32) - name.value.num_addresses), 4
             )
         elif isinstance(name.value, ipaddress.IPv6Network):
-            packed = (
-                name.value.network_address.packed +
-                utils.int_to_bytes((1 << 128) - name.value.num_addresses, 16)
+            packed = name.value.network_address.packed + utils.int_to_bytes(
+                (1 << 128) - name.value.num_addresses, 16
             )
         else:
             packed = name.value.packed
@@ -448,7 +446,7 @@ def _encode_general_name_preallocated(backend, name, gn):
         backend.openssl_assert(other_name != backend._ffi.NULL)
 
         type_id = backend._lib.OBJ_txt2obj(
-            name.type_id.dotted_string.encode('ascii'), 1
+            name.type_id.dotted_string.encode("ascii"), 1
         )
         backend.openssl_assert(type_id != backend._ffi.NULL)
         data = backend._ffi.new("unsigned char[]", name.value)
@@ -481,9 +479,7 @@ def _encode_general_name_preallocated(backend, name, gn):
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
     else:
-        raise ValueError(
-            "{} is an unknown GeneralName type".format(name)
-        )
+        raise ValueError("{} is an unknown GeneralName type".format(name))
 
 
 def _encode_extended_key_usage(backend, extended_key_usage):

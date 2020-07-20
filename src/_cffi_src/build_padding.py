@@ -9,14 +9,14 @@ import os
 from _cffi_src.utils import build_ffi, compiler_type, extra_link_args
 
 
-with open(os.path.join(
-    os.path.dirname(__file__), "hazmat_src/padding.h"
-)) as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "hazmat_src/padding.h")
+) as f:
     types = f.read()
 
-with open(os.path.join(
-    os.path.dirname(__file__), "hazmat_src/padding.c"
-)) as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "hazmat_src/padding.c")
+) as f:
     functions = f.read()
 
 ffi = build_ffi(

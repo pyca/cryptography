@@ -30,10 +30,10 @@ class TestRevokedCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_minimal_serial_number(self, backend):
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            1
-        ).revocation_date(
-            revocation_date
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(1)
+            .revocation_date(revocation_date)
         )
 
         revoked_certificate = builder.build(backend)
@@ -42,10 +42,10 @@ class TestRevokedCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_biggest_serial_number(self, backend):
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            (1 << 159) - 1
-        ).revocation_date(
-            revocation_date
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number((1 << 159) - 1)
+            .revocation_date(revocation_date)
         )
 
         revoked_certificate = builder.build(backend)
@@ -67,10 +67,10 @@ class TestRevokedCertificateBuilder(object):
         time = tz.localize(time)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
         serial_number = 333
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            serial_number
-        ).revocation_date(
-            time
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(serial_number)
+            .revocation_date(time)
         )
 
         revoked_certificate = builder.build(backend)
@@ -129,10 +129,10 @@ class TestRevokedCertificateBuilder(object):
     def test_create_revoked(self, backend):
         serial_number = 333
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            serial_number
-        ).revocation_date(
-            revocation_date
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(serial_number)
+            .revocation_date(revocation_date)
         )
 
         revoked_certificate = builder.build(backend)
@@ -145,21 +145,18 @@ class TestRevokedCertificateBuilder(object):
         [
             x509.InvalidityDate(datetime.datetime(2015, 1, 1, 0, 0)),
             x509.CRLReason(x509.ReasonFlags.ca_compromise),
-            x509.CertificateIssuer([
-                x509.DNSName(u"cryptography.io"),
-            ])
-        ]
+            x509.CertificateIssuer([x509.DNSName(u"cryptography.io")]),
+        ],
     )
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_add_extensions(self, backend, extension):
         serial_number = 333
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            serial_number
-        ).revocation_date(
-            revocation_date
-        ).add_extension(
-            extension, False
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(serial_number)
+            .revocation_date(revocation_date)
+            .add_extension(extension, False)
         )
 
         revoked_certificate = builder.build(backend)
@@ -179,20 +176,17 @@ class TestRevokedCertificateBuilder(object):
         invalidity_date = x509.InvalidityDate(
             datetime.datetime(2015, 1, 1, 0, 0)
         )
-        certificate_issuer = x509.CertificateIssuer([
-            x509.DNSName(u"cryptography.io"),
-        ])
+        certificate_issuer = x509.CertificateIssuer(
+            [x509.DNSName(u"cryptography.io")]
+        )
         crl_reason = x509.CRLReason(x509.ReasonFlags.aa_compromise)
-        builder = x509.RevokedCertificateBuilder().serial_number(
-            serial_number
-        ).revocation_date(
-            revocation_date
-        ).add_extension(
-            invalidity_date, True
-        ).add_extension(
-            crl_reason, True
-        ).add_extension(
-            certificate_issuer, True
+        builder = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(serial_number)
+            .revocation_date(revocation_date)
+            .add_extension(invalidity_date, True)
+            .add_extension(crl_reason, True)
+            .add_extension(certificate_issuer, True)
         )
 
         revoked_certificate = builder.build(backend)

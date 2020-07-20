@@ -6,7 +6,11 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.hazmat._der import (
-    DERReader, INTEGER, SEQUENCE, encode_der, encode_der_integer
+    DERReader,
+    INTEGER,
+    SEQUENCE,
+    encode_der,
+    encode_der_integer,
 )
 from cryptography.hazmat.primitives import hashes
 

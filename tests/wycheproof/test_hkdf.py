@@ -35,7 +35,7 @@ def test_hkdf(backend, wycheproof):
                 length=wycheproof.testcase["size"],
                 salt=binascii.unhexlify(wycheproof.testcase["salt"]),
                 info=binascii.unhexlify(wycheproof.testcase["info"]),
-                backend=backend
+                backend=backend,
             )
         return
 
@@ -44,7 +44,7 @@ def test_hkdf(backend, wycheproof):
         length=wycheproof.testcase["size"],
         salt=binascii.unhexlify(wycheproof.testcase["salt"]),
         info=binascii.unhexlify(wycheproof.testcase["info"]),
-        backend=backend
+        backend=backend,
     )
     result = h.derive(binascii.unhexlify(wycheproof.testcase["ikm"]))
     assert result == binascii.unhexlify(wycheproof.testcase["okm"])

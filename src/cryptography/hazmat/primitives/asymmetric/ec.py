@@ -166,6 +166,7 @@ class EllipticCurvePublicKey(object):
             raise ValueError("Unsupported elliptic curve point type")
 
         from cryptography.hazmat.backends.openssl.backend import backend
+
         return backend.load_elliptic_curve_public_bytes(curve, data)
 
 
@@ -289,26 +290,22 @@ class BrainpoolP512R1(object):
 _CURVE_TYPES = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
-
     "secp192r1": SECP192R1,
     "secp224r1": SECP224R1,
     "secp256r1": SECP256R1,
     "secp384r1": SECP384R1,
     "secp521r1": SECP521R1,
     "secp256k1": SECP256K1,
-
     "sect163k1": SECT163K1,
     "sect233k1": SECT233K1,
     "sect283k1": SECT283K1,
     "sect409k1": SECT409K1,
     "sect571k1": SECT571K1,
-
     "sect163r2": SECT163R2,
     "sect233r1": SECT233R1,
     "sect283r1": SECT283R1,
     "sect409r1": SECT409R1,
     "sect571r1": SECT571R1,
-
     "brainpoolP256r1": BrainpoolP256R1,
     "brainpoolP384r1": BrainpoolP384R1,
     "brainpoolP512r1": BrainpoolP512R1,
@@ -342,9 +339,8 @@ def derive_private_key(private_value, curve, backend):
 
 class EllipticCurvePublicNumbers(object):
     def __init__(self, x, y, curve):
-        if (
-            not isinstance(x, six.integer_types) or
-            not isinstance(y, six.integer_types)
+        if not isinstance(x, six.integer_types) or not isinstance(
+            y, six.integer_types
         ):
             raise TypeError("x and y must be integers.")
 
@@ -370,8 +366,9 @@ class EllipticCurvePublicNumbers(object):
         # key_size is in bits. Convert to bytes and round up
         byte_length = (self.curve.key_size + 7) // 8
         return (
-            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
-            utils.int_to_bytes(self.y, byte_length)
+            b"\x04"
+            + utils.int_to_bytes(self.x, byte_length)
+            + utils.int_to_bytes(self.y, byte_length)
         )
 
     @classmethod
@@ -387,17 +384,17 @@ class EllipticCurvePublicNumbers(object):
             stacklevel=2,
         )
 
-        if data.startswith(b'\x04'):
+        if data.startswith(b"\x04"):
             # key_size is in bits. Convert to bytes and round up
             byte_length = (curve.key_size + 7) // 8
             if len(data) == 2 * byte_length + 1:
-                x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
-                y = utils.int_from_bytes(data[byte_length + 1:], 'big')
+                x = utils.int_from_bytes(data[1 : byte_length + 1], "big")
+                y = utils.int_from_bytes(data[byte_length + 1 :], "big")
                 return cls(x, y, curve)
             else:
-                raise ValueError('Invalid elliptic curve point data length')
+                raise ValueError("Invalid elliptic curve point data length")
         else:
-            raise ValueError('Unsupported elliptic curve point type')
+            raise ValueError("Unsupported elliptic curve point type")
 
     curve = utils.read_only_property("_curve")
     x = utils.read_only_property("_x")
@@ -408,10 +405,10 @@ class EllipticCurvePublicNumbers(object):
             return NotImplemented
 
         return (
-            self.x == other.x and
-            self.y == other.y and
-            self.curve.name == other.curve.name and
-            self.curve.key_size == other.curve.key_size
+            self.x == other.x
+            and self.y == other.y
+            and self.curve.name == other.curve.name
+            and self.curve.key_size == other.curve.key_size
         )
 
     def __ne__(self, other):
@@ -452,8 +449,8 @@ class EllipticCurvePrivateNumbers(object):
             return NotImplemented
 
         return (
-            self.private_value == other.private_value and
-            self.public_numbers == other.public_numbers
+            self.private_value == other.private_value
+            and self.public_numbers == other.public_numbers
         )
 
     def __ne__(self, other):

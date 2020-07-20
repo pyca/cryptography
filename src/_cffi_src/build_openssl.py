@@ -11,7 +11,9 @@ from distutils.ccompiler import get_default_compiler
 from distutils.command.config import config
 
 from _cffi_src.utils import (
-    build_ffi_for_binding, compiler_type, extra_link_args
+    build_ffi_for_binding,
+    compiler_type,
+    extra_link_args,
 )
 
 
@@ -40,7 +42,7 @@ def _get_openssl_libraries(platform):
         # -lpthread required due to usage of pthread an potential
         # existance of a static part containing e.g. pthread_atfork
         # (https://github.com/pyca/cryptography/issues/5084)
-        if sys.platform == 'zos':
+        if sys.platform == "zos":
             return ["ssl", "crypto"]
         else:
             return ["ssl", "crypto", "pthread"]
@@ -62,10 +64,14 @@ def _extra_compile_args(platform):
         d = dist.Distribution()
         cmd = config(d)
         cmd._check_compiler()
-        is_gcc = ("gcc" in cmd.compiler.compiler[0] or
-                  "clang" in cmd.compiler.compiler[0])
-    if is_gcc or not (platform in ["win32", "hp-ux11", "sunos5"] or
-                      platform.startswith("aix")):
+        is_gcc = (
+            "gcc" in cmd.compiler.compiler[0]
+            or "clang" in cmd.compiler.compiler[0]
+        )
+    if is_gcc or not (
+        platform in ["win32", "hp-ux11", "sunos5"]
+        or platform.startswith("aix")
+    ):
         return ["-Wconversion", "-Wno-error=sign-conversion"]
     else:
         return []
@@ -77,7 +83,6 @@ ffi = build_ffi_for_binding(
     modules=[
         # This goes first so we can define some cryptography-wide symbols.
         "cryptography",
-
         "aes",
         "asn1",
         "bignum",

@@ -152,9 +152,9 @@ def _check_dsa_private_numbers(numbers):
 class DSAParameterNumbers(object):
     def __init__(self, p, q, g):
         if (
-            not isinstance(p, six.integer_types) or
-            not isinstance(q, six.integer_types) or
-            not isinstance(g, six.integer_types)
+            not isinstance(p, six.integer_types)
+            or not isinstance(q, six.integer_types)
+            or not isinstance(g, six.integer_types)
         ):
             raise TypeError(
                 "DSAParameterNumbers p, q, and g arguments must be integers."
@@ -182,9 +182,8 @@ class DSAParameterNumbers(object):
 
     def __repr__(self):
         return (
-            "<DSAParameterNumbers(p={self.p}, q={self.q}, g={self.g})>".format(
-                self=self
-            )
+            "<DSAParameterNumbers(p={self.p}, q={self.q}, "
+            "g={self.g})>".format(self=self)
         )
 
 
@@ -212,8 +211,8 @@ class DSAPublicNumbers(object):
             return NotImplemented
 
         return (
-            self.y == other.y and
-            self.parameter_numbers == other.parameter_numbers
+            self.y == other.y
+            and self.parameter_numbers == other.parameter_numbers
         )
 
     def __ne__(self, other):

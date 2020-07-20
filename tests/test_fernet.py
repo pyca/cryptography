@@ -26,14 +26,13 @@ import cryptography_vectors
 
 def json_parametrize(keys, filename):
     vector_file = cryptography_vectors.open_vector_file(
-        os.path.join('fernet', filename), "r"
+        os.path.join("fernet", filename), "r"
     )
     with vector_file:
         data = json.load(vector_file)
-        return pytest.mark.parametrize(keys, [
-            tuple([entry[k] for k in keys])
-            for entry in data
-        ])
+        return pytest.mark.parametrize(
+            keys, [tuple([entry[k] for k in keys]) for entry in data]
+        )
 
 
 def test_default_backend():
@@ -58,15 +57,16 @@ class TestFernet(object):
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
-            b"".join(map(six.int2byte, iv))
+            b"".join(map(six.int2byte, iv)),
         )
         assert actual_token == token.encode("ascii")
 
     @json_parametrize(
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
     )
-    def test_verify(self, secret, now, src, ttl_sec, token, backend,
-                    monkeypatch):
+    def test_verify(
+        self, secret, now, src, ttl_sec, token, backend, monkeypatch
+    ):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         payload = f.decrypt_at_time(
@@ -139,7 +139,7 @@ class TestFernet(object):
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         current_time = 1526138327
-        token = f.encrypt_at_time(b'encrypt me', current_time)
+        token = f.encrypt_at_time(b"encrypt me", current_time)
         assert f.extract_timestamp(token) == current_time
         with pytest.raises(InvalidToken):
             f.extract_timestamp(b"nonsensetoken")

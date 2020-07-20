@@ -14,7 +14,9 @@ from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID,
+    CRLEntryExtensionOID,
+    CertificatePoliciesOID,
+    ExtensionOID,
     OCSPExtensionOID,
 )
 
@@ -119,10 +121,10 @@ def _decode_general_name(backend, gn):
             # netmask. To handle this we convert the netmask to integer, then
             # find the first 0 bit, which will be the prefix. If another 1
             # bit is present after that the netmask is invalid.
-            base = ipaddress.ip_address(data[:data_len // 2])
-            netmask = ipaddress.ip_address(data[data_len // 2:])
+            base = ipaddress.ip_address(data[: data_len // 2])
+            netmask = ipaddress.ip_address(data[data_len // 2 :])
             bits = bin(int(netmask))[2:]
-            prefix = bits.find('0')
+            prefix = bits.find("0")
             # If no 0 bits are found it is a /32 or /128
             if prefix == -1:
                 prefix = len(bits)
@@ -158,7 +160,7 @@ def _decode_general_name(backend, gn):
             "{} is not a supported type".format(
                 x509._GENERAL_NAMES.get(gn.type, gn.type)
             ),
-            gn.type
+            gn.type,
         )
 
 
@@ -223,9 +225,9 @@ class _X509ExtensionParser(object):
                 # The contents of the extension must be an ASN.1 NULL.
                 reader = DERReader(_asn1_string_to_bytes(backend, data))
                 reader.read_single_element(NULL).check_empty()
-                extensions.append(x509.Extension(
-                    oid, critical, x509.PrecertPoison()
-                ))
+                extensions.append(
+                    x509.Extension(oid, critical, x509.PrecertPoison())
+                )
                 seen_oids.add(oid)
                 continue
 
@@ -237,9 +239,7 @@ class _X509ExtensionParser(object):
                 backend.openssl_assert(data != backend._ffi.NULL)
                 der = backend._ffi.buffer(data.data, data.length)[:]
                 unrecognized = x509.UnrecognizedExtension(oid, der)
-                extensions.append(
-                    x509.Extension(oid, critical, unrecognized)
-                )
+                extensions.append(x509.Extension(oid, critical, unrecognized))
             else:
                 ext_data = backend._lib.X509V3_EXT_d2i(ext)
                 if ext_data == backend._ffi.NULL:
@@ -271,16 +271,12 @@ def _decode_certificate_policies(backend, cp):
             qnum = backend._lib.sk_POLICYQUALINFO_num(pi.qualifiers)
             qualifiers = []
             for j in range(qnum):
-                pqi = backend._lib.sk_POLICYQUALINFO_value(
-                    pi.qualifiers, j
-                )
-                pqualid = x509.ObjectIdentifier(
-                    _obj2txt(backend, pqi.pqualid)
-                )
+                pqi = backend._lib.sk_POLICYQUALINFO_value(pi.qualifiers, j)
+                pqualid = x509.ObjectIdentifier(_obj2txt(backend, pqi.pqualid))
                 if pqualid == CertificatePoliciesOID.CPS_QUALIFIER:
                     cpsuri = backend._ffi.buffer(
                         pqi.d.cpsuri.data, pqi.d.cpsuri.length
-                    )[:].decode('ascii')
+                    )[:].decode("ascii")
                     qualifiers.append(cpsuri)
                 else:
                     assert pqualid == CertificatePoliciesOID.CPS_USER_NOTICE
@@ -289,9 +285,7 @@ def _decode_certificate_policies(backend, cp):
                     )
                     qualifiers.append(user_notice)
 
-        certificate_policies.append(
-            x509.PolicyInformation(oid, qualifiers)
-        )
+        certificate_policies.append(x509.PolicyInformation(oid, qualifiers))
 
     return x509.CertificatePolicies(certificate_policies)
 
@@ -304,13 +298,9 @@ def _decode_user_notice(backend, un):
         explicit_text = _asn1_string_to_utf8(backend, un.exptext)
 
     if un.noticeref != backend._ffi.NULL:
-        organization = _asn1_string_to_utf8(
-            backend, un.noticeref.organization
-        )
+        organization = _asn1_string_to_utf8(backend, un.noticeref.organization)
 
-        num = backend._lib.sk_ASN1_INTEGER_num(
-            un.noticeref.noticenos
-        )
+        num = backend._lib.sk_ASN1_INTEGER_num(un.noticeref.noticenos)
         notice_numbers = []
         for i in range(num):
             asn1_int = backend._lib.sk_ASN1_INTEGER_value(
@@ -319,9 +309,7 @@ def _decode_user_notice(backend, un):
             notice_num = _asn1_integer_to_int(backend, asn1_int)
             notice_numbers.append(notice_num)
 
-        notice_reference = x509.NoticeReference(
-            organization, notice_numbers
-        )
+        notice_reference = x509.NoticeReference(organization, notice_numbers)
 
     return x509.UserNotice(notice_reference, explicit_text)
 
@@ -364,9 +352,7 @@ def _decode_authority_key_identifier(backend, akid):
         )[:]
 
     if akid.issuer != backend._ffi.NULL:
-        authority_cert_issuer = _decode_general_names(
-            backend, akid.issuer
-        )
+        authority_cert_issuer = _decode_general_names(backend, akid.issuer)
 
     authority_cert_serial_number = _asn1_integer_to_int_or_none(
         backend, akid.serial
@@ -382,10 +368,11 @@ def _decode_information_access(backend, ia):
     ia = backend._ffi.gc(
         ia,
         lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
-            x, backend._ffi.addressof(
+            x,
+            backend._ffi.addressof(
                 backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
-            )
-        )
+            ),
+        ),
     )
     num = backend._lib.sk_ACCESS_DESCRIPTION_num(ia)
     access_descriptions = []
@@ -432,7 +419,7 @@ def _decode_key_usage(backend, bit_string):
         key_cert_sign,
         crl_sign,
         encipher_only,
-        decipher_only
+        decipher_only,
     )
 
 
@@ -500,8 +487,13 @@ def _decode_issuing_dist_point(backend, idp):
         only_some_reasons = None
 
     return x509.IssuingDistributionPoint(
-        full_name, relative_name, only_user, only_ca, only_some_reasons,
-        indirect_crl, only_attr
+        full_name,
+        relative_name,
+        only_user,
+        only_ca,
+        only_some_reasons,
+        indirect_crl,
+        only_attr,
     )
 
 
@@ -622,13 +614,9 @@ def _decode_distpoint(backend, distpoint):
     rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
     attributes = set()
     for i in range(rnum):
-        rn = backend._lib.sk_X509_NAME_ENTRY_value(
-            rns, i
-        )
+        rn = backend._lib.sk_X509_NAME_ENTRY_value(rns, i)
         backend.openssl_assert(rn != backend._ffi.NULL)
-        attributes.add(
-            _decode_x509_name_entry(backend, rn)
-        )
+        attributes.add(_decode_x509_name_entry(backend, rn))
 
     relative_name = x509.RelativeDistinguishedName(attributes)
 
@@ -654,8 +642,9 @@ def _decode_inhibit_any_policy(backend, asn1_int):
 
 def _decode_scts(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
-        _SignedCertificateTimestamp
+        _SignedCertificateTimestamp,
     )
+
     asn1_scts = backend._ffi.cast("Cryptography_STACK_OF_SCT *", asn1_scts)
     asn1_scts = backend._ffi.gc(asn1_scts, backend._lib.SCT_LIST_free)
 
@@ -674,9 +663,7 @@ def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
 
 
 def _decode_signed_certificate_timestamps(backend, asn1_scts):
-    return x509.SignedCertificateTimestamps(
-        _decode_scts(backend, asn1_scts)
-    )
+    return x509.SignedCertificateTimestamps(_decode_scts(backend, asn1_scts))
 
 
 #    CRLReason ::= ENUMERATED {
@@ -715,7 +702,7 @@ _CRL_ENTRY_REASON_ENUM_TO_CODE = {
     x509.ReasonFlags.certificate_hold: 6,
     x509.ReasonFlags.remove_from_crl: 8,
     x509.ReasonFlags.privilege_withdrawn: 9,
-    x509.ReasonFlags.aa_compromise: 10
+    x509.ReasonFlags.aa_compromise: 10,
 }
 
 
@@ -731,9 +718,7 @@ def _decode_crl_reason(backend, enum):
 
 
 def _decode_invalidity_date(backend, inv_date):
-    generalized_time = backend._ffi.cast(
-        "ASN1_GENERALIZEDTIME *", inv_date
-    )
+    generalized_time = backend._ffi.cast("ASN1_GENERALIZEDTIME *", inv_date)
     generalized_time = backend._ffi.gc(
         generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
     )
@@ -794,7 +779,7 @@ def _asn1_string_to_utf8(backend, asn1_string):
     buf = backend._ffi.gc(
         buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
     )
-    return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+    return backend._ffi.buffer(buf[0], res)[:].decode("utf8")
 
 
 def _parse_asn1_time(backend, asn1_time):
@@ -895,19 +880,19 @@ _OCSP_SINGLERESP_EXTENSION_HANDLERS[
 _CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS_NO_SCT
+    handlers=_EXTENSION_HANDLERS_NO_SCT,
 )
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS
+    handlers=_EXTENSION_HANDLERS,
 )
 
 _CSR_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
     get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
-    handlers=_EXTENSION_HANDLERS
+    handlers=_EXTENSION_HANDLERS,
 )
 
 _REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
@@ -943,5 +928,5 @@ _OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
 _OCSP_SINGLERESP_EXT_PARSER_NO_SCT = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
-    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT
+    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT,
 )

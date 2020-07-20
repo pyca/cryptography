@@ -30,8 +30,8 @@ class TestChaCha20(object):
         _load_all_params(
             os.path.join("ciphers", "ChaCha20"),
             ["rfc7539.txt"],
-            load_nist_vectors
-        )
+            load_nist_vectors,
+        ),
     )
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
@@ -47,9 +47,7 @@ class TestChaCha20(object):
     def test_buffer_protocol(self, backend):
         key = bytearray(os.urandom(32))
         nonce = bytearray(os.urandom(16))
-        cipher = Cipher(
-            algorithms.ChaCha20(key, nonce), None, backend
-        )
+        cipher = Cipher(algorithms.ChaCha20(key, nonce), None, backend)
         enc = cipher.encryptor()
         ct = enc.update(bytearray(b"hello")) + enc.finalize()
         dec = cipher.decryptor()

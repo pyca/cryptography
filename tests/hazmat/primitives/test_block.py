@@ -8,16 +8,18 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import (
-    AlreadyFinalized, _Reasons
-)
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import (
-    Cipher, algorithms, base, modes
+    Cipher,
+    algorithms,
+    base,
+    modes,
 )
 
 from .utils import (
-    generate_aead_exception_test, generate_aead_tag_exception_test
+    generate_aead_exception_test,
+    generate_aead_tag_exception_test,
 )
 from ...doubles import DummyCipherAlgorithm, DummyMode
 from ...utils import raises_unsupported_algorithm
@@ -29,7 +31,7 @@ class TestCipher(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         assert isinstance(cipher.encryptor(), base.CipherContext)
 
@@ -37,7 +39,7 @@ class TestCipher(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         assert isinstance(cipher.decryptor(), base.CipherContext)
 
@@ -53,7 +55,7 @@ class TestCipherContext(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -74,7 +76,7 @@ class TestCipherContext(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -85,9 +87,7 @@ class TestCipherContext(object):
 
     def test_unaligned_block_encryption(self, backend):
         cipher = Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.ECB(),
-            backend
+            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.ECB(), backend
         )
         encryptor = cipher.encryptor()
         ct = encryptor.update(b"a" * 15)
@@ -105,9 +105,7 @@ class TestCipherContext(object):
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
     def test_nonexistent_cipher(self, backend, mode):
-        cipher = Cipher(
-            DummyCipherAlgorithm(), mode, backend
-        )
+        cipher = Cipher(DummyCipherAlgorithm(), mode, backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
@@ -116,9 +114,7 @@ class TestCipherContext(object):
 
     def test_incorrectly_padded(self, backend):
         cipher = Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.CBC(b"\x00" * 16),
-            backend
+            algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16), backend
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"1")
@@ -140,12 +136,10 @@ class TestCipherContext(object):
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
-        algorithms.AES,
-        modes.GCM,
+        algorithms.AES, modes.GCM,
     )
     test_aead_tag_exceptions = generate_aead_tag_exception_test(
-        algorithms.AES,
-        modes.GCM,
+        algorithms.AES, modes.GCM,
     )
 
 
@@ -154,41 +148,31 @@ class TestModeValidation(object):
     def test_cbc(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CBC(b"abc"),
-                backend,
+                algorithms.AES(b"\x00" * 16), modes.CBC(b"abc"), backend,
             )
 
     def test_ofb(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.OFB(b"abc"),
-                backend,
+                algorithms.AES(b"\x00" * 16), modes.OFB(b"abc"), backend,
             )
 
     def test_cfb(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CFB(b"abc"),
-                backend,
+                algorithms.AES(b"\x00" * 16), modes.CFB(b"abc"), backend,
             )
 
     def test_cfb8(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CFB8(b"abc"),
-                backend,
+                algorithms.AES(b"\x00" * 16), modes.CFB8(b"abc"), backend,
             )
 
     def test_ctr(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CTR(b"abc"),
-                backend,
+                algorithms.AES(b"\x00" * 16), modes.CTR(b"abc"), backend,
             )
 
     def test_gcm(self):

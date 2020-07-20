@@ -30,19 +30,18 @@ def _skip_hashfn_unsupported(backend, hashfn):
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestX963(object):
     _algorithms_dict = {
-        'SHA-1': hashes.SHA1,
-        'SHA-224': hashes.SHA224,
-        'SHA-256': hashes.SHA256,
-        'SHA-384': hashes.SHA384,
-        'SHA-512': hashes.SHA512
+        "SHA-1": hashes.SHA1,
+        "SHA-224": hashes.SHA224,
+        "SHA-256": hashes.SHA256,
+        "SHA-384": hashes.SHA384,
+        "SHA-512": hashes.SHA512,
     }
 
     @pytest.mark.parametrize(
         ("vector"),
         load_vectors_from_file(
-            os.path.join("KDF", "ansx963_2001.txt"),
-            load_x963_vectors
-        )
+            os.path.join("KDF", "ansx963_2001.txt"), load_x963_vectors
+        ),
     )
     def test_x963(self, backend, vector):
         hashfn = self._algorithms_dict[vector["hash"]]
@@ -55,10 +54,12 @@ class TestX963(object):
         key_data_len = vector["key_data_length"] // 8
         key_data = binascii.unhexlify(vector["key_data"])
 
-        xkdf = X963KDF(algorithm=hashfn(),
-                       length=key_data_len,
-                       sharedinfo=sharedinfo,
-                       backend=default_backend())
+        xkdf = X963KDF(
+            algorithm=hashfn(),
+            length=key_data_len,
+            sharedinfo=sharedinfo,
+            backend=default_backend(),
+        )
         xkdf.verify(key, key_data)
 
     def test_unsupported_hash(self, backend):

@@ -34,10 +34,8 @@ def test_dsa_signature(backend, wycheproof):
     )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
-    if (
-        wycheproof.valid or (
-            wycheproof.acceptable and not wycheproof.has_flag("NoLeadingZero")
-        )
+    if wycheproof.valid or (
+        wycheproof.acceptable and not wycheproof.has_flag("NoLeadingZero")
     ):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),

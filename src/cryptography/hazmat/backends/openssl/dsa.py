@@ -7,12 +7,15 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
-    _calculate_digest_and_algorithm, _check_not_prehashed,
-    _warn_sign_verify_deprecated
+    _calculate_digest_and_algorithm,
+    _check_not_prehashed,
+    _warn_sign_verify_deprecated,
 )
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
+    AsymmetricSignatureContext,
+    AsymmetricVerificationContext,
+    dsa,
 )
 
 
@@ -29,7 +32,7 @@ def _dsa_sig_sign(backend, private_key, data):
     backend.openssl_assert(res == 1)
     backend.openssl_assert(buflen[0])
 
-    return backend._ffi.buffer(sig_buf)[:buflen[0]]
+    return backend._ffi.buffer(sig_buf)[: buflen[0]]
 
 
 def _dsa_sig_verify(backend, public_key, signature, data):
@@ -98,7 +101,7 @@ class _DSAParameters(object):
         return dsa.DSAParameterNumbers(
             p=self._backend._bn_to_int(p[0]),
             q=self._backend._bn_to_int(q[0]),
-            g=self._backend._bn_to_int(g[0])
+            g=self._backend._bn_to_int(g[0]),
         )
 
     def generate_private_key(self):
@@ -144,11 +147,11 @@ class _DSAPrivateKey(object):
                 parameter_numbers=dsa.DSAParameterNumbers(
                     p=self._backend._bn_to_int(p[0]),
                     q=self._backend._bn_to_int(q[0]),
-                    g=self._backend._bn_to_int(g[0])
+                    g=self._backend._bn_to_int(g[0]),
                 ),
-                y=self._backend._bn_to_int(pub_key[0])
+                y=self._backend._bn_to_int(pub_key[0]),
             ),
-            x=self._backend._bn_to_int(priv_key[0])
+            x=self._backend._bn_to_int(priv_key[0]),
         )
 
     def public_key(self):
@@ -185,7 +188,7 @@ class _DSAPrivateKey(object):
             encryption_algorithm,
             self,
             self._evp_pkey,
-            self._dsa_cdata
+            self._dsa_cdata,
         )
 
     def sign(self, data, algorithm):
@@ -236,9 +239,9 @@ class _DSAPublicKey(object):
             parameter_numbers=dsa.DSAParameterNumbers(
                 p=self._backend._bn_to_int(p[0]),
                 q=self._backend._bn_to_int(q[0]),
-                g=self._backend._bn_to_int(g[0])
+                g=self._backend._bn_to_int(g[0]),
             ),
-            y=self._backend._bn_to_int(pub_key[0])
+            y=self._backend._bn_to_int(pub_key[0]),
         )
 
     def parameters(self):
@@ -250,11 +253,7 @@ class _DSAPublicKey(object):
 
     def public_bytes(self, encoding, format):
         return self._backend._public_key_bytes(
-            encoding,
-            format,
-            self,
-            self._evp_pkey,
-            None
+            encoding, format, self, self._evp_pkey, None
         )
 
     def verify(self, signature, data, algorithm):

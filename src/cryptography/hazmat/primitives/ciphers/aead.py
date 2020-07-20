@@ -18,7 +18,7 @@ class ChaCha20Poly1305(object):
         if not backend.aead_cipher_supported(self):
             raise exceptions.UnsupportedAlgorithm(
                 "ChaCha20Poly1305 is not supported by this version of OpenSSL",
-                exceptions._Reasons.UNSUPPORTED_CIPHER
+                exceptions._Reasons.UNSUPPORTED_CIPHER,
             )
         utils._check_byteslike("key", key)
 
@@ -42,18 +42,14 @@ class ChaCha20Poly1305(object):
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(
-            backend, self, nonce, data, associated_data, 16
-        )
+        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
 
     def decrypt(self, nonce, data, associated_data):
         if associated_data is None:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(
-            backend, self, nonce, data, associated_data, 16
-        )
+        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
 
     def _check_params(self, nonce, data, associated_data):
         utils._check_byteslike("nonce", nonce)
@@ -161,18 +157,14 @@ class AESGCM(object):
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(
-            backend, self, nonce, data, associated_data, 16
-        )
+        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
 
     def decrypt(self, nonce, data, associated_data):
         if associated_data is None:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(
-            backend, self, nonce, data, associated_data, 16
-        )
+        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
 
     def _check_params(self, nonce, data, associated_data):
         utils._check_byteslike("nonce", nonce)

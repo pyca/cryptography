@@ -6,7 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized,
+    UnsupportedAlgorithm,
+    _Reasons,
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
@@ -18,7 +20,7 @@ class HMAC(object):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
+                _Reasons.BACKEND_MISSING_INTERFACE,
             )
 
         if not isinstance(algorithm, hashes.HashAlgorithm):
@@ -47,7 +49,7 @@ class HMAC(object):
             self._key,
             self.algorithm,
             backend=self._backend,
-            ctx=self._ctx.copy()
+            ctx=self._ctx.copy(),
         )
 
     def finalize(self):

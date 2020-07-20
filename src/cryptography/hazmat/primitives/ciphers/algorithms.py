@@ -6,7 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.hazmat.primitives.ciphers import (
-    BlockCipherAlgorithm, CipherAlgorithm
+    BlockCipherAlgorithm,
+    CipherAlgorithm,
 )
 from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
@@ -17,9 +18,11 @@ def _verify_key_size(algorithm, key):
 
     # Verify that the key size matches the expected key size
     if len(key) * 8 not in algorithm.key_sizes:
-        raise ValueError("Invalid key size ({}) for {}.".format(
-            len(key) * 8, algorithm.name
-        ))
+        raise ValueError(
+            "Invalid key size ({}) for {}.".format(
+                len(key) * 8, algorithm.name
+            )
+        )
     return key
 
 

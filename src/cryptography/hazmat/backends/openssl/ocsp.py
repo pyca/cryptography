@@ -9,18 +9,27 @@ import functools
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CRL_ENTRY_REASON_CODE_TO_ENUM, _OCSP_BASICRESP_EXT_PARSER,
-    _OCSP_REQ_EXT_PARSER, _OCSP_SINGLERESP_EXT_PARSER,
+    _CRL_ENTRY_REASON_CODE_TO_ENUM,
+    _OCSP_BASICRESP_EXT_PARSER,
+    _OCSP_REQ_EXT_PARSER,
+    _OCSP_SINGLERESP_EXT_PARSER,
     _OCSP_SINGLERESP_EXT_PARSER_NO_SCT,
     _asn1_integer_to_int,
-    _asn1_string_to_bytes, _decode_x509_name, _obj2txt,
+    _asn1_string_to_bytes,
+    _decode_x509_name,
+    _obj2txt,
     _parse_asn1_generalized_time,
 )
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.ocsp import (
-    OCSPCertStatus, OCSPRequest, OCSPResponse, OCSPResponseStatus,
-    _CERT_STATUS_TO_ENUM, _OIDS_TO_HASH, _RESPONSE_STATUS_TO_ENUM,
+    OCSPCertStatus,
+    OCSPRequest,
+    OCSPResponse,
+    OCSPResponseStatus,
+    _CERT_STATUS_TO_ENUM,
+    _OIDS_TO_HASH,
+    _RESPONSE_STATUS_TO_ENUM,
 )
 
 
@@ -41,8 +50,11 @@ def _requires_successful_response(func):
 def _issuer_key_hash(backend, cert_id):
     key_hash = backend._ffi.new("ASN1_OCTET_STRING **")
     res = backend._lib.OCSP_id_get0_info(
-        backend._ffi.NULL, backend._ffi.NULL,
-        key_hash, backend._ffi.NULL, cert_id
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        key_hash,
+        backend._ffi.NULL,
+        cert_id,
     )
     backend.openssl_assert(res == 1)
     backend.openssl_assert(key_hash[0] != backend._ffi.NULL)
@@ -52,8 +64,11 @@ def _issuer_key_hash(backend, cert_id):
 def _issuer_name_hash(backend, cert_id):
     name_hash = backend._ffi.new("ASN1_OCTET_STRING **")
     res = backend._lib.OCSP_id_get0_info(
-        name_hash, backend._ffi.NULL,
-        backend._ffi.NULL, backend._ffi.NULL, cert_id
+        name_hash,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        cert_id,
     )
     backend.openssl_assert(res == 1)
     backend.openssl_assert(name_hash[0] != backend._ffi.NULL)
@@ -63,8 +78,7 @@ def _issuer_name_hash(backend, cert_id):
 def _serial_number(backend, cert_id):
     num = backend._ffi.new("ASN1_INTEGER **")
     res = backend._lib.OCSP_id_get0_info(
-        backend._ffi.NULL, backend._ffi.NULL,
-        backend._ffi.NULL, num, cert_id
+        backend._ffi.NULL, backend._ffi.NULL, backend._ffi.NULL, num, cert_id
     )
     backend.openssl_assert(res == 1)
     backend.openssl_assert(num[0] != backend._ffi.NULL)
@@ -74,8 +88,11 @@ def _serial_number(backend, cert_id):
 def _hash_algorithm(backend, cert_id):
     asn1obj = backend._ffi.new("ASN1_OBJECT **")
     res = backend._lib.OCSP_id_get0_info(
-        backend._ffi.NULL, asn1obj,
-        backend._ffi.NULL, backend._ffi.NULL, cert_id
+        backend._ffi.NULL,
+        asn1obj,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        cert_id,
     )
     backend.openssl_assert(res == 1)
     backend.openssl_assert(asn1obj[0] != backend._ffi.NULL)
@@ -339,9 +356,7 @@ class _OCSPResponse(object):
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:
-            raise ValueError(
-                "The only allowed encoding value is Encoding.DER"
-            )
+            raise ValueError("The only allowed encoding value is Encoding.DER")
 
         bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_OCSP_RESPONSE_bio(
@@ -356,7 +371,7 @@ class _OCSPRequest(object):
     def __init__(self, backend, ocsp_request):
         if backend._lib.OCSP_request_onereq_count(ocsp_request) > 1:
             raise NotImplementedError(
-                'OCSP request contains more than one request'
+                "OCSP request contains more than one request"
             )
         self._backend = backend
         self._ocsp_request = ocsp_request
@@ -389,9 +404,7 @@ class _OCSPRequest(object):
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:
-            raise ValueError(
-                "The only allowed encoding value is Encoding.DER"
-            )
+            raise ValueError("The only allowed encoding value is Encoding.DER")
 
         bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_OCSP_REQUEST_bio(bio, self._ocsp_request)

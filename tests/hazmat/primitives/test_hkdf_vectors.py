@@ -17,7 +17,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1."
+    skip_message="Does not support SHA1.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFSHA1(object):
@@ -25,13 +25,13 @@ class TestHKDFSHA1(object):
         load_nist_vectors,
         os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA1.txt"],
-        hashes.SHA1()
+        hashes.SHA1(),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256."
+    skip_message="Does not support SHA256.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFSHA256(object):
@@ -39,5 +39,5 @@ class TestHKDFSHA256(object):
         load_nist_vectors,
         os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA256.txt"],
-        hashes.SHA256()
+        hashes.SHA256(),
     )

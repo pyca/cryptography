@@ -39,15 +39,15 @@ _NAMEOID_DEFAULT_TYPE = {
 #: Short attribute names from RFC 4514:
 #: https://tools.ietf.org/html/rfc4514#page-7
 _NAMEOID_TO_NAME = {
-    NameOID.COMMON_NAME: 'CN',
-    NameOID.LOCALITY_NAME: 'L',
-    NameOID.STATE_OR_PROVINCE_NAME: 'ST',
-    NameOID.ORGANIZATION_NAME: 'O',
-    NameOID.ORGANIZATIONAL_UNIT_NAME: 'OU',
-    NameOID.COUNTRY_NAME: 'C',
-    NameOID.STREET_ADDRESS: 'STREET',
-    NameOID.DOMAIN_COMPONENT: 'DC',
-    NameOID.USER_ID: 'UID',
+    NameOID.COMMON_NAME: "CN",
+    NameOID.LOCALITY_NAME: "L",
+    NameOID.STATE_OR_PROVINCE_NAME: "ST",
+    NameOID.ORGANIZATION_NAME: "O",
+    NameOID.ORGANIZATIONAL_UNIT_NAME: "OU",
+    NameOID.COUNTRY_NAME: "C",
+    NameOID.STREET_ADDRESS: "STREET",
+    NameOID.DOMAIN_COMPONENT: "DC",
+    NameOID.USER_ID: "UID",
 }
 
 
@@ -55,22 +55,22 @@ def _escape_dn_value(val):
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
-        return ''
+        return ""
 
     # See https://tools.ietf.org/html/rfc4514#section-2.4
-    val = val.replace('\\', '\\\\')
+    val = val.replace("\\", "\\\\")
     val = val.replace('"', '\\"')
-    val = val.replace('+', '\\+')
-    val = val.replace(',', '\\,')
-    val = val.replace(';', '\\;')
-    val = val.replace('<', '\\<')
-    val = val.replace('>', '\\>')
-    val = val.replace('\0', '\\00')
+    val = val.replace("+", "\\+")
+    val = val.replace(",", "\\,")
+    val = val.replace(";", "\\;")
+    val = val.replace("<", "\\<")
+    val = val.replace(">", "\\>")
+    val = val.replace("\0", "\\00")
 
-    if val[0] in ('#', ' '):
-        val = '\\' + val
-    if val[-1] == ' ':
-        val = val[:-1] + '\\ '
+    if val[0] in ("#", " "):
+        val = "\\" + val
+    if val[-1] == " ":
+        val = val[:-1] + "\\ "
 
     return val
 
@@ -83,13 +83,11 @@ class NameAttribute(object):
             )
 
         if not isinstance(value, six.text_type):
-            raise TypeError(
-                "value argument must be a text type."
-            )
+            raise TypeError("value argument must be a text type.")
 
         if (
-            oid == NameOID.COUNTRY_NAME or
-            oid == NameOID.JURISDICTION_COUNTRY_NAME
+            oid == NameOID.COUNTRY_NAME
+            or oid == NameOID.JURISDICTION_COUNTRY_NAME
         ):
             if len(value.encode("utf8")) != 2:
                 raise ValueError(
@@ -123,16 +121,13 @@ class NameAttribute(object):
         dotted string.
         """
         key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
-        return '%s=%s' % (key, _escape_dn_value(self.value))
+        return "%s=%s" % (key, _escape_dn_value(self.value))
 
     def __eq__(self, other):
         if not isinstance(other, NameAttribute):
             return NotImplemented
 
-        return (
-            self.oid == other.oid and
-            self.value == other.value
-        )
+        return self.oid == other.oid and self.value == other.value
 
     def __ne__(self, other):
         return not self == other
@@ -169,7 +164,7 @@ class RelativeDistinguishedName(object):
         Within each RDN, attributes are joined by '+', although that is rarely
         used in certificates.
         """
-        return '+'.join(attr.rfc4514_string() for attr in self._attributes)
+        return "+".join(attr.rfc4514_string() for attr in self._attributes)
 
     def __eq__(self, other):
         if not isinstance(other, RelativeDistinguishedName):
@@ -219,8 +214,9 @@ class Name(object):
         real world certificates. According to RFC4514 section 2.1 the
         RDNSequence must be reversed when converting to string representation.
         """
-        return ','.join(
-            attr.rfc4514_string() for attr in reversed(self._attributes))
+        return ",".join(
+            attr.rfc4514_string() for attr in reversed(self._attributes)
+        )
 
     def get_attributes_for_oid(self, oid):
         return [i for i in self if i.oid == oid]
@@ -255,9 +251,9 @@ class Name(object):
         return sum(len(rdn) for rdn in self._attributes)
 
     def __repr__(self):
-        rdns = ','.join(attr.rfc4514_string() for attr in self._attributes)
+        rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
 
         if six.PY2:
-            return "<Name({})>".format(rdns.encode('utf8'))
+            return "<Name({})>".format(rdns.encode("utf8"))
         else:
             return "<Name({})>".format(rdns)

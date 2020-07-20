@@ -22,12 +22,7 @@ from ...utils import load_hash_vectors
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACMD5(object):
     test_hmac_md5 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-2202-md5.txt",
-        ],
-        hashes.MD5(),
+        load_hash_vectors, "HMAC", ["rfc-2202-md5.txt"], hashes.MD5(),
     )
 
 
@@ -38,12 +33,7 @@ class TestHMACMD5(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACSHA1(object):
     test_hmac_sha1 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-2202-sha1.txt",
-        ],
-        hashes.SHA1(),
+        load_hash_vectors, "HMAC", ["rfc-2202-sha1.txt"], hashes.SHA1(),
     )
 
 
@@ -54,12 +44,7 @@ class TestHMACSHA1(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACSHA224(object):
     test_hmac_sha224 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-4231-sha224.txt",
-        ],
-        hashes.SHA224(),
+        load_hash_vectors, "HMAC", ["rfc-4231-sha224.txt"], hashes.SHA224(),
     )
 
 
@@ -70,12 +55,7 @@ class TestHMACSHA224(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACSHA256(object):
     test_hmac_sha256 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-4231-sha256.txt",
-        ],
-        hashes.SHA256(),
+        load_hash_vectors, "HMAC", ["rfc-4231-sha256.txt"], hashes.SHA256(),
     )
 
 
@@ -86,12 +66,7 @@ class TestHMACSHA256(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACSHA384(object):
     test_hmac_sha384 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-4231-sha384.txt",
-        ],
-        hashes.SHA384(),
+        load_hash_vectors, "HMAC", ["rfc-4231-sha384.txt"], hashes.SHA384(),
     )
 
 
@@ -102,19 +77,14 @@ class TestHMACSHA384(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACSHA512(object):
     test_hmac_sha512 = generate_hmac_test(
-        load_hash_vectors,
-        "HMAC",
-        [
-            "rfc-4231-sha512.txt",
-        ],
-        hashes.SHA512(),
+        load_hash_vectors, "HMAC", ["rfc-4231-sha512.txt"], hashes.SHA512(),
     )
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.BLAKE2b(
-        digest_size=64
-    )),
+    only_if=lambda backend: backend.hmac_supported(
+        hashes.BLAKE2b(digest_size=64)
+    ),
     skip_message="Does not support BLAKE2",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)

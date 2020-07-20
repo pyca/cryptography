@@ -8,7 +8,10 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized,
+    InvalidKey,
+    UnsupportedAlgorithm,
+    _Reasons,
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
@@ -21,7 +24,7 @@ class HKDF(object):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
+                _Reasons.BACKEND_MISSING_INTERFACE,
             )
 
         self._algorithm = algorithm
@@ -57,7 +60,7 @@ class HKDFExpand(object):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
+                _Reasons.BACKEND_MISSING_INTERFACE,
             )
 
         self._algorithm = algorithm
@@ -68,9 +71,8 @@ class HKDFExpand(object):
 
         if length > max_length:
             raise ValueError(
-                "Can not derive keys larger than {} octets.".format(
-                    max_length
-                ))
+                "Can not derive keys larger than {} octets.".format(max_length)
+            )
 
         self._length = length
 
@@ -95,7 +97,7 @@ class HKDFExpand(object):
             output.append(h.finalize())
             counter += 1
 
-        return b"".join(output)[:self._length]
+        return b"".join(output)[: self._length]
 
     def derive(self, key_material):
         utils._check_byteslike("key_material", key_material)

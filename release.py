@@ -25,10 +25,13 @@ def run(*args, **kwargs):
 
 def wait_for_build_complete_github_actions(session, token, run_url):
     while True:
-        response = session.get(run_url, headers={
-            "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
-        })
+        response = session.get(
+            run_url,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "token {}".format(token),
+            },
+        )
         response.raise_for_status()
         if response.json()["conclusion"] is not None:
             break
@@ -36,32 +39,39 @@ def wait_for_build_complete_github_actions(session, token, run_url):
 
 
 def download_artifacts_github_actions(session, token, run_url):
-    response = session.get(run_url, headers={
-        "Content-Type": "application/json",
-        "Authorization": "token {}".format(token),
-    })
+    response = session.get(
+        run_url,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "token {}".format(token),
+        },
+    )
     response.raise_for_status()
 
-    response = session.get(response.json()["artifacts_url"], headers={
-        "Content-Type": "application/json",
-        "Authorization": "token {}".format(token),
-    })
+    response = session.get(
+        response.json()["artifacts_url"],
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "token {}".format(token),
+        },
+    )
     response.raise_for_status()
     paths = []
     for artifact in response.json()["artifacts"]:
-        response = session.get(artifact["archive_download_url"], headers={
-            "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
-        })
+        response = session.get(
+            artifact["archive_download_url"],
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "token {}".format(token),
+            },
+        )
         with zipfile.ZipFile(io.BytesIO(response.content)) as z:
             for name in z.namelist():
                 if not name.endswith(".whl"):
                     continue
                 p = z.open(name)
                 out_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "dist",
-                    os.path.basename(name),
+                    os.path.dirname(__file__), "dist", os.path.basename(name),
                 )
                 with open(out_path, "wb") as f:
                     f.write(p.read())
@@ -79,12 +89,12 @@ def build_github_actions_wheels(token, version):
             "Accept": "application/vnd.github.everest-preview+json",
             "Authorization": "token {}".format(token),
         },
-        data=json.dumps({
-            "event_type": "wheel-builder",
-            "client_payload": {
-                "BUILD_VERSION": version,
-            },
-        }),
+        data=json.dumps(
+            {
+                "event_type": "wheel-builder",
+                "client_payload": {"BUILD_VERSION": version},
+            }
+        ),
     )
     response.raise_for_status()
 
@@ -120,9 +130,8 @@ def release(version):
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    packages = (
-        glob.glob("dist/cryptography-{0}*".format(version)) +
-        glob.glob("vectors/dist/cryptography_vectors-{0}*".format(version))
+    packages = glob.glob("dist/cryptography-{0}*".format(version)) + glob.glob(
+        "vectors/dist/cryptography_vectors-{0}*".format(version)
     )
     run("twine", "upload", "-s", *packages)
 

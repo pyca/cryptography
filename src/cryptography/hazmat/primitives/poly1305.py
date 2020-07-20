@@ -7,17 +7,20 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized,
+    UnsupportedAlgorithm,
+    _Reasons,
 )
 
 
 class Poly1305(object):
     def __init__(self, key):
         from cryptography.hazmat.backends.openssl.backend import backend
+
         if not backend.poly1305_supported():
             raise UnsupportedAlgorithm(
                 "poly1305 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_MAC
+                _Reasons.UNSUPPORTED_MAC,
             )
         self._ctx = backend.create_poly1305_ctx(key)
 

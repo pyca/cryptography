@@ -11,9 +11,9 @@ from urllib3.util.retry import Retry
 def get_response(session, url, token):
     response = session.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
-        raise ValueError("Got HTTP {} fetching {}: ".format(
-            response.status_code, url
-        ))
+        raise ValueError(
+            "Got HTTP {} fetching {}: ".format(response.status_code, url)
+        )
     return response
 
 
@@ -28,9 +28,7 @@ def main(platform, target):
         raise ValueError("Invalid platform")
 
     session = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(
-        max_retries=Retry()
-    )
+    adapter = requests.adapters.HTTPAdapter(max_retries=Retry())
     session.mount("https://", adapter)
     session.mount("http://", adapter)
 

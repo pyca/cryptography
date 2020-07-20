@@ -9,15 +9,19 @@ import pytest
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
 from .utils import (
-    check_backend_support, load_wycheproof_tests, skip_if_wycheproof_none
+    check_backend_support,
+    load_wycheproof_tests,
+    skip_if_wycheproof_none,
 )
 
 
 def pytest_report_header(config):
-    return "\n".join([
-        "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
-        "FIPS Enabled: {}".format(openssl_backend._fips_enabled),
-    ])
+    return "\n".join(
+        [
+            "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
+            "FIPS Enabled: {}".format(openssl_backend._fips_enabled),
+        ]
+    )
 
 
 def pytest_addoption(parser):

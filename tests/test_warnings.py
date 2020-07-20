@@ -21,7 +21,7 @@ class TestDeprecated(object):
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
-            warning_class=DeprecationWarning
+            warning_class=DeprecationWarning,
         )
         mod.Y = deprecated(
             value=2,
@@ -55,7 +55,7 @@ class TestDeprecated(object):
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
-            warning_class=DeprecationWarning
+            warning_class=DeprecationWarning,
         )
         mod.Y = deprecated(
             value=2,

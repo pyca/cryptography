@@ -8,11 +8,13 @@ BLOCK_SIZE = 64
 
 
 def encrypt(mode, key, iv, plaintext):
-    encryptor = botan.Cipher("IDEA/{0}/NoPadding".format(mode), "encrypt",
-                             binascii.unhexlify(key))
+    encryptor = botan.Cipher(
+        "IDEA/{0}/NoPadding".format(mode), "encrypt", binascii.unhexlify(key)
+    )
 
-    cipher_text = encryptor.cipher(binascii.unhexlify(plaintext),
-                                   binascii.unhexlify(iv))
+    cipher_text = encryptor.cipher(
+        binascii.unhexlify(plaintext), binascii.unhexlify(iv)
+    )
     return binascii.hexlify(cipher_text)
 
 
@@ -22,12 +24,7 @@ def verify_vectors(mode, filename):
 
     vectors = load_nist_vectors(vector_file)
     for vector in vectors:
-        ct = encrypt(
-            mode,
-            vector["key"],
-            vector["iv"],
-            vector["plaintext"]
-        )
+        ct = encrypt(mode, vector["key"], vector["iv"], vector["plaintext"])
         assert ct == vector["ciphertext"]
 
 

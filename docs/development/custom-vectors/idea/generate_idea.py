@@ -8,7 +8,7 @@ def encrypt(mode, key, iv, plaintext):
     cipher = base.Cipher(
         algorithms.IDEA(binascii.unhexlify(key)),
         mode(binascii.unhexlify(iv)),
-        backend
+        backend,
     )
     encryptor = cipher.encryptor()
     ct = encryptor.update(binascii.unhexlify(plaintext))
@@ -29,8 +29,10 @@ def build_vectors(mode, filename):
         line = line.strip()
         if line.startswith("KEY"):
             if count != 0:
-                output.append("CIPHERTEXT = {0}".format(
-                    encrypt(mode, key, iv, plaintext))
+                output.append(
+                    "CIPHERTEXT = {0}".format(
+                        encrypt(mode, key, iv, plaintext)
+                    )
                 )
             output.append("\nCOUNT = {0}".format(count))
             count += 1

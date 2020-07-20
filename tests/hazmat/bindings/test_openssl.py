@@ -8,7 +8,10 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _consume_errors, _openssl_assert, _verify_package_version
+    Binding,
+    _consume_errors,
+    _openssl_assert,
+    _verify_package_version,
 )
 
 
@@ -95,7 +98,7 @@ class TestOpenSSL(object):
             b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
             b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
             b"",
-            -1
+            -1,
         )
         with pytest.raises(InternalError) as exc_info:
             _openssl_assert(b.lib, False)
@@ -114,7 +117,7 @@ class TestOpenSSL(object):
             b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
             b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
             b"",
-            -1
+            -1,
         )
         b._register_osrandom_engine()
         assert _consume_errors(b.lib) == []

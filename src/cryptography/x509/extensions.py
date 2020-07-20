@@ -14,37 +14,42 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat._der import (
-    BIT_STRING, DERReader, OBJECT_IDENTIFIER, SEQUENCE
+    BIT_STRING,
+    DERReader,
+    OBJECT_IDENTIFIER,
+    SEQUENCE,
 )
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.certificate_transparency import (
-    SignedCertificateTimestamp
+    SignedCertificateTimestamp,
 )
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import RelativeDistinguishedName
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID, ExtensionOID, OCSPExtensionOID, ObjectIdentifier,
+    CRLEntryExtensionOID,
+    ExtensionOID,
+    OCSPExtensionOID,
+    ObjectIdentifier,
 )
 
 
 def _key_identifier_from_public_key(public_key):
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
-            serialization.Encoding.DER,
-            serialization.PublicFormat.PKCS1,
+            serialization.Encoding.DER, serialization.PublicFormat.PKCS1,
         )
     elif isinstance(public_key, EllipticCurvePublicKey):
         data = public_key.public_bytes(
             serialization.Encoding.X962,
-            serialization.PublicFormat.UncompressedPoint
+            serialization.PublicFormat.UncompressedPoint,
         )
     else:
         # This is a very slow way to do this.
         serialized = public_key.public_bytes(
             serialization.Encoding.DER,
-            serialization.PublicFormat.SubjectPublicKeyInfo
+            serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
         reader = DERReader(serialized)
@@ -62,7 +67,7 @@ def _key_identifier_from_public_key(public_key):
         # BIT STRING contents begin with the number of padding bytes added. It
         # must be zero for SubjectPublicKeyInfo structures.
         if public_key.read_byte() != 0:
-            raise ValueError('Invalid public key encoding')
+            raise ValueError("Invalid public key encoding")
 
         data = public_key.data
 
@@ -133,9 +138,7 @@ class Extensions(object):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_extensions")
 
     def __repr__(self):
-        return (
-            "<Extensions({})>".format(self._extensions)
-        )
+        return "<Extensions({})>".format(self._extensions)
 
 
 @utils.register_interface(ExtensionType)
@@ -170,8 +173,12 @@ class CRLNumber(object):
 class AuthorityKeyIdentifier(object):
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
-    def __init__(self, key_identifier, authority_cert_issuer,
-                 authority_cert_serial_number):
+    def __init__(
+        self,
+        key_identifier,
+        authority_cert_issuer,
+        authority_cert_serial_number,
+    ):
         if (authority_cert_issuer is None) != (
             authority_cert_serial_number is None
         ):
@@ -193,9 +200,7 @@ class AuthorityKeyIdentifier(object):
         if authority_cert_serial_number is not None and not isinstance(
             authority_cert_serial_number, six.integer_types
         ):
-            raise TypeError(
-                "authority_cert_serial_number must be an integer"
-            )
+            raise TypeError("authority_cert_serial_number must be an integer")
 
         self._key_identifier = key_identifier
         self._authority_cert_issuer = authority_cert_issuer
@@ -207,7 +212,7 @@ class AuthorityKeyIdentifier(object):
         return cls(
             key_identifier=digest,
             authority_cert_issuer=None,
-            authority_cert_serial_number=None
+            authority_cert_serial_number=None,
         )
 
     @classmethod
@@ -215,7 +220,7 @@ class AuthorityKeyIdentifier(object):
         return cls(
             key_identifier=ski.digest,
             authority_cert_issuer=None,
-            authority_cert_serial_number=None
+            authority_cert_serial_number=None,
         )
 
     def __repr__(self):
@@ -231,10 +236,10 @@ class AuthorityKeyIdentifier(object):
             return NotImplemented
 
         return (
-            self.key_identifier == other.key_identifier and
-            self.authority_cert_issuer == other.authority_cert_issuer and
-            self.authority_cert_serial_number ==
-            other.authority_cert_serial_number
+            self.key_identifier == other.key_identifier
+            and self.authority_cert_issuer == other.authority_cert_issuer
+            and self.authority_cert_serial_number
+            == other.authority_cert_serial_number
         )
 
     def __ne__(self, other):
@@ -245,9 +250,9 @@ class AuthorityKeyIdentifier(object):
             aci = None
         else:
             aci = tuple(self.authority_cert_issuer)
-        return hash((
-            self.key_identifier, aci, self.authority_cert_serial_number
-        ))
+        return hash(
+            (self.key_identifier, aci, self.authority_cert_serial_number)
+        )
 
     key_identifier = utils.read_only_property("_key_identifier")
     authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
@@ -371,8 +376,8 @@ class AccessDescription(object):
             return NotImplemented
 
         return (
-            self.access_method == other.access_method and
-            self.access_location == other.access_location
+            self.access_method == other.access_method
+            and self.access_location == other.access_location
         )
 
     def __ne__(self, other):
@@ -396,9 +401,8 @@ class BasicConstraints(object):
         if path_length is not None and not ca:
             raise ValueError("path_length must be None when ca is False")
 
-        if (
-            path_length is not None and
-            (not isinstance(path_length, six.integer_types) or path_length < 0)
+        if path_length is not None and (
+            not isinstance(path_length, six.integer_types) or path_length < 0
         ):
             raise TypeError(
                 "path_length must be a non-negative integer or None"
@@ -411,8 +415,9 @@ class BasicConstraints(object):
     path_length = utils.read_only_property("_path_length")
 
     def __repr__(self):
-        return ("<BasicConstraints(ca={0.ca}, "
-                "path_length={0.path_length})>").format(self)
+        return (
+            "<BasicConstraints(ca={0.ca}, " "path_length={0.path_length})>"
+        ).format(self)
 
     def __eq__(self, other):
         if not isinstance(other, BasicConstraints):
@@ -555,14 +560,15 @@ class DistributionPoint(object):
                     "crl_issuer must be None or a list of general names"
                 )
 
-        if reasons and (not isinstance(reasons, frozenset) or not all(
-            isinstance(x, ReasonFlags) for x in reasons
-        )):
+        if reasons and (
+            not isinstance(reasons, frozenset)
+            or not all(isinstance(x, ReasonFlags) for x in reasons)
+        ):
             raise TypeError("reasons must be None or frozenset of ReasonFlags")
 
         if reasons and (
-            ReasonFlags.unspecified in reasons or
-            ReasonFlags.remove_from_crl in reasons
+            ReasonFlags.unspecified in reasons
+            or ReasonFlags.remove_from_crl in reasons
         ):
             raise ValueError(
                 "unspecified and remove_from_crl are not valid reasons in a "
@@ -583,8 +589,8 @@ class DistributionPoint(object):
     def __repr__(self):
         return (
             "<DistributionPoint(full_name={0.full_name}, relative_name={0.rela"
-            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_issuer})>"
-            .format(self)
+            "tive_name}, reasons={0.reasons}, "
+            "crl_issuer={0.crl_issuer})>".format(self)
         )
 
     def __eq__(self, other):
@@ -592,10 +598,10 @@ class DistributionPoint(object):
             return NotImplemented
 
         return (
-            self.full_name == other.full_name and
-            self.relative_name == other.relative_name and
-            self.reasons == other.reasons and
-            self.crl_issuer == other.crl_issuer
+            self.full_name == other.full_name
+            and self.relative_name == other.relative_name
+            and self.reasons == other.reasons
+            and self.crl_issuer == other.crl_issuer
         )
 
     def __ne__(self, other):
@@ -674,8 +680,8 @@ class PolicyConstraints(object):
             return NotImplemented
 
         return (
-            self.require_explicit_policy == other.require_explicit_policy and
-            self.inhibit_policy_mapping == other.inhibit_policy_mapping
+            self.require_explicit_policy == other.require_explicit_policy
+            and self.inhibit_policy_mapping == other.inhibit_policy_mapping
         )
 
     def __ne__(self, other):
@@ -736,8 +742,8 @@ class PolicyInformation(object):
         if policy_qualifiers:
             policy_qualifiers = list(policy_qualifiers)
             if not all(
-                    isinstance(x, (six.text_type, UserNotice))
-                    for x in policy_qualifiers
+                isinstance(x, (six.text_type, UserNotice))
+                for x in policy_qualifiers
             ):
                 raise TypeError(
                     "policy_qualifiers must be a list of strings and/or "
@@ -757,8 +763,8 @@ class PolicyInformation(object):
             return NotImplemented
 
         return (
-            self.policy_identifier == other.policy_identifier and
-            self.policy_qualifiers == other.policy_qualifiers
+            self.policy_identifier == other.policy_identifier
+            and self.policy_qualifiers == other.policy_qualifiers
         )
 
     def __ne__(self, other):
@@ -799,8 +805,8 @@ class UserNotice(object):
             return NotImplemented
 
         return (
-            self.notice_reference == other.notice_reference and
-            self.explicit_text == other.explicit_text
+            self.notice_reference == other.notice_reference
+            and self.explicit_text == other.explicit_text
         )
 
     def __ne__(self, other):
@@ -818,9 +824,7 @@ class NoticeReference(object):
         self._organization = organization
         notice_numbers = list(notice_numbers)
         if not all(isinstance(x, int) for x in notice_numbers):
-            raise TypeError(
-                "notice_numbers must be a list of integers"
-            )
+            raise TypeError("notice_numbers must be a list of integers")
 
         self._notice_numbers = notice_numbers
 
@@ -835,8 +839,8 @@ class NoticeReference(object):
             return NotImplemented
 
         return (
-            self.organization == other.organization and
-            self.notice_numbers == other.notice_numbers
+            self.organization == other.organization
+            and self.notice_numbers == other.notice_numbers
         )
 
     def __ne__(self, other):
@@ -927,8 +931,8 @@ class TLSFeature(object):
     def __init__(self, features):
         features = list(features)
         if (
-            not all(isinstance(x, TLSFeatureType) for x in features) or
-            len(features) == 0
+            not all(isinstance(x, TLSFeatureType) for x in features)
+            or len(features) == 0
         ):
             raise TypeError(
                 "features must be a list of elements from the TLSFeatureType "
@@ -1004,9 +1008,18 @@ class InhibitAnyPolicy(object):
 class KeyUsage(object):
     oid = ExtensionOID.KEY_USAGE
 
-    def __init__(self, digital_signature, content_commitment, key_encipherment,
-                 data_encipherment, key_agreement, key_cert_sign, crl_sign,
-                 encipher_only, decipher_only):
+    def __init__(
+        self,
+        digital_signature,
+        content_commitment,
+        key_encipherment,
+        data_encipherment,
+        key_agreement,
+        key_cert_sign,
+        crl_sign,
+        encipher_only,
+        decipher_only,
+    ):
         if not key_agreement and (encipher_only or decipher_only):
             raise ValueError(
                 "encipher_only and decipher_only can only be true when "
@@ -1060,42 +1073,49 @@ class KeyUsage(object):
             encipher_only = False
             decipher_only = False
 
-        return ("<KeyUsage(digital_signature={0.digital_signature}, "
-                "content_commitment={0.content_commitment}, "
-                "key_encipherment={0.key_encipherment}, "
-                "data_encipherment={0.data_encipherment}, "
-                "key_agreement={0.key_agreement}, "
-                "key_cert_sign={0.key_cert_sign}, crl_sign={0.crl_sign}, "
-                "encipher_only={1}, decipher_only={2})>").format(
-                    self, encipher_only, decipher_only)
+        return (
+            "<KeyUsage(digital_signature={0.digital_signature}, "
+            "content_commitment={0.content_commitment}, "
+            "key_encipherment={0.key_encipherment}, "
+            "data_encipherment={0.data_encipherment}, "
+            "key_agreement={0.key_agreement}, "
+            "key_cert_sign={0.key_cert_sign}, crl_sign={0.crl_sign}, "
+            "encipher_only={1}, decipher_only={2})>"
+        ).format(self, encipher_only, decipher_only)
 
     def __eq__(self, other):
         if not isinstance(other, KeyUsage):
             return NotImplemented
 
         return (
-            self.digital_signature == other.digital_signature and
-            self.content_commitment == other.content_commitment and
-            self.key_encipherment == other.key_encipherment and
-            self.data_encipherment == other.data_encipherment and
-            self.key_agreement == other.key_agreement and
-            self.key_cert_sign == other.key_cert_sign and
-            self.crl_sign == other.crl_sign and
-            self._encipher_only == other._encipher_only and
-            self._decipher_only == other._decipher_only
+            self.digital_signature == other.digital_signature
+            and self.content_commitment == other.content_commitment
+            and self.key_encipherment == other.key_encipherment
+            and self.data_encipherment == other.data_encipherment
+            and self.key_agreement == other.key_agreement
+            and self.key_cert_sign == other.key_cert_sign
+            and self.crl_sign == other.crl_sign
+            and self._encipher_only == other._encipher_only
+            and self._decipher_only == other._decipher_only
         )
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash((
-            self.digital_signature, self.content_commitment,
-            self.key_encipherment, self.data_encipherment,
-            self.key_agreement, self.key_cert_sign,
-            self.crl_sign, self._encipher_only,
-            self._decipher_only
-        ))
+        return hash(
+            (
+                self.digital_signature,
+                self.content_commitment,
+                self.key_encipherment,
+                self.data_encipherment,
+                self.key_agreement,
+                self.key_cert_sign,
+                self.crl_sign,
+                self._encipher_only,
+                self._decipher_only,
+            )
+        )
 
 
 @utils.register_interface(ExtensionType)
@@ -1105,9 +1125,7 @@ class NameConstraints(object):
     def __init__(self, permitted_subtrees, excluded_subtrees):
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
-            if not all(
-                isinstance(x, GeneralName) for x in permitted_subtrees
-            ):
+            if not all(isinstance(x, GeneralName) for x in permitted_subtrees):
                 raise TypeError(
                     "permitted_subtrees must be a list of GeneralName objects "
                     "or None"
@@ -1117,9 +1135,7 @@ class NameConstraints(object):
 
         if excluded_subtrees is not None:
             excluded_subtrees = list(excluded_subtrees)
-            if not all(
-                isinstance(x, GeneralName) for x in excluded_subtrees
-            ):
+            if not all(isinstance(x, GeneralName) for x in excluded_subtrees):
                 raise TypeError(
                     "excluded_subtrees must be a list of GeneralName objects "
                     "or None"
@@ -1141,17 +1157,21 @@ class NameConstraints(object):
             return NotImplemented
 
         return (
-            self.excluded_subtrees == other.excluded_subtrees and
-            self.permitted_subtrees == other.permitted_subtrees
+            self.excluded_subtrees == other.excluded_subtrees
+            and self.permitted_subtrees == other.permitted_subtrees
         )
 
     def __ne__(self, other):
         return not self == other
 
     def _validate_ip_name(self, tree):
-        if any(isinstance(name, IPAddress) and not isinstance(
-            name.value, (ipaddress.IPv4Network, ipaddress.IPv6Network)
-        ) for name in tree):
+        if any(
+            isinstance(name, IPAddress)
+            and not isinstance(
+                name.value, (ipaddress.IPv4Network, ipaddress.IPv6Network)
+            )
+            for name in tree
+        ):
             raise TypeError(
                 "IPAddress name constraints must be an IPv4Network or"
                 " IPv6Network object"
@@ -1199,17 +1219,19 @@ class Extension(object):
     value = utils.read_only_property("_value")
 
     def __repr__(self):
-        return ("<Extension(oid={0.oid}, critical={0.critical}, "
-                "value={0.value})>").format(self)
+        return (
+            "<Extension(oid={0.oid}, critical={0.critical}, "
+            "value={0.value})>"
+        ).format(self)
 
     def __eq__(self, other):
         if not isinstance(other, Extension):
             return NotImplemented
 
         return (
-            self.oid == other.oid and
-            self.critical == other.critical and
-            self.value == other.value
+            self.oid == other.oid
+            and self.critical == other.critical
+            and self.value == other.value
         )
 
     def __ne__(self, other):
@@ -1229,6 +1251,7 @@ class GeneralNames(object):
             )
 
         self._general_names = general_names
+
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
     def get_values_for_type(self, type):
@@ -1419,10 +1442,8 @@ class PrecertificateSignedCertificateTimestamps(object):
     )
 
     def __repr__(self):
-        return (
-            "<PrecertificateSignedCertificateTimestamps({})>".format(
-                list(self)
-            )
+        return "<PrecertificateSignedCertificateTimestamps({})>".format(
+            list(self)
         )
 
     def __hash__(self):
@@ -1433,8 +1454,8 @@ class PrecertificateSignedCertificateTimestamps(object):
             return NotImplemented
 
         return (
-            self._signed_certificate_timestamps ==
-            other._signed_certificate_timestamps
+            self._signed_certificate_timestamps
+            == other._signed_certificate_timestamps
         )
 
     def __ne__(self, other):
@@ -1462,11 +1483,7 @@ class SignedCertificateTimestamps(object):
     )
 
     def __repr__(self):
-        return (
-            "<SignedCertificateTimestamps({})>".format(
-                list(self)
-            )
-        )
+        return "<SignedCertificateTimestamps({})>".format(list(self))
 
     def __hash__(self):
         return hash(tuple(self._signed_certificate_timestamps))
@@ -1476,8 +1493,8 @@ class SignedCertificateTimestamps(object):
             return NotImplemented
 
         return (
-            self._signed_certificate_timestamps ==
-            other._signed_certificate_timestamps
+            self._signed_certificate_timestamps
+            == other._signed_certificate_timestamps
         )
 
     def __ne__(self, other):
@@ -1516,23 +1533,27 @@ class OCSPNonce(object):
 class IssuingDistributionPoint(object):
     oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 
-    def __init__(self, full_name, relative_name, only_contains_user_certs,
-                 only_contains_ca_certs, only_some_reasons, indirect_crl,
-                 only_contains_attribute_certs):
-        if (
-            only_some_reasons and (
-                not isinstance(only_some_reasons, frozenset) or not all(
-                    isinstance(x, ReasonFlags) for x in only_some_reasons
-                )
-            )
+    def __init__(
+        self,
+        full_name,
+        relative_name,
+        only_contains_user_certs,
+        only_contains_ca_certs,
+        only_some_reasons,
+        indirect_crl,
+        only_contains_attribute_certs,
+    ):
+        if only_some_reasons and (
+            not isinstance(only_some_reasons, frozenset)
+            or not all(isinstance(x, ReasonFlags) for x in only_some_reasons)
         ):
             raise TypeError(
                 "only_some_reasons must be None or frozenset of ReasonFlags"
             )
 
         if only_some_reasons and (
-            ReasonFlags.unspecified in only_some_reasons or
-            ReasonFlags.remove_from_crl in only_some_reasons
+            ReasonFlags.unspecified in only_some_reasons
+            or ReasonFlags.remove_from_crl in only_some_reasons
         ):
             raise ValueError(
                 "unspecified and remove_from_crl are not valid reasons in an "
@@ -1540,10 +1561,10 @@ class IssuingDistributionPoint(object):
             )
 
         if not (
-            isinstance(only_contains_user_certs, bool) and
-            isinstance(only_contains_ca_certs, bool) and
-            isinstance(indirect_crl, bool) and
-            isinstance(only_contains_attribute_certs, bool)
+            isinstance(only_contains_user_certs, bool)
+            and isinstance(only_contains_ca_certs, bool)
+            and isinstance(indirect_crl, bool)
+            and isinstance(only_contains_attribute_certs, bool)
         ):
             raise TypeError(
                 "only_contains_user_certs, only_contains_ca_certs, "
@@ -1552,8 +1573,10 @@ class IssuingDistributionPoint(object):
             )
 
         crl_constraints = [
-            only_contains_user_certs, only_contains_ca_certs,
-            indirect_crl, only_contains_attribute_certs
+            only_contains_user_certs,
+            only_contains_ca_certs,
+            indirect_crl,
+            only_contains_attribute_certs,
         ]
 
         if len([x for x in crl_constraints if x]) > 1:
@@ -1563,12 +1586,16 @@ class IssuingDistributionPoint(object):
                 "indirect_crl, only_contains_attribute_certs"
             )
 
-        if (
-            not any([
-                only_contains_user_certs, only_contains_ca_certs,
-                indirect_crl, only_contains_attribute_certs, full_name,
-                relative_name, only_some_reasons
-            ])
+        if not any(
+            [
+                only_contains_user_certs,
+                only_contains_ca_certs,
+                indirect_crl,
+                only_contains_attribute_certs,
+                full_name,
+                relative_name,
+                only_some_reasons,
+            ]
         ):
             raise ValueError(
                 "Cannot create empty extension: "
@@ -1603,29 +1630,31 @@ class IssuingDistributionPoint(object):
             return NotImplemented
 
         return (
-            self.full_name == other.full_name and
-            self.relative_name == other.relative_name and
-            self.only_contains_user_certs == other.only_contains_user_certs and
-            self.only_contains_ca_certs == other.only_contains_ca_certs and
-            self.only_some_reasons == other.only_some_reasons and
-            self.indirect_crl == other.indirect_crl and
-            self.only_contains_attribute_certs ==
-            other.only_contains_attribute_certs
+            self.full_name == other.full_name
+            and self.relative_name == other.relative_name
+            and self.only_contains_user_certs == other.only_contains_user_certs
+            and self.only_contains_ca_certs == other.only_contains_ca_certs
+            and self.only_some_reasons == other.only_some_reasons
+            and self.indirect_crl == other.indirect_crl
+            and self.only_contains_attribute_certs
+            == other.only_contains_attribute_certs
         )
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash((
-            self.full_name,
-            self.relative_name,
-            self.only_contains_user_certs,
-            self.only_contains_ca_certs,
-            self.only_some_reasons,
-            self.indirect_crl,
-            self.only_contains_attribute_certs,
-        ))
+        return hash(
+            (
+                self.full_name,
+                self.relative_name,
+                self.only_contains_user_certs,
+                self.only_contains_ca_certs,
+                self.only_some_reasons,
+                self.indirect_crl,
+                self.only_contains_attribute_certs,
+            )
+        )
 
     full_name = utils.read_only_property("_full_name")
     relative_name = utils.read_only_property("_relative_name")
@@ -1655,9 +1684,8 @@ class UnrecognizedExtension(object):
 
     def __repr__(self):
         return (
-            "<UnrecognizedExtension(oid={0.oid}, value={0.value!r})>".format(
-                self
-            )
+            "<UnrecognizedExtension(oid={0.oid}, "
+            "value={0.value!r})>".format(self)
         )
 
     def __eq__(self, other):

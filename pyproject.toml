@@ -8,3 +8,7 @@ requires = [
     "cffi>=1.8,!=1.11.3; platform_python_implementation != 'PyPy'",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 79
+target-version = ["py27"]
