@@ -3,10 +3,8 @@ Changelog
 
 .. _v3-0:
 
-3.0 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+3.0 - 2020-07-20
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed support for passing an
   :class:`~cryptography.x509.Extension` instance to
