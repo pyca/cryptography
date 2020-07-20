@@ -196,6 +196,7 @@ class TestDH(object):
                                                int(vector["g"], 16),
                                                int(vector["q"], 16))
 
+    @pytest.mark.skip_fips(reason="modulus too small for FIPS")
     @pytest.mark.parametrize("with_q", [False, True])
     def test_convert_to_numbers(self, backend, with_q):
         if with_q:
@@ -242,6 +243,7 @@ class TestDH(object):
         with pytest.raises(ValueError):
             private.private_key(backend)
 
+    @pytest.mark.skip_fips(reason="FIPS requires key size >= 2048")
     @pytest.mark.parametrize("with_q", [False, True])
     def test_generate_dh(self, backend, with_q):
         if with_q:
@@ -309,6 +311,7 @@ class TestDH(object):
 
         assert symkey == symkey_manual
 
+    @pytest.mark.skip_fips(reason="key_size too small for FIPS")
     def test_symmetric_key_padding(self, backend):
         """
         This test has specific parameters that produce a symmetric key
@@ -339,6 +342,11 @@ class TestDH(object):
             os.path.join("asymmetric", "DH", "bad_exchange.txt"),
             load_nist_vectors))
     def test_bad_exchange(self, backend, vector):
+        if (
+                backend._fips_enabled and
+                int(vector["p1"]) < backend._fips_dh_min_modulus
+        ):
+            pytest.skip("modulus too small for FIPS mode")
         parameters1 = dh.DHParameterNumbers(int(vector["p1"]),
                                             int(vector["g"]))
         public1 = dh.DHPublicNumbers(int(vector["y1"]), parameters1)
@@ -370,6 +378,11 @@ class TestDH(object):
             os.path.join("asymmetric", "DH", "vec.txt"),
             load_nist_vectors))
     def test_dh_vectors(self, backend, vector):
+        if (
+                backend._fips_enabled and
+                int(vector["p"]) < backend._fips_dh_min_modulus
+        ):
+            pytest.skip("modulus too small for FIPS mode")
         parameters = dh.DHParameterNumbers(int(vector["p"]),
                                            int(vector["g"]))
         public = dh.DHPublicNumbers(int(vector["y"]), parameters)

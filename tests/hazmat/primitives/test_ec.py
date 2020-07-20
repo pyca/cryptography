@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_ec import EC_KEY_SECP384R1
+from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
@@ -45,7 +46,7 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
         curve_type()
     ):
         pytest.skip(
-            "ECDSA not supported with this hash {} and curve {}".format(
+            "ECDSA not supported with this hash {} and curve {}.".format(
                 hash_type().name, curve_type().name
             )
         )
@@ -693,6 +694,7 @@ class TestECSerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        skip_fips_traditional_openssl(backend, fmt)
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
@@ -798,6 +800,9 @@ class TestECSerialization(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL key format is not supported in FIPS mode."
+    )
     @pytest.mark.parametrize(
         ("key_path", "encoding", "loader_func"),
         [

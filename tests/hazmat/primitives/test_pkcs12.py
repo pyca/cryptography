@@ -67,6 +67,7 @@ class TestPKCS12Loading(object):
         only_if=lambda backend: backend.cipher_supported(_RC2(), None),
         skip_message="Does not support RC2"
     )
+    @pytest.mark.skip_fips(reason="Unsupported algorithm in FIPS mode")
     def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 

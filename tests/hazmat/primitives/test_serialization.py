@@ -40,6 +40,14 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import raises_unsupported_algorithm
 
 
+def _skip_fips_format(key_path, password, backend):
+    if backend._fips_enabled:
+        if key_path[0] == "Traditional_OpenSSL_Serialization":
+            pytest.skip("Traditional OpenSSL format blocked in FIPS mode")
+        if key_path[0] == "PEM_Serialization" and password is not None:
+            pytest.skip("Encrypted PEM_Serialization blocked in FIPS mode")
+
+
 class TestBufferProtocolSerialization(object):
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.parametrize(
@@ -79,6 +87,7 @@ class TestBufferProtocolSerialization(object):
         ]
     )
     def test_load_pem_rsa_private_key(self, key_path, password, backend):
+        _skip_fips_format(key_path, password, backend)
         data = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda pemfile: pemfile.read(), mode="rb"
@@ -404,6 +413,7 @@ class TestPEMSerialization(object):
         ]
     )
     def test_load_pem_rsa_private_key(self, key_file, password, backend):
+        _skip_fips_format(key_file, password, backend)
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_file),
             lambda pemfile: load_pem_private_key(
@@ -426,6 +436,7 @@ class TestPEMSerialization(object):
         ]
     )
     def test_load_dsa_private_key(self, key_path, password, backend):
+        _skip_fips_format(key_path, password, backend)
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
@@ -448,6 +459,7 @@ class TestPEMSerialization(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_pem_ec_private_key(self, key_path, password, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
+        _skip_fips_format(key_path, password, backend)
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
@@ -516,6 +528,9 @@ class TestPEMSerialization(object):
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
+    @pytest.mark.skip_fips(
+        reason="Traditional OpenSSL format blocked in FIPS mode"
+    )
     def test_rsa_traditional_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join(
