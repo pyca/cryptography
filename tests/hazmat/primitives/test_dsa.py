@@ -50,8 +50,7 @@ def test_skip_if_dsa_not_supported(backend):
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
-        key_size = 2048
-        parameters = dsa.generate_parameters(key_size, backend)
+        parameters = dsa.generate_parameters(2048, backend)
         assert isinstance(parameters, dsa.DSAParameters)
 
     def test_generate_invalid_dsa_parameters(self, backend):
@@ -98,8 +97,7 @@ class TestDSA(object):
         )
 
     def test_generate_dsa_private_key_and_parameters(self, backend):
-        key_size = 2048
-        skey = dsa.generate_private_key(key_size, backend)
+        skey = dsa.generate_private_key(2048, backend)
         assert skey
         numbers = skey.private_numbers()
         skey_parameters = numbers.public_numbers.parameter_numbers

@@ -2523,7 +2523,7 @@ class Backend(object):
 
     def poly1305_supported(self):
         if self._fips_enabled:
-            return 0
+            return False
         return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def create_poly1305_ctx(self, key):

@@ -86,7 +86,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         len(params["iv"]) != 24
     ):
         # Red Hat disables non-96-bit IV support as part of its FIPS
-        # patches.
+        # patches. The check is for a byte length of 24 because the value is
+        # hex encoded.
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
 
     if params.get("pt") is not None:
