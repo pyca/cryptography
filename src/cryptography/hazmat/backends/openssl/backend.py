@@ -2397,6 +2397,61 @@ class Backend(object):
 
         return (key, cert, additional_certificates)
 
+    def serialize_key_and_certificates_to_pkcs12(self, name, key, cert, cas,
+                                                 encryption_algorithm):
+        password = None
+        if name is not None:
+            utils._check_bytes("name", name)
+
+        if isinstance(encryption_algorithm, serialization.NoEncryption):
+            nid_cert = -1
+            nid_key = -1
+            pkcs12_iter = 0
+            mac_iter = 0
+        elif isinstance(encryption_algorithm,
+                        serialization.BestAvailableEncryption):
+            # PKCS12 encryption is hopeless trash and can never be fixed.
+            # This is the least terrible option.
+            nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            # At least we can set this higher than OpenSSL's default
+            pkcs12_iter = 20000
+            # mac_iter chosen for compatibility reasons, see:
+            # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
+            # Did we mention how lousy PKCS12 encryption is?
+            mac_iter = 1
+            password = encryption_algorithm.password
+        else:
+            raise ValueError("Unsupported key encryption type")
+
+        if cas is None or len(cas) == 0:
+            sk_x509 = self._ffi.NULL
+        else:
+            sk_x509 = self._lib.sk_X509_new_null()
+            sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
+
+            # reverse the list when building the stack so that they're encoded
+            # in the order they were originally provided. it is a mystery
+            for ca in reversed(cas):
+                res = self._lib.sk_X509_push(sk_x509, ca._x509)
+                backend.openssl_assert(res >= 1)
+
+        with self._zeroed_null_terminated_buf(password) as password_buf:
+            with self._zeroed_null_terminated_buf(name) as name_buf:
+                p12 = self._lib.PKCS12_create(
+                    password_buf, name_buf,
+                    key._evp_pkey if key else self._ffi.NULL,
+                    cert._x509 if cert else self._ffi.NULL,
+                    sk_x509, nid_key, nid_cert, pkcs12_iter, mac_iter, 0)
+
+        self.openssl_assert(p12 != self._ffi.NULL)
+        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
+
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_PKCS12_bio(bio, p12)
+        self.openssl_assert(res > 0)
+        return self._read_mem_bio(bio)
+
     def poly1305_supported(self):
         return self._lib.Cryptography_HAS_POLY1305 == 1
 

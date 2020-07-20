@@ -11,16 +11,18 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import DERSerializationBackend
 from cryptography.hazmat.backends.openssl.backend import _RC2
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
-    load_key_and_certificates
+    load_key_and_certificates, serialize_key_and_certificates
 )
 
 from .utils import load_vectors_from_file
+from ...doubles import DummyKeySerializationEncryption
 
 
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestPKCS12(object):
+class TestPKCS12Loading(object):
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
@@ -137,3 +139,113 @@ class TestPKCS12(object):
         assert parsed_key is not None
         assert parsed_cert is not None
         assert parsed_more_certs == []
+
+
+def _load_cert(backend, path):
+    return load_vectors_from_file(
+        path,
+        lambda pemfile: x509.load_pem_x509_certificate(
+            pemfile.read(), backend
+        ), mode='rb'
+    )
+
+
+def _load_ca(backend):
+    cert = _load_cert(backend, os.path.join('x509', 'custom', 'ca', 'ca.pem'))
+    key = load_vectors_from_file(
+        os.path.join('x509', 'custom', 'ca', 'ca_key.pem'),
+        lambda pemfile: load_pem_private_key(
+            pemfile.read(), None, backend
+        ), mode='rb'
+    )
+    return cert, key
+
+
+class TestPKCS12Creation(object):
+    @pytest.mark.parametrize('name', [None, b'name'])
+    @pytest.mark.parametrize(('encryption_algorithm', 'password'), [
+        (serialization.BestAvailableEncryption(b'password'), b'password'),
+        (serialization.NoEncryption(), None)
+    ])
+    def test_generate(self, backend, name, encryption_algorithm, password):
+        cert, key = _load_ca(backend)
+        p12 = serialize_key_and_certificates(
+            name, key, cert, None, encryption_algorithm)
+
+        parsed_key, parsed_cert, parsed_more_certs = \
+            load_key_and_certificates(p12, password, backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+    def test_generate_with_cert_key_ca(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+            backend, os.path.join('x509', 'custom', 'dsa_selfsigned_ca.pem')
+        )
+        cert3 = _load_cert(backend, os.path.join('x509', 'letsencryptx3.pem'))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_key_and_certificates(
+            None, key, cert, [cert2, cert3], encryption)
+
+        parsed_key, parsed_cert, parsed_more_certs = \
+            load_key_and_certificates(p12, None, backend)
+        assert parsed_cert == cert
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == [cert2, cert3]
+
+    def test_generate_wrong_types(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(backend, os.path.join('x509', 'letsencryptx3.pem'))
+        encryption = serialization.NoEncryption()
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(
+                b'name', cert, cert, None, encryption)
+        assert str(exc.value) == \
+            'Key must be RSA, DSA, or EllipticCurve private key.'
+
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(b'name', key, key, None, encryption)
+        assert str(exc.value) == 'cert must be a certificate'
+
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(
+                b'name', key, cert, None, key)
+        assert str(
+            exc.value) == ('Key encryption algorithm must be a '
+                           'KeySerializationEncryption instance')
+
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(None, key, cert, cert2, encryption)
+
+        with pytest.raises(TypeError) as exc:
+            serialize_key_and_certificates(None, key, cert, [key], encryption)
+        assert str(exc.value) == 'all values in cas must be certificates'
+
+    def test_generate_no_cert(self, backend):
+        _, key = _load_ca(backend)
+        p12 = serialize_key_and_certificates(
+            None, key, None, None, serialization.NoEncryption())
+        parsed_key, parsed_cert, parsed_more_certs = \
+            load_key_and_certificates(p12, None, backend)
+        assert parsed_cert is None
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+    def test_must_supply_something(self):
+        with pytest.raises(ValueError) as exc:
+            serialize_key_and_certificates(
+                None, None, None, None, serialization.NoEncryption()
+            )
+        assert str(exc.value) == (
+            'You must supply at least one of key, cert, or cas'
+        )
+
+    def test_generate_unsupported_encryption_type(self, backend):
+        cert, key = _load_ca(backend)
+        with pytest.raises(ValueError) as exc:
+            serialize_key_and_certificates(
+                None, key, cert, None,
+                DummyKeySerializationEncryption(),
+            )
+        assert str(exc.value) == 'Unsupported key encryption type'
