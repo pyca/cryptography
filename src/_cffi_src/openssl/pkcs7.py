@@ -54,24 +54,8 @@ static const int PKCS7_TEXT;
 """
 
 FUNCTIONS = """
-PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
-int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
-
 void PKCS7_free(PKCS7 *);
 
-PKCS7 *PKCS7_sign(X509 *, EVP_PKEY *, Cryptography_STACK_OF_X509 *,
-                  BIO *, int);
-int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
-                 BIO *, int);
-Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
-                                               Cryptography_STACK_OF_X509 *,
-                                               int);
-
-PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *, BIO *,
-                     const EVP_CIPHER *, int);
-int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
-
-BIO *PKCS7_dataInit(PKCS7 *, BIO *);
 int PKCS7_type_is_encrypted(PKCS7 *);
 int PKCS7_type_is_signed(PKCS7 *);
 int PKCS7_type_is_enveloped(PKCS7 *);

@@ -30,8 +30,6 @@ static const int CRYPTO_MEM_CHECK_DISABLE;
 """
 
 FUNCTIONS = """
-int CRYPTO_mem_ctrl(int);
-
 void OPENSSL_cleanup(void);
 
 /* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. This function
