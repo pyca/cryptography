@@ -23,7 +23,6 @@ static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_SIGALGS;
@@ -331,10 +330,6 @@ long SSL_SESSION_get_timeout(const SSL_SESSION *);
 int SSL_SESSION_has_ticket(const SSL_SESSION *);
 long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
 
-/* not a macro, but older OpenSSLs don't pass the args as const */
-char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
-int SSL_SESSION_print(BIO *, const SSL_SESSION *);
-
 /* not macros, but will be conditionally bound so can't live in functions */
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
@@ -468,9 +463,6 @@ long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
-/* Added in 1.0.2 */
-const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
-
 int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
                                 unsigned int);
 /* Added in 1.1.0 for the great opaquing of structs */
@@ -541,12 +533,6 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
-const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
-    return ctx->method;
-}
-#endif
-
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
@@ -667,8 +653,6 @@ typedef void COMP_METHOD;
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
 #endif
-
-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
 
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
