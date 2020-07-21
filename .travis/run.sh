@@ -2,11 +2,6 @@
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-if [[ "${TOXENV}" == "pypy" ]]; then
-    PYENV_ROOT="$HOME/.pyenv"
-    PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-fi
 if [ -n "${LIBRESSL}" ]; then
     LIBRESSL_DIR="ossl-2/${LIBRESSL}"
     export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function -I$HOME/$LIBRESSL_DIR/include"
