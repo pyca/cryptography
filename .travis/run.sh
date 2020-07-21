@@ -31,6 +31,7 @@ if [ -n "${DOCKER}" ]; then
         -e TOXENV "${DOCKER}" \
         /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then
+    export CFLAGS="$CFLAGS -fsanitize=address,undefined"
     tox -- --wycheproof-root="$HOME/wycheproof"
 else
     downstream_script="${TRAVIS_BUILD_DIR}/.travis/downstream.d/${DOWNSTREAM}.sh"
