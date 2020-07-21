@@ -29,6 +29,10 @@ OpenSSL releases:
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
 
+.. warning::
+
+    Cryptography 3.1 has deprecated support for OpenSSL 1.0.2.
+
 Building cryptography on Windows
 --------------------------------
 
