@@ -297,6 +297,15 @@ def cryptography_has_verified_chain():
     ]
 
 
+def cryptography_has_srtp():
+    return [
+        "SSL_CTX_set_tlsext_use_srtp",
+        "SSL_set_tlsext_use_srtp",
+        "SSL_get_selected_srtp_profile",
+        "SRTP_PROTECTION_PROFILE"
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -354,4 +363,5 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
+    "Cryptography_HAS_SRTP": cryptography_has_srtp,
 }
