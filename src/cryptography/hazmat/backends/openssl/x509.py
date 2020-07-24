@@ -133,7 +133,7 @@ class _Certificate(object):
 
     @utils.cached_property
     def extensions(self):
-        if self._backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if self._backend._lib.Cryptography_HAS_SCT:
             return _CERTIFICATE_EXTENSION_PARSER.parse(
                 self._backend, self._x509
             )

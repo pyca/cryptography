@@ -5482,10 +5482,8 @@ class TestPrecertPoisonExtension(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSignedCertificateTimestamps(object):
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_eq(self, backend):
         sct = (
@@ -5513,10 +5511,8 @@ class TestSignedCertificateTimestamps(object):
         assert sct == sct2
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_ne(self, backend):
         sct = (
@@ -5545,10 +5541,8 @@ class TestSignedCertificateTimestamps(object):
         assert sct != object()
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_hash(self, backend):
         sct = (
@@ -5601,10 +5595,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_eq(self, backend):
         psct1 = (
@@ -5632,10 +5624,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert psct1 == psct2
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_ne(self, backend):
         psct1 = (
@@ -5664,10 +5654,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert psct1 != object()
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_hash(self, backend):
         psct1 = (
@@ -5707,10 +5695,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert hash(psct1) != hash(psct3)
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 1.1.0f+",
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
     )
     def test_simple(self, backend):
         cert = _load_cert(
