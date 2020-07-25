@@ -345,7 +345,7 @@ class _OCSPResponse(object):
     @utils.cached_property
     @_requires_successful_response
     def single_extensions(self):
-        if self._backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if self._backend._lib.Cryptography_HAS_SCT:
             return _OCSP_SINGLERESP_EXT_PARSER.parse(
                 self._backend, self._single
             )

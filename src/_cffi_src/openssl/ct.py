@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER && !defined(OPENSSL_NO_CT)
 #include <openssl/ct.h>
 
 typedef STACK_OF(SCT) Cryptography_STACK_OF_SCT;
@@ -65,7 +65,7 @@ int SCT_set_log_entry_type(SCT *, ct_log_entry_type_t);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER && !defined(OPENSSL_NO_CT)
 static const long Cryptography_HAS_SCT = 1;
 #else
 static const long Cryptography_HAS_SCT = 0;
@@ -85,7 +85,12 @@ typedef enum {
     SCT_SOURCE_X509V3_EXTENSION,
     SCT_SOURCE_OCSP_STAPLED_RESPONSE
 } sct_source_t;
+
+/* OpenSSL compiled with `no-ct` still defines the `SCT` struct. */
+#if !defined(OPENSSL_NO_CT)
 typedef void SCT;
+#endif
+
 typedef void Cryptography_STACK_OF_SCT;
 
 sct_version_t (*SCT_get_version)(const SCT *) = NULL;
