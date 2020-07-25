@@ -287,6 +287,54 @@ def cryptography_has_srtp():
     ]
 
 
+def cryptography_has_ocsp():
+    return [
+        "OCSP_NOCERTS",
+        "OCSP_RESPID_KEY",
+        "OCSP_response_status",
+        "OCSP_response_get1_basic",
+        "OCSP_BASICRESP_get_ext_count",
+        "OCSP_resp_get0_signature",
+        "OCSP_resp_get0_certs",
+        "OCSP_resp_get0_produced_at",
+        "OCSP_SINGLERESP_get0_id",
+        "OCSP_resp_get0_id",
+        "OCSP_resp_get0_tbs_sigalg",
+        "OCSP_RESPDATA *OCSP_resp_get0_respdata",
+        "OCSP_BASICRESP_get_ext",
+        "OCSP_resp_count",
+        "OCSP_resp_get0",
+        "OCSP_SINGLERESP_get_ext_count",
+        "OCSP_SINGLERESP_get_ext",
+        "OCSP_single_get0_status",
+        "OCSP_REQUEST_get_ext_count",
+        "OCSP_REQUEST_get_ext",
+        "OCSP_request_onereq_count",
+        "OCSP_request_onereq_get0",
+        "OCSP_onereq_get0_id",
+        "OCSP_request_add0_id",
+        "OCSP_cert_to_id",
+        "OCSP_CERTID_free",
+        "OCSP_BASICRESP_new",
+        "OCSP_BASICRESP_free",
+        "OCSP_basic_add1_status",
+        "OCSP_basic_add1_cert",
+        "OCSP_BASICRESP_add_ext",
+        "OCSP_basic_sign",
+        "OCSP_response_create",
+        "OCSP_RESPONSE_free",
+        "OCSP_REQUEST_new",
+        "OCSP_REQUEST_free",
+        "OCSP_REQUEST_add_ext",
+        "OCSP_id_get0_info",
+        "d2i_OCSP_REQUEST_bio",
+        "d2i_OCSP_RESPONSE_bio",
+        "i2d_OCSP_REQUEST_bio",
+        "i2d_OCSP_RESPONSE_bio",
+        "i2d_OCSP_RESPDATA",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -309,6 +357,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
     "Cryptography_HAS_SCT": cryptography_has_sct,
+    "Cryptography_HAS_OCSP": cryptography_has_ocsp,
     "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
         cryptography_has_x509_store_ctx_get_issuer
     ),

@@ -351,6 +351,10 @@ class TestOpenSSLMemoryLeaks(object):
             )
         )
 
+    @pytest.mark.skipif(
+        not Binding().lib.Cryptography_HAS_OCSP,
+        reason="Requires OCSP support",
+    )
     def test_create_ocsp_request(self):
         assert_no_memory_leaks(
             textwrap.dedent(

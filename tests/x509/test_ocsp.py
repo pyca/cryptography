@@ -73,12 +73,16 @@ def _generate_root(private_key=None, algorithm=hashes.SHA256()):
     return cert, private_key
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestOCSPRequest(object):
-    def test_bad_request(self):
+    def test_bad_request(self, backend):
         with pytest.raises(ValueError):
             ocsp.load_der_ocsp_request(b"invalid")
 
-    def test_load_request(self):
+    def test_load_request(self, backend):
         req = _load_data(
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
@@ -95,7 +99,7 @@ class TestOCSPRequest(object):
         )
         assert len(req.extensions) == 0
 
-    def test_load_request_with_extensions(self):
+    def test_load_request_with_extensions(self, backend):
         req = _load_data(
             os.path.join("x509", "ocsp", "req-ext-nonce.der"),
             ocsp.load_der_ocsp_request,
@@ -107,14 +111,14 @@ class TestOCSPRequest(object):
             b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd"
         )
 
-    def test_load_request_two_requests(self):
+    def test_load_request_two_requests(self, backend):
         with pytest.raises(NotImplementedError):
             _load_data(
                 os.path.join("x509", "ocsp", "req-multi-sha1.der"),
                 ocsp.load_der_ocsp_request,
             )
 
-    def test_invalid_hash_algorithm(self):
+    def test_invalid_hash_algorithm(self, backend):
         req = _load_data(
             os.path.join("x509", "ocsp", "req-invalid-hash-alg.der"),
             ocsp.load_der_ocsp_request,
@@ -122,7 +126,7 @@ class TestOCSPRequest(object):
         with pytest.raises(UnsupportedAlgorithm):
             req.hash_algorithm
 
-    def test_serialize_request(self):
+    def test_serialize_request(self, backend):
         req_bytes = load_vectors_from_file(
             filename=os.path.join("x509", "ocsp", "req-sha1.der"),
             loader=lambda data: data.read(),
@@ -131,7 +135,7 @@ class TestOCSPRequest(object):
         req = ocsp.load_der_ocsp_request(req_bytes)
         assert req.public_bytes(serialization.Encoding.DER) == req_bytes
 
-    def test_invalid_serialize_encoding(self):
+    def test_invalid_serialize_encoding(self, backend):
         req = _load_data(
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
@@ -142,6 +146,10 @@ class TestOCSPRequest(object):
             req.public_bytes(serialization.Encoding.PEM)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestOCSPRequestBuilder(object):
     def test_add_two_certs(self):
         cert, issuer = _cert_and_issuer()
@@ -181,7 +189,7 @@ class TestOCSPRequestBuilder(object):
         with pytest.raises(TypeError):
             builder.add_certificate(cert, b"notacert", hashes.SHA1())
 
-    def test_create_ocsp_request(self):
+    def test_create_ocsp_request(self, backend):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
         builder = builder.add_certificate(cert, issuer, hashes.SHA1())
@@ -199,7 +207,7 @@ class TestOCSPRequestBuilder(object):
             [x509.OCSPNonce(b"\x00\x01\x02"), True],
         ],
     )
-    def test_create_ocsp_request_with_extension(self, ext, critical):
+    def test_create_ocsp_request_with_extension(self, ext, critical, backend):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
         builder = builder.add_certificate(
@@ -212,6 +220,10 @@ class TestOCSPRequestBuilder(object):
         assert req.extensions[0].critical is critical
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestOCSPResponseBuilder(object):
     def test_add_response_twice(self):
         cert, issuer = _cert_and_issuer()
@@ -442,7 +454,7 @@ class TestOCSPResponseBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(private_key, "notahash")
 
-    def test_sign_good_cert(self):
+    def test_sign_good_cert(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -478,7 +490,7 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_sign_revoked_cert(self):
+    def test_sign_revoked_cert(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -508,7 +520,7 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_sign_with_appended_certs(self):
+    def test_sign_with_appended_certs(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -532,7 +544,7 @@ class TestOCSPResponseBuilder(object):
         resp = builder.sign(private_key, hashes.SHA256())
         assert resp.certificates == [root_cert]
 
-    def test_sign_revoked_no_next_update(self):
+    def test_sign_revoked_no_next_update(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -561,7 +573,7 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_sign_revoked_with_reason(self):
+    def test_sign_revoked_with_reason(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -591,7 +603,7 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_sign_responder_id_key_hash(self):
+    def test_sign_responder_id_key_hash(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -619,7 +631,9 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_invalid_sign_responder_cert_does_not_match_private_key(self):
+    def test_invalid_sign_responder_cert_does_not_match_private_key(
+        self, backend
+    ):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -644,7 +658,7 @@ class TestOCSPResponseBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(diff_key, hashes.SHA256())
 
-    def test_sign_with_extension(self):
+    def test_sign_with_extension(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -683,22 +697,26 @@ class TestOCSPResponseBuilder(object):
             (ocsp.OCSPResponseStatus.UNAUTHORIZED, b"0\x03\n\x01\x06"),
         ],
     )
-    def test_build_non_successful_statuses(self, status, der):
+    def test_build_non_successful_statuses(self, status, der, backend):
         resp = ocsp.OCSPResponseBuilder.build_unsuccessful(status)
         assert resp.response_status is status
         assert resp.public_bytes(serialization.Encoding.DER) == der
 
-    def test_invalid_build_not_a_status(self):
+    def test_invalid_build_not_a_status(self, backend):
         with pytest.raises(TypeError):
             ocsp.OCSPResponseBuilder.build_unsuccessful("notastatus")
 
-    def test_invalid_build_successful_status(self):
+    def test_invalid_build_successful_status(self, backend):
         with pytest.raises(ValueError):
             ocsp.OCSPResponseBuilder.build_unsuccessful(
                 ocsp.OCSPResponseStatus.SUCCESSFUL
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
@@ -785,17 +803,20 @@ class TestSignedCertificateTimestampsExtension(object):
         assert hash(sct1) != hash(sct3)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestOCSPResponse(object):
-    def test_bad_response(self):
+    def test_bad_response(self, backend):
         with pytest.raises(ValueError):
             ocsp.load_der_ocsp_response(b"invalid")
 
-    def test_load_response(self):
+    def test_load_response(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-sha256.der"),
             ocsp.load_der_ocsp_response,
         )
-        from cryptography.hazmat.backends.openssl.backend import backend
 
         issuer = _load_cert(
             os.path.join("x509", "letsencryptx3.pem"),
@@ -848,14 +869,14 @@ class TestOCSPResponse(object):
         assert resp.serial_number == 271024907440004808294641238224534273948400
         assert len(resp.extensions) == 0
 
-    def test_load_multi_valued_response(self):
+    def test_load_multi_valued_response(self, backend):
         with pytest.raises(ValueError):
             _load_data(
                 os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
                 ocsp.load_der_ocsp_response,
             )
 
-    def test_load_unauthorized(self):
+    def test_load_unauthorized(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-unauthorized.der"),
             ocsp.load_der_ocsp_response,
@@ -898,7 +919,7 @@ class TestOCSPResponse(object):
         with pytest.raises(ValueError):
             resp.extensions
 
-    def test_load_revoked(self):
+    def test_load_revoked(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked.der"),
             ocsp.load_der_ocsp_response,
@@ -909,7 +930,7 @@ class TestOCSPResponse(object):
         )
         assert resp.revocation_reason is None
 
-    def test_load_delegate_unknown_cert(self):
+    def test_load_delegate_unknown_cert(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-delegate-unknown-cert.der"),
             ocsp.load_der_ocsp_response,
@@ -918,7 +939,7 @@ class TestOCSPResponse(object):
         assert isinstance(resp.certificates[0], x509.Certificate)
         assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
 
-    def test_load_invalid_signature_oid(self):
+    def test_load_invalid_signature_oid(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-invalid-signature-oid.der"),
             ocsp.load_der_ocsp_response,
@@ -929,7 +950,7 @@ class TestOCSPResponse(object):
         with pytest.raises(UnsupportedAlgorithm):
             resp.signature_hash_algorithm
 
-    def test_load_responder_key_hash(self):
+    def test_load_responder_key_hash(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-responder-key-hash.der"),
             ocsp.load_der_ocsp_response,
@@ -939,14 +960,14 @@ class TestOCSPResponse(object):
             b"\x0f\x80a\x1c\x821a\xd5/(\xe7\x8dF8\xb4,\xe1\xc6\xd9\xe2"
         )
 
-    def test_load_revoked_reason(self):
+    def test_load_revoked_reason(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked-reason.der"),
             ocsp.load_der_ocsp_response,
         )
         assert resp.revocation_reason is x509.ReasonFlags.superseded
 
-    def test_load_revoked_no_next_update(self):
+    def test_load_revoked_no_next_update(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked-no-next-update.der"),
             ocsp.load_der_ocsp_response,
@@ -954,7 +975,7 @@ class TestOCSPResponse(object):
         assert resp.serial_number == 16160
         assert resp.next_update is None
 
-    def test_response_extensions(self):
+    def test_response_extensions(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked-reason.der"),
             ocsp.load_der_ocsp_response,
@@ -966,7 +987,7 @@ class TestOCSPResponse(object):
             b'\x04\x105\x957\x9fa\x03\x83\x87\x89rW\x8f\xae\x99\xf7"'
         )
 
-    def test_serialize_reponse(self):
+    def test_serialize_reponse(self, backend):
         resp_bytes = load_vectors_from_file(
             filename=os.path.join("x509", "ocsp", "resp-revoked.der"),
             loader=lambda data: data.read(),
@@ -975,7 +996,7 @@ class TestOCSPResponse(object):
         resp = ocsp.load_der_ocsp_response(resp_bytes)
         assert resp.public_bytes(serialization.Encoding.DER) == resp_bytes
 
-    def test_invalid_serialize_encoding(self):
+    def test_invalid_serialize_encoding(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-revoked.der"),
             ocsp.load_der_ocsp_response,
@@ -1038,6 +1059,10 @@ class TestOCSPResponse(object):
         assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (backend._lib.Cryptography_HAS_OCSP),
+    skip_message="Requires OCSP support",
+)
 class TestOCSPEdDSA(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
