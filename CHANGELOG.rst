@@ -37,6 +37,10 @@ Changelog
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2 no longer receives support from the Python core
   team.
+
+  If you have trouble suppressing this warning, please, check out :ref:`an FAQ
+  entry about addressing this issue <faq-howto-handle-deprecation-warning>`.
+
 * Added support for ``OpenSSH`` serialization format for
   ``ec``, ``ed25519``, ``rsa`` and ``dsa`` private keys:
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
