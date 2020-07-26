@@ -432,9 +432,6 @@ X.509 Certificate Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
-        :raises UnicodeError: If an extension contains IDNA encoding that is
-            invalid or not compliant with IDNA 2008.
-
         .. doctest::
 
             >>> for ext in cert.extensions:
@@ -888,9 +885,6 @@ X.509 CSR (Certificate Signing Request) Object
 
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
-
-        :raises UnicodeError: If an extension contains IDNA encoding that is
-            invalid or not compliant with IDNA 2008.
 
     .. method:: get_attribute_for_oid(oid)
 
@@ -1412,23 +1406,18 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
-
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to an email address. For example, ``user@example.com``.
 
     :param value: The email address. If the address contains an
         internationalized domain name then it must be encoded to an
         :term:`A-label` string before being passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
     .. attribute:: value
 
@@ -1438,22 +1427,18 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
     :param value: The domain name. If it is an internationalized domain
         name then it must be encoded to an :term:`A-label` string before being
         passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
         :type: :term:`text`
 
@@ -1475,16 +1460,10 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to a uniform resource identifier.  For example,
     ``https://cryptography.io``.
@@ -1492,6 +1471,8 @@ General Name Classes
     :param value: The URI. If it contains an internationalized domain
         name then it must be encoded to an :term:`A-label` string before
         being passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
     .. attribute:: value
 
