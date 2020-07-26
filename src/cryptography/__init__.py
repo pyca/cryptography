@@ -37,4 +37,5 @@ if sys.version_info[0] == 2:
         "it is now deprecated in cryptography, and will be removed in a "
         "future release.",
         CryptographyDeprecationWarning,
+        stacklevel=2,
     )
