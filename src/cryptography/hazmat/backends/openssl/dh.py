@@ -142,7 +142,8 @@ class _DHPrivateKey(object):
             errors_with_text = self._backend._consume_errors_with_text()
             raise ValueError(
                 "Error computing shared key. Public key is likely invalid "
-                "for this exchange.", errors_with_text
+                "for this exchange.",
+                errors_with_text,
             )
         else:
             self._backend.openssl_assert(res >= 1)
