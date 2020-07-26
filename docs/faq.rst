@@ -126,18 +126,6 @@ support multiple versions of Python. The Python 3.5 ``abi3`` wheel can be used
 with any version of Python greater than or equal to 3.5. Recent versions of
 ``pip`` will automatically install ``abi3`` wheels.
 
-``ImportError``: ``idna`` is not installed
-------------------------------------------
-
-``cryptography`` deprecated passing :term:`U-label` strings to various X.509
-constructors in version 2.1 and in version 2.5 moved the ``idna`` dependency
-to a ``setuptools`` extra. If you see this exception you should upgrade your
-software so that it no longer depends on this deprecated feature. If that is
-not yet possible you  can also install ``cryptography`` with
-``pip install cryptography[idna]`` to automatically install the missing
-dependency. This workaround will be available until the feature is fully
-removed.
-
 Why can't I import my PEM file?
 -------------------------------
 

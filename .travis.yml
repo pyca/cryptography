@@ -23,8 +23,6 @@ matrix:
         # Setting 'python' is just to make travis's UI a bit prettier
         - python: 3.6
           env: TOXENV=py36
-        - python: 3.8
-          env: TOXENV=py38-idna
           # Travis lists available Pythons (including PyPy) by arch and distro here:
           # https://docs.travis-ci.com/user/languages/python/#python-versions
         - python: pypy2.7-7.3.1
