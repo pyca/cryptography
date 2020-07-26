@@ -15,7 +15,7 @@ import pytest
 
 import six
 
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend,
     EllipticCurveBackend,
