@@ -50,6 +50,7 @@ static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
 static const long Cryptography_HAS_CUSTOM_EXT;
+static const long Cryptography_HAS_SRTP;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -760,6 +761,15 @@ int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
                                      custom_ext_parse_cb,
                                      void *) = NULL;
 int (*SSL_extension_supported)(unsigned int) = NULL;
+#endif
+
+#ifndef OPENSSL_NO_SRTP
+static const long Cryptography_HAS_SRTP = 1;
+#else
+static const long Cryptography_HAS_SRTP = 0;
+int (*SSL_CTX_set_tlsext_use_srtp)(SSL_CTX *, const char *) = NULL;
+int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
+SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
