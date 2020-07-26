@@ -79,16 +79,6 @@ class _DHParameters(object):
         return self._backend._parameter_bytes(encoding, format, self._dh_cdata)
 
 
-def _handle_dh_compute_key_error(errors, backend):
-    lib = backend._lib
-
-    backend.openssl_assert(
-        errors[0]._lib_reason_match(lib.ERR_LIB_DH, lib.DH_R_INVALID_PUBKEY)
-    )
-
-    raise ValueError("Public key value is invalid for this exchange.")
-
-
 def _get_dh_num_bits(backend, dh_cdata):
     p = backend._ffi.new("BIGNUM **")
     backend._lib.DH_get0_pqg(dh_cdata, p, backend._ffi.NULL, backend._ffi.NULL)
@@ -149,8 +139,11 @@ class _DHPrivateKey(object):
         )
 
         if res == -1:
-            errors = self._backend._consume_errors()
-            return _handle_dh_compute_key_error(errors, self._backend)
+            errors_with_text = self._backend._consume_errors_with_text()
+            raise ValueError(
+                "Error computing shared key. Public key is likely invalid "
+                "for this exchange.", errors_with_text
+            )
         else:
             self._backend.openssl_assert(res >= 1)
 
