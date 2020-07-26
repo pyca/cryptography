@@ -19,6 +19,7 @@ codebook
 committer
 committers
 conda
+CPython
 Cryptanalysis
 crypto
 cryptographic
@@ -88,6 +89,7 @@ preprocessors
 presentational
 pseudorandom
 pyOpenSSL
+pytest
 relicensed
 responder
 runtime

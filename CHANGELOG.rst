@@ -38,24 +38,8 @@ Changelog
   their Python, as Python 2 no longer receives support from the Python core
   team.
 
-  .. hint::
-
-     The deprecation warning emitted on import does not inherit
-     :py:exc:`DeprecationWarning` but subclasses :py:exc:`UserWarning`
-     instead.
-
-     If your pytest setup follows the best practices of failing on
-     emitted warnings (``filterwarnings = error``), you may ignore it
-     by adding the following line in the end of the list::
-
-       ignore:Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography, and will be removed in a future release.:UserWarning:cryptography
-
-     **Note:** Using :py:exc:`~cryptography.utils.CryptographyDeprecationWarning`
-     is not possible here because specifying it triggers
-     ``import cryptography`` internally that emits the warning before
-     the ignore rule even kicks in.
-
-     Ref: https://github.com/pytest-dev/pytest/issues/7524
+  If you have trouble suppressing this warning, please, check out :ref:`an FAQ
+  entry about addressing this issue <faq-howto-handle-deprecation-warning>`.
 
 * Added support for ``OpenSSH`` serialization format for
   ``ec``, ``ed25519``, ``rsa`` and ``dsa`` private keys:

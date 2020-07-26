@@ -1,6 +1,33 @@
 Frequently asked questions
 ==========================
 
+.. _faq-howto-handle-deprecation-warning:
+
+I cannot suppress the deprecation warning that ``cryptography`` emits on import
+-------------------------------------------------------------------------------
+
+.. hint::
+
+   The deprecation warning emitted on import does not inherit
+   :py:exc:`DeprecationWarning` but inherits :py:exc:`UserWarning`
+   instead.
+
+If your pytest setup follows the best practices of failing on
+emitted warnings (``filterwarnings = error``), you may ignore it
+by adding the following line at the end of the list::
+
+   ignore:Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography, and will be removed in a future release.:UserWarning:cryptography
+
+**Note:** Using ``cryptography.utils.CryptographyDeprecationWarning``
+is not possible here because specifying it triggers
+``import cryptography`` internally that emits the warning before
+the ignore rule even kicks in.
+
+Ref: https://github.com/pytest-dev/pytest/issues/7524
+
+The same applies when you use :py:func:`~warnings.filterwarnings` in
+your code or invoke CPython with :std:option:`-W` command line option.
+
 ``cryptography`` failed to install!
 -----------------------------------
 
