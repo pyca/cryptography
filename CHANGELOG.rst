@@ -38,8 +38,8 @@ Changelog
   their Python, as Python 2 no longer receives support from the Python core
   team.
 
-  If you have trouble suppressing this warning, please, check out :ref:`an FAQ
-  entry about addressing this issue <faq-howto-handle-deprecation-warning>`.
+  If you have trouble suppressing this warning in tests view the :ref:`FAQ
+  entry addressing this issue <faq-howto-handle-deprecation-warning>`.
 
 * Added support for ``OpenSSH`` serialization format for
   ``ec``, ``ed25519``, ``rsa`` and ``dsa`` private keys:
