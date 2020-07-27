@@ -4085,10 +4085,8 @@ class TestCertificateSigningRequestBuilder(object):
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u"US")])
         )
 
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA512(), backend)
-
-        assert str(exc.value) == "Digest too big for RSA key"
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

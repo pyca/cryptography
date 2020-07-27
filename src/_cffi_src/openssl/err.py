@@ -91,8 +91,6 @@ static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
-static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
-
 static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_WARNING;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
@@ -128,7 +126,6 @@ static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE;
 static const int SSL_AD_UNKNOWN_PSK_IDENTITY;
 
 static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
-static const int X509_R_KEY_VALUES_MISMATCH;
 """
 
 FUNCTIONS = """
