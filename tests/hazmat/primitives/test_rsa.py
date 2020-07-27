@@ -1583,9 +1583,9 @@ class TestRSADecryption(object):
         skip_message="Does not support OAEP.",
     )
     def test_invalid_oaep_decryption(self, backend):
-        # More recent versions of OpenSSL may raise RSA_R_OAEP_DECODING_ERROR
-        # This test triggers it and confirms that we properly handle it. Other
-        # backends should also return the proper ValueError.
+        # More recent versions of OpenSSL may raise different errors.
+        # This test triggers a failure and confirms that we properly handle
+        # it.
         private_key = RSA_KEY_512.private_key(backend)
 
         ciphertext = private_key.public_key().encrypt(
