@@ -7,6 +7,7 @@ publish = false
 
 [dependencies]
 pyo3 = { version = "0.13.1", features = ["extension-module"] }
+asn1 = { version = "0.3", default-features = false }
 
 [lib]
 name = "cryptography_rust"

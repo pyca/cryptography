@@ -8,8 +8,7 @@ import ipaddress
 import typing
 
 from cryptography import x509
-from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
-from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
+from cryptography.hazmat.bindings._rust import asn1
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
     CRLEntryExtensionOID,
@@ -211,25 +210,17 @@ class _X509ExtensionParser(object):
                 # The extension contents are a SEQUENCE OF INTEGERs.
                 data = self._backend._lib.X509_EXTENSION_get_data(ext)
                 data_bytes = _asn1_string_to_bytes(self._backend, data)
-                features = DERReader(data_bytes).read_single_element(SEQUENCE)
-                parsed = []
-                while not features.is_empty():
-                    parsed.append(features.read_element(INTEGER).as_integer())
-                # Map the features to their enum value.
-                value = x509.TLSFeature(
-                    [_TLS_FEATURE_TYPE_TO_ENUM[x] for x in parsed]
-                )
+                value = asn1.parse_tls_feature(data_bytes)
+
                 extensions.append(x509.Extension(oid, critical, value))
                 seen_oids.add(oid)
                 continue
             elif oid == ExtensionOID.PRECERT_POISON:
                 data = self._backend._lib.X509_EXTENSION_get_data(ext)
-                # The contents of the extension must be an ASN.1 NULL.
-                reader = DERReader(_asn1_string_to_bytes(self._backend, data))
-                reader.read_single_element(NULL).check_empty()
-                extensions.append(
-                    x509.Extension(oid, critical, x509.PrecertPoison())
-                )
+                data_bytes = _asn1_string_to_bytes(self._backend, data)
+                value = asn1.parse_precert_poison(data_bytes)
+
+                extensions.append(x509.Extension(oid, critical, value))
                 seen_oids.add(oid)
                 continue
 
