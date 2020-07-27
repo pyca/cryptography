@@ -52,20 +52,29 @@ def _consume_errors(lib):
     return errors
 
 
+def _errors_with_text(errors):
+    errors_with_text = []
+    for err in errors:
+        buf = ffi.new("char[]", 256)
+        lib.ERR_error_string_n(err.code, buf, len(buf))
+        err_text_reason = ffi.string(buf)
+
+        errors_with_text.append(
+            _OpenSSLErrorWithText(
+                err.code, err.lib, err.func, err.reason, err_text_reason
+            )
+        )
+
+    return errors_with_text
+
+
+def _consume_errors_with_text(lib):
+    return _errors_with_text(_consume_errors(lib))
+
+
 def _openssl_assert(lib, ok):
     if not ok:
-        errors = _consume_errors(lib)
-        errors_with_text = []
-        for err in errors:
-            buf = ffi.new("char[]", 256)
-            lib.ERR_error_string_n(err.code, buf, len(buf))
-            err_text_reason = ffi.string(buf)
-
-            errors_with_text.append(
-                _OpenSSLErrorWithText(
-                    err.code, err.lib, err.func, err.reason, err_text_reason
-                )
-            )
+        errors_with_text = _consume_errors_with_text(lib)
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "

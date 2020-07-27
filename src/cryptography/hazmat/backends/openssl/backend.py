@@ -435,6 +435,9 @@ class Backend(object):
     def _consume_errors(self):
         return binding._consume_errors(self._lib)
 
+    def _consume_errors_with_text(self):
+        return binding._consume_errors_with_text(self._lib)
+
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL
 
@@ -1473,18 +1476,7 @@ class Backend(object):
         group = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
 
         if group == self._ffi.NULL:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                curve_nid == self._lib.NID_undef
-                or errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_EC, self._lib.EC_R_UNKNOWN_GROUP
-                )
-                or
-                # This occurs in FIPS mode for unsupported curves on RHEL
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_EC, self._lib.EC_R_NOT_A_NIST_PRIME
-                )
-            )
+            self._consume_errors()
             return False
         else:
             self.openssl_assert(curve_nid != self._lib.NID_undef)
@@ -2398,25 +2390,14 @@ class Backend(object):
             length,
         )
         if res != 1:
-            errors = self._consume_errors()
-            if not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111:
-                # This error is only added to the stack in 1.1.1+
-                self.openssl_assert(
-                    errors[0]._lib_reason_match(
-                        self._lib.ERR_LIB_EVP, self._lib.ERR_R_MALLOC_FAILURE
-                    )
-                    or errors[0]._lib_reason_match(
-                        self._lib.ERR_LIB_EVP,
-                        self._lib.EVP_R_MEMORY_LIMIT_EXCEEDED,
-                    )
-                )
-
+            errors = self._consume_errors_with_text()
             # memory required formula explained here:
             # https://blog.filippo.io/the-scrypt-parameters/
             min_memory = 128 * n * r // (1024 ** 2)
             raise MemoryError(
                 "Not enough memory to derive key. These parameters require"
-                " {} MB of memory.".format(min_memory)
+                " {} MB of memory.".format(min_memory),
+                errors,
             )
         return self._ffi.buffer(buf)[:]
 

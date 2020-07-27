@@ -11,7 +11,6 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_EC_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
-static const int Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED;
 
 static const int ERR_LIB_DH;
 static const int ERR_LIB_EVP;
@@ -22,9 +21,6 @@ static const int ERR_LIB_RSA;
 static const int ERR_LIB_PKCS12;
 static const int ERR_LIB_SSL;
 static const int ERR_LIB_X509;
-
-static const int ERR_R_MALLOC_FAILURE;
-static const int EVP_R_MEMORY_LIMIT_EXCEEDED;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
@@ -50,8 +46,6 @@ static const int ASN1_R_NO_CONTENT_TYPE;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY;
 static const int ASN1_R_HEADER_TOO_LONG;
-
-static const int DH_R_INVALID_PUBKEY;
 
 static const int EVP_F_EVP_ENCRYPTFINAL_EX;
 
@@ -79,9 +73,6 @@ static const int EVP_R_UNSUPPORTED_SALT_TYPE;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
 static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
-
-static const int EC_R_UNKNOWN_GROUP;
-static const int EC_R_NOT_A_NIST_PRIME;
 
 static const int PEM_R_BAD_BASE64_DECODE;
 static const int PEM_R_BAD_DECRYPT;
@@ -173,12 +164,5 @@ static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
 static const long RSA_R_PKCS_DECODING_ERROR = 0;
-#endif
-
-#ifdef EVP_R_MEMORY_LIMIT_EXCEEDED
-static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 1;
-#else
-static const long EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
-static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
 #endif
 """
