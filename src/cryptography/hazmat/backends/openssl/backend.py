@@ -2396,7 +2396,8 @@ class Backend(object):
             min_memory = 128 * n * r // (1024 ** 2)
             raise MemoryError(
                 "Not enough memory to derive key. These parameters require"
-                " {} MB of memory.".format(min_memory), errors
+                " {} MB of memory.".format(min_memory),
+                errors,
             )
         return self._ffi.buffer(buf)[:]
 
