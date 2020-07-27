@@ -311,6 +311,9 @@ unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_clear_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
 
+unsigned long SSL_set_options(SSL *, unsigned long);
+unsigned long SSL_get_options(SSL *);
+
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
