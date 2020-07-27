@@ -22,6 +22,10 @@ static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_PKCS12;
 
+static const int SSL_TLSEXT_ERR_OK;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL;
+static const int SSL_TLSEXT_ERR_NOACK;
+
 static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 """
 
