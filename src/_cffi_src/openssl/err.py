@@ -9,6 +9,7 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int EVP_F_EVP_ENCRYPTFINAL_EX;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 static const int EVP_R_BAD_DECRYPT;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
