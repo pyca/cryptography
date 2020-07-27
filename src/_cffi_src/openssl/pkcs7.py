@@ -56,12 +56,10 @@ static const int PKCS7_TEXT;
 FUNCTIONS = """
 void PKCS7_free(PKCS7 *);
 
-int PKCS7_type_is_encrypted(PKCS7 *);
 int PKCS7_type_is_signed(PKCS7 *);
 int PKCS7_type_is_enveloped(PKCS7 *);
 int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
 int PKCS7_type_is_data(PKCS7 *);
-int PKCS7_type_is_digest(PKCS7 *);
 """
 
 CUSTOMIZATIONS = ""

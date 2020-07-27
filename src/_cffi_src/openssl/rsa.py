@@ -25,19 +25,10 @@ static const int Cryptography_HAS_RSA_OAEP_LABEL;
 FUNCTIONS = """
 RSA *RSA_new(void);
 void RSA_free(RSA *);
-int RSA_size(const RSA *);
 int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
 int RSA_check_key(const RSA *);
 RSA *RSAPublicKey_dup(RSA *);
 int RSA_blinding_on(RSA *, BN_CTX *);
-int RSA_public_encrypt(int, const unsigned char *, unsigned char *,
-                       RSA *, int);
-int RSA_private_encrypt(int, const unsigned char *, unsigned char *,
-                        RSA *, int);
-int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
-                       RSA *, int);
-int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
-                        RSA *, int);
 int RSA_print(BIO *, const RSA *, int);
 
 /* added in 1.1.0 when the RSA struct was opaqued */
