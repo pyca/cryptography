@@ -146,6 +146,9 @@ int EVP_PKEY_set1_EC_KEY(EVP_PKEY *, EC_KEY *);
 
 int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
+int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
+                      const EVP_MD *, int, unsigned char *);
+
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
 int EVP_PBE_scrypt(const char *, size_t, const unsigned char *, size_t,
