@@ -10,7 +10,6 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_EC_CODES;
-static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
 
 static const int ERR_LIB_DH;
 static const int ERR_LIB_EVP;
@@ -92,14 +91,7 @@ static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
-static const int RSA_R_BAD_PAD_BYTE_COUNT;
-static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
-static const int RSA_R_DATA_TOO_LARGE_FOR_MODULUS;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
-static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
-static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
-static const int RSA_R_PKCS_DECODING_ERROR;
-static const int RSA_R_OAEP_DECODING_ERROR;
 
 static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_WARNING;
@@ -159,10 +151,4 @@ int ERR_GET_REASON(unsigned long);
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_EC_CODES = 1;
 
-#ifdef RSA_R_PKCS_DECODING_ERROR
-static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
-#else
-static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
-static const long RSA_R_PKCS_DECODING_ERROR = 0;
-#endif
 """
