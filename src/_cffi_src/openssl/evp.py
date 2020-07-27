@@ -90,8 +90,6 @@ int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
                          ENGINE *, EVP_PKEY *);
 
 
-int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
-                           int, unsigned char *);
 
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
 EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);

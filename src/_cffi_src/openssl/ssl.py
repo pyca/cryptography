@@ -19,7 +19,6 @@ static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
-static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
@@ -151,7 +150,6 @@ static const long TLSEXT_STATUSTYPE_ocsp;
 
 typedef ... SSL_CIPHER;
 typedef ... Cryptography_STACK_OF_SSL_CIPHER;
-typedef ... COMP_METHOD;
 
 typedef struct {
     const char *name;
@@ -164,20 +162,10 @@ FUNCTIONS = """
 const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
-int SSL_get_verify_mode(const SSL *);
-void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
-void SSL_set_verify_depth(SSL *, int);
-int SSL_get_verify_depth(const SSL *);
-int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
-void SSL_set_info_callback(SSL *ssl, void (*)(const SSL *, int, int));
-void (*SSL_get_info_callback(const SSL *))(const SSL *, int, int);
 SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
-SSL_CTX *SSL_get_SSL_CTX(const SSL *);
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
-BIO *SSL_get_rbio(const SSL *);
-BIO *SSL_get_wbio(const SSL *);
 void SSL_set_bio(SSL *, BIO *, BIO *);
 void SSL_set_connect_state(SSL *);
 void SSL_set_accept_state(SSL *);
@@ -195,14 +183,6 @@ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
 X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
 
-int SSL_use_certificate(SSL *, X509 *);
-int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
-int SSL_use_certificate_file(SSL *, const char *, int);
-int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
-int SSL_use_PrivateKey_ASN1(int, SSL *, const unsigned char *, long);
-int SSL_use_PrivateKey_file(SSL *, const char *, int);
-int SSL_check_private_key(const SSL *);
-
 int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
                     unsigned char *);
 
@@ -217,7 +197,6 @@ int SSL_shutdown(SSL *);
 int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
-Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -225,7 +204,6 @@ long SSL_CTX_set_timeout(SSL_CTX *, long);
 int SSL_CTX_set_default_verify_paths(SSL_CTX *);
 void SSL_CTX_set_verify(SSL_CTX *, int, int (*)(int, X509_STORE_CTX *));
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
-int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
 int SSL_CTX_get_verify_mode(const SSL_CTX *);
 int SSL_CTX_get_verify_depth(const SSL_CTX *);
 int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
@@ -233,11 +211,9 @@ int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
 void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
-int SSL_CTX_use_certificate_ASN1(SSL_CTX *, int, const unsigned char *);
 int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
-int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
@@ -331,21 +307,12 @@ long SSL_SESSION_get_timeout(const SSL_SESSION *);
 int SSL_SESSION_has_ticket(const SSL_SESSION *);
 long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
 
-/* not macros, but will be conditionally bound so can't live in functions */
-const COMP_METHOD *SSL_get_current_compression(SSL *);
-const COMP_METHOD *SSL_get_current_expansion(SSL *);
-const char *SSL_COMP_get_name(const COMP_METHOD *);
-
 unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_clear_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
 
 unsigned long SSL_set_options(SSL *, unsigned long);
 unsigned long SSL_get_options(SSL *);
-
-void SSL_set_app_data(SSL *, char *);
-char * SSL_get_app_data(SSL *);
-void SSL_set_read_ahead(SSL *, int);
 
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
@@ -643,16 +610,6 @@ void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
 static const long Cryptography_HAS_SET_CERT_CB = 0;
 #else
 static const long Cryptography_HAS_SET_CERT_CB = 1;
-#endif
-
-/* In OpenSSL 1.0.2i+ the handling of COMP_METHOD when OPENSSL_NO_COMP was
-   changed and we no longer need to typedef void */
-#if (defined(OPENSSL_NO_COMP) && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I) || \
-    CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_COMPRESSION = 0;
-typedef void COMP_METHOD;
-#else
-static const long Cryptography_HAS_COMPRESSION = 1;
 #endif
 
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;

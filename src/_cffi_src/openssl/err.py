@@ -36,7 +36,6 @@ const char *ERR_func_error_string(unsigned long);
 const char *ERR_reason_error_string(unsigned long);
 unsigned long ERR_get_error(void);
 unsigned long ERR_peek_error(void);
-unsigned long ERR_peek_last_error(void);
 void ERR_clear_error(void);
 void ERR_put_error(int, int, int, const char *, int);
 
