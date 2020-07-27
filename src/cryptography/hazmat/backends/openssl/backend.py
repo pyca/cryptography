@@ -932,15 +932,8 @@ class Backend(object):
         # Sign the request using the requester's private key.
         res = self._lib.X509_REQ_sign(x509_req, private_key._evp_pkey, evp_md)
         if res == 0:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_RSA,
-                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY,
-                )
-            )
-
-            raise ValueError("Digest too big for RSA key")
+            errors = self._consume_errors_with_text()
+            raise ValueError("Signing failed", errors)
 
         return _CertificateSigningRequest(self, x509_req)
 
@@ -1005,14 +998,8 @@ class Backend(object):
         # Sign the certificate with the issuer's private key.
         res = self._lib.X509_sign(x509_cert, private_key._evp_pkey, evp_md)
         if res == 0:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_RSA,
-                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY,
-                )
-            )
-            raise ValueError("Digest too big for RSA key")
+            errors = self._consume_errors_with_text()
+            raise ValueError("Signing failed", errors)
 
         return _Certificate(self, x509_cert)
 
@@ -1091,14 +1078,8 @@ class Backend(object):
 
         res = self._lib.X509_CRL_sign(x509_crl, private_key._evp_pkey, evp_md)
         if res == 0:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_RSA,
-                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY,
-                )
-            )
-            raise ValueError("Digest too big for RSA key")
+            errors = self._consume_errors_with_text()
+            raise ValueError("Signing failed", errors)
 
         return _CertificateRevocationList(self, x509_crl)
 
@@ -1716,14 +1697,12 @@ class Backend(object):
             flags,
         )
         if res != 1:
-            errors = self._consume_errors()
-            self.openssl_assert(
-                errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_X509,
-                    self._lib.X509_R_KEY_VALUES_MISMATCH,
-                )
+            errors = self._consume_errors_with_text()
+            raise ValueError(
+                "Error while signing. responder_cert must be signed "
+                "by private_key",
+                errors,
             )
-            raise ValueError("responder_cert must be signed by private_key")
 
         return basic
 
