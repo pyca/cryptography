@@ -117,12 +117,6 @@ def verify_interface(iface, klass):
             )
 
 
-# No longer needed as of 2.2, but retained because we have external consumers
-# who use it.
-def bit_length(x):
-    return x.bit_length()
-
-
 class _DeprecatedValue(object):
     def __init__(self, value, message, warning_class):
         self.value = value
