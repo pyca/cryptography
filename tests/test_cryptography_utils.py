@@ -58,8 +58,3 @@ class TestCachedProperty(object):
         assert len(accesses) == 1
         assert t.t == 14
         assert len(accesses) == 1
-
-
-def test_bit_length():
-    assert utils.bit_length(1) == 1
-    assert utils.bit_length(11) == 4
