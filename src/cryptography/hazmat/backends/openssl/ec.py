@@ -199,12 +199,7 @@ class _EllipticCurvePrivateKey(object):
         self._backend.openssl_assert(group != self._backend._ffi.NULL)
 
         curve_nid = self._backend._lib.EC_GROUP_get_curve_name(group)
-
-        public_ec_key = self._backend._lib.EC_KEY_new_by_curve_name(curve_nid)
-        self._backend.openssl_assert(public_ec_key != self._backend._ffi.NULL)
-        public_ec_key = self._backend._ffi.gc(
-            public_ec_key, self._backend._lib.EC_KEY_free
-        )
+        public_ec_key = self._backend._ec_key_new_by_curve_nid(curve_nid)
 
         point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
         self._backend.openssl_assert(point != self._backend._ffi.NULL)
