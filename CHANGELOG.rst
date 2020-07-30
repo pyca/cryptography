@@ -12,9 +12,8 @@ Changelog
   :term:`U-label` parsing in various X.509 classes. This support was originally
   deprecated in version 2.1 and moved to an extra in 2.5.
 * Deprecated OpenSSL 1.0.2 support. OpenSSL 1.0.2 is no longer supported by
-  the OpenSSL project. At this time there is no time table for dropping
-  support, however we strongly encourage all users to upgrade or install
-  ``cryptography`` from a wheel.
+  the OpenSSL project. The next version of ``cryptography`` will drop support
+  for it.
 
 .. _v3-0:
 
