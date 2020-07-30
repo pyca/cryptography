@@ -23,10 +23,6 @@ static const int OPENSSL_CFLAGS;
 static const int OPENSSL_BUILT_ON;
 static const int OPENSSL_PLATFORM;
 static const int OPENSSL_DIR;
-static const int CRYPTO_MEM_CHECK_ON;
-static const int CRYPTO_MEM_CHECK_OFF;
-static const int CRYPTO_MEM_CHECK_ENABLE;
-static const int CRYPTO_MEM_CHECK_DISABLE;
 """
 
 FUNCTIONS = """
