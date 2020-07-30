@@ -25,9 +25,14 @@ if [ -n "${OPENSSL}" ]; then
         shlib_sed
         make depend
         make -j"$(nproc)"
-        # avoid installing the docs
-        # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
-        make install_sw install_ssldirs
+        # CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+        if [ "${OPENSSL}" == "1.0.2u" ]; then
+            make install
+        else
+            # avoid installing the docs on versions of OpenSSL that aren't ancient.
+            # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
+            make install_sw install_ssldirs
+        fi
         popd
     fi
 elif [ -n "${LIBRESSL}" ]; then
