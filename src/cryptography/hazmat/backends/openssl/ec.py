@@ -47,7 +47,7 @@ def _ec_key_curve_sn(backend, ec_key):
     # explicitly encoded a curve with the same parameters as a named curve.
     # Don't do that.
     if (
-        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+        backend._lib.CRYPTOGRAPHY_OPENSSL_102U_OR_GREATER
         and backend._lib.EC_GROUP_get_asn1_flag(group) == 0
     ):
         raise NotImplementedError(
