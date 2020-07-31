@@ -56,6 +56,19 @@ matrix:
           env: TOXENV=py38 LIBRESSL=3.2.0
 
         - python: 2.7
+          dist: focal
+          arch: arm64-graviton2
+          virt: lxd
+          group: edge
+          env: TOXENV=py27
+        - python: 3.8
+          dist: focal
+          arch: arm64-graviton2
+          virt: lxd
+          group: edge
+          env: TOXENV=py38
+
+        - python: 2.7
           services: docker
           env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos7
         - python: 2.7
