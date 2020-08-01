@@ -166,6 +166,20 @@ class _Certificate(x509.Certificate):
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
+    def check_issued(self, issuer):
+        if not isinstance(issuer, x509.Certificate):
+            raise TypeError("issuer must be a Certificate")
+        res = self._backend._lib.X509_check_issued(issuer._x509, self._x509)
+        if res != self._backend._lib.X509_V_OK:
+            error = self._backend._lib.X509_verify_cert_error_string(res)
+            self._backend.openssl_assert(error != self._backend._ffi.NULL)
+            error_str = self._backend._ffi.string(error).decode()
+            raise x509.CheckIssuedFail(
+                msg="Check issued of %s against %s failed: %s"
+                % (self.subject, issuer.subject, error_str),
+                err_code=res,
+            )
+
 
 class _RevokedCertificate(x509.RevokedCertificate):
     def __init__(self, backend, crl, x509_revoked):

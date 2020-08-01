@@ -1821,6 +1821,40 @@ class TestRSACertificateRequest(object):
             assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
 
 
+class TestCertificate(object):
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_check_issued(self, backend):
+        ca = _load_cert(
+            os.path.join("x509", "custom", "ca", "ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        issuer = _load_cert(
+            os.path.join("x509", "custom", "issued.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert ca.check_issued(ca) is None
+        assert issuer.check_issued(ca) is None
+        with pytest.raises(x509.CheckIssuedFail) as exc:
+            assert not ca.check_issued(issuer)
+        expected = (
+            "Check issued of <Name(C=US,CN=cryptography CA)> against "
+            "<Name(C=US,ST=Some-State,O=Internet Widgits Pty Ltd,"
+            "CN=cryptography CA)> failed: subject issuer mismatch"
+        )
+        assert str(exc.value) == expected
+        with pytest.raises(x509.CheckIssuedFail) as exc:
+            assert not issuer.check_issued(issuer)
+        expected = (
+            "Check issued of <Name(C=US,ST=Some-State,O=Internet "
+            "Widgits Pty Ltd,CN=cryptography CA)> against <Name(C=US,"
+            "ST=Some-State,O=Internet Widgits Pty Ltd,CN=cryptography "
+            "CA)> failed: subject issuer mismatch"
+        )
+        assert str(exc.value) == expected
+
+
 class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

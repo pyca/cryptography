@@ -188,6 +188,7 @@ GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 int X509_check_ca(X509 *);
+int X509_check_issued(X509 *issuer, X509 *subject);
 /* X509 became a const arg in 1.1.0 */
 void *X509_get_ext_d2i(X509 *, int, int *, int *);
 /* The last two char * args became const char * in 1.1.0 */

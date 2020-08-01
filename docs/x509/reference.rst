@@ -459,31 +459,7 @@ X.509 Certificate Object
         certificate validation is a complex problem that involves much more
         than just signature checks.
 
-        To validate the signature on a certificate you can do the following.
-        Note: This only verifies that the certificate was signed with the
-        private key associated with the public key provided and does not
-        perform any of the other checks needed for secure certificate
-        validation. Additionally, this example will only work for RSA public
-        keys with ``PKCS1v15`` signatures, and so it can't be used for general
-        purpose signature verification.
-
-        .. doctest::
-
-           >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
-           >>> from cryptography.hazmat.primitives.asymmetric import padding
-           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key)
-           >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check)
-           >>> issuer_public_key.verify(
-           ...     cert_to_check.signature,
-           ...     cert_to_check.tbs_certificate_bytes,
-           ...     # Depends on the algorithm used to create the certificate
-           ...     padding.PKCS1v15(),
-           ...     cert_to_check.signature_hash_algorithm,
-           ... )
-
-           An
-           :class:`~cryptography.exceptions.InvalidSignature`
-           exception will be raised if the signature fails to verify.
+        To validate the signature on a certificate, :meth:`check_issued` can be called.
 
     .. method:: public_bytes(encoding)
 
@@ -495,6 +471,16 @@ X.509 Certificate Object
 
         :return bytes: The data that can be written to a file or sent
             over the network to be verified by clients.
+
+    .. method:: check_issued(issuer)
+
+        .. versionadded:: 3.1
+
+        This function checks if certificate subject was issued using CA certificate issuer.
+
+        :param issuer: The :class:`~cryptography.x509.Certificate` that is checked to be the issuer.
+
+        An :class:`~cryptography.x509.CheckIssuedFail` exception will be raised if the test fails.
 
 X.509 CRL (Certificate Revocation List) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3281,6 +3267,10 @@ Exceptions
         :type: :class:`ObjectIdentifier`
 
         Returns the OID.
+
+.. class:: CheckIssuedFail
+
+    This is raised when calling :meth:`Certificate.check_issued` and the certificate issued check fails.
 
 .. class:: UnsupportedGeneralNameType
 

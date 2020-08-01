@@ -33,6 +33,11 @@ class AttributeNotFound(Exception):
         self.oid = oid
 
 
+class CheckIssuedFail(Exception):
+    def __init__(self, msg, err_code):
+        super(CheckIssuedFail, self).__init__(msg, err_code)
+
+
 def _reject_duplicate_extension(
     extension: Extension, extensions: typing.List[Extension]
 ):
@@ -181,6 +186,12 @@ class Certificate(metaclass=abc.ABCMeta):
     def public_bytes(self, encoding: serialization.Encoding) -> bytes:
         """
         Serializes the certificate to PEM or DER format.
+        """
+
+    @abc.abstractmethod
+    def check_issued(self, issuer):
+        """
+        Verifies that the certificate was issued by the given issuer.
         """
 
 
