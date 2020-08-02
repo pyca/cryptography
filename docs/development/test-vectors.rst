@@ -569,6 +569,14 @@ Custom PKCS12 Test Vectors
   (``x509/custom/ca/ca.pem``) encrypted via AES 256 CBC with the
   password ``cryptography`` and no private key.
 
+Custom PKCS7 Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``pkcs7/isrg.pem`` - A PEM encoded PKCS7 file containing the ISRG X1 root
+  CA.
+* ``pkcs7/amazon-roots.p7b`` - A DER encoded PCKS7 file containing Amazon Root
+  CA 2 and 3.
+* ``pkcs7/enveloped.pem`` - A PEM encoded PKCS7 file with enveloped data.
+
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
