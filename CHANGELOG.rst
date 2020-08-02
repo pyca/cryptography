@@ -14,6 +14,11 @@ Changelog
 * Deprecated OpenSSL 1.0.2 support. OpenSSL 1.0.2 is no longer supported by
   the OpenSSL project. The next version of ``cryptography`` will drop support
   for it.
+* Added initial support for parsing certificates from PKCS7 files with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pem_load_certificates`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.der_load_certificates`
+  .
 
 .. _v3-0:
 

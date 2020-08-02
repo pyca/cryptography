@@ -528,6 +528,42 @@ file suffix.
 
     :return bytes: Serialized PKCS12.
 
+PKCS7
+~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization.pkcs7
+
+PKCS7 is a format described in :rfc:`2315`, among other specifications. It can
+contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
+``p7m``, or ``p7s`` file suffix but other suffixes are also seen in the wild.
+
+.. note::
+
+    ``cryptography`` only supports parsing certificates from PKCS7 files at
+    this time.
+
+.. function:: pem_load_certificates(data)
+
+    .. versionadded:: 3.1
+
+    Deserialize a PEM encoded PKCS7 blob.
+
+    :param data: The data.
+    :type data: bytes
+
+    :returns: A list of :class:`~cryptography.x509.Certificate`.
+
+.. function:: der_load_certificates(data)
+
+    .. versionadded:: 3.1
+
+    Deserialize a DER encoded PKCS7 blob.
+
+    :param data: The data.
+    :type data: bytes
+
+    :returns: A list of :class:`~cryptography.x509.Certificate`.
+
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
 
