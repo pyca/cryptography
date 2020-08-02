@@ -2480,8 +2480,8 @@ class Backend(object):
             num = self._lib.sk_X509_num(sk_x509_ptr[0])
             for i in range(num):
                 x509 = self._lib.sk_X509_value(sk_x509, i)
-                x509 = self._ffi.gc(x509, self._lib.X509_free)
                 self.openssl_assert(x509 != self._ffi.NULL)
+                x509 = self._ffi.gc(x509, self._lib.X509_free)
                 additional_certificates.append(_Certificate(self, x509))
 
         return (key, cert, additional_certificates)
