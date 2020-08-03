@@ -16,7 +16,7 @@ PyPy 7.1+, and PyPy3 7.0 on these operating systems.
 * x86-64 CentOS 7.x, 8.x
 * x86-64 Fedora (latest)
 * macOS 10.15 Catalina
-* x86-64 Ubuntu 16.04 and rolling
+* x86-64 Ubuntu 18.04, 20.04, and rolling
 * x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), and Sid
   (unstable)
 * x86-64 Alpine (latest)
