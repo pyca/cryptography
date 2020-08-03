@@ -15,9 +15,9 @@ Changelog
   the OpenSSL project. The next version of ``cryptography`` will drop support
   for it.
 * Added initial support for parsing certificates from PKCS7 files with
-  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pem_load_certificates`
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
   and
-  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.der_load_certificates`
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
   .
 
 .. _v3-0:

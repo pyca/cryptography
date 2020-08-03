@@ -542,7 +542,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     ``cryptography`` only supports parsing certificates from PKCS7 files at
     this time.
 
-.. function:: pem_load_certificates(data)
+.. function:: load_pem_pkcs7_certificates(data)
 
     .. versionadded:: 3.1
 
@@ -553,7 +553,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     :returns: A list of :class:`~cryptography.x509.Certificate`.
 
-.. function:: der_load_certificates(data)
+.. function:: load_der_pkcs7_certificates(data)
 
     .. versionadded:: 3.1
 

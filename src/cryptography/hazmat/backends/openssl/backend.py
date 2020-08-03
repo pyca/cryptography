@@ -2562,7 +2562,7 @@ class Backend(object):
 
         return _Poly1305Context(self, key)
 
-    def load_certificates_from_pem_pkcs7(self, data):
+    def load_pem_pkcs7_certificates(self, data):
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.PEM_read_bio_PKCS7(
@@ -2572,9 +2572,9 @@ class Backend(object):
             raise ValueError("Unable to parse PKCS7 data")
 
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
-        return self._load_certificates_from_pkcs7(p7)
+        return self._load_pkcs7_certificates(p7)
 
-    def load_certificates_from_der_pkcs7(self, data):
+    def load_der_pkcs7_certificates(self, data):
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.d2i_PKCS7_bio(bio.bio, self._ffi.NULL)
@@ -2582,9 +2582,9 @@ class Backend(object):
             raise ValueError("Unable to parse PKCS7 data")
 
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
-        return self._load_certificates_from_pkcs7(p7)
+        return self._load_pkcs7_certificates(p7)
 
-    def _load_certificates_from_pkcs7(self, p7):
+    def _load_pkcs7_certificates(self, p7):
         nid = self._lib.OBJ_obj2nid(p7.type)
         self.openssl_assert(nid != self._lib.NID_undef)
         if nid != self._lib.NID_pkcs7_signed:

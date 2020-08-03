@@ -18,24 +18,24 @@ from .utils import load_vectors_from_file
 class TestPKCS7Loading(object):
     def test_load_invalid_der_pkcs7(self):
         with pytest.raises(ValueError):
-            pkcs7.der_load_certificates(b"nonsense")
+            pkcs7.load_der_pkcs7_certificates(b"nonsense")
 
     def test_load_invalid_pem_pkcs7(self):
         with pytest.raises(ValueError):
-            pkcs7.pem_load_certificates(b"nonsense")
+            pkcs7.load_pem_pkcs7_certificates(b"nonsense")
 
     def test_not_bytes_der(self):
         with pytest.raises(TypeError):
-            pkcs7.der_load_certificates(38)
+            pkcs7.load_der_pkcs7_certificates(38)
 
     def test_not_bytes_pem(self):
         with pytest.raises(TypeError):
-            pkcs7.pem_load_certificates(38)
+            pkcs7.load_pem_pkcs7_certificates(38)
 
     def test_load_pkcs7_pem(self):
         certs = load_vectors_from_file(
             os.path.join("pkcs7", "isrg.pem"),
-            lambda pemfile: pkcs7.pem_load_certificates(pemfile.read()),
+            lambda pemfile: pkcs7.load_pem_pkcs7_certificates(pemfile.read()),
             mode="rb",
         )
         assert len(certs) == 1
@@ -48,7 +48,7 @@ class TestPKCS7Loading(object):
     def test_load_pkcs7_der(self):
         certs = load_vectors_from_file(
             os.path.join("pkcs7", "amazon-roots.p7b"),
-            lambda derfile: pkcs7.der_load_certificates(derfile.read()),
+            lambda derfile: pkcs7.load_der_pkcs7_certificates(derfile.read()),
             mode="rb",
         )
         assert len(certs) == 2
@@ -71,6 +71,6 @@ class TestPKCS7Loading(object):
         with pytest.raises(UnsupportedAlgorithm):
             load_vectors_from_file(
                 os.path.join("pkcs7", "enveloped.pem"),
-                lambda pemfile: pkcs7.pem_load_certificates(pemfile.read()),
+                lambda pemfile: pkcs7.load_pem_pkcs7_certificates(pemfile.read()),
                 mode="rb",
             )

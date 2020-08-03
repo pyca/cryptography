@@ -7,9 +7,9 @@ from __future__ import absolute_import, division, print_function
 from cryptography.hazmat.backends import default_backend
 
 
-def pem_load_certificates(data):
-    return default_backend().load_certificates_from_pem_pkcs7(data)
+def load_pem_pkcs7_certificates(data):
+    return default_backend().load_pem_pkcs7_certificates(data)
 
 
-def der_load_certificates(data):
-    return default_backend().load_certificates_from_der_pkcs7(data)
+def load_der_pkcs7_certificates(data):
+    return default_backend().load_der_pkcs7_certificates(data)
