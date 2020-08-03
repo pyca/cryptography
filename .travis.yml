@@ -83,7 +83,7 @@ matrix:
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-sid
         - python: 3.6
           services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-ubuntu-bionic
+          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-ubuntu-bionic
         - python: 3.8
           services: docker
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-ubuntu-focal
