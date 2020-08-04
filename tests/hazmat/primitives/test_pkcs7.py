@@ -71,6 +71,8 @@ class TestPKCS7Loading(object):
         with pytest.raises(UnsupportedAlgorithm):
             load_vectors_from_file(
                 os.path.join("pkcs7", "enveloped.pem"),
-                lambda pemfile: pkcs7.load_pem_pkcs7_certificates(pemfile.read()),
+                lambda pemfile: pkcs7.load_pem_pkcs7_certificates(
+                    pemfile.read()
+                ),
                 mode="rb",
             )
