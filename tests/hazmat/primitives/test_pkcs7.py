@@ -9,10 +9,11 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 from .utils import load_vectors_from_file
+from ...utils import raises_unsupported_algorithm
 
 
 class TestPKCS7Loading(object):
@@ -68,7 +69,7 @@ class TestPKCS7Loading(object):
         ]
 
     def test_load_pkcs7_unsupported_type(self):
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             load_vectors_from_file(
                 os.path.join("pkcs7", "enveloped.pem"),
                 lambda pemfile: pkcs7.load_pem_pkcs7_certificates(

@@ -2590,7 +2590,8 @@ class Backend(object):
         if nid != self._lib.NID_pkcs7_signed:
             raise UnsupportedAlgorithm(
                 "Only basic signed structures are currently supported. NID"
-                " for this data was {}".format(nid)
+                " for this data was {}".format(nid),
+                _Reasons.UNSUPPORTED_SERIALIZATION,
             )
 
         sk_x509 = p7.d.sign.cert

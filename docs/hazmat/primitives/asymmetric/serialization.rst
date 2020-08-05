@@ -546,23 +546,37 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. versionadded:: 3.1
 
-    Deserialize a PEM encoded PKCS7 blob.
+    Deserialize a PEM encoded PKCS7 blob to a list of certificates. PKCS7 can
+    contain many other types of data, including CRLs, but this function will
+    ignore everything except certificates.
 
     :param data: The data.
     :type data: bytes
 
     :returns: A list of :class:`~cryptography.x509.Certificate`.
+
+    :raises ValueError: If the PKCS7 data could not be loaded.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the PKCS7 data
+        is of a type that is not supported.
 
 .. function:: load_der_pkcs7_certificates(data)
 
     .. versionadded:: 3.1
 
-    Deserialize a DER encoded PKCS7 blob.
+    Deserialize a DER encoded PKCS7 blob to a list of certificates. PKCS7 can
+    contain many other types of data, including CRLs, but this function will
+    ignore everything except certificates.
 
     :param data: The data.
     :type data: bytes
 
     :returns: A list of :class:`~cryptography.x509.Certificate`.
+
+    :raises ValueError: If the PKCS7 data could not be loaded.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the PKCS7 data
+        is of a type that is not supported.
 
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
