@@ -1,0 +1,7 @@
+- project:
+    check:
+      jobs:
+        - pyca-cryptography-ubuntu-focal-py38-arm64
+        - pyca-cryptography-ubuntu-bionic-py36-arm64
+        - pyca-cryptography-ubuntu-xenial-py27-arm64
+        - pyca-cryptography-centos-8-py36-arm64

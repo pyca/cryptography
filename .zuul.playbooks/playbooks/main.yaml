@@ -1,0 +1,32 @@
+- hosts: all
+  tasks:
+
+    - name: Install tox
+      include_role:
+        name: ensure-tox
+
+    - name: Install required packages
+      package:
+        name:
+          - build-essential
+          - libssl-dev
+          - libffi-dev
+          - python3-dev
+      become: yes
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: Install required packages
+      package:
+        name:
+          - redhat-rpm-config
+          - gcc
+          - libffi-devel
+          - openssl-devel
+          - python3-devel
+      become: yes
+      when: ansible_distribution == 'CentOS'
+
+    - name: Run tox
+      include_role:
+        name: tox
+

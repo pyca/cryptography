@@ -1,0 +1,33 @@
+- job:
+    name: pyca-cryptography-base
+    abstract: true
+    description: Run pyca/cryptography unit testing
+    run: .zuul.playbooks/playbooks/main.yaml
+
+- job:
+    name: pyca-cryptography-ubuntu-focal-py38-arm64
+    parent: pyca-cryptography-base
+    nodeset: ubuntu-focal-arm64
+    vars:
+      tox_envlist: py38
+
+- job:
+    name: pyca-cryptography-ubuntu-bionic-py36-arm64
+    parent: pyca-cryptography-base
+    nodeset: ubuntu-bionic-arm64
+    vars:
+      tox_envlist: py36
+
+- job:
+    name: pyca-cryptography-ubuntu-xenial-py27-arm64
+    parent: pyca-cryptography-base
+    nodeset: ubuntu-xenial-arm64
+    vars:
+      tox_envlist: py27
+
+- job:
+    name: pyca-cryptography-centos-8-py36-arm64
+    parent: pyca-cryptography-base
+    nodeset: centos-8-arm64
+    vars:
+      tox_envlist: py36
