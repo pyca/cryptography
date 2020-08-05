@@ -109,14 +109,14 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
-        - python: 2.7
+        - python: 3.8
           services: docker
           env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
           if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
         - python: 3.8
           env: TOXENV=packaging
 
-        - python: 2.7
+        - python: 3.8
           env: DOWNSTREAM=pyopenssl
         - python: 3.7
           env: DOWNSTREAM=twisted OPENSSL=1.1.1g
@@ -128,11 +128,11 @@ matrix:
           # BOTO_CONFIG works around this boto issue on travis:
           # https://github.com/boto/boto/issues/3717
           env: DOWNSTREAM=dynamodb-encryption-sdk BOTO_CONFIG=/dev/null
-        - python: 2.7
+        - python: 3.8
           env: DOWNSTREAM=certbot
-        - python: 2.7
+        - python: 3.8
           env: DOWNSTREAM=certbot-josepy
-        - python: 2.7
+        - python: 3.8
           env: DOWNSTREAM=urllib3
           # Tests hang when run under bionic/focal
           dist: xenial
