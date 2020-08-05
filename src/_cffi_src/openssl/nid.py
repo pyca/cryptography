@@ -25,6 +25,8 @@ static const int NID_poly1305;
 
 static const int NID_subject_alt_name;
 static const int NID_crl_reason;
+
+static const int NID_pkcs7_signed;
 """
 
 FUNCTIONS = """
