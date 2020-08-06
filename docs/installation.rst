@@ -11,7 +11,7 @@ Supported platforms
 -------------------
 
 Currently we test ``cryptography`` on Python 2.7, 3.5+,
-PyPy 7.1+, and PyPy3 7.0 on these operating systems.
+PyPy 7.3.1, and PyPy3 7.3.1 on these operating systems.
 
 * x86-64 CentOS 7.x, 8.x
 * x86-64 Fedora (latest)
