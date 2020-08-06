@@ -34,10 +34,12 @@
        * wheels, since that's the predominant way you get a situation where
        * you don't have SYS_getrandom at compile time but do have the syscall
        * at runtime */
-      #if defined __x86_64__
+      #if defined(__x86_64__)
         #define SYS_getrandom 318
       #elif defined(__i386__)
         #define SYS_getrandom 355
+      #elif defined(__aarch64__)
+        #define SYS_getrandom 278
       #endif
     #endif
   #endif /* __linux__ */
