@@ -82,7 +82,7 @@ def main(argv):
     assert result == 1
 
     # Trigger a bunch of initialization stuff.
-    import cryptography.hazmat.backends.openssl
+    from cryptography.hazmat.backends.openssl.backend import backend
 
     start_heap = set(heap)
 
@@ -90,6 +90,10 @@ def main(argv):
     gc.collect()
     gc.collect()
     gc.collect()
+
+    if lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+        lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
+        lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
 
     if lib.Cryptography_HAS_OPENSSL_CLEANUP:
         lib.OPENSSL_cleanup()

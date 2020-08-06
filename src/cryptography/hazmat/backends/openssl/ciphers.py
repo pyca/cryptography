@@ -146,6 +146,7 @@ class _CipherContext(object):
                 self._ctx, outbuf, outlen, inbuf, inlen
             )
             if res == 0 and isinstance(self._mode, modes.XTS):
+                self._backend._consume_errors()
                 raise ValueError(
                     "In XTS mode you must supply at least a full block in the "
                     "first update call. For AES this is 16 bytes."
@@ -180,6 +181,13 @@ class _CipherContext(object):
                 errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+                )
+                or (
+                    self._backend._lib.Cryptography_HAS_PROVIDERS
+                    and errors[0]._lib_reason_match(
+                        self._backend._lib.ERR_LIB_PROV,
+                        self._backend._lib.PROV_R_WRONG_FINAL_BLOCK_LENGTH,
+                    )
                 ),
                 errors=errors,
             )
