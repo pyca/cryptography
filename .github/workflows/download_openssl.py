@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import time
 import zipfile
 
 import requests
@@ -20,6 +21,7 @@ def get_response(session, url, token):
                     response.status_code, url
                 )
             )
+            time.sleep(2)
             continue
         return response
     response = session.get(url, headers={"Authorization": "token " + token})
