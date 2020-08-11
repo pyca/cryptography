@@ -37,7 +37,7 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
 
 void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx) {
 #if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-    return HMAC_CTX_free(ctx);
+    HMAC_CTX_free(ctx);
 #else
     if (ctx != NULL) {
         HMAC_CTX_cleanup(ctx);
