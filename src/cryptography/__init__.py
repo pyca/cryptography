@@ -39,3 +39,10 @@ if sys.version_info[0] == 2:
         CryptographyDeprecationWarning,
         stacklevel=2,
     )
+if sys.version_info[:2] == (3, 5):
+    warnings.warn(
+        "Python 3.5 support will be dropped in the next release of"
+        "cryptography. Please upgrade your Python.",
+        CryptographyDeprecationWarning,
+        stacklevel=2,
+    )

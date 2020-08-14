@@ -14,6 +14,8 @@ Changelog
 * Deprecated OpenSSL 1.0.2 support. OpenSSL 1.0.2 is no longer supported by
   the OpenSSL project. The next version of ``cryptography`` will drop support
   for it.
+* Deprecated support for Python 3.5. This version sees very little use and will
+  be removed in the next release.
 * Added initial support for parsing certificates from PKCS7 files with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
   and
