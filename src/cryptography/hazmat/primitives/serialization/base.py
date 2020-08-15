@@ -10,29 +10,36 @@ from enum import Enum
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends import _get_backend
 
 
-def load_pem_private_key(data, password, backend):
+def load_pem_private_key(data, password, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_private_key(data, password)
 
 
-def load_pem_public_key(data, backend):
+def load_pem_public_key(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_public_key(data)
 
 
-def load_pem_parameters(data, backend):
+def load_pem_parameters(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_parameters(data)
 
 
-def load_der_private_key(data, password, backend):
+def load_der_private_key(data, password, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_private_key(data, password)
 
 
-def load_der_public_key(data, backend):
+def load_der_public_key(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_public_key(data)
 
 
-def load_der_parameters(data, backend):
+def load_der_parameters(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_parameters(data)
 
 

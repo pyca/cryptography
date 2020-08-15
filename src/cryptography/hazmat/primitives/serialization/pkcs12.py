@@ -5,12 +5,13 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends import _get_backend, default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
-def load_key_and_certificates(data, password, backend):
+def load_key_and_certificates(data, password, backend=None):
+    backend = _get_backend(backend)
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
