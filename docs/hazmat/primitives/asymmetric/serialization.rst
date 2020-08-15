@@ -88,10 +88,9 @@ methods.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import dsa, rsa
         >>> from cryptography.hazmat.primitives.serialization import load_pem_private_key
-        >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
+        >>> key = load_pem_private_key(pem_data, password=None)
         >>> if isinstance(key, rsa.RSAPrivateKey):
         ...     signature = sign_with_rsa_key(key, message)
         ... elif isinstance(key, dsa.DSAPrivateKey):
@@ -173,7 +172,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
-        >>> key = load_pem_public_key(public_pem_data, backend=default_backend())
+        >>> key = load_pem_public_key(public_pem_data)
         >>> isinstance(key, rsa.RSAPublicKey)
         True
 
@@ -208,7 +207,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
         >>> from cryptography.hazmat.primitives.serialization import load_pem_parameters
         >>> from cryptography.hazmat.primitives.asymmetric import dh
-        >>> parameters = load_pem_parameters(parameters_pem_data, backend=default_backend())
+        >>> parameters = load_pem_parameters(parameters_pem_data)
         >>> isinstance(parameters, dh.DHParameters)
         True
 
@@ -274,10 +273,9 @@ the rest.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.hazmat.primitives.serialization import load_der_private_key
-        >>> key = load_der_private_key(der_data, password=None, backend=default_backend())
+        >>> key = load_der_private_key(der_data, password=None)
         >>> isinstance(key, rsa.RSAPrivateKey)
         True
 
@@ -310,10 +308,9 @@ the rest.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.hazmat.primitives.serialization import load_der_public_key
-        >>> key = load_der_public_key(public_der_data, backend=default_backend())
+        >>> key = load_der_public_key(public_der_data)
         >>> isinstance(key, rsa.RSAPublicKey)
         True
 
@@ -341,10 +338,9 @@ the rest.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import dh
         >>> from cryptography.hazmat.primitives.serialization import load_der_parameters
-        >>> parameters = load_der_parameters(parameters_der_data, backend=default_backend())
+        >>> parameters = load_der_parameters(parameters_der_data)
         >>> isinstance(parameters, dh.DHParameters)
         True
 

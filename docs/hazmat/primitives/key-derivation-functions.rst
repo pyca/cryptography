@@ -55,8 +55,6 @@ PBKDF2
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> # Salts should be randomly generated
         >>> salt = os.urandom(16)
         >>> # derive
@@ -65,7 +63,6 @@ PBKDF2
         ...     length=32,
         ...     salt=salt,
         ...     iterations=100000,
-        ...     backend=backend
         ... )
         >>> key = kdf.derive(b"my great password")
         >>> # verify
@@ -74,7 +71,6 @@ PBKDF2
         ...     length=32,
         ...     salt=salt,
         ...     iterations=100000,
-        ...     backend=backend
         ... )
         >>> kdf.verify(b"my great password", key)
 
@@ -159,8 +155,6 @@ Scrypt
 
         >>> import os
         >>> from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> salt = os.urandom(16)
         >>> # derive
         >>> kdf = Scrypt(
@@ -169,7 +163,6 @@ Scrypt
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
-        ...     backend=backend
         ... )
         >>> key = kdf.derive(b"my great password")
         >>> # verify
@@ -179,7 +172,6 @@ Scrypt
         ...     n=2**14,
         ...     r=8,
         ...     p=1,
-        ...     backend=backend
         ... )
         >>> kdf.verify(b"my great password", key)
 
@@ -276,21 +268,17 @@ ConcatKDF
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     otherinfo=otherinfo,
-        ...     backend=backend
         ... )
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     otherinfo=otherinfo,
-        ...     backend=backend
         ... )
         >>> ckdf.verify(b"input key", key)
 
@@ -364,8 +352,6 @@ ConcatKDF
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHMAC
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> salt = os.urandom(16)
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHMAC(
@@ -373,7 +359,6 @@ ConcatKDF
         ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
-        ...     backend=backend
         ... )
         >>> key = ckdf.derive(b"input key")
         >>> ckdf = ConcatKDFHMAC(
@@ -381,7 +366,6 @@ ConcatKDF
         ...     length=32,
         ...     salt=salt,
         ...     otherinfo=otherinfo,
-        ...     backend=backend
         ... )
         >>> ckdf.verify(b"input key", key)
 
@@ -468,8 +452,6 @@ HKDF
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> salt = os.urandom(16)
         >>> info = b"hkdf-example"
         >>> hkdf = HKDF(
@@ -477,7 +459,6 @@ HKDF
         ...     length=32,
         ...     salt=salt,
         ...     info=info,
-        ...     backend=backend
         ... )
         >>> key = hkdf.derive(b"input key")
         >>> hkdf = HKDF(
@@ -485,7 +466,6 @@ HKDF
         ...     length=32,
         ...     salt=salt,
         ...     info=info,
-        ...     backend=backend
         ... )
         >>> hkdf.verify(b"input key", key)
 
@@ -575,22 +555,18 @@ HKDF
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> info = b"hkdf-example"
         >>> key_material = os.urandom(16)
         >>> hkdf = HKDFExpand(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     info=info,
-        ...     backend=backend
         ... )
         >>> key = hkdf.derive(key_material)
         >>> hkdf = HKDFExpand(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     info=info,
-        ...     backend=backend
         ... )
         >>> hkdf.verify(key_material, key)
 
@@ -676,8 +652,6 @@ KBKDF
         >>> from cryptography.hazmat.primitives.kdf.kbkdf import (
         ...    CounterLocation, KBKDFHMAC, Mode
         ... )
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> label = b"KBKDF HMAC Label"
         >>> context = b"KBKDF HMAC Context"
         >>> kdf = KBKDFHMAC(
@@ -690,7 +664,6 @@ KBKDF
         ...     label=label,
         ...     context=context,
         ...     fixed=None,
-        ...     backend=backend
         ... )
         >>> key = kdf.derive(b"input key")
         >>> kdf = KBKDFHMAC(
@@ -703,7 +676,6 @@ KBKDF
         ...     label=label,
         ...     context=context,
         ...     fixed=None,
-        ...     backend=backend
         ... )
         >>> kdf.verify(b"input key", key)
 
@@ -835,21 +807,17 @@ X963KDF
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> sharedinfo = b"ANSI X9.63 Example"
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     sharedinfo=sharedinfo,
-        ...     backend=backend
         ... )
         >>> key = xkdf.derive(b"input key")
         >>> xkdf = X963KDF(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     sharedinfo=sharedinfo,
-        ...     backend=backend
         ... )
         >>> xkdf.verify(b"input key", key)
 

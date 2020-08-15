@@ -56,11 +56,10 @@ Elliptic Curve Signature Algorithms
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import ec
         >>> private_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... )
         >>> data = b"this is some data I'd like to sign"
         >>> signature = private_key.sign(
@@ -80,7 +79,7 @@ Elliptic Curve Signature Algorithms
 
         >>> from cryptography.hazmat.primitives.asymmetric import utils
         >>> chosen_hash = hashes.SHA256()
-        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher = hashes.Hash(chosen_hash)
         >>> hasher.update(b"data & ")
         >>> hasher.update(b"more data")
         >>> digest = hasher.finalize()
@@ -112,7 +111,7 @@ Elliptic Curve Signature Algorithms
     .. doctest::
 
         >>> chosen_hash = hashes.SHA256()
-        >>> hasher = hashes.Hash(chosen_hash, default_backend())
+        >>> hasher = hashes.Hash(chosen_hash)
         >>> hasher.update(b"data & ")
         >>> hasher.update(b"more data")
         >>> digest = hasher.finalize()
@@ -270,18 +269,17 @@ Elliptic Curve Key Exchange algorithm
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import ec
         >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
         >>> # Generate a private key for use in the exchange.
         >>> server_private_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... )
         >>> # In a real handshake the peer is a remote client. For this
         >>> # example we'll generate another local private key though.
         >>> peer_private_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... )
         >>> shared_key = server_private_key.exchange(
         ...     ec.ECDH(), peer_private_key.public_key())
@@ -291,7 +289,6 @@ Elliptic Curve Key Exchange algorithm
         ...     length=32,
         ...     salt=None,
         ...     info=b'handshake data',
-        ...     backend=default_backend()
         ... ).derive(shared_key)
         >>> # And now we can demonstrate that the handshake performed in the
         >>> # opposite direction gives the same final value
@@ -303,7 +300,6 @@ Elliptic Curve Key Exchange algorithm
         ...     length=32,
         ...     salt=None,
         ...     info=b'handshake data',
-        ...     backend=default_backend()
         ... ).derive(same_shared_key)
         >>> derived_key == same_derived_key
         True
@@ -316,19 +312,18 @@ Elliptic Curve Key Exchange algorithm
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import ec
         >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
         >>> # Generate a private key for use in the exchange.
         >>> private_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... )
         >>> # In a real handshake the peer_public_key will be received from the
         >>> # other party. For this example we'll generate another private key
         >>> # and get a public key from that.
         >>> peer_public_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... ).public_key()
         >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
         >>> # Perform key derivation.
@@ -337,14 +332,13 @@ Elliptic Curve Key Exchange algorithm
         ...     length=32,
         ...     salt=None,
         ...     info=b'handshake data',
-        ...     backend=default_backend()
         ... ).derive(shared_key)
         >>> # For the next handshake we MUST generate another private key.
         >>> private_key_2 = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... )
         >>> peer_public_key_2 = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
+        ...     ec.SECP384R1()
         ... ).public_key()
         >>> shared_key_2 = private_key_2.exchange(ec.ECDH(), peer_public_key_2)
         >>> derived_key_2 = HKDF(
@@ -352,7 +346,6 @@ Elliptic Curve Key Exchange algorithm
         ...     length=32,
         ...     salt=None,
         ...     info=b'handshake data',
-        ...     backend=default_backend()
         ... ).derive(shared_key_2)
 
 Elliptic Curves
@@ -787,11 +780,10 @@ This sample demonstrates how to generate a private key and serialize it.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
     >>> from cryptography.hazmat.primitives.asymmetric import ec
 
-    >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
+    >>> private_key = ec.generate_private_key(ec.SECP384R1())
 
     >>> serialized_private = private_key.private_bytes(
     ...     encoding=serialization.Encoding.PEM,
@@ -831,14 +823,12 @@ in PEM format.
 
     >>> loaded_public_key = serialization.load_pem_public_key(
     ...     serialized_public,
-    ...     backend=default_backend()
     ... )
 
     >>> loaded_private_key = serialization.load_pem_private_key(
     ...     serialized_private,
     ...     # or password=None, if in plain text
     ...     password=b'testpassword',
-    ...     backend=default_backend()
     ... )
 
 
