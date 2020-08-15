@@ -13,7 +13,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends import _get_backend, default_backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
@@ -471,10 +471,11 @@ def _lookup_kformat(key_type):
     raise UnsupportedAlgorithm("Unsupported key type: %r" % key_type)
 
 
-def load_ssh_private_key(data, password, backend):
+def load_ssh_private_key(data, password, backend=None):
     """Load private key from OpenSSH custom encoding.
     """
     utils._check_byteslike("data", data)
+    backend = _get_backend(backend)
     if password is not None:
         utils._check_bytes("password", password)
 
@@ -626,9 +627,10 @@ def serialize_ssh_private_key(private_key, password=None):
     return txt
 
 
-def load_ssh_public_key(data, backend):
+def load_ssh_public_key(data, backend=None):
     """Load public key from OpenSSH one-line format.
     """
+    backend = _get_backend(backend)
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)

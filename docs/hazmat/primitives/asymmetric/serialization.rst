@@ -126,7 +126,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     extract the public key with
     :meth:`Certificate.public_key <cryptography.x509.Certificate.public_key>`.
 
-.. function:: load_pem_private_key(data, password, backend)
+.. function:: load_pem_private_key(data, password, backend=None)
 
     .. versionadded:: 0.6
 
@@ -140,7 +140,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         be ``None`` if the private key is not encrypted.
     :type data: :term:`bytes-like`
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
     :returns: One of
@@ -162,7 +162,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         is of a type that is not supported by the backend or if the key is
         encrypted with a symmetric cipher that is not supported by the backend.
 
-.. function:: load_pem_public_key(data, backend)
+.. function:: load_pem_public_key(data, backend=None)
 
     .. versionadded:: 0.6
 
@@ -179,7 +179,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :param bytes data: The PEM encoded key data.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
 
@@ -197,7 +197,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
         is of a type that is not supported by the backend.
 
-.. function:: load_pem_parameters(data, backend)
+.. function:: load_pem_parameters(data, backend=None)
 
     .. versionadded:: 2.0
 
@@ -214,7 +214,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :param bytes data: The PEM encoded parameters data.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
 
@@ -236,7 +236,7 @@ data is binary. DER keys may be in a variety of formats, but as long as you
 know whether it is a public or private key the loading functions will handle
 the rest.
 
-.. function:: load_der_private_key(data, password, backend)
+.. function:: load_der_private_key(data, password, backend=None)
 
     .. versionadded:: 0.8
 
@@ -250,7 +250,7 @@ the rest.
         be ``None`` if the private key is not encrypted.
     :type password: :term:`bytes-like`
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
@@ -281,7 +281,7 @@ the rest.
         >>> isinstance(key, rsa.RSAPrivateKey)
         True
 
-.. function:: load_der_public_key(data, backend)
+.. function:: load_der_public_key(data, backend=None)
 
     .. versionadded:: 0.8
 
@@ -291,7 +291,7 @@ the rest.
 
     :param bytes data: The DER encoded key data.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
@@ -317,7 +317,7 @@ the rest.
         >>> isinstance(key, rsa.RSAPublicKey)
         True
 
-.. function:: load_der_parameters(data, backend)
+.. function:: load_der_parameters(data, backend=None)
 
     .. versionadded:: 2.0
 
@@ -326,7 +326,7 @@ the rest.
 
     :param bytes data: The DER encoded parameters data.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: Currently only
@@ -369,7 +369,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 ``ssh-rsa``. ECDSA keys have a slightly different format, they begin with
 ``ecdsa-sha2-{curve}``.
 
-.. function:: load_ssh_public_key(data, backend)
+.. function:: load_ssh_public_key(data, backend=None)
 
     .. versionadded:: 0.7
 
@@ -380,7 +380,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :param data: The OpenSSH encoded key data.
     :type data: :term:`bytes-like`
 
-    :param backend: A backend which implements
+    :param backend: An optional backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
@@ -418,7 +418,7 @@ An example ECDSA key in OpenSSH format::
     BAUGBw==
     -----END OPENSSH PRIVATE KEY-----
 
-.. function:: load_ssh_private_key(data, password, backend)
+.. function:: load_ssh_private_key(data, password, backend=None)
 
     .. versionadded:: 3.0
 
@@ -431,7 +431,7 @@ An example ECDSA key in OpenSSH format::
     :param bytes password: Password bytes to use to decrypt
         password-protected key. Or ``None`` if not needed.
 
-    :param backend: A backend which implements
+    :param backend: An optional backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
@@ -466,7 +466,7 @@ file suffix.
     ``cryptography`` only supports a single private key and associated
     certificates when parsing PKCS12 files at this time.
 
-.. function:: load_key_and_certificates(data, password, backend)
+.. function:: load_key_and_certificates(data, password, backend=None)
 
     .. versionadded:: 2.5
 
@@ -479,7 +479,7 @@ file suffix.
         if the PKCS12 is not encrypted.
     :type password: :term:`bytes-like`
 
-    :param backend: A backend instance.
+    :param backend: An optional backend instance.
 
     :returns: A tuple of
         ``(private_key, certificate, additional_certificates)``.
