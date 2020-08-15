@@ -16,6 +16,8 @@ Changelog
   for it.
 * Deprecated support for Python 3.5. This version sees very little use and will
   be removed in the next release.
+* ``backend`` arguments to functions are no longer required and the
+  default backend will automatically be selected if no ``backend`` is provided.
 * Added initial support for parsing certificates from PKCS7 files with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
   and
