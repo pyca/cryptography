@@ -9,6 +9,7 @@ from enum import Enum
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends import _get_backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
@@ -225,7 +226,8 @@ class Name(object):
     def rdns(self):
         return self._attributes
 
-    def public_bytes(self, backend):
+    def public_bytes(self, backend=None):
+        backend = _get_backend(backend)
         return backend.x509_name_bytes(self)
 
     def __eq__(self, other):
