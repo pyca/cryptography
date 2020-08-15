@@ -20,7 +20,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 **To minimize the risk of security issues you should evaluate Fernet to see if
 it fits your needs before implementing anything using this module.**
 
-.. class:: Cipher(algorithm, mode, backend)
+.. class:: Cipher(algorithm, mode, backend=None)
 
     Cipher objects combine an algorithm such as
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` with a
@@ -51,7 +51,7 @@ it fits your needs before implementing anything using this module.**
     :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
         instance such as those described
         :ref:`below <symmetric-encryption-modes>`.
-    :param backend: A
+    :param backend: An optional
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         instance.
 

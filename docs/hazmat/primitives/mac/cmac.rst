@@ -17,7 +17,7 @@ of a message.
 
 A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
-.. class:: CMAC(algorithm, backend)
+.. class:: CMAC(algorithm, backend=None)
 
     .. versionadded:: 0.4
 
@@ -56,7 +56,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`.
     :raises TypeError: This is raised if the provided ``algorithm`` is not an instance of
         :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
