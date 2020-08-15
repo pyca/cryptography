@@ -13,6 +13,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
@@ -24,7 +25,8 @@ def _int_to_u32be(n):
 
 @utils.register_interface(KeyDerivationFunction)
 class X963KDF(object):
-    def __init__(self, algorithm, length, sharedinfo, backend):
+    def __init__(self, algorithm, length, sharedinfo, backend=None):
+        backend = _get_backend(backend)
 
         max_len = algorithm.digest_size * (2 ** 32 - 1)
         if length > max_len:

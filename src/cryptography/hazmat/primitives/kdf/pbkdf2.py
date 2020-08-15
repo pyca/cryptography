@@ -11,6 +11,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
@@ -18,7 +19,8 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 @utils.register_interface(KeyDerivationFunction)
 class PBKDF2HMAC(object):
-    def __init__(self, algorithm, length, salt, iterations, backend):
+    def __init__(self, algorithm, length, salt, iterations, backend=None):
+        backend = _get_backend(backend)
         if not isinstance(backend, PBKDF2HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement PBKDF2HMACBackend.",
