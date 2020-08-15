@@ -19,13 +19,6 @@
       tox_envlist: py36
 
 - job:
-    name: pyca-cryptography-ubuntu-xenial-py27-arm64
-    parent: pyca-cryptography-base
-    nodeset: ubuntu-xenial-arm64
-    vars:
-      tox_envlist: py27
-
-- job:
     name: pyca-cryptography-centos-8-py36-arm64
     parent: pyca-cryptography-base
     nodeset: centos-8-arm64
