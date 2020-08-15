@@ -17,8 +17,6 @@ jobs:
         PYTHON:
           - {VERSION: "2.7", TOXENV: "py27", EXTRA_CFLAGS: ""}
           - {VERSION: "3.5", TOXENV: "py35", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.7", TOXENV: "py37", EXTRA_CFLAGS: ""}
           - {VERSION: "3.8", TOXENV: "py38", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
     steps:
