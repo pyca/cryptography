@@ -42,6 +42,14 @@ from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
+    _CRL_EXTENSION_HANDLERS,
+    _EXTENSION_HANDLERS_BASE,
+    _EXTENSION_HANDLERS_SCT,
+    _OCSP_BASICRESP_EXTENSION_HANDLERS,
+    _OCSP_REQ_EXTENSION_HANDLERS,
+    _OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT,
+    _REVOKED_EXTENSION_HANDLERS,
+    _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters,
@@ -219,6 +227,7 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
+        self._register_x509_ext_parsers()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
                 "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
@@ -403,6 +412,59 @@ class Backend(object):
             ChaCha20, type(None), GetCipherByName("chacha20")
         )
         self.register_cipher_adapter(AES, XTS, _get_xts_cipher)
+
+    def _register_x509_ext_parsers(self):
+        ext_handlers = _EXTENSION_HANDLERS_BASE.copy()
+        # All revoked extensions are valid single response extensions, see:
+        # https://tools.ietf.org/html/rfc6960#section-4.4.5
+        singleresp_handlers = _REVOKED_EXTENSION_HANDLERS.copy()
+
+        if self._lib.Cryptography_HAS_SCT:
+            ext_handlers.update(_EXTENSION_HANDLERS_SCT)
+            singleresp_handlers.update(_OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT)
+
+        self._certificate_extension_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.X509_get_ext_count,
+            get_ext=self._lib.X509_get_ext,
+            handlers=ext_handlers,
+        )
+        self._csr_extension_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.sk_X509_EXTENSION_num,
+            get_ext=self._lib.sk_X509_EXTENSION_value,
+            handlers=ext_handlers,
+        )
+        self._revoked_cert_extension_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.X509_REVOKED_get_ext_count,
+            get_ext=self._lib.X509_REVOKED_get_ext,
+            handlers=_REVOKED_EXTENSION_HANDLERS,
+        )
+        self._crl_extension_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.X509_CRL_get_ext_count,
+            get_ext=self._lib.X509_CRL_get_ext,
+            handlers=_CRL_EXTENSION_HANDLERS,
+        )
+        self._ocsp_req_ext_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.OCSP_REQUEST_get_ext_count,
+            get_ext=self._lib.OCSP_REQUEST_get_ext,
+            handlers=_OCSP_REQ_EXTENSION_HANDLERS,
+        )
+        self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
+            get_ext=self._lib.OCSP_BASICRESP_get_ext,
+            handlers=_OCSP_BASICRESP_EXTENSION_HANDLERS,
+        )
+        self._ocsp_singleresp_ext_parser = _X509ExtensionParser(
+            self,
+            ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
+            get_ext=self._lib.OCSP_SINGLERESP_get_ext,
+            handlers=singleresp_handlers,
+        )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
