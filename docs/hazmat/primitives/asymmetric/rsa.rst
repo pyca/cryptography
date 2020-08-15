@@ -14,7 +14,7 @@ Unlike symmetric cryptography, where the key is typically just a random series
 of bytes, RSA keys have a complex internal structure with `specific
 mathematical properties`_.
 
-.. function:: generate_private_key(public_exponent, key_size, backend)
+.. function:: generate_private_key(public_exponent, key_size, backend=None)
 
     .. versionadded:: 0.5
 
@@ -49,7 +49,7 @@ mathematical properties`_.
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
 
-    :param backend: A backend which implements
+    :param backend: An optional backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
     :return: An instance of
@@ -403,9 +403,9 @@ is unavailable.
 
         The public exponent.
 
-    .. method:: public_key(backend)
+    .. method:: public_key(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
         :returns: A new instance of
@@ -470,9 +470,9 @@ is unavailable.
         A `Chinese remainder theorem`_ coefficient used to speed up RSA
         operations. Calculated as: q\ :sup:`-1` mod p
 
-    .. method:: private_key(backend)
+    .. method:: private_key(backend=None)
 
-        :param backend: A new instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
         :returns: An instance of
