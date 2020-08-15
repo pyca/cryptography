@@ -118,8 +118,10 @@ matrix:
           env: DOWNSTREAM=pyopenssl
         - python: 3.7
           env: DOWNSTREAM=twisted OPENSSL=1.1.1g
-        - python: 2.7
-          env: DOWNSTREAM=paramiko
+        # Temporary disabled until
+        # https://github.com/paramiko/paramiko/pull/1723 is merged
+        # - python: 2.7
+        #   env: DOWNSTREAM=paramiko
         - python: 2.7
           env: DOWNSTREAM=aws-encryption-sdk
         - python: 2.7

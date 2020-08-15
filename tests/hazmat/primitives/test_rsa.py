@@ -49,6 +49,7 @@ from .fixtures_rsa import (
     RSA_KEY_599,
     RSA_KEY_745,
     RSA_KEY_768,
+    RSA_KEY_CORRUPTED,
 )
 from .utils import (
     _check_rsa_private_numbers,
@@ -727,6 +728,12 @@ class TestRSASignature(object):
                 b"0" * 64,
                 padding.PKCS1v15(),
                 asym_utils.Prehashed(hashes.SHA1()),
+            )
+
+    def test_corrupted_private_key(self, backend):
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(
+                RSA_KEY_CORRUPTED, password=None, backend=backend
             )
 
 

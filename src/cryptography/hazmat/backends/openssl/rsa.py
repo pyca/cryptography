@@ -314,6 +314,11 @@ class _RSAVerificationContext(object):
 @utils.register_interface(RSAPrivateKeyWithSerialization)
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata, evp_pkey):
+        res = backend._lib.RSA_check_key(rsa_cdata)
+        if res != 1:
+            errors = backend._consume_errors_with_text()
+            raise ValueError("Invalid private key", errors)
+
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
