@@ -5,7 +5,7 @@ Message digests (Hashing)
 
 .. module:: cryptography.hazmat.primitives.hashes
 
-.. class:: Hash(algorithm, backend)
+.. class:: Hash(algorithm, backend=None)
 
     A cryptographic hash function takes an arbitrary block of data and
     calculates a fixed-size bit string (a digest), such that different data
@@ -42,7 +42,7 @@ Message digests (Hashing)
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         instance such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
-    :param backend: A
+    :param backend: An optional
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
         instance.
 

@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import struct
 
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import ECB
@@ -33,7 +34,8 @@ def _wrap_core(wrapping_key, a, r, backend):
     return a + b"".join(r)
 
 
-def aes_key_wrap(wrapping_key, key_to_wrap, backend):
+def aes_key_wrap(wrapping_key, key_to_wrap, backend=None):
+    backend = _get_backend(backend)
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
 
@@ -71,7 +73,8 @@ def _unwrap_core(wrapping_key, a, r, backend):
     return a, r
 
 
-def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend):
+def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend=None):
+    backend = _get_backend(backend)
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
 
@@ -90,7 +93,8 @@ def aes_key_wrap_with_padding(wrapping_key, key_to_wrap, backend):
         return _wrap_core(wrapping_key, aiv, r, backend)
 
 
-def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
+def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend=None):
+    backend = _get_backend(backend)
     if len(wrapped_key) < 16:
         raise InvalidUnwrap("Must be at least 16 bytes")
 
@@ -132,7 +136,8 @@ def aes_key_unwrap_with_padding(wrapping_key, wrapped_key, backend):
         return data[:-b]
 
 
-def aes_key_unwrap(wrapping_key, wrapped_key, backend):
+def aes_key_unwrap(wrapping_key, wrapped_key, backend=None):
+    backend = _get_backend(backend)
     if len(wrapped_key) < 24:
         raise InvalidUnwrap("Must be at least 24 bytes")
 

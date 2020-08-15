@@ -15,7 +15,7 @@ message authentication codes using a cryptographic hash function coupled with a
 secret key. You can use an HMAC to verify both the integrity and authenticity
 of a message.
 
-.. class:: HMAC(key, algorithm, backend)
+.. class:: HMAC(key, algorithm, backend=None)
 
     HMAC objects take a ``key`` and a
     :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` instance.
@@ -60,7 +60,7 @@ of a message.
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         instance such as those described in
         :ref:`Cryptographic Hashes <cryptographic-hash-algorithms>`.
-    :param backend: An
+    :param backend: An optional
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         instance.
 

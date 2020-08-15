@@ -10,12 +10,14 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives import ciphers
 
 
 class CMAC(object):
-    def __init__(self, algorithm, backend, ctx=None):
+    def __init__(self, algorithm, backend=None, ctx=None):
+        backend = _get_backend(backend)
         if not isinstance(backend, CMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement CMACBackend.",

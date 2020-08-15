@@ -10,13 +10,15 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 
 
 @utils.register_interface(hashes.HashContext)
 class HMAC(object):
-    def __init__(self, key, algorithm, backend, ctx=None):
+    def __init__(self, key, algorithm, backend=None, ctx=None):
+        backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
