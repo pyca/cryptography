@@ -389,9 +389,7 @@ class _OCSPRequest(object):
 
     @utils.cached_property
     def extensions(self):
-        return self._backend._ocsp_req_ext_parser.parse(
-            self._ocsp_request
-        )
+        return self._backend._ocsp_req_ext_parser.parse(self._ocsp_request)
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:

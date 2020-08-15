@@ -195,7 +195,9 @@ class _RevokedCertificate(object):
 
     @utils.cached_property
     def extensions(self):
-        return self._backend._revoked_cert_extension_parser.parse(self._x509_revoked)
+        return self._backend._revoked_cert_extension_parser.parse(
+            self._x509_revoked
+        )
 
 
 @utils.register_interface(x509.CertificateRevocationList)
