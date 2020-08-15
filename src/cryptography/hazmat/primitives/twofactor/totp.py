@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -19,9 +20,10 @@ class TOTP(object):
         length,
         algorithm,
         time_step,
-        backend,
+        backend=None,
         enforce_key_length=True,
     ):
+        backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",

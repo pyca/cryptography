@@ -9,6 +9,7 @@ import struct
 import six
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
@@ -18,8 +19,9 @@ from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 class HOTP(object):
     def __init__(
-        self, key, length, algorithm, backend, enforce_key_length=True
+        self, key, length, algorithm, backend=None, enforce_key_length=True
     ):
+        backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
