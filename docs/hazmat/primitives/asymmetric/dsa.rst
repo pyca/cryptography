@@ -17,7 +17,7 @@ DSA
 Generation
 ~~~~~~~~~~
 
-.. function:: generate_private_key(key_size, backend)
+.. function:: generate_private_key(key_size, backend=None)
 
     .. versionadded:: 0.5
 
@@ -34,7 +34,7 @@ Generation
         be either 1024, 2048, 3072, or 4096. For keys generated in 2015 this
         should be `at least 2048`_ (See page 41).
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
     :return: An instance of
@@ -44,7 +44,7 @@ Generation
         the provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
 
-.. function:: generate_parameters(key_size, backend)
+.. function:: generate_parameters(key_size, backend=None)
 
     .. versionadded:: 0.5
 
@@ -60,7 +60,7 @@ Generation
         should be either 1024, 2048, 3072, or 4096. For keys generated in 2015
         this should be `at least 2048`_ (See page 41).
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
     :return: An instance of
@@ -183,9 +183,9 @@ Numbers
 
         The generator.
 
-    .. method:: parameters(backend)
+    .. method:: parameters(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of
@@ -210,9 +210,9 @@ Numbers
         The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
         associated with the public key.
 
-    .. method:: public_key(backend)
+    .. method:: public_key(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of
@@ -242,9 +242,9 @@ Numbers
         The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
         associated with the private key.
 
-    .. method:: private_key(backend)
+    .. method:: private_key(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of

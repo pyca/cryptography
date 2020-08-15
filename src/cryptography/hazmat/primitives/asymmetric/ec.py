@@ -11,6 +11,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
+from cryptography.hazmat.backends import _get_backend
 
 
 class EllipticCurveOID(object):
@@ -320,11 +321,13 @@ class ECDSA(object):
     algorithm = utils.read_only_property("_algorithm")
 
 
-def generate_private_key(curve, backend):
+def generate_private_key(curve, backend=None):
+    backend = _get_backend(backend)
     return backend.generate_elliptic_curve_private_key(curve)
 
 
-def derive_private_key(private_value, curve, backend):
+def derive_private_key(private_value, curve, backend=None):
+    backend = _get_backend(backend)
     if not isinstance(private_value, six.integer_types):
         raise TypeError("private_value must be an integer type.")
 
@@ -351,7 +354,8 @@ class EllipticCurvePublicNumbers(object):
         self._x = x
         self._curve = curve
 
-    def public_key(self, backend):
+    def public_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_elliptic_curve_public_numbers(self)
 
     def encode_point(self):
@@ -438,7 +442,8 @@ class EllipticCurvePrivateNumbers(object):
         self._private_value = private_value
         self._public_numbers = public_numbers
 
-    def private_key(self, backend):
+    def private_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_elliptic_curve_private_numbers(self)
 
     private_value = utils.read_only_property("_private_value")
