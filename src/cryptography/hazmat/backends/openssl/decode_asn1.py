@@ -233,28 +233,29 @@ class _X509ExtensionParser(object):
 
             try:
                 handler = self.handlers[oid]
-            except KeyError:
-                # Dump the DER payload into an UnrecognizedExtension object
-                data = backend._lib.X509_EXTENSION_get_data(ext)
-                backend.openssl_assert(data != backend._ffi.NULL)
-                der = backend._ffi.buffer(data.data, data.length)[:]
-                unrecognized = x509.UnrecognizedExtension(oid, der)
-                extensions.append(x509.Extension(oid, critical, unrecognized))
-            else:
                 ext_data = backend._lib.X509V3_EXT_d2i(ext)
                 if ext_data == backend._ffi.NULL:
                     backend._consume_errors()
-                    raise ValueError(
-                        "The {} extension is invalid and can't be "
-                        "parsed".format(oid)
-                    )
+                    value = _create_unrecognized_ext(backend, ext, oid)
+                else:
+                    value = handler(backend, ext_data)
 
-                value = handler(backend, ext_data)
                 extensions.append(x509.Extension(oid, critical, value))
+            except KeyError:
+                # Dump the DER payload into an UnrecognizedExtension object
+                unrecognized = _create_unrecognized_ext(backend, ext, oid)
+                extensions.append(x509.Extension(oid, critical, unrecognized))
 
             seen_oids.add(oid)
 
         return x509.Extensions(extensions)
+
+
+def _create_unrecognized_ext(backend, ext, oid):
+    data = backend._lib.X509_EXTENSION_get_data(ext)
+    backend.openssl_assert(data != backend._ffi.NULL)
+    der = backend._ffi.buffer(data.data, data.length)[:]
+    return x509.UnrecognizedExtension(oid, der)
 
 
 def _decode_certificate_policies(backend, cp):

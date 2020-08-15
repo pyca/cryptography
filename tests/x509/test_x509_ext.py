@@ -5709,8 +5709,16 @@ class TestInvalidExtension(object):
             x509.load_pem_x509_certificate,
             backend,
         )
-        with pytest.raises(ValueError):
-            cert.extensions
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ExtensionOID.CERTIFICATE_POLICIES
+        )
+        assert len(cert.extensions) == 1
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
+        assert ext.oid == x509.ExtensionOID.CERTIFICATE_POLICIES
+        assert ext.value.value == (
+            b'0301\x06\x0b`\x86H\x01\xe09\x01\x02\x03\x04\x010"0 \x06\x08+'
+            b'\x06\x01\x05\x05\x07\x02\x02\x16\x14http://other.com/cps'
+        )
 
 
 class TestOCSPNonce(object):

@@ -612,8 +612,10 @@ class TestRevokedCertificate(object):
             backend,
         )
 
-        with pytest.raises(ValueError):
-            crl[0].extensions
+        ext = crl[0].extensions
+        assert len(ext) == 1
+        assert isinstance(ext[0].value, x509.UnrecognizedExtension)
+        assert ext[0].value.value == b''
 
     def test_indexing(self, backend):
         crl = _load_cert(
