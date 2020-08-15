@@ -72,9 +72,11 @@ def _consume_errors_with_text(lib):
     return _errors_with_text(_consume_errors(lib))
 
 
-def _openssl_assert(lib, ok):
+def _openssl_assert(lib, ok, errors=None):
     if not ok:
-        errors_with_text = _consume_errors_with_text(lib)
+        if errors is None:
+            errors = _consume_errors(lib)
+        errors_with_text = _errors_with_text(errors)
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "

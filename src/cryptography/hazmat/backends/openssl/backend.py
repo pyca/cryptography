@@ -230,8 +230,8 @@ class Backend(object):
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
-    def openssl_assert(self, ok):
-        return binding._openssl_assert(self._lib, ok)
+    def openssl_assert(self, ok, errors=None):
+        return binding._openssl_assert(self._lib, ok, errors=errors)
 
     def _is_fips_enabled(self):
         fips_mode = getattr(self._lib, "FIPS_mode", lambda: 0)

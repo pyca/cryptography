@@ -167,7 +167,8 @@ class _CipherContext(object):
                 errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
-                )
+                ),
+                errors=errors,
             )
             raise ValueError(
                 "The length of the provided data is not a multiple of "
