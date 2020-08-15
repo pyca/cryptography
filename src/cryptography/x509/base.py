@@ -12,6 +12,7 @@ from enum import Enum
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -66,27 +67,33 @@ class Version(Enum):
     v3 = 2
 
 
-def load_pem_x509_certificate(data, backend):
+def load_pem_x509_certificate(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_x509_certificate(data)
 
 
-def load_der_x509_certificate(data, backend):
+def load_der_x509_certificate(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_x509_certificate(data)
 
 
-def load_pem_x509_csr(data, backend):
+def load_pem_x509_csr(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_x509_csr(data)
 
 
-def load_der_x509_csr(data, backend):
+def load_der_x509_csr(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_x509_csr(data)
 
 
-def load_pem_x509_crl(data, backend):
+def load_pem_x509_crl(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_pem_x509_crl(data)
 
 
-def load_der_x509_crl(data, backend):
+def load_der_x509_crl(data, backend=None):
+    backend = _get_backend(backend)
     return backend.load_der_x509_crl(data)
 
 
@@ -468,10 +475,11 @@ class CertificateSigningRequestBuilder(object):
             self._attributes + [(oid, value)],
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
         """
         Signs the request using the requestor's private key.
         """
+        backend = _get_backend(backend)
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
         return backend.create_x509_csr(self, private_key, algorithm)
@@ -672,10 +680,11 @@ class CertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
         """
         Signs the certificate using the CA's private key.
         """
+        backend = _get_backend(backend)
         if self._subject_name is None:
             raise ValueError("A certificate must have a subject name")
 
@@ -801,7 +810,8 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates + [revoked_certificate],
         )
 
-    def sign(self, private_key, algorithm, backend):
+    def sign(self, private_key, algorithm, backend=None):
+        backend = _get_backend(backend)
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
 
@@ -866,7 +876,8 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def build(self, backend):
+    def build(self, backend=None):
+        backend = _get_backend(backend)
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")
         if self._revocation_date is None:

@@ -149,7 +149,7 @@ X.509 Reference
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_certificate(data, backend)
+.. function:: load_pem_x509_certificate(data, backend=None)
 
     .. versionadded:: 0.7
 
@@ -159,7 +159,7 @@ Loading Certificates
 
     :param bytes data: The PEM encoded certificate data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -173,7 +173,7 @@ Loading Certificates
         >>> cert.serial_number
         2
 
-.. function:: load_der_x509_certificate(data, backend)
+.. function:: load_der_x509_certificate(data, backend=None)
 
     .. versionadded:: 0.7
 
@@ -183,7 +183,7 @@ Loading Certificates
 
     :param bytes data: The DER encoded certificate data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -192,7 +192,7 @@ Loading Certificates
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_crl(data, backend)
+.. function:: load_pem_x509_crl(data, backend=None)
 
     .. versionadded:: 1.1
 
@@ -202,7 +202,7 @@ Loading Certificate Revocation Lists
 
     :param bytes data: The PEM encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -218,7 +218,7 @@ Loading Certificate Revocation Lists
         >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_crl(data, backend)
+.. function:: load_der_x509_crl(data, backend=None)
 
     .. versionadded:: 1.1
 
@@ -227,7 +227,7 @@ Loading Certificate Revocation Lists
 
     :param bytes data: The DER encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -237,7 +237,7 @@ Loading Certificate Revocation Lists
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_csr(data, backend)
+.. function:: load_pem_x509_csr(data, backend=None)
 
     .. versionadded:: 0.9
 
@@ -248,7 +248,7 @@ Loading Certificate Signing Requests
 
     :param bytes data: The PEM encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -264,7 +264,7 @@ Loading Certificate Signing Requests
         >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_csr(data, backend)
+.. function:: load_der_x509_csr(data, backend=None)
 
     .. versionadded:: 0.9
 
@@ -273,7 +273,7 @@ Loading Certificate Signing Requests
 
     :param bytes data: The DER encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -780,7 +780,7 @@ X.509 Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: sign(private_key, algorithm, backend=None)
 
         Sign the certificate using the CA's private key.
 
@@ -803,7 +803,7 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
 
-        :param backend: Backend that will be used to build the certificate.
+        :param backend: An optional backend used to build the certificate.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1021,7 +1021,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: sign(private_key, algorithm, backend=None)
 
         Sign this CRL using the CA's private key.
 
@@ -1044,7 +1044,7 @@ X.509 Certificate Revocation List Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
 
-        :param backend: Backend that will be used to build the CRL.
+        :param backend: An optional backend used to build the CRL.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1140,11 +1140,11 @@ X.509 Revoked Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled.
 
-    .. method:: build(backend)
+    .. method:: build(backend=None)
 
         Create a revoked certificate object using the provided backend.
 
-        :param backend: Backend that will be used to build the revoked
+        :param backend: An optional backend used to build the revoked
             certificate.  Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1212,9 +1212,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: sign(private_key, algorithm, backend=None)
 
-        :param backend: Backend that will be used to sign the request.
+        :param backend: An optional backend used to sign the request.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1294,11 +1294,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='Good CA')>]
 
-    .. method:: public_bytes(backend)
+    .. method:: public_bytes(backend=None)
 
         .. versionadded:: 1.6
 
-        :param backend: A backend supporting the
+        :param backend: An optional backend supporting the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
 
