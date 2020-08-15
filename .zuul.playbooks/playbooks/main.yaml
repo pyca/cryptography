@@ -23,6 +23,7 @@
           - libffi-devel
           - openssl-devel
           - python3-devel
+          - python2-devel
       become: yes
       when: ansible_distribution == 'CentOS'
 

@@ -24,3 +24,10 @@
     nodeset: centos-8-arm64
     vars:
       tox_envlist: py36
+
+- job:
+    name: pyca-cryptography-centos-8-py27-arm64
+    parent: pyca-cryptography-base
+    nodeset: centos-8-arm64
+    vars:
+      tox_envlist: py27
