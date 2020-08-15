@@ -16,6 +16,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import RSABackend
 
 
@@ -109,7 +110,8 @@ class RSAPublicKey(object):
 RSAPublicKeyWithSerialization = RSAPublicKey
 
 
-def generate_private_key(public_exponent, key_size, backend):
+def generate_private_key(public_exponent, key_size, backend=None):
+    backend = _get_backend(backend)
     if not isinstance(backend, RSABackend):
         raise UnsupportedAlgorithm(
             "Backend object does not implement RSABackend.",
@@ -304,7 +306,8 @@ class RSAPrivateNumbers(object):
     iqmp = utils.read_only_property("_iqmp")
     public_numbers = utils.read_only_property("_public_numbers")
 
-    def private_key(self, backend):
+    def private_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_rsa_private_numbers(self)
 
     def __eq__(self, other):
@@ -351,7 +354,8 @@ class RSAPublicNumbers(object):
     e = utils.read_only_property("_e")
     n = utils.read_only_property("_n")
 
-    def public_key(self, backend):
+    def public_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_rsa_public_numbers(self)
 
     def __repr__(self):
