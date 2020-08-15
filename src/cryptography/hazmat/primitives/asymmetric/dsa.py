@@ -9,6 +9,7 @@ import abc
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends import _get_backend
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -119,11 +120,13 @@ class DSAPublicKey(object):
 DSAPublicKeyWithSerialization = DSAPublicKey
 
 
-def generate_parameters(key_size, backend):
+def generate_parameters(key_size, backend=None):
+    backend = _get_backend(backend)
     return backend.generate_dsa_parameters(key_size)
 
 
-def generate_private_key(key_size, backend):
+def generate_private_key(key_size, backend=None):
+    backend = _get_backend(backend)
     return backend.generate_dsa_private_key_and_parameters(key_size)
 
 
@@ -168,7 +171,8 @@ class DSAParameterNumbers(object):
     q = utils.read_only_property("_q")
     g = utils.read_only_property("_g")
 
-    def parameters(self, backend):
+    def parameters(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dsa_parameter_numbers(self)
 
     def __eq__(self, other):
@@ -203,7 +207,8 @@ class DSAPublicNumbers(object):
     y = utils.read_only_property("_y")
     parameter_numbers = utils.read_only_property("_parameter_numbers")
 
-    def public_key(self, backend):
+    def public_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dsa_public_numbers(self)
 
     def __eq__(self, other):
@@ -240,7 +245,8 @@ class DSAPrivateNumbers(object):
     x = utils.read_only_property("_x")
     public_numbers = utils.read_only_property("_public_numbers")
 
-    def private_key(self, backend):
+    def private_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dsa_private_numbers(self)
 
     def __eq__(self, other):

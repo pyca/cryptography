@@ -9,9 +9,11 @@ import abc
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends import _get_backend
 
 
-def generate_parameters(generator, key_size, backend):
+def generate_parameters(generator, key_size, backend=None):
+    backend = _get_backend(backend)
     return backend.generate_dh_parameters(generator, key_size)
 
 
@@ -40,7 +42,8 @@ class DHPrivateNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def private_key(self, backend):
+    def private_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dh_private_numbers(self)
 
     public_numbers = utils.read_only_property("_public_numbers")
@@ -72,7 +75,8 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def public_key(self, backend):
+    def public_key(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dh_public_numbers(self)
 
     y = utils.read_only_property("_y")
@@ -106,7 +110,8 @@ class DHParameterNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def parameters(self, backend):
+    def parameters(self, backend=None):
+        backend = _get_backend(backend)
         return backend.load_dh_parameter_numbers(self)
 
     p = utils.read_only_property("_p")
