@@ -2569,6 +2569,7 @@ class Backend(object):
             bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
         if p7 == self._ffi.NULL:
+            self._consume_errors()
             raise ValueError("Unable to parse PKCS7 data")
 
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
@@ -2579,6 +2580,7 @@ class Backend(object):
         bio = self._bytes_to_bio(data)
         p7 = self._lib.d2i_PKCS7_bio(bio.bio, self._ffi.NULL)
         if p7 == self._ffi.NULL:
+            self._consume_errors()
             raise ValueError("Unable to parse PKCS7 data")
 
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
