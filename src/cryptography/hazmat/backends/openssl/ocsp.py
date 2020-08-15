@@ -10,10 +10,6 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_CODE_TO_ENUM,
-    _OCSP_BASICRESP_EXT_PARSER,
-    _OCSP_REQ_EXT_PARSER,
-    _OCSP_SINGLERESP_EXT_PARSER,
-    _OCSP_SINGLERESP_EXT_PARSER_NO_SCT,
     _asn1_integer_to_int,
     _asn1_string_to_bytes,
     _decode_x509_name,
@@ -340,19 +336,12 @@ class _OCSPResponse(object):
     @utils.cached_property
     @_requires_successful_response
     def extensions(self):
-        return _OCSP_BASICRESP_EXT_PARSER.parse(self._backend, self._basic)
+        return self._backend._ocsp_basicresp_ext_parser.parse(self._basic)
 
     @utils.cached_property
     @_requires_successful_response
     def single_extensions(self):
-        if self._backend._lib.Cryptography_HAS_SCT:
-            return _OCSP_SINGLERESP_EXT_PARSER.parse(
-                self._backend, self._single
-            )
-        else:
-            return _OCSP_SINGLERESP_EXT_PARSER_NO_SCT.parse(
-                self._backend, self._single
-            )
+        return self._backend._ocsp_singleresp_ext_parser.parse(self._single)
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:
@@ -400,7 +389,9 @@ class _OCSPRequest(object):
 
     @utils.cached_property
     def extensions(self):
-        return _OCSP_REQ_EXT_PARSER.parse(self._backend, self._ocsp_request)
+        return self._backend._ocsp_req_ext_parser.parse(
+            self._ocsp_request
+        )
 
     def public_bytes(self, encoding):
         if encoding is not serialization.Encoding.DER:

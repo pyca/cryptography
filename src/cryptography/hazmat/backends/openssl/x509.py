@@ -10,11 +10,6 @@ import operator
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CERTIFICATE_EXTENSION_PARSER,
-    _CERTIFICATE_EXTENSION_PARSER_NO_SCT,
-    _CRL_EXTENSION_PARSER,
-    _CSR_EXTENSION_PARSER,
-    _REVOKED_CERTIFICATE_EXTENSION_PARSER,
     _asn1_integer_to_int,
     _asn1_string_to_bytes,
     _decode_x509_name,
@@ -133,14 +128,7 @@ class _Certificate(object):
 
     @utils.cached_property
     def extensions(self):
-        if self._backend._lib.Cryptography_HAS_SCT:
-            return _CERTIFICATE_EXTENSION_PARSER.parse(
-                self._backend, self._x509
-            )
-        else:
-            return _CERTIFICATE_EXTENSION_PARSER_NO_SCT.parse(
-                self._backend, self._x509
-            )
+        return self._backend._certificate_extension_parser.parse(self._x509)
 
     @property
     def signature(self):
@@ -207,9 +195,7 @@ class _RevokedCertificate(object):
 
     @utils.cached_property
     def extensions(self):
-        return _REVOKED_CERTIFICATE_EXTENSION_PARSER.parse(
-            self._backend, self._x509_revoked
-        )
+        return self._backend._revoked_cert_extension_parser.parse(self._x509_revoked)
 
 
 @utils.register_interface(x509.CertificateRevocationList)
@@ -363,7 +349,7 @@ class _CertificateRevocationList(object):
 
     @utils.cached_property
     def extensions(self):
-        return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
+        return self._backend._crl_extension_parser.parse(self._x509_crl)
 
     def is_signature_valid(self, public_key):
         if not isinstance(
@@ -449,7 +435,7 @@ class _CertificateSigningRequest(object):
                 ),
             ),
         )
-        return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
+        return self._backend._csr_extension_parser.parse(x509_exts)
 
     def public_bytes(self, encoding):
         bio = self._backend._create_mem_bio_gc()

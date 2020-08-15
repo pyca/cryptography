@@ -181,21 +181,25 @@ def _decode_delta_crl_indicator(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, ext_count, get_ext, handlers):
+    def __init__(self, backend, ext_count, get_ext, handlers):
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
+        self._backend = backend
 
-    def parse(self, backend, x509_obj):
+    def parse(self, x509_obj):
         extensions = []
         seen_oids = set()
-        for i in range(self.ext_count(backend, x509_obj)):
-            ext = self.get_ext(backend, x509_obj, i)
-            backend.openssl_assert(ext != backend._ffi.NULL)
-            crit = backend._lib.X509_EXTENSION_get_critical(ext)
+        for i in range(self.ext_count(x509_obj)):
+            ext = self.get_ext(x509_obj, i)
+            self._backend.openssl_assert(ext != self._backend._ffi.NULL)
+            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
             oid = x509.ObjectIdentifier(
-                _obj2txt(backend, backend._lib.X509_EXTENSION_get_object(ext))
+                _obj2txt(
+                    self._backend,
+                    self._backend._lib.X509_EXTENSION_get_object(ext),
+                )
             )
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
@@ -207,8 +211,8 @@ class _X509ExtensionParser(object):
             # ourselves.
             if oid == ExtensionOID.TLS_FEATURE:
                 # The extension contents are a SEQUENCE OF INTEGERs.
-                data = backend._lib.X509_EXTENSION_get_data(ext)
-                data_bytes = _asn1_string_to_bytes(backend, data)
+                data = self._backend._lib.X509_EXTENSION_get_data(ext)
+                data_bytes = _asn1_string_to_bytes(self._backend, data)
                 features = DERReader(data_bytes).read_single_element(SEQUENCE)
                 parsed = []
                 while not features.is_empty():
@@ -221,9 +225,9 @@ class _X509ExtensionParser(object):
                 seen_oids.add(oid)
                 continue
             elif oid == ExtensionOID.PRECERT_POISON:
-                data = backend._lib.X509_EXTENSION_get_data(ext)
+                data = self._backend._lib.X509_EXTENSION_get_data(ext)
                 # The contents of the extension must be an ASN.1 NULL.
-                reader = DERReader(_asn1_string_to_bytes(backend, data))
+                reader = DERReader(_asn1_string_to_bytes(self._backend, data))
                 reader.read_single_element(NULL).check_empty()
                 extensions.append(
                     x509.Extension(oid, critical, x509.PrecertPoison())
@@ -235,21 +239,21 @@ class _X509ExtensionParser(object):
                 handler = self.handlers[oid]
             except KeyError:
                 # Dump the DER payload into an UnrecognizedExtension object
-                data = backend._lib.X509_EXTENSION_get_data(ext)
-                backend.openssl_assert(data != backend._ffi.NULL)
-                der = backend._ffi.buffer(data.data, data.length)[:]
+                data = self._backend._lib.X509_EXTENSION_get_data(ext)
+                self._backend.openssl_assert(data != self._backend._ffi.NULL)
+                der = self._backend._ffi.buffer(data.data, data.length)[:]
                 unrecognized = x509.UnrecognizedExtension(oid, der)
                 extensions.append(x509.Extension(oid, critical, unrecognized))
             else:
-                ext_data = backend._lib.X509V3_EXT_d2i(ext)
-                if ext_data == backend._ffi.NULL:
-                    backend._consume_errors()
+                ext_data = self._backend._lib.X509V3_EXT_d2i(ext)
+                if ext_data == self._backend._ffi.NULL:
+                    self._backend._consume_errors()
                     raise ValueError(
                         "The {} extension is invalid and can't be "
                         "parsed".format(oid)
                     )
 
-                value = handler(backend, ext_data)
+                value = handler(self._backend, ext_data)
                 extensions.append(x509.Extension(oid, critical, value))
 
             seen_oids.add(oid)
@@ -813,7 +817,7 @@ def _decode_nonce(backend, nonce):
     return x509.OCSPNonce(_asn1_string_to_bytes(backend, nonce))
 
 
-_EXTENSION_HANDLERS_NO_SCT = {
+_EXTENSION_HANDLERS_BASE = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
     ExtensionOID.KEY_USAGE: _decode_key_usage,
@@ -835,11 +839,11 @@ _EXTENSION_HANDLERS_NO_SCT = {
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
 }
-_EXTENSION_HANDLERS = _EXTENSION_HANDLERS_NO_SCT.copy()
-_EXTENSION_HANDLERS[
-    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
-] = _decode_precert_signed_certificate_timestamps
-
+_EXTENSION_HANDLERS_SCT = {
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
+        _decode_precert_signed_certificate_timestamps
+    )
+}
 
 _REVOKED_EXTENSION_HANDLERS = {
     CRLEntryExtensionOID.CRL_REASON: _decode_crl_reason,
@@ -867,66 +871,8 @@ _OCSP_BASICRESP_EXTENSION_HANDLERS = {
     OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
-# All revoked extensions are valid single response extensions, see:
-# https://tools.ietf.org/html/rfc6960#section-4.4.5
-_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT = _REVOKED_EXTENSION_HANDLERS.copy()
-_OCSP_SINGLERESP_EXTENSION_HANDLERS = (
-    _OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT.copy()
-)
-_OCSP_SINGLERESP_EXTENSION_HANDLERS[
-    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
-] = _decode_signed_certificate_timestamps
-
-_CERTIFICATE_EXTENSION_PARSER_NO_SCT = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS_NO_SCT,
-)
-
-_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
-    handlers=_EXTENSION_HANDLERS,
-)
-
-_CSR_EXTENSION_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
-    get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
-    handlers=_EXTENSION_HANDLERS,
-)
-
-_REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.X509_REVOKED_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
-    handlers=_REVOKED_EXTENSION_HANDLERS,
-)
-
-_CRL_EXTENSION_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.X509_CRL_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.X509_CRL_get_ext(x, i),
-    handlers=_CRL_EXTENSION_HANDLERS,
-)
-
-_OCSP_REQ_EXT_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.OCSP_REQUEST_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.OCSP_REQUEST_get_ext(x, i),
-    handlers=_OCSP_REQ_EXTENSION_HANDLERS,
-)
-
-_OCSP_BASICRESP_EXT_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.OCSP_BASICRESP_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.OCSP_BASICRESP_get_ext(x, i),
-    handlers=_OCSP_BASICRESP_EXTENSION_HANDLERS,
-)
-
-_OCSP_SINGLERESP_EXT_PARSER = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
-    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS,
-)
-
-_OCSP_SINGLERESP_EXT_PARSER_NO_SCT = _X509ExtensionParser(
-    ext_count=lambda backend, x: backend._lib.OCSP_SINGLERESP_get_ext_count(x),
-    get_ext=lambda backend, x, i: backend._lib.OCSP_SINGLERESP_get_ext(x, i),
-    handlers=_OCSP_SINGLERESP_EXTENSION_HANDLERS_NO_SCT,
-)
+_OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT = {
+    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS: (
+        _decode_signed_certificate_timestamps
+    )
+}
