@@ -36,7 +36,7 @@ PBKDF2
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.pbkdf2
 
-.. class:: PBKDF2HMAC(algorithm, length, salt, iterations, backend)
+.. class:: PBKDF2HMAC(algorithm, length, salt, iterations, backend=None)
 
     .. versionadded:: 0.2
 
@@ -89,7 +89,7 @@ PBKDF2
         takes. Higher numbers help mitigate brute force attacks against derived
         keys. A `more detailed description`_ can be consulted for additional
         information.
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
@@ -143,7 +143,7 @@ Scrypt
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.scrypt
 
-.. class:: Scrypt(salt, length, n, r, p, backend)
+.. class:: Scrypt(salt, length, n, r, p, backend=None)
 
     .. versionadded:: 1.6
 
@@ -189,7 +189,7 @@ Scrypt
         power of 2.
     :param int r: Block size parameter.
     :param int p: Parallelization parameter.
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
 
     The computational and memory cost of Scrypt can be adjusted by manipulating
@@ -259,7 +259,7 @@ ConcatKDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.concatkdf
 
-.. class:: ConcatKDFHash(algorithm, length, otherinfo, backend)
+.. class:: ConcatKDFHash(algorithm, length, otherinfo, backend=None)
 
     .. versionadded:: 1.0
 
@@ -303,7 +303,7 @@ ConcatKDF
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
@@ -349,7 +349,7 @@ ConcatKDF
         raises an exception if they do not match.
 
 
-.. class:: ConcatKDFHMAC(algorithm, length, salt, otherinfo, backend)
+.. class:: ConcatKDFHMAC(algorithm, length, salt, otherinfo, backend=None)
 
     .. versionadded:: 1.0
 
@@ -402,7 +402,7 @@ ConcatKDF
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
@@ -452,7 +452,7 @@ HKDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.hkdf
 
-.. class:: HKDF(algorithm, length, salt, info, backend)
+.. class:: HKDF(algorithm, length, salt, info, backend=None)
 
     .. versionadded:: 0.2
 
@@ -508,7 +508,7 @@ HKDF
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
@@ -555,7 +555,7 @@ HKDF
         raises an exception if they do not match.
 
 
-.. class:: HKDFExpand(algorithm, length, info, backend)
+.. class:: HKDFExpand(algorithm, length, info, backend=None)
 
     .. versionadded:: 0.5
 
@@ -603,7 +603,7 @@ HKDF
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
@@ -656,7 +656,7 @@ KBKDF
 .. currentmodule:: cryptography.hazmat.primitives.kdf.kbkdf
 
 .. class:: KBKDFHMAC(algorithm, mode, length, rlen, llen, location,\
-           label, context, fixed, backend)
+           label, context, fixed, backend=None)
 
     .. versionadded:: 1.4
 
@@ -734,9 +734,8 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
-    :param backend: A cryptography backend
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        instance.
+    :param backend: An optional instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement
@@ -813,7 +812,7 @@ X963KDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.x963kdf
 
-.. class:: X963KDF(algorithm, length, otherinfo, backend)
+.. class:: X963KDF(algorithm, length, otherinfo, backend=None)
 
     .. versionadded:: 1.1
 
@@ -863,9 +862,8 @@ X963KDF
     :param bytes sharedinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: A cryptography backend
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        instance.
+    :param backend: An optional instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement

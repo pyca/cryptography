@@ -13,6 +13,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
@@ -53,7 +54,8 @@ def _concatkdf_derive(key_material, length, auxfn, otherinfo):
 
 @utils.register_interface(KeyDerivationFunction)
 class ConcatKDFHash(object):
-    def __init__(self, algorithm, length, otherinfo, backend):
+    def __init__(self, algorithm, length, otherinfo, backend=None):
+        backend = _get_backend(backend)
 
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm
@@ -88,7 +90,8 @@ class ConcatKDFHash(object):
 
 @utils.register_interface(KeyDerivationFunction)
 class ConcatKDFHMAC(object):
-    def __init__(self, algorithm, length, salt, otherinfo, backend):
+    def __init__(self, algorithm, length, salt, otherinfo, backend=None):
+        backend = _get_backend(backend)
 
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm

@@ -15,6 +15,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
@@ -42,8 +43,9 @@ class KBKDFHMAC(object):
         label,
         context,
         fixed,
-        backend,
+        backend=None,
     ):
+        backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",

@@ -17,3 +17,10 @@ def default_backend():
         _default_backend = backend
 
     return _default_backend
+
+
+def _get_backend(backend):
+    if backend is None:
+        return default_backend()
+    else:
+        return backend
