@@ -228,6 +228,7 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self._register_x509_ext_parsers()
+        self._register_x509_encoders()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
                 "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
@@ -464,6 +465,21 @@ class Backend(object):
             ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
             get_ext=self._lib.OCSP_SINGLERESP_get_ext,
             handlers=singleresp_handlers,
+        )
+
+    def _register_x509_encoders(self):
+        self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()
+        self._crl_extension_encode_handlers = (
+            _CRL_EXTENSION_ENCODE_HANDLERS.copy()
+        )
+        self._crl_entry_extension_encode_handlers = (
+            _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS.copy()
+        )
+        self._ocsp_request_extension_encode_handlers = (
+            _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS.copy()
+        )
+        self._ocsp_basicresp_extension_encode_handlers = (
+            _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS.copy()
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
@@ -971,7 +987,7 @@ class Backend(object):
         # sk_extensions and will be freed along with it.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._extension_encode_handlers,
             x509_obj=sk_extension,
             add_func=self._lib.sk_X509_EXTENSION_insert,
             gc=False,
@@ -1045,7 +1061,7 @@ class Backend(object):
         # Add extensions.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._extension_encode_handlers,
             x509_obj=x509_cert,
             add_func=self._lib.X509_add_ext,
             gc=True,
@@ -1123,7 +1139,7 @@ class Backend(object):
         # Add extensions.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_CRL_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._crl_extension_encode_handlers,
             x509_obj=x509_crl,
             add_func=self._lib.X509_CRL_add_ext,
             gc=True,
@@ -1217,7 +1233,7 @@ class Backend(object):
         # add CRL entry extensions
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._crl_entry_extension_encode_handlers,
             x509_obj=x509_revoked,
             add_func=self._lib.X509_REVOKED_add_ext,
             gc=True,
@@ -1687,7 +1703,7 @@ class Backend(object):
         self.openssl_assert(onereq != self._ffi.NULL)
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._ocsp_request_extension_encode_handlers,
             x509_obj=ocsp_req,
             add_func=self._lib.OCSP_REQUEST_add_ext,
             gc=True,
@@ -1755,7 +1771,7 @@ class Backend(object):
 
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=_OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
+            handlers=self._ocsp_basicresp_extension_encode_handlers,
             x509_obj=basic,
             add_func=self._lib.OCSP_BASICRESP_add_ext,
             gc=True,
