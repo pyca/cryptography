@@ -33,9 +33,7 @@ class TestPBKDF2HMAC(object):
 
     def test_unsupported_algorithm(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            PBKDF2HMAC(
-                DummyHashAlgorithm(), 20, b"salt", 10, backend
-            )
+            PBKDF2HMAC(DummyHashAlgorithm(), 20, b"salt", 10, backend)
 
     def test_invalid_key(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, backend)
