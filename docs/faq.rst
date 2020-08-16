@@ -117,6 +117,19 @@ upstream, ``cryptography`` is also dropping support for them. To fix this issue
 you should upgrade to a newer version of OpenSSL (1.1.0 or later). This may
 require you to upgrade to a newer operating system.
 
+Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
+----------------------------------------------------------------------------
+
+Building ``cryptography`` from source requires you have :ref:`Rust installed
+and available<installation:Rust>` on your ``PATH``. You may be able to fix this
+by upgrading to a newer version of ``pip`` which will install a pre-compiled
+``cryptography`` wheel. If not, you'll need to install Rust.
+
+For the current release *only* you can temporarily bypass the requirement to
+have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
+variable. Note that this option will be removed in the next release and not
+having Rust available will be a hard error.
+
 Why are there no wheels for my Python3.x version?
 -------------------------------------------------
 

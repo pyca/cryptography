@@ -61,6 +61,9 @@ platforms). ``cryptography`` links against the new 1.1.0 names by default. If
 you need to compile ``cryptography`` against an older version then you **must**
 set ``CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL`` or else installation will fail.
 
+You will also need to have :ref:`Rust installed and
+available<installation:Rust>`.
+
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
@@ -70,7 +73,7 @@ Building cryptography on Linux
 ------------------------------
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
-are included. For users on pip 8.1 or above running on a ``manylinux1`` (or
+are included. For users on pip 19.0 or above running on a ``manylinux2010`` (or
 greater) compatible distribution (almost everything except Alpine) all you
 should need to do is:
 
@@ -82,6 +85,9 @@ If you are on Alpine or just want to compile it yourself then
 ``cryptography`` requires a compiler, headers for Python (if you're not
 using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
 available on your system.
+
+On all Linux distributions you will need to have :ref:`Rust installed and
+available<installation:Rust>`.
 
 Alpine
 ~~~~~~
@@ -229,6 +235,9 @@ open a terminal window and run:
 This will install a compiler (clang) along with (most of) the required
 development headers.
 
+You will also need to have :ref:`Rust installed and
+available<installation:Rust>`.
+
 You'll also need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
 Cryptography does **not** support Apple's deprecated OpenSSL distribution.
 
@@ -267,6 +276,13 @@ You can also build cryptography statically:
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
+Rust
+----
+
+Building ``cryptography`` requires having a working Rust toolchain. The current
+minimum supported Rust version is 1.45.0.
+
+Instructions for installing Rust can be found on `the Rust Project's website`_.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
@@ -274,3 +290,4 @@ local `wheel cache`_.
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
+.. _`the Rust Project's website`: https://www.rust-lang.org/tools/install

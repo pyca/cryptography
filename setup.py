@@ -5,9 +5,12 @@
 # for complete details.
 
 import os
+import platform
 import sys
 
 from setuptools import find_packages, setup
+
+from setuptools_rust import RustExtension
 
 
 base_dir = os.path.dirname(__file__)
@@ -23,7 +26,24 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
-setup_requirements = ["cffi>=1.12"]
+setup_requirements = ["cffi>=1.12", "setuptools-rust>=0.11.4"]
+
+if os.environ.get("CRYPTOGRAPHY_DONT_BUILD_RUST"):
+    rust_extensions = []
+else:
+    rust_extensions = [
+        RustExtension(
+            "_rust",
+            "src/rust/Cargo.toml",
+            py_limited_api=True,
+            # Enable abi3 mode if we're not using PyPy.
+            features=(
+                []
+                if platform.python_implementation() == "PyPy"
+                else ["pyo3/abi3-py36"]
+            ),
+        )
+    ]
 
 with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
@@ -108,6 +128,7 @@ try:
             "src/_cffi_src/build_openssl.py:ffi",
             "src/_cffi_src/build_padding.py:ffi",
         ],
+        rust_extensions=rust_extensions,
     )
 except:  # noqa: E722
     # Note: This is a bare exception that re-raises so that we don't interfere
@@ -128,6 +149,7 @@ except:  # noqa: E722
        instructions for your platform.
     3) Check our frequently asked questions for more information:
        https://cryptography.io/en/latest/faq.html
+    4) Ensure you have a recent Rust toolchain installed.
     =============================DEBUG ASSISTANCE=============================
     """
     )

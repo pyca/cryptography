@@ -23,6 +23,15 @@
   become: yes
   when: ansible_distribution in ['Debian', 'Ubuntu']
 
+- name: Install rust
+  include_role:
+    name: ensure-rust
+
+- name: Install setuptools-rust
+  pip:
+    name: setuptools-rust
+  become: yes
+
 - name: Create sdist
   command: |
     python3 setup.py sdist
