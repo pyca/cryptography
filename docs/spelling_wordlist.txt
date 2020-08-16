@@ -1,4 +1,4 @@
-AArch64
+AArch
 accessor
 affine
 Authenticator
