@@ -81,10 +81,9 @@ Every recipe should include a version or algorithmic marker of some sort in its
 output in order to allow transparent upgrading of the algorithms in use, as
 the algorithms or parameters needed to achieve a given security margin evolve.
 
-APIs at the :doc:`/hazmat/primitives/index` layer should always take an
-explicit backend, APIs at the recipes layer should automatically use the
-:func:`~cryptography.hazmat.backends.default_backend`, but optionally allow
-specifying a different backend.
+APIs at the :doc:`/hazmat/primitives/index` and recipes layer should
+automatically use the :func:`~cryptography.hazmat.backends.default_backend`,
+but optionally allow specifying a different backend.
 
 C bindings
 ~~~~~~~~~~
