@@ -13,7 +13,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends import _get_backend, default_backend
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
@@ -579,8 +579,9 @@ def serialize_ssh_private_key(private_key, password=None):
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
+        backend = _get_backend(None)
         ciph = _init_cipher(
-            ciphername, password, salt, rounds, default_backend()
+            ciphername, password, salt, rounds, backend
         )
     else:
         ciphername = kdfname = _NONE
