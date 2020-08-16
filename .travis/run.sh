@@ -21,9 +21,7 @@ fi
 source ~/.venv/bin/activate
 
 if [ -n "${DOCKER}" ]; then
-    # We will be able to drop the -u once we switch the default container user in the
-    # dockerfiles.
-    docker run --rm -u 2000:2000 \
+    docker run --rm \
         -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
         -w "${TRAVIS_BUILD_DIR}" \
