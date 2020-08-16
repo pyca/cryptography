@@ -9,7 +9,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
@@ -58,7 +57,7 @@ class TestX963(object):
             algorithm=hashfn(),
             length=key_data_len,
             sharedinfo=sharedinfo,
-            backend=default_backend(),
+            backend=backend,
         )
         xkdf.verify(key, key_data)
 
