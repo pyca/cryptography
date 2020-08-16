@@ -580,9 +580,7 @@ def serialize_ssh_private_key(private_key, password=None):
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
         backend = _get_backend(None)
-        ciph = _init_cipher(
-            ciphername, password, salt, rounds, backend
-        )
+        ciph = _init_cipher(ciphername, password, salt, rounds, backend)
     else:
         ciphername = kdfname = _NONE
         blklen = 8
