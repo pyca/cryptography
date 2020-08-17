@@ -6,7 +6,7 @@ case "${1}" in
         cd aws-encryption-sdk-python
         git rev-parse HEAD
         pip install -e .
-        pip install -r test/upstream-requirements-py27.txt
+        pip install -r test/upstream-requirements-py37.txt
         ;;
     run)
         cd aws-encryption-sdk-python
