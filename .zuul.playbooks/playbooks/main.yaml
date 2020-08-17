@@ -36,18 +36,12 @@
     - name: Ridiculous bcrypt test part two
       shell: |
         curl -O https://f001.backblazeb2.com/file/dropshare-fenrir/bcrypt-good-cp36-abi3-manylinux2014_aarch64.whl
-        pip install bcrypt-good-cp36-abi3-manylinux2014_aarch64.whl
-        python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
-        pip uninstall bcrypt
+        python3 -m venv venv
+        venv/bin/pip install bcrypt-good-cp36-abi3-manylinux2014_aarch64.whl
+        venv/bin/python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
 
     - name: Ridiculous bcrypt test part one
       shell: |
-        pip install -U bcrypt
-        python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
-
-    - name: Run tox
-      include_role:
-        name: tox
-      vars:
-        tox_extra_args: "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
-
+        python3 -m venv venv2
+        venv2/bin/pip install -U bcrypt
+        venv2/bin/python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
