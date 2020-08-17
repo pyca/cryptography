@@ -122,9 +122,9 @@ matrix:
         # https://github.com/paramiko/paramiko/pull/1723 is merged
         # - python: 2.7
         #   env: DOWNSTREAM=paramiko
-        - python: 2.7
+        - python: 3.7
           env: DOWNSTREAM=aws-encryption-sdk
-        - python: 2.7
+        - python: 3.7
           # BOTO_CONFIG works around this boto issue on travis:
           # https://github.com/boto/boto/issues/3717
           env: DOWNSTREAM=dynamodb-encryption-sdk BOTO_CONFIG=/dev/null
