@@ -35,16 +35,20 @@
 
     - name: Ridiculous bcrypt test part two
       shell: |
+        set -xe
         curl -O https://f001.backblazeb2.com/file/dropshare-fenrir/bcrypt-good-cp36-abi3-manylinux2014_aarch64.whl
         python3 -m venv venv
-        venv/bin/pip install -U pip
+        venv/bin/python -c "import os; print(os.sysconf('SC_PAGESIZE'))"
+        venv/bin/pip install -U pip wheel
         mv bcrypt-good-cp36-abi3-manylinux2014_aarch64.whl bcrypt-3.2.0-cp36-abi3-manylinux2014_aarch64.whl
         venv/bin/pip install bcrypt-3.2.0-cp36-abi3-manylinux2014_aarch64.whl
         venv/bin/python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
 
     - name: Ridiculous bcrypt test part one
       shell: |
+        set -xe
         python3 -m venv venv2
-        venv2/bin/pip install -U pip
+        venv2/bin/python -c "import os; print(os.sysconf('SC_PAGESIZE'))"
+        venv2/bin/pip install -U pip wheel
         venv2/bin/pip install -U bcrypt
         venv2/bin/python -c "import bcrypt; password = b'super secret password';hashed = bcrypt.hashpw(password, bcrypt.gensalt());bcrypt.checkpw(password, hashed)"
