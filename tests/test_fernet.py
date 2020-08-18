@@ -238,3 +238,7 @@ class TestMultiFernet(object):
 
         with pytest.raises(InvalidToken):
             mf2.rotate(mf1.encrypt(b"abc"))
+
+
+def test_deliberate_failure():
+    assert False
