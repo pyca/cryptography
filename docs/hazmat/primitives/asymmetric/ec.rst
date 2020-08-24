@@ -47,6 +47,10 @@ Elliptic Curve Signature Algorithms
     The ECDSA signature algorithm first standardized in NIST publication
     `FIPS 186-3`_, and later in `FIPS 186-4`_.
 
+    Note that while elliptic curve keys can be used for both signing and key
+    exchange, this is bad cryptographic practice. Instead, users should
+    generate separate signing and ECDH keys.
+
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
@@ -253,6 +257,10 @@ Elliptic Curve Key Exchange algorithm
     derivation function. This allows mixing of additional information into the
     key, derivation of multiple keys, and destroys any structure that may be
     present.
+
+    Note that while elliptic curve keys can be used for both signing and key
+    exchange, this is bad cryptographic practice. Instead, users should
+    generate separate signing and ECDH keys.
 
     .. warning::
 
