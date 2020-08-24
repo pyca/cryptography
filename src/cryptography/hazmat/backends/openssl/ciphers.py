@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
+    _MAX_CHUNK_SIZE = 2 ** 31
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
@@ -124,25 +125,32 @@ class _CipherContext(object):
         return bytes(buf[:n])
 
     def update_into(self, data, buf):
-        if len(buf) < (len(data) + self._block_size_bytes - 1):
+        total_data_len = len(data)
+        if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
                 "buffer must be at least {} bytes for this "
                 "payload".format(len(data) + self._block_size_bytes - 1)
             )
 
-        buf = self._backend._ffi.cast(
-            "unsigned char *", self._backend._ffi.from_buffer(buf)
-        )
+        data_processed = 0
+        total_out = 0
         outlen = self._backend._ffi.new("int *")
-        res = self._backend._lib.EVP_CipherUpdate(
-            self._ctx,
-            buf,
-            outlen,
-            self._backend._ffi.from_buffer(data),
-            len(data),
-        )
-        self._backend.openssl_assert(res != 0)
-        return outlen[0]
+        baseoutbuf = self._backend._ffi.from_buffer(buf)
+        baseinbuf = self._backend._ffi.from_buffer(data)
+
+        while data_processed != total_data_len:
+            outbuf = baseoutbuf + total_out
+            inbuf = baseinbuf + data_processed
+            inlen = min(self._MAX_CHUNK_SIZE, total_data_len - data_processed)
+
+            res = self._backend._lib.EVP_CipherUpdate(
+                self._ctx, outbuf, outlen, inbuf, inlen
+            )
+            self._backend.openssl_assert(res != 0)
+            data_processed += inlen
+            total_out += outlen[0]
+
+        return total_out
 
     def finalize(self):
         if (

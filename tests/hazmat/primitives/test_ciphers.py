@@ -316,3 +316,20 @@ class TestCipherUpdateInto(object):
         buf = bytearray(5)
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
+
+    def test_update_into_auto_chunking(self, backend, monkeypatch):
+        key = b"\x00" * 16
+        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
+        encryptor = c.encryptor()
+        # Lower max chunk size so we can test chunking
+        monkeypatch.setattr(encryptor._ctx, "_MAX_CHUNK_SIZE", 40)
+        buf = bytearray(527)
+        pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
+        processed = encryptor.update_into(pt, buf)
+        assert processed == 512
+        decryptor = c.decryptor()
+        # Change max chunk size to verify alternate boundaries don't matter
+        monkeypatch.setattr(decryptor._ctx, "_MAX_CHUNK_SIZE", 73)
+        decbuf = bytearray(527)
+        decprocessed = decryptor.update_into(buf[:processed], decbuf)
+        assert decbuf[:decprocessed] == pt
