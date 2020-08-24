@@ -125,8 +125,6 @@ class _CipherContext(object):
         return bytes(buf[:n])
 
     def update_into(self, data, buf):
-        data_processed = 0
-        total_out = 0
         total_data_len = len(data)
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
@@ -134,6 +132,8 @@ class _CipherContext(object):
                 "payload".format(len(data) + self._block_size_bytes - 1)
             )
 
+        data_processed = 0
+        total_out = 0
         outlen = self._backend._ffi.new("int *")
         baseoutbuf = self._backend._ffi.from_buffer(buf)
         baseinbuf = self._backend._ffi.from_buffer(data)
@@ -141,10 +141,7 @@ class _CipherContext(object):
         while data_processed != total_data_len:
             outbuf = baseoutbuf + total_out
             inbuf = baseinbuf + data_processed
-            if total_data_len - data_processed > self._MAX_CHUNK_SIZE:
-                inlen = self._MAX_CHUNK_SIZE
-            else:
-                inlen = total_data_len - data_processed
+            inlen = min(self._MAX_CHUNK_SIZE, total_data_len - data_processed)
 
             res = self._backend._lib.EVP_CipherUpdate(
                 self._ctx, outbuf, outlen, inbuf, inlen
