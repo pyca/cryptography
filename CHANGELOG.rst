@@ -23,6 +23,8 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
   .
+* Resolved an issue causing large symmetric encryption calls (greater than
+  2\ :sup:`31` bytes) to raise an ``OverflowError``.
 
 .. _v3-0:
 
