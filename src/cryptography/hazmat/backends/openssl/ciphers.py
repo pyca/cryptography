@@ -136,13 +136,11 @@ class _CipherContext(object):
 
         outlen = self._backend._ffi.new("int *")
         baseoutbuf = self._backend._ffi.from_buffer(buf)
+        baseinbuf = self._backend._ffi.from_buffer(data)
 
         while data_processed != total_data_len:
-            # Slice doesn't work for the writable buffer... Probably me being
-            # dumb? Doesn't write to the buffer with this:
-            # outbuf = self._backend._ffi.from_buffer(buf[total_out:])
             outbuf = baseoutbuf + total_out
-            inbuf = self._backend._ffi.from_buffer(data[data_processed:])
+            inbuf = baseinbuf + data_processed
             if total_data_len - data_processed > self._MAX_CHUNK_SIZE:
                 inlen = self._MAX_CHUNK_SIZE
             else:
