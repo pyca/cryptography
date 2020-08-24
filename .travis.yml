@@ -50,7 +50,7 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.0.2
         - python: 3.8
-          env: TOXENV=py38 LIBRESSL=3.1.3
+          env: TOXENV=py38 LIBRESSL=3.1.4
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.2.0
 
