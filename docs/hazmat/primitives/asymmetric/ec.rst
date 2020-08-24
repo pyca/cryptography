@@ -48,7 +48,7 @@ Elliptic Curve Signature Algorithms
     `FIPS 186-3`_, and later in `FIPS 186-4`_.
 
     Note that while elliptic curve keys can be used for both signing and key
-    exchange, this is bad cryptographic practice. Instead, users should
+    exchange, this is `bad cryptographic practice`_. Instead, users should
     generate separate signing and ECDH keys.
 
     :param algorithm: An instance of
@@ -259,7 +259,7 @@ Elliptic Curve Key Exchange algorithm
     present.
 
     Note that while elliptic curve keys can be used for both signing and key
-    exchange, this is bad cryptographic practice. Instead, users should
+    exchange, this is `bad cryptographic practice`_. Instead, users should
     generate separate signing and ECDH keys.
 
     .. warning::
@@ -980,3 +980,4 @@ Elliptic Curve Object Identifiers
 .. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
+.. _`bad cryptographic practice`: https://crypto.stackexchange.com/a/3313
