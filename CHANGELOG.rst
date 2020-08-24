@@ -23,8 +23,10 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
   .
-* Resolved an issue causing large symmetric encryption calls (greater than
-  2\ :sup:`31` bytes) to raise an ``OverflowError``.
+* Calling :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update` or 
+  :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into`
+  with ``data`` longer than 2\ :sup:`31` bytes no longer raises an
+  ``OverflowError``.
 
 .. _v3-0:
 
