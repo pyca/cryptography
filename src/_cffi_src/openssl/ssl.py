@@ -371,6 +371,10 @@ const SSL_METHOD *SSLv23_method(void);
 const SSL_METHOD *SSLv23_server_method(void);
 const SSL_METHOD *SSLv23_client_method(void);
 
+const SSL_METHOD *TLS_method(void) = SSLv23_method;
+const SSL_METHOD *TLS_client_method(void) = SSLv23_client_method;
+const SSL_METHOD *TLS_server_method(void) = SSLv23_server_method;
+
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(SSL_METHOD *);
 long SSL_CTX_get_timeout(const SSL_CTX *);
@@ -501,17 +505,12 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
+
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
-const SSL_METHOD *TLS_method = SSLv23_method;
-const SSL_METHOD *TLS_client_method = SSLv23_client_method;
-const SSL_METHOD *TLS_server_method = SSLv23_server_method;
 #else
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
-const SSL_METHOD *TLS_method(void);
-const SSL_METHOD *TLS_client_method(void);
-const SSL_METHOD *TLS_server_method(void);
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
