@@ -27,7 +27,9 @@ from ...utils import raises_unsupported_algorithm
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACCopy(object):
-    test_copy = generate_base_hmac_test(hashes.MD5(),)
+    test_copy = generate_base_hmac_test(
+        hashes.MD5(),
+    )
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)

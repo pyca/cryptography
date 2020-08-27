@@ -654,7 +654,8 @@ class TestDHPublicKeySerialization(object):
         )
         pub_key = loader_func(key_bytes, backend)
         serialized = pub_key.public_bytes(
-            encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
+            encoding,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         assert serialized == key_bytes
 
@@ -780,7 +781,8 @@ class TestDHParameterSerialization(object):
         )
         parameters = loader_func(param_bytes, backend)
         serialized = parameters.parameter_bytes(
-            encoding, serialization.ParameterFormat.PKCS3,
+            encoding,
+            serialization.ParameterFormat.PKCS3,
         )
         assert serialized == param_bytes
 

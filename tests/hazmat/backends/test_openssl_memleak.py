@@ -135,7 +135,10 @@ def assert_no_memory_leaks(s, argv=[]):
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.
     proc = subprocess.Popen(
-        argv, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        argv,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     try:
         proc.wait()

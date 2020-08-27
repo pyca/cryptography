@@ -38,7 +38,8 @@ from cryptography.x509.oid import (
 def _key_identifier_from_public_key(public_key):
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
-            serialization.Encoding.DER, serialization.PublicFormat.PKCS1,
+            serialization.Encoding.DER,
+            serialization.PublicFormat.PKCS1,
         )
     elif isinstance(public_key, EllipticCurvePublicKey):
         data = public_key.public_bytes(

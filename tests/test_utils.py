@@ -362,7 +362,8 @@ def test_load_hash_vectors_bad_data():
 
 def test_load_vectors_from_file():
     vectors = load_vectors_from_file(
-        os.path.join("ciphers", "Blowfish", "bf-cfb.txt"), load_nist_vectors,
+        os.path.join("ciphers", "Blowfish", "bf-cfb.txt"),
+        load_nist_vectors,
     )
     assert vectors == [
         {

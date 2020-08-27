@@ -50,7 +50,8 @@ def test_default_backend():
 )
 class TestFernet(object):
     @json_parametrize(
-        ("secret", "now", "iv", "src", "token"), "generate.json",
+        ("secret", "now", "iv", "src", "token"),
+        "generate.json",
     )
     def test_generate(self, secret, now, iv, src, token, backend):
         f = Fernet(secret.encode("ascii"), backend=backend)
@@ -62,7 +63,8 @@ class TestFernet(object):
         assert actual_token == token.encode("ascii")
 
     @json_parametrize(
-        ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
+        ("secret", "now", "src", "ttl_sec", "token"),
+        "verify.json",
     )
     def test_verify(
         self, secret, now, src, ttl_sec, token, backend, monkeypatch
@@ -70,7 +72,9 @@ class TestFernet(object):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         payload = f.decrypt_at_time(
-            token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
+            token.encode("ascii"),
+            ttl=ttl_sec,
+            current_time=current_time,
         )
         assert payload == src.encode("ascii")
         monkeypatch.setattr(time, "time", lambda: current_time)
@@ -83,7 +87,9 @@ class TestFernet(object):
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         with pytest.raises(InvalidToken):
             f.decrypt_at_time(
-                token.encode("ascii"), ttl=ttl_sec, current_time=current_time,
+                token.encode("ascii"),
+                ttl=ttl_sec,
+                current_time=current_time,
             )
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):

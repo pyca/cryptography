@@ -380,7 +380,10 @@ class TestCertificateRevocationList(object):
 
         # Encode it to PEM and load it back.
         crl = x509.load_pem_x509_crl(
-            crl.public_bytes(encoding=serialization.Encoding.PEM,), backend
+            crl.public_bytes(
+                encoding=serialization.Encoding.PEM,
+            ),
+            backend,
         )
 
         assert len(crl) == 0
@@ -396,7 +399,10 @@ class TestCertificateRevocationList(object):
 
         # Encode it to DER and load it back.
         crl = x509.load_der_x509_crl(
-            crl.public_bytes(encoding=serialization.Encoding.DER,), backend
+            crl.public_bytes(
+                encoding=serialization.Encoding.DER,
+            ),
+            backend,
         )
 
         assert len(crl) == 12
@@ -1141,7 +1147,10 @@ class TestRSACertificate(object):
 
         # Encode it to PEM and load it back.
         cert = x509.load_pem_x509_certificate(
-            cert.public_bytes(encoding=serialization.Encoding.PEM,), backend
+            cert.public_bytes(
+                encoding=serialization.Encoding.PEM,
+            ),
+            backend,
         )
 
         # We should recover what we had to start with.
@@ -1164,7 +1173,10 @@ class TestRSACertificate(object):
 
         # Encode it to DER and load it back.
         cert = x509.load_der_x509_certificate(
-            cert.public_bytes(encoding=serialization.Encoding.DER,), backend
+            cert.public_bytes(
+                encoding=serialization.Encoding.DER,
+            ),
+            backend,
         )
 
         # We should recover what we had to start with.
@@ -1429,7 +1441,10 @@ class TestRSACertificateRequest(object):
 
         # Encode it to PEM and load it back.
         request = x509.load_pem_x509_csr(
-            request.public_bytes(encoding=serialization.Encoding.PEM,), backend
+            request.public_bytes(
+                encoding=serialization.Encoding.PEM,
+            ),
+            backend,
         )
 
         # We should recover what we had to start with.
@@ -1456,7 +1471,10 @@ class TestRSACertificateRequest(object):
 
         # Encode it to DER and load it back.
         request = x509.load_der_x509_csr(
-            request.public_bytes(encoding=serialization.Encoding.DER,), backend
+            request.public_bytes(
+                encoding=serialization.Encoding.DER,
+            ),
+            backend,
         )
 
         # We should recover what we had to start with.
@@ -1660,7 +1678,8 @@ class TestRSACertificateRequest(object):
             )
             .public_key(subject_private_key.public_key())
             .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
             .add_extension(
                 x509.SubjectAlternativeName(
@@ -2336,12 +2355,14 @@ class TestCertificateBuilder(object):
 
     def test_add_extension_checks_for_duplicates(self):
         builder = x509.CertificateBuilder().add_extension(
-            x509.BasicConstraints(ca=False, path_length=None), True,
+            x509.BasicConstraints(ca=False, path_length=None),
+            True,
         )
 
         with pytest.raises(ValueError):
             builder.add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
 
     def test_add_invalid_extension_type(self):
@@ -2513,7 +2534,8 @@ class TestCertificateBuilder(object):
             )
             .public_key(subject_private_key.public_key())
             .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
             .add_extension(
                 x509.SubjectAlternativeName(
@@ -2563,7 +2585,8 @@ class TestCertificateBuilder(object):
             )
             .public_key(subject_private_key.public_key())
             .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
             .add_extension(
                 x509.SubjectAlternativeName(
@@ -2615,7 +2638,8 @@ class TestCertificateBuilder(object):
             )
             .public_key(subject_private_key.public_key())
             .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
             .add_extension(
                 x509.SubjectAlternativeName(
@@ -2712,7 +2736,8 @@ class TestCertificateBuilder(object):
             )
             .public_key(subject_private_key.public_key())
             .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), True,
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
             )
             .add_extension(
                 x509.SubjectAlternativeName(
@@ -3292,7 +3317,8 @@ class TestCertificateBuilder(object):
         "unrecognized",
         [
             x509.UnrecognizedExtension(
-                x509.ObjectIdentifier("1.2.3.4.5"), b"abcdef",
+                x509.ObjectIdentifier("1.2.3.4.5"),
+                b"abcdef",
             )
         ],
     )
@@ -3740,11 +3766,13 @@ class TestCertificateSigningRequestBuilder(object):
 
     def test_add_duplicate_extension(self):
         builder = x509.CertificateSigningRequestBuilder().add_extension(
-            x509.BasicConstraints(True, 2), critical=True,
+            x509.BasicConstraints(True, 2),
+            critical=True,
         )
         with pytest.raises(ValueError):
             builder.add_extension(
-                x509.BasicConstraints(True, 2), critical=True,
+                x509.BasicConstraints(True, 2),
+                critical=True,
             )
 
     def test_set_invalid_subject(self):
@@ -4001,7 +4029,10 @@ class TestCertificateSigningRequestBuilder(object):
             .subject_name(
                 x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u"SAN")])
             )
-            .add_extension(san, critical=False,)
+            .add_extension(
+                san,
+                critical=False,
+            )
             .sign(private_key, hashes.SHA256(), backend)
         )
 
@@ -5207,8 +5238,7 @@ class TestEd448Certificate(object):
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSignatureRejection(object):
-    """Test if signing rejects DH keys properly.
-    """
+    """Test if signing rejects DH keys properly."""
 
     def load_key(self, backend):
         data = load_vectors_from_file(
