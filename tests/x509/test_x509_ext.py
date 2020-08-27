@@ -2749,7 +2749,8 @@ class TestPolicyConstraintsExtension(object):
         assert ext.critical is True
 
         assert ext.value == x509.PolicyConstraints(
-            require_explicit_policy=None, inhibit_policy_mapping=0,
+            require_explicit_policy=None,
+            inhibit_policy_mapping=0,
         )
 
     def test_require_explicit_policy(self, backend):
@@ -2763,7 +2764,8 @@ class TestPolicyConstraintsExtension(object):
         )
         assert ext.critical is True
         assert ext.value == x509.PolicyConstraints(
-            require_explicit_policy=1, inhibit_policy_mapping=None,
+            require_explicit_policy=1,
+            inhibit_policy_mapping=None,
         )
 
 

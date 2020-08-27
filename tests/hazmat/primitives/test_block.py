@@ -136,10 +136,12 @@ class TestCipherContext(object):
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
-        algorithms.AES, modes.GCM,
+        algorithms.AES,
+        modes.GCM,
     )
     test_aead_tag_exceptions = generate_aead_tag_exception_test(
-        algorithms.AES, modes.GCM,
+        algorithms.AES,
+        modes.GCM,
     )
 
 
@@ -148,31 +150,41 @@ class TestModeValidation(object):
     def test_cbc(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16), modes.CBC(b"abc"), backend,
+                algorithms.AES(b"\x00" * 16),
+                modes.CBC(b"abc"),
+                backend,
             )
 
     def test_ofb(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16), modes.OFB(b"abc"), backend,
+                algorithms.AES(b"\x00" * 16),
+                modes.OFB(b"abc"),
+                backend,
             )
 
     def test_cfb(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16), modes.CFB(b"abc"), backend,
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB(b"abc"),
+                backend,
             )
 
     def test_cfb8(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16), modes.CFB8(b"abc"), backend,
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB8(b"abc"),
+                backend,
             )
 
     def test_ctr(self, backend):
         with pytest.raises(ValueError):
             Cipher(
-                algorithms.AES(b"\x00" * 16), modes.CTR(b"abc"), backend,
+                algorithms.AES(b"\x00" * 16),
+                modes.CTR(b"abc"),
+                backend,
             )
 
     def test_gcm(self):

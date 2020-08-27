@@ -211,7 +211,8 @@ def _encode_certificate_policies(backend, certificate_policies):
                         backend, x509.OID_CPS_QUALIFIER.dotted_string
                     )
                     pqi.d.cpsuri = _encode_asn1_str(
-                        backend, qualifier.encode("ascii"),
+                        backend,
+                        qualifier.encode("ascii"),
                     )
                 else:
                     assert isinstance(qualifier, x509.UserNotice)
@@ -313,7 +314,10 @@ def _encode_authority_key_identifier(backend, authority_keyid):
     backend.openssl_assert(akid != backend._ffi.NULL)
     akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
     if authority_keyid.key_identifier is not None:
-        akid.keyid = _encode_asn1_str(backend, authority_keyid.key_identifier,)
+        akid.keyid = _encode_asn1_str(
+            backend,
+            authority_keyid.key_identifier,
+        )
 
     if authority_keyid.authority_cert_issuer is not None:
         akid.issuer = _encode_general_names(

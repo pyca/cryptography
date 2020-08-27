@@ -221,7 +221,10 @@ class OCSPResponseBuilder(object):
             revocation_reason,
         )
         return OCSPResponseBuilder(
-            singleresp, self._responder_id, self._certs, self._extensions,
+            singleresp,
+            self._responder_id,
+            self._certs,
+            self._extensions,
         )
 
     def responder_id(self, encoding, responder_cert):
@@ -250,7 +253,10 @@ class OCSPResponseBuilder(object):
         if not all(isinstance(x, x509.Certificate) for x in certs):
             raise TypeError("certs must be a list of Certificates")
         return OCSPResponseBuilder(
-            self._response, self._responder_id, certs, self._extensions,
+            self._response,
+            self._responder_id,
+            certs,
+            self._extensions,
         )
 
     def add_extension(self, extension, critical):

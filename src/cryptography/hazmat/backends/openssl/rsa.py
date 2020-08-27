@@ -448,7 +448,8 @@ class _RSAPublicKey(object):
         self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(e[0] != self._backend._ffi.NULL)
         return rsa.RSAPublicNumbers(
-            e=self._backend._bn_to_int(e[0]), n=self._backend._bn_to_int(n[0]),
+            e=self._backend._bn_to_int(e[0]),
+            n=self._backend._bn_to_int(n[0]),
         )
 
     def public_bytes(self, encoding, format):

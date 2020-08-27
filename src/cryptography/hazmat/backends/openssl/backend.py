@@ -399,7 +399,8 @@ class Backend(object):
                 SEED, mode_cls, GetCipherByName("seed-{mode.name}")
             )
         for cipher_cls, mode_cls in itertools.product(
-            [CAST5, IDEA], [CBC, OFB, CFB, ECB],
+            [CAST5, IDEA],
+            [CBC, OFB, CFB, ECB],
         ):
             self.register_cipher_adapter(
                 cipher_cls,

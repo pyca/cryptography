@@ -91,7 +91,11 @@ class TestOpenSSL(object):
             type(mode),
             lambda backend, cipher, mode: backend._ffi.NULL,
         )
-        cipher = Cipher(DummyCipherAlgorithm(), mode, backend=b,)
+        cipher = Cipher(
+            DummyCipherAlgorithm(),
+            mode,
+            backend=b,
+        )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
