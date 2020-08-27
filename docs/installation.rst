@@ -33,7 +33,8 @@ OpenSSL releases:
 
 .. warning::
 
-    Cryptography 3.1 has deprecated support for OpenSSL 1.0.2.
+    Cryptography 3.2 has dropped support for OpenSSL 1.0.2, see the
+    :doc:`FAQ </faq>` for more details
 
 Building cryptography on Windows
 --------------------------------

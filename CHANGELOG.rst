@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for OpenSSL 1.0.2 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
+
 .. _v3-1:
 
 3.1 - 2020-08-26
