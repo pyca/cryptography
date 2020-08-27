@@ -3,10 +3,8 @@ Changelog
 
 .. _v3-1:
 
-3.1 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+3.1 - 2020-08-26
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed support for ``idna`` based
   :term:`U-label` parsing in various X.509 classes. This support was originally
