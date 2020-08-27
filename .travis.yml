@@ -118,7 +118,7 @@ matrix:
           env: DOWNSTREAM=pyopenssl
         - python: 3.7
           env: DOWNSTREAM=twisted OPENSSL=1.1.1g
-        - python: 2.7
+        - python: 3.7
           env: DOWNSTREAM=paramiko
         - python: 3.7
           env: DOWNSTREAM=aws-encryption-sdk
