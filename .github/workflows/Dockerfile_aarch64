@@ -1,0 +1,16 @@
+FROM pyca/cryptography-manylinux2014_aarch64 as build
+MAINTAINER Python Cryptographic Authority
+
+ARG PYTHON
+ARG CRYPTOGRAPHY_VERSION
+ENV PYTHON=${PYTHON}
+ENV CRYPTOGRAPHY_VERSION=${CRYPTOGRAPHY_VERSION}
+
+WORKDIR /root
+ADD .github/workflows/build-wheels-aarch64.sh /root/build-wheels-aarch64.sh
+CMD cd /root/
+RUN chmod +x build-wheels-aarch64.sh
+RUN ./build-wheels-aarch64.sh
+
+FROM scratch as release
+COPY --from=build /root/wheelhouse /wheelhouse

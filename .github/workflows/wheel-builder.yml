@@ -51,6 +51,40 @@ jobs:
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
           path: cryptography-wheelhouse/
+  
+  # Since github actions do not offer arm64 builders, we use Docker buildx to do the build
+  # and dump the artifacts to a folder.
+  manylinux_aarch64:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON: ["cp35-cp35m", "cp36-cp36m", "cp37-cp37m", "cp38-cp38", "cp39-cp39"]
+        MANYLINUX:
+          - NAME: manylinux2014_aarch64
+            CONTAINER: "gwblake/cryptography-manylinux2014_aarch64:latest"
+    name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
+    steps:
+      - uses: actions/checkout@master
+      - name: Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v3.3.0
+        with:
+          buildx-version: latest
+          qemu-version: latest
+      - name: Pull the container
+        run: docker pull ${{ matrix.MANYLINUX.CONTAINER }}
+      - name: Build our container with the wheel in in
+        run: >
+          docker buildx build --platform linux/arm64 
+          -t crypto-wheelhouse_aarch64-${{ matrix.PYTHON }} --output tmpwheelhouse --build-arg PYTHON=${{ matrix.PYTHON }}
+          --build-arg CRYPTOGRAPHY_VERSION=${{ github.event.inputs.version }} -f .github/workflows/Dockerfile_aarch64 .
+      - name: Extract wheelhouse folder from dumped container
+        run: |
+          mv tmpwheelhouse/wheelhouse cryptography-wheelhouse
+      - uses: actions/upload-artifact@v1
+        with:
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
+          path: cryptography-wheelhouse/
 
   macos:
     runs-on: macos-latest
