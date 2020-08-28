@@ -1,0 +1,84 @@
+Metadata-Version: 2.1
+Name: snowballstemmer
+Version: 2.0.0
+Summary: This package provides 26 stemmers for 25 languages generated from Snowball algorithms.
+Home-page: https://github.com/snowballstem/snowball
+Author: Snowball Developers
+Author-email: snowball-discuss@lists.tartarus.org
+License: BSD-3-Clause
+Keywords: stemmer
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: Arabic
+Classifier: Natural Language :: Catalan
+Classifier: Natural Language :: Danish
+Classifier: Natural Language :: Dutch
+Classifier: Natural Language :: English
+Classifier: Natural Language :: Finnish
+Classifier: Natural Language :: French
+Classifier: Natural Language :: German
+Classifier: Natural Language :: Greek
+Classifier: Natural Language :: Hindi
+Classifier: Natural Language :: Hungarian
+Classifier: Natural Language :: Indonesian
+Classifier: Natural Language :: Italian
+Classifier: Natural Language :: Norwegian
+Classifier: Natural Language :: Portuguese
+Classifier: Natural Language :: Romanian
+Classifier: Natural Language :: Russian
+Classifier: Natural Language :: Spanish
+Classifier: Natural Language :: Swedish
+Classifier: Natural Language :: Tamil
+Classifier: Natural Language :: Turkish
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Database
+Classifier: Topic :: Internet :: WWW/HTTP :: Indexing/Search
+Classifier: Topic :: Text Processing :: Indexing
+Classifier: Topic :: Text Processing :: Linguistic
+
+
+It includes following language algorithms:
+
+* Arabic
+* Basque
+* Catalan
+* Danish
+* Dutch
+* English (Standard, Porter)
+* Finnish
+* French
+* German
+* Greek
+* Hindi
+* Hungarian
+* Indonesian
+* Irish
+* Italian
+* Lithuanian
+* Nepali
+* Norwegian
+* Portuguese
+* Romanian
+* Russian
+* Spanish
+* Swedish
+* Tamil
+* Turkish
+
+This is a pure Python stemming library. If `PyStemmer <https://pypi.org/project/PyStemmer/>`_ is available, this module uses
+it to accelerate.
+
+

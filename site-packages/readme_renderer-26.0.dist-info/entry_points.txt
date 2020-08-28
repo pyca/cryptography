@@ -1,0 +1,3 @@
+[distutils.commands]
+check = readme_renderer.integration.distutils:Check
+

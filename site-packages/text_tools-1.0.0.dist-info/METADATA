@@ -1,0 +1,49 @@
+Metadata-Version: 2.1
+Name: text-tools
+Version: 1.0.0
+Summary: Various tools for manipulating text
+Home-page: https://www.alexseitsinger.com/packages/python/text-tools
+Author: Alex Seitsinger
+Author-email: software@alexseitsinger.com
+License: BSD 2-Clause License
+Project-URL: Documentation, https://www.alexseitsinger.com/packages/python/text-tools
+Project-URL: Source, https://github.com/alexseitsinger/text-tools
+Project-URL: Tracker, https://github.com/alexseitsinger/text-tools/issues
+Keywords: images
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Utilities
+Classifier: Topic :: Text Processing :: General
+Description-Content-Type: text/markdown
+
+# Text Tools
+
+## Description
+
+Various tools for manipulating text.
+
+## Installation
+
+```
+pip install text-tools
+```
+
+## Usage
+
+```python
+from text_tools.finders import find_best_string
+
+corpus = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+query = "Ipsum"
+
+first_match = find_best_string(query, corpus)
+```
+
+

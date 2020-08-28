@@ -1,0 +1,35 @@
+Mike Taylor         https://bear.im
+Darshana Chhajed    <darshana@osafoundation.org>
+Michael Lim         <lim.ck.michael@gmail.com>
+Bernd Zeimetz       <bzed@debian.org>
+Geoffrey Floyd      https://github.com/geoffreyfloyd
+Alexis Sasha Acker  https://github.com/sashaacker
+Yu-Jie Lin          https://github.com/livibetter
+rl-0x0              https://github.com/rl-0x0
+Bernardo Sulzbach   https://github.com/mafagafogigante
+Philip Tzou         https://github.com/philiptzou
+Ian Paterson        https://github.com/idpaterson
+Omer Katz           https://github.com/thedrow
+Rob Curtis          https://github.com/Rob1080
+Michael Maltese     https://github.com/michaelmaltese
+Dan Steeves         https://github.com/dansteeves68
+Alexander Sapronov  https://github.com/WarmongeR1
+Bernardo Sulzbach   https://github.com/mafagafogigante
+Zed                 https://github.com/zed
+
+https://github.com/fake-name
+https://github.com/rl-0x0
+https://github.com/dirkjankrijnders
+https://github.com/inean
+https://github.com/oxan
+https://github.com/jstegle
+https://github.com/devainandor
+https://github.com/borgstrom
+https://github.com/arcimboldo
+https://github.com/ccho-sevenrooms
+https://github.com/boppreh
+https://github.com/lborgav
+https://github.com/yishaibeeri
+https://github.com/rmecham
+
+see https://github.com/bear/parsedatetime/graphs/contributors for the full list

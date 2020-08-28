@@ -45,6 +45,7 @@ def register_interface(iface):
         verify_interface(iface, klass)
         iface.register(klass)
         return klass
+
     return register_decorator
 
 
@@ -54,27 +55,33 @@ def register_interface_if(predicate, iface):
             verify_interface(iface, klass)
             iface.register(klass)
         return klass
+
     return register_decorator
 
 
 if hasattr(int, "from_bytes"):
     int_from_bytes = int.from_bytes
 else:
+
     def int_from_bytes(data, byteorder, signed=False):
-        assert byteorder == 'big'
+        assert byteorder == "big"
         assert not signed
 
         return int(binascii.hexlify(data), 16)
 
 
 if hasattr(int, "to_bytes"):
+
     def int_to_bytes(integer, length=None):
         return integer.to_bytes(
-            length or (integer.bit_length() + 7) // 8 or 1, 'big'
+            length or (integer.bit_length() + 7) // 8 or 1, "big"
         )
+
+
 else:
+
     def int_to_bytes(integer, length=None):
-        hex_string = '%x' % integer
+        hex_string = "%x" % integer
         if length is None:
             n = len(hex_string)
         else:
@@ -106,16 +113,8 @@ def verify_interface(iface, klass):
         if sig != actual:
             raise InterfaceNotImplemented(
                 "{}.{}'s signature differs from the expected. Expected: "
-                "{!r}. Received: {!r}".format(
-                    klass, method, sig, actual
-                )
+                "{!r}. Received: {!r}".format(klass, method, sig, actual)
             )
-
-
-# No longer needed as of 2.2, but retained because we have external consumers
-# who use it.
-def bit_length(x):
-    return x.bit_length()
 
 
 class _DeprecatedValue(object):
@@ -168,4 +167,5 @@ def cached_property(func):
         result = func(instance)
         setattr(instance, cached_name, result)
         return result
+
     return property(inner)

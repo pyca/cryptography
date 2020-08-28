@@ -1,0 +1,195 @@
+Metadata-Version: 2.1
+Name: asn1
+Version: 2.4.1
+Summary: Python-ASN1 is a simple ASN.1 encoder and decoder for Python 2.7+ and 3.5+.
+Home-page: https://github.com/andrivet/python-asn1
+Author: Sebastien Andrivet
+Author-email: sebastien@andrivet.com
+License: BSD
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Utilities
+Requires-Dist: enum-compat
+
+
+
+========
+Overview
+========
+
+Python-ASN1 is a simple ASN.1 encoder and decoder for Python 2.7 and 3.5+.
+
+Features
+========
+
+- Support BER (parser) and DER (parser and generator) encoding (except indefinite lengths)
+- 100% python, compatible with version 2.7, 3.5 and higher
+- Can be integrated by just including a file into your project
+
+
+Dependencies
+==============
+
+Python-ASN1 relies on `Python-Future <http://python-future.org>`_ for Python 2 and 3 compatibility. To install Python-Future:
+
+.. code-block:: sh
+
+  pip install future
+
+
+How to install Python-asn1
+==========================
+
+Install from PyPi with the following:
+
+.. code-block:: sh
+
+  pip install asn1
+
+or download the repository from `GitHub <https://github.com/andrivet/python-asn1>`_ and install with the following:
+
+.. code-block:: sh
+
+  python setup.py install
+
+You can also simply include ``asn1.py`` into your project.
+
+
+How to use Python-asn1
+======================
+
+.. note:: You can find more detailed documentation on the `Usage`_ page.
+
+.. _Usage: usage.html
+
+Encoding
+--------
+
+If you want to encode data and retrieve its DER-encoded representation, use code such as:
+
+.. code-block:: python
+
+  import asn1
+
+  encoder = asn1.Encoder()
+  encoder.start()
+  encoder.write('1.2.3', asn1.Numbers.ObjectIdentifier)
+  encoded_bytes = encoder.output()
+
+
+Decoding
+--------
+
+If you want to decode ASN.1 from DER or BER encoded bytes, use code such as:
+
+.. code-block:: python
+
+  import asn1
+
+  decoder = asn1.Decoder()
+  decoder.start(encoded_bytes)
+  tag, value = decoder.read()
+
+
+Documentation
+=============
+
+The complete documentation is available on Read The Docs:
+
+`python-asn1.readthedocs.io <https://python-asn1.readthedocs.io/en/latest/>`_
+
+
+License
+=======
+
+Python-ASN1 is free software that is made available under the MIT license.
+Consult the file LICENSE that is distributed together with this library for
+the exact licensing terms.
+
+Copyright
+=========
+
+The following people have contributed to Python-ASN1. Collectively they own the copyright of this software.
+
+* Geert Jansen (geert@boskant.nl): `original implementation <https://github.com/geertj/python-asn1>`_.
+* Sebastien Andrivet (sebastien@andrivet.com)
+
+Changelog
+=========
+
+2.4.1 (2020-07-16)
+
+* Fix #89 - Replace explicit references to enum34 by enum-compat
+
+2.4.0 (2020-06-23)
+
+* Fix #21 - Invalid decoding in non-Universal classes
+* Fix #57 - Invalid encoding of non-Universal classes
+
+2.3.1 (2020-04-06)
+------------------
+
+* No change in code, only in packaging and in texts (README, ...)
+
+2.3.0 (2020-04-05)
+------------------
+
+* Tests: Replace nose by pytest
+* Add Python 3.8, remove Python 3.4 support
+* PR#26 (from rumbah): Add test for default (implicit) encoding types
+* PR#25 (from thomwiggers): Attempt to support BIT STRING
+* Fix wrong example code, see #27
+* (from jcrowgey) Makes the package usable with pip install
+* Remove support of Python 3.3 (some dependencies do not support 3.3)
+* PR#15 (from ThePlasmaRailgun) Fix parsing of object identifier
+* PR#10 (from robinleander): Allow user to determine decoding tagtype
+
+
+2.2.0 (2017-10-30)
+------------------
+
+* Use "true" enums instead of classes. Use enun34 backport for old Python versions.
+
+2.1.1 (2017-10-30)
+------------------
+
+* Fix a bug (#9): two's complement corner case with values such as -32769. Add new test cases to test them.
+
+2.1.0 (2016-12-18)
+------------------
+
+* Add more documentation
+* Use (simulated) enumerations
+* Add Python 2.6 in automated checks and tests
+* Add type hints (for static checking) and fix some code
+
+2.0.0 (2016-12-16)
+------------------
+
+* First public release by Sebastien Andrivet
+* Support both python 2 and 3 (with Python-Future)
+* All strings are now in unicode
+* Add more ASN.1 tags (like PrintableString)
+* Fix errors in the example (dump.py)
+* Code reorganization
+
+0.9 (2011-05-18)
+----------------
+
+* Initial public release by Geert Jansen
+
+
