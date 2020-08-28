@@ -1,0 +1,53 @@
+Metadata-Version: 2.1
+Name: tldextract
+Version: 2.2.3
+Summary: Accurately separate the TLD from the registered domain and subdomains of a URL, using the Public Suffix List. By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well.
+Home-page: https://github.com/john-kurkowski/tldextract
+Author: John Kurkowski
+Author-email: john.kurkowski@gmail.com
+License: BSD License
+Keywords: tld domain subdomain url parse extract urlparse urlsplit public suffix list
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
+Description-Content-Type: text/markdown
+Requires-Dist: idna
+Requires-Dist: requests (>=2.1.0)
+Requires-Dist: requests-file (>=1.4)
+
+`tldextract` accurately separates the gTLD or ccTLD (generic or country code
+top-level domain) from the registered domain and subdomains of a URL.
+
+    >>> import tldextract
+    >>> tldextract.extract('http://forums.news.cnn.com/')
+    ExtractResult(subdomain='forums.news', domain='cnn', suffix='com')
+    >>> tldextract.extract('http://forums.bbc.co.uk/') # United Kingdom
+    ExtractResult(subdomain='forums', domain='bbc', suffix='co.uk')
+    >>> tldextract.extract('http://www.worldbank.org.kg/') # Kyrgyzstan
+    ExtractResult(subdomain='www', domain='worldbank', suffix='org.kg')
+
+`ExtractResult` is a namedtuple, so it's simple to access the parts you want.
+
+    >>> ext = tldextract.extract('http://forums.bbc.co.uk')
+    >>> (ext.subdomain, ext.domain, ext.suffix)
+    ('forums', 'bbc', 'co.uk')
+    >>> # rejoin subdomain and domain
+    >>> '.'.join(ext[:2])
+    'forums.bbc'
+    >>> # a common alias
+    >>> ext.registered_domain
+    'bbc.co.uk'
+
+By default, this package supports the public ICANN TLDs and their exceptions.
+You can optionally support the Public Suffix List's private domains as well.
+
+

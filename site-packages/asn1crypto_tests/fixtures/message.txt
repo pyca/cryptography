@@ -1,0 +1,1 @@
+This is the message to encapsulate in PKCS#7/CMS

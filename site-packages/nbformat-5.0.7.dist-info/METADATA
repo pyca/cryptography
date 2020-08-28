@@ -1,0 +1,37 @@
+Metadata-Version: 2.1
+Name: nbformat
+Version: 5.0.7
+Summary: The Jupyter Notebook format
+Home-page: http://jupyter.org
+Author: Jupyter Development Team
+Author-email: jupyter@googlegroups.com
+License: BSD
+Keywords: Interactive,Interpreter,Shell,Web
+Platform: Linux
+Platform: Mac OS X
+Platform: Windows
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.5
+Requires-Dist: ipython-genutils
+Requires-Dist: jsonschema (!=2.5.0,>=2.4)
+Requires-Dist: jupyter-core
+Requires-Dist: traitlets (>=4.1)
+Provides-Extra: test
+Requires-Dist: pytest ; extra == 'test'
+Requires-Dist: pytest-cov ; extra == 'test'
+Requires-Dist: testpath ; extra == 'test'
+
+
+This package contains the base implementation of the Jupyter Notebook format,
+and Python APIs for working with notebooks.
+
+

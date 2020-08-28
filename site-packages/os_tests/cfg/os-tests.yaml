@@ -1,0 +1,2 @@
+results_dir: "/tmp/os_tests_result"
+max_boot_time: 40

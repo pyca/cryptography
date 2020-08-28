@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: ipynb-tests
+Version: 1.0rc1
+Summary: Run Jupyter notebook tests
+Home-page: https://bitbucket.org/coleopter/ipynb-tests
+Author: Daniel Farré Manzorro
+Author-email: d.farre.m@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Developers
+Description-Content-Type: text/markdown
+Requires-Dist: jupyter
+Requires-Dist: bs4
+Provides-Extra: dev
+Requires-Dist: ipdb ; extra == 'dev'
+Requires-Dist: ipython ; extra == 'dev'
+Provides-Extra: test
+Requires-Dist: pytest-cov ; extra == 'test'
+
+Run pytest unit tests written as Jupyter notebooks:
+
+* Collects all exceptions raised in each notebook
+* Links to HTML notebook outputs in pytest output
+* (Optionally) check notebook standard output per cell with methods `check_notebook_name(self, soup)` using [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+
+See tests/example.py.
+
+

@@ -1,0 +1,41 @@
+.djtext_html_editor {
+    display: inline-block;
+    outline: none;
+    padding: 50px 50px 65px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+form .djtext_html_editor p {
+    margin-bottom: 1em !important;
+    margin-top: 0;
+    margin-left: 0;
+    padding-left: 0;
+    font-size: 1.3em;
+    color: black;
+    font-family: 'Lora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: 1.8;
+}
+
+form .djtext_html_editor h1 {
+    padding-left: 0;
+    font-size: 3em;
+    font-weight: normal;
+    font-family: 'Lora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: black;
+    margin: 1em 0;
+    text-shadow: none !important;
+    line-height: 1.2;
+}
+
+form .djtext_html_editor h2 {
+    font-weight: normal;
+    font-family: 'Lora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: black;
+    font-size: 1.8em;
+    margin: 1.5em 0 1em !important;
+    text-shadow: none !important;
+    line-height: 1.2;
+    padding: 0;
+    background: none;
+}

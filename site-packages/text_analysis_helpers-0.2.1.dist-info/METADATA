@@ -1,0 +1,72 @@
+Metadata-Version: 2.1
+Name: text-analysis-helpers
+Version: 0.2.1
+Summary: Collection of classes and functions for text analysis
+Home-page: https://github.com/pmatigakis/text-analysis-helpers
+Author: Panagiotis Matigakis
+Author-email: pmatigakis@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+Requires-Dist: newspaper3k (<0.3.0,>=0.2.6)
+Requires-Dist: topicaxis-opengraph (==0.5)
+Requires-Dist: TopicAxis-RAKE (==0.1.0)
+Requires-Dist: textstat (<0.5.0,>=0.4.1)
+Requires-Dist: nltk (<4.0,>=3.3)
+Requires-Dist: numpy (<2.0.0,>=1.15.2)
+Requires-Dist: gensim (<4.0.0,>=3.6.0)
+Requires-Dist: Jinja2 (<3.0,>=2.10)
+Requires-Dist: arrow (<1.0.0,>=0.15.5)
+
+# Introduction
+
+Text-analysis-helpers is a collection of classes and functions for text analysis.
+
+## Installation
+
+A Python 3 interpreter is required. It is recommended to install the package in
+a virtual environment in order to avoid corrupting the system's Python interpeter
+packages.
+
+```bash
+pip install text-analysis-helpers
+
+python -m nltk.downloader "punkt"
+python -m nltk.downloader "averaged_perceptron_tagger"
+python -m nltk.downloader "maxent_ne_chunker"
+python -m nltk.downloader "words"
+```
+
+## Usage
+
+You can use the HtmlAnalyser object to analyse the contents of a url.
+
+```python
+from text_analysis_helpers.html import HtmlAnalyser
+
+analyser = HtmlAnalyser()
+analysis_result = analyser.analyse_url("http://www.add-a-url-here.com")
+
+analysis_result.save("analysis_result.html")
+
+```
+
+You can see the scripts in the `examples` folder for some usage examples.
+
+There is also an cli utility that can be used to analyse a url. For example to
+analyse a url and save the analysis result to a json encoded file execute the
+following command in the terminal.
+
+```bash
+text-analysis-helpers-cli analyse-url --json --output analysis_result.json https://www.the-url-to-analyse.com
+```
+
+

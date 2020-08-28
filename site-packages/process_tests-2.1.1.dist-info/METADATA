@@ -1,0 +1,112 @@
+Metadata-Version: 2.1
+Name: process-tests
+Version: 2.1.1
+Summary: Tools for testing processes.
+Home-page: https://github.com/ionelmc/python-process-tests
+Author: Ionel Cristian Mărieș
+Author-email: contact@ionelmc.ro
+License: BSD-2-Clause
+Project-URL: Changelog, https://github.com/ionelmc/python-process-tests/blob/master/CHANGELOG.rst
+Project-URL: Issue Tracker, https://github.com/ionelmc/python-process-tests/issues
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Topic :: Utilities
+Classifier: Topic :: Software Development :: Testing
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Utilities
+Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
+
+========
+Overview
+========
+
+
+
+Tools for testing processes.
+
+* Free software: BSD 2-Clause License
+
+Usage
+=====
+
+::
+
+    from process_tests import ProcessTestCase
+    from process_tests import TestProcess
+
+    class MyTestCase(ProcessTestCase):
+        def test_simple(self):
+            with TestProcess('mydaemon', 'arg1', 'arg2') as proc:
+                with self.dump_on_error(proc.read):
+                    self.wait_for_strings(proc.read, 10, # wait 10 seconds for process to output lines with these strings
+                        'Started',
+                        'Working',
+                        'Done',
+                    )
+
+
+Features
+========
+
+* TODO
+
+Examples
+========
+
+* https://github.com/ionelmc/python-redis-lock/blob/master/tests/test_redis_lock.py
+* https://github.com/ionelmc/python-manhole/blob/master/tests/test_manhole.py
+* https://github.com/ionelmc/python-stampede/blob/master/tests/test_stampede.py
+* https://github.com/ionelmc/python-remote-pdb/blob/master/tests/test_remote_pdb.py
+
+TODO
+====
+
+* tests
+* docs
+
+Requirements
+============
+
+:OS: Any
+:Runtime: Python 2.6, 2.7, 3.2, 3.3 or PyPy
+
+Similar projects
+================
+
+* TODO
+
+
+Changelog
+=========
+
+2.1.1 (2020-07-23)
+------------------
+
+* Fixed regression caused by the ``universal_newlines`` (now the internals don't decode strings).
+
+2.1.0 (2020-07-23)
+------------------
+
+* Applied the cookiecutter-pylibrary templates.
+* ``TestProcess`` will use ``universal_newlines`` by default for the contained ``subprocess.Popen`` to make sure line buffering is actually
+  used. This also fixes warnings on Python 3.
+
+2.x (???)
+---------
+
+* Lots of wild stuff.
+
+

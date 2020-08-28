@@ -1,0 +1,3 @@
+[console_scripts]
+text-analysis-helpers-cli = text_analysis_helpers.cli:main
+
