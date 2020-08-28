@@ -132,8 +132,6 @@ matrix:
           env: DOWNSTREAM=certbot-josepy
         - python: 3.8
           env: DOWNSTREAM=urllib3
-          # Tests hang when run under bionic/focal
-          dist: xenial
 
 install:
     - ./.travis/install.sh
