@@ -32,12 +32,10 @@ mathematical properties`_.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
         ...     key_size=2048,
-        ...     backend=default_backend()
         ... )
 
     :param int public_exponent: The public exponent of the new key.
@@ -68,14 +66,12 @@ markers), you can load it:
 
 .. code-block:: pycon
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
 
     >>> with open("path/to/key.pem", "rb") as key_file:
     ...     private_key = serialization.load_pem_private_key(
     ...         key_file.read(),
     ...         password=None,
-    ...         backend=default_backend()
     ...     )
 
 Serialized keys may optionally be encrypted on disk using a password. In this
@@ -171,7 +167,7 @@ separately and pass that value using
 
     >>> from cryptography.hazmat.primitives.asymmetric import utils
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()
@@ -221,7 +217,7 @@ separately and pass that value using
 .. doctest::
 
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()
