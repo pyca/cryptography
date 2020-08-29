@@ -1,0 +1,145 @@
+# Wheel builds is a list of dicts, with keys
+#
+#  platform: the manylinux platform name
+#  image: the docker image to build in
+#  pythons: list of pythons in the image to build wheels for
+- name: Sanity check build list
+  assert:
+    that: wheel_builds is defined
+
+- name: Ensure pip installed
+  include_role:
+    name: ensure-pip
+
+- name: Run ensure-docker
+  include_role:
+    name: ensure-docker
+
+- name: Workaround Linaro aarch64 cloud MTU issues
+  # NOTE(ianw) : Docker default networking, the Linaro NAT setup and
+  # *insert random things here* cause PMTU issues, resulting in hung
+  # connections, particularly to fastly CDN (particularly annoying
+  # because pypi and pythonhosted live behind that).  Can remove after
+  # upstream changes merge, or we otherwise find a solution in the
+  # upstream cloud.
+  #  https://review.opendev.org/747062
+  #  https://review.opendev.org/746833
+  #  https://review.opendev.org/747064
+  when: ansible_architecture == 'aarch64'
+  block:
+    - name: Install jq
+      package:
+        name: jq
+        state: present
+      become: yes
+
+    - name: Reset docker MTU
+      shell: |
+          jq --arg mtu 1400 '. + {mtu: $mtu|tonumber}' /etc/docker/daemon.json > /etc/docker/daemon.json.new
+          cat /etc/docker/daemon.json.new
+          mv /etc/docker/daemon.json.new /etc/docker/daemon.json
+          service docker restart
+      become: yes
+
+# We build an sdist of the checkout, and then build wheels from the
+# sdist.  This ensures that nothing is left out of the sdist.
+- name: Install sdist required packages
+  package:
+    name:
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python3-dev
+  become: yes
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Create sdist
+  command: |
+    python3 setup.py sdist
+  args:
+    chdir: '{{ ansible_user_dir }}/{{ zuul.project.src_dir }}'
+
+- name: Find output file
+  find:
+    paths: '{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/dist'
+    file_type: file
+    patterns: "*.tar.gz"
+  register: _sdist
+
+- assert:
+    that:
+      - _sdist.matched == 1
+
+- name: Create a build area
+  file:
+    path: '{{ ansible_user_dir }}/build'
+    state: directory
+
+- name: Create build area from sdist
+  unarchive:
+    src: '{{ _sdist.files[0].path }}'
+    dest: '{{ ansible_user_dir }}/build'
+    remote_src: yes
+
+- name: Find cryptography subdir from sdist build dir
+  set_fact:
+    _build_dir: "{{ ansible_user_dir }}/build/{{ _sdist.files[0].path | basename | replace('.tar.gz', '') }}"
+
+- name: Show _build_dir
+  debug:
+    var: _build_dir
+
+- name: Install build script
+  copy:
+    src: build-wheels.sh
+    dest: '{{ _build_dir }}'
+    mode: 0755
+
+- name: Pre-pull containers
+  command: >-
+    docker pull {{ item.image }}
+  become: yes
+  loop: '{{ wheel_builds }}'
+
+- name: Run builds
+  command: |
+    docker run --rm \
+      -e PLAT={{ item.platform }} \
+      -e PYTHONS="{{ item.pythons | join(' ') }}" \
+      -v {{ _build_dir }}:/io \
+      {{ item.image }} \
+      /io/build-wheels.sh
+  become: yes
+  loop: '{{ wheel_builds }}'
+
+- name: Copy sdist to output
+  synchronize:
+    src: '{{ _sdist.files[0].path }}'
+    dest: '{{ zuul.executor.log_root }}'
+    mode: pull
+
+- name: Return sdist artifact
+  zuul_return:
+    data:
+      zuul:
+        artifacts:
+          - name: '{{ _sdist.files[0].path | basename }}'
+            url: 'sdist/{{ _sdist.files[0].path }}'
+            metadata:
+              type: sdist
+
+- name: Copy wheels to output
+  synchronize:
+    src: '{{ _build_dir }}/wheelhouse.final/'
+    dest: '{{ zuul.executor.log_root }}/wheelhouse'
+    mode: pull
+
+- name: Return wheelhouse artifact
+  zuul_return:
+    data:
+      zuul:
+        artifacts:
+          - name: "Wheelhouse"
+            url: "wheelhouse"
+            metadata:
+              type: wheelhouse

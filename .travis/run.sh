@@ -2,11 +2,6 @@
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-if [[ "${TOXENV}" == "pypy" ]]; then
-    PYENV_ROOT="$HOME/.pyenv"
-    PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-fi
 if [ -n "${LIBRESSL}" ]; then
     LIBRESSL_DIR="ossl-2/${LIBRESSL}"
     export CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=discarded-qualifiers -Wno-error=unused-function -I$HOME/$LIBRESSL_DIR/include"
@@ -26,12 +21,11 @@ fi
 source ~/.venv/bin/activate
 
 if [ -n "${DOCKER}" ]; then
-    # We will be able to drop the -u once we switch the default container user in the
-    # dockerfiles.
-    docker run --rm -u 2000:2000 \
+    docker run --rm \
         -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
         -v "${HOME}/wycheproof":/wycheproof \
         -w "${TRAVIS_BUILD_DIR}" \
+        -e OPENSSL_FORCE_FIPS_MODE \
         -e TOXENV "${DOCKER}" \
         /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
 elif [ -n "${TOXENV}" ]; then

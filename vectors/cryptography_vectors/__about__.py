@@ -5,8 +5,14 @@
 from __future__ import absolute_import, division, print_function
 
 __all__ = [
-    "__title__", "__summary__", "__uri__", "__version__", "__author__",
-    "__email__", "__license__", "__copyright__",
+    "__title__",
+    "__summary__",
+    "__uri__",
+    "__version__",
+    "__author__",
+    "__email__",
+    "__license__",
+    "__copyright__",
 ]
 
 __title__ = "cryptography_vectors"
@@ -14,7 +20,7 @@ __summary__ = "Test vectors for the cryptography package."
 
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "3.0.dev1"
+__version__ = "3.2.dev1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"

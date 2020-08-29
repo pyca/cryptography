@@ -16,11 +16,17 @@ from cffi import FFI
 base_src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 about = {}
 with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
+    exec (f.read(), about)
 
 
-def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
-                          extra_compile_args=[], extra_link_args=[]):
+def build_ffi_for_binding(
+    module_name,
+    module_prefix,
+    modules,
+    libraries=[],
+    extra_compile_args=[],
+    extra_link_args=[],
+):
     """
     Modules listed in ``modules`` should have the following attributes:
 
@@ -44,10 +50,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
 
-    verify_source = "\n".join(
-        includes +
-        customizations
-    )
+    verify_source = "\n".join(includes + customizations)
     ffi = build_ffi(
         module_name,
         cdef_source="\n".join(types + functions),
@@ -60,8 +63,14 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
     return ffi
 
 
-def build_ffi(module_name, cdef_source, verify_source, libraries=[],
-              extra_compile_args=[], extra_link_args=[]):
+def build_ffi(
+    module_name,
+    cdef_source,
+    verify_source,
+    libraries=[],
+    extra_compile_args=[],
+    extra_link_args=[],
+):
     ffi = FFI()
     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
     cdef_source += "\nstatic const char *const CRYPTOGRAPHY_PACKAGE_VERSION;"
@@ -80,10 +89,10 @@ def build_ffi(module_name, cdef_source, verify_source, libraries=[],
 
 
 def extra_link_args(compiler_type):
-    if compiler_type == 'msvc':
+    if compiler_type == "msvc":
         # Enable NX and ASLR for Windows builds on MSVC. These are enabled by
         # default on Python 3.3+ but not on 2.x.
-        return ['/NXCOMPAT', '/DYNAMICBASE']
+        return ["/NXCOMPAT", "/DYNAMICBASE"]
     else:
         return []
 
@@ -95,7 +104,7 @@ def compiler_type():
     """
     dist = Distribution()
     dist.parse_config_files()
-    cmd = dist.get_command_obj('build')
+    cmd = dist.get_command_obj("build")
     cmd.ensure_finalized()
     compiler = new_compiler(compiler=cmd.compiler)
     return compiler.compiler_type

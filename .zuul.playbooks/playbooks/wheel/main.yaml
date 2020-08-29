@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+
+    - name: Build wheel
+      include_role:
+        name: build-wheel-manylinux
