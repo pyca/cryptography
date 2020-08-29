@@ -1,0 +1,11 @@
+shellescape-3.8.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+shellescape-3.8.1.dist-info/METADATA,sha256=0JKCtsUacGFBcPFmQFEXZhf6s6YL1HtvJjUZwwsHwW0,2830
+shellescape-3.8.1.dist-info/RECORD,,
+shellescape-3.8.1.dist-info/WHEEL,sha256=8zNYZbwQSXoB9IfXOjPfeNwvAsALAjffgk27FqvCWbo,110
+shellescape-3.8.1.dist-info/top_level.txt,sha256=1nR_M9ikLI5pRQ3rfRuYjdDB9AjP3V9GAQITd5ohg98,12
+shellescape/__init__.py,sha256=J9YVVI_M1jo_ZSqrPd7v379OhwJdfj65HyyrDTIGwAU,71
+shellescape/__pycache__/__init__.cpython-38.pyc,,
+shellescape/__pycache__/main.cpython-38.pyc,,
+shellescape/__pycache__/settings.cpython-38.pyc,,
+shellescape/main.py,sha256=t8Fy42MZOR3BEYyVPAY1ArIbHG_kJANIH7u3XLGm1fE,435
+shellescape/settings.py,sha256=tcr2V8HBzoiMYSqwczFT7HYzKHc6UbR7p7C5Q_LV9T8,494

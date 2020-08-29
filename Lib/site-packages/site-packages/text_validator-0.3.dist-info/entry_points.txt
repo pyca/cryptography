@@ -1,0 +1,3 @@
+[console_scripts]
+validate-text = text_validator.main:main
+

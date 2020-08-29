@@ -1,0 +1,61 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'text/css/toolbar.css' %}" />
+
+<button id="djtext_toolbar_handle">
+    Edit texts
+</button>
+
+<div id="djtext_toolbar"
+     data-language="{{ language }}"
+     data-url-pattern="{% url 'django_text:text' text_slug='__id__' %}"
+     data-inline-wrapper-class="{{ inline_wrapper_class }}">
+
+    <div class="djtext_toolbar_menu">
+        <div class="djtext_toolbar_menu_tools">
+            Editing <span class="djtext_text_name"></span>
+            <button class="djtext_submit">Save</button>
+        </div>
+        <button class="djtext_close_toolbar">Hide</button>
+    </div>
+
+    <div class="djtext_editor_wrapper">
+        <div class="djtext_editor_start">
+            <h3>Select a text on the right to start editing</h3>
+
+            <p>
+                Looking for texts in a different language? Activate that language and open
+                the text editor on that page instead.
+            </p>
+        </div>
+
+        <p id="djtext_reload_page_notice">
+            You need to reload the page to see edits to this text.
+        </p>
+
+        <div class="djtext_editor">
+            <form id="djtext_form" method="post" action="{% url 'django_text:update_text' text_id=0 %}">
+                {% csrf_token %}
+
+                {{ form }}
+            </form>
+        </div>
+    </div>
+
+    <div class="djtext_menu">
+        <h3>
+            Texts on this page
+        </h3>
+
+        <ul>
+            {% for text in texts %}
+                <li data-name="{{ text }}">{{ text }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script src="{% static 'text/bundle/zepto-1.1.6/zepto.min.js' %}"></script>
+<script src="{% static 'text/js/toolbar.js' %}"></script>
+
+{{ form.media }}

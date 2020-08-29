@@ -1,0 +1,91 @@
+Metadata-Version: 2.1
+Name: twine
+Version: 3.2.0
+Summary: Collection of utilities for publishing packages on PyPI
+Home-page: https://twine.readthedocs.io/
+Author: Donald Stufft and individual contributors
+Author-email: donald@stufft.io
+License: UNKNOWN
+Project-URL: Packaging tutorial, https://packaging.python.org/tutorials/distributing-packages/
+Project-URL: Travis CI, https://travis-ci.org/pypa/twine/
+Project-URL: Twine documentation, https://twine.readthedocs.io/en/latest/
+Project-URL: Twine source, https://github.com/pypa/twine/
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: POSIX :: BSD
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Requires-Python: >=3.6
+Requires-Dist: pkginfo (>=1.4.2)
+Requires-Dist: readme-renderer (>=21.0)
+Requires-Dist: requests (>=2.20)
+Requires-Dist: requests-toolbelt (!=0.9.0,>=0.8.0)
+Requires-Dist: setuptools (>=0.7.0)
+Requires-Dist: tqdm (>=4.14)
+Requires-Dist: keyring (>=15.1)
+Requires-Dist: rfc3986 (>=1.4.0)
+Requires-Dist: colorama (>=0.4.3)
+Requires-Dist: importlib-metadata ; python_version < "3.8"
+
+.. image:: https://img.shields.io/pypi/v/twine.svg
+    :target: https://pypi.org/project/twine
+
+.. image:: https://img.shields.io/pypi/pyversions/twine.svg
+    :target: https://pypi.org/project/twine
+
+.. image:: https://img.shields.io/readthedocs/twine
+    :target: https://twine.readthedocs.io
+
+.. image:: https://img.shields.io/travis/com/pypa/twine
+    :target: https://travis-ci.org/pypa/twine
+
+.. image:: https://img.shields.io/codecov/c/github/pypa/twine
+    :target: https://codecov.io/gh/pypa/twine
+
+twine
+=====
+
+Twine is a utility for `publishing`_ Python packages on `PyPI`_.
+
+It provides build system independent uploads of source and binary
+`distribution artifacts <distributions_>`_ for both new and existing
+`projects`_.
+
+See our `documentation`_ for a description of features, installation
+and usage instructions, and links to additional resources.
+
+Contributing
+------------
+
+See our `developer documentation`_ for how to get started, an
+architectural overview, and our future development plans.
+
+Code of Conduct
+---------------
+
+Everyone interacting in the Twine project's codebases, issue
+trackers, chat rooms, and mailing lists is expected to follow the
+`PyPA Code of Conduct`_.
+
+.. _`publishing`: https://packaging.python.org/tutorials/distributing-packages/
+.. _`PyPI`: https://pypi.org
+.. _`distributions`:
+    https://packaging.python.org/glossary/#term-distribution-package
+.. _`projects`: https://packaging.python.org/glossary/#term-project
+.. _`documentation`: https://twine.readthedocs.io/
+.. _`developer documentation`:
+    https://twine.readthedocs.io/en/latest/contributing.html
+.. _`PyPA Code of Conduct`: https://www.pypa.io/en/latest/code-of-conduct/
+
+

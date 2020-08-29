@@ -1,0 +1,59 @@
+Metadata-Version: 2.1
+Name: Unit
+Version: 0.2.2
+Summary: An asynchronous web framework written in Python.
+Home-page: https://github.com/jiangwwei/unit
+Author: Jiang Wei
+Author-email: jiangweiaz@gmail.com
+License: Apache License, Version 2.0
+Platform: POSIX
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Environment :: Web Environment
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS :: MacOS X
+Requires-Python: >=3.5
+Requires-Dist: httptools (>=0.0.11)
+
+Unit -- An asynchronous web framework written in Python
+=======================================================
+
+
+Installation
+------------
+
+Unit requires Python 3.5 and is available on PyPI.
+Use pip to install it::
+
+    $ pip install unit
+
+
+"Hello, World!" Example
+-----------------------
+
+.. code-block:: python
+
+    import unit
+
+    app = unit.Application(__name__)
+
+
+    @app.route('/')
+    def hello(request):
+        return 'Hello, World!'
+
+
+    if __name__ == '__main__':
+        app.run()
+
+
+License
+-------
+
+Unit is developed and distributed under the Apache 2.0 license.
+
+

@@ -1,0 +1,31 @@
+Metadata-Version: 2.1
+Name: enum-compat
+Version: 0.0.3
+Summary: enum/enum34 compatibility package
+Home-page: https://github.com/jstasiak/enum-compat
+Author: Jakub Stasiak
+Author-email: jakub@stasiak.at
+License: MIT
+Keywords: enum,compatibility,enum34
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Requires-Dist: enum34; python_version < "3.4"
+
+
+enum-compat
+===========
+
+This is a virtual package, its whole purpose is to install enum34 on
+Python older than 3.4. On Python 3.4+ it's a no-op.
+
+
+

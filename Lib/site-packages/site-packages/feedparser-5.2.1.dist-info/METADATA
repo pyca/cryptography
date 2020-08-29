@@ -1,0 +1,34 @@
+Metadata-Version: 2.1
+Name: feedparser
+Version: 5.2.1
+Summary: Universal feed parser, handles RSS 0.9x, RSS 1.0, RSS 2.0, CDF, Atom 0.3, and Atom 1.0 feeds
+Home-page: https://github.com/kurtmckee/feedparser
+Author: Kurt McKee
+Author-email: contactme@kurtmckee.org
+License: UNKNOWN
+Download-URL: https://pypi.python.org/pypi/feedparser
+Keywords: atom,cdf,feed,parser,rdf,rss
+Platform: POSIX
+Platform: Windows
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.4
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.0
+Classifier: Programming Language :: Python :: 3.1
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Text Processing :: Markup :: XML
+
+UNKNOWN
+
+

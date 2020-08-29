@@ -1,0 +1,3 @@
+[console_scripts]
+naked = Naked.app:main
+

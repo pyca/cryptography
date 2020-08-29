@@ -1,0 +1,3 @@
+[console_scripts]
+tldextract = tldextract.cli:main
+
