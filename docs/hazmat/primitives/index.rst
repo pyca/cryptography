@@ -14,5 +14,6 @@ Primitives
     mac/index
     cryptographic-hashes
     symmetric-encryption
+    smime
     padding
     twofactor

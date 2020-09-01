@@ -115,7 +115,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _RevokedCertificate,
 )
 from cryptography.hazmat.bindings.openssl import binding
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes, serialization, smime
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -2689,6 +2689,66 @@ class Backend(object):
             certs.append(_Certificate(self, x509))
 
         return certs
+
+    def smime_sign(self, builder, encoding, options):
+        bio = self._bytes_to_bio(builder._data)
+        init_flags = self._lib.PKCS7_PARTIAL
+        final_flags = 0
+
+        if smime.SMIMEOptions.DetachedSignature in options:
+            # Don't embed the data in the PKCS7 structure
+            init_flags |= self._lib.PKCS7_DETACHED
+            final_flags |= self._lib.PKCS7_DETACHED
+
+        # This just inits a structure for us. However, there
+        # are flags we need to set, joy.
+        p7 = self._lib.PKCS7_sign(
+            self._ffi.NULL,
+            self._ffi.NULL,
+            self._ffi.NULL,
+            self._ffi.NULL,
+            init_flags,
+        )
+        self.openssl_assert(p7 != self._ffi.NULL)
+        for certificate, private_key, hash_algorithm in builder._signers:
+            signer_flags = 0
+            # These flags are configurable on a per-signature basis
+            # but we've deliberately chosen to make the API only allow
+            # setting it across all signatures for now.
+            if smime.SMIMEOptions.NoCapabilities in options:
+                signer_flags |= self._lib.PKCS7_NOSMIMECAP
+            elif smime.SMIMEOptions.NoAttributes in options:
+                signer_flags |= self._lib.PKCS7_NOATTR
+
+            md = self._evp_md_non_null_from_algorithm(hash_algorithm)
+            p7signerinfo = self._lib.PKCS7_sign_add_signer(
+                p7, certificate._x509, private_key._evp_pkey, md, signer_flags
+            )
+            self.openssl_assert(p7signerinfo != self._ffi.NULL)
+
+        for option in options:
+            # DetachedSignature, NoCapabilities, and NoAttributes are already
+            # handled so we just need to check these last two options.
+            if option is smime.SMIMEOptions.Text:
+                final_flags |= self._lib.PKCS7_TEXT
+            elif option is smime.SMIMEOptions.Binary:
+                final_flags |= self._lib.PKCS7_BINARY
+
+        bio_out = self._create_mem_bio_gc()
+        if encoding is serialization.Encoding.PEM:
+            # This finalizes the structure
+            res = self._lib.SMIME_write_PKCS7(
+                bio_out, p7, bio.bio, final_flags
+            )
+        else:
+            assert encoding is serialization.Encoding.DER
+            # We need to call finalize here becauase i2d_PKCS7_bio does not
+            # finalize.
+            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
+            self.openssl_assert(res == 1)
+            res = self._lib.i2d_PKCS7_bio(bio_out, p7)
+        self.openssl_assert(res == 1)
+        return self._read_mem_bio(bio_out)
 
 
 class GetCipherByName(object):
