@@ -1371,6 +1371,61 @@ class TestExtensions(object):
             x509.ObjectIdentifier("1.3.6.1.4.1.45724.2.1.1"), b"\x03\x02\x040"
         )
 
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_unsupported_extension_handler(self, backend):
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        # Added extra OIDs to _OID_NAMES
+        TEST_1_OID = x509.ObjectIdentifier("1.3.6.1.4.1.41482.2")
+        TEST_2_OID = x509.ObjectIdentifier("1.3.6.1.4.1.45724.2.1.1")
+
+        _OID_NAMES[TEST_1_OID] = 'TEST 1 - OID'
+        _OID_NAMES[TEST_2_OID] = 'TEST 2 - OID'
+
+        # Example of oid handler as a function
+        def _test_1_oid_handler(backend, ext_data):
+            return ext_data.decode('utf-8')
+
+        # Example of oid handler as lambda
+        _test_2_oid_hander = lambda backend, ext_data: ext_data
+
+        # Added extra handler to the extension parser
+        backend._certificate_extension_parser.add_extra_oid_handler(
+            TEST_1_OID,
+            _test_1_oid_handler
+        )
+        backend._certificate_extension_parser.add_extra_oid_handler(
+            TEST_2_OID,
+            _test_2_oid_hander
+        )
+
+        # Load pem-files from disk
+        cert = _load_cert(
+            os.path.join("x509", "custom", "unsupported_extension_2.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        # Test that the code works
+        extensions = cert.extensions
+        assert len(extensions) == 2
+
+        assert extensions[0].critical is False
+        assert extensions[0].oid == TEST_1_OID
+        assert extensions[0].oid._name == _OID_NAMES[TEST_1_OID]
+        assert extensions[0].value == "1.3.6.1.4.1.41482.1.2"
+
+        assert extensions[1].critical is False
+        assert extensions[1].oid == TEST_2_OID
+        assert extensions[1].oid._name == _OID_NAMES[TEST_2_OID]
+        assert extensions[1].value == b"\x03\x02\x040"
+
+        # Clean-up, so the TEST OIDs will not interfere with other tests
+        backend._certificate_extension_parser.handlers_extra.pop(TEST_1_OID)
+        backend._certificate_extension_parser.handlers_extra.pop(TEST_2_OID)
+        _OID_NAMES.pop(TEST_1_OID)
+        _OID_NAMES.pop(TEST_2_OID)
+
     def test_no_extensions_get_for_class(self, backend):
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),

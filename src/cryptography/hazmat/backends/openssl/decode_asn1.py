@@ -186,6 +186,17 @@ class _X509ExtensionParser(object):
         self.get_ext = get_ext
         self.handlers = handlers
         self._backend = backend
+        self.handlers_extra = {}
+
+    def add_extra_oid_handler(self, oid, func):
+        if not isinstance(oid, x509.ObjectIdentifier):
+            raise TypeError('The variable "oid" is not an ObjectIdentifier')
+        if not callable(func):
+            raise TypeError('The variable "func" have to be a callable object')
+        if func.__code__.co_argcount != 2:
+            raise KeyError('The callable object "func" have to take 2 arguments')
+
+        self.handlers_extra[oid] = func
 
     def parse(self, x509_obj):
         extensions = []
@@ -238,12 +249,20 @@ class _X509ExtensionParser(object):
             try:
                 handler = self.handlers[oid]
             except KeyError:
-                # Dump the DER payload into an UnrecognizedExtension object
-                data = self._backend._lib.X509_EXTENSION_get_data(ext)
-                self._backend.openssl_assert(data != self._backend._ffi.NULL)
-                der = self._backend._ffi.buffer(data.data, data.length)[:]
-                unrecognized = x509.UnrecognizedExtension(oid, der)
-                extensions.append(x509.Extension(oid, critical, unrecognized))
+                try:
+                    handler = self.handlers_extra[oid]
+                    data = self._backend._lib.X509_EXTENSION_get_data(ext)
+                    self._backend.openssl_assert(data != self._backend._ffi.NULL)
+                    der = self._backend._ffi.buffer(data.data, data.length)[:]
+                    value = handler(self._backend, der)
+                    extensions.append(x509.Extension(oid, critical, value))
+                except KeyError:
+                    # Dump the DER payload into an UnrecognizedExtension object
+                    data = self._backend._lib.X509_EXTENSION_get_data(ext)
+                    self._backend.openssl_assert(data != self._backend._ffi.NULL)
+                    der = self._backend._ffi.buffer(data.data, data.length)[:]
+                    unrecognized = x509.UnrecognizedExtension(oid, der)
+                    extensions.append(x509.Extension(oid, critical, unrecognized))
             else:
                 ext_data = self._backend._lib.X509V3_EXT_d2i(ext)
                 if ext_data == self._backend._ffi.NULL:
