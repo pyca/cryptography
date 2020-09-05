@@ -11,7 +11,8 @@ where the sender and receiver both use the same secret key. Note that symmetric
 encryption is **not** sufficient for most applications because it only
 provides secrecy but not authenticity. That means an attacker can't see the
 message but an attacker can create bogus messages and force the application to
-decrypt them.
+decrypt them. In many contexts, a lack of authentication on encrypted messages
+can result in a loss of secrecy as well.
 
 For this reason it is **strongly** recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`,
