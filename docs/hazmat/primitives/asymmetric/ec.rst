@@ -369,7 +369,13 @@ binary field ("B") NIST curves may have been weakened during their generation.
 
 Currently `cryptography` only supports NIST curves, none of which are
 considered "safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and
-Tanja Lange.
+Tanja Lange. The name "safe curve" is considered a `misnomer`_ and
+`misleading`_ by some, who argue that Bernstein and Lange dont't mean "*some
+curves are inherently unsafe, but that safe implementation of some curves is
+easier than for others*" (`Thomas Pornin`_). NIST curves "*`have been
+researched and used for many years, and no significant cryptanalytic breaks
+have been found`_*", rendering the "*`criteria a bit unfairly misleading in
+implying that e.g. NIST curves are unsafe`_*" (Anton Kueltz).
 
 All named curves are instances of :class:`EllipticCurve`.
 
@@ -966,6 +972,11 @@ Elliptic Curve Object Identifiers
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
 .. _`minimize the number of security concerns for elliptic-curve cryptography`: https://cr.yp.to/ecdh/curve25519-20060209.pdf
 .. _`SafeCurves`: https://safecurves.cr.yp.to/
+.. _`misnomer`: https://satoshinichi.gitlab.io/b/safecurves-scare.html
+.. _`misleading`: https://security.stackexchange.com/questions/78621/which-elliptic-curve-should-i-use/78624#:~:text=admittedly,%20their%20presentation%20is%20a%20bit%20misleading
+.. _`Thomas Pornin`: https://security.stackexchange.com/questions/78621/which-elliptic-curve-should-i-use/78624#:~:text=What%20they%20mean,some%20curves%20is%20easier%20than%20for%20others
+.. _`have been researched and used for many years, and no significant cryptanalytic breaks have been found`: https://github.com/AntonKueltz/fastecdsa/issues/23#:~:text=have%20been%20researched,breaks%20have%20been%20found
+.. _`criteria a bit unfairly misleading in implying that NIST curves are unsafe`: https://github.com/AntonKueltz/fastecdsa/issues/23#:~:text=criteria%20is%20a%20bit,NIST%20curves%20are%20unsafe
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
 .. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
