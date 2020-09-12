@@ -63,8 +63,8 @@ int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
 PKCS7_SIGNER_INFO *PKCS7_sign_add_signer(PKCS7 *, X509 *, EVP_PKEY *,
                                          const EVP_MD *, int);
 int PKCS7_final(PKCS7 *, BIO *, int);
-// Included verify due to external consumer, see
-// https://github.com/pyca/cryptography/issues/5433
+/* Included verify due to external consumer, see
+ * https://github.com/pyca/cryptography/issues/5433 */
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                  BIO *, int);
 
