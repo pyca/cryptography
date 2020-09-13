@@ -107,7 +107,8 @@ multiple of the block size.
 
     .. method:: update(data)
 
-        :param bytes data: The data you wish to pass into the context.
+        :param data: The data you wish to pass into the context.
+        :type data: :term:`bytes-like`
         :return bytes: Returns the data that was padded or unpadded.
         :raises TypeError: Raised if data is not bytes.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
