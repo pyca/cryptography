@@ -731,7 +731,7 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`Project Wycheproof`: https://github.com/google/wycheproof
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
-.. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
+.. _`Bruce Schneier's vectors`: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
