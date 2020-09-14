@@ -109,6 +109,8 @@ Custom asymmetric vectors
 * ``x509/custom/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
   the private key for the certificate ``x509/custom/ca/ca.pem``. This key is
   encoded in several of the PKCS12 custom vectors.
+* ``x509/custom/ca/rsa_key.pem`` - An unencrypted PCKS8 4096 bit RSA key. It is
+  the private key for the certificate ``x509/custom/ca/rsa_ca.pem``.
 * ``asymmetric/EC/compressed_points.txt`` - Contains compressed public points
   generated using OpenSSL.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
@@ -414,6 +416,8 @@ Custom X.509 Vectors
 * ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
 * ``root-ed448.pem`` - An ``ed448`` self-signed CA certificate
   using ``ed448-pkcs8.pem`` as key.
+* ``ca/rsa_ca.pem`` - A self-signed RSA certificate with ``basicConstraints``
+  set to true. Its private key is ``ca/rsa_key.pem``.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
