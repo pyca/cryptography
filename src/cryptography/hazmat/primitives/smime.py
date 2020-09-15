@@ -18,7 +18,7 @@ class SMIMESignatureBuilder(object):
         self._data = data
         self._signers = signers
 
-    def add_data(self, data):
+    def set_data(self, data):
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")
@@ -76,6 +76,14 @@ class SMIMESignatureBuilder(object):
             raise ValueError(
                 "When passing the Text option you must also pass "
                 "DetachedSignature"
+            )
+
+        if (
+            SMIMEOptions.Text in options
+            and encoding is serialization.Encoding.DER
+        ):
+            raise ValueError(
+                "The Text option does nothing when serializing to DER"
             )
 
         # No attributes implies no capabilities so we'll error if you try to

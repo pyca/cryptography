@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-import re
 
 import pytest
 
@@ -36,15 +35,15 @@ class TestSMIMEBuilder(object):
     def test_invalid_data(self):
         builder = smime.SMIMESignatureBuilder()
         with pytest.raises(TypeError):
-            builder.add_data(u"not bytes")
+            builder.set_data(u"not bytes")
 
-    def test_add_data_twice(self):
-        builder = smime.SMIMESignatureBuilder().add_data(b"test")
+    def test_set_data_twice(self):
+        builder = smime.SMIMESignatureBuilder().set_data(b"test")
         with pytest.raises(ValueError):
-            builder.add_data(b"test")
+            builder.set_data(b"test")
 
     def test_sign_no_signer(self):
-        builder = smime.SMIMESignatureBuilder().add_data(b"test")
+        builder = smime.SMIMESignatureBuilder().set_data(b"test")
         with pytest.raises(ValueError):
             builder.sign(serialization.Encoding.PEM, [])
 
@@ -86,7 +85,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(b"test")
+            .set_data(b"test")
             .add_signer(cert, key, hashes.SHA256())
         )
         with pytest.raises(ValueError):
@@ -96,7 +95,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(b"test")
+            .set_data(b"test")
             .add_signer(cert, key, hashes.SHA256())
         )
         with pytest.raises(ValueError):
@@ -106,18 +105,32 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(b"test")
+            .set_data(b"test")
             .add_signer(cert, key, hashes.SHA256())
         )
         options = [smime.SMIMEOptions.Text]
         with pytest.raises(ValueError):
             builder.sign(serialization.Encoding.PEM, options)
 
+    def test_sign_invalid_options_text_der_encoding(self):
+        cert, key = _load_cert_key()
+        builder = (
+            smime.SMIMESignatureBuilder()
+            .set_data(b"test")
+            .add_signer(cert, key, hashes.SHA256())
+        )
+        options = [
+            smime.SMIMEOptions.Text,
+            smime.SMIMEOptions.DetachedSignature,
+        ]
+        with pytest.raises(ValueError):
+            builder.sign(serialization.Encoding.DER, options)
+
     def test_sign_invalid_options_no_attrs_and_no_caps(self):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(b"test")
+            .set_data(b"test")
             .add_signer(cert, key, hashes.SHA256())
         )
         options = [
@@ -133,7 +146,7 @@ class TestSMIMEBuilder(object):
         options = [smime.SMIMEOptions.DetachedSignature]
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -157,7 +170,7 @@ class TestSMIMEBuilder(object):
         options = [smime.SMIMEOptions.DetachedSignature]
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -178,7 +191,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hash_alg)
         )
 
@@ -203,7 +216,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hash_alg)
         )
         options = [smime.SMIMEOptions.DetachedSignature]
@@ -218,7 +231,7 @@ class TestSMIMEBuilder(object):
         options = []
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -233,7 +246,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -253,7 +266,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -269,7 +282,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -278,12 +291,10 @@ class TestSMIMEBuilder(object):
             smime.SMIMEOptions.DetachedSignature,
         ]
         sig_pem = builder.sign(serialization.Encoding.PEM, options)
-        sig_binary = builder.sign(serialization.Encoding.DER, options)
         # The text option adds text/plain headers to the S/MIME message
         # These headers are only relevant in PEM mode, not binary, which is
         # just the PKCS7 structure itself.
         assert b"text/plain" in sig_pem
-        assert b"text/plain" not in sig_binary
         # TODO: validate sig
 
     def test_smime_sign_no_capabilities(self):
@@ -291,7 +302,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -313,7 +324,7 @@ class TestSMIMEBuilder(object):
         cert, key = _load_cert_key()
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
 
@@ -347,15 +358,13 @@ class TestSMIMEBuilder(object):
         )
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA512())
             .add_signer(rsa_cert, rsa_key, hashes.SHA512())
         )
         sig = builder.sign(serialization.Encoding.DER, [])
-        # There should be three SHA512 OIDs in this structure, so we search
-        # for them all.
-        results = re.findall(b"\\x06\\t`\\x86H\\x01e\\x03\\x04\\x02\\x03", sig)
-        assert len(results) == 3
+        # There should be three SHA512 OIDs in this structure
+        assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 3
 
     def test_multiple_signers_different_hash_algs(self):
         data = b"hello world"
@@ -376,14 +385,11 @@ class TestSMIMEBuilder(object):
         )
         builder = (
             smime.SMIMESignatureBuilder()
-            .add_data(data)
+            .set_data(data)
             .add_signer(cert, key, hashes.SHA384())
             .add_signer(rsa_cert, rsa_key, hashes.SHA512())
         )
         sig = builder.sign(serialization.Encoding.DER, [])
-        # There should be two SHA384 and two SHA512 OIDs in this structure, so
-        # we search for them all.
-        sha384 = re.findall(b"\\x06\\t`\\x86H\\x01e\\x03\\x04\\x02\\x02", sig)
-        sha512 = re.findall(b"\\x06\\t`\\x86H\\x01e\\x03\\x04\\x02\\x03", sig)
-        assert len(sha384) == 2
-        assert len(sha512) == 2
+        # There should be two SHA384 and two SHA512 OIDs in this structure
+        assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x02") == 2
+        assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 2

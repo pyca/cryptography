@@ -45,7 +45,7 @@ module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
         >>> cert = x509.load_pem_x509_certificate(ca_cert)
         >>> key = serialization.load_pem_private_key(ca_key, None)
         >>> options = [smime.SMIMEOptions.DetachedSignature]
-        >>> smime.SMIMESignatureBuilder().add_data(
+        >>> smime.SMIMESignatureBuilder().set_data(
         ...     b"data to sign"
         ... ).add_signer(
         ...     cert, key, hashes.SHA256()
@@ -54,7 +54,7 @@ module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
         ... )
         b'...'
 
-    .. method:: add_data(data)
+    .. method:: set_data(data)
 
         :param data: The data to be hashed and signed.
         :type data: :term:`bytes-like`

@@ -2710,6 +2710,7 @@ class Backend(object):
             init_flags,
         )
         self.openssl_assert(p7 != self._ffi.NULL)
+        p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
         for certificate, private_key, hash_algorithm in builder._signers:
             signer_flags = 0
             # These flags are configurable on a per-signature basis
