@@ -29,7 +29,7 @@ S/MIME
     """.strip()
 
 
-S/MIME provides a method to send and receive secure MIME messages. It is
+S/MIME provides a method to send and receive signed MIME messages. It is
 commonly used in email. S/MIME has multiple versions, but this
 module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
 
