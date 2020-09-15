@@ -74,7 +74,7 @@ class TestSMIMEBuilder(object):
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Does not support ed25519.",
     )
-    def test_unsupported_key_type(self):
+    def test_unsupported_key_type(self, backend):
         cert, _ = _load_cert_key()
         key = ed25519.Ed25519PrivateKey.generate()
         with pytest.raises(TypeError):
