@@ -162,7 +162,7 @@ class TestSMIMEBuilder(object):
         )
 
         sig = builder.sign(serialization.Encoding.PEM, options)
-        assert data in sig
+        assert bytes(data) in sig
 
     @pytest.mark.parametrize(
         ("hash_alg", "expected_value"),
