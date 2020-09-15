@@ -109,7 +109,8 @@ module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
 
         Don't embed the signed data within the ASN.1. When signing with
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` this
-        also results in the data being prepended in clear text.
+        also results in the data being added as clear text before the
+        PEM encoded structure.
 
     .. attribute:: NoCapabilities
 
