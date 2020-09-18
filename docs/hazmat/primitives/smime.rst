@@ -98,7 +98,7 @@ module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
         The text option adds ``text/plain`` headers to the S/MIME message when
         serializing to
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`.
-        This option has no effect with ``DER`` serialization.
+        This option is disallowed with ``DER`` serialization.
 
     .. attribute:: Binary
 

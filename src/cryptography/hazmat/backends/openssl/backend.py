@@ -2711,16 +2711,15 @@ class Backend(object):
         )
         self.openssl_assert(p7 != self._ffi.NULL)
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
+        signer_flags = 0
+        # These flags are configurable on a per-signature basis
+        # but we've deliberately chosen to make the API only allow
+        # setting it across all signatures for now.
+        if smime.SMIMEOptions.NoCapabilities in options:
+            signer_flags |= self._lib.PKCS7_NOSMIMECAP
+        elif smime.SMIMEOptions.NoAttributes in options:
+            signer_flags |= self._lib.PKCS7_NOATTR
         for certificate, private_key, hash_algorithm in builder._signers:
-            signer_flags = 0
-            # These flags are configurable on a per-signature basis
-            # but we've deliberately chosen to make the API only allow
-            # setting it across all signatures for now.
-            if smime.SMIMEOptions.NoCapabilities in options:
-                signer_flags |= self._lib.PKCS7_NOSMIMECAP
-            elif smime.SMIMEOptions.NoAttributes in options:
-                signer_flags |= self._lib.PKCS7_NOATTR
-
             md = self._evp_md_non_null_from_algorithm(hash_algorithm)
             p7signerinfo = self._lib.PKCS7_sign_add_signer(
                 p7, certificate._x509, private_key._evp_pkey, md, signer_flags
