@@ -84,6 +84,8 @@ module implements a subset of :rfc:`2632`, also known as S/MIME Version 3.
 
         :param options: A list of :class:`~cryptography.hazmat.primitives.smime.SMIMEOptions`.
 
+        :return bytes: The signed S/MIME message.
+
         :param backend: An optional backend.
 
 
