@@ -10,6 +10,8 @@ Changelog
 
 * Support for OpenSSL 1.0.2 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* Added basic support for SMIME signing via
+  :class:`~cryptography.hazmat.primitives.smime.SMIMESignatureBuilder`.
 
 .. _v3-1:
 

@@ -67,6 +67,7 @@ int PKCS7_final(PKCS7 *, BIO *, int);
    https://github.com/pyca/cryptography/issues/5433 */
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                  BIO *, int);
+PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
 
 int PKCS7_type_is_signed(PKCS7 *);
 int PKCS7_type_is_enveloped(PKCS7 *);
