@@ -18,7 +18,7 @@ jobs:
           - {VERSION: "2.7", TOXENV: "py27", EXTRA_CFLAGS: ""}
           - {VERSION: "3.5", TOXENV: "py35", EXTRA_CFLAGS: ""}
           - {VERSION: "3.8", TOXENV: "py38", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
-          - {VERSION: "3.9.0-rc.1", TOXENV: "py39"}
+          - {VERSION: "3.9.0-rc.2", TOXENV: "py39"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
     steps:
       - uses: actions/checkout@master
@@ -64,7 +64,7 @@ jobs:
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
-          - {VERSION: "3.9.0-rc.1", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: ""}
+          - {VERSION: "3.9.0-rc.2", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: ""}
     name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
     steps:
       - uses: actions/checkout@master
