@@ -40,13 +40,13 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 OPENSSL=1.1.0l
         - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.1g
+          env: TOXENV=py27 OPENSSL=1.1.1h
         - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1g
+          env: TOXENV=py38 OPENSSL=1.1.1h
         - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1g OPENSSL_CONFIG_FLAGS="no-engine no-rc2 no-srtp no-ct"
+          env: TOXENV=py38 OPENSSL=1.1.1h OPENSSL_CONFIG_FLAGS="no-engine no-rc2 no-srtp no-ct"
         - python: 3.8
-          env: TOXENV=py38-ssh OPENSSL=1.1.1g
+          env: TOXENV=py38-ssh OPENSSL=1.1.1h
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=2.9.2
         - python: 3.8
@@ -106,7 +106,7 @@ matrix:
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-alpine:latest
 
         - python: 3.8
-          env: TOXENV=docs OPENSSL=1.1.1g
+          env: TOXENV=docs OPENSSL=1.1.1h
           addons:
               apt:
                   packages:
@@ -119,7 +119,7 @@ matrix:
         - python: 3.8
           env: DOWNSTREAM=pyopenssl
         - python: 3.7
-          env: DOWNSTREAM=twisted OPENSSL=1.1.1g
+          env: DOWNSTREAM=twisted OPENSSL=1.1.1h
         - python: 3.7
           env: DOWNSTREAM=paramiko
         - python: 3.7
