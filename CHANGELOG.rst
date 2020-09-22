@@ -13,6 +13,14 @@ Changelog
 * Added basic support for SMIME signing via
   :class:`~cryptography.hazmat.primitives.smime.SMIMESignatureBuilder`.
 
+.. _v3-1-1:
+
+3.1.1 - 2020-09-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1h.
+
 .. _v3-1:
 
 3.1 - 2020-08-26
