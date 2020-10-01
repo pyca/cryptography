@@ -45,11 +45,14 @@ class Fernet(object):
     def generate_key(cls):
         return base64.urlsafe_b64encode(os.urandom(32))
 
-    def encrypt(self, data):
-        return self.encrypt_at_time(data, int(time.time()))
+    def encrypt(self, data, seed = None):
+        return self.encrypt_at_time(data, int(time.time()), seed)
 
-    def encrypt_at_time(self, data, current_time):
-        iv = os.urandom(16)
+    def encrypt_at_time(self, data, current_time, seed = None):
+        if seed != None:
+            iv = seed
+        else:
+            iv = os.urandom(16)
         return self._encrypt_from_parts(data, current_time, iv)
 
     def _encrypt_from_parts(self, data, current_time, iv):
