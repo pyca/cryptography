@@ -139,10 +139,11 @@ jobs:
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
 
       - run: python -m pip install -U pip wheel cffi six ipaddress "enum34; python_version < '3'"
       - run: pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
