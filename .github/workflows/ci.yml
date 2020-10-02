@@ -85,9 +85,9 @@ jobs:
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_PATH
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_PATH
-            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_PATH
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_ENV
+            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
