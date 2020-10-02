@@ -45,17 +45,19 @@ class Fernet(object):
     def generate_key(cls):
         return base64.urlsafe_b64encode(os.urandom(32))
 
-    def encrypt(self, data, seed = None):
-        return self.encrypt_at_time(data, int(time.time()), seed)
+    def encrypt(self, data, seed = None, iv = None):
+        if type(data).__name__ != 'bytes':
+            data = str(data).encode()
+        return self.encrypt_at_time(data, seed, iv)
 
-    def encrypt_at_time(self, data, current_time, seed = None):
-        if seed != None:
-            iv = seed
-        else:
+    def encrypt_at_time(self, data, seed = None, iv = None):
+        if iv is None:
             iv = os.urandom(16)
-        return self._encrypt_from_parts(data, current_time, iv)
+        if seed is None:
+            seed = int(time.time())
+        return self._encrypt_from_parts(data, seed, iv)
 
-    def _encrypt_from_parts(self, data, current_time, iv):
+    def _encrypt_from_parts(self, data, seed, iv):
         utils._check_bytes("data", data)
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -66,15 +68,17 @@ class Fernet(object):
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
         basic_parts = (
-            b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext
+            b"\x80" + struct.pack(">Q", seed) + iv + ciphertext
         )
 
         h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(basic_parts)
         hmac = h.finalize()
-        return base64.urlsafe_b64encode(basic_parts + hmac)
+        return base64.urlsafe_b64encode(basic_parts + hmac).decode()
 
     def decrypt(self, token, ttl=None):
+        if type(token).__name__ != 'bytes':
+            token = token.encode()
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, ttl, int(time.time()))
 
@@ -144,7 +148,7 @@ class Fernet(object):
             unpadded += unpadder.finalize()
         except ValueError:
             raise InvalidToken
-        return unpadded
+        return unpadded.decode()
 
 
 class MultiFernet(object):
