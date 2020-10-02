@@ -85,11 +85,12 @@ jobs:
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_PATH
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_PATH
+            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_PATH
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
       - run: git clone https://github.com/google/wycheproof
 
       - run: tox -r -- --color=yes --wycheproof-root=wycheproof
