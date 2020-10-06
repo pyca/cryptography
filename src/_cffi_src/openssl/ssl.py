@@ -760,10 +760,4 @@ int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
-
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
-SSL_METHOD (*TLS_method)(void) = NULL;
-SSL_METHOD (*TLS_client_method)(void) = NULL;
-SSL_METHOD (*TLS_server_method)(void) = NULL;
-#endif
 """
