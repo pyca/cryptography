@@ -346,5 +346,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
-    "Cryptography_HAS_TLS_METHOD": cryptography_has_tls_method,
+    "Cryptography_HAS_TLS_METHOD": (
+        cryptography_has_tls_method
+    ),
 }
