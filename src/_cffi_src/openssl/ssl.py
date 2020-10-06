@@ -768,11 +768,6 @@ static const long Cryptography_HAS_TLS_METHOD = 0;
 const SSL_METHOD* (*TLS_method)(void) = NULL;
 const SSL_METHOD* (*TLS_client_method)(void) = NULL;
 const SSL_METHOD* (*TLS_server_method)(void) = NULL;
-#elif CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_TLS_METHOD = 0;
-const SSL_METHOD (*TLS_method)(void) = NULL;
-const SSL_METHOD (*TLS_client_method)(void) = NULL;
-const SSL_METHOD (*TLS_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_TLS_METHOD = 1;
 #endif
