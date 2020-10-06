@@ -119,17 +119,16 @@ class TestOpenSSL(object):
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
         
-    @pytest.mark.skipif(
-        (int(hex(backend._lib.OPENSSL_VERSION_NUMBER)[2]) < 1 or
-         (int(hex(backend._lib.OPENSSL_VERSION_NUMBER)[3]) == 0 and
-          int(hex(backend._lib.OPENSSL_VERSION_NUMBER)[4]) < 1)),
-        reason="TLS_method does not exist prior to OpenSSL 1.1.0",
-    )
     def test_tls_ciphers_registered(self):
-        meth = backend._lib.TLS_method()
-        ctx = backend._lib.SSL_CTX_new(meth)
-        assert ctx != backend._ffi.NULL
-        backend._lib.SSL_CTX_free(ctx)
+        version = hex(backend._lib.OPENSSL_VERSION_NUMBER)
+        if( int(version[2]) < 1 or 
+           (int(version[3]) == 0 and int(version[4]) < 1) ):
+            pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
+        else:
+            meth = backend._lib.TLS_method()
+            ctx = backend._lib.SSL_CTX_new(meth)
+            assert ctx != backend._ffi.NULL
+            backend._lib.SSL_CTX_free(ctx)
 
     def test_evp_ciphers_registered(self):
         cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
