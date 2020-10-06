@@ -52,11 +52,79 @@ class TestLibreSkip(object):
             skip_if_libre_ssl(u"LibreSSL 2.1.6")
 
 
+def p_o_v(libversion):
+    """
+    This is a convenience function for processing library identification
+    metadata for use in version/variant-sensitive tests.
+
+    Terse name due to PEP8 rules limiting code to 79 characters per line.
+    Should be "process_openssl_version" or something similar
+
+    Shamelessly copy+pasting in tests because I couldn't figure out a
+    more 'elegant' method of applying this. This should probably be in
+    the library's src folder somewhere but I don't want to disturb any
+    boffins or eggheads exploring M-theory with my free hacks.
+
+    Return value example: ['OpenSSL',['1','1','1g']]
+
+    :param char* libversion: a cffi character array with metadata
+    :return: tuple of form [Library_Name,[version,id,info,...]]
+    :rtype: list
+    :raises ValueError: if libversion doesn't evaluate into >=2 parts
+    :raises ValueError: if libversion isn't a string
+    """
+    libtext = libversion.split(" ")
+    if(len(libtext) < 2):
+        err = "Library metadata lacked discernable name and version parts"
+        raise ValueError(err)
+    else:
+        # Processing assumes OPENSSL_VERSION_TEXT format from OpenSSL 1.1.0
+        libver = libtext[1].split(".")
+        retval = list()
+        retval.append(libtext[0])
+        retval.append(libver)
+        return retval
+
+
+class TestLibraryVersion(object):
+    """
+    This is a necessary class to ensure that we're running the correct tests
+    against our version/variant-sensitive test code (since we're accommodating
+    3 releases of OpenSSL across 2 major versions and 4 releases of LibreSSL
+    across 2 major versions (and that's before geopolitics get mixed in)
+
+    This class validates functionality of library metadata processing
+    mechanisms (so you know you're identifying the version correctly)
+    """
+    def test_p_o_v_works(self):
+        libname = "OpenSSL"
+        libversion = ["1", "0", "2u"]
+        separator = "."
+        versionstring = separator.join(libversion)
+        version = libname + " " + versionstring
+
+        retval = p_o_v(version)
+
+        assert retval[0] == libname
+        assert retval[1][0] == libversion[0]
+        assert retval[1][1] == libversion[1]
+        assert retval[1][2] == libversion[2]
+
+    def test_p_o_v_exception(self):
+        version = "LibreSSL2.1.6"
+        with pytest.raises(ValueError):
+            p_o_v(version)
+
+
 class DummyMGF(object):
     _salt_length = 0
 
 
 class TestOpenSSL(object):
+
+    _libname = p_o_v(backend.openssl_version_text())[0]
+    _libver = p_o_v(backend.openssl_version_text())[1]
+
     def test_backend_exists(self):
         assert backend
 
@@ -118,16 +186,20 @@ class TestOpenSSL(object):
         ctx = backend._lib.SSL_CTX_new(meth)
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
-        
+
+    @pytest.mark.skipif(_libname == "OpenSSL" and
+                        (int(_libver[0]) < 1 or
+                         int(_libver[1]) < 1),
+                        reason="TLS_method requires OpenSSL >= 1.1.0")
+    @pytest.mark.skipif(_libname == "LibreSSL" and
+                        (int(_libver[0]) < 2 and
+                         int(_libver[1]) < 3),
+                        reason="TLS_method requires LibreSSL >= 2.3.0")
     def test_tls_ciphers_registered(self):
-        version = hex(backend._lib.OPENSSL_VERSION_NUMBER)
-        if(int(version[2]) < 1 or (int(version[3]) == 0 and int(version[4]) < 1)):
-            pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
-        else:
-            meth = backend._lib.TLS_method()
-            ctx = backend._lib.SSL_CTX_new(meth)
-            assert ctx != backend._ffi.NULL
-            backend._lib.SSL_CTX_free(ctx)
+        meth = backend._lib.TLS_method()
+        ctx = backend._lib.SSL_CTX_new(meth)
+        assert ctx != backend._ffi.NULL
+        backend._lib.SSL_CTX_free(ctx)
 
     def test_evp_ciphers_registered(self):
         cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
