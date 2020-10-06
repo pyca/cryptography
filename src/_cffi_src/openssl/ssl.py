@@ -372,9 +372,9 @@ const SSL_METHOD *SSLv23_server_method(void);
 const SSL_METHOD *SSLv23_client_method(void);
 
 /* Added in 1.1.0 */
-const SSL_METHOD *TLS_method(void) = &SSLv23_method;
-const SSL_METHOD *TLS_client_method(void) = &SSLv23_client_method;
-const SSL_METHOD *TLS_server_method(void) = &SSLv23_server_method;
+const SSL_METHOD (*TLS_method)(void) = &SSLv23_method;
+const SSL_METHOD (*TLS_client_method)(void) = &SSLv23_client_method;
+const SSL_METHOD (*TLS_server_method)(void) = &SSLv23_server_method;
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(SSL_METHOD *);
