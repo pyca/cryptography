@@ -262,6 +262,10 @@ class TestPKCS12Creation(object):
         cert, key = _load_ca(backend)
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
-                None, key, cert, None, DummyKeySerializationEncryption(),
+                None,
+                key,
+                cert,
+                None,
+                DummyKeySerializationEncryption(),
             )
         assert str(exc.value) == "Unsupported key encryption type"

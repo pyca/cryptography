@@ -20,5 +20,8 @@ from ...utils import load_nist_vectors
 @pytest.mark.requires_backend_interface(interface=PBKDF2HMACBackend)
 class TestPBKDF2HMACSHA1(object):
     test_pbkdf2_sha1 = generate_pbkdf2_test(
-        load_nist_vectors, "KDF", ["rfc-6070-PBKDF2-SHA1.txt"], hashes.SHA1(),
+        load_nist_vectors,
+        "KDF",
+        ["rfc-6070-PBKDF2-SHA1.txt"],
+        hashes.SHA1(),
     )

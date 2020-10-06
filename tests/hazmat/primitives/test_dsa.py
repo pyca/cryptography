@@ -936,7 +936,8 @@ class TestDSAPEMPublicKeySerialization(object):
         )
         key = loader_func(key_bytes, backend)
         serialized = key.public_bytes(
-            encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
+            encoding,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         assert serialized == key_bytes
 

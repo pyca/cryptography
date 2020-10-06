@@ -270,6 +270,10 @@ def cryptography_has_engine():
         "ENGINE_free",
         "ENGINE_get_name",
         "Cryptography_add_osrandom_engine",
+        "ENGINE_ctrl_cmd_string",
+        "ENGINE_load_builtin_engines",
+        "ENGINE_load_private_key",
+        "ENGINE_load_public_key",
     ]
 
 

@@ -136,7 +136,8 @@ def test_rsa_pss_signature(backend, wycheproof):
     if digest is None or mgf_digest is None:
         pytest.skip(
             "PSS with digest={} and MGF digest={} not supported".format(
-                wycheproof.testgroup["sha"], wycheproof.testgroup["mgfSha"],
+                wycheproof.testgroup["sha"],
+                wycheproof.testgroup["mgfSha"],
             )
         )
 
@@ -212,7 +213,8 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     if not backend.rsa_padding_supported(padding_algo):
         pytest.skip(
             "OAEP with digest={} and MGF digest={} not supported".format(
-                wycheproof.testgroup["sha"], wycheproof.testgroup["mgfSha"],
+                wycheproof.testgroup["sha"],
+                wycheproof.testgroup["mgfSha"],
             )
         )
 

@@ -11,7 +11,8 @@ where the sender and receiver both use the same secret key. Note that symmetric
 encryption is **not** sufficient for most applications because it only
 provides secrecy but not authenticity. That means an attacker can't see the
 message but an attacker can create bogus messages and force the application to
-decrypt them.
+decrypt them. In many contexts, a lack of authentication on encrypted messages
+can result in a loss of secrecy as well.
 
 For this reason it is **strongly** recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`,
@@ -33,11 +34,9 @@ it fits your needs before implementing anything using this module.**
 
         >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> backend = default_backend()
         >>> key = os.urandom(32)
         >>> iv = os.urandom(16)
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
@@ -147,10 +146,9 @@ Algorithms
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.backends import default_backend
         >>> nonce = os.urandom(16)
         >>> algorithm = algorithms.ChaCha20(key, nonce)
-        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
+        >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
@@ -231,9 +229,8 @@ Weak ciphers
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.backends import default_backend
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
+        >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
@@ -425,7 +422,6 @@ Modes
 
         import os
 
-        from cryptography.hazmat.backends import default_backend
         from cryptography.hazmat.primitives.ciphers import (
             Cipher, algorithms, modes
         )
@@ -439,7 +435,6 @@ Modes
             encryptor = Cipher(
                 algorithms.AES(key),
                 modes.GCM(iv),
-                backend=default_backend()
             ).encryptor()
 
             # associated_data will be authenticated but not encrypted,
@@ -458,7 +453,6 @@ Modes
             decryptor = Cipher(
                 algorithms.AES(key),
                 modes.GCM(iv, tag),
-                backend=default_backend()
             ).decryptor()
 
             # We put associated_data back in or the tag will fail to verify
@@ -595,11 +589,9 @@ Interfaces
 
             >>> import os
             >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> backend = default_backend()
             >>> key = os.urandom(32)
             >>> iv = os.urandom(16)
-            >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+            >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
             >>> encryptor = cipher.encryptor()
             >>> # the buffer needs to be at least len(data) + n - 1 where n is cipher/mode block size in bytes
             >>> buf = bytearray(31)

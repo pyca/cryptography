@@ -52,7 +52,10 @@ class TestHashContext(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA1(object):
-    test_sha1 = generate_base_hash_test(hashes.SHA1(), digest_size=20,)
+    test_sha1 = generate_base_hash_test(
+        hashes.SHA1(),
+        digest_size=20,
+    )
 
 
 @pytest.mark.supported(
@@ -61,7 +64,10 @@ class TestSHA1(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA224(object):
-    test_sha224 = generate_base_hash_test(hashes.SHA224(), digest_size=28,)
+    test_sha224 = generate_base_hash_test(
+        hashes.SHA224(),
+        digest_size=28,
+    )
 
 
 @pytest.mark.supported(
@@ -70,7 +76,10 @@ class TestSHA224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA256(object):
-    test_sha256 = generate_base_hash_test(hashes.SHA256(), digest_size=32,)
+    test_sha256 = generate_base_hash_test(
+        hashes.SHA256(),
+        digest_size=32,
+    )
 
 
 @pytest.mark.supported(
@@ -79,7 +88,10 @@ class TestSHA256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA384(object):
-    test_sha384 = generate_base_hash_test(hashes.SHA384(), digest_size=48,)
+    test_sha384 = generate_base_hash_test(
+        hashes.SHA384(),
+        digest_size=48,
+    )
 
 
 @pytest.mark.supported(
@@ -88,7 +100,10 @@ class TestSHA384(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512(object):
-    test_sha512 = generate_base_hash_test(hashes.SHA512(), digest_size=64,)
+    test_sha512 = generate_base_hash_test(
+        hashes.SHA512(),
+        digest_size=64,
+    )
 
 
 @pytest.mark.supported(
@@ -97,7 +112,10 @@ class TestSHA512(object):
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestMD5(object):
-    test_md5 = generate_base_hash_test(hashes.MD5(), digest_size=16,)
+    test_md5 = generate_base_hash_test(
+        hashes.MD5(),
+        digest_size=16,
+    )
 
 
 @pytest.mark.supported(
@@ -109,7 +127,8 @@ class TestMD5(object):
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2b(object):
     test_blake2b = generate_base_hash_test(
-        hashes.BLAKE2b(digest_size=64), digest_size=64,
+        hashes.BLAKE2b(digest_size=64),
+        digest_size=64,
     )
 
     def test_invalid_digest_size(self, backend):
@@ -132,7 +151,8 @@ class TestBLAKE2b(object):
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2s(object):
     test_blake2s = generate_base_hash_test(
-        hashes.BLAKE2s(digest_size=32), digest_size=32,
+        hashes.BLAKE2s(digest_size=32),
+        digest_size=32,
     )
 
     def test_invalid_digest_size(self, backend):

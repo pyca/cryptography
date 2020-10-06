@@ -2,7 +2,7 @@
     name: pyca-cryptography-base
     abstract: true
     description: Run pyca/cryptography unit testing
-    run: .zuul.playbooks/playbooks/main.yaml
+    run: .zuul.playbooks/playbooks/tox/main.yaml
 
 - job:
     name: pyca-cryptography-ubuntu-focal-py38-arm64
@@ -31,3 +31,38 @@
     nodeset: centos-8-arm64
     vars:
       tox_envlist: py27
+
+- job:
+    name: pyca-cryptography-build-wheel
+    abstract: true
+    run: .zuul.playbooks/playbooks/wheel/main.yaml
+
+- job:
+    name: pyca-cryptography-build-wheel-arm64
+    parent: pyca-cryptography-build-wheel
+    nodeset: ubuntu-bionic-arm64
+    vars:
+      wheel_builds:
+        - platform: manylinux2014_aarch64
+          image: pyca/cryptography-manylinux2014_aarch64
+          pythons:
+            - cp35-cp35m
+
+- job:
+    name: pyca-cryptography-build-wheel-x86_64
+    parent: pyca-cryptography-build-wheel
+    nodeset: ubuntu-bionic
+    vars:
+      wheel_builds:
+        - platform: manylinux1_x86_64
+          image: pyca/cryptography-manylinux1:x86_64
+          pythons:
+            - cp27-cp27m
+            - cp27-cp27mu
+            - cp35-cp35m
+        - platform: manylinux2010_x86_64
+          image: pyca/cryptography-manylinux2010:x86_64
+          pythons:
+            - cp27-cp27m
+            - cp27-cp27mu
+            - cp35-cp35m

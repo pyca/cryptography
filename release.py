@@ -71,7 +71,9 @@ def download_artifacts_github_actions(session, token, run_url):
                     continue
                 p = z.open(name)
                 out_path = os.path.join(
-                    os.path.dirname(__file__), "dist", os.path.basename(name),
+                    os.path.dirname(__file__),
+                    "dist",
+                    os.path.basename(name),
                 )
                 with open(out_path, "wb") as f:
                     f.write(p.read())

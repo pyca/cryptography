@@ -1467,11 +1467,15 @@ class TestEd25519Serialization(object):
         key = ed25519.Ed25519PrivateKey.generate()
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.PEM,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.DER,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
 
 
@@ -1543,11 +1547,15 @@ class TestX448Serialization(object):
         key = x448.X448PrivateKey.generate()
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.PEM,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.DER,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
 
     def test_openssh_serialization_unsupported(self, backend):
@@ -1630,11 +1638,15 @@ class TestX25519Serialization(object):
         key = x25519.X25519PrivateKey.generate()
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.PEM,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.DER,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
 
     def test_openssh_serialization_unsupported(self, backend):
@@ -1717,28 +1729,34 @@ class TestEd448Serialization(object):
         key = ed448.Ed448PrivateKey.generate()
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.PEM,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption(),
+                Encoding.DER,
+                PrivateFormat.TraditionalOpenSSL,
+                NoEncryption(),
             )
 
     def test_openssh_serialization_unsupported(self, backend):
         key = ed448.Ed448PrivateKey.generate()
         with pytest.raises(ValueError):
             key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH,
+                Encoding.OpenSSH,
+                PublicFormat.OpenSSH,
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption(),
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                NoEncryption(),
             )
 
 
 class TestDHSerialization(object):
-    """Test all options with least-supported key type.
-    """
+    """Test all options with least-supported key type."""
 
     def test_dh_public_key(self, backend):
         data = load_vectors_from_file(
@@ -1951,7 +1969,9 @@ class TestOpenSSHSerialization(object):
         if password:
             encryption = BestAvailableEncryption(password)
         priv_data2 = private_key.private_bytes(
-            Encoding.PEM, PrivateFormat.OpenSSH, encryption,
+            Encoding.PEM,
+            PrivateFormat.OpenSSH,
+            encryption,
         )
         private_key2 = load_ssh_private_key(priv_data2, password, backend)
         assert (
@@ -2062,7 +2082,10 @@ class TestOpenSSHSerialization(object):
         kdfoptions=b"",
         nkeys=1,
         pub_type=b"ecdsa-sha2-nistp256",
-        pub_fields=(b"nistp256", b"\x04" * 65,),
+        pub_fields=(
+            b"nistp256",
+            b"\x04" * 65,
+        ),
         priv_type=None,
         priv_fields=(b"nistp256", b"\x04" * 65, b"\x7F" * 32),
         comment=b"comment",
@@ -2073,8 +2096,7 @@ class TestOpenSSHSerialization(object):
         footer=b"-----END OPENSSH PRIVATE KEY-----\n",
         cut=8192,
     ):
-        """Create private key file
-        """
+        """Create private key file"""
         if not priv_type:
             priv_type = pub_type
 
@@ -2157,7 +2179,10 @@ class TestOpenSSHSerialization(object):
     def test_ssh_errors_pubpriv_mismatch(self, backend):
         # ecdsa public-private mismatch
         data = self.make_file(
-            pub_fields=(b"nistp256", b"\x04" + b"\x05" * 64,)
+            pub_fields=(
+                b"nistp256",
+                b"\x04" + b"\x05" * 64,
+            )
         )
         with pytest.raises(ValueError):
             load_ssh_private_key(data, None, backend)
@@ -2187,14 +2212,20 @@ class TestOpenSSHSerialization(object):
         data = self.make_file(
             pub_type=b"ssh-ed25519",
             pub_fields=(pk1,),
-            priv_fields=(pk1, sk + pk2,),
+            priv_fields=(
+                pk1,
+                sk + pk2,
+            ),
         )
         with pytest.raises(ValueError):
             load_ssh_private_key(data, None, backend)
         data = self.make_file(
             pub_type=b"ssh-ed25519",
             pub_fields=(pk1,),
-            priv_fields=(pk2, sk + pk1,),
+            priv_fields=(
+                pk2,
+                sk + pk1,
+            ),
         )
         with pytest.raises(ValueError):
             load_ssh_private_key(data, None, backend)

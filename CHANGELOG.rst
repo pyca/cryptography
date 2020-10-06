@@ -1,12 +1,30 @@
 Changelog
 =========
 
-.. _v3-1:
+.. _v3-2:
 
-3.1 - `master`_
+3.2 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* Support for OpenSSL 1.0.2 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
+* Added basic support for SMIME signing via
+  :class:`~cryptography.hazmat.primitives.smime.SMIMESignatureBuilder`.
+
+.. _v3-1-1:
+
+3.1.1 - 2020-09-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1h.
+
+.. _v3-1:
+
+3.1 - 2020-08-26
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed support for ``idna`` based
   :term:`U-label` parsing in various X.509 classes. This support was originally
@@ -23,6 +41,10 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
   .
+* Calling ``update`` or ``update_into`` on
+  :class:`~cryptography.hazmat.primitives.ciphers.CipherContext` with ``data``
+  longer than 2\ :sup:`31` bytes no longer raises an ``OverflowError``. This
+  also resolves the same issue in :doc:`/fernet`.
 
 .. _v3-0:
 
