@@ -86,8 +86,8 @@ class TestOpenSSL(object):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         version = hex(b.lib.OPENSSL_VERSION_NUMBER)
-        if(    int(version[2]) < 1 or 
-            (int(version[3]) == 0 and int(version[4]) < 1) ):
+        if(	int(version[2]) < 1 or 
+			(int(version[3]) == 0 and int(version[4]) < 1) ):
             pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
         else:
             assert b.lib.SSL_OP_ALL > 0
@@ -105,7 +105,7 @@ class TestOpenSSL(object):
         b = Binding()
         version = hex(b.lib.OPENSSL_VERSION_NUMBER)
         if( int(version[2]) < 1 or 
-            (int(version[3]) == 0 and int(version[4]) < 1) ):
+			(int(version[3]) == 0 and int(version[4]) < 1) ):
             pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
         else:
             assert b.lib.SSL_OP_ALL > 0
@@ -125,7 +125,7 @@ class TestOpenSSL(object):
         b = Binding()
         version = hex(b.lib.OPENSSL_VERSION_NUMBER)
         if( int(version[2]) < 1 or 
-            (int(version[3]) == 0 and int(version[4]) < 1) ):
+			(int(version[3]) == 0 and int(version[4]) < 1) ):
             pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
         else:
             assert b.lib.SSL_OP_ALL > 0
