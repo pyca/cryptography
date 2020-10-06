@@ -121,8 +121,10 @@ class TestOpenSSL(object):
         
     def test_tls_ciphers_registered(self):
         version = hex(backend._lib.OPENSSL_VERSION_NUMBER)
-        if( int(version[2]) < 1 or 
-           (int(version[3]) == 0 and int(version[4]) < 1) ):
+        if(
+            int(version[2]) < 1 or 
+           (int(version[3]) == 0 and int(version[4]) < 1)
+        ):
             pytest.skip("TLS_method does not exist prior to OpenSSL 1.1.0")
         else:
             meth = backend._lib.TLS_method()
