@@ -119,8 +119,10 @@ class TestOpenSSL(object):
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
 
-    @pytest.mark.skipif(backend._lib.Cryptography_HAS_TLS_METHOD == 0,
-                        reason="Requires Library with TLS_method")
+    @pytest.mark.skipif(
+        backend._lib.Cryptography_HAS_TLS_METHOD == 0,
+        reason="Requires Library with TLS_method",
+    )
     def test_tls_ciphers_registered(self):
         meth = backend._lib.TLS_method()
         ctx = backend._lib.SSL_CTX_new(meth)

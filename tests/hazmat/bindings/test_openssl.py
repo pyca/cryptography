@@ -82,8 +82,10 @@ class TestOpenSSL(object):
         assert resp == expected_options
         assert b.lib.SSL_get_mode(ssl) == expected_options
 
-    @pytest.mark.skipif(Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
-                        reason="TLS_method requires OpenSSL >= 1.1.0")
+    @pytest.mark.skipif(
+        Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
+        reason="TLS_method requires OpenSSL >= 1.1.0",
+    )
     def test_tls_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
@@ -97,8 +99,10 @@ class TestOpenSSL(object):
         assert resp == expected_options
         assert b.lib.SSL_CTX_get_options(ctx) == expected_options
 
-    @pytest.mark.skipif(Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
-                        reason="TLS_method requires OpenSSL >= 1.1.0")
+    @pytest.mark.skipif(
+        Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
+        reason="TLS_method requires OpenSSL >= 1.1.0",
+    )
     def test_tls_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
@@ -114,8 +118,10 @@ class TestOpenSSL(object):
         assert resp == expected_options
         assert b.lib.SSL_get_options(ssl) == expected_options
 
-    @pytest.mark.skipif(Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
-                        reason="TLS_method requires OpenSSL >= 1.1.0")
+    @pytest.mark.skipif(
+        Binding.lib.Cryptography_HAS_TLS_METHOD == 0,
+        reason="TLS_method requires OpenSSL >= 1.1.0",
+    )
     def test_tls_mode(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
