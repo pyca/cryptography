@@ -18,6 +18,7 @@ static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
+static const long Cryptography_HAS_TLS_METHOD;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
@@ -362,9 +363,10 @@ const SSL_METHOD *DTLSv1_method(void);
 const SSL_METHOD *DTLSv1_server_method(void);
 const SSL_METHOD *DTLSv1_client_method(void);
 
-const SSL_METHOD *TLS_method(void) = SSLv23_method;
-const SSL_METHOD *TLS_client_method(void) = SSLv23_client_method;
-const SSL_METHOD *TLS_server_method(void) = SSLv23_server_method;
+/* Added in 1.1.0 */
+const SSL_METHOD *TLS_method(void);
+const SSL_METHOD *TLS_client_method(void);
+const SSL_METHOD *TLS_server_method(void);
 
 /* Added in 1.0.2 */
 const SSL_METHOD *DTLS_method(void);
@@ -759,5 +761,14 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
+#endif
+
+#ifdef TLS_method
+Cryptography_HAS_TLS_METHOD = 1;
+#else
+Cryptography_HAS_TLS_METHOD = 0;
+SSL_METHOD* (*TLS_method)(void) = NULL;
+SSL_METHOD* (*TLS_client_method)(void) = NULL;
+SSL_METHOD* (*TLS_server_method)(void) = NULL;
 #endif
 """
