@@ -18,6 +18,7 @@ static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
+static const long Cryptography_HAS_TLS_METHOD;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
@@ -362,6 +363,11 @@ const SSL_METHOD *DTLSv1_method(void);
 const SSL_METHOD *DTLSv1_server_method(void);
 const SSL_METHOD *DTLSv1_client_method(void);
 
+/* Added in 1.1.0 */
+const SSL_METHOD *TLS_method(void);
+const SSL_METHOD *TLS_client_method(void);
+const SSL_METHOD *TLS_server_method(void);
+
 /* Added in 1.0.2 */
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
@@ -501,6 +507,7 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
+
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
@@ -754,5 +761,14 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_TLS_METHOD = 0;
+const SSL_METHOD* (*TLS_method)(void) = NULL;
+const SSL_METHOD* (*TLS_client_method)(void) = NULL;
+const SSL_METHOD* (*TLS_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_TLS_METHOD = 1;
 #endif
 """

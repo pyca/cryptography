@@ -270,6 +270,10 @@ def cryptography_has_engine():
         "ENGINE_free",
         "ENGINE_get_name",
         "Cryptography_add_osrandom_engine",
+        "ENGINE_ctrl_cmd_string",
+        "ENGINE_load_builtin_engines",
+        "ENGINE_load_private_key",
+        "ENGINE_load_public_key",
     ]
 
 
@@ -284,6 +288,14 @@ def cryptography_has_srtp():
         "SSL_CTX_set_tlsext_use_srtp",
         "SSL_set_tlsext_use_srtp",
         "SSL_get_selected_srtp_profile",
+    ]
+
+
+def cryptography_has_tls_method():
+    return [
+        "TLS_method",
+        "TLS_client_method",
+        "TLS_server_method",
     ]
 
 
@@ -338,4 +350,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
+    "Cryptography_HAS_TLS_METHOD": cryptography_has_tls_method,
 }

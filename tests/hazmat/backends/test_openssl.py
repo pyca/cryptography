@@ -91,7 +91,11 @@ class TestOpenSSL(object):
             type(mode),
             lambda backend, cipher, mode: backend._ffi.NULL,
         )
-        cipher = Cipher(DummyCipherAlgorithm(), mode, backend=b,)
+        cipher = Cipher(
+            DummyCipherAlgorithm(),
+            mode,
+            backend=b,
+        )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
@@ -115,6 +119,16 @@ class TestOpenSSL(object):
 
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.SSLv23_method()
+        ctx = backend._lib.SSL_CTX_new(meth)
+        assert ctx != backend._ffi.NULL
+        backend._lib.SSL_CTX_free(ctx)
+
+    @pytest.mark.skipif(
+        backend._lib.Cryptography_HAS_TLS_METHOD == 0,
+        reason="Requires Library with TLS_method",
+    )
+    def test_tls_ciphers_registered(self):
+        meth = backend._lib.TLS_method()
         ctx = backend._lib.SSL_CTX_new(meth)
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
