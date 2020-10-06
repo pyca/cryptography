@@ -763,11 +763,16 @@ int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_TLS_METHOD = 0;
 const SSL_METHOD* (*TLS_method)(void) = NULL;
 const SSL_METHOD* (*TLS_client_method)(void) = NULL;
 const SSL_METHOD* (*TLS_server_method)(void) = NULL;
+#elif CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_TLS_METHOD = 0;
+const SSL_METHOD (*TLS_method)(void) = NULL;
+const SSL_METHOD (*TLS_client_method)(void) = NULL;
+const SSL_METHOD (*TLS_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_TLS_METHOD = 1;
 #endif
