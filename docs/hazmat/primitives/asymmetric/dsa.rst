@@ -78,12 +78,10 @@ instance.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric import dsa
     >>> private_key = dsa.generate_private_key(
     ...     key_size=1024,
-    ...     backend=default_backend()
     ... )
     >>> data = b"this is some data I'd like to sign"
     >>> signature = private_key.sign(
@@ -103,7 +101,7 @@ separately and pass that value using
 
     >>> from cryptography.hazmat.primitives.asymmetric import utils
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()
@@ -146,7 +144,7 @@ separately and pass that value using
 .. doctest::
 
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()

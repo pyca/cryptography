@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import os
 import threading
 import types
 import warnings
@@ -170,12 +171,19 @@ def _verify_openssl_version(lib):
         lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
         and not lib.CRYPTOGRAPHY_IS_LIBRESSL
     ):
-        warnings.warn(
-            "OpenSSL version 1.0.2 is no longer supported by the OpenSSL "
-            "project, please upgrade. The next version of cryptography will "
-            "drop support for it.",
-            utils.CryptographyDeprecationWarning,
-        )
+        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_102"):
+            warnings.warn(
+                "OpenSSL version 1.0.2 is no longer supported by the OpenSSL "
+                "project, please upgrade. The next version of cryptography "
+                "will completely remove support for it.",
+                utils.CryptographyDeprecationWarning,
+            )
+        else:
+            raise RuntimeError(
+                "You are linking against OpenSSL 1.0.2, which is no longer "
+                "supported by the OpenSSL project. You need to upgrade to a "
+                "newer version of OpenSSL."
+            )
 
 
 def _verify_package_version(version):

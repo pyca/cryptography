@@ -33,11 +33,10 @@ codes (HMAC).
     .. doctest::
 
         >>> import os
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.hotp import HOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(20)
-        >>> hotp = HOTP(key, 6, SHA1(), backend=default_backend())
+        >>> hotp = HOTP(key, 6, SHA1())
         >>> hotp_value = hotp.generate(0)
         >>> hotp.verify(hotp_value, 0)
 
@@ -129,7 +128,7 @@ similar to the following code.
         assert look_ahead >= 0
         correct_counter = None
 
-        otp = HOTP(key, 6, default_backend())
+        otp = HOTP(key, 6)
         for count in range(counter, counter + look_ahead):
             try:
                 otp.verify(hotp, count)
@@ -155,11 +154,10 @@ similar to the following code.
 
         >>> import os
         >>> import time
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.totp import TOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(20)
-        >>> totp = TOTP(key, 8, SHA1(), 30, backend=default_backend())
+        >>> totp = TOTP(key, 8, SHA1(), 30)
         >>> time_value = time.time()
         >>> totp_value = totp.generate(time_value)
         >>> totp.verify(totp_value, time_value)

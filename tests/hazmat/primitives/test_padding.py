@@ -109,6 +109,18 @@ class TestPKCS7(object):
 
         assert data == b""
 
+    def test_bytearray(self):
+        padder = padding.PKCS7(128).padder()
+        unpadded = bytearray(b"t" * 38)
+        padded = (
+            padder.update(unpadded)
+            + padder.update(unpadded)
+            + padder.finalize()
+        )
+        unpadder = padding.PKCS7(128).unpadder()
+        final = unpadder.update(padded) + unpadder.finalize()
+        assert final == unpadded + unpadded
+
 
 class TestANSIX923(object):
     @pytest.mark.parametrize("size", [127, 4096, -2])
@@ -193,3 +205,15 @@ class TestANSIX923(object):
             unpadder.update(b"")
         with pytest.raises(AlreadyFinalized):
             unpadder.finalize()
+
+    def test_bytearray(self):
+        padder = padding.ANSIX923(128).padder()
+        unpadded = bytearray(b"t" * 38)
+        padded = (
+            padder.update(unpadded)
+            + padder.update(unpadded)
+            + padder.finalize()
+        )
+        unpadder = padding.ANSIX923(128).unpadder()
+        final = unpadder.update(padded) + unpadder.finalize()
+        assert final == unpadded + unpadded

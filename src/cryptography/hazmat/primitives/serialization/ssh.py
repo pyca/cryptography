@@ -95,22 +95,19 @@ def _ssh_pem_encode(data, prefix=_SK_START + b"\n", suffix=_SK_END + b"\n"):
 
 
 def _check_block_size(data, block_len):
-    """Require data to be full blocks
-    """
+    """Require data to be full blocks"""
     if not data or len(data) % block_len != 0:
         raise ValueError("Corrupt data: missing padding")
 
 
 def _check_empty(data):
-    """All data should have been parsed.
-    """
+    """All data should have been parsed."""
     if data:
         raise ValueError("Corrupt data: unparsed data")
 
 
 def _init_cipher(ciphername, password, salt, rounds, backend):
-    """Generate key + iv and return cipher.
-    """
+    """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
 
@@ -150,8 +147,7 @@ def _get_mpint(data):
 
 
 def _to_mpint(val):
-    """Storage format for signed bigint.
-    """
+    """Storage format for signed bigint."""
     if val < 0:
         raise ValueError("negative mpint not allowed")
     if not val:
@@ -161,8 +157,7 @@ def _to_mpint(val):
 
 
 class _FragList(object):
-    """Build recursive structure without data copy.
-    """
+    """Build recursive structure without data copy."""
 
     def __init__(self, init=None):
         self.flist = []
@@ -462,8 +457,7 @@ _KEY_FORMATS = {
 
 
 def _lookup_kformat(key_type):
-    """Return valid format or throw error
-    """
+    """Return valid format or throw error"""
     if not isinstance(key_type, bytes):
         key_type = memoryview(key_type).tobytes()
     if key_type in _KEY_FORMATS:
@@ -472,8 +466,7 @@ def _lookup_kformat(key_type):
 
 
 def load_ssh_private_key(data, password, backend=None):
-    """Load private key from OpenSSH custom encoding.
-    """
+    """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
     backend = _get_backend(backend)
     if password is not None:
@@ -547,8 +540,7 @@ def load_ssh_private_key(data, password, backend=None):
 
 
 def serialize_ssh_private_key(private_key, password=None):
-    """Serialize private key with OpenSSH custom encoding.
-    """
+    """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
     if password and len(password) > _MAX_PASSWORD:
@@ -627,8 +619,7 @@ def serialize_ssh_private_key(private_key, password=None):
 
 
 def load_ssh_public_key(data, backend=None):
-    """Load public key from OpenSSH one-line format.
-    """
+    """Load public key from OpenSSH one-line format."""
     backend = _get_backend(backend)
     utils._check_byteslike("data", data)
 
@@ -671,8 +662,7 @@ def load_ssh_public_key(data, backend=None):
 
 
 def serialize_ssh_public_key(public_key):
-    """One-line public key format for OpenSSH
-    """
+    """One-line public key format for OpenSSH"""
     if isinstance(public_key, ec.EllipticCurvePublicKey):
         key_type = _ecdsa_key_type(public_key)
     elif isinstance(public_key, rsa.RSAPublicKey):

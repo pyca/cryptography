@@ -1103,7 +1103,9 @@ class TestRSAVerification(object):
                 signature,
                 b"sign me",
                 padding.PSS(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1(),),
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA1(),
+                    ),
                     salt_length=1000000,
                 ),
                 hashes.SHA1(),
@@ -1163,7 +1165,9 @@ class TestRSAPSSMGF1Verification(object):
             ],
             hashes.SHA1(),
             lambda params, hash_alg: padding.PSS(
-                mgf=padding.MGF1(algorithm=hash_alg,),
+                mgf=padding.MGF1(
+                    algorithm=hash_alg,
+                ),
                 salt_length=params["salt_length"],
             ),
         )
@@ -1188,7 +1192,9 @@ class TestRSAPSSMGF1Verification(object):
             ],
             hashes.SHA224(),
             lambda params, hash_alg: padding.PSS(
-                mgf=padding.MGF1(algorithm=hash_alg,),
+                mgf=padding.MGF1(
+                    algorithm=hash_alg,
+                ),
                 salt_length=params["salt_length"],
             ),
         )
@@ -1213,7 +1219,9 @@ class TestRSAPSSMGF1Verification(object):
             ],
             hashes.SHA256(),
             lambda params, hash_alg: padding.PSS(
-                mgf=padding.MGF1(algorithm=hash_alg,),
+                mgf=padding.MGF1(
+                    algorithm=hash_alg,
+                ),
                 salt_length=params["salt_length"],
             ),
         )
@@ -1238,7 +1246,9 @@ class TestRSAPSSMGF1Verification(object):
             ],
             hashes.SHA384(),
             lambda params, hash_alg: padding.PSS(
-                mgf=padding.MGF1(algorithm=hash_alg,),
+                mgf=padding.MGF1(
+                    algorithm=hash_alg,
+                ),
                 salt_length=params["salt_length"],
             ),
         )
@@ -1263,7 +1273,9 @@ class TestRSAPSSMGF1Verification(object):
             ],
             hashes.SHA512(),
             lambda params, hash_alg: padding.PSS(
-                mgf=padding.MGF1(algorithm=hash_alg,),
+                mgf=padding.MGF1(
+                    algorithm=hash_alg,
+                ),
                 salt_length=params["salt_length"],
             ),
         )

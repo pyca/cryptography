@@ -68,7 +68,6 @@ hazmat layer only when necessary.
     exceptions
     random-numbers
     hazmat/backends/index
-    hazmat/bindings/index
 
 .. toctree::
     :maxdepth: 2
