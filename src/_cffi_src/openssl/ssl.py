@@ -18,7 +18,6 @@ static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
-static const long Cryptography_HAS_TLS_METHOD;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
@@ -764,11 +763,8 @@ static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_TLS_METHOD = 0;
-const SSL_METHOD* (*TLS_method)(void) = SSLv23_method;
-const SSL_METHOD* (*TLS_client_method)(void) = SSLv23_client_method;
-const SSL_METHOD* (*TLS_server_method)(void) = SSLv23_server_method;
-#else
-static const long Cryptography_HAS_TLS_METHOD = 1;
+#define TLS_method SSLv23_method
+#define TLS_client_method SSLv23_client_method
+#define TLS_server_method SSLv23_server_method
 #endif
 """
