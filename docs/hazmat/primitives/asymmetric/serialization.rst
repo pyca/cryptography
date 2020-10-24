@@ -647,6 +647,13 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
             :class:`~cryptography.hazmat.primitives.hashes.SHA384`, or
             :class:`~cryptography.hazmat.primitives.hashes.SHA512`.
 
+    .. method:: add_certificate(certificate)
+
+        Add an additional certificate to the PKCS7 structure. This method may
+        be called multiple times to add as many certificates as desired.
+
+        :param certificate: The :class:`~cryptography.x509.Certificate` to add.
+
     .. method:: sign(encoding, options, backend=None)
 
         :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,

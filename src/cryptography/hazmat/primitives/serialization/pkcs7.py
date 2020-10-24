@@ -24,9 +24,10 @@ def load_der_pkcs7_certificates(data):
 
 
 class PKCS7SignatureBuilder(object):
-    def __init__(self, data=None, signers=[]):
+    def __init__(self, data=None, signers=[], additional_certs=[]):
         self._data = data
         self._signers = signers
+        self._additional_certs = additional_certs
 
     def set_data(self, data):
         _check_byteslike("data", data)
@@ -61,6 +62,14 @@ class PKCS7SignatureBuilder(object):
         return PKCS7SignatureBuilder(
             self._data,
             self._signers + [(certificate, private_key, hash_algorithm)],
+        )
+
+    def add_certificate(self, certificate):
+        if not isinstance(certificate, x509.Certificate):
+            raise TypeError("certificate must be a x509.Certificate")
+
+        return PKCS7SignatureBuilder(
+            self._data, self._signers, self._additional_certs + [certificate]
         )
 
     def sign(self, encoding, options, backend=None):
