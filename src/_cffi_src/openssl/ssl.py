@@ -29,6 +29,8 @@ static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_CIPHER_DETAILS;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
+static const long Cryptography_HAS_PROTOCOL_SETTERS;
+static const long Cryptography_HAS_PROTOCOL_GETTERS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -198,6 +200,14 @@ int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 
+/* Added in 1.1.0 */
+int SSL_set_min_proto_version(SSL *ssl, int version);
+int SSL_set_max_proto_version(SSL *ssl, int version);
+
+/* Added in 1.1.1 */
+int SSL_get_min_proto_version(SSL *ssl);
+int SSL_get_max_proto_version(SSL *ssl);
+
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
 long SSL_CTX_set_timeout(SSL_CTX *, long);
@@ -264,6 +274,14 @@ void SSL_CTX_set_keylog_callback(SSL_CTX *,
 void (*SSL_CTX_get_keylog_callback(SSL_CTX *))(const SSL *, const char *);
 
 long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
+
+/* Added in 1.1.0 */
+int SSL_CTX_set_min_proto_version(SSL_CTX *ctx, int version);
+int SSL_CTX_set_max_proto_version(SSL_CTX *ctx, int version);
+
+/* Added in 1.1.1 */
+int SSL_CTX_get_min_proto_version(SSL_CTX *ctx);
+int SSL_CTX_get_max_proto_version(SSL_CTX *ctx);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
@@ -765,5 +783,28 @@ static const long Cryptography_HAS_TLSv1_3 = 1;
 #define TLS_method SSLv23_method
 #define TLS_client_method SSLv23_client_method
 #define TLS_server_method SSLv23_server_method
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
+int (*SSL_CTX_set_min_proto_version)(SSL_CTX *ctx, int version) = NULL;
+int (*SSL_CTX_set_max_proto_version)(SSL_CTX *ctx, int version) = NULL;
+int (*SSL_set_min_proto_version)(SSL *ssl, int version) = NULL;
+int (*SSL_set_max_proto_version)(SSL *ssl, int version) = NULL;
+int (*SSL_CTX_get_min_proto_version)(SSL_CTX *ctx) = NULL;
+int (*SSL_CTX_get_max_proto_version)(SSL_CTX *ctx) = NULL;
+int (*SSL_get_min_proto_version)(SSL *ssl) = NULL;
+int (*SSL_get_max_proto_version)(SSL *ssl) = NULL;
+static const long Cryptography_HAS_PROTOCOL_SETTERS = 0;
+static const long Cryptography_HAS_PROTOCOL_GETTERS = 0;
+#elif CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL
+int (*SSL_CTX_get_min_proto_version)(SSL_CTX *ctx) = NULL;
+int (*SSL_CTX_get_max_proto_version)(SSL_CTX *ctx) = NULL;
+int (*SSL_get_min_proto_version)(SSL *ssl) = NULL;
+int (*SSL_get_max_proto_version)(SSL *ssl) = NULL;
+static const long Cryptography_HAS_PROTOCOL_SETTERS = 1;
+static const long Cryptography_HAS_PROTOCOL_GETTERS = 0;
+#else
+static const long Cryptography_HAS_PROTOCOL_SETTERS = 1;
+static const long Cryptography_HAS_PROTOCOL_GETTERS = 1;
 #endif
 """
