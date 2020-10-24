@@ -108,7 +108,7 @@ class PKCS7SignatureBuilder(object):
             )
 
         backend = _get_backend(backend)
-        return backend.smime_sign(self, encoding, options)
+        return backend.pkcs7_sign(self, encoding, options)
 
 
 class PKCS7Options(Enum):

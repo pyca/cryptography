@@ -2690,7 +2690,7 @@ class Backend(object):
 
         return certs
 
-    def smime_sign(self, builder, encoding, options):
+    def pkcs7_sign(self, builder, encoding, options):
         bio = self._bytes_to_bio(builder._data)
         init_flags = self._lib.PKCS7_PARTIAL
         final_flags = 0
