@@ -291,6 +291,24 @@ def cryptography_has_srtp():
     ]
 
 
+def cryptography_has_protocol_setters():
+    return [
+        "SSL_CTX_set_min_proto_version",
+        "SSL_CTX_set_max_proto_version",
+        "SSL_set_min_proto_version",
+        "SSL_set_max_proto_version",
+    ]
+
+
+def cryptography_has_protocol_getters():
+    return [
+        "SSL_CTX_get_min_proto_version",
+        "SSL_CTX_get_max_proto_version",
+        "SSL_get_min_proto_version",
+        "SSL_get_max_proto_version",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -342,4 +360,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
+    "Cryptography_HAS_PROTOCOL_SETTERS": cryptography_has_protocol_setters,
+    "Cryptography_HAS_PROTOCOL_GETTERS": cryptography_has_protocol_getters,
 }
