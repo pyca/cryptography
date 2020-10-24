@@ -71,11 +71,14 @@ class PKCS7SignatureBuilder(object):
         options = list(options)
         if not all(isinstance(x, PKCS7Options) for x in options):
             raise ValueError("options must be from the PKCS7Options enum")
-        if (
-            encoding is not serialization.Encoding.PEM
-            and encoding is not serialization.Encoding.DER
+        if encoding not in (
+            serialization.Encoding.PEM,
+            serialization.Encoding.DER,
+            serialization.Encoding.SMIME,
         ):
-            raise ValueError("Must be PEM or DER from the Encoding enum")
+            raise ValueError(
+                "Must be PEM, DER, or SMIME from the Encoding enum"
+            )
 
         # Text is a meaningless option unless it is accompanied by
         # DetachedSignature
@@ -88,12 +91,12 @@ class PKCS7SignatureBuilder(object):
                 "DetachedSignature"
             )
 
-        if (
-            PKCS7Options.Text in options
-            and encoding is serialization.Encoding.DER
+        if PKCS7Options.Text in options and encoding in (
+            serialization.Encoding.DER,
+            serialization.Encoding.PEM,
         ):
             raise ValueError(
-                "The Text option does nothing when serializing to DER"
+                "The Text option is only available for SMIME serialization"
             )
 
         # No attributes implies no capabilities so we'll error if you try to

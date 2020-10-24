@@ -620,7 +620,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         ... ).add_signer(
         ...     cert, key, hashes.SHA256()
         ... ).sign(
-        ...     serialization.Encoding.PEM, options
+        ...     serialization.Encoding.SMIME, options
         ... )
         b'...'
 
@@ -649,8 +649,9 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. method:: sign(encoding, options, backend=None)
 
-        :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`
-            or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`.
+        :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`,
+            or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`.
 
         :param options: A list of
             :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`.
@@ -670,19 +671,19 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
         The text option adds ``text/plain`` headers to an S/MIME message when
         serializing to
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`.
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`.
         This option is disallowed with ``DER`` serialization.
 
     .. attribute:: Binary
 
-        S/MIME signing normally converts line endings (LF to CRLF). When
+        Signing normally converts line endings (LF to CRLF). When
         passing this option the data will not be converted.
 
     .. attribute:: DetachedSignature
 
         Don't embed the signed data within the ASN.1. When signing with
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` this
-        also results in the data being added as clear text before the
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`
+        this also results in the data being added as clear text before the
         PEM encoded structure.
 
     .. attribute:: NoCapabilities
@@ -890,6 +891,12 @@ Serialization Encodings
 
         The format used by elliptic curve point encodings. This is a binary
         format.
+
+    .. attribute:: SMIME
+
+        .. versionadded:: 3.2
+
+        An output format used for PKCS7. This is a text format.
 
 
 Serialization Encryption Types
