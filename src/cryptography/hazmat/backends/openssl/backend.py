@@ -623,8 +623,6 @@ class Backend(object):
         self.openssl_assert(res == 1)
         res = self._lib.RSA_set0_crt_params(rsa_cdata, dmp1, dmq1, iqmp)
         self.openssl_assert(res == 1)
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
-        self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
         return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
