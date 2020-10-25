@@ -115,7 +115,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _RevokedCertificate,
 )
 from cryptography.hazmat.bindings.openssl import binding
-from cryptography.hazmat.primitives import hashes, serialization, smime
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -151,7 +151,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     XTS,
 )
 from cryptography.hazmat.primitives.kdf import scrypt
-from cryptography.hazmat.primitives.serialization import ssh
+from cryptography.hazmat.primitives.serialization import pkcs7, ssh
 from cryptography.x509 import ocsp
 
 
@@ -2690,12 +2690,12 @@ class Backend(object):
 
         return certs
 
-    def smime_sign(self, builder, encoding, options):
+    def pkcs7_sign(self, builder, encoding, options):
         bio = self._bytes_to_bio(builder._data)
         init_flags = self._lib.PKCS7_PARTIAL
         final_flags = 0
 
-        if smime.SMIMEOptions.DetachedSignature in options:
+        if pkcs7.PKCS7Options.DetachedSignature in options:
             # Don't embed the data in the PKCS7 structure
             init_flags |= self._lib.PKCS7_DETACHED
             final_flags |= self._lib.PKCS7_DETACHED
@@ -2715,9 +2715,9 @@ class Backend(object):
         # These flags are configurable on a per-signature basis
         # but we've deliberately chosen to make the API only allow
         # setting it across all signatures for now.
-        if smime.SMIMEOptions.NoCapabilities in options:
+        if pkcs7.PKCS7Options.NoCapabilities in options:
             signer_flags |= self._lib.PKCS7_NOSMIMECAP
-        elif smime.SMIMEOptions.NoAttributes in options:
+        elif pkcs7.PKCS7Options.NoAttributes in options:
             signer_flags |= self._lib.PKCS7_NOATTR
         for certificate, private_key, hash_algorithm in builder._signers:
             md = self._evp_md_non_null_from_algorithm(hash_algorithm)
@@ -2729,9 +2729,9 @@ class Backend(object):
         for option in options:
             # DetachedSignature, NoCapabilities, and NoAttributes are already
             # handled so we just need to check these last two options.
-            if option is smime.SMIMEOptions.Text:
+            if option is pkcs7.PKCS7Options.Text:
                 final_flags |= self._lib.PKCS7_TEXT
-            elif option is smime.SMIMEOptions.Binary:
+            elif option is pkcs7.PKCS7Options.Binary:
                 final_flags |= self._lib.PKCS7_BINARY
 
         bio_out = self._create_mem_bio_gc()
