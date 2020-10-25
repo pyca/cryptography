@@ -607,3 +607,52 @@ class TestPKCS7Builder(object):
             options,
             backend,
         )
+
+    def test_add_additional_cert_not_a_cert(self, backend):
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7SignatureBuilder().add_certificate(b"notacert")
+
+    def test_add_additional_cert(self, backend):
+        data = b"hello world"
+        cert, key = _load_cert_key()
+        rsa_cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+            loader=lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read()
+            ),
+            mode="rb",
+        )
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA384())
+            .add_certificate(rsa_cert)
+        )
+        options = []
+        sig = builder.sign(serialization.Encoding.DER, options)
+        assert (
+            sig.count(rsa_cert.public_bytes(serialization.Encoding.DER)) == 1
+        )
+
+    def test_add_multiple_additional_certs(self, backend):
+        data = b"hello world"
+        cert, key = _load_cert_key()
+        rsa_cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+            loader=lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read()
+            ),
+            mode="rb",
+        )
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA384())
+            .add_certificate(rsa_cert)
+            .add_certificate(rsa_cert)
+        )
+        options = []
+        sig = builder.sign(serialization.Encoding.DER, options)
+        assert (
+            sig.count(rsa_cert.public_bytes(serialization.Encoding.DER)) == 2
+        )

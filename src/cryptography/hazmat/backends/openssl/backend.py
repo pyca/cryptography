@@ -2695,6 +2695,15 @@ class Backend(object):
         init_flags = self._lib.PKCS7_PARTIAL
         final_flags = 0
 
+        if len(builder._additional_certs) == 0:
+            certs = self._ffi.NULL
+        else:
+            certs = self._lib.sk_X509_new_null()
+            certs = self._ffi.gc(certs, self._lib.sk_X509_free)
+            for cert in builder._additional_certs:
+                res = self._lib.sk_X509_push(certs, cert._x509)
+                self.openssl_assert(res >= 1)
+
         if pkcs7.PKCS7Options.DetachedSignature in options:
             # Don't embed the data in the PKCS7 structure
             init_flags |= self._lib.PKCS7_DETACHED
@@ -2705,7 +2714,7 @@ class Backend(object):
         p7 = self._lib.PKCS7_sign(
             self._ffi.NULL,
             self._ffi.NULL,
-            self._ffi.NULL,
+            certs,
             self._ffi.NULL,
             init_flags,
         )
