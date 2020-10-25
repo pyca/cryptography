@@ -312,7 +312,7 @@ class TestPKCS7Builder(object):
         _pkcs7_verify(
             serialization.Encoding.PEM,
             sig,
-            data,
+            None,
             [cert],
             options,
             backend,
