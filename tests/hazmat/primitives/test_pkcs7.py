@@ -608,6 +608,10 @@ class TestPKCS7Builder(object):
             backend,
         )
 
+    def test_add_additional_cert_not_a_cert(self, backend):
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7SignatureBuilder().add_certificate(b"notacert")
+
     def test_add_additional_cert(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
