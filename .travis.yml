@@ -13,8 +13,8 @@ cache:
 branches:
     only:
         - master
-        - /\d+\.\d+\.x/
-        - /\d+\.\d+(\.\d+)?/
+        - /^\d+\.\d+\.x$/
+        - /^\d+\.\d+(\.\d+)?$/
 
 matrix:
     include:
