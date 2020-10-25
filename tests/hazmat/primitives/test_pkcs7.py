@@ -84,10 +84,17 @@ class TestPKCS7Loading(object):
 # We have no public verification API and won't be adding one until we get
 # some requirements from users so this function exists to give us basic
 # verification for the signing tests.
-def _smime_verify(encoding, sig, msg, certs, options, backend):
+def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
     sig_bio = backend._bytes_to_bio(sig)
     if encoding is serialization.Encoding.DER:
         p7 = backend._lib.d2i_PKCS7_bio(sig_bio.bio, backend._ffi.NULL)
+    elif encoding is serialization.Encoding.PEM:
+        p7 = backend._lib.PEM_read_bio_PKCS7(
+            sig_bio.bio,
+            backend._ffi.NULL,
+            backend._ffi.NULL,
+            backend._ffi.NULL,
+        )
     else:
         p7 = backend._lib.SMIME_read_PKCS7(sig_bio.bio, backend._ffi.NULL)
     backend.openssl_assert(p7 != backend._ffi.NULL)
@@ -149,7 +156,7 @@ class TestPKCS7Builder(object):
     def test_sign_no_signer(self):
         builder = pkcs7.PKCS7SignatureBuilder().set_data(b"test")
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.PEM, [])
+            builder.sign(serialization.Encoding.SMIME, [])
 
     def test_sign_no_data(self):
         cert, key = _load_cert_key()
@@ -157,7 +164,7 @@ class TestPKCS7Builder(object):
             cert, key, hashes.SHA256()
         )
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.PEM, [])
+            builder.sign(serialization.Encoding.SMIME, [])
 
     def test_unsupported_hash_alg(self):
         cert, key = _load_cert_key()
@@ -193,7 +200,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.PEM, [b"invalid"])
+            builder.sign(serialization.Encoding.SMIME, [b"invalid"])
 
     def test_sign_invalid_encoding(self):
         cert, key = _load_cert_key()
@@ -214,7 +221,7 @@ class TestPKCS7Builder(object):
         )
         options = [pkcs7.PKCS7Options.Text]
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.PEM, options)
+            builder.sign(serialization.Encoding.SMIME, options)
 
     def test_sign_invalid_options_text_der_encoding(self):
         cert, key = _load_cert_key()
@@ -242,7 +249,7 @@ class TestPKCS7Builder(object):
             pkcs7.PKCS7Options.NoCapabilities,
         ]
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.PEM, options)
+            builder.sign(serialization.Encoding.SMIME, options)
 
     def test_smime_sign_detached(self, backend):
         data = b"hello world"
@@ -254,22 +261,22 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
 
-        sig = builder.sign(serialization.Encoding.PEM, options)
+        sig = builder.sign(serialization.Encoding.SMIME, options)
         sig_binary = builder.sign(serialization.Encoding.DER, options)
         # We don't have a generic ASN.1 parser available to us so we instead
         # will assert on specific byte sequences being present based on the
         # parameters chosen above.
         assert b"sha-256" in sig
         # Detached signature means that the signed data is *not* embedded into
-        # the PKCS7 structure itself, but is present in the PEM serialization
+        # the PKCS7 structure itself, but is present in the SMIME serialization
         # as a separate section before the PKCS7 data. So we should expect to
         # have data in sig but not in sig_binary
         assert data in sig
-        _smime_verify(
-            serialization.Encoding.PEM, sig, data, [cert], options, backend
+        _pkcs7_verify(
+            serialization.Encoding.SMIME, sig, data, [cert], options, backend
         )
         assert data not in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             data,
@@ -288,8 +295,28 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
 
-        sig = builder.sign(serialization.Encoding.PEM, options)
+        sig = builder.sign(serialization.Encoding.SMIME, options)
         assert bytes(data) in sig
+
+    def test_sign_pem(self, backend):
+        data = b"hello world"
+        cert, key = _load_cert_key()
+        options = []
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.PEM, options)
+        _pkcs7_verify(
+            serialization.Encoding.PEM,
+            sig,
+            None,
+            [cert],
+            options,
+            backend,
+        )
 
     @pytest.mark.parametrize(
         ("hash_alg", "expected_value"),
@@ -300,7 +327,7 @@ class TestPKCS7Builder(object):
             (hashes.SHA512(), b"\x06\t`\x86H\x01e\x03\x04\x02\x03"),
         ],
     )
-    def test_smime_sign_alternate_digests_der(
+    def test_sign_alternate_digests_der(
         self, hash_alg, expected_value, backend
     ):
         data = b"hello world"
@@ -313,7 +340,7 @@ class TestPKCS7Builder(object):
         options = []
         sig = builder.sign(serialization.Encoding.DER, options)
         assert expected_value in sig
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER, sig, None, [cert], options, backend
         )
 
@@ -326,9 +353,7 @@ class TestPKCS7Builder(object):
             (hashes.SHA512(), b"sha-512"),
         ],
     )
-    def test_smime_sign_alternate_digests_detached_pem(
-        self, hash_alg, expected_value
-    ):
+    def test_sign_alternate_digests_detached(self, hash_alg, expected_value):
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -337,12 +362,12 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hash_alg)
         )
         options = [pkcs7.PKCS7Options.DetachedSignature]
-        sig = builder.sign(serialization.Encoding.PEM, options)
+        sig = builder.sign(serialization.Encoding.SMIME, options)
         # When in detached signature mode the hash algorithm is stored as a
         # byte string like "sha-384".
         assert expected_value in sig
 
-    def test_smime_sign_attached(self, backend):
+    def test_sign_attached(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
         options = []
@@ -356,7 +381,7 @@ class TestPKCS7Builder(object):
         # When not passing detached signature the signed data is embedded into
         # the PKCS7 structure itself
         assert data in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             None,
@@ -365,7 +390,7 @@ class TestPKCS7Builder(object):
             backend,
         )
 
-    def test_smime_sign_binary(self, backend):
+    def test_sign_binary(self, backend):
         data = b"hello\nworld"
         cert, key = _load_cert_key()
         builder = (
@@ -382,7 +407,7 @@ class TestPKCS7Builder(object):
         # so data should not be present in sig_no_binary, but should be present
         # in sig_binary
         assert data not in sig_no_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_no_binary,
             None,
@@ -391,7 +416,7 @@ class TestPKCS7Builder(object):
             backend,
         )
         assert data in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             None,
@@ -400,7 +425,7 @@ class TestPKCS7Builder(object):
             backend,
         )
 
-    def test_smime_sign_smime_canonicalization(self, backend):
+    def test_sign_smime_canonicalization(self, backend):
         data = b"hello\nworld"
         cert, key = _load_cert_key()
         builder = (
@@ -415,7 +440,7 @@ class TestPKCS7Builder(object):
         # so data should not be present in the sig
         assert data not in sig_binary
         assert b"hello\r\nworld" in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             None,
@@ -424,7 +449,7 @@ class TestPKCS7Builder(object):
             backend,
         )
 
-    def test_smime_sign_text(self, backend):
+    def test_sign_text(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -437,16 +462,16 @@ class TestPKCS7Builder(object):
             pkcs7.PKCS7Options.Text,
             pkcs7.PKCS7Options.DetachedSignature,
         ]
-        sig_pem = builder.sign(serialization.Encoding.PEM, options)
+        sig_pem = builder.sign(serialization.Encoding.SMIME, options)
         # The text option adds text/plain headers to the S/MIME message
-        # These headers are only relevant in PEM mode, not binary, which is
+        # These headers are only relevant in SMIME mode, not binary, which is
         # just the PKCS7 structure itself.
         assert b"text/plain" in sig_pem
         # When passing the Text option the header is prepended so the actual
         # signed data is this.
         signed_data = b"Content-Type: text/plain\r\n\r\nhello world"
-        _smime_verify(
-            serialization.Encoding.PEM,
+        _pkcs7_verify(
+            serialization.Encoding.SMIME,
             sig_pem,
             signed_data,
             [cert],
@@ -454,7 +479,7 @@ class TestPKCS7Builder(object):
             backend,
         )
 
-    def test_smime_sign_no_capabilities(self, backend):
+    def test_sign_no_capabilities(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -474,7 +499,7 @@ class TestPKCS7Builder(object):
         assert b"\x06\t*\x86H\x86\xf7\r\x01\t\x0f" not in sig_binary
         # 1.2.840.113549.1.9.5 signingTime as an ASN.1 DER encoded OID
         assert b"\x06\t*\x86H\x86\xf7\r\x01\t\x05" in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             None,
@@ -483,7 +508,7 @@ class TestPKCS7Builder(object):
             backend,
         )
 
-    def test_smime_sign_no_attributes(self, backend):
+    def test_sign_no_attributes(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -501,7 +526,7 @@ class TestPKCS7Builder(object):
         assert b"\x06\t*\x86H\x86\xf7\r\x01\t\x0f" not in sig_binary
         # 1.2.840.113549.1.9.5 signingTime as an ASN.1 DER encoded OID
         assert b"\x06\t*\x86H\x86\xf7\r\x01\t\x05" not in sig_binary
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig_binary,
             None,
@@ -537,7 +562,7 @@ class TestPKCS7Builder(object):
         sig = builder.sign(serialization.Encoding.DER, options)
         # There should be three SHA512 OIDs in this structure
         assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 3
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig,
             None,
@@ -574,7 +599,7 @@ class TestPKCS7Builder(object):
         # There should be two SHA384 and two SHA512 OIDs in this structure
         assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x02") == 2
         assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 2
-        _smime_verify(
+        _pkcs7_verify(
             serialization.Encoding.DER,
             sig,
             None,

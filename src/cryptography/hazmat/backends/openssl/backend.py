@@ -2735,9 +2735,15 @@ class Backend(object):
                 final_flags |= self._lib.PKCS7_BINARY
 
         bio_out = self._create_mem_bio_gc()
-        if encoding is serialization.Encoding.PEM:
+        if encoding is serialization.Encoding.SMIME:
             # This finalizes the structure
             res = self._lib.SMIME_write_PKCS7(
+                bio_out, p7, bio.bio, final_flags
+            )
+        elif encoding is serialization.Encoding.PEM:
+            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
+            self.openssl_assert(res == 1)
+            res = self._lib.PEM_write_bio_PKCS7_stream(
                 bio_out, p7, bio.bio, final_flags
             )
         else:
