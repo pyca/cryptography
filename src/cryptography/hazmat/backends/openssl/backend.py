@@ -2719,6 +2719,10 @@ class Backend(object):
             signer_flags |= self._lib.PKCS7_NOSMIMECAP
         elif pkcs7.PKCS7Options.NoAttributes in options:
             signer_flags |= self._lib.PKCS7_NOATTR
+
+        if pkcs7.PKCS7Options.NoCerts in options:
+            signer_flags |= self._lib.PKCS7_NOCERTS
+
         for certificate, private_key, hash_algorithm in builder._signers:
             md = self._evp_md_non_null_from_algorithm(hash_algorithm)
             p7signerinfo = self._lib.PKCS7_sign_add_signer(

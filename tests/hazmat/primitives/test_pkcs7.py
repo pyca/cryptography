@@ -535,6 +535,23 @@ class TestPKCS7Builder(object):
             backend,
         )
 
+    def test_sign_no_certs(self, backend):
+        data = b"hello world"
+        cert, key = _load_cert_key()
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        options = []
+        sig = builder.sign(serialization.Encoding.DER, options)
+        assert sig.count(cert.public_bytes(serialization.Encoding.DER)) == 1
+
+        options = [pkcs7.PKCS7Options.NoCerts]
+        sig_no = builder.sign(serialization.Encoding.DER, options)
+        assert sig_no.count(cert.public_bytes(serialization.Encoding.DER)) == 0
+
     def test_multiple_signers(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
