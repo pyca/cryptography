@@ -129,3 +129,4 @@ class PKCS7Options(Enum):
     DetachedSignature = "Don't embed data in the PKCS7 structure"
     NoCapabilities = "Don't embed SMIME capabilities"
     NoAttributes = "Don't embed authenticatedAttributes"
+    NoCerts = "Don't embed signer certificate"

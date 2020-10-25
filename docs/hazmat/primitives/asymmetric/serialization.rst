@@ -707,6 +707,13 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         pass ``NoAttributes`` you can't pass ``NoCapabilities`` since
         ``NoAttributes`` removes ``MIMECapabilities`` and more.
 
+    .. attribute:: NoCerts
+
+        Don't include the signer's certificate in the PKCS7 structure. This can
+        reduce the size of the signature but requires that the recipient can
+        obtain the signer's certificate by other means (for example from a
+        previously signed message).
+
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
 
