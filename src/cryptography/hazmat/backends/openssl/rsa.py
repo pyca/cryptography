@@ -119,23 +119,19 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
 
     outlen = backend._ffi.new("size_t *", buf_size)
     buf = backend._ffi.new("unsigned char[]", buf_size)
+    # Everything from this line onwards is written with the goal of being as
+    # constant-time as is practical given the constraints of Python and our
+    # API. See Bleichenbacher's '98 attack on RSA, and its many many variants.
+    # As such, you should not attempt to change this (particularly to "clean it
+    # up") without understanding why it was written this way (see
+    # Chesterton's Fence), and without measuring to verify you have not
+    # introduced observable time differences.
     res = crypt(pkey_ctx, buf, outlen, data, len(data))
+    resbuf = backend._ffi.buffer(buf)[: outlen[0]]
+    backend._lib.ERR_clear_error()
     if res <= 0:
-        _handle_rsa_enc_dec_error(backend, key)
-
-    return backend._ffi.buffer(buf)[: outlen[0]]
-
-
-def _handle_rsa_enc_dec_error(backend, key):
-    errors = backend._consume_errors_with_text()
-    if isinstance(key, _RSAPublicKey):
-        raise ValueError(
-            "Data too long for key size. Encrypt less data or use a "
-            "larger key size.",
-            errors,
-        )
-    else:
-        raise ValueError("Decryption failed.", errors)
+        raise ValueError("Encryption/decryption failed.")
+    return resbuf
 
 
 def _rsa_sig_determine_padding(backend, key, padding, algorithm):

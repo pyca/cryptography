@@ -8,6 +8,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **SECURITY ISSUE:** Attempted to make RSA PKCS#1v1.5 decryption more constant
+  time, to protect against Bleichenbacher vulnerabilities. Due to limitations
+  imposed by our API, we cannot completely mitigate this vulnerability and a
+  future release will contain a new API which is designed to be resilient to
+  these for contexts where it is required. Credit to **Hubert Kario** for
+  reporting the issue. *CVE-2020-25659*
 * Support for OpenSSL 1.0.2 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Added basic support for PKCS7 signing (including SMIME) via
