@@ -319,6 +319,11 @@ class _RSAPrivateKey(object):
             errors = backend._consume_errors_with_text()
             raise ValueError("Invalid private key", errors)
 
+        # Blinding is on by default in many versions of OpenSSL, but let's
+        # just be conservative here.
+        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
+        backend.openssl_assert(res == 1)
+
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
@@ -351,8 +356,6 @@ class _RSAPrivateKey(object):
         ctx = self._backend._lib.RSAPublicKey_dup(self._rsa_cdata)
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
-        res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
-        self._backend.openssl_assert(res == 1)
         evp_pkey = self._backend._rsa_cdata_to_evp_pkey(ctx)
         return _RSAPublicKey(self._backend, ctx, evp_pkey)
 
@@ -411,6 +414,11 @@ class _RSAPrivateKey(object):
 @utils.register_interface(RSAPublicKeyWithSerialization)
 class _RSAPublicKey(object):
     def __init__(self, backend, rsa_cdata, evp_pkey):
+        # Blinding is on by default in many versions of OpenSSL, but let's
+        # just be conservative here.
+        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
+        backend.openssl_assert(res == 1)
+
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey

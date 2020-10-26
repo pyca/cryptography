@@ -946,21 +946,19 @@ class TestRSAVerification(object):
         skip_message="Does not support PSS.",
     )
     def test_invalid_pss_signature_data_too_large_for_modulus(self, backend):
+        # 2048 bit PSS signature
         signature = binascii.unhexlify(
-            b"cb43bde4f7ab89eb4a79c6e8dd67e0d1af60715da64429d90c716a490b799c29"
-            b"194cf8046509c6ed851052367a74e2e92d9b38947ed74332acb115a03fcc0222"
+            b"58750fc3d2f560d1f3e37c8e28bc8da6d3e93f5d58f8becd25b1c931eea30fea"
+            b"54cb17d44b90104a0aacb7fe9ffa2a59c5788435911d63de78178d21eb875ccd"
+            b"0b07121b641ed4fe6bcb1ca5060322765507b4f24bdba8a698a8e4e07e6bf2c4"
+            b"7a736abe5a912e85cd32f648f3e043b4385e8b612dcce342c5fddf18c524deb5"
+            b"6295b95f6dfa759b2896b793628a90f133e74c1ff7d3af43e3f7ee792df2e5b6"
+            b"a19e996ac3676884354899a437b3ae4e3ac91976c336c332a3b1db0d172b19cb"
+            b"40ad3d871296cfffb3c889ce74a179a3e290852c35d59525afe4b39dc907fad2"
+            b"ac462c50a488dca486031a3dc8c4cdbbc53e9f71d64732e1533a5d1249b833ce"
         )
-        public_key = rsa.RSAPublicNumbers(
-            n=int(
-                b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
-                b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
-                b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
-                b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
-                b"030d3581e13522",
-                16,
-            ),
-            e=65537,
-        ).public_key(backend)
+        # 1024 bit key
+        public_key = RSA_KEY_1024.private_key(backend).public_key()
         with pytest.raises(InvalidSignature):
             public_key.verify(
                 signature,
