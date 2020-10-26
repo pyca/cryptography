@@ -20,10 +20,10 @@ __summary__ = "Test vectors for the cryptography package."
 
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "3.2"
+__version__ = "3.3.dev1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "BSD or Apache License, Version 2.0"
-__copyright__ = "Copyright 2013-2019 %s" % __author__
+__copyright__ = "Copyright 2013-2020 %s" % __author__
