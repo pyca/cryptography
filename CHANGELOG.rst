@@ -3,8 +3,8 @@ Changelog
 
 .. _v3-3:
 
-33 - `master`_
-~~~~~~~~~~~~~~
+3.3 - `master`_
+~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
