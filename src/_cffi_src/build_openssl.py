@@ -22,17 +22,15 @@ def _get_openssl_libraries(platform):
         return []
     # OpenSSL goes by a different library name on different operating systems.
     if platform == "win32" and compiler_type() == "msvc":
-        windows_link_legacy_openssl = os.environ.get(
-            "CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL", None
-        )
-        if windows_link_legacy_openssl is None:
-            # Link against the 1.1.0 names
-            # CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-            libs = ["libssl", "libcrypto"]
-        else:
-            # Link against the 1.0.2 and lower names
-            libs = ["libeay32", "ssleay32"]
-        return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
+        return [
+            "libssl",
+            "libcrypto",
+            "advapi32",
+            "crypt32",
+            "gdi32",
+            "user32",
+            "ws2_32",
+        ]
     else:
         # darwin, linux, mingw all use this path
         # In some circumstances, the order in which these libs are

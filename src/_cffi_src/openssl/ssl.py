@@ -26,7 +26,6 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
-static const long Cryptography_HAS_CIPHER_DETAILS;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 
@@ -501,7 +500,7 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 #else
@@ -519,58 +518,6 @@ void (*(*SSL_CTX_get_keylog_callback)(SSL_CTX *))(
                                                   ) = NULL;
 #else
 static const long Cryptography_HAS_KEYLOG = 1;
-#endif
-
-/* Added in 1.1.0 in the great opaquing, but we need to define it for older
-   OpenSSLs. Such is our burden. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
-/* from ssl/ssl_lib.c */
-size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
-{
-    if (outlen == 0)
-        return sizeof(ssl->s3->client_random);
-    if (outlen > sizeof(ssl->s3->client_random))
-        outlen = sizeof(ssl->s3->client_random);
-    memcpy(out, ssl->s3->client_random, outlen);
-    return outlen;
-}
-/* Added in 1.1.0 as well */
-/* from ssl/ssl_lib.c */
-size_t SSL_get_server_random(const SSL *ssl, unsigned char *out, size_t outlen)
-{
-    if (outlen == 0)
-        return sizeof(ssl->s3->server_random);
-    if (outlen > sizeof(ssl->s3->server_random))
-        outlen = sizeof(ssl->s3->server_random);
-    memcpy(out, ssl->s3->server_random, outlen);
-    return outlen;
-}
-/* Added in 1.1.0 as well */
-/* from ssl/ssl_lib.c */
-size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
-                               unsigned char *out, size_t outlen)
-{
-    if (session->master_key_length < 0) {
-        /* Should never happen */
-        return 0;
-    }
-    if (outlen == 0)
-        return session->master_key_length;
-    if (outlen > (size_t)session->master_key_length)
-        outlen = session->master_key_length;
-    memcpy(out, session->master_key, outlen);
-    return outlen;
-}
-/* from ssl/ssl_sess.c */
-int SSL_SESSION_has_ticket(const SSL_SESSION *s)
-{
-    return (s->tlsext_ticklen > 0) ? 1 : 0;
-}
-/* from ssl/ssl_sess.c */
-unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *s)
-{
-    return s->tlsext_tick_lifetime_hint;
-}
 #endif
 
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
@@ -616,7 +563,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_SSL_ST = 1;
 #else
 static const long Cryptography_HAS_SSL_ST = 0;
@@ -625,7 +572,7 @@ static const long SSL_ST_OK = 0;
 static const long SSL_ST_INIT = 0;
 static const long SSL_ST_RENEGOTIATE = 0;
 #endif
-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+#if !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_TLS_ST = 1;
 #else
 static const long Cryptography_HAS_TLS_ST = 0;
@@ -727,17 +674,6 @@ static const long Cryptography_HAS_SRTP = 0;
 int (*SSL_CTX_set_tlsext_use_srtp)(SSL_CTX *, const char *) = NULL;
 int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
 SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
-#endif
-
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
-int (*SSL_CIPHER_is_aead)(const SSL_CIPHER *) = NULL;
-int (*SSL_CIPHER_get_cipher_nid)(const SSL_CIPHER *) = NULL;
-int (*SSL_CIPHER_get_digest_nid)(const SSL_CIPHER *) = NULL;
-int (*SSL_CIPHER_get_kx_nid)(const SSL_CIPHER *) = NULL;
-int (*SSL_CIPHER_get_auth_nid)(const SSL_CIPHER *) = NULL;
-static const long Cryptography_HAS_CIPHER_DETAILS = 0;
-#else
-static const long Cryptography_HAS_CIPHER_DETAILS = 1;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111

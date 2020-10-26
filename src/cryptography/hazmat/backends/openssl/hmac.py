@@ -21,11 +21,9 @@ class _HMACContext(object):
         self._backend = backend
 
         if ctx is None:
-            ctx = self._backend._lib.Cryptography_HMAC_CTX_new()
+            ctx = self._backend._lib.HMAC_CTX_new()
             self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
-            ctx = self._backend._ffi.gc(
-                ctx, self._backend._lib.Cryptography_HMAC_CTX_free
-            )
+            ctx = self._backend._ffi.gc(ctx, self._backend._lib.HMAC_CTX_free)
             evp_md = self._backend._evp_md_from_algorithm(algorithm)
             if evp_md == self._backend._ffi.NULL:
                 raise UnsupportedAlgorithm(
@@ -46,10 +44,10 @@ class _HMACContext(object):
     algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
-        copied_ctx = self._backend._lib.Cryptography_HMAC_CTX_new()
+        copied_ctx = self._backend._lib.HMAC_CTX_new()
         self._backend.openssl_assert(copied_ctx != self._backend._ffi.NULL)
         copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.Cryptography_HMAC_CTX_free
+            copied_ctx, self._backend._lib.HMAC_CTX_free
         )
         res = self._backend._lib.HMAC_CTX_copy(copied_ctx, self._ctx)
         self._backend.openssl_assert(res != 0)

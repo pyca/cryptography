@@ -35,12 +35,7 @@ def should_verify(backend, wycheproof):
         return True
 
     if wycheproof.acceptable:
-        if (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-            or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ) and wycheproof.has_flag("MissingNull"):
-            return False
-        return True
+        return not wycheproof.has_flag("MissingNull")
 
     return False
 
@@ -165,16 +160,6 @@ def test_rsa_pss_signature(backend, wycheproof):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.supported(
-    only_if=lambda backend: (
-        backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-        or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-    ),
-    skip_message=(
-        "A handful of these tests fail on OpenSSL 1.0.2 and since upstream "
-        "isn't maintaining it, they'll never be fixed."
-    ),
-)
 @pytest.mark.wycheproof_tests(
     "rsa_oaep_2048_sha1_mgf1sha1_test.json",
     "rsa_oaep_2048_sha224_mgf1sha1_test.json",

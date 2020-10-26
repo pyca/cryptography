@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import InternalError
@@ -13,7 +11,6 @@ from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
     _consume_errors,
     _openssl_assert,
-    _verify_openssl_version,
     _verify_package_version,
 )
 
@@ -30,7 +27,7 @@ class TestOpenSSL(object):
 
         b.init_static_locks()
         lock_cb = b.lib.CRYPTO_get_locking_callback()
-        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if not b.lib.CRYPTOGRAPHY_IS_LIBRESSL:
             assert lock_cb == b.ffi.NULL
             assert b.lib.Cryptography_HAS_LOCKING_CALLBACKS == 0
         else:
@@ -88,7 +85,7 @@ class TestOpenSSL(object):
     def test_conditional_removal(self):
         b = Binding()
 
-        if b.lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER:
+        if not b.lib.CRYPTOGRAPHY_IS_LIBRESSL:
             assert b.lib.TLS_ST_OK
         else:
             with pytest.raises(AttributeError):
@@ -128,12 +125,3 @@ class TestOpenSSL(object):
     def test_version_mismatch(self):
         with pytest.raises(ImportError):
             _verify_package_version("nottherightversion")
-
-    def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_102", raising=False)
-        lib = pretend.stub(
-            CRYPTOGRAPHY_OPENSSL_LESS_THAN_110=True,
-            CRYPTOGRAPHY_IS_LIBRESSL=False,
-        )
-        with pytest.raises(RuntimeError):
-            _verify_openssl_version(lib)

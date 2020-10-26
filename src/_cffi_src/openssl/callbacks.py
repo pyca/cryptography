@@ -51,7 +51,7 @@ CUSTOMIZATIONS = """
    using CPython APIs by Armin Rigo of the PyPy project.
 */
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 #ifdef _WIN32
 typedef CRITICAL_SECTION Cryptography_mutex;
 static __inline void cryptography_mutex_init(Cryptography_mutex *mutex) {

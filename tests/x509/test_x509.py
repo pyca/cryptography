@@ -1820,10 +1820,6 @@ class TestRSACertificateRequest(object):
         if (
             # This only works correctly in OpenSSL 1.1.0f+ and 1.0.2l+
             backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-            or (
-                backend._lib.CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER
-                and not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-            )
         ):
             assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
             assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING

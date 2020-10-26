@@ -3,7 +3,7 @@
 OpenSSL backend
 ===============
 
-The `OpenSSL`_ C library. Cryptography supports OpenSSL version 1.0.2 and
+The `OpenSSL`_ C library. Cryptography supports OpenSSL version 1.1.0 and
 greater.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
