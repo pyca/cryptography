@@ -3,10 +3,8 @@ Changelog
 
 .. _v3-2:
 
-3.2 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+3.2 - 2020-10-25
+~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE:** Attempted to make RSA PKCS#1v1.5 decryption more constant
   time, to protect against Bleichenbacher vulnerabilities. Due to limitations
