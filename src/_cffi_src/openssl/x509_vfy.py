@@ -30,6 +30,7 @@ typedef ... X509_OBJECT;
 typedef ... X509_STORE;
 typedef ... X509_VERIFY_PARAM;
 typedef ... X509_STORE_CTX;
+typedef int... X509_LOOKUP_TYPE;
 
 typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **, X509_STORE_CTX *, X509 *);
 
@@ -210,7 +211,7 @@ X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
-int X509_OBJECT_get_type(const X509_OBJECT *);
+X509_LOOKUP_TYPE X509_OBJECT_get_type(const X509_OBJECT *);
 
 /* added in 1.1.0 */
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);

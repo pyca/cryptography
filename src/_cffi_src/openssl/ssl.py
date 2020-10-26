@@ -304,11 +304,11 @@ const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
 long SSL_SESSION_get_time(const SSL_SESSION *);
 long SSL_SESSION_get_timeout(const SSL_SESSION *);
 int SSL_SESSION_has_ticket(const SSL_SESSION *);
-long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
+unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
 
-unsigned long SSL_set_mode(SSL *, unsigned long);
-unsigned long SSL_clear_mode(SSL *, unsigned long);
-unsigned long SSL_get_mode(SSL *);
+long SSL_set_mode(SSL *, long);
+long SSL_clear_mode(SSL *, long);
+long SSL_get_mode(SSL *);
 
 unsigned long SSL_set_options(SSL *, unsigned long);
 unsigned long SSL_get_options(SSL *);
@@ -324,14 +324,14 @@ long SSL_get_secure_renegotiation_support(SSL *);
 unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_options(SSL_CTX *);
-unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_clear_mode(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_get_mode(SSL_CTX *);
-unsigned long SSL_CTX_set_session_cache_mode(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_get_session_cache_mode(SSL_CTX *);
-unsigned long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
-unsigned long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
-unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
+long SSL_CTX_set_mode(SSL_CTX *, long);
+long SSL_CTX_clear_mode(SSL_CTX *, long);
+long SSL_CTX_get_mode(SSL_CTX *);
+long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
+long SSL_CTX_get_session_cache_mode(SSL_CTX *);
+long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
+long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
+long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
 
