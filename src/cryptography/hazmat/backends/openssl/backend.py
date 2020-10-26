@@ -1660,14 +1660,6 @@ class Backend(object):
     def _ec_key_new_by_curve_nid(self, curve_nid):
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
         self.openssl_assert(ec_cdata != self._ffi.NULL)
-        # Setting the ASN.1 flag to OPENSSL_EC_NAMED_CURVE is
-        # only necessary on OpenSSL 1.0.2t/u. Once we drop support for 1.0.2
-        # we can remove this as it's done automatically when getting an EC_KEY
-        # from new_by_curve_name
-        # CRYPTOGRAPHY_OPENSSL_102U_OR_GREATER
-        self._lib.EC_KEY_set_asn1_flag(
-            ec_cdata, backend._lib.OPENSSL_EC_NAMED_CURVE
-        )
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
     def load_der_ocsp_request(self, data):
@@ -2334,7 +2326,7 @@ class Backend(object):
     def x25519_supported(self):
         if self._fips_enabled:
             return False
-        return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+        return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
 
     def x448_load_public_bytes(self, data):
         if len(data) != 56:

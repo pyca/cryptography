@@ -27,14 +27,9 @@ PyPy 7.3.1, and PyPy3 7.3.1 on these operating systems.
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
 
-.. warning::
-
-    Cryptography 3.2 has dropped support for OpenSSL 1.0.2, see the
-    :doc:`FAQ </faq>` for more details
 
 Building cryptography on Windows
 --------------------------------

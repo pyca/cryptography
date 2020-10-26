@@ -126,20 +126,6 @@ def cryptography_has_x509_store_ctx_get_issuer():
     ]
 
 
-def cryptography_has_x25519():
-    return [
-        "EVP_PKEY_X25519",
-        "NID_X25519",
-    ]
-
-
-def cryptography_has_x448():
-    return [
-        "EVP_PKEY_X448",
-        "NID_X448",
-    ]
-
-
 def cryptography_has_ed448():
     return [
         "EVP_PKEY_ED448",
@@ -214,16 +200,6 @@ def cryptography_has_custom_ext():
 def cryptography_has_openssl_cleanup():
     return [
         "OPENSSL_cleanup",
-    ]
-
-
-def cryptography_has_cipher_details():
-    return [
-        "SSL_CIPHER_is_aead",
-        "SSL_CIPHER_get_cipher_nid",
-        "SSL_CIPHER_get_digest_nid",
-        "SSL_CIPHER_get_kx_nid",
-        "SSL_CIPHER_get_auth_nid",
     ]
 
 
@@ -316,8 +292,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
         cryptography_has_x509_store_ctx_get_issuer
     ),
-    "Cryptography_HAS_X25519": cryptography_has_x25519,
-    "Cryptography_HAS_X448": cryptography_has_x448,
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_POLY1305": cryptography_has_poly1305,
@@ -332,7 +306,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
-    "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
     "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,

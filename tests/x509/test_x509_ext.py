@@ -5679,10 +5679,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL < 1.1.0",
+        only_if=lambda backend: backend._lib.CRYPTOGRAPHY_IS_LIBRESSL,
+        skip_message="Requires LibreSSL",
     )
     def test_skips_scts_if_unsupported(self, backend):
         cert = _load_cert(

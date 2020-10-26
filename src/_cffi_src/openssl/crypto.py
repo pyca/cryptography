@@ -79,13 +79,13 @@ CUSTOMIZATIONS = """
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
 #endif
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
 #else
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
 
 void (*OPENSSL_cleanup)(void) = NULL;

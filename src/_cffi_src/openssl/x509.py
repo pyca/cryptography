@@ -288,7 +288,7 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
 }
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
 {
     req->req_info->enc.modified = 1;
@@ -298,47 +298,5 @@ int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
     crl->crl->enc.modified = 1;
     return i2d_X509_CRL_INFO(crl->crl, pp);
 }
-
-#if !CRYPTOGRAPHY_IS_LIBRESSL
-int X509_up_ref(X509 *x) {
-   return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
-}
-
-const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
-{
-    return x->cert_info->signature;
-}
-
-/* from x509/x509_req.c */
-void X509_REQ_get0_signature(const X509_REQ *req, const ASN1_BIT_STRING **psig,
-                             const X509_ALGOR **palg)
-{
-    if (psig != NULL)
-        *psig = req->signature;
-    if (palg != NULL)
-        *palg = req->sig_alg;
-}
-void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
-                             const X509_ALGOR **palg)
-{
-    if (psig != NULL)
-        *psig = crl->signature;
-    if (palg != NULL)
-        *palg = crl->sig_alg;
-}
-const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *x)
-{
-    return x->revocationDate;
-}
-const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
-{
-    return x->serialNumber;
-}
-
-#define X509_set1_notBefore X509_set_notBefore
-#define X509_set1_notAfter X509_set_notAfter
-#define X509_getm_notAfter X509_get_notAfter
-#define X509_getm_notBefore X509_get_notBefore
-#endif
 #endif
 """

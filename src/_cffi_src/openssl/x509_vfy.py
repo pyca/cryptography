@@ -234,7 +234,7 @@ static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 0;
 #ifndef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
 static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
@@ -243,29 +243,7 @@ static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
 static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 1;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
-Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
-    return ctx->objs;
-}
-X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *store) {
-    return store->param;
-}
-int X509_OBJECT_get_type(const X509_OBJECT *x) {
-    return x->type;
-}
-
-/* from x509/x509_vfy.c */
-X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
-{
-    return ctx->cert;
-}
-
-X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
-    return x->data.x509;
-}
-#endif
-
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+#if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
 typedef void *X509_STORE_CTX_get_issuer_fn;
 X509_STORE_CTX_get_issuer_fn (*X509_STORE_get_get_issuer)(X509_STORE *) = NULL;
