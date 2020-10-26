@@ -120,11 +120,12 @@ int EVP_PKEY_set_type(EVP_PKEY *, int);
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
-/* in 1.1.0 _create and _destroy were renamed to _new and _free. The following
-   two functions wrap both the old and new functions so we can call them
-   without worrying about what OpenSSL we're running against. */
+EVP_MD_CTX *EVP_MD_CTX_new(void);
+void EVP_MD_CTX_free(EVP_MD_CTX *);
+/* Backwards compat aliases for pyOpenSSL */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
+
 /* Added in 1.1.1 */
 int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
                    const unsigned char *, size_t);
@@ -174,21 +175,13 @@ const long EVP_PKEY_DHX = -1;
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
     return EVP_PKEY_id(key);
 }
-
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-#if CRYPTOGRAPHY_IS_LIBRESSL
-    return EVP_MD_CTX_create();
-#else
     return EVP_MD_CTX_new();
-#endif
 }
-void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
-#if CRYPTOGRAPHY_IS_LIBRESSL
-    EVP_MD_CTX_destroy(ctx);
-#else
-    EVP_MD_CTX_free(ctx);
-#endif
+void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *md) {
+    EVP_MD_CTX_free(md);
 }
+
 #if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 0;
 int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,

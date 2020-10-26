@@ -30,10 +30,10 @@ class _Poly1305Context(object):
         self._evp_pkey = self._backend._ffi.gc(
             evp_pkey, self._backend._lib.EVP_PKEY_free
         )
-        ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
+        ctx = self._backend._lib.EVP_MD_CTX_new()
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         self._ctx = self._backend._ffi.gc(
-            ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
+            ctx, self._backend._lib.EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_DigestSignInit(
             self._ctx,
