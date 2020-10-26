@@ -51,10 +51,9 @@ def _extra_compile_args(platform):
     We set -Wconversion args here so that we only do Wconversion checks on the
     code we're compiling and not on cffi itself (as passing -Wconversion in
     CFLAGS would do). We set no error on sign conversion because some
-    function signatures in OpenSSL have changed from long -> unsigned long
-    in the past. Since that isn't a precision issue we don't care.
-    When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
-    revisit this.
+    function signatures in LibreSSL differ from OpenSSL have changed on long
+    vs. unsigned long in the past. Since that isn't a precision issue we don't
+    care.
     """
     # make sure the compiler used supports the flags to be added
     is_gcc = False
@@ -117,13 +116,6 @@ ffi = build_ffi_for_binding(
         "callbacks",
     ],
     libraries=_get_openssl_libraries(sys.platform),
-    # These args are passed here so that we only do Wconversion checks on the
-    # code we're compiling and not on cffi itself (as passing -Wconversion in
-    # CFLAGS would do). We set no error on sign convesrion because some
-    # function signatures in OpenSSL have changed from long -> unsigned long
-    # in the past. Since that isn't a precision issue we don't care.
-    # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
-    # revisit this.
     extra_compile_args=_extra_compile_args(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )
