@@ -1894,6 +1894,9 @@ class TestRSANumbers(object):
         public_key = RSA_KEY_1024.public_numbers.public_key(backend)
         assert public_key
 
+        public_key = rsa.RSAPublicNumbers(n=10, e=3).public_key(backend)
+        assert public_key
+
     def test_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPublicNumbers(e=None, n=15)
