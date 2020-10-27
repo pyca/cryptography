@@ -10,8 +10,6 @@ INCLUDES = """
 
 TYPES = """
 typedef ... RAND_METHOD;
-
-static const long Cryptography_HAS_EGD;
 """
 
 FUNCTIONS = """
@@ -27,5 +25,4 @@ void ERR_load_RAND_strings(void);
 """
 
 CUSTOMIZATIONS = """
-static const long Cryptography_HAS_EGD = 0;
 """
