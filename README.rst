@@ -68,7 +68,7 @@ documentation.
 
 
 .. _`documentation`: https://cryptography.io/
-.. _`the installation documentation`: https://cryptography.io/en/latest/installation/
+.. _`the installation documentation`: https://cryptography.io/en/latest/installation.html
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`security reporting`: https://cryptography.io/en/latest/security/
