@@ -410,11 +410,6 @@ class _RSAPrivateKey(object):
 @utils.register_interface(RSAPublicKeyWithSerialization)
 class _RSAPublicKey(object):
     def __init__(self, backend, rsa_cdata, evp_pkey):
-        # Blinding is on by default in many versions of OpenSSL, but let's
-        # just be conservative here.
-        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
-        backend.openssl_assert(res == 1)
-
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
