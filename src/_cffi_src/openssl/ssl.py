@@ -13,24 +13,17 @@ typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
-static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
-
-/* Internally invented symbol to tell us if SNI is supported */
-static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -522,12 +515,6 @@ static const long Cryptography_HAS_KEYLOG = 1;
 
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 
-/* Cryptography now compiles out all SSLv2 bindings. This exists to allow
- * clients that use it to check for SSLv2 support to keep functioning as
- * expected.
- */
-static const long Cryptography_HAS_SSL2 = 0;
-
 #ifdef OPENSSL_NO_SSL3_METHOD
 static const long Cryptography_HAS_SSL3_METHOD = 0;
 SSL_METHOD* (*SSLv3_method)(void) = NULL;
@@ -537,10 +524,6 @@ SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 static const long Cryptography_HAS_SSL3_METHOD = 1;
 #endif
 
-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_TLSv1_1 = 1;
