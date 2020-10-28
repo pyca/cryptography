@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.5 has been removed due to
+  low usage and maintenance burden.
+
 .. _v3-2-1:
 
 3.2.1 - 2020-10-27
@@ -15,7 +18,6 @@ Changelog
 
 * Disable blinding on RSA public keys to address an error with some versions
   of OpenSSL.
-
 
 .. _v3-2:
 
