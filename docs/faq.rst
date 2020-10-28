@@ -16,7 +16,7 @@ If your pytest setup follows the best practices of failing on
 emitted warnings (``filterwarnings = error``), you may ignore it
 by adding the following line at the end of the list::
 
-   ignore:Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography, and will be removed in a future release.:UserWarning:cryptography
+   ignore:Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography, and will be removed in a future release.:UserWarning
 
 **Note:** Using ``cryptography.utils.CryptographyDeprecationWarning``
 is not possible here because specifying it triggers
