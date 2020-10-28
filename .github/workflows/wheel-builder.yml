@@ -11,7 +11,7 @@ jobs:
     container: ${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       matrix:
-        PYTHON: ["cp27-cp27m", "cp27-cp27mu", "cp35-cp35m"]
+        PYTHON: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m"]
         MANYLINUX:
           - NAME: manylinux1_x86_64
             CONTAINER: "pyca/cryptography-manylinux1:x86_64"
@@ -62,7 +62,7 @@ jobs:
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/2.7.17/python-2.7.17-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
           - VERSION: '3.8'
-            ABI_VERSION: '3.5'
+            ABI_VERSION: '3.6'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
@@ -115,7 +115,6 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "2.7", MSVC_VERSION: "2010"}
-          - {VERSION: "3.5", MSVC_VERSION: "2019"}
           - {VERSION: "3.6", MSVC_VERSION: "2019"}
           - {VERSION: "3.7", MSVC_VERSION: "2019"}
           - {VERSION: "3.8", MSVC_VERSION: "2019"}

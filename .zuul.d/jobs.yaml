@@ -46,7 +46,7 @@
         - platform: manylinux2014_aarch64
           image: pyca/cryptography-manylinux2014_aarch64
           pythons:
-            - cp35-cp35m
+            - cp36-cp36m
 
 - job:
     name: pyca-cryptography-build-wheel-x86_64
@@ -59,10 +59,10 @@
           pythons:
             - cp27-cp27m
             - cp27-cp27mu
-            - cp35-cp35m
+            - cp36-cp36m
         - platform: manylinux2010_x86_64
           image: pyca/cryptography-manylinux2010:x86_64
           pythons:
             - cp27-cp27m
             - cp27-cp27mu
-            - cp35-cp35m
+            - cp36-cp36m

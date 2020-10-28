@@ -16,7 +16,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "2.7", TOXENV: "py27", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.5", TOXENV: "py35", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
     steps:
@@ -59,7 +59,6 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010", CL_FLAGS: ""}
-          - {VERSION: "3.5", TOXENV: "py35", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: ""}
