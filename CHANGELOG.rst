@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v3-2-1:
+
+3.2.1 - 2020-10-27
+~~~~~~~~~~~~~~~~~~
+
+* Disable blinding on RSA public keys to address an error with some versions
+  of OpenSSL.
+
 .. _v3-2:
 
 3.2 - 2020-10-25
