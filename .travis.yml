@@ -90,9 +90,9 @@ matrix:
         - python: 3.8
           services: docker
           env: TOXENV=py38-randomorder DOCKER=pyca/cryptography-runner-ubuntu-rolling
-        - python: 3.8
+        - python: 3.9
           services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-fedora
+          env: TOXENV=py39 DOCKER=pyca/cryptography-runner-fedora
         - python: 3.8
           services: docker
           env: TOXENV=py38 DOCKER=pyca/cryptography-runner-alpine:latest
