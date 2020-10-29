@@ -13,8 +13,6 @@ import iso8601
 
 import pytest
 
-import six
-
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
@@ -57,7 +55,7 @@ class TestFernet(object):
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
-            b"".join(map(six.int2byte, iv)),
+            bytes(iv),
         )
         assert actual_token == token.encode("ascii")
 

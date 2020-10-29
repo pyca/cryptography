@@ -5,15 +5,12 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AsymmetricPadding(object):
+class AsymmetricPadding(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def name(self):
         """
@@ -35,7 +32,7 @@ class PSS(object):
         self._mgf = mgf
 
         if (
-            not isinstance(salt_length, six.integer_types)
+            not isinstance(salt_length, int)
             and salt_length is not self.MAX_LENGTH
         ):
             raise TypeError("salt_length must be an integer.")

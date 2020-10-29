@@ -7,8 +7,6 @@ import abc
 import ipaddress
 from email.utils import parseaddr
 
-import six
-
 from cryptography import utils
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
@@ -33,8 +31,7 @@ class UnsupportedGeneralNameType(Exception):
         self.type = type
 
 
-@six.add_metaclass(abc.ABCMeta)
-class GeneralName(object):
+class GeneralName(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def value(self):
         """
@@ -45,7 +42,7 @@ class GeneralName(object):
 @utils.register_interface(GeneralName)
 class RFC822Name(object):
     def __init__(self, value):
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:
@@ -92,7 +89,7 @@ class RFC822Name(object):
 @utils.register_interface(GeneralName)
 class DNSName(object):
     def __init__(self, value):
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:
@@ -133,7 +130,7 @@ class DNSName(object):
 @utils.register_interface(GeneralName)
 class UniformResourceIdentifier(object):
     def __init__(self, value):
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:

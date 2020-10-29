@@ -7,8 +7,6 @@ import abc
 import datetime
 from enum import Enum
 
-import six
-
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.base import (
@@ -298,8 +296,7 @@ class OCSPResponseBuilder(object):
         return backend.create_ocsp_response(response_status, None, None, None)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class OCSPRequest(object):
+class OCSPRequest(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def issuer_key_hash(self):
         """
@@ -337,8 +334,7 @@ class OCSPRequest(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class OCSPResponse(object):
+class OCSPResponse(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def response_status(self):
         """

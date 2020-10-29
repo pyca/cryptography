@@ -5,8 +5,6 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -20,8 +18,7 @@ from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import modes
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CipherAlgorithm(object):
+class CipherAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def name(self):
         """
@@ -35,8 +32,7 @@ class CipherAlgorithm(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BlockCipherAlgorithm(object):
+class BlockCipherAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def block_size(self):
         """
@@ -44,8 +40,7 @@ class BlockCipherAlgorithm(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CipherContext(object):
+class CipherContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -67,8 +62,7 @@ class CipherContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AEADCipherContext(object):
+class AEADCipherContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def authenticate_additional_data(self, data):
         """
@@ -76,8 +70,7 @@ class AEADCipherContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AEADDecryptionContext(object):
+class AEADDecryptionContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def finalize_with_tag(self, tag):
         """
@@ -86,8 +79,7 @@ class AEADDecryptionContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AEADEncryptionContext(object):
+class AEADEncryptionContext(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tag(self):
         """

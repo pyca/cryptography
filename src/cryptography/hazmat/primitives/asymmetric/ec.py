@@ -6,8 +6,6 @@
 import abc
 import warnings
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.backends import _get_backend
@@ -35,8 +33,7 @@ class EllipticCurveOID(object):
     SECT571R1 = ObjectIdentifier("1.3.132.0.39")
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurve(object):
+class EllipticCurve(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def name(self):
         """
@@ -50,8 +47,7 @@ class EllipticCurve(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurveSignatureAlgorithm(object):
+class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def algorithm(self):
         """
@@ -59,8 +55,7 @@ class EllipticCurveSignatureAlgorithm(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePrivateKey(object):
+class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signer(self, signature_algorithm):
         """
@@ -99,8 +94,7 @@ class EllipticCurvePrivateKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
+class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -114,8 +108,7 @@ class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePublicKey(object):
+class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def verifier(self, signature, signature_algorithm):
         """
@@ -162,7 +155,7 @@ class EllipticCurvePublicKey(object):
         if len(data) == 0:
             raise ValueError("data must not be an empty byte string")
 
-        if six.indexbytes(data, 0) not in [0x02, 0x03, 0x04]:
+        if data[0] not in [0x02, 0x03, 0x04]:
             raise ValueError("Unsupported elliptic curve point type")
 
         from cryptography.hazmat.backends.openssl.backend import backend
@@ -327,7 +320,7 @@ def generate_private_key(curve, backend=None):
 
 def derive_private_key(private_value, curve, backend=None):
     backend = _get_backend(backend)
-    if not isinstance(private_value, six.integer_types):
+    if not isinstance(private_value, int):
         raise TypeError("private_value must be an integer type.")
 
     if private_value <= 0:
@@ -341,8 +334,8 @@ def derive_private_key(private_value, curve, backend=None):
 
 class EllipticCurvePublicNumbers(object):
     def __init__(self, x, y, curve):
-        if not isinstance(x, six.integer_types) or not isinstance(
-            y, six.integer_types
+        if not isinstance(x, int) or not isinstance(
+            y, int
         ):
             raise TypeError("x and y must be integers.")
 
@@ -429,7 +422,7 @@ class EllipticCurvePublicNumbers(object):
 
 class EllipticCurvePrivateNumbers(object):
     def __init__(self, private_value, public_numbers):
-        if not isinstance(private_value, six.integer_types):
+        if not isinstance(private_value, int):
             raise TypeError("private_value must be an integer.")
 
         if not isinstance(public_numbers, EllipticCurvePublicNumbers):

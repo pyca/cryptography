@@ -3,8 +3,6 @@
 # for complete details.
 
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -95,7 +93,7 @@ class HKDFExpand(object):
             h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
             h.update(output[-1])
             h.update(self._info)
-            h.update(six.int2byte(counter))
+            h.update(bytes([counter]))
             output.append(h.finalize())
             counter += 1
 

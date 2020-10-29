@@ -6,16 +6,13 @@
 import abc
 from math import gcd
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import RSABackend
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKey(object):
+class RSAPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signer(self, padding, algorithm):
         """
@@ -47,8 +44,7 @@ class RSAPrivateKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithSerialization(RSAPrivateKey):
+class RSAPrivateKeyWithSerialization(RSAPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -62,8 +58,7 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKey(object):
+class RSAPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def verifier(self, signature, padding, algorithm):
         """
@@ -272,12 +267,12 @@ def rsa_recover_prime_factors(n, e, d):
 class RSAPrivateNumbers(object):
     def __init__(self, p, q, d, dmp1, dmq1, iqmp, public_numbers):
         if (
-            not isinstance(p, six.integer_types)
-            or not isinstance(q, six.integer_types)
-            or not isinstance(d, six.integer_types)
-            or not isinstance(dmp1, six.integer_types)
-            or not isinstance(dmq1, six.integer_types)
-            or not isinstance(iqmp, six.integer_types)
+            not isinstance(p, int)
+            or not isinstance(q, int)
+            or not isinstance(d, int)
+            or not isinstance(dmp1, int)
+            or not isinstance(dmq1, int)
+            or not isinstance(iqmp, int)
         ):
             raise TypeError(
                 "RSAPrivateNumbers p, q, d, dmp1, dmq1, iqmp arguments must"
@@ -343,8 +338,8 @@ class RSAPrivateNumbers(object):
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
-        if not isinstance(e, six.integer_types) or not isinstance(
-            n, six.integer_types
+        if not isinstance(e, int) or not isinstance(
+            n, int
         ):
             raise TypeError("RSAPublicNumbers arguments must be integers.")
 

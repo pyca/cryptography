@@ -6,8 +6,6 @@
 import abc
 from enum import Enum
 
-import six
-
 
 class LogEntryType(Enum):
     X509_CERTIFICATE = 0
@@ -18,8 +16,7 @@ class Version(Enum):
     v1 = 0
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SignedCertificateTimestamp(object):
+class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def version(self):
         """

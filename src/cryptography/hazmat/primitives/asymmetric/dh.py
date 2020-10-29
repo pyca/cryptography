@@ -5,8 +5,6 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 
@@ -21,7 +19,7 @@ def generate_parameters(generator, key_size, backend=None):
 
 class DHPrivateNumbers(object):
     def __init__(self, x, public_numbers):
-        if not isinstance(x, six.integer_types):
+        if not isinstance(x, int):
             raise TypeError("x must be an integer.")
 
         if not isinstance(public_numbers, DHPublicNumbers):
@@ -54,7 +52,7 @@ class DHPrivateNumbers(object):
 
 class DHPublicNumbers(object):
     def __init__(self, y, parameter_numbers):
-        if not isinstance(y, six.integer_types):
+        if not isinstance(y, int):
             raise TypeError("y must be an integer.")
 
         if not isinstance(parameter_numbers, DHParameterNumbers):
@@ -87,11 +85,11 @@ class DHPublicNumbers(object):
 
 class DHParameterNumbers(object):
     def __init__(self, p, g, q=None):
-        if not isinstance(p, six.integer_types) or not isinstance(
-            g, six.integer_types
+        if not isinstance(p, int) or not isinstance(
+            g, int
         ):
             raise TypeError("p and g must be integers")
-        if q is not None and not isinstance(q, six.integer_types):
+        if q is not None and not isinstance(q, int):
             raise TypeError("q must be integer or None")
 
         if g < 2:
@@ -126,8 +124,7 @@ class DHParameterNumbers(object):
     q = utils.read_only_property("_q")
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DHParameters(object):
+class DHParameters(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def generate_private_key(self):
         """
@@ -150,8 +147,7 @@ class DHParameters(object):
 DHParametersWithSerialization = DHParameters
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DHPrivateKey(object):
+class DHPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def key_size(self):
         """
@@ -178,8 +174,7 @@ class DHPrivateKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DHPrivateKeyWithSerialization(DHPrivateKey):
+class DHPrivateKeyWithSerialization(DHPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -193,8 +188,7 @@ class DHPrivateKeyWithSerialization(DHPrivateKey):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DHPublicKey(object):
+class DHPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def key_size(self):
         """

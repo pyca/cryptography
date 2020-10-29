@@ -5,8 +5,6 @@
 
 from enum import Enum
 
-from six.moves import range
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,

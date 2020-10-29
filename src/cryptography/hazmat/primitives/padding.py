@@ -5,15 +5,12 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings._padding import lib
 
 
-@six.add_metaclass(abc.ABCMeta)
-class PaddingContext(object):
+class PaddingContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -87,7 +84,7 @@ def _byte_unpadding_check(buffer_, block_size, checkfn):
     if not valid:
         raise ValueError("Invalid padding bytes.")
 
-    pad_size = six.indexbytes(buffer_, -1)
+    pad_size = buffer_[-1]
     return buffer_[:-pad_size]
 
 
@@ -117,7 +114,7 @@ class _PKCS7PaddingContext(object):
         return result
 
     def _padding(self, size):
-        return six.int2byte(size) * size
+        return bytes([size]) * size
 
     def finalize(self):
         result = _byte_padding_pad(
@@ -174,7 +171,7 @@ class _ANSIX923PaddingContext(object):
         return result
 
     def _padding(self, size):
-        return six.int2byte(0) * (size - 1) + six.int2byte(size)
+        return bytes([0]) * (size - 1) + bytes([size])
 
     def finalize(self):
         result = _byte_padding_pad(

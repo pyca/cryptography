@@ -5,13 +5,10 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Mode(object):
+class Mode(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def name(self):
         """
@@ -26,8 +23,7 @@ class Mode(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ModeWithInitializationVector(object):
+class ModeWithInitializationVector(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def initialization_vector(self):
         """
@@ -35,8 +31,7 @@ class ModeWithInitializationVector(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ModeWithTweak(object):
+class ModeWithTweak(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tweak(self):
         """
@@ -44,8 +39,7 @@ class ModeWithTweak(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ModeWithNonce(object):
+class ModeWithNonce(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def nonce(self):
         """
@@ -53,8 +47,7 @@ class ModeWithNonce(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ModeWithAuthenticationTag(object):
+class ModeWithAuthenticationTag(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tag(self):
         """

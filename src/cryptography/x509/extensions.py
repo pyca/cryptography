@@ -9,8 +9,6 @@ import hashlib
 import ipaddress
 from enum import Enum
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat._der import (
     BIT_STRING,
@@ -99,8 +97,7 @@ class ExtensionNotFound(Exception):
         self.oid = oid
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ExtensionType(object):
+class ExtensionType(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def oid(self):
         """
@@ -146,7 +143,7 @@ class CRLNumber(object):
     oid = ExtensionOID.CRL_NUMBER
 
     def __init__(self, crl_number):
-        if not isinstance(crl_number, six.integer_types):
+        if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
 
         self._crl_number = crl_number
@@ -198,7 +195,7 @@ class AuthorityKeyIdentifier(object):
                 )
 
         if authority_cert_serial_number is not None and not isinstance(
-            authority_cert_serial_number, six.integer_types
+            authority_cert_serial_number, int
         ):
             raise TypeError("authority_cert_serial_number must be an integer")
 
@@ -402,7 +399,7 @@ class BasicConstraints(object):
             raise ValueError("path_length must be None when ca is False")
 
         if path_length is not None and (
-            not isinstance(path_length, six.integer_types) or path_length < 0
+            not isinstance(path_length, int) or path_length < 0
         ):
             raise TypeError(
                 "path_length must be a non-negative integer or None"
@@ -437,7 +434,7 @@ class DeltaCRLIndicator(object):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
     def __init__(self, crl_number):
-        if not isinstance(crl_number, six.integer_types):
+        if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
 
         self._crl_number = crl_number
@@ -645,7 +642,7 @@ class PolicyConstraints(object):
 
     def __init__(self, require_explicit_policy, inhibit_policy_mapping):
         if require_explicit_policy is not None and not isinstance(
-            require_explicit_policy, six.integer_types
+            require_explicit_policy, int
         ):
             raise TypeError(
                 "require_explicit_policy must be a non-negative integer or "
@@ -653,7 +650,7 @@ class PolicyConstraints(object):
             )
 
         if inhibit_policy_mapping is not None and not isinstance(
-            inhibit_policy_mapping, six.integer_types
+            inhibit_policy_mapping, int
         ):
             raise TypeError(
                 "inhibit_policy_mapping must be a non-negative integer or None"
@@ -742,7 +739,7 @@ class PolicyInformation(object):
         if policy_qualifiers:
             policy_qualifiers = list(policy_qualifiers)
             if not all(
-                isinstance(x, (six.text_type, UserNotice))
+                isinstance(x, (str, UserNotice))
                 for x in policy_qualifiers
             ):
                 raise TypeError(
@@ -978,7 +975,7 @@ class InhibitAnyPolicy(object):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
     def __init__(self, skip_certs):
-        if not isinstance(skip_certs, six.integer_types):
+        if not isinstance(skip_certs, int):
             raise TypeError("skip_certs must be an integer")
 
         if skip_certs < 0:

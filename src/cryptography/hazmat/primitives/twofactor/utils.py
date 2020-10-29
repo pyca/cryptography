@@ -4,8 +4,7 @@
 
 
 import base64
-
-from six.moves.urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode
 
 
 def _generate_uri(hotp, type_name, account_name, issuer, extra_parameters):
