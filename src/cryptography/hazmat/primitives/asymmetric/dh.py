@@ -85,9 +85,7 @@ class DHPublicNumbers(object):
 
 class DHParameterNumbers(object):
     def __init__(self, p, g, q=None):
-        if not isinstance(p, int) or not isinstance(
-            g, int
-        ):
+        if not isinstance(p, int) or not isinstance(g, int):
             raise TypeError("p and g must be integers")
         if q is not None and not isinstance(q, int):
             raise TypeError("q must be integer or None")

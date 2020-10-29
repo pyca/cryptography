@@ -739,8 +739,7 @@ class PolicyInformation(object):
         if policy_qualifiers:
             policy_qualifiers = list(policy_qualifiers)
             if not all(
-                isinstance(x, (str, UserNotice))
-                for x in policy_qualifiers
+                isinstance(x, (str, UserNotice)) for x in policy_qualifiers
             ):
                 raise TypeError(
                     "policy_qualifiers must be a list of strings and/or "

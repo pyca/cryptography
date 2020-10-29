@@ -94,7 +94,9 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
 
 
-class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey, metaclass=abc.ABCMeta):
+class EllipticCurvePrivateKeyWithSerialization(
+    EllipticCurvePrivateKey, metaclass=abc.ABCMeta
+):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -334,9 +336,7 @@ def derive_private_key(private_value, curve, backend=None):
 
 class EllipticCurvePublicNumbers(object):
     def __init__(self, x, y, curve):
-        if not isinstance(x, int) or not isinstance(
-            y, int
-        ):
+        if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError("x and y must be integers.")
 
         if not isinstance(curve, EllipticCurve):

@@ -338,9 +338,7 @@ class RSAPrivateNumbers(object):
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
-        if not isinstance(e, int) or not isinstance(
-            n, int
-        ):
+        if not isinstance(e, int) or not isinstance(n, int):
             raise TypeError("RSAPublicNumbers arguments must be integers.")
 
         self._e = e
