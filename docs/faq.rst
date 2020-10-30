@@ -122,9 +122,9 @@ Why are there no wheels for Python 3.6+ on Linux or macOS?
 ----------------------------------------------------------
 
 Our Python3 wheels, for macOS and Linux, are ``abi3`` wheels. This means they
-support multiple versions of Python. The Python 3.5 ``abi3`` wheel can be used
-with any version of Python greater than or equal to 3.5. Recent versions of
-``pip`` will automatically install ``abi3`` wheels.
+support multiple versions of Python. The ``abi3`` wheel can be used with any
+version of Python greater than or equal to the version it specifies. Recent
+versions of ``pip`` will automatically install ``abi3`` wheels.
 
 Why can't I import my PEM file?
 -------------------------------
