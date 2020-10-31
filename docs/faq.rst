@@ -118,13 +118,13 @@ upstream, ``cryptography`` is also dropping support for them. To fix this issue
 you should upgrade to a newer version of OpenSSL (1.1.0 or later). This may
 require you to upgrade to a newer operating system.
 
-Why are there no wheels for Python 3.6+ on Linux or macOS?
-----------------------------------------------------------
+Why are there no wheels for my Python3.x version?
+-------------------------------------------------
 
-Our Python3 wheels, for macOS and Linux, are ``abi3`` wheels. This means they
-support multiple versions of Python. The ``abi3`` wheel can be used with any
-version of Python greater than or equal to the version it specifies. Recent
-versions of ``pip`` will automatically install ``abi3`` wheels.
+Our Python3 wheels are ``abi3`` wheels. This means they support multiple
+versions of Python. The ``abi3`` wheel can be used with any version of Python
+greater than or equal to the version it specifies. Recent versions of ``pip``
+will automatically install ``abi3`` wheels.
 
 Why can't I import my PEM file?
 -------------------------------
