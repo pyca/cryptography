@@ -70,18 +70,17 @@ legacy libraries:
   :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 
-Compiling ``cryptography`` on macOS produces a ``fatal error: 'openssl/aes.h' file not found`` error
-----------------------------------------------------------------------------------------------------
+Installing ``cryptography`` produces a ``fatal error: 'openssl/opensslv.h' file not found`` error
+-------------------------------------------------------------------------------------------------
 
-This happens because macOS 10.11 no longer includes a copy of OpenSSL.
-``cryptography`` now provides wheels which include a statically linked copy of
-OpenSSL. You're seeing this error because your copy of pip is too old to find
-our wheel files. Upgrade your copy of pip with ``pip install -U pip`` and then
-try install ``cryptography`` again.
+``cryptography`` provides wheels which include a statically linked copy of
+OpenSSL. If you see this error it is likely because your copy of ``pip`` is too
+old to find our wheel files. Upgrade your ``pip`` with ``pip install -U pip``
+and then try to install ``cryptography`` again.
 
-If you are using PyPy, we do not currently ship ``cryptography`` wheels for
-PyPy. You will need to install your own copy of OpenSSL -- we recommend using
-Homebrew.
+Users on PyPy, unusual CPU architectures, or distributions of Linux using
+``musl`` (like Alpine) will need to compile ``cryptography`` themselves. Please
+view our :doc:`/installation` documentation.
 
 ``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
 -------------------------------------------------------------------------
