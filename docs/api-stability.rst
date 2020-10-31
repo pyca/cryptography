@@ -1,7 +1,7 @@
 API stability
 =============
 
-From its first release, ``cryptography`` will have a strong API stability
+From its first release, ``cryptography`` has had a strong API stability
 policy.
 
 What does this policy cover?
