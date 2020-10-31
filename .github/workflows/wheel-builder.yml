@@ -115,9 +115,6 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "2.7", MSVC_VERSION: "2010"}
-          - {VERSION: "3.6", MSVC_VERSION: "2019"}
-          - {VERSION: "3.7", MSVC_VERSION: "2019"}
-          - {VERSION: "3.8", MSVC_VERSION: "2019"}
           - {VERSION: "3.8", MSVC_VERSION: "2019", "USE_ABI3": "true", "ABI_VERSION": "cp36"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
