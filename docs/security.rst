@@ -53,10 +53,9 @@ We ask that you do not report security issues to our normal GitHub issue
 tracker.
 
 If you believe you've identified a security issue with ``cryptography``, please
-report it to ``alex.gaynor@gmail.com``. Messages may be optionally encrypted
-with PGP using key fingerprint
-``F7FC 698F AAE2 D2EF BECD  E98E D1B3 ADC0 E023 8CA6`` (this public key is
-available from most commonly-used key servers).
+report it to ``alex.gaynor@gmail.com`` and/or ``paul.l.kehrer@gmail.com``. You
+should verify that your MTA uses TLS to ensure the confidentiality of your
+message.
 
 Once you've submitted an issue via email, you should receive an acknowledgment
 within 48 hours, and depending on the action to be taken, you may receive
