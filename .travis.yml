@@ -61,8 +61,7 @@ matrix:
                   packages:
                       - libenchant-dev
         - python: 3.8
-          services: docker
-          env: TOXENV=docs-linkcheck DOCKER=pyca/cryptography-runner-buster
+          env: TOXENV=docs-linkcheck
           if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
 
         - python: 3.8
