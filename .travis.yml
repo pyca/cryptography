@@ -54,49 +54,6 @@ matrix:
         - python: 3.8
           env: TOXENV=py38 LIBRESSL=3.2.2
 
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-centos8
-        - python: 3.6
-          services: docker
-          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-centos8
-        - python: 3.6
-          services: docker
-          env: TOXENV=py36 OPENSSL_FORCE_FIPS_MODE=1 DOCKER=pyca/cryptography-runner-centos8-fips
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-stretch
-        - python: 3.7
-          services: docker
-          env: TOXENV=py37 DOCKER=pyca/cryptography-runner-buster
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-bullseye
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-sid
-        - python: 3.6
-          services: docker
-          env: TOXENV=py36 DOCKER=pyca/cryptography-runner-ubuntu-bionic
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-ubuntu-focal
-        - python: 2.7
-          services: docker
-          env: TOXENV=py27 DOCKER=pyca/cryptography-runner-ubuntu-rolling
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-ubuntu-rolling
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38-randomorder DOCKER=pyca/cryptography-runner-ubuntu-rolling
-        - python: 3.9
-          services: docker
-          env: TOXENV=py39 DOCKER=pyca/cryptography-runner-fedora
-        - python: 3.8
-          services: docker
-          env: TOXENV=py38 DOCKER=pyca/cryptography-runner-alpine:latest
-
         - python: 3.8
           env: TOXENV=docs OPENSSL=1.1.1h
           addons:
