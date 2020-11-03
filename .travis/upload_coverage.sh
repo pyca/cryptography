@@ -14,8 +14,8 @@ if [ -n "${TOXENV}" ]; then
             source ~/.venv/bin/activate
             curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
 
-            bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER,OPENSSL_FORCE_FIPS_MODE || \
-                bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL,DOCKER,OPENSSL_FORCE_FIPS_MODE
+            bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL || \
+                bash codecov.sh -Z -e TRAVIS_OS_NAME,TOXENV,OPENSSL
             ;;
     esac
 fi

@@ -20,15 +20,7 @@ fi
 
 source ~/.venv/bin/activate
 
-if [ -n "${DOCKER}" ]; then
-    docker run --rm \
-        -v "${TRAVIS_BUILD_DIR}":"${TRAVIS_BUILD_DIR}" \
-        -v "${HOME}/wycheproof":/wycheproof \
-        -w "${TRAVIS_BUILD_DIR}" \
-        -e OPENSSL_FORCE_FIPS_MODE \
-        -e TOXENV "${DOCKER}" \
-        /bin/sh -c "tox -- --wycheproof-root='/wycheproof'"
-elif [ -n "${TOXENV}" ]; then
+if [ -n "${TOXENV}" ]; then
     tox -- --wycheproof-root="$HOME/wycheproof"
 else
     downstream_script="${TRAVIS_BUILD_DIR}/.travis/downstream.d/${DOWNSTREAM}.sh"
