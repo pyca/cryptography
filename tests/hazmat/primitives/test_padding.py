@@ -43,6 +43,18 @@ class TestPKCS7(object):
         with pytest.raises(TypeError):
             unpadder.update(u"abc")
 
+    def test_zany_py2_bytes_subclass(self):
+        class mybytes(bytes):  # noqa: N801
+            def __str__(self):
+                return "broken"
+
+        str(mybytes())
+        padder = padding.PKCS7(128).padder()
+        padder.update(mybytes(b"abc"))
+        unpadder = padding.PKCS7(128).unpadder()
+        unpadder.update(mybytes(padder.finalize()))
+        assert unpadder.finalize() == b"abc"
+
     @pytest.mark.parametrize(
         ("size", "unpadded", "padded"),
         [
@@ -153,6 +165,18 @@ class TestANSIX923(object):
         unpadder = padding.ANSIX923(128).unpadder()
         with pytest.raises(TypeError):
             unpadder.update(u"abc")
+
+    def test_zany_py2_bytes_subclass(self):
+        class mybytes(bytes):  # noqa: N801
+            def __str__(self):
+                return "broken"
+
+        str(mybytes())
+        padder = padding.ANSIX923(128).padder()
+        padder.update(mybytes(b"abc"))
+        unpadder = padding.ANSIX923(128).unpadder()
+        unpadder.update(mybytes(padder.finalize()))
+        assert unpadder.finalize() == b"abc"
 
     @pytest.mark.parametrize(
         ("size", "unpadded", "padded"),
