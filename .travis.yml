@@ -18,42 +18,7 @@ branches:
 
 matrix:
     include:
-        - python: 3.8
-          env: TOXENV=pep8,packaging
         # Setting 'python' is just to make travis's UI a bit prettier
-        - python: 3.6
-          env: TOXENV=py36
-        - python: 3.9
-          env: TOXENV=py39
-          # Travis lists available Pythons (including PyPy) by arch and distro here:
-          # https://docs.travis-ci.com/user/languages/python/#python-versions
-        - python: pypy2.7-7.3.1
-          env: TOXENV=pypy-nocoverage
-        - python: pypy3.6-7.3.1
-          env: TOXENV=pypy3-nocoverage
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.0l
-        - python: 2.7
-          env: TOXENV=py27-ssh OPENSSL=1.1.0l
-        - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.0l
-        - python: 2.7
-          env: TOXENV=py27 OPENSSL=1.1.1h
-        - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1h
-        - python: 3.8
-          env: TOXENV=py38 OPENSSL=1.1.1h OPENSSL_CONFIG_FLAGS="no-engine no-rc2 no-srtp no-ct"
-        - python: 3.8
-          env: TOXENV=py38-ssh OPENSSL=1.1.1h
-        - python: 3.8
-          env: TOXENV=py38 LIBRESSL=2.9.2
-        - python: 3.8
-          env: TOXENV=py38 LIBRESSL=3.0.2
-        - python: 3.8
-          env: TOXENV=py38 LIBRESSL=3.1.4
-        - python: 3.8
-          env: TOXENV=py38 LIBRESSL=3.2.2
-
         - python: 3.8
           env: TOXENV=docs
           addons:

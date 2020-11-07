@@ -10,6 +10,101 @@ on:
       - '*.*.*'
 
 jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - {VERSION: "3.9", TOXENV: "pep8,packaging"}
+          - {VERSION: "pypy2", TOXENV: "pypy-nocoverage"}
+          - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage"}
+          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.4"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.2"}}
+    name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+      - run: git clone --depth=1 https://github.com/google/wycheproof
+      - run: python -m pip install tox requests
+      - name: Compute config hash and set config vars
+        run: |
+          DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
+          CONFIG_FLAGS="$DEFAULT_CONFIG_FLAGS $CONFIG_FLAGS"
+          CONFIG_HASH=$(echo "$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
+          echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
+          echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_HASH}" >> $GITHUB_ENV
+        env:
+          CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
+        if: ${{ matrix.PYTHON.OPENSSL }}
+      - name: Load cache
+        uses: actions/cache@v2
+        id: ossl-cache
+        with:
+          path: ${{ github.workspace }}/osslcache
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}
+        if: ${{ matrix.PYTHON.OPENSSL }}
+      - name: Build custom OpenSSL/LibreSSL
+        run: |
+          shlib_sed() {
+              # modify the shlib version to a unique one to make sure the dynamic
+              # linker doesn't load the system one.
+              sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
+              sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
+              sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
+          }
+
+          OPENSSL_DIR="${{ github.workspace }}/osslcache/${TYPE}-${VERSION}-${CONFIG_HASH}"
+          if [[ "${TYPE}" == "openssl" ]]; then
+              curl -O "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
+              tar zxf "openssl-${VERSION}.tar.gz"
+              pushd "openssl-${VERSION}"
+              # CONFIG_FLAGS comes from the previous step. It's set as global.
+              ./config $CONFIG_FLAGS -fPIC --prefix="${OPENSSL_DIR}"
+              shlib_sed
+              make depend
+              make -j"$(nproc)"
+              # avoid installing the docs on versions of OpenSSL that aren't ancient.
+              # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
+              make install_sw install_ssldirs
+              popd
+          elif [[ "${TYPE}" == "libressl" ]]; then
+              curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
+              tar zxf "libressl-${VERSION}.tar.gz"
+              pushd "libressl-${VERSION}"
+              ./config -Wl -Wl,-Bsymbolic-functions -fPIC shared --prefix="${OPENSSL_DIR}"
+              shlib_sed
+              make -j"$(nproc)" install
+              popd
+          fi
+        env:
+          TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
+          VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
+        if: ${{ matrix.PYTHON.OPENSSL }} && steps.cache.outputs.cache-hit != 'true'
+      - name: Set CFLAGS/LDFLAGS
+        run: |
+          echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
+          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib" >> $GITHUB_ENV
+        if: ${{ matrix.PYTHON.OPENSSL }}
+      - name: Tests
+        run: |
+            echo "Expected OpenSSL path: ${OSSL_PATH}"
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+
   linux-distros:
     runs-on: ubuntu-latest
     container: ${{ matrix.IMAGE.IMAGE }}
