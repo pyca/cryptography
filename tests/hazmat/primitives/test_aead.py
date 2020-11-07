@@ -380,6 +380,9 @@ class TestAESGCM(object):
     def test_vectors(self, backend, vector):
         nonce = binascii.unhexlify(vector["iv"])
 
+        if len(nonce) < 8:
+            pytest.skip("GCM does not support less than 64-bit IVs")
+
         if backend._fips_enabled and len(nonce) != 12:
             # Red Hat disables non-96-bit IV support as part of its FIPS
             # patches.
@@ -420,6 +423,11 @@ class TestAESGCM(object):
 
     @pytest.mark.parametrize("length", [7, 129])
     def test_invalid_nonce_length(self, length, backend):
+        if backend._fips_enabled:
+            # Red Hat disables non-96-bit IV support as part of its FIPS
+            # patches.
+            pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
         with pytest.raises(ValueError):

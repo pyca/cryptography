@@ -86,6 +86,10 @@ def generate_aead_test(
 
 
 def aead_test(backend, cipher_factory, mode_factory, params):
+    if mode_factory is GCM and len(params["iv"]) < 16:
+        # 16 because this is hex encoded data
+        pytest.skip("Less than 64-bit IVs are no longer supported")
+
     if (
         mode_factory is GCM
         and backend._fips_enabled

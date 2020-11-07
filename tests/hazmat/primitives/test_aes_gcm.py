@@ -197,7 +197,12 @@ class TestAESModeGCM(object):
         assert pt == data
 
     @pytest.mark.parametrize("size", [8, 128])
-    def test_gcm_min_max_iv(self, size):
+    def test_gcm_min_max_iv(self, size, backend):
+        if backend._fips_enabled:
+            # Red Hat disables non-96-bit IV support as part of its FIPS
+            # patches.
+            pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
         key = os.urandom(16)
         iv = b"\x00" * size
 

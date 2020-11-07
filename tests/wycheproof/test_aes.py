@@ -54,6 +54,11 @@ def test_aes_gcm(backend, wycheproof):
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     ct = binascii.unhexlify(wycheproof.testcase["ct"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if len(iv) < 8 or len(iv) > 128:
+        pytest.skip(
+            "Less than 64-bit IVs (and greater than 1024-bit) are no longer "
+            "supported"
+        )
     if backend._fips_enabled and len(iv) != 12:
         # Red Hat disables non-96-bit IV support as part of its FIPS
         # patches.
@@ -97,6 +102,12 @@ def test_aes_gcm_aead_api(backend, wycheproof):
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     ct = binascii.unhexlify(wycheproof.testcase["ct"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if len(iv) < 8 or len(iv) > 128:
+        pytest.skip(
+            "Less than 64-bit IVs (and greater than 1024-bit) are no longer "
+            "supported"
+        )
+
     if backend._fips_enabled and len(iv) != 12:
         # Red Hat disables non-96-bit IV support as part of its FIPS
         # patches.
