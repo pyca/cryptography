@@ -10,6 +10,12 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.5 has been removed due to
   low usage and maintenance burden.
+* **BACKWARDS INCOMPATIBLE:** The
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` now require
+  64-bit to 1024-bit (8 byte to 128 byte) initialization vectors. This change
+  is to conform with an upcoming OpenSSL release that will no longer support
+  sizes outside this window.
 
 .. _v3-2-1:
 

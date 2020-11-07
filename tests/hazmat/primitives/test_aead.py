@@ -418,11 +418,12 @@ class TestAESGCM(object):
         with pytest.raises(TypeError):
             aesgcm.decrypt(nonce, data, associated_data)
 
-    def test_invalid_nonce_length(self, backend):
+    @pytest.mark.parametrize("length", [7, 129])
+    def test_invalid_nonce_length(self, length, backend):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
         with pytest.raises(ValueError):
-            aesgcm.encrypt(b"", b"hi", None)
+            aesgcm.encrypt(b"\x00" * length, b"hi", None)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):

@@ -196,12 +196,14 @@ class GCM(object):
     _MAX_AAD_BYTES = (2 ** 64) // 8
 
     def __init__(self, initialization_vector, tag=None, min_tag_length=16):
-        # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
-        # to actually construct a bytes object that large, so we don't check
-        # for it
+        # OpenSSL 3.0.0 constrains GCM IVs to [64, 1024] bits inclusive
+        # This is a sane limit anyway so we'll enforce it here.
         utils._check_byteslike("initialization_vector", initialization_vector)
-        if len(initialization_vector) == 0:
-            raise ValueError("initialization_vector must be at least 1 byte")
+        if len(initialization_vector) < 8 or len(initialization_vector) > 128:
+            raise ValueError(
+                "initialization_vector must be between 8 and 128 bytes (64 "
+                "and 1024 bits)."
+            )
         self._initialization_vector = initialization_vector
         if tag is not None:
             utils._check_bytes("tag", tag)
