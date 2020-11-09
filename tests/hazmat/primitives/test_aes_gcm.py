@@ -207,16 +207,12 @@ class TestAESModeGCM(object):
         iv = b"\x00" * size
 
         payload = b"data"
-        encryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv)
-        ).encryptor()
+        encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
         ct = encryptor.update(payload)
         encryptor.finalize()
         tag = encryptor.tag
 
-        decryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv)
-        ).decryptor()
+        decryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).decryptor()
         pt = decryptor.update(ct)
 
         decryptor.finalize_with_tag(tag)
