@@ -78,9 +78,6 @@ def test_aes_gcm(backend, wycheproof):
         dec.authenticate_additional_data(aad)
         computed_msg = dec.update(ct) + dec.finalize()
         assert computed_msg == msg
-    elif len(iv) == 0:
-        with pytest.raises(ValueError):
-            Cipher(algorithms.AES(key), modes.GCM(iv), backend)
     else:
         dec = Cipher(
             algorithms.AES(key),
@@ -118,9 +115,6 @@ def test_aes_gcm_aead_api(backend, wycheproof):
         assert computed_ct == ct + tag
         computed_msg = aesgcm.decrypt(iv, ct + tag, aad)
         assert computed_msg == msg
-    elif len(iv) == 0:
-        with pytest.raises(ValueError):
-            aesgcm.encrypt(iv, msg, aad)
     else:
         with pytest.raises(InvalidTag):
             aesgcm.decrypt(iv, ct + tag, aad)
