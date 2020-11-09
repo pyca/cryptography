@@ -195,3 +195,25 @@ class TestAESModeGCM(object):
         dec.authenticate_additional_data(bytearray(b"foo"))
         pt = dec.update(ct) + dec.finalize()
         assert pt == data
+
+    @pytest.mark.parametrize("size", [8, 128])
+    def test_gcm_min_max_iv(self, size, backend):
+        if backend._fips_enabled:
+            # Red Hat disables non-96-bit IV support as part of its FIPS
+            # patches.
+            pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
+        key = os.urandom(16)
+        iv = b"\x00" * size
+
+        payload = b"data"
+        encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
+        ct = encryptor.update(payload)
+        encryptor.finalize()
+        tag = encryptor.tag
+
+        decryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).decryptor()
+        pt = decryptor.update(ct)
+
+        decryptor.finalize_with_tag(tag)
+        assert pt == payload

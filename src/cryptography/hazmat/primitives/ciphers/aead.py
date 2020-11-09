@@ -170,5 +170,5 @@ class AESGCM(object):
         utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
-        if len(nonce) == 0:
-            raise ValueError("Nonce must be at least 1 byte")
+        if len(nonce) < 8 or len(nonce) > 128:
+            raise ValueError("Nonce must be between 8 and 128 bytes")

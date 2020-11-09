@@ -72,6 +72,13 @@ class TestAESXTS(object):
             ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
 
 
+class TestGCM(object):
+    @pytest.mark.parametrize("size", [7, 129])
+    def test_gcm_min_max(self, size):
+        with pytest.raises(ValueError):
+            modes.GCM(b"0" * size)
+
+
 class TestCamellia(object):
     @pytest.mark.parametrize(
         ("key", "keysize"),
