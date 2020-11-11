@@ -55,7 +55,7 @@ matrix:
           env: TOXENV=py38 LIBRESSL=3.2.2
 
         - python: 3.8
-          env: TOXENV=docs OPENSSL=1.1.1h
+          env: TOXENV=docs
           addons:
               apt:
                   packages:
