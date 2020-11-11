@@ -9,7 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_LOCKING_CALLBACKS;
 static const long Cryptography_HAS_MEM_FUNCTIONS;
 static const long Cryptography_HAS_OPENSSL_CLEANUP;
 
@@ -78,11 +77,6 @@ CUSTOMIZATIONS = """
 # define OPENSSL_BUILT_ON        SSLEAY_BUILT_ON
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
-#endif
-#if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
-#else
-static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
