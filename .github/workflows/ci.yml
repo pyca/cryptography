@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - run: git clone --depth=1 https://github.com/google/wycheproof
-      - run: python -m pip install tox requests
+      - run: python -m pip install tox requests coverage
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
