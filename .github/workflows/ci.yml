@@ -15,20 +15,20 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "3.9", TOXENV: "pep8,packaging"}
-          - {VERSION: "pypy2", TOXENV: "pypy-nocoverage"}
-          - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage"}
-          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.4"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.2"}}
+          - {VERSION: "3.9", TOXENV: "pep8,packaging", COVERAGE: "false"}
+          - {VERSION: "pypy2", TOXENV: "pypy-nocoverage", COVERAGE: "false"}
+          - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "2.7", TOXENV: "py27", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27-ssh", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.1.4"}}
+          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.2.2"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     steps:
       - uses: actions/checkout@v2
@@ -48,14 +48,14 @@ jobs:
           echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_HASH}" >> $GITHUB_ENV
         env:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
-        if: ${{ matrix.PYTHON.OPENSSL }}
+        if: matrix.PYTHON.OPENSSL
       - name: Load cache
         uses: actions/cache@v2
         id: ossl-cache
         with:
           path: ${{ github.workspace }}/osslcache
           key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}
-        if: ${{ matrix.PYTHON.OPENSSL }}
+        if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: |
           shlib_sed() {
@@ -92,18 +92,23 @@ jobs:
         env:
           TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
           VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
-        if: ${{ matrix.PYTHON.OPENSSL }} && steps.cache.outputs.cache-hit != 'true'
+        if: matrix.PYTHON.OPENSSL && steps.cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
           echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
           echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib" >> $GITHUB_ENV
-        if: ${{ matrix.PYTHON.OPENSSL }}
+        if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
             echo "Expected OpenSSL path: ${OSSL_PATH}"
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+      - name: Upload coverage
+        run: |
+          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
+          bash codecov.sh -n "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL }}"
+        if: matrix.PYTHON.COVERAGE == 'true'
 
   linux-distros:
     runs-on: ubuntu-latest
