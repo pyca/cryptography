@@ -18,17 +18,17 @@ jobs:
           - {VERSION: "3.9", TOXENV: "pep8,packaging", COVERAGE: "false"}
           - {VERSION: "pypy2", TOXENV: "pypy-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "2.7", TOXENV: "py27", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27-ssh", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39-ssh", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.1.4"}}
-          - {VERSION: "3.9", TOXENV: "py39", COVERAGE: "true", OPENSSL: {TYPE: "libressl", VERSION: "3.2.2"}}
+          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.4"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.2"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     steps:
       - uses: actions/checkout@v2
@@ -45,6 +45,7 @@ jobs:
           CONFIG_HASH=$(echo "$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
           echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
           echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "OSSL_INFO=${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_FLAGS}"
           echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_HASH}" >> $GITHUB_ENV
         env:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
@@ -100,15 +101,14 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
-            echo "Expected OpenSSL path: ${OSSL_PATH}"
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
       - name: Upload coverage
         run: |
           curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL }}"
-        if: matrix.PYTHON.COVERAGE == 'true'
+          bash codecov.sh -n "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
+        if: matrix.PYTHON.COVERAGE != 'false'
 
   linux-distros:
     runs-on: ubuntu-latest
