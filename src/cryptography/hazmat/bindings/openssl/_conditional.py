@@ -74,12 +74,6 @@ def cryptography_has_tls_st():
     ]
 
 
-def cryptography_has_locking_callbacks():
-    return [
-        "Cryptography_setup_ssl_threads",
-    ]
-
-
 def cryptography_has_scrypt():
     return [
         "EVP_PBE_scrypt",
@@ -284,7 +278,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_LOCKING_CALLBACKS": cryptography_has_locking_callbacks,
     "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,

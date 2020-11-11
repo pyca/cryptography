@@ -22,18 +22,6 @@ class TestOpenSSL(object):
         assert binding.lib
         assert binding.ffi
 
-    def test_crypto_lock_init(self):
-        b = Binding()
-
-        b.init_static_locks()
-        lock_cb = b.lib.CRYPTO_get_locking_callback()
-        if not b.lib.CRYPTOGRAPHY_IS_LIBRESSL:
-            assert lock_cb == b.ffi.NULL
-            assert b.lib.Cryptography_HAS_LOCKING_CALLBACKS == 0
-        else:
-            assert lock_cb != b.ffi.NULL
-            assert b.lib.Cryptography_HAS_LOCKING_CALLBACKS == 1
-
     def test_add_engine_more_than_once(self):
         b = Binding()
         b._register_osrandom_engine()
