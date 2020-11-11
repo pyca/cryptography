@@ -55,44 +55,16 @@ jobs:
         id: ossl-cache
         with:
           path: ${{ github.workspace }}/osslcache
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}
+          # When altering the openssl build process you may need to increment the value on the end of this cache key
+          # so that you can prevent it from fetching the cache and skipping the build step.
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-1
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
-        run: |
-          shlib_sed() {
-              # modify the shlib version to a unique one to make sure the dynamic
-              # linker doesn't load the system one.
-              sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
-              sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
-              sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
-          }
-
-          OPENSSL_DIR="${{ github.workspace }}/osslcache/${TYPE}-${VERSION}-${CONFIG_HASH}"
-          if [[ "${TYPE}" == "openssl" ]]; then
-              curl -O "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
-              tar zxf "openssl-${VERSION}.tar.gz"
-              pushd "openssl-${VERSION}"
-              # CONFIG_FLAGS comes from the previous step. It's set as global.
-              ./config $CONFIG_FLAGS -fPIC --prefix="${OPENSSL_DIR}"
-              shlib_sed
-              make depend
-              make -j"$(nproc)"
-              # avoid installing the docs on versions of OpenSSL that aren't ancient.
-              # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
-              make install_sw install_ssldirs
-              popd
-          elif [[ "${TYPE}" == "libressl" ]]; then
-              curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
-              tar zxf "libressl-${VERSION}.tar.gz"
-              pushd "libressl-${VERSION}"
-              ./config -Wl -Wl,-Bsymbolic-functions -fPIC shared --prefix="${OPENSSL_DIR}"
-              shlib_sed
-              make -j"$(nproc)" install
-              popd
-          fi
+        run: .github/workflows/build_openssl.sh
         env:
           TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
           VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
