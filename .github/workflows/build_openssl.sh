@@ -17,7 +17,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
   tar zxf "openssl-${VERSION}.tar.gz"
   pushd "openssl-${VERSION}"
   # CONFIG_FLAGS is a global coming from a previous step
-  ./config "${CONFIG_FLAGS}" -fPIC --prefix="${OPENSSL_DIR}"
+  ./config ${CONFIG_FLAGS} -fPIC --prefix="${OPENSSL_DIR}"
   shlib_sed
   make depend
   make -j"$(nproc)"
