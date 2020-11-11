@@ -92,7 +92,7 @@ jobs:
         env:
           TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
           VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
-        if: matrix.PYTHON.OPENSSL && steps.cache.outputs.cache-hit != 'true'
+        if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
           echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
