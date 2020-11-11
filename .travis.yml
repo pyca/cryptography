@@ -19,16 +19,6 @@ branches:
 matrix:
     include:
         # Setting 'python' is just to make travis's UI a bit prettier
-        - python: 3.8
-          env: TOXENV=docs
-          addons:
-              apt:
-                  packages:
-                      - libenchant-dev
-        - python: 3.8
-          env: TOXENV=docs-linkcheck
-          if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
-
         # TODO: This needs to be moved to GHA, but it fails there. The
         # confusing part is why it passes on Travis!
         - python: 3.7
