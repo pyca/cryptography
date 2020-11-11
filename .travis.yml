@@ -64,22 +64,10 @@ matrix:
           env: TOXENV=docs-linkcheck
           if: (branch = master AND type != pull_request) OR commit_message =~ /linkcheck/
 
-        - python: 3.8
-          env: DOWNSTREAM=pyopenssl
-        - python: 3.7
-          env: DOWNSTREAM=twisted OPENSSL=1.1.1h
+        # TODO: This needs to be moved to GHA, but it fails there. The
+        # confusing part is why it passes on Travis!
         - python: 3.7
           env: DOWNSTREAM=paramiko
-        - python: 3.7
-          env: DOWNSTREAM=aws-encryption-sdk
-        - python: 3.7
-          # BOTO_CONFIG works around this boto issue on travis:
-          # https://github.com/boto/boto/issues/3717
-          env: DOWNSTREAM=dynamodb-encryption-sdk BOTO_CONFIG=/dev/null
-        - python: 3.8
-          env: DOWNSTREAM=certbot
-        - python: 3.8
-          env: DOWNSTREAM=certbot-josepy
 
 install:
     - ./.travis/install.sh
