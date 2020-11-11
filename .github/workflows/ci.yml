@@ -15,10 +15,9 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "3.9", TOXENV: "pep8,packaging", COVERAGE: "false"}
+          - {VERSION: "3.9", TOXENV: "pep8,packaging,docs", COVERAGE: "false"}
           - {VERSION: "pypy2", TOXENV: "pypy-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "3.9", TOXENV: "docs", COVERAGE: "false"}
           - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "2.7", TOXENV: "py27-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
@@ -233,7 +232,7 @@ jobs:
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || contains(github.event.head_commit.message, 'linkcheck')
     runs-on: ubuntu-latest
     name: "linkcheck"
     steps:
