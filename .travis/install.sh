@@ -3,10 +3,6 @@
 set -e
 set -x
 
-if [ -z "${DOWNSTREAM}" ]; then
-    git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"
-fi
-
 pip install -U pip
 pip install virtualenv
 
