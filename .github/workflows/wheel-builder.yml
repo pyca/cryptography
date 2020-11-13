@@ -76,7 +76,7 @@ jobs:
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv requests
       - name: Download OpenSSL
         run: |
-            ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos
+            ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-x86-64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -92,8 +92,8 @@ jobs:
 
           cd cryptography*
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
-              LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
-              CFLAGS="-I${HOME}/openssl-macos/include -mmacosx-version-min=10.10 -march=core2" \
+              LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
+              CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
               ../venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../wheelhouse
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
       - run: |

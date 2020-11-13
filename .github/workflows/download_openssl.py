@@ -67,6 +67,7 @@ def main(platform, target):
                 os.path.join(path, artifact["name"])
             )
             return
+    raise ValueError("Didn't find {} in {}".format(target, response))
 
 
 if __name__ == "__main__":
