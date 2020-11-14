@@ -16,8 +16,6 @@ recursive-include tests *.py
 exclude vectors
 recursive-exclude vectors *
 
-exclude .travis.yml .travis
-recursive-exclude .travis *
 recursive-exclude .github *
 
 exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt rtd-requirements.txt tox.ini

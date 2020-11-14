@@ -213,6 +213,7 @@ jobs:
     strategy:
       matrix:
         DOWNSTREAM:
+          - paramiko
           - pyopenssl
           - twisted
           - aws-encryption-sdk
@@ -228,6 +229,7 @@ jobs:
           python-version: 3.7
       - run: python -m pip install -U pip wheel
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
+      - run: pip uninstall -y enum34
       - run: pip install .
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 

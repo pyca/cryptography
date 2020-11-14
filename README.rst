@@ -9,9 +9,6 @@ pyca/cryptography
     :target: https://cryptography.io
     :alt: Latest Docs
 
-.. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
-    :target: https://travis-ci.org/pyca/cryptography
-
 .. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=master
     :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amaster
 
