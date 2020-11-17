@@ -168,7 +168,7 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     return padding_enum
 
 
-def _rsa_sig_setup(backend, padding, algorithm, key, data, init_func):
+def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
     evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
@@ -208,7 +208,6 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
         padding,
         algorithm,
         private_key,
-        data,
         backend._lib.EVP_PKEY_sign_init,
     )
     buflen = backend._ffi.new("size_t *")
@@ -235,7 +234,6 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         padding,
         algorithm,
         public_key,
-        data,
         backend._lib.EVP_PKEY_verify_init,
     )
     res = backend._lib.EVP_PKEY_verify(
