@@ -112,6 +112,7 @@ class RSAPublicKey(object):
         Recovers the original data digest from the signature.
         """
 
+
 RSAPublicKeyWithSerialization = RSAPublicKey
 
 

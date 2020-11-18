@@ -254,6 +254,7 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         backend._consume_errors()
         raise InvalidSignature
 
+
 def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
     pkey_ctx = _rsa_sig_setup(
         backend,
@@ -282,6 +283,7 @@ def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
     if res != 1:
         raise InvalidSignature
     return resbuf
+
 
 @utils.register_interface(AsymmetricSignatureContext)
 class _RSASignatureContext(object):
@@ -499,4 +501,6 @@ class _RSAPublicKey(object):
 
     def recover(self, signature, padding, algorithm):
         _check_not_prehashed(algorithm)
-        return _rsa_sig_recover(self._backend, padding, algorithm, self, signature)
+        return _rsa_sig_recover(
+            self._backend, padding, algorithm, self, signature
+        )
