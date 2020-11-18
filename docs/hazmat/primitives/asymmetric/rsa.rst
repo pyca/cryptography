@@ -709,6 +709,37 @@ Key interfaces
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 
+    .. method:: recover(signature, padding, algorithm)
+
+        .. versionadded:: 3.3
+
+        Recovers the digest of the original message string from the signature.
+        Normally you should use the
+        :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+        function to validate the signature. But there are some cases where you
+        may want to recover the digest of the original message.
+
+        Note that the ``padding`` and ``algorithm`` parameters must match the
+        ones used when the signature was created for the recovery to succeed.
+
+        :param bytes signature: The signature.
+
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
+            Recovery is only supported with some of the padding types. (Currently
+            only with
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`).
+
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+
+        :return bytes: The original message digest.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature is
+            invalid.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If signature
+            recovery is not supported with the provided ``padding`` type.
 
 .. class:: RSAPublicKeyWithSerialization
 

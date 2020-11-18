@@ -101,6 +101,9 @@ int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
 int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
 int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
+int EVP_PKEY_verify_recover_init(EVP_PKEY_CTX *);
+int EVP_PKEY_verify_recover(EVP_PKEY_CTX *, unsigned char *,
+                            size_t *, const unsigned char *, size_t);
 int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
 int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
 

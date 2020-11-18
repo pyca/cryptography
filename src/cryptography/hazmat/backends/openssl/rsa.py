@@ -186,7 +186,14 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
             _Reasons.UNSUPPORTED_HASH,
         )
     res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
-    backend.openssl_assert(res > 0)
+    if res <= 0:
+        backend._consume_errors()
+        raise UnsupportedAlgorithm(
+            "{} is not supported for the RSA sigature operation.".format(
+                padding.name
+            ),
+            _Reasons.UNSUPPORTED_PADDING,
+        )
     if isinstance(padding, PSS):
         res = backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
             pkey_ctx, _get_rsa_pss_salt_length(padding, key, algorithm)
@@ -247,6 +254,34 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         backend._consume_errors()
         raise InvalidSignature
 
+def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
+    pkey_ctx = _rsa_sig_setup(
+        backend,
+        padding,
+        algorithm,
+        public_key,
+        backend._lib.EVP_PKEY_verify_recover_init,
+    )
+
+    # Attempt to keep the rest of the code in this function as constant/time
+    # as possible. See the comment in _enc_dec_rsa_pkey_ctx. Note that the
+    # outlen parameter is used even though its value may be undefined in the
+    # error case. Due to the tolerant nature of Python slicing this does not
+    # trigger any exceptions.
+    maxlen = backend._lib.EVP_PKEY_size(public_key._evp_pkey)
+    backend.openssl_assert(maxlen > 0)
+    buf = backend._ffi.new("unsigned char[]", maxlen)
+    buflen = backend._ffi.new("size_t *", maxlen)
+    res = backend._lib.EVP_PKEY_verify_recover(
+        pkey_ctx, buf, buflen, signature, len(signature)
+    )
+    resbuf = backend._ffi.buffer(buf)[: buflen[0]]
+    backend._lib.ERR_clear_error()
+    # Assume that all parameter errors are handled during the setup phase and
+    # any error here is due to invalid signature.
+    if res != 1:
+        raise InvalidSignature
+    return resbuf
 
 @utils.register_interface(AsymmetricSignatureContext)
 class _RSASignatureContext(object):
@@ -461,3 +496,7 @@ class _RSAPublicKey(object):
         return _rsa_sig_verify(
             self._backend, padding, algorithm, self, signature, data
         )
+
+    def recover(self, signature, padding, algorithm):
+        _check_not_prehashed(algorithm)
+        return _rsa_sig_recover(self._backend, padding, algorithm, self, signature)

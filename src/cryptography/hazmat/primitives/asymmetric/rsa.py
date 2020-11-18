@@ -106,6 +106,11 @@ class RSAPublicKey(object):
         Verifies the signature of the data.
         """
 
+    @abc.abstractmethod
+    def recover(self, signature, padding, algorithm):
+        """
+        Recovers the original data digest from the signature.
+        """
 
 RSAPublicKeyWithSerialization = RSAPublicKey
 
