@@ -274,8 +274,9 @@ Limitations
 -----------
 
 Fernet is ideal for encrypting data that easily fits in memory. As a design
-feature it does not expose unauthenticated bytes. Unfortunately, this makes it
-generally unsuitable for very large files at this time.
+feature it does not expose unauthenticated bytes. This means that the complete
+message contents must be available in memory, making Fernet generally
+unsuitable for very large files at this time.
 
 
 .. _`Fernet`: https://github.com/fernet/spec/
