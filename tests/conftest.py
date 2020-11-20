@@ -11,7 +11,6 @@ from cryptography.hazmat.backends.openssl import backend as openssl_backend
 from .utils import (
     check_backend_support,
     load_wycheproof_tests,
-    skip_if_wycheproof_none,
 )
 
 
@@ -30,8 +29,7 @@ def pytest_addoption(parser):
 
 def pytest_generate_tests(metafunc):
     if "wycheproof" in metafunc.fixturenames:
-        wycheproof = metafunc.config.getoption("--wycheproof-root")
-        skip_if_wycheproof_none(wycheproof)
+        wycheproof = metafunc.config.getoption("--wycheproof-root", skip=True)
 
         testcases = []
         marker = metafunc.definition.get_closest_marker("wycheproof_tests")
