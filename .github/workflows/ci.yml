@@ -64,7 +64,6 @@ jobs:
         env:
           TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
           VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
         if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
