@@ -75,10 +75,9 @@ jobs:
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
         if: matrix.PYTHON.COVERAGE != 'false'
 
   linux-distros:
@@ -112,10 +111,9 @@ jobs:
       - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ matrix.IMAGE.ENV }}"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ matrix.IMAGE.ENV }}"
 
   macos:
     runs-on: macos-latest
@@ -152,10 +150,9 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
 
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on macOS"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
 
   windows:
     runs-on: windows-latest
@@ -202,10 +199,9 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
 
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
 
   linux-downstream:
     runs-on: ubuntu-latest
