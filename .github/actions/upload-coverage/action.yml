@@ -1,0 +1,19 @@
+name: Upload Coverage
+description: Upload coverage to codecov
+
+inputs:
+  name:
+    description: "Job name"
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - run: |
+        curl -o codecov.sh -f https://codecov.io/bash || \
+          curl -o codecov.sh -f https://codecov.io/bash || \
+          curl -o codecov.sh -f https://codecov.io/bash
+
+        bash codecov.sh -n "${{ inputs.name }}"
+      shell: bash
