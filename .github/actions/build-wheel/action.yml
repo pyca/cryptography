@@ -1,0 +1,41 @@
+name: Build wheel
+description: Build wheel
+
+inputs:
+  python:
+    description: "Path to Python binary"
+    required: true
+  version:
+    description: "cryptography version to build a wheel for"
+    required: true
+  python-version:
+    description: "Target Python version"
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Install Python dependencies
+      run: ${{ inputs.python }} -m pip install -U pip wheel cffi six ipaddress "enum34; python_version < '3'"
+      shell: bash
+    - run: ${{ inputs.python }} -m pip download cryptography==${{ inputs.version }} --no-deps --no-binary cryptography
+      shell: bash
+    - run: tar zxvf cryptography*.tar.gz
+      shell: bash
+    - run: mkdir wheelhouse
+      shell: bash
+    - run: |
+        REGEX="cp3([0-9])*"
+        if [[ "${{ inputs.python-version }}" =~ $REGEX ]]; then
+            PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
+        fi
+        cd cryptography*
+        ${{ inputs.python }} setup.py bdist_wheel $PY_LIMITED_API
+        mv dist/cryptography*.whl ../wheelhouse
+      shell: bash
+    - run: ${{ inputs.python }} -m pip install cryptography --no-index -f wheelhouse/
+      shell: bash
+    - run: |
+        ${{ inputs.python }} -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+      shell: bash

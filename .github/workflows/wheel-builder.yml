@@ -19,21 +19,19 @@ jobs:
             CONTAINER: "pyca/cryptography-manylinux2010:x86_64"
     name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv
-      - name: Install Python dependencies
-        run: .venv/bin/pip install -U pip wheel cffi six ipaddress "enum34; python_version < '3'"
-      - run: .venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir tmpwheelhouse
+      - uses: actions/checkout@v2
       - run: |
-          REGEX="cp3([0-9])*"
-          if [[ "${{ matrix.PYTHON }}" =~ $REGEX ]]; then
-              PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
-          fi
-          cd cryptography*
-          LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
-              CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
-              ../.venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../tmpwheelhouse
-      - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptograph*.whl -w wheelhouse/
-      - run: unzip wheelhouse/*.whl -d execstack.check
+          echo "LDFLAGS=-L/opt/pyca/cryptography/openssl/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" >> $GITHUB_ENV
+
+      - uses: ./.github/actions/build-wheel
+        with:
+          python: /opt/python/${{ matrix.PYTHON }}/bin/python
+          version: ${{ github.event.inputs.version }}
+          python-version: ${{ matrix.PYTHON }}
+
+      - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} wheelhouse/cryptograph*.whl -w manylinux-wheelhouse/
+      - run: unzip manylinux-wheelhouse/*.whl -d execstack.check
       - run: |
           results=$(execstack execstack.check/cryptography/hazmat/bindings/*.so)
           count=$(echo "$results" | grep -c '^X' || true)
@@ -42,11 +40,8 @@ jobs:
           else
             exit 0
           fi
-      - run: .venv/bin/pip install cryptography --no-index -f wheelhouse/
-      - run: |
-          .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
       - run: mkdir cryptography-wheelhouse
-      - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
+      - run: mv manylinux-wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - uses: actions/upload-artifact@v1
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
@@ -58,11 +53,11 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '2.7'
-            ABI_VERSION: '2.7'
+            ABI_VERSION: 'cp27'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/2.7.17/python-2.7.17-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
           - VERSION: '3.8'
-            ABI_VERSION: '3.6'
+            ABI_VERSION: 'cp36'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
@@ -80,24 +75,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m virtualenv venv
-      - run: venv/bin/pip install -U pip wheel cffi six ipaddress "enum34; python_version < '3'"
-      - run: venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
-      - name: Build the wheel
-        run: |
-          REGEX="3\.([0-9])*"
-          if [[ "${{ matrix.PYTHON.ABI_VERSION }}" =~ $REGEX ]]; then
-              PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
-          fi
-
-          cd cryptography*
-          CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
-              LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
-              CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
-              ../venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../wheelhouse
-      - run: venv/bin/pip install -f wheelhouse --no-index cryptography
       - run: |
-          venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+            echo "CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1" >> $GITHUB_ENV
+            echo "LDFLAGS=${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" >> $GITHUB_ENV
+            echo "CFLAGS=-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" >> $GITHUB_ENV
+
+      - uses: ./.github/actions/build-wheel
+        with:
+          python: ${{ matrix.PYTHON.BIN_PATH }}
+          version: ${{ github.event.inputs.version }}
+          python-version: ${{ matrix.PYTHON.ABI_VERSION }}
 
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
@@ -114,8 +101,8 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "2.7", MSVC_VERSION: "2010"}
-          - {VERSION: "3.8", MSVC_VERSION: "2019", "USE_ABI3": "true", "ABI_VERSION": "cp36"}
+          - {VERSION: "2.7", MSVC_VERSION: "2010", ABI_VERSION: "cp27"}
+          - {VERSION: "3.8", MSVC_VERSION: "2019", ABI_VERSION: "cp36"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - uses: actions/checkout@v2
@@ -141,17 +128,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      - run: python -m pip install -U pip wheel cffi six ipaddress "enum34; python_version < '3'"
-      - run: pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
-        shell: bash
-      - run: cd cryptography* && python setup.py bdist_wheel && mv dist/cryptography*.whl ../wheelhouse
-        if: matrix.PYTHON.USE_ABI3 != 'true'
-      - run: cd cryptography* && python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
-        if: matrix.PYTHON.USE_ABI3 == 'true'
-      - run: pip install -f wheelhouse --no-index cryptography
-      - name: Print the OpenSSL we built and linked against
-        run: |
-            python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+      - uses: ./.github/actions/build-wheel
+        with:
+          python: python
+          version: ${{ github.event.inputs.version }}
+          python-version: ${{ matrix.PYTHON.ABI_VERSION }}
 
       - run: mkdir cryptography-wheelhouse
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
