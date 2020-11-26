@@ -1496,14 +1496,11 @@ class Backend(object):
                 "incorrect format or it may be encrypted with an unsupported "
                 "algorithm."
             )
-        elif (
-            errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
-            )
-            or errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_PKCS12,
-                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
-            )
+        elif errors[0]._lib_reason_match(
+            self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
+        ) or errors[0]._lib_reason_match(
+            self._lib.ERR_LIB_PKCS12,
+            self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 
