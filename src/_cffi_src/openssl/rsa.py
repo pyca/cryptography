@@ -48,17 +48,13 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
-#if defined(EVP_PKEY_CTX_set_rsa_oaep_md)
+#if !CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_RSA_OAEP_MD = 1;
-#else
-static const long Cryptography_HAS_RSA_OAEP_MD = 0;
-int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
-#endif
-
-#if defined(EVP_PKEY_CTX_set0_rsa_oaep_label)
 static const long Cryptography_HAS_RSA_OAEP_LABEL = 1;
 #else
+static const long Cryptography_HAS_RSA_OAEP_MD = 0;
 static const long Cryptography_HAS_RSA_OAEP_LABEL = 0;
+int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
 int (*EVP_PKEY_CTX_set0_rsa_oaep_label)(EVP_PKEY_CTX *, unsigned char *,
                                         int) = NULL;
 #endif
