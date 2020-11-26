@@ -13,7 +13,7 @@ import pytest
 
 import six
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend,
     DSABackend,
@@ -55,7 +55,6 @@ from .utils import (
     load_vectors_from_file,
 )
 from ...doubles import DummyKeySerializationEncryption
-from ...utils import raises_unsupported_algorithm
 
 
 def _skip_fips_format(key_path, password, backend):
@@ -771,7 +770,7 @@ class TestPEMSerialization(object):
 
         password = b"password"
 
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        with pytest.raises(ValueError):
             load_pem_private_key(key_data, password, backend)
 
     def test_corrupt_pkcs8_format(self, backend):
@@ -966,7 +965,7 @@ class TestPEMSerialization(object):
         ("key_file", "password"), [("bad-encryption-oid.pem", b"password")]
     )
     def test_load_bad_encryption_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join("asymmetric", "PKCS8", key_file),
                 lambda pemfile: load_pem_private_key(

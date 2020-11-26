@@ -16,6 +16,10 @@ Changelog
   64-bit to 1024-bit (8 byte to 128 byte) initialization vectors. This change
   is to conform with an upcoming OpenSSL release that will no longer support
   sizes outside this window.
+* **BACKWARDS INCOMPATIBLE:** When deserializing asymmetric keys we now
+  raise ``ValueError`` rather than ``UnsupportedAlgorithm`` when an
+  unsupported cipher is used. This change is to conform with an upcoming
+  OpenSSL release that will no longer distinguish between error types.
 * Python 2 support is deprecated in ``cryptography``. This is the last release
   that will support Python 2.
 

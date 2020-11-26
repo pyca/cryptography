@@ -1491,8 +1491,11 @@ class Backend(object):
         errors = self._consume_errors()
 
         if not errors:
-            raise ValueError("Could not deserialize key data.")
-
+            raise ValueError(
+                "Could not deserialize key data. The data may be in an "
+                "incorrect format or it may be encrypted with an unsupported "
+                "algorithm."
+            )
         elif errors[0]._lib_reason_match(
             self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
         ) or errors[0]._lib_reason_match(
@@ -1500,16 +1503,6 @@ class Backend(object):
             self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
-
-        elif errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
-        ):
-            raise UnsupportedAlgorithm(
-                "PEM data is encrypted with an unsupported cipher",
-                _Reasons.UNSUPPORTED_CIPHER,
-            )
 
         elif any(
             error._lib_reason_match(
@@ -1521,12 +1514,11 @@ class Backend(object):
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            assert errors[0].lib in (
-                self._lib.ERR_LIB_EVP,
-                self._lib.ERR_LIB_PEM,
-                self._lib.ERR_LIB_ASN1,
+            raise ValueError(
+                "Could not deserialize key data. The data may be in an "
+                "incorrect format or it may be encrypted with an unsupported "
+                "algorithm."
             )
-            raise ValueError("Could not deserialize key data.")
 
     def elliptic_curve_supported(self, curve):
         try:

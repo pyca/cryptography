@@ -158,8 +158,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         password was supplied.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
-        is of a type that is not supported by the backend or if the key is
-        encrypted with a symmetric cipher that is not supported by the backend.
+        is of a type that is not supported by the backend.
 
 .. function:: load_pem_public_key(data, backend=None)
 
@@ -267,9 +266,8 @@ the rest.
         not encrypted. Or if the key was encrypted but no
         password was supplied.
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
-        is not supported by the backend or if the key is encrypted with a
-        symmetric cipher that is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        is of a type that is not supported by the backend.
 
     .. doctest::
 
