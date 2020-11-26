@@ -1459,8 +1459,7 @@ class Backend(object):
 
         if evp_pkey == self._ffi.NULL:
             if userdata.error != 0:
-                errors = self._consume_errors()
-                self.openssl_assert(errors)
+                self._consume_errors()
                 if userdata.error == -1:
                     raise TypeError(
                         "Password was not given but private key is encrypted"
