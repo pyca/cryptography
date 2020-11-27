@@ -141,10 +141,6 @@ class Binding(object):
                 cls.lib.OpenSSL_add_all_algorithms()
                 cls._register_osrandom_engine()
 
-    @classmethod
-    def init_static_locks(cls):
-        cls._ensure_ffi_initialized()
-
 
 def _verify_package_version(version):
     # Occasionally we run into situations where the version of the Python
@@ -169,4 +165,4 @@ def _verify_package_version(version):
 
 _verify_package_version(cryptography.__version__)
 
-Binding.init_static_locks()
+Binding._ensure_ffi_initialized()
