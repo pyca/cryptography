@@ -61,6 +61,10 @@ def test_dh_parameternumbers():
     with pytest.raises(ValueError):
         dh.DHParameterNumbers(P_1536, 1)
 
+    # p too small
+    with pytest.raises(ValueError):
+        dh.DHParameterNumbers(65537, 2)
+
     params = dh.DHParameterNumbers(P_1536, 7, 1245)
 
     assert params.p == P_1536
