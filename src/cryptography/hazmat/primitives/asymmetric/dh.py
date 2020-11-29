@@ -95,6 +95,9 @@ class DHParameterNumbers(object):
         if g < 2:
             raise ValueError("DH generator must be 2 or greater")
 
+        if p.bit_length() < 512:
+            raise ValueError("p (modulus) must be at least 512-bit")
+
         self._p = p
         self._g = g
         self._q = q

@@ -20,6 +20,10 @@ Changelog
   raise ``ValueError`` rather than ``UnsupportedAlgorithm`` when an
   unsupported cipher is used. This change is to conform with an upcoming
   OpenSSL release that will no longer distinguish between error types.
+* **BACKWARDS INCOMPATIBLE:** We no longer allow loading of finite field
+  Diffie-Hellman parameters of less than 512 bits in length. This change is to
+  conform with an upcoming OpenSSL release that no longer supports smaller
+  sizes.
 * Python 2 support is deprecated in ``cryptography``. This is the last release
   that will support Python 2.
 
