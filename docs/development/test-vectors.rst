@@ -184,6 +184,8 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.der`` and
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
   are the above parameters and keys in DER format.
+* ``vectors/cryptography_vectors/asymmetric/DH/dh_key_256.pem`` contains
+  a PEM PKCS8 encoded DH key with a 256-bit key size.
 
 * ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
   Brainpool vectors from :rfc:`7027`.

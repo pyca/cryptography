@@ -12,6 +12,9 @@ from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 
 
+_MIN_MODULUS_SIZE = 512
+
+
 def generate_parameters(generator, key_size, backend=None):
     backend = _get_backend(backend)
     return backend.generate_dh_parameters(generator, key_size)
@@ -94,6 +97,11 @@ class DHParameterNumbers(object):
 
         if g < 2:
             raise ValueError("DH generator must be 2 or greater")
+
+        if p.bit_length() < _MIN_MODULUS_SIZE:
+            raise ValueError(
+                "p (modulus) must be at least {}-bit".format(_MIN_MODULUS_SIZE)
+            )
 
         self._p = p
         self._g = g

@@ -23,6 +23,19 @@ from .fixtures_dh import FFDH3072_P
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 
+# RFC 3526
+P_1536 = int(
+    "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
+    "29024E088A67CC74020BBEA63B139B22514A08798E3404DD"
+    "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"
+    "E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"
+    "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"
+    "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"
+    "83655D23DCA3AD961C62F356208552BB9ED529077096966D"
+    "670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF",
+    16,
+)
+
 
 def _skip_dhx_unsupported(backend, is_dhx):
     if not is_dhx:
@@ -32,35 +45,39 @@ def _skip_dhx_unsupported(backend, is_dhx):
 
 
 def test_dh_parameternumbers():
-    params = dh.DHParameterNumbers(65537, 2)
+    params = dh.DHParameterNumbers(P_1536, 2)
 
-    assert params.p == 65537
+    assert params.p == P_1536
     assert params.g == 2
 
     with pytest.raises(TypeError):
         dh.DHParameterNumbers(None, 2)
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(65537, None)
+        dh.DHParameterNumbers(P_1536, None)
 
     with pytest.raises(TypeError):
         dh.DHParameterNumbers(None, None)
 
     with pytest.raises(ValueError):
-        dh.DHParameterNumbers(65537, 1)
+        dh.DHParameterNumbers(P_1536, 1)
 
-    params = dh.DHParameterNumbers(65537, 7, 1245)
+    # p too small
+    with pytest.raises(ValueError):
+        dh.DHParameterNumbers(65537, 2)
 
-    assert params.p == 65537
+    params = dh.DHParameterNumbers(P_1536, 7, 1245)
+
+    assert params.p == P_1536
     assert params.g == 7
     assert params.q == 1245
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(65537, 2, "hello")
+        dh.DHParameterNumbers(P_1536, 2, "hello")
 
 
 def test_dh_numbers():
-    params = dh.DHParameterNumbers(65537, 2)
+    params = dh.DHParameterNumbers(P_1536, 2)
 
     public = dh.DHPublicNumbers(1, params)
 
@@ -86,20 +103,22 @@ def test_dh_numbers():
 
 
 def test_dh_parameter_numbers_equality():
-    assert dh.DHParameterNumbers(65537, 2) == dh.DHParameterNumbers(65537, 2)
-    assert dh.DHParameterNumbers(65537, 7, 12345) == dh.DHParameterNumbers(
-        65537, 7, 12345
+    assert dh.DHParameterNumbers(P_1536, 2) == dh.DHParameterNumbers(P_1536, 2)
+    assert dh.DHParameterNumbers(P_1536, 7, 12345) == dh.DHParameterNumbers(
+        P_1536, 7, 12345
     )
-    assert dh.DHParameterNumbers(6, 2) != dh.DHParameterNumbers(65537, 2)
-    assert dh.DHParameterNumbers(65537, 2, 123) != dh.DHParameterNumbers(
-        65537, 2, 456
+    assert dh.DHParameterNumbers(P_1536 + 2, 2) != dh.DHParameterNumbers(
+        P_1536, 2
     )
-    assert dh.DHParameterNumbers(65537, 5) != dh.DHParameterNumbers(65537, 2)
-    assert dh.DHParameterNumbers(65537, 2) != object()
+    assert dh.DHParameterNumbers(P_1536, 2, 123) != dh.DHParameterNumbers(
+        P_1536, 2, 456
+    )
+    assert dh.DHParameterNumbers(P_1536, 5) != dh.DHParameterNumbers(P_1536, 2)
+    assert dh.DHParameterNumbers(P_1536, 2) != object()
 
 
 def test_dh_private_numbers_equality():
-    params = dh.DHParameterNumbers(65537, 2)
+    params = dh.DHParameterNumbers(P_1536, 2)
     public = dh.DHPublicNumbers(1, params)
     private = dh.DHPrivateNumbers(2, public)
 
@@ -107,18 +126,18 @@ def test_dh_private_numbers_equality():
     assert private != dh.DHPrivateNumbers(0, public)
     assert private != dh.DHPrivateNumbers(2, dh.DHPublicNumbers(0, params))
     assert private != dh.DHPrivateNumbers(
-        2, dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 5))
+        2, dh.DHPublicNumbers(1, dh.DHParameterNumbers(P_1536, 5))
     )
     assert private != object()
 
 
 def test_dh_public_numbers_equality():
-    params = dh.DHParameterNumbers(65537, 2)
+    params = dh.DHParameterNumbers(P_1536, 2)
     public = dh.DHPublicNumbers(1, params)
 
     assert public == dh.DHPublicNumbers(1, params)
     assert public != dh.DHPublicNumbers(0, params)
-    assert public != dh.DHPublicNumbers(1, dh.DHParameterNumbers(65537, 5))
+    assert public != dh.DHPublicNumbers(1, dh.DHParameterNumbers(P_1536, 5))
     assert public != object()
 
 
@@ -209,12 +228,11 @@ class TestDH(object):
         )
 
     def test_numbers_unsupported_parameters(self, backend):
-        # p is set to 21 because when calling private_key we want it to
-        # fail the DH_check call OpenSSL does. Originally this was 23, but
-        # we are allowing p % 24 to == 23 with this PR (see #3768 for more)
-        # By setting it to 21 it fails later in DH_check in a primality check
-        # which triggers the code path we want to test
-        params = dh.DHParameterNumbers(21, 2)
+        # p is set to P_1536 + 1 because when calling private_key we want it to
+        # fail the DH_check call OpenSSL does, but we specifically want it to
+        # fail such that we don't get a DH_NOT_SUITABLE_GENERATOR. We can cause
+        # this by making sure p is not prime.
+        params = dh.DHParameterNumbers(P_1536 + 1, 2)
         public = dh.DHPublicNumbers(1, params)
         private = dh.DHPrivateNumbers(2, public)
 
@@ -363,6 +381,16 @@ class TestDH(object):
 
             assert symkey1 != symkey2
 
+    @pytest.mark.skip_fips(reason="key_size too small for FIPS")
+    def test_load_256bit_key_from_pkcs8(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dh_key_256.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key = serialization.load_pem_private_key(data, None, backend)
+        assert key.key_size == 256
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -375,6 +403,10 @@ class TestDH(object):
             and int(vector["p"]) < backend._fips_dh_min_modulus
         ):
             pytest.skip("modulus too small for FIPS mode")
+
+        if int(vector["p"]).bit_length() < 512:
+            pytest.skip("DH keys less than 512 bits are unsupported")
+
         parameters = dh.DHParameterNumbers(int(vector["p"]), int(vector["g"]))
         public = dh.DHPublicNumbers(int(vector["y"]), parameters)
         private = dh.DHPrivateNumbers(int(vector["x"]), public)
