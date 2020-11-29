@@ -381,6 +381,7 @@ class TestDH(object):
 
             assert symkey1 != symkey2
 
+    @pytest.mark.skip_fips(reason="key_size too small for FIPS")
     def test_load_256bit_key_from_pkcs8(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dh_key_256.pem"),
