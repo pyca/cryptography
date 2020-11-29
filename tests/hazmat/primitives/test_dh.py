@@ -32,7 +32,8 @@ P_1536 = int(
     "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"
     "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"
     "83655D23DCA3AD961C62F356208552BB9ED529077096966D"
-    "670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF", 16
+    "670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF",
+    16,
 )
 
 
@@ -106,7 +107,9 @@ def test_dh_parameter_numbers_equality():
     assert dh.DHParameterNumbers(P_1536, 7, 12345) == dh.DHParameterNumbers(
         P_1536, 7, 12345
     )
-    assert dh.DHParameterNumbers(P_1536 + 2, 2) != dh.DHParameterNumbers(P_1536, 2)
+    assert dh.DHParameterNumbers(P_1536 + 2, 2) != dh.DHParameterNumbers(
+        P_1536, 2
+    )
     assert dh.DHParameterNumbers(P_1536, 2, 123) != dh.DHParameterNumbers(
         P_1536, 2, 456
     )
