@@ -117,6 +117,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
+    dh,
     dsa,
     ec,
     ed25519,
@@ -2086,8 +2087,12 @@ class Backend(object):
         return self._read_mem_bio(bio)
 
     def generate_dh_parameters(self, generator, key_size):
-        if key_size < 512:
-            raise ValueError("DH key_size must be at least 512 bits")
+        if key_size < dh._MIN_MODULUS_SIZE:
+            raise ValueError(
+                "DH key_size must be at least {} bits".format(
+                    dh._MIN_MODULUS_SIZE
+                )
+            )
 
         if generator not in (2, 5):
             raise ValueError("DH generator must be 2 or 5")

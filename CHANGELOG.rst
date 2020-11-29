@@ -23,7 +23,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** We no longer allow loading of finite field
   Diffie-Hellman parameters of less than 512 bits in length. This change is to
   conform with an upcoming OpenSSL release that no longer supports smaller
-  sizes.
+  sizes. These keys were already wildly insecure and should not have been used
+  in any application outside of testing.
 * Python 2 support is deprecated in ``cryptography``. This is the last release
   that will support Python 2.
 
