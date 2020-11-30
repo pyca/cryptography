@@ -189,7 +189,7 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     if res <= 0:
         backend._consume_errors()
         raise UnsupportedAlgorithm(
-            "{} is not supported for the RSA sigature operation.".format(
+            "{} is not supported for the RSA signature operation.".format(
                 padding.name
             ),
             _Reasons.UNSUPPORTED_PADDING,
