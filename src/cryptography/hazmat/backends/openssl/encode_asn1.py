@@ -604,9 +604,19 @@ def _encode_general_subtree(backend, subtrees):
             gs = backend._lib.GENERAL_SUBTREE_new()
             gs.base = _encode_general_name(backend, name)
             res = backend._lib.sk_GENERAL_SUBTREE_push(general_subtrees, gs)
-            assert res >= 1
+            backend.openssl_assert(res >= 1)
 
         return general_subtrees
+
+
+def _encode_precert_signed_certificate_timestamps(backend, scts):
+    sct_stack = backend._lib.sk_SCT_new_null()
+    backend.openssl_assert(sct_stack != backend._ffi.NULL)
+    sct_stack = backend._ffi.gc(sct_stack, backend._lib.sk_SCT_free)
+    for sct in scts:
+        res = backend._lib.sk_SCT_push(sct_stack, sct._sct)
+        backend.openssl_assert(res >= 1)
+    return sct_stack
 
 
 def _encode_nonce(backend, nonce):
@@ -630,6 +640,9 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
+    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
+        _encode_precert_signed_certificate_timestamps
+    ),
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
