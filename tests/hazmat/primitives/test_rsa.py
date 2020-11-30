@@ -730,6 +730,16 @@ class TestRSASignature(object):
                 asym_utils.Prehashed(hashes.SHA1()),
             )
 
+    def test_prehashed_unsupported_in_signature_recover(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        public_key = private_key.public_key()
+        signature = private_key.sign(
+            b"sign me", padding.PKCS1v15(), hashes.SHA1()
+        )
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
+        with pytest.raises(TypeError):
+            public_key.recover(signature, padding.PKCS1v15(), prehashed_alg)
+
     def test_corrupted_private_key(self, backend):
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(
