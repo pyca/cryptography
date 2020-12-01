@@ -24,6 +24,7 @@ static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
+static const long Cryptography_HAS_GET_PROTO_VERSION;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -312,6 +313,16 @@ int SSL_want_write(const SSL *);
 long SSL_total_renegotiations(SSL *);
 long SSL_get_secure_renegotiation_support(SSL *);
 
+long SSL_CTX_set_min_proto_version(SSL_CTX *, int);
+long SSL_CTX_set_max_proto_version(SSL_CTX *, int);
+long SSL_set_min_proto_version(SSL *, int);
+long SSL_set_max_proto_version(SSL *, int);
+
+long SSL_CTX_get_min_proto_version(SSL_CTX *);
+long SSL_CTX_get_max_proto_version(SSL_CTX *);
+long SSL_get_min_proto_version(SSL *);
+long SSL_get_max_proto_version(SSL *);
+
 /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
    and Windows defines long as 32-bit. */
 unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
@@ -330,10 +341,6 @@ unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*  methods */
 
-/*
- * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
- * OpenSSL support them.
- */
 const SSL_METHOD *TLSv1_1_method(void);
 const SSL_METHOD *TLSv1_1_server_method(void);
 const SSL_METHOD *TLSv1_1_client_method(void);
@@ -362,6 +369,10 @@ const SSL_METHOD *DTLS_client_method(void);
 const SSL_METHOD *SSLv23_method(void);
 const SSL_METHOD *SSLv23_server_method(void);
 const SSL_METHOD *SSLv23_client_method(void);
+
+const SSL_METHOD *TLS_method(void);
+const SSL_METHOD *TLS_server_method(void);
+const SSL_METHOD *TLS_client_method(void);
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(SSL_METHOD *);
@@ -673,5 +684,16 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3 = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_GET_PROTO_VERSION = 0;
+
+long (*SSL_CTX_get_min_proto_version)(SSL_CTX *) = NULL;
+long (*SSL_CTX_get_max_proto_version)(SSL_CTX *) = NULL;
+long (*SSL_get_min_proto_version)(SSL *) = NULL;
+long (*SSL_get_max_proto_version)(SSL *) = NULL;
+#else
+static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
 #endif
 """
