@@ -496,6 +496,11 @@ file suffix.
 
     Serialize a PKCS12 blob.
 
+    .. note::
+
+        Due to `a bug in Firefox`_ it's not possible to load unencrypted PKCS12
+        blobs in Firefox.
+
     :param name: The friendly name to use for the supplied certificate and key.
     :type name: bytes
 
@@ -942,6 +947,7 @@ Serialization Encryption Types
     Do not encrypt.
 
 
+.. _`a bug in Firefox`: https://bugzilla.mozilla.org/show_bug.cgi?id=773111
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
 .. _`PROTOCOL.key`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
