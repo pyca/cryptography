@@ -26,7 +26,7 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
-setup_requirements = ["cffi>=1.8,!=1.11.3"]
+setup_requirements = ["cffi>=1.12"]
 
 if platform.python_implementation() == "PyPy":
     if sys.pypy_version_info < (5, 4):
