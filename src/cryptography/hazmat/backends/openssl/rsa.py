@@ -142,6 +142,7 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     backend.openssl_assert(pkey_size > 0)
 
     if isinstance(padding, PKCS1v15):
+        # Hash algorithm is ignored for PKCS1v15-padding, may be None.
         padding_enum = backend._lib.RSA_PKCS1_PADDING
     elif isinstance(padding, PSS):
         if not isinstance(padding._mgf, MGF1):
@@ -149,6 +150,10 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
                 "Only MGF1 is supported by this backend.",
                 _Reasons.UNSUPPORTED_MGF,
             )
+
+        # PSS padding requires a hash algorithm
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         # Size of key in bytes - 2 is the maximum
         # PSS signature length (salt length is checked later)
@@ -168,23 +173,28 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     return padding_enum
 
 
+# Hash algorithm can be absent (None) to initialize the context without setting
+# any message digest algorithm. This is currently only valid for the PKCS1v15
+# padding type, where it means that the signature data is encoded/decoded
+# as provided, without being wrapped in a DigestInfo structure.
 def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
-    evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init_func(pkey_ctx)
     backend.openssl_assert(res == 1)
-    res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
-    if res == 0:
-        backend._consume_errors()
-        raise UnsupportedAlgorithm(
-            "{} is not supported by this backend for RSA signing.".format(
-                algorithm.name
-            ),
-            _Reasons.UNSUPPORTED_HASH,
-        )
+    if algorithm is not None:
+        evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
+        res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
+        if res == 0:
+            backend._consume_errors()
+            raise UnsupportedAlgorithm(
+                "{} is not supported by this backend for RSA signing.".format(
+                    algorithm.name
+                ),
+                _Reasons.UNSUPPORTED_HASH,
+            )
     res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
     if res <= 0:
         backend._consume_errors()

@@ -777,6 +777,7 @@ class TestRSAVerification(object):
             signature, message, padding.PKCS1v15(), hashes.SHA1()
         )
 
+        # Test digest recovery by providing hash
         digest = hashes.Hash(hashes.SHA1())
         digest.update(message)
         msg_digest = digest.finalize()
@@ -784,6 +785,13 @@ class TestRSAVerification(object):
             signature, padding.PKCS1v15(), hashes.SHA1()
         )
         assert msg_digest == rec_msg_digest
+
+        # Test recovery of all data (full DigestInfo) with hash alg. as None
+        rec_sig_data = public_key.recover_data_from_signature(
+            signature, padding.PKCS1v15(), None
+        )
+        assert len(rec_sig_data) > len(msg_digest)
+        assert msg_digest == rec_sig_data[-len(msg_digest) :]
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1008,6 +1016,14 @@ class TestRSAVerification(object):
             salt_length=padding.PSS.MAX_LENGTH,
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA1())
+
+        # Hash algorithm can not be absent for PSS padding
+        with pytest.raises(TypeError):
+            public_key.recover_data_from_signature(
+                signature, pss_padding, None
+            )
+
+        # Signature data recovery not supported with PSS
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.recover_data_from_signature(
                 signature, pss_padding, hashes.SHA1()
