@@ -107,9 +107,9 @@ class RSAPublicKey(object):
         """
 
     @abc.abstractmethod
-    def recover(self, signature, padding, algorithm):
+    def recover_data_from_signature(self, signature, padding, algorithm):
         """
-        Recovers the original data digest from the signature.
+        Recovers the original data from the signature.
         """
 
 

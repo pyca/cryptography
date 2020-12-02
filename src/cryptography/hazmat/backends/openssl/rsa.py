@@ -499,7 +499,7 @@ class _RSAPublicKey(object):
             self._backend, padding, algorithm, self, signature, data
         )
 
-    def recover(self, signature, padding, algorithm):
+    def recover_data_from_signature(self, signature, padding, algorithm):
         _check_not_prehashed(algorithm)
         return _rsa_sig_recover(
             self._backend, padding, algorithm, self, signature

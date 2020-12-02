@@ -28,10 +28,10 @@ Changelog
 * Python 2 support is deprecated in ``cryptography``. This is the last release
   that will support Python 2.
 * Added the
-  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.recover`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.recover_data_from_signature`
   function to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-  for RSA signature recovery support.
+  for recovering the signed data from an RSA signature.
 
 .. _v3-2-1:
 

@@ -709,15 +709,15 @@ Key interfaces
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 
-    .. method:: recover(signature, padding, algorithm)
+    .. method:: recover_data_from_signature(signature, padding, algorithm)
 
         .. versionadded:: 3.3
 
-        Recovers the digest of the original message string from the signature.
-        Normally you should use the
+        Recovers the signed data from the signature. The data is the digest of
+        the original message string. Normally you should use the
         :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
         function to validate the signature. But there are some cases where you
-        may want to recover the digest of the original message.
+        may want to recover the signed data.
 
         Note that the ``padding`` and ``algorithm`` parameters must match the
         ones used when the signature was created for the recovery to succeed.
@@ -733,13 +733,13 @@ Key interfaces
         :param algorithm: An instance of
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-        :return bytes: The original message digest.
+        :return bytes: The signed data.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature is
             invalid.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If signature
-            recovery is not supported with the provided ``padding`` type.
+            data recovery is not supported with the provided ``padding`` type.
 
 .. class:: RSAPublicKeyWithSerialization
 

@@ -738,7 +738,9 @@ class TestRSASignature(object):
         )
         prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
         with pytest.raises(TypeError):
-            public_key.recover(signature, padding.PKCS1v15(), prehashed_alg)
+            public_key.recover_data_from_signature(
+                signature, padding.PKCS1v15(), prehashed_alg
+            )
 
     def test_corrupted_private_key(self, backend):
         with pytest.raises(ValueError):
@@ -778,7 +780,7 @@ class TestRSAVerification(object):
         digest = hashes.Hash(hashes.SHA1())
         digest.update(message)
         msg_digest = digest.finalize()
-        rec_msg_digest = public_key.recover(
+        rec_msg_digest = public_key.recover_data_from_signature(
             signature, padding.PKCS1v15(), hashes.SHA1()
         )
         assert msg_digest == rec_msg_digest
@@ -807,7 +809,9 @@ class TestRSAVerification(object):
             b"sign me", padding.PKCS1v15(), hashes.SHA1()
         )
         with pytest.raises(InvalidSignature):
-            public_key.recover(signature, padding.PKCS1v15(), hashes.SHA256())
+            public_key.recover_data_from_signature(
+                signature, padding.PKCS1v15(), hashes.SHA256()
+            )
 
     def test_invalid_signature_sequence_removed(self, backend):
         """
@@ -1005,7 +1009,9 @@ class TestRSAVerification(object):
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA1())
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.recover(signature, pss_padding, hashes.SHA1())
+            public_key.recover_data_from_signature(
+                signature, pss_padding, hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
