@@ -25,6 +25,7 @@ static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
+static const long Cryptography_HAS_SET_PROTO_VERSION;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -695,5 +696,16 @@ long (*SSL_get_min_proto_version)(SSL *) = NULL;
 long (*SSL_get_max_proto_version)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_SET_PROTO_VERSION = 0;
+
+long (*SSL_CTX_set_min_proto_version)(SSL_CTX *) = NULL;
+long (*SSL_CTX_set_max_proto_version)(SSL_CTX *) = NULL;
+long (*SSL_set_min_proto_version)(SSL *) = NULL;
+long (*SSL_set_max_proto_version)(SSL *) = NULL;
+#else
+static const long Cryptography_HAS_SET_PROTO_VERSION = 1;
 #endif
 """
