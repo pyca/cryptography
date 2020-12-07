@@ -20,5 +20,25 @@ like almost all software in Python is potentially vulnerable to this attack. The
 Likelihood: unlikely, Remediation Cost: expensive to repair" and we do not
 consider this a high risk for most users.
 
+RSA PKCS1 v1.5 constant time decryption
+---------------------------------------
+
+RSA decryption has several different modes, one of which is PKCS1 v1.5. When
+used in online contexts, a secure protocol implementation requires that peers
+not be able to tell whether RSA PKCS1 v1.5 decryption failed or succeeded,
+even by timing variability.
+
+``cryptography`` does not provide an API that makes this possible, due to the
+fact that RSA decryption raises an exception on failure, which takes a
+different amount of time than returning a value in the success case.
+
+For this reason, at present, we recommend not implementing online protocols
+that use RSA PKCS1 v1.5 decryption with ``cryptography`` -- independent of this
+limitation, such protocols generally have poor security properties due to their
+lack of forward security.
+
+If a constant time RSA PKCS1 v1.5 decryption API is truly required, you should
+contribute one to ``cryptography``.
+
 .. _`Memory wiping`:  https://devblogs.microsoft.com/oldnewthing/?p=4223
 .. _`CERT secure coding guidelines`: https://wiki.sei.cmu.edu/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources

@@ -342,6 +342,11 @@ Padding
     :class:`OAEP` should be preferred for encryption and :class:`PSS` should be
     preferred for signatures.
 
+    .. warning::
+
+        Our implementation of PKCS1 v1.5 decryption is not constant time. See
+        :doc:`/limitations` for details.
+
 
 .. function:: calculate_max_pss_salt_length(key, hash_algorithm)
 
