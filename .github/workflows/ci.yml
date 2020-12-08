@@ -107,7 +107,7 @@ jobs:
       - run: 'echo -e "$ENV_VARS" >> $GITHUB_ENV'
         if: matrix.IMAGE.ENV
         env:
-          ENV_VARS: ${{ join(matrix.IMAGE.ENV, "\n") }}
+          ENV_VARS: ${{ join(matrix.IMAGE.ENV, '\n') }}
       - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
