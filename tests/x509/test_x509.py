@@ -41,6 +41,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
+    dh,
     dsa,
     ec,
     ed25519,
@@ -51,6 +52,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
 )
+from cryptography.utils import int_from_bytes
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
@@ -65,7 +67,7 @@ from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
-from ..utils import load_vectors_from_file
+from ..utils import load_nist_vectors, load_vectors_from_file
 
 
 @utils.register_interface(x509.ExtensionType)
@@ -5237,12 +5239,14 @@ class TestSignatureRejection(object):
     """Test if signing rejects DH keys properly."""
 
     def load_key(self, backend):
-        data = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhkey.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        return serialization.load_pem_private_key(data, None, backend)
+        vector = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "rfc3526.txt"),
+            load_nist_vectors,
+        )[1]
+        p = int_from_bytes(binascii.unhexlify(vector["p"]), "big")
+        params = dh.DHParameterNumbers(p, int(vector["g"]))
+        param = params.parameters(backend)
+        return param.generate_private_key()
 
     def test_crt_signing_check(self, backend):
         issuer_private_key = self.load_key(backend)

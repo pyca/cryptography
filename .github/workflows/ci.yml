@@ -88,7 +88,7 @@ jobs:
         IMAGE:
           - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py36"}
-          - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", ENV: "OPENSSL_FORCE_FIPS_MODE=1"}
+          - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", ENV: "OPENSSL_FORCE_FIPS_MODE=1\nCFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING"}
           - {IMAGE: "pyca/cryptography-runner-stretch", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-buster", TOXENV: "py37"}
           - {IMAGE: "pyca/cryptography-runner-bullseye", TOXENV: "py38"}
@@ -104,10 +104,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
-      - run: 'echo "$ENV_VAR" >> $GITHUB_ENV'
+      - run: 'echo -e "$ENV_VARS" >> $GITHUB_ENV'
         if: matrix.IMAGE.ENV
         env:
-          ENV_VAR: ${{ matrix.IMAGE.ENV }}
+          ENV_VARS: ${{ matrix.IMAGE.ENV }}
       - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
