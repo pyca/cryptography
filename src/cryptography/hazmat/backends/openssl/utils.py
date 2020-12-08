@@ -52,7 +52,8 @@ def _check_not_prehashed(signature_algorithm):
     if isinstance(signature_algorithm, Prehashed):
         raise TypeError(
             "Prehashed is only supported in the sign and verify methods. "
-            "It cannot be used with signer or verifier."
+            "It cannot be used with signer, verifier or "
+            "recover_data_from_signature."
         )
 
 

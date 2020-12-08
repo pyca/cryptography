@@ -714,6 +714,55 @@ Key interfaces
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 
+    .. method:: recover_data_from_signature(signature, padding, algorithm)
+
+        .. versionadded:: 3.3
+
+        Recovers the signed data from the signature. The data contains the
+        digest of the original message string. The ``padding`` and
+        ``algorithm`` parameters must match the ones used when the signature
+        was created for the recovery to succeed.
+
+        The ``algorithm`` parameter can also be set to ``None`` to recover all
+        the data present in the signature, without regard to its format or the
+        hash algorithm used for its creation.
+
+        For
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+        padding, this returns the data after removing the padding layer. For
+        standard signatures the data contains the full ``DigestInfo`` structure.
+        For non-standard signatures, any data can be returned, including zero-
+        length data.
+
+        Normally you should use the
+        :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+        function to validate the signature. But for some non-standard signature
+        formats you may need to explicitly recover and validate the signed
+        data. Following are some examples:
+
+        - Some old Thawte and Verisign timestamp certificates without ``DigestInfo``.
+        - Signed MD5/SHA1 hashes in TLS 1.1 or earlier (RFC 4346, section 4.7).
+        - IKE version 1 signatures without ``DigestInfo`` (RFC 2409, section 5.1).
+
+        :param bytes signature: The signature.
+
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
+            Recovery is only supported with some of the padding types. (Currently
+            only with
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`).
+
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+            Can be ``None`` to return the all the data present in the signature.
+
+        :return bytes: The signed data.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature is
+            invalid.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If signature
+            data recovery is not supported with the provided ``padding`` type.
 
 .. class:: RSAPublicKeyWithSerialization
 
