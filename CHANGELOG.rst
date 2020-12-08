@@ -3,8 +3,8 @@ Changelog
 
 .. _v3-3:
 
-3.3 - `master`_
-~~~~~~~~~~~~~~~
+3.3 - 2020-12-08
+~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
@@ -25,6 +25,8 @@ Changelog
   conform with an upcoming OpenSSL release that no longer supports smaller
   sizes. These keys were already wildly insecure and should not have been used
   in any application outside of testing.
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1i.
 * Python 2 support is deprecated in ``cryptography``. This is the last release
   that will support Python 2.
 * Added the
