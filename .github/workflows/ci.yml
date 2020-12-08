@@ -88,7 +88,7 @@ jobs:
         IMAGE:
           - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py36"}
-          - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", ENV: ["OPENSSL_FORCE_FIPS_MODE=1", "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING"]}
+          - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", FIPS: true}
           - {IMAGE: "pyca/cryptography-runner-stretch", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-buster", TOXENV: "py37"}
           - {IMAGE: "pyca/cryptography-runner-bullseye", TOXENV: "py38"}
@@ -100,20 +100,20 @@ jobs:
           - {IMAGE: "pyca/cryptography-runner-ubuntu-rolling", TOXENV: "py38-randomorder"}
           - {IMAGE: "pyca/cryptography-runner-fedora", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-alpine", TOXENV: "py38"}
-    name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ join(matrix.IMAGE.ENV, ' ') }}"
+    name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     steps:
       - uses: actions/checkout@v2
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
-      - run: 'echo -e "$ENV_VARS" >> $GITHUB_ENV'
-        if: matrix.IMAGE.ENV
-        env:
-          ENV_VARS: ${{ join(matrix.IMAGE.ENV, '\n') }}
+      - run: |
+          echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
+          echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
+        if: matrix.IMAGE.FIPS
       - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
       - uses: ./.github/actions/upload-coverage
         with:
-          name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ join(matrix.IMAGE.ENV, ' ') }}"
+          name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
 
   macos:
     runs-on: macos-latest
