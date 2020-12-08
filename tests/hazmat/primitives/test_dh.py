@@ -151,6 +151,7 @@ class TestDH(object):
         with pytest.raises(ValueError):
             dh.generate_parameters(7, 512, backend)
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_dh_parameters_supported(self, backend):
         valid_p = int(
             b"907c7211ae61aaaba1825ff53b6cb71ac6df9f1a424c033f4a0a41ac42fad3a9"
@@ -171,6 +172,12 @@ class TestDH(object):
     )
     def test_dh_parameters_allows_rfc3526_groups(self, backend, vector):
         p = int_from_bytes(binascii.unhexlify(vector["p"]), "big")
+        if (
+            backend._fips_enabled
+            and p.bit_length() < backend._fips_dh_min_modulus
+        ):
+            pytest.skip("modulus too small for FIPS mode")
+
         params = dh.DHParameterNumbers(p, int(vector["g"]))
         param = params.parameters(backend)
         key = param.generate_private_key()
@@ -180,6 +187,7 @@ class TestDH(object):
         roundtripped_key = key.private_numbers().private_key(backend)
         assert key.private_numbers() == roundtripped_key.private_numbers()
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -227,6 +235,7 @@ class TestDH(object):
             deserialized_private, dh.DHPrivateKeyWithSerialization
         )
 
+    @pytest.mark.skip_fips(reason="FIPS requires specific parameters")
     def test_numbers_unsupported_parameters(self, backend):
         # p is set to P_1536 + 1 because when calling private_key we want it to
         # fail the DH_check call OpenSSL does, but we specifically want it to
@@ -415,6 +424,7 @@ class TestDH(object):
 
         assert int_from_bytes(symkey, "big") == int(vector["k"], 16)
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -477,6 +487,7 @@ class TestDHPrivateKeySerialization(object):
         with pytest.raises(ValueError):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "is_dhx"),
         [
@@ -521,6 +532,7 @@ class TestDHPrivateKeySerialization(object):
         )
         assert serialized == key_bytes
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "vec_path", "is_dhx"),
         [

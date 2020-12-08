@@ -1757,6 +1757,7 @@ class TestEd448Serialization(object):
 class TestDHSerialization(object):
     """Test all options with least-supported key type."""
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_dh_public_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhkey.pem"),
@@ -1788,6 +1789,7 @@ class TestDHSerialization(object):
                 with pytest.raises(ValueError):
                     public_key.public_bytes(enc, fmt)
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_dh_private_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhkey.pem"),
