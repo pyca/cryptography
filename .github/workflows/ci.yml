@@ -100,7 +100,7 @@ jobs:
           - {IMAGE: "pyca/cryptography-runner-ubuntu-rolling", TOXENV: "py38-randomorder"}
           - {IMAGE: "pyca/cryptography-runner-fedora", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-alpine", TOXENV: "py38"}
-    name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ matrix.IMAGE.ENV }}"
+    name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} ${{ join(matrix.IMAGE.ENV, ' ') }}"
     steps:
       - uses: actions/checkout@v2
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
