@@ -138,7 +138,7 @@ def _get_mpint(data):
     val, data = _get_sshstr(data)
     if val and six.indexbytes(val, 0) > 0x7F:
         raise ValueError("Invalid data")
-    return utils.int_from_bytes(val, "big"), data
+    return int.from_bytes(val, "big"), data
 
 
 def _to_mpint(val):

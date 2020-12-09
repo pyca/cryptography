@@ -391,8 +391,8 @@ class EllipticCurvePublicNumbers(object):
             # key_size is in bits. Convert to bytes and round up
             byte_length = (curve.key_size + 7) // 8
             if len(data) == 2 * byte_length + 1:
-                x = utils.int_from_bytes(data[1 : byte_length + 1], "big")
-                y = utils.int_from_bytes(data[byte_length + 1 :], "big")
+                x = int.from_bytes(data[1 : byte_length + 1], "big")
+                y = int.from_bytes(data[byte_length + 1 :], "big")
                 return cls(x, y, curve)
             else:
                 raise ValueError("Invalid elliptic curve point data length")
