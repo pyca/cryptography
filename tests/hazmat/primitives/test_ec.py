@@ -532,11 +532,15 @@ class TestECDSAVectors(object):
 
                 signature = encode_dss_signature(vector["r"], vector["s"])
 
-        if vector["fail"] is True:
-            with pytest.raises(exceptions.InvalidSignature):
-                key.verify(signature, vector["message"], ec.ECDSA(hash_type()))
-        else:
-            key.verify(signature, vector["message"], ec.ECDSA(hash_type()))
+                if vector["fail"] is True:
+                    with pytest.raises(exceptions.InvalidSignature):
+                        key.verify(
+                            signature, vector["message"], ec.ECDSA(hash_type())
+                        )
+                else:
+                    key.verify(
+                        signature, vector["message"], ec.ECDSA(hash_type())
+                    )
 
     def test_sign(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
