@@ -275,7 +275,7 @@ def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
 
     # Attempt to keep the rest of the code in this function as constant/time
     # as possible. See the comment in _enc_dec_rsa_pkey_ctx. Note that the
-    # outlen parameter is used even though its value may be undefined in the
+    # buflen parameter is used even though its value may be undefined in the
     # error case. Due to the tolerant nature of Python slicing this does not
     # trigger any exceptions.
     maxlen = backend._lib.EVP_PKEY_size(public_key._evp_pkey)
