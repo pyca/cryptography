@@ -179,11 +179,7 @@ class TestDH(object):
         params = dh.DHParameterNumbers(p, int(vector["g"]))
         param = params.parameters(backend)
         key = param.generate_private_key()
-        # This confirms that a key generated with this group
-        # will pass DH_check when we serialize and de-serialize it via
-        # the Numbers path.
-        roundtripped_key = key.private_numbers().private_key(backend)
-        assert key.private_numbers() == roundtripped_key.private_numbers()
+        assert key.private_numbers().public_numbers.parameter_numbers == params
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
