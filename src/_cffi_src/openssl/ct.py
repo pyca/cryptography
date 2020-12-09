@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #if CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER && !defined(OPENSSL_NO_CT)
