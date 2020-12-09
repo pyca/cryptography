@@ -1208,7 +1208,7 @@ class TestECDH(object):
                 if vector["fail"] and vector["errno"] in [5, 6, 7]:
                     with pytest.raises(ValueError):
                         private_numbers.private_key(backend)
-                    return
+                    continue
                 else:
                     private_key = private_numbers.private_key(backend)
 
@@ -1223,7 +1223,7 @@ class TestECDH(object):
                 if vector["fail"] and vector["errno"] in [1, 2]:
                     with pytest.raises(ValueError):
                         public_numbers.public_key(backend)
-                    return
+                    continue
                 else:
                     peer_pubkey = public_numbers.public_key(backend)
 
