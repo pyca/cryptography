@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
+
 .. _v3-3:
 
 3.3 - 2020-12-08

@@ -5,12 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-
-try:
-    # Only available in math in 3.5+
-    from math import gcd
-except ImportError:
-    from fractions import gcd
+from math import gcd
 
 import six
 

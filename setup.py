@@ -63,9 +63,8 @@ try:
             "Operating System :: POSIX :: Linux",
             "Operating System :: Microsoft :: Windows",
             "Programming Language :: Python",
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
@@ -79,13 +78,10 @@ try:
             where="src", exclude=["_cffi_src", "_cffi_src.*"]
         ),
         include_package_data=True,
-        python_requires=(
-            ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
-        ),
+        python_requires=">=3.6",
         install_requires=["six >= 1.4.1"] + setup_requirements,
         setup_requires=setup_requirements,
         extras_require={
-            ":python_version < '3'": ["enum34", "ipaddress"],
             "test": [
                 "pytest>=3.6.0,!=3.9.0,!=3.9.1,!=3.9.2",
                 "pretend",

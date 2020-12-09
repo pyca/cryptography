@@ -16,12 +16,8 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "pep8,packaging,docs", COVERAGE: "false"}
-          - {VERSION: "pypy2", TOXENV: "pypy-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "2.7", TOXENV: "py27", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
           - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1h", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
@@ -86,16 +82,13 @@ jobs:
     strategy:
       matrix:
         IMAGE:
-          - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-centos8", TOXENV: "py36"}
           - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", FIPS: true}
-          - {IMAGE: "pyca/cryptography-runner-stretch", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-buster", TOXENV: "py37"}
           - {IMAGE: "pyca/cryptography-runner-bullseye", TOXENV: "py38"}
           - {IMAGE: "pyca/cryptography-runner-sid", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "pyca/cryptography-runner-ubuntu-rolling", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-rolling", TOXENV: "py38"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-rolling", TOXENV: "py38-randomorder"}
           - {IMAGE: "pyca/cryptography-runner-fedora", TOXENV: "py39"}
@@ -120,7 +113,6 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27", EXTRA_CFLAGS: ""}
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
@@ -162,7 +154,6 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010", CL_FLAGS: ""}
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: ""}
@@ -176,13 +167,6 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
 
-      - name: Install MSVC for Python 2.7
-        run: |
-            Invoke-WebRequest -Uri https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/VCForPython27.msi -OutFile VCForPython27.msi
-            Start-Process msiexec -Wait -ArgumentList @('/i', 'VCForPython27.msi', '/qn', 'ALLUSERS=1')
-            Remove-Item VCForPython27.msi -Force
-        shell: powershell
-        if: matrix.PYTHON.VERSION == '2.7'
       - run: python -m pip install tox requests coverage
       - name: Download OpenSSL
         run: |

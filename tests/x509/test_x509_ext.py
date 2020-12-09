@@ -13,8 +13,6 @@ import pretend
 
 import pytest
 
-import six
-
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend,
@@ -213,16 +211,10 @@ class TestUnrecognizedExtension(object):
         ext1 = x509.UnrecognizedExtension(
             x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
         )
-        if not six.PY2:
-            assert repr(ext1) == (
-                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
-                "name=Unknown OID)>, value=b'\\x03\\x02\\x01')>"
-            )
-        else:
-            assert repr(ext1) == (
-                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
-                "name=Unknown OID)>, value='\\x03\\x02\\x01')>"
-            )
+        assert repr(ext1) == (
+            "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
+            "name=Unknown OID)>, value=b'\\x03\\x02\\x01')>"
+        )
 
     def test_hash(self):
         ext1 = x509.UnrecognizedExtension(
@@ -275,16 +267,10 @@ class TestCertificateIssuer(object):
 
     def test_repr(self):
         ci = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
-        if not six.PY2:
-            assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(value="
-                "'cryptography.io')>])>)>"
-            )
-        else:
-            assert repr(ci) == (
-                "<CertificateIssuer(<GeneralNames([<DNSName(value="
-                "u'cryptography.io')>])>)>"
-            )
+        assert repr(ci) == (
+            "<CertificateIssuer(<GeneralNames([<DNSName(value="
+            "'cryptography.io')>])>)>"
+        )
 
     def test_get_values_for_type(self):
         ci = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
@@ -405,16 +391,10 @@ class TestNoticeReference(object):
     def test_repr(self):
         nr = x509.NoticeReference(u"org", [1, 3, 4])
 
-        if not six.PY2:
-            assert repr(nr) == (
-                "<NoticeReference(organization='org', notice_numbers=[1, 3, 4"
-                "])>"
-            )
-        else:
-            assert repr(nr) == (
-                "<NoticeReference(organization=u'org', notice_numbers=[1, 3, "
-                "4])>"
-            )
+        assert repr(nr) == (
+            "<NoticeReference(organization='org', notice_numbers=[1, 3, 4"
+            "])>"
+        )
 
     def test_eq(self):
         nr = x509.NoticeReference("org", [1, 2])
@@ -449,16 +429,10 @@ class TestUserNotice(object):
 
     def test_repr(self):
         un = x509.UserNotice(x509.NoticeReference(u"org", [1]), u"text")
-        if not six.PY2:
-            assert repr(un) == (
-                "<UserNotice(notice_reference=<NoticeReference(organization='"
-                "org', notice_numbers=[1])>, explicit_text='text')>"
-            )
-        else:
-            assert repr(un) == (
-                "<UserNotice(notice_reference=<NoticeReference(organization=u"
-                "'org', notice_numbers=[1])>, explicit_text=u'text')>"
-            )
+        assert repr(un) == (
+            "<UserNotice(notice_reference=<NoticeReference(organization='"
+            "org', notice_numbers=[1])>, explicit_text='text')>"
+        )
 
     def test_eq(self):
         nr = x509.NoticeReference("org", [1, 2])
@@ -515,18 +489,11 @@ class TestPolicyInformation(object):
     def test_repr(self):
         pq = [u"string", x509.UserNotice(None, u"hi")]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
-        if not six.PY2:
-            assert repr(pi) == (
-                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
-                "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
-                "tice(notice_reference=None, explicit_text='hi')>])>"
-            )
-        else:
-            assert repr(pi) == (
-                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
-                "2.3, name=Unknown OID)>, policy_qualifiers=[u'string', <UserN"
-                "otice(notice_reference=None, explicit_text=u'hi')>])>"
-            )
+        assert repr(pi) == (
+            "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
+            "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
+            "tice(notice_reference=None, explicit_text='hi')>])>"
+        )
 
     def test_eq(self):
         pi = x509.PolicyInformation(
@@ -594,18 +561,11 @@ class TestCertificatePolicies(object):
         pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         cp = x509.CertificatePolicies([pi])
-        if not six.PY2:
-            assert repr(cp) == (
-                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
-                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
-                "ers=['string'])>])>"
-            )
-        else:
-            assert repr(cp) == (
-                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
-                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
-                "ers=[u'string'])>])>"
-            )
+        assert repr(cp) == (
+            "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
+            "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
+            "ers=['string'])>])>"
+        )
 
     def test_eq(self):
         pi = x509.PolicyInformation(
@@ -1011,20 +971,12 @@ class TestSubjectKeyIdentifier(object):
             binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ext = x509.Extension(ExtensionOID.SUBJECT_KEY_IDENTIFIER, False, ski)
-        if not six.PY2:
-            assert repr(ext) == (
-                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
-                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
-                "igest=b'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
-                "\\xf7\\xff:\\xc9')>)>"
-            )
-        else:
-            assert repr(ext) == (
-                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
-                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
-                "igest='\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
-                "\\xf7\\xff:\\xc9')>)>"
-            )
+        assert repr(ext) == (
+            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
+            "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
+            "igest=b'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
+            "\\xf7\\xff:\\xc9')>)>"
+        )
 
     def test_eq(self):
         ski = x509.SubjectKeyIdentifier(
@@ -1128,18 +1080,11 @@ class TestAuthorityKeyIdentifier(object):
         )
         aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
 
-        if not six.PY2:
-            assert repr(aki) == (
-                "<AuthorityKeyIdentifier(key_identifier=b'digest', authority_"
-                "cert_issuer=[<DirectoryName(value=<Name(CN=myCN)>)>], author"
-                "ity_cert_serial_number=1234)>"
-            )
-        else:
-            assert repr(aki) == (
-                "<AuthorityKeyIdentifier(key_identifier='digest', authority_"
-                "cert_issuer=[<DirectoryName(value=<Name(CN=myCN)>)>], author"
-                "ity_cert_serial_number=1234)>"
-            )
+        assert repr(aki) == (
+            "<AuthorityKeyIdentifier(key_identifier=b'digest', authority_"
+            "cert_issuer=[<DirectoryName(value=<Name(CN=myCN)>)>], author"
+            "ity_cert_serial_number=1234)>"
+        )
 
     def test_eq(self):
         dirname = x509.DirectoryName(
@@ -1806,10 +1751,7 @@ class TestDirectoryName(object):
 class TestRFC822Name(object):
     def test_repr(self):
         gn = x509.RFC822Name(u"string")
-        if not six.PY2:
-            assert repr(gn) == "<RFC822Name(value='string')>"
-        else:
-            assert repr(gn) == "<RFC822Name(value=u'string')>"
+        assert repr(gn) == "<RFC822Name(value='string')>"
 
     def test_equality(self):
         gn = x509.RFC822Name(u"string")
@@ -1891,10 +1833,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_repr(self):
         gn = x509.UniformResourceIdentifier(u"string")
-        if not six.PY2:
-            assert repr(gn) == ("<UniformResourceIdentifier(value='string')>")
-        else:
-            assert repr(gn) == ("<UniformResourceIdentifier(value=u'string')>")
+        assert repr(gn) == ("<UniformResourceIdentifier(value='string')>")
 
 
 class TestRegisteredID(object):
@@ -1981,28 +1920,16 @@ class TestOtherName(object):
 
     def test_repr(self):
         gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
-        if not six.PY2:
-            assert repr(gn) == (
-                "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
-                "name=Unknown OID)>, value=b'derdata')>"
-            )
-        else:
-            assert repr(gn) == (
-                "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
-                "name=Unknown OID)>, value='derdata')>"
-            )
+        assert repr(gn) == (
+            "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
+            "name=Unknown OID)>, value=b'derdata')>"
+        )
 
         gn = x509.OtherName(x509.ObjectIdentifier("2.5.4.65"), b"derdata")
-        if not six.PY2:
-            assert repr(gn) == (
-                "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
-                "name=pseudonym)>, value=b'derdata')>"
-            )
-        else:
-            assert repr(gn) == (
-                "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
-                "name=pseudonym)>, value='derdata')>"
-            )
+        assert repr(gn) == (
+            "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
+            "name=pseudonym)>, value=b'derdata')>"
+        )
 
     def test_eq(self):
         gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
@@ -2070,14 +1997,9 @@ class TestGeneralNames(object):
 
     def test_repr(self):
         gns = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
-        if not six.PY2:
-            assert repr(gns) == (
-                "<GeneralNames([<DNSName(value='cryptography.io')>])>"
-            )
-        else:
-            assert repr(gns) == (
-                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>"
-            )
+        assert repr(gns) == (
+            "<GeneralNames([<DNSName(value='cryptography.io')>])>"
+        )
 
     def test_eq(self):
         gns = x509.GeneralNames([x509.DNSName(u"cryptography.io")])
@@ -2135,16 +2057,10 @@ class TestIssuerAlternativeName(object):
 
     def test_repr(self):
         san = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
-        if not six.PY2:
-            assert repr(san) == (
-                "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
-            )
-        else:
-            assert repr(san) == (
-                "<IssuerAlternativeName("
-                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
-            )
+        assert repr(san) == (
+            "<IssuerAlternativeName("
+            "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
+        )
 
     def test_eq(self):
         san = x509.IssuerAlternativeName([x509.DNSName(u"cryptography.io")])
@@ -2249,16 +2165,10 @@ class TestSubjectAlternativeName(object):
 
     def test_repr(self):
         san = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
-        if not six.PY2:
-            assert repr(san) == (
-                "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
-            )
-        else:
-            assert repr(san) == (
-                "<SubjectAlternativeName("
-                "<GeneralNames([<DNSName(value=u'cryptography.io')>])>)>"
-            )
+        assert repr(san) == (
+            "<SubjectAlternativeName("
+            "<GeneralNames([<DNSName(value='cryptography.io')>])>)>"
+        )
 
     def test_eq(self):
         san = x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")])
@@ -2634,18 +2544,11 @@ class TestAccessDescription(object):
             AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com"),
         )
-        if not six.PY2:
-            assert repr(ad) == (
-                "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
-                ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
-                "Identifier(value='http://ocsp.domain.com')>)>"
-            )
-        else:
-            assert repr(ad) == (
-                "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
-                ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
-                "Identifier(value=u'http://ocsp.domain.com')>)>"
-            )
+        assert repr(ad) == (
+            "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6"
+            ".1.5.5.7.48.1, name=OCSP)>, access_location=<UniformResource"
+            "Identifier(value='http://ocsp.domain.com')>)>"
+        )
 
     def test_eq(self):
         ad = x509.AccessDescription(
@@ -2826,26 +2729,15 @@ class TestAuthorityInformationAccess(object):
                 ),
             ]
         )
-        if not six.PY2:
-            assert repr(aia) == (
-                "<AuthorityInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
-                "s_location=<UniformResourceIdentifier(value='http://oc"
-                "sp.domain.com')>)>, <AccessDescription(access_method=<ObjectI"
-                "dentifier(oid=1.3.6.1.5.5.7.48.2, name=caIssuers)>, access_lo"
-                "cation=<UniformResourceIdentifier(value='http://domain"
-                ".com/ca.crt')>)>])>"
-            )
-        else:
-            assert repr(aia) == (
-                "<AuthorityInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
-                "s_location=<UniformResourceIdentifier(value=u'http://oc"
-                "sp.domain.com')>)>, <AccessDescription(access_method=<ObjectI"
-                "dentifier(oid=1.3.6.1.5.5.7.48.2, name=caIssuers)>, access_lo"
-                "cation=<UniformResourceIdentifier(value=u'http://domain"
-                ".com/ca.crt')>)>])>"
-            )
+        assert repr(aia) == (
+            "<AuthorityInformationAccess([<AccessDescription(access_method"
+            "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, acces"
+            "s_location=<UniformResourceIdentifier(value='http://oc"
+            "sp.domain.com')>)>, <AccessDescription(access_method=<ObjectI"
+            "dentifier(oid=1.3.6.1.5.5.7.48.2, name=caIssuers)>, access_lo"
+            "cation=<UniformResourceIdentifier(value='http://domain"
+            ".com/ca.crt')>)>])>"
+        )
 
     def test_eq(self):
         aia = x509.AuthorityInformationAccess(
@@ -3031,20 +2923,12 @@ class TestSubjectInformationAccess(object):
                 )
             ]
         )
-        if not six.PY2:
-            assert repr(sia) == (
-                "<SubjectInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepositor"
-                "y)>, access_location=<UniformResourceIdentifier(value='http"
-                "://ca.domain.com')>)>])>"
-            )
-        else:
-            assert repr(sia) == (
-                "<SubjectInformationAccess([<AccessDescription(access_method"
-                "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepositor"
-                "y)>, access_location=<UniformResourceIdentifier(value=u'htt"
-                "p://ca.domain.com')>)>])>"
-            )
+        assert repr(sia) == (
+            "<SubjectInformationAccess([<AccessDescription(access_method"
+            "=<ObjectIdentifier(oid=1.3.6.1.5.5.7.48.5, name=caRepositor"
+            "y)>, access_location=<UniformResourceIdentifier(value='http"
+            "://ca.domain.com')>)>])>"
+        )
 
     def test_eq(self):
         sia = x509.SubjectInformationAccess(
@@ -3509,18 +3393,11 @@ class TestNameConstraints(object):
         nc = x509.NameConstraints(
             permitted_subtrees=permitted, excluded_subtrees=None
         )
-        if not six.PY2:
-            assert repr(nc) == (
-                "<NameConstraints(permitted_subtrees=[<DNSName("
-                "value='name.local')>, <DNSName(value="
-                "'name2.local')>], excluded_subtrees=None)>"
-            )
-        else:
-            assert repr(nc) == (
-                "<NameConstraints(permitted_subtrees=[<DNSName("
-                "value=u'name.local')>, <DNSName(value="
-                "u'name2.local')>], excluded_subtrees=None)>"
-            )
+        assert repr(nc) == (
+            "<NameConstraints(permitted_subtrees=[<DNSName("
+            "value='name.local')>, <DNSName(value="
+            "'name2.local')>], excluded_subtrees=None)>"
+        )
 
     def test_eq(self):
         nc = x509.NameConstraints(
@@ -3874,20 +3751,12 @@ class TestDistributionPoint(object):
                 )
             ],
         )
-        if not six.PY2:
-            assert repr(dp) == (
-                "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
-                "tinguishedName(CN=myCN)>, reasons=frozenset({<ReasonFlags.ca_"
-                "compromise: 'cACompromise'>}), crl_issuer=[<DirectoryName(val"
-                "ue=<Name(CN=Important CA)>)>])>"
-            )
-        else:
-            assert repr(dp) == (
-                "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
-                "tinguishedName(CN=myCN)>, reasons=frozenset([<ReasonFlags.ca_"
-                "compromise: 'cACompromise'>]), crl_issuer=[<DirectoryName(val"
-                "ue=<Name(CN=Important CA)>)>])>"
-            )
+        assert repr(dp) == (
+            "<DistributionPoint(full_name=None, relative_name=<RelativeDis"
+            "tinguishedName(CN=myCN)>, reasons=frozenset({<ReasonFlags.ca_"
+            "compromise: 'cACompromise'>}), crl_issuer=[<DirectoryName(val"
+            "ue=<Name(CN=Important CA)>)>])>"
+        )
 
     def test_hash(self):
         dp = x509.DistributionPoint(
@@ -3983,20 +3852,12 @@ class TestFreshestCRL(object):
                 ),
             ]
         )
-        if not six.PY2:
-            assert repr(fcrl) == (
-                "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value='ftp://domain')>], relative"
-                "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
-                "'keyCompromise'>}), crl_issuer=None)>])>"
-            )
-        else:
-            assert repr(fcrl) == (
-                "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value=u'ftp://domain')>], relative"
-                "_name=None, reasons=frozenset([<ReasonFlags.key_compromise: "
-                "'keyCompromise'>]), crl_issuer=None)>])>"
-            )
+        assert repr(fcrl) == (
+            "<FreshestCRL([<DistributionPoint(full_name=[<Unifo"
+            "rmResourceIdentifier(value='ftp://domain')>], relative"
+            "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
+            "'keyCompromise'>}), crl_issuer=None)>])>"
+        )
 
     def test_eq(self):
         fcrl = x509.FreshestCRL(
@@ -4246,20 +4107,12 @@ class TestCRLDistributionPoints(object):
                 ),
             ]
         )
-        if not six.PY2:
-            assert repr(cdp) == (
-                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value='ftp://domain')>], relative"
-                "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
-                "'keyCompromise'>}), crl_issuer=None)>])>"
-            )
-        else:
-            assert repr(cdp) == (
-                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
-                "rmResourceIdentifier(value=u'ftp://domain')>], relative"
-                "_name=None, reasons=frozenset([<ReasonFlags.key_compromise: "
-                "'keyCompromise'>]), crl_issuer=None)>])>"
-            )
+        assert repr(cdp) == (
+            "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
+            "rmResourceIdentifier(value='ftp://domain')>], relative"
+            "_name=None, reasons=frozenset({<ReasonFlags.key_compromise: "
+            "'keyCompromise'>}), crl_issuer=None)>])>"
+        )
 
     def test_eq(self):
         cdp = x509.CRLDistributionPoints(
@@ -5116,22 +4969,13 @@ class TestIssuingDistributionPointExtension(object):
             False,
             False,
         )
-        if not six.PY2:
-            assert repr(idp) == (
-                "<IssuingDistributionPoint(full_name=None, relative_name=None,"
-                " only_contains_user_certs=False, only_contains_ca_certs=False"
-                ", only_some_reasons=frozenset({<ReasonFlags.key_compromise: '"
-                "keyCompromise'>}), indirect_crl=False, only_contains_attribut"
-                "e_certs=False)>"
-            )
-        else:
-            assert repr(idp) == (
-                "<IssuingDistributionPoint(full_name=None, relative_name=None,"
-                " only_contains_user_certs=False, only_contains_ca_certs=False"
-                ", only_some_reasons=frozenset([<ReasonFlags.key_compromise: '"
-                "keyCompromise'>]), indirect_crl=False, only_contains_attribut"
-                "e_certs=False)>"
-            )
+        assert repr(idp) == (
+            "<IssuingDistributionPoint(full_name=None, relative_name=None,"
+            " only_contains_user_certs=False, only_contains_ca_certs=False"
+            ", only_some_reasons=frozenset({<ReasonFlags.key_compromise: '"
+            "keyCompromise'>}), indirect_crl=False, only_contains_attribut"
+            "e_certs=False)>"
+        )
 
     def test_eq(self):
         idp1 = x509.IssuingDistributionPoint(
@@ -5758,10 +5602,7 @@ class TestOCSPNonce(object):
 
     def test_repr(self):
         nonce1 = x509.OCSPNonce(b"nonce")
-        if not six.PY2:
-            assert repr(nonce1) == "<OCSPNonce(nonce=b'nonce')>"
-        else:
-            assert repr(nonce1) == "<OCSPNonce(nonce='nonce')>"
+        assert repr(nonce1) == "<OCSPNonce(nonce=b'nonce')>"
 
     def test_hash(self):
         nonce1 = x509.OCSPNonce(b"0" * 5)

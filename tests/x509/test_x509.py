@@ -16,8 +16,6 @@ import pytest
 
 import pytz
 
-import six
-
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat._der import (
@@ -4810,16 +4808,10 @@ class TestNameAttribute(object):
 
     def test_repr(self):
         na = x509.NameAttribute(x509.ObjectIdentifier("2.5.4.3"), u"value")
-        if not six.PY2:
-            assert repr(na) == (
-                "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
-                "nName)>, value='value')>"
-            )
-        else:
-            assert repr(na) == (
-                "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
-                "nName)>, value=u'value')>"
-            )
+        assert repr(na) == (
+            "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
+            "nName)>, value='value')>"
+        )
 
     def test_distinugished_name(self):
         # Escaping

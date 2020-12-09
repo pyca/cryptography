@@ -26,13 +26,6 @@
       tox_envlist: py36
 
 - job:
-    name: pyca-cryptography-centos-8-py27-arm64
-    parent: pyca-cryptography-base
-    nodeset: centos-8-arm64
-    vars:
-      tox_envlist: py27
-
-- job:
     name: pyca-cryptography-build-wheel
     abstract: true
     run: .zuul.playbooks/playbooks/wheel/main.yaml
@@ -57,12 +50,8 @@
         - platform: manylinux1_x86_64
           image: pyca/cryptography-manylinux1:x86_64
           pythons:
-            - cp27-cp27m
-            - cp27-cp27mu
             - cp36-cp36m
         - platform: manylinux2010_x86_64
           image: pyca/cryptography-manylinux2010:x86_64
           pythons:
-            - cp27-cp27m
-            - cp27-cp27mu
             - cp36-cp36m

@@ -254,8 +254,4 @@ class Name(object):
 
     def __repr__(self):
         rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
-
-        if six.PY2:
-            return "<Name({})>".format(rdns.encode("utf8"))
-        else:
-            return "<Name({})>".format(rdns)
+        return "<Name({})>".format(rdns)

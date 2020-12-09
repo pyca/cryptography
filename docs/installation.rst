@@ -10,10 +10,9 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.7, 3.6+,
-PyPy 7.3.1, and PyPy3 7.3.1 on these operating systems.
+Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.1 on these
+operating systems.
 
-* x86-64 CentOS 7.x
 * x86-64 & AArch64 CentOS 8.x
 * x86-64 Fedora (latest)
 * x86-64 macOS 10.15 Catalina
@@ -45,9 +44,9 @@ just run
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
 Be sure to download the proper version for your architecture and Python
-(VC2010 works for Python 2.7 while VC2015 is required for 3.6 and above).
-Wherever you place your copy of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE``
-environment variables to include the proper locations. For example:
+(VC2015 is required for 3.6 and above). Wherever you place your copy of OpenSSL
+you'll need to set the ``LIB`` and ``INCLUDE`` environment variables to include
+the proper locations. For example:
 
 .. code-block:: console
 
@@ -87,8 +86,6 @@ available on your system.
 Alpine
 ~~~~~~
 
-Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
-
 .. code-block:: console
 
     $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev
@@ -97,8 +94,6 @@ If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
-
-Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
 
 .. code-block:: console
 
