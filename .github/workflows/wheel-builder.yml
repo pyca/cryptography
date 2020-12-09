@@ -58,7 +58,7 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '3.8'
-            ABI_VERSION: '3.6'
+            ABI_VERSION: 'cp36'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
@@ -81,16 +81,11 @@ jobs:
       - run: venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
       - name: Build the wheel
         run: |
-          REGEX="3\.([0-9])*"
-          if [[ "${{ matrix.PYTHON.ABI_VERSION }}" =~ $REGEX ]]; then
-              PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
-          fi
-
           cd cryptography*
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
               LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
               CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
-              ../venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../wheelhouse
+              ../venv/bin/python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
       - run: |
           venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
