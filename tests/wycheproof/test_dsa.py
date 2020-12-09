@@ -11,6 +11,8 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import hashes, serialization
 
+from .utils import wycheproof_tests
+
 
 _DIGESTS = {
     "SHA-1": hashes.SHA1(),
@@ -20,7 +22,7 @@ _DIGESTS = {
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "dsa_test.json",
     "dsa_2048_224_sha224_test.json",
     "dsa_2048_224_sha256_test.json",
