@@ -76,9 +76,10 @@ def generate_aead_test(
     param_loader, path, file_names, cipher_factory, mode_factory
 ):
     all_params = _load_all_params(path, file_names, param_loader)
+
+    assert mode_factory is GCM
     # We don't support IVs < 64-bit in GCM mode so just strip them out
-    if mode_factory is GCM:
-        all_params = [i for i in all_params if len(i["iv"]) >= 16]
+    all_params = [i for i in all_params if len(i["iv"]) >= 16]
 
     def test_aead(self, backend, subtests):
         for params in all_params:
