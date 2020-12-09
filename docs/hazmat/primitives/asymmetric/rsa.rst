@@ -718,8 +718,8 @@ Key interfaces
 
         .. versionadded:: 3.3
 
-        Recovers the signed data from the signature. The data contains the
-        digest of the original message string. The ``padding`` and
+        Recovers the signed data from the signature. The data typically contains
+        the digest of the original message string. The ``padding`` and
         ``algorithm`` parameters must match the ones used when the signature
         was created for the recovery to succeed.
 
@@ -729,20 +729,20 @@ Key interfaces
 
         For
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
-        padding, this returns the data after removing the padding layer. For
-        standard signatures the data contains the full ``DigestInfo`` structure.
-        For non-standard signatures, any data can be returned, including zero-
-        length data.
+        padding, this method returns the data after removing the padding layer.
+        For standard signatures the data contains the full ``DigestInfo``
+        structure.  For non-standard signatures, any data can be returned,
+        including zero-length data.
 
         Normally you should use the
         :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
         function to validate the signature. But for some non-standard signature
         formats you may need to explicitly recover and validate the signed
-        data. Following are some examples:
+        data. The following are some examples:
 
         - Some old Thawte and Verisign timestamp certificates without ``DigestInfo``.
-        - Signed MD5/SHA1 hashes in TLS 1.1 or earlier (RFC 4346, section 4.7).
-        - IKE version 1 signatures without ``DigestInfo`` (RFC 2409, section 5.1).
+        - Signed MD5/SHA1 hashes in TLS 1.1 or earlier (:rfc:`4346`, section 4.7).
+        - IKE version 1 signatures without ``DigestInfo`` (:rfc:`2409`, section 5.1).
 
         :param bytes signature: The signature.
 
