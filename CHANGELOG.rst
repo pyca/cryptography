@@ -3,8 +3,8 @@ Changelog
 
 .. _v3-3-1:
 
-3.3 - 2020-12-09
-~~~~~~~~~~~~~~~~
+3.3.1 - 2020-12-09
+~~~~~~~~~~~~~~~~~~
 
 * Re-added a legacy symbol causing problems for older ``pyOpenSSL`` users.
 

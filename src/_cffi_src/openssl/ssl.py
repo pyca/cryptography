@@ -507,7 +507,7 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 CUSTOMIZATIONS = """
 // This symbol is being preserved because removing it will break users with
 // pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
-// users have upgraded.
+// users have upgraded. PersistentlyDeprecated2020
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
