@@ -45,12 +45,12 @@ class TestPBKDF2HMAC(object):
 
     def test_unicode_error_with_salt(self, backend):
         with pytest.raises(TypeError):
-            PBKDF2HMAC(hashes.SHA1(), 20, u"salt", 10, backend)
+            PBKDF2HMAC(hashes.SHA1(), 20, "salt", 10, backend)
 
     def test_unicode_error_with_key_material(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, backend)
         with pytest.raises(TypeError):
-            kdf.derive(u"unicode here")
+            kdf.derive("unicode here")
 
     def test_buffer_protocol(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 10, b"salt", 10, backend)

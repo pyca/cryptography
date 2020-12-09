@@ -65,31 +65,31 @@ class TestHKDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=u"foo", info=None, backend=backend)
+            HKDF(hashes.SHA256(), 16, salt="foo", info=None, backend=backend)
 
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=None, info=u"foo", backend=backend)
-
-        with pytest.raises(TypeError):
-            hkdf = HKDF(
-                hashes.SHA256(), 16, salt=None, info=None, backend=backend
-            )
-
-            hkdf.derive(u"foo")
+            HKDF(hashes.SHA256(), 16, salt=None, info="foo", backend=backend)
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify(u"foo", b"bar")
+            hkdf.derive("foo")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify(b"foo", u"bar")
+            hkdf.verify("foo", b"bar")
+
+        with pytest.raises(TypeError):
+            hkdf = HKDF(
+                hashes.SHA256(), 16, salt=None, info=None, backend=backend
+            )
+
+            hkdf.verify(b"foo", "bar")
 
     def test_derive_short_output(self, backend):
         hkdf = HKDF(hashes.SHA256(), 4, salt=None, info=None, backend=backend)
@@ -202,7 +202,7 @@ class TestHKDFExpand(object):
         hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(TypeError):
-            hkdf.derive(u"first")
+            hkdf.derive("first")
 
 
 def test_invalid_backend():

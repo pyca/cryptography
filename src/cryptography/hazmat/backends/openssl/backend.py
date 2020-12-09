@@ -1167,7 +1167,7 @@ class Backend(object):
                 *[
                     encode_der(INTEGER, encode_der_integer(x.value))
                     for x in extension.value
-                ]
+                ],
             )
             value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)

@@ -113,9 +113,9 @@ class TestFernet(object):
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
-            f.encrypt(u"")
+            f.encrypt("")
         with pytest.raises(TypeError):
-            f.decrypt(u"")
+            f.decrypt("")
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)

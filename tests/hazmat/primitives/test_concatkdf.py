@@ -100,7 +100,7 @@ class TestConcatKDFHash(object):
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
             ConcatKDFHash(
-                hashes.SHA256(), 16, otherinfo=u"foo", backend=backend
+                hashes.SHA256(), 16, otherinfo="foo", backend=backend
             )
 
         with pytest.raises(TypeError):
@@ -108,21 +108,21 @@ class TestConcatKDFHash(object):
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.derive(u"foo")
+            ckdf.derive("foo")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHash(
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(u"foo", b"bar")
+            ckdf.verify("foo", b"bar")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHash(
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(b"foo", u"bar")
+            ckdf.verify(b"foo", "bar")
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
@@ -249,7 +249,7 @@ class TestConcatKDFHMAC(object):
             ConcatKDFHMAC(
                 hashes.SHA256(),
                 16,
-                salt=u"foo",
+                salt="foo",
                 otherinfo=None,
                 backend=backend,
             )
@@ -259,7 +259,7 @@ class TestConcatKDFHMAC(object):
                 hashes.SHA256(),
                 16,
                 salt=None,
-                otherinfo=u"foo",
+                otherinfo="foo",
                 backend=backend,
             )
 
@@ -268,21 +268,21 @@ class TestConcatKDFHMAC(object):
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.derive(u"foo")
+            ckdf.derive("foo")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHMAC(
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(u"foo", b"bar")
+            ckdf.verify("foo", b"bar")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHMAC(
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(b"foo", u"bar")
+            ckdf.verify(b"foo", "bar")
 
 
 def test_invalid_backend():

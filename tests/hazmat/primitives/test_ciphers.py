@@ -46,7 +46,7 @@ class TestAES(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            AES(u"0" * 32)
+            AES("0" * 32)
 
 
 class TestAESXTS(object):
@@ -94,7 +94,7 @@ class TestCamellia(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Camellia(u"0" * 32)
+            Camellia("0" * 32)
 
 
 class TestTripleDES(object):
@@ -109,7 +109,7 @@ class TestTripleDES(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            TripleDES(u"0" * 16)
+            TripleDES("0" * 16)
 
 
 class TestBlowfish(object):
@@ -127,7 +127,7 @@ class TestBlowfish(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Blowfish(u"0" * 8)
+            Blowfish("0" * 8)
 
 
 class TestCAST5(object):
@@ -145,7 +145,7 @@ class TestCAST5(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            CAST5(u"0" * 10)
+            CAST5("0" * 10)
 
 
 class TestARC4(object):
@@ -171,7 +171,7 @@ class TestARC4(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            ARC4(u"0" * 10)
+            ARC4("0" * 10)
 
 
 class TestIDEA(object):
@@ -185,7 +185,7 @@ class TestIDEA(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            IDEA(u"0" * 16)
+            IDEA("0" * 16)
 
 
 class TestSEED(object):
@@ -199,7 +199,7 @@ class TestSEED(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            SEED(u"0" * 16)
+            SEED("0" * 16)
 
 
 def test_invalid_backend():

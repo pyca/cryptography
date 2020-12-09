@@ -22,7 +22,7 @@ sys.path.insert(0, src_dir)
 
 about = {}
 with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
-    exec (f.read(), about)
+    exec(f.read(), about)
 
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
