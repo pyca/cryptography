@@ -8,6 +8,7 @@ import binascii
 import os
 import re
 import struct
+from base64 import encodebytes as _base64_encode
 
 import six
 
@@ -33,11 +34,6 @@ except ImportError:
     def _bcrypt_kdf(*args, **kwargs):
         raise UnsupportedAlgorithm("Need bcrypt module")
 
-
-try:
-    from base64 import encodebytes as _base64_encode
-except ImportError:
-    from base64 import encodestring as _base64_encode
 
 _SSH_ED25519 = b"ssh-ed25519"
 _SSH_RSA = b"ssh-rsa"

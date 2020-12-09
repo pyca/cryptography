@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import binascii
 import inspect
 import sys
 import warnings
@@ -59,44 +58,17 @@ def register_interface_if(predicate, iface):
     return register_decorator
 
 
-if hasattr(int, "from_bytes"):
-    int_from_bytes = int.from_bytes
-else:
-
-    def int_from_bytes(data, byteorder, signed=False):
-        assert byteorder == "big"
-        assert not signed
-
-        return int(binascii.hexlify(data), 16)
+int_from_bytes = int.from_bytes
 
 
-if hasattr(int, "to_bytes"):
-
-    def int_to_bytes(integer, length=None):
-        return integer.to_bytes(
-            length or (integer.bit_length() + 7) // 8 or 1, "big"
-        )
-
-
-else:
-
-    def int_to_bytes(integer, length=None):
-        hex_string = "%x" % integer
-        if length is None:
-            n = len(hex_string)
-        else:
-            n = length * 2
-        return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
+def int_to_bytes(integer, length=None):
+    return integer.to_bytes(
+        length or (integer.bit_length() + 7) // 8 or 1, "big"
+    )
 
 
 class InterfaceNotImplemented(Exception):
     pass
-
-
-if hasattr(inspect, "signature"):
-    signature = inspect.signature
-else:
-    signature = inspect.getargspec
 
 
 def verify_interface(iface, klass):
@@ -108,8 +80,8 @@ def verify_interface(iface, klass):
         if isinstance(getattr(iface, method), abc.abstractproperty):
             # Can't properly verify these yet.
             continue
-        sig = signature(getattr(iface, method))
-        actual = signature(getattr(klass, method))
+        sig = inspect.signature(getattr(iface, method))
+        actual = inspect.signature(getattr(klass, method))
         if sig != actual:
             raise InterfaceNotImplemented(
                 "{}.{}'s signature differs from the expected. Expected: "
