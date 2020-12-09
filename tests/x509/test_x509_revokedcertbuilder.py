@@ -145,7 +145,7 @@ class TestRevokedCertificateBuilder(object):
         [
             x509.InvalidityDate(datetime.datetime(2015, 1, 1, 0, 0)),
             x509.CRLReason(x509.ReasonFlags.ca_compromise),
-            x509.CertificateIssuer([x509.DNSName(u"cryptography.io")]),
+            x509.CertificateIssuer([x509.DNSName("cryptography.io")]),
         ],
     )
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -177,7 +177,7 @@ class TestRevokedCertificateBuilder(object):
             datetime.datetime(2015, 1, 1, 0, 0)
         )
         certificate_issuer = x509.CertificateIssuer(
-            [x509.DNSName(u"cryptography.io")]
+            [x509.DNSName("cryptography.io")]
         )
         crl_reason = x509.CRLReason(x509.ReasonFlags.aa_compromise)
         builder = (

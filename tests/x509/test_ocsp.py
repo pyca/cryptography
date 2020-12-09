@@ -52,8 +52,8 @@ def _generate_root(private_key=None, algorithm=hashes.SHA256()):
 
     subject = x509.Name(
         [
-            x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u"US"),
-            x509.NameAttribute(x509.NameOID.COMMON_NAME, u"Cryptography CA"),
+            x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "US"),
+            x509.NameAttribute(x509.NameOID.COMMON_NAME, "Cryptography CA"),
         ]
     )
 

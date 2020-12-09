@@ -182,10 +182,10 @@ class TestCMAC(object):
         cmac = CMAC(AES(key), backend)
 
         with pytest.raises(TypeError):
-            cmac.update(u"")
+            cmac.update("")
 
         with pytest.raises(TypeError):
-            cmac.verify(u"")
+            cmac.verify("")
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(

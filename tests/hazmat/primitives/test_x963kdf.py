@@ -86,28 +86,28 @@ class TestX963KDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            X963KDF(hashes.SHA256(), 16, sharedinfo=u"foo", backend=backend)
+            X963KDF(hashes.SHA256(), 16, sharedinfo="foo", backend=backend)
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.derive(u"foo")
+            xkdf.derive("foo")
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify(u"foo", b"bar")
+            xkdf.verify("foo", b"bar")
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify(b"foo", u"bar")
+            xkdf.verify(b"foo", "bar")
 
 
 def test_invalid_backend():

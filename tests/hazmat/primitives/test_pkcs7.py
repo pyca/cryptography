@@ -44,9 +44,7 @@ class TestPKCS7Loading(object):
         assert len(certs) == 1
         assert certs[0].subject.get_attributes_for_oid(
             x509.oid.NameOID.COMMON_NAME
-        ) == [
-            x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u"ISRG Root X1")
-        ]
+        ) == [x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, "ISRG Root X1")]
 
     def test_load_pkcs7_der(self):
         certs = load_vectors_from_file(
@@ -59,14 +57,14 @@ class TestPKCS7Loading(object):
             x509.oid.NameOID.COMMON_NAME
         ) == [
             x509.NameAttribute(
-                x509.oid.NameOID.COMMON_NAME, u"Amazon Root CA 3"
+                x509.oid.NameOID.COMMON_NAME, "Amazon Root CA 3"
             )
         ]
         assert certs[1].subject.get_attributes_for_oid(
             x509.oid.NameOID.COMMON_NAME
         ) == [
             x509.NameAttribute(
-                x509.oid.NameOID.COMMON_NAME, u"Amazon Root CA 2"
+                x509.oid.NameOID.COMMON_NAME, "Amazon Root CA 2"
             )
         ]
 
@@ -146,7 +144,7 @@ class TestPKCS7Builder(object):
     def test_invalid_data(self):
         builder = pkcs7.PKCS7SignatureBuilder()
         with pytest.raises(TypeError):
-            builder.set_data(u"not bytes")
+            builder.set_data("not bytes")
 
     def test_set_data_twice(self):
         builder = pkcs7.PKCS7SignatureBuilder().set_data(b"test")

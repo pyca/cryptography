@@ -283,7 +283,7 @@ class TestKBKDFHMAC(object):
                 4,
                 4,
                 CounterLocation.BeforeFixed,
-                u"label",
+                "label",
                 b"context",
                 backend=backend,
             )
@@ -298,7 +298,7 @@ class TestKBKDFHMAC(object):
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
-                u"context",
+                "context",
                 None,
                 backend=backend,
             )
@@ -317,7 +317,7 @@ class TestKBKDFHMAC(object):
                 None,
                 backend=backend,
             )
-            kdf.derive(u"material")
+            kdf.derive("material")
 
     def test_buffer_protocol(self, backend):
         kdf = KBKDFHMAC(

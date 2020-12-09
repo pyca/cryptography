@@ -22,7 +22,7 @@ class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            m.update(u"\u00FC")
+            m.update("\u00FC")
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):

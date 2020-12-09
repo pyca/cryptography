@@ -16,7 +16,7 @@ from cffi import FFI
 base_src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 about = {}
 with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
-    exec (f.read(), about)
+    exec(f.read(), about)
 
 
 def build_ffi_for_binding(

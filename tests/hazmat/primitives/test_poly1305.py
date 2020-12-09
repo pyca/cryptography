@@ -71,10 +71,10 @@ class TestPoly1305(object):
     def test_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
-            poly.update(u"")
+            poly.update("")
 
         with pytest.raises(TypeError):
-            Poly1305.generate_tag(b"0" * 32, u"")
+            Poly1305.generate_tag(b"0" * 32, "")
 
     def test_verify(self, backend):
         poly = Poly1305(b"0" * 32)
@@ -107,10 +107,10 @@ class TestPoly1305(object):
     def test_verify_reject_unicode(self, backend):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
-            poly.verify(u"")
+            poly.verify("")
 
         with pytest.raises(TypeError):
-            Poly1305.verify_tag(b"0" * 32, b"msg", u"")
+            Poly1305.verify_tag(b"0" * 32, b"msg", "")
 
     def test_invalid_key_type(self, backend):
         with pytest.raises(TypeError):

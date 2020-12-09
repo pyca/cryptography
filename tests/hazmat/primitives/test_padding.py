@@ -38,10 +38,10 @@ class TestPKCS7(object):
     def test_non_bytes(self):
         padder = padding.PKCS7(128).padder()
         with pytest.raises(TypeError):
-            padder.update(u"abc")
+            padder.update("abc")
         unpadder = padding.PKCS7(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update(u"abc")
+            unpadder.update("abc")
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801
@@ -161,10 +161,10 @@ class TestANSIX923(object):
     def test_non_bytes(self):
         padder = padding.ANSIX923(128).padder()
         with pytest.raises(TypeError):
-            padder.update(u"abc")
+            padder.update("abc")
         unpadder = padding.ANSIX923(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update(u"abc")
+            unpadder.update("abc")
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801

@@ -39,17 +39,17 @@ from ...x509.test_x509 import _load_cert
 
 
 def skip_if_libre_ssl(openssl_version):
-    if u"LibreSSL" in openssl_version:
+    if "LibreSSL" in openssl_version:
         pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
 
 
 class TestLibreSkip(object):
     def test_skip_no(self):
-        assert skip_if_libre_ssl(u"OpenSSL 1.0.2h  3 May 2016") is None
+        assert skip_if_libre_ssl("OpenSSL 1.0.2h  3 May 2016") is None
 
     def test_skip_yes(self):
         with pytest.raises(pytest.skip.Exception):
-            skip_if_libre_ssl(u"LibreSSL 2.1.6")
+            skip_if_libre_ssl("LibreSSL 2.1.6")
 
 
 class DummyMGF(object):

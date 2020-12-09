@@ -81,7 +81,7 @@ copyright = "2013-2020, Individual Contributors"
 base_dir = os.path.join(os.path.dirname(__file__), os.pardir)
 about = {}
 with open(os.path.join(base_dir, "src", "cryptography", "__about__.py")) as f:
-    exec (f.read(), about)
+    exec(f.read(), about)
 
 version = release = about["__version__"]
 

@@ -167,7 +167,7 @@ class TestDERSerialization(object):
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_password_not_bytes(self, key_path, backend):
         key_file = os.path.join("asymmetric", *key_path)
-        password = u"this password is not bytes"
+        password = "this password is not bytes"
 
         with pytest.raises(TypeError):
             load_vectors_from_file(
@@ -625,7 +625,7 @@ class TestPEMSerialization(object):
     )
     def test_password_not_bytes(self, key_path, backend):
         key_file = os.path.join("asymmetric", *key_path)
-        password = u"this password is not bytes"
+        password = "this password is not bytes"
 
         with pytest.raises(TypeError):
             load_vectors_from_file(

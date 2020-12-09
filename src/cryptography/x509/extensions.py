@@ -671,9 +671,9 @@ class PolicyConstraints(object):
 
     def __repr__(self):
         return (
-            u"<PolicyConstraints(require_explicit_policy={0.require_explicit"
-            u"_policy}, inhibit_policy_mapping={0.inhibit_policy_"
-            u"mapping})>".format(self)
+            "<PolicyConstraints(require_explicit_policy={0.require_explicit"
+            "_policy}, inhibit_policy_mapping={0.inhibit_policy_"
+            "mapping})>".format(self)
         )
 
     def __eq__(self, other):
@@ -1180,8 +1180,8 @@ class NameConstraints(object):
 
     def __repr__(self):
         return (
-            u"<NameConstraints(permitted_subtrees={0.permitted_subtrees}, "
-            u"excluded_subtrees={0.excluded_subtrees})>".format(self)
+            "<NameConstraints(permitted_subtrees={0.permitted_subtrees}, "
+            "excluded_subtrees={0.excluded_subtrees})>".format(self)
         )
 
     def __hash__(self):
