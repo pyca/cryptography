@@ -6,8 +6,6 @@
 import abc
 from enum import Enum
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 
@@ -71,8 +69,7 @@ class ParameterFormat(Enum):
     PKCS3 = "PKCS3"
 
 
-@six.add_metaclass(abc.ABCMeta)
-class KeySerializationEncryption(object):
+class KeySerializationEncryption(metaclass=abc.ABCMeta):
     pass
 
 

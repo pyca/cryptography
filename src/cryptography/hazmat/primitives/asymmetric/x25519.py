@@ -5,13 +5,10 @@
 
 import abc
 
-import six
-
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 
-@six.add_metaclass(abc.ABCMeta)
-class X25519PublicKey(object):
+class X25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
     def from_public_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
@@ -31,8 +28,7 @@ class X25519PublicKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class X25519PrivateKey(object):
+class X25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
     def generate(cls):
         from cryptography.hazmat.backends.openssl.backend import backend

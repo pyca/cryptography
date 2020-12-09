@@ -5,8 +5,6 @@
 
 import pytest
 
-import six
-
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
@@ -111,7 +109,7 @@ class TestPKCS7(object):
         padded_data = padder.update(b"")
         padded_data += padder.finalize()
 
-        for i in six.iterbytes(padded_data):
+        for i in padded_data:
             assert i == 255
 
         unpadder = padding.PKCS7(2040).unpadder()

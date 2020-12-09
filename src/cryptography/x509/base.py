@@ -8,8 +8,6 @@ import datetime
 import os
 from enum import Enum
 
-import six
-
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -101,8 +99,7 @@ class InvalidVersion(Exception):
         self.parsed_version = parsed_version
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Certificate(object):
+class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def fingerprint(self, algorithm):
         """
@@ -207,8 +204,7 @@ class Certificate(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CertificateRevocationList(object):
+class CertificateRevocationList(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_bytes(self, encoding):
         """
@@ -314,8 +310,7 @@ class CertificateRevocationList(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CertificateSigningRequest(object):
+class CertificateSigningRequest(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __eq__(self, other):
         """
@@ -397,8 +392,7 @@ class CertificateSigningRequest(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RevokedCertificate(object):
+class RevokedCertificate(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def serial_number(self):
         """
@@ -574,7 +568,7 @@ class CertificateBuilder(object):
         """
         Sets the certificate serial number.
         """
-        if not isinstance(number, six.integer_types):
+        if not isinstance(number, int):
             raise TypeError("Serial number must be of integral type.")
         if self._serial_number is not None:
             raise ValueError("The serial number may only be set once.")
@@ -831,7 +825,7 @@ class RevokedCertificateBuilder(object):
         self._extensions = extensions
 
     def serial_number(self, number):
-        if not isinstance(number, six.integer_types):
+        if not isinstance(number, int):
             raise TypeError("Serial number must be of integral type.")
         if self._serial_number is not None:
             raise ValueError("The serial number may only be set once.")

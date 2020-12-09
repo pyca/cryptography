@@ -9,8 +9,6 @@ import itertools
 import warnings
 from contextlib import contextmanager
 
-from six.moves import range
-
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._der import (

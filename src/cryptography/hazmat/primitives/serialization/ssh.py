@@ -9,8 +9,6 @@ import re
 import struct
 from base64 import encodebytes as _base64_encode
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends import _get_backend
@@ -136,7 +134,7 @@ def _get_sshstr(data):
 def _get_mpint(data):
     """Big integer."""
     val, data = _get_sshstr(data)
-    if val and six.indexbytes(val, 0) > 0x7F:
+    if val and val[0] > 0x7F:
         raise ValueError("Invalid data")
     return int.from_bytes(val, "big"), data
 
@@ -345,7 +343,7 @@ class _SSHFormatECDSA(object):
         point, data = _get_sshstr(data)
         if curve != self.ssh_curve_name:
             raise ValueError("Curve name mismatch")
-        if six.indexbytes(point, 0) != 4:
+        if point[0] != 4:
             raise NotImplementedError("Need uncompressed point")
         return (curve, point), data
 

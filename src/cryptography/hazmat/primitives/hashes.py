@@ -5,8 +5,6 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -17,8 +15,7 @@ from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HashBackend
 
 
-@six.add_metaclass(abc.ABCMeta)
-class HashAlgorithm(object):
+class HashAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def name(self):
         """
@@ -32,8 +29,7 @@ class HashAlgorithm(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class HashContext(object):
+class HashContext(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def algorithm(self):
         """
@@ -59,8 +55,7 @@ class HashContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ExtendableOutputFunction(object):
+class ExtendableOutputFunction(metaclass=abc.ABCMeta):
     """
     An interface for extendable output functions.
     """
@@ -189,7 +184,7 @@ class SHAKE128(object):
     name = "shake128"
 
     def __init__(self, digest_size):
-        if not isinstance(digest_size, six.integer_types):
+        if not isinstance(digest_size, int):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:
@@ -206,7 +201,7 @@ class SHAKE256(object):
     name = "shake256"
 
     def __init__(self, digest_size):
-        if not isinstance(digest_size, six.integer_types):
+        if not isinstance(digest_size, int):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:

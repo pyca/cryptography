@@ -12,8 +12,6 @@ from contextlib import contextmanager
 
 import pytest
 
-import six
-
 from cryptography.exceptions import UnsupportedAlgorithm
 
 import cryptography_vectors
@@ -166,7 +164,7 @@ def load_pkcs1_vectors(vector_data):
             or line.startswith("# PKCS#1 v1.5")
         ):
             if example_vector:
-                for key, value in six.iteritems(example_vector):
+                for key, value in example_vector.items():
                     hex_str = "".join(value).replace(" ", "").encode("ascii")
                     example_vector[key] = hex_str
                 examples.append(example_vector)
@@ -192,7 +190,7 @@ def load_pkcs1_vectors(vector_data):
         elif example_vector and line.startswith(
             "# ============================================="
         ):
-            for key, value in six.iteritems(example_vector):
+            for key, value in example_vector.items():
                 hex_str = "".join(value).replace(" ", "").encode("ascii")
                 example_vector[key] = hex_str
             examples.append(example_vector)
@@ -212,11 +210,11 @@ def load_pkcs1_vectors(vector_data):
                 assert private_key_vector
                 assert public_key_vector
 
-                for key, value in six.iteritems(public_key_vector):
+                for key, value in public_key_vector.items():
                     hex_str = "".join(value).replace(" ", "")
                     public_key_vector[key] = int(hex_str, 16)
 
-                for key, value in six.iteritems(private_key_vector):
+                for key, value in private_key_vector.items():
                     hex_str = "".join(value).replace(" ", "")
                     private_key_vector[key] = int(hex_str, 16)
 

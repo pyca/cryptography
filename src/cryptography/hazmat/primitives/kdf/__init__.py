@@ -5,11 +5,8 @@
 
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class KeyDerivationFunction(object):
+class KeyDerivationFunction(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def derive(self, key_material):
         """

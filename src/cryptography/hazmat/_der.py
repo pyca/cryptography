@@ -3,8 +3,6 @@
 # for complete details.
 
 
-import six
-
 from cryptography.utils import int_to_bytes
 
 
@@ -52,7 +50,7 @@ class DERReader(object):
     def read_byte(self):
         if len(self.data) < 1:
             raise ValueError("Invalid DER input: insufficient data")
-        ret = six.indexbytes(self.data, 0)
+        ret = self.data[0]
         self.data = self.data[1:]
         return ret
 
@@ -110,20 +108,20 @@ class DERReader(object):
             return self.read_element(expected_tag)
 
     def read_optional_element(self, expected_tag):
-        if len(self.data) > 0 and six.indexbytes(self.data, 0) == expected_tag:
+        if len(self.data) > 0 and self.data[0] == expected_tag:
             return self.read_element(expected_tag)
         return None
 
     def as_integer(self):
         if len(self.data) == 0:
             raise ValueError("Invalid DER input: empty integer contents")
-        first = six.indexbytes(self.data, 0)
+        first = self.data[0]
         if first & 0x80 == 0x80:
             raise ValueError("Negative DER integers are not supported")
         # The first 9 bits must not all be zero or all be ones. Otherwise, the
         # encoding should have been one byte shorter.
         if len(self.data) > 1:
-            second = six.indexbytes(self.data, 1)
+            second = self.data[1]
             if first == 0 and second & 0x80 == 0:
                 raise ValueError(
                     "Invalid DER input: integer not minimally-encoded"
@@ -132,7 +130,7 @@ class DERReader(object):
 
 
 def encode_der_integer(x):
-    if not isinstance(x, six.integer_types):
+    if not isinstance(x, int):
         raise ValueError("Value must be an integer")
     if x < 0:
         raise ValueError("Negative integers are not supported")
@@ -144,12 +142,12 @@ def encode_der(tag, *children):
     length = 0
     for child in children:
         length += len(child)
-    chunks = [six.int2byte(tag)]
+    chunks = [bytes([tag])]
     if length < 0x80:
-        chunks.append(six.int2byte(length))
+        chunks.append(bytes([length]))
     else:
         length_bytes = int_to_bytes(length)
-        chunks.append(six.int2byte(0x80 | len(length_bytes)))
+        chunks.append(bytes([0x80 | len(length_bytes)]))
         chunks.append(length_bytes)
     chunks.extend(children)
     return b"".join(chunks)

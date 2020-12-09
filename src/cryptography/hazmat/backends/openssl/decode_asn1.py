@@ -6,8 +6,6 @@
 import datetime
 import ipaddress
 
-import six
-
 from cryptography import x509
 from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
 from cryptography.x509.extensions import _TLS_FEATURE_TYPE_TO_ENUM
@@ -594,7 +592,7 @@ _REASON_BIT_MAPPING = {
 def _decode_reasons(backend, reasons):
     # We will check each bit from RFC 5280
     enum_reasons = []
-    for bit_position, reason in six.iteritems(_REASON_BIT_MAPPING):
+    for bit_position, reason in _REASON_BIT_MAPPING.items():
         if backend._lib.ASN1_BIT_STRING_get_bit(reasons, bit_position):
             enum_reasons.append(reason)
 

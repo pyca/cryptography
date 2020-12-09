@@ -5,8 +5,6 @@
 
 import abc
 
-import six
-
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 
@@ -14,8 +12,7 @@ _ED25519_KEY_SIZE = 32
 _ED25519_SIG_SIZE = 64
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Ed25519PublicKey(object):
+class Ed25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
     def from_public_bytes(cls, data):
         from cryptography.hazmat.backends.openssl.backend import backend
@@ -41,8 +38,7 @@ class Ed25519PublicKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Ed25519PrivateKey(object):
+class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
     def generate(cls):
         from cryptography.hazmat.backends.openssl.backend import backend

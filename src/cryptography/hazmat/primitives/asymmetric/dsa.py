@@ -5,14 +5,11 @@
 
 import abc
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DSAParameters(object):
+class DSAParameters(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def generate_private_key(self):
         """
@@ -20,8 +17,7 @@ class DSAParameters(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DSAParametersWithNumbers(DSAParameters):
+class DSAParametersWithNumbers(DSAParameters, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def parameter_numbers(self):
         """
@@ -29,8 +25,7 @@ class DSAParametersWithNumbers(DSAParameters):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DSAPrivateKey(object):
+class DSAPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def key_size(self):
         """
@@ -62,8 +57,7 @@ class DSAPrivateKey(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DSAPrivateKeyWithSerialization(DSAPrivateKey):
+class DSAPrivateKeyWithSerialization(DSAPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -77,8 +71,7 @@ class DSAPrivateKeyWithSerialization(DSAPrivateKey):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DSAPublicKey(object):
+class DSAPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def key_size(self):
         """
@@ -154,9 +147,9 @@ def _check_dsa_private_numbers(numbers):
 class DSAParameterNumbers(object):
     def __init__(self, p, q, g):
         if (
-            not isinstance(p, six.integer_types)
-            or not isinstance(q, six.integer_types)
-            or not isinstance(g, six.integer_types)
+            not isinstance(p, int)
+            or not isinstance(q, int)
+            or not isinstance(g, int)
         ):
             raise TypeError(
                 "DSAParameterNumbers p, q, and g arguments must be integers."
@@ -192,7 +185,7 @@ class DSAParameterNumbers(object):
 
 class DSAPublicNumbers(object):
     def __init__(self, y, parameter_numbers):
-        if not isinstance(y, six.integer_types):
+        if not isinstance(y, int):
             raise TypeError("DSAPublicNumbers y argument must be an integer.")
 
         if not isinstance(parameter_numbers, DSAParameterNumbers):
@@ -231,7 +224,7 @@ class DSAPublicNumbers(object):
 
 class DSAPrivateNumbers(object):
     def __init__(self, x, public_numbers):
-        if not isinstance(x, six.integer_types):
+        if not isinstance(x, int):
             raise TypeError("DSAPrivateNumbers x argument must be an integer.")
 
         if not isinstance(public_numbers, DSAPublicNumbers):

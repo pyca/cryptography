@@ -5,8 +5,6 @@
 
 from enum import Enum
 
-import six
-
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
@@ -82,7 +80,7 @@ class NameAttribute(object):
                 "oid argument must be an ObjectIdentifier instance."
             )
 
-        if not isinstance(value, six.text_type):
+        if not isinstance(value, str):
             raise TypeError("value argument must be a text type.")
 
         if (

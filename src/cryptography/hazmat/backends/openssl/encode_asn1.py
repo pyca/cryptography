@@ -6,8 +6,6 @@
 import calendar
 import ipaddress
 
-import six
-
 from cryptography import utils, x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
@@ -205,7 +203,7 @@ def _encode_certificate_policies(backend, certificate_policies):
                 backend.openssl_assert(pqi != backend._ffi.NULL)
                 res = backend._lib.sk_POLICYQUALINFO_push(pqis, pqi)
                 backend.openssl_assert(res >= 1)
-                if isinstance(qualifier, six.text_type):
+                if isinstance(qualifier, str):
                     pqi.pqualid = _txt2obj(
                         backend, x509.OID_CPS_QUALIFIER.dotted_string
                     )

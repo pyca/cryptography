@@ -5,8 +5,6 @@
 
 import struct
 
-import six
-
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
@@ -30,7 +28,7 @@ class HOTP(object):
         if len(key) < 16 and enforce_key_length is True:
             raise ValueError("Key length has to be at least 128 bits.")
 
-        if not isinstance(length, six.integer_types):
+        if not isinstance(length, int):
             raise TypeError("Length parameter must be an integer type.")
 
         if length < 6 or length > 8:
@@ -58,7 +56,7 @@ class HOTP(object):
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 
-        offset = six.indexbytes(hmac_value, len(hmac_value) - 1) & 0b1111
+        offset = hmac_value[len(hmac_value) - 1] & 0b1111
         p = hmac_value[offset : offset + 4]
         return struct.unpack(">I", p)[0] & 0x7FFFFFFF
 
