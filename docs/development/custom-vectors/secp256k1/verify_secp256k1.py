@@ -1,5 +1,3 @@
-from __future__ import absolute_import, print_function
-
 import os
 
 from cryptography.hazmat.backends import default_backend

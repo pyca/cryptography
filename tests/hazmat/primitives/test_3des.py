@@ -6,7 +6,6 @@
 Test using the NIST Test Vectors
 """
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
