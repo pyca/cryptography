@@ -11,7 +11,6 @@ from enum import Enum
 
 import six
 
-from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -889,4 +888,4 @@ class RevokedCertificateBuilder(object):
 
 
 def random_serial_number():
-    return utils.int_from_bytes(os.urandom(20), "big") >> 1
+    return int.from_bytes(os.urandom(20), "big") >> 1

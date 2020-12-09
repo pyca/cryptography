@@ -17,7 +17,6 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
-from cryptography.utils import int_from_bytes
 
 from .fixtures_dh import FFDH3072_P
 from ...doubles import DummyKeySerializationEncryption
@@ -171,7 +170,7 @@ class TestDH(object):
         ),
     )
     def test_dh_parameters_allows_rfc3526_groups(self, backend, vector):
-        p = int_from_bytes(binascii.unhexlify(vector["p"]), "big")
+        p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
         if (
             backend._fips_enabled
             and p.bit_length() < backend._fips_dh_min_modulus
@@ -309,7 +308,7 @@ class TestDH(object):
         key2 = parameters.generate_private_key()
 
         shared_key_bytes = key2.exchange(key1.public_key())
-        symkey = int_from_bytes(shared_key_bytes, "big")
+        symkey = int.from_bytes(shared_key_bytes, "big")
 
         symkey_manual = pow(
             key1.public_key().public_numbers().y,
@@ -422,7 +421,7 @@ class TestDH(object):
         key = private.private_key(backend)
         symkey = key.exchange(public.public_key(backend))
 
-        assert int_from_bytes(symkey, "big") == int(vector["k"], 16)
+        assert int.from_bytes(symkey, "big") == int(vector["k"], 16)
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
@@ -444,8 +443,8 @@ class TestDH(object):
         symkey1 = key1.exchange(public2.public_key(backend))
         symkey2 = key2.exchange(public1.public_key(backend))
 
-        assert int_from_bytes(symkey1, "big") == int(vector["z"], 16)
-        assert int_from_bytes(symkey2, "big") == int(vector["z"], 16)
+        assert int.from_bytes(symkey1, "big") == int(vector["z"], 16)
+        assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)

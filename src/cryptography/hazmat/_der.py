@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
-from cryptography.utils import int_from_bytes, int_to_bytes
+from cryptography.utils import int_to_bytes
 
 
 # This module contains a lightweight DER encoder and decoder. See X.690 for the
@@ -129,7 +129,7 @@ class DERReader(object):
                 raise ValueError(
                     "Invalid DER input: integer not minimally-encoded"
                 )
-        return int_from_bytes(self.data, "big")
+        return int.from_bytes(self.data, "big")
 
 
 def encode_der_integer(x):

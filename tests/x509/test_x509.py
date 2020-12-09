@@ -50,7 +50,6 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
 )
-from cryptography.utils import int_from_bytes
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
@@ -5185,7 +5184,7 @@ class TestSignatureRejection(object):
             os.path.join("asymmetric", "DH", "rfc3526.txt"),
             load_nist_vectors,
         )[1]
-        p = int_from_bytes(binascii.unhexlify(vector["p"]), "big")
+        p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
         params = dh.DHParameterNumbers(p, int(vector["g"]))
         param = params.parameters(backend)
         return param.generate_private_key()
@@ -5249,5 +5248,5 @@ def test_random_serial_number(monkeypatch):
 
     serial_number = x509.random_serial_number()
 
-    assert serial_number == utils.int_from_bytes(sample_data, "big") >> 1
+    assert serial_number == int.from_bytes(sample_data, "big") >> 1
     assert serial_number.bit_length() < 160
