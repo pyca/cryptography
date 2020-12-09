@@ -12,6 +12,8 @@ from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from .utils import wycheproof_tests
+
 
 _DIGESTS = {
     "SHA-1": hashes.SHA1(),
@@ -27,7 +29,7 @@ _DIGESTS = {
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "ecdsa_test.json",
     "ecdsa_brainpoolP224r1_sha224_test.json",
     "ecdsa_brainpoolP256r1_sha256_test.json",

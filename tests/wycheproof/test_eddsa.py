@@ -11,12 +11,14 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from cryptography.hazmat.primitives.asymmetric.ed448 import Ed448PublicKey
 
+from .utils import wycheproof_tests
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-@pytest.mark.wycheproof_tests("eddsa_test.json")
+@wycheproof_tests("eddsa_test.json")
 def test_ed25519_signature(backend, wycheproof):
     # We want to fail if/when wycheproof adds more edwards curve tests
     # so we can add them as well.
@@ -43,7 +45,7 @@ def test_ed25519_signature(backend, wycheproof):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-@pytest.mark.wycheproof_tests("ed448_test.json")
+@wycheproof_tests("ed448_test.json")
 def test_ed448_signature(backend, wycheproof):
     key = Ed448PublicKey.from_public_bytes(
         binascii.unhexlify(wycheproof.testgroup["key"]["pk"])

@@ -10,6 +10,8 @@ import pytest
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
+from .utils import wycheproof_tests
+
 
 _HASH_ALGORITHMS = {
     "HKDF-SHA-1": hashes.SHA1(),
@@ -19,7 +21,7 @@ _HASH_ALGORITHMS = {
 }
 
 
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "hkdf_sha1_test.json",
     "hkdf_sha256_test.json",
     "hkdf_sha384_test.json",
