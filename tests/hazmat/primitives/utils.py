@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import itertools
 import os
 
 import pytest
@@ -46,9 +45,10 @@ def generate_encrypt_test(
 ):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_encryption(self, backend, params):
-        encrypt_test(backend, cipher_factory, mode_factory, params)
+    def test_encryption(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                encrypt_test(backend, cipher_factory, mode_factory, params)
 
     return test_encryption
 
@@ -78,9 +78,10 @@ def generate_aead_test(
 ):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_aead(self, backend, params):
-        aead_test(backend, cipher_factory, mode_factory, params)
+    def test_aead(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                aead_test(backend, cipher_factory, mode_factory, params)
 
     return test_aead
 
@@ -152,9 +153,10 @@ def generate_stream_encryption_test(
 ):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_stream_encryption(self, backend, params):
-        stream_encryption_test(backend, cipher_factory, params)
+    def test_stream_encryption(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                stream_encryption_test(backend, cipher_factory, params)
 
     return test_stream_encryption
 
@@ -180,9 +182,10 @@ def stream_encryption_test(backend, cipher_factory, params):
 def generate_hash_test(param_loader, path, file_names, hash_cls):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_hash(self, backend, params):
-        hash_test(backend, hash_cls, params)
+    def test_hash(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                hash_test(backend, hash_cls, params)
 
     return test_hash
 
@@ -234,9 +237,10 @@ def base_hmac_test(backend, algorithm):
 def generate_hmac_test(param_loader, path, file_names, algorithm):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_hmac(self, backend, params):
-        hmac_test(backend, algorithm, params)
+    def test_hmac(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                hmac_test(backend, algorithm, params)
 
     return test_hmac
 
@@ -251,9 +255,10 @@ def hmac_test(backend, algorithm, params):
 def generate_pbkdf2_test(param_loader, path, file_names, algorithm):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_pbkdf2(self, backend, params):
-        pbkdf2_test(backend, algorithm, params)
+    def test_pbkdf2(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                pbkdf2_test(backend, algorithm, params)
 
     return test_pbkdf2
 
@@ -383,13 +388,14 @@ def hkdf_expand_test(backend, algorithm, params):
 def generate_hkdf_test(param_loader, path, file_names, algorithm):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    all_tests = [hkdf_extract_test, hkdf_expand_test, hkdf_derive_test]
-
-    @pytest.mark.parametrize(
-        ("params", "hkdf_test"), itertools.product(all_params, all_tests)
-    )
-    def test_hkdf(self, backend, params, hkdf_test):
-        hkdf_test(backend, algorithm, params)
+    def test_hkdf(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                hkdf_extract_test(backend, algorithm, params)
+            with subtests.test():
+                hkdf_expand_test(backend, algorithm, params)
+            with subtests.test():
+                hkdf_derive_test(backend, algorithm, params)
 
     return test_hkdf
 
@@ -397,9 +403,10 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
 def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
     all_params = _load_all_params(path, file_names, param_loader)
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_kbkdf(self, backend, params):
-        kbkdf_counter_mode_test(backend, params)
+    def test_kbkdf(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                kbkdf_counter_mode_test(backend, params)
 
     return test_kbkdf
 
@@ -457,9 +464,10 @@ def generate_rsa_verification_test(
         i for i in all_params if i["algorithm"] == hash_alg.name.upper()
     ]
 
-    @pytest.mark.parametrize("params", all_params)
-    def test_rsa_verification(self, backend, params):
-        rsa_verification_test(backend, params, hash_alg, pad_factory)
+    def test_rsa_verification(self, backend, subtests):
+        for params in all_params:
+            with subtests.test():
+                rsa_verification_test(backend, params, hash_alg, pad_factory)
 
     return test_rsa_verification
 
