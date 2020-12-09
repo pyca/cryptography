@@ -73,7 +73,9 @@ try:
         extras_require={
             "test": [
                 "pytest>=4.4.0",
+                "pytest-cov",
                 "pytest-subtests",
+                "pytest-xdist",
                 "pretend",
                 "iso8601",
                 "pytz",
