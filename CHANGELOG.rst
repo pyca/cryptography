@@ -1,12 +1,15 @@
 Changelog
 =========
 
+3.4 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v3-3:
 
 3.3 - 2020-12-08
 ~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.5 has been removed due to
   low usage and maintenance burden.
