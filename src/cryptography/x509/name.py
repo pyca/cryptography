@@ -183,7 +183,7 @@ class RelativeDistinguishedName:
         return len(self._attributes)
 
     def __repr__(self):
-        return "<RelativeDistinguishedName({})>".format(self.rfc4514_string())
+        return f"<RelativeDistinguishedName({self.rfc4514_string()})>"
 
 
 class Name:
@@ -250,4 +250,4 @@ class Name:
 
     def __repr__(self):
         rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
-        return "<Name({})>".format(rdns)
+        return f"<Name({rdns})>"

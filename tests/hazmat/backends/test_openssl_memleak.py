@@ -129,7 +129,7 @@ def assert_no_memory_leaks(s, argv=[]):
     argv = [
         sys.executable,
         "-c",
-        "{}\n\n{}".format(s, MEMORY_LEAK_SCRIPT),
+        f"{s}\n\n{MEMORY_LEAK_SCRIPT}",
     ] + argv
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.

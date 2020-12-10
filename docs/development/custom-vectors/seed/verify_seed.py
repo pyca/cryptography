@@ -7,7 +7,7 @@ from tests.utils import load_nist_vectors
 
 def encrypt(mode, key, iv, plaintext):
     encryptor = botan.Cipher(
-        "SEED/{}/NoPadding".format(mode), "encrypt", binascii.unhexlify(key)
+        f"SEED/{mode}/NoPadding", "encrypt", binascii.unhexlify(key)
     )
 
     cipher_text = encryptor.cipher(

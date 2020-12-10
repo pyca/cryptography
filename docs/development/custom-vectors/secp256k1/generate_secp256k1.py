@@ -41,7 +41,7 @@ def build_vectors(fips_vectors):
             continue
 
         yield ""
-        yield "[K-256,{}]".format(digest_algorithm)
+        yield f"[K-256,{digest_algorithm}]"
         yield ""
 
         for message in messages:
@@ -58,11 +58,11 @@ def build_vectors(fips_vectors):
             r, s = sigdecode_der(signature, None)
 
             yield "Msg = {}".format(hexlify(message))
-            yield "d = {:x}".format(secret_key.privkey.secret_multiplier)
-            yield "Qx = {:x}".format(public_key.pubkey.point.x())
-            yield "Qy = {:x}".format(public_key.pubkey.point.y())
-            yield "R = {:x}".format(r)
-            yield "S = {:x}".format(s)
+            yield f"d = {secret_key.privkey.secret_multiplier:x}"
+            yield f"Qx = {public_key.pubkey.point.x():x}"
+            yield f"Qy = {public_key.pubkey.point.y():x}"
+            yield f"R = {r:x}"
+            yield f"S = {s:x}"
             yield ""
 
 

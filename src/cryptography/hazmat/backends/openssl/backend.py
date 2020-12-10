@@ -1176,7 +1176,7 @@ class Backend:
                 encode = handlers[extension.oid]
             except KeyError:
                 raise NotImplementedError(
-                    "Extension not supported: {}".format(extension.oid)
+                    f"Extension not supported: {extension.oid}"
                 )
 
             ext_struct = encode(self, extension.value)
@@ -1534,7 +1534,7 @@ class Backend:
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm(
-                "Backend object does not support {}.".format(curve.name),
+                f"Backend object does not support {curve.name}.",
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
             )
 
@@ -1794,7 +1794,7 @@ class Backend:
         curve_nid = self._lib.OBJ_sn2nid(curve_name.encode())
         if curve_nid == self._lib.NID_undef:
             raise UnsupportedAlgorithm(
-                "{} is not a supported elliptic curve".format(curve.name),
+                f"{curve.name} is not a supported elliptic curve",
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
             )
         return curve_nid

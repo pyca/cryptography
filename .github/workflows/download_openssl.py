@@ -26,9 +26,7 @@ def get_response(session, url, token):
         return response
     response = session.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
-        raise ValueError(
-            "Got HTTP {} fetching {}: ".format(response.status_code, url)
-        )
+        raise ValueError(f"Got HTTP {response.status_code} fetching {url}: ")
     return response
 
 
@@ -48,7 +46,7 @@ def main(platform, target):
     session.mount("http://", adapter)
 
     token = os.environ["GITHUB_TOKEN"]
-    print("Looking for: {}".format(target))
+    print(f"Looking for: {target}")
     runs_url = (
         "https://api.github.com/repos/pyca/infra/actions/workflows/"
         "{}/runs?branch=master&status=success".format(workflow)
@@ -67,7 +65,7 @@ def main(platform, target):
                 os.path.join(path, artifact["name"])
             )
             return
-    raise ValueError("Didn't find {} in {}".format(target, response))
+    raise ValueError(f"Didn't find {target} in {response}")
 
 
 if __name__ == "__main__":

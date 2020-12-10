@@ -74,7 +74,7 @@ def test_ecdsa_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if not backend.hash_supported(digest):
-        pytest.skip("Hash {} not supported".format(digest))
+        pytest.skip(f"Hash {digest} not supported")
 
     if wycheproof.valid or (
         wycheproof.acceptable and not wycheproof.has_flag("MissingZero")

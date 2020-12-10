@@ -9,7 +9,7 @@ BLOCK_SIZE = 64
 
 def encrypt(mode, key, iv, plaintext):
     encryptor = botan.Cipher(
-        "IDEA/{}/NoPadding".format(mode), "encrypt", binascii.unhexlify(key)
+        f"IDEA/{mode}/NoPadding", "encrypt", binascii.unhexlify(key)
     )
 
     cipher_text = encryptor.cipher(

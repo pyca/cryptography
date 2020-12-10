@@ -480,7 +480,7 @@ def _encode_general_name_preallocated(backend, name, gn):
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
     else:
-        raise ValueError("{} is an unknown GeneralName type".format(name))
+        raise ValueError(f"{name} is an unknown GeneralName type")
 
 
 def _encode_extended_key_usage(backend, extended_key_usage):

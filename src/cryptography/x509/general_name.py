@@ -71,7 +71,7 @@ class RFC822Name:
         return instance
 
     def __repr__(self):
-        return "<RFC822Name(value={!r})>".format(self.value)
+        return f"<RFC822Name(value={self.value!r})>"
 
     def __eq__(self, other):
         if not isinstance(other, RFC822Name):
@@ -112,7 +112,7 @@ class DNSName:
         return instance
 
     def __repr__(self):
-        return "<DNSName(value={!r})>".format(self.value)
+        return f"<DNSName(value={self.value!r})>"
 
     def __eq__(self, other):
         if not isinstance(other, DNSName):
@@ -153,7 +153,7 @@ class UniformResourceIdentifier:
         return instance
 
     def __repr__(self):
-        return "<UniformResourceIdentifier(value={!r})>".format(self.value)
+        return f"<UniformResourceIdentifier(value={self.value!r})>"
 
     def __eq__(self, other):
         if not isinstance(other, UniformResourceIdentifier):
@@ -179,7 +179,7 @@ class DirectoryName:
     value = utils.read_only_property("_value")
 
     def __repr__(self):
-        return "<DirectoryName(value={})>".format(self.value)
+        return f"<DirectoryName(value={self.value})>"
 
     def __eq__(self, other):
         if not isinstance(other, DirectoryName):
@@ -205,7 +205,7 @@ class RegisteredID:
     value = utils.read_only_property("_value")
 
     def __repr__(self):
-        return "<RegisteredID(value={})>".format(self.value)
+        return f"<RegisteredID(value={self.value})>"
 
     def __eq__(self, other):
         if not isinstance(other, RegisteredID):
@@ -243,7 +243,7 @@ class IPAddress:
     value = utils.read_only_property("_value")
 
     def __repr__(self):
-        return "<IPAddress(value={})>".format(self.value)
+        return f"<IPAddress(value={self.value})>"
 
     def __eq__(self, other):
         if not isinstance(other, IPAddress):

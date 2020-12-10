@@ -129,7 +129,7 @@ def _decode_general_name(backend, gn):
             if "1" in bits[prefix:]:
                 raise ValueError("Invalid netmask")
 
-            ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
+            ip = ipaddress.ip_network(base.exploded + f"/{prefix}")
         else:
             ip = ipaddress.ip_address(data)
 
@@ -200,7 +200,7 @@ class _X509ExtensionParser:
             )
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
-                    "Duplicate {} extension found".format(oid), oid
+                    f"Duplicate {oid} extension found", oid
                 )
 
             # These OIDs are only supported in OpenSSL 1.1.0+ but we want
@@ -715,7 +715,7 @@ def _decode_crl_reason(backend, enum):
     try:
         return x509.CRLReason(_CRL_ENTRY_REASON_CODE_TO_ENUM[code])
     except KeyError:
-        raise ValueError("Unsupported reason code: {}".format(code))
+        raise ValueError(f"Unsupported reason code: {code}")
 
 
 def _decode_invalidity_date(backend, inv_date):
@@ -773,7 +773,7 @@ def _asn1_string_to_utf8(backend, asn1_string):
     res = backend._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
     if res == -1:
         raise ValueError(
-            "Unsupported ASN1 string type. Type: {}".format(asn1_string.type)
+            f"Unsupported ASN1 string type. Type: {asn1_string.type}"
         )
 
     backend.openssl_assert(buf[0] != backend._ffi.NULL)

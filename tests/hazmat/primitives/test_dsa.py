@@ -35,9 +35,7 @@ def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
     if not backend.dsa_parameters_supported(
         p, q, g
     ) or not backend.dsa_hash_supported(algorithm):
-        pytest.skip(
-            "{} does not support the provided parameters".format(backend)
-        )
+        pytest.skip(f"{backend} does not support the provided parameters")
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

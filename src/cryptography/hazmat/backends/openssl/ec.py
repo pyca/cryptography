@@ -77,7 +77,7 @@ def _sn_to_elliptic_curve(backend, sn):
         return ec._CURVE_TYPES[sn]()
     except KeyError:
         raise UnsupportedAlgorithm(
-            "{} is not a supported elliptic curve".format(sn),
+            f"{sn} is not a supported elliptic curve",
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
         )
 

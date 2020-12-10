@@ -27,7 +27,7 @@ def wait_for_build_complete_github_actions(session, token, run_url):
             run_url,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "token {}".format(token),
+                "Authorization": f"token {token}",
             },
         )
         response.raise_for_status()
@@ -41,7 +41,7 @@ def download_artifacts_github_actions(session, token, run_url):
         run_url,
         headers={
             "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
     )
     response.raise_for_status()
@@ -50,7 +50,7 @@ def download_artifacts_github_actions(session, token, run_url):
         response.json()["artifacts_url"],
         headers={
             "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
     )
     response.raise_for_status()
@@ -60,7 +60,7 @@ def download_artifacts_github_actions(session, token, run_url):
             artifact["archive_download_url"],
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "token {}".format(token),
+                "Authorization": f"token {token}",
             },
         )
         with zipfile.ZipFile(io.BytesIO(response.content)) as z:
@@ -88,7 +88,7 @@ def build_github_actions_wheels(token, version):
         headers={
             "Content-Type": "application/json",
             "Accept": "application/vnd.github.v3+json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
         data=json.dumps({"ref": "master", "inputs": {"version": version}}),
     )
@@ -103,7 +103,7 @@ def build_github_actions_wheels(token, version):
         ),
         headers={
             "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
     )
     response.raise_for_status()
@@ -120,14 +120,14 @@ def release(version):
     """
     github_token = getpass.getpass("Github person access token: ")
 
-    run("git", "tag", "-s", version, "-m", "{} release".format(version))
+    run("git", "tag", "-s", version, "-m", f"{version} release")
     run("git", "push", "--tags")
 
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    packages = glob.glob("dist/cryptography-{}*".format(version)) + glob.glob(
-        "vectors/dist/cryptography_vectors-{}*".format(version)
+    packages = glob.glob(f"dist/cryptography-{version}*") + glob.glob(
+        f"vectors/dist/cryptography_vectors-{version}*"
     )
     run("twine", "upload", "-s", *packages)
 

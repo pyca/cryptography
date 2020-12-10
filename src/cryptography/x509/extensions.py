@@ -114,7 +114,7 @@ class Extensions:
             if ext.oid == oid:
                 return ext
 
-        raise ExtensionNotFound("No {} extension was found".format(oid), oid)
+        raise ExtensionNotFound(f"No {oid} extension was found", oid)
 
     def get_extension_for_class(self, extclass):
         if extclass is UnrecognizedExtension:
@@ -129,13 +129,13 @@ class Extensions:
                 return ext
 
         raise ExtensionNotFound(
-            "No {} extension was found".format(extclass), extclass.oid
+            f"No {extclass} extension was found", extclass.oid
         )
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_extensions")
 
     def __repr__(self):
-        return "<Extensions({})>".format(self._extensions)
+        return f"<Extensions({self._extensions})>"
 
 
 @utils.register_interface(ExtensionType)
@@ -161,7 +161,7 @@ class CRLNumber:
         return hash(self.crl_number)
 
     def __repr__(self):
-        return "<CRLNumber({})>".format(self.crl_number)
+        return f"<CRLNumber({self.crl_number})>"
 
     crl_number = utils.read_only_property("_crl_number")
 
@@ -272,7 +272,7 @@ class SubjectKeyIdentifier:
     digest = utils.read_only_property("_digest")
 
     def __repr__(self):
-        return "<SubjectKeyIdentifier(digest={!r})>".format(self.digest)
+        return f"<SubjectKeyIdentifier(digest={self.digest!r})>"
 
     def __eq__(self, other):
         if not isinstance(other, SubjectKeyIdentifier):
@@ -304,7 +304,7 @@ class AuthorityInformationAccess:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
 
     def __repr__(self):
-        return "<AuthorityInformationAccess({})>".format(self._descriptions)
+        return f"<AuthorityInformationAccess({self._descriptions})>"
 
     def __eq__(self, other):
         if not isinstance(other, AuthorityInformationAccess):
@@ -336,7 +336,7 @@ class SubjectInformationAccess:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
 
     def __repr__(self):
-        return "<SubjectInformationAccess({})>".format(self._descriptions)
+        return f"<SubjectInformationAccess({self._descriptions})>"
 
     def __eq__(self, other):
         if not isinstance(other, SubjectInformationAccess):
@@ -454,7 +454,7 @@ class DeltaCRLIndicator:
         return hash(self.crl_number)
 
     def __repr__(self):
-        return "<DeltaCRLIndicator(crl_number={0.crl_number})>".format(self)
+        return f"<DeltaCRLIndicator(crl_number={self.crl_number})>"
 
 
 @utils.register_interface(ExtensionType)
@@ -478,7 +478,7 @@ class CRLDistributionPoints:
     )
 
     def __repr__(self):
-        return "<CRLDistributionPoints({})>".format(self._distribution_points)
+        return f"<CRLDistributionPoints({self._distribution_points})>"
 
     def __eq__(self, other):
         if not isinstance(other, CRLDistributionPoints):
@@ -514,7 +514,7 @@ class FreshestCRL:
     )
 
     def __repr__(self):
-        return "<FreshestCRL({})>".format(self._distribution_points)
+        return f"<FreshestCRL({self._distribution_points})>"
 
     def __eq__(self, other):
         if not isinstance(other, FreshestCRL):
@@ -714,7 +714,7 @@ class CertificatePolicies:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_policies")
 
     def __repr__(self):
-        return "<CertificatePolicies({})>".format(self._policies)
+        return f"<CertificatePolicies({self._policies})>"
 
     def __eq__(self, other):
         if not isinstance(other, CertificatePolicies):
@@ -865,7 +865,7 @@ class ExtendedKeyUsage:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_usages")
 
     def __repr__(self):
-        return "<ExtendedKeyUsage({})>".format(self._usages)
+        return f"<ExtendedKeyUsage({self._usages})>"
 
     def __eq__(self, other):
         if not isinstance(other, ExtendedKeyUsage):
@@ -940,7 +940,7 @@ class TLSFeature:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_features")
 
     def __repr__(self):
-        return "<TLSFeature(features={0._features})>".format(self)
+        return f"<TLSFeature(features={self._features})>"
 
     def __eq__(self, other):
         if not isinstance(other, TLSFeature):
@@ -983,7 +983,7 @@ class InhibitAnyPolicy:
         self._skip_certs = skip_certs
 
     def __repr__(self):
-        return "<InhibitAnyPolicy(skip_certs={0.skip_certs})>".format(self)
+        return f"<InhibitAnyPolicy(skip_certs={self.skip_certs})>"
 
     def __eq__(self, other):
         if not isinstance(other, InhibitAnyPolicy):
@@ -1260,7 +1260,7 @@ class GeneralNames:
         return list(objs)
 
     def __repr__(self):
-        return "<GeneralNames({})>".format(self._general_names)
+        return f"<GeneralNames({self._general_names})>"
 
     def __eq__(self, other):
         if not isinstance(other, GeneralNames):
@@ -1288,7 +1288,7 @@ class SubjectAlternativeName:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self):
-        return "<SubjectAlternativeName({})>".format(self._general_names)
+        return f"<SubjectAlternativeName({self._general_names})>"
 
     def __eq__(self, other):
         if not isinstance(other, SubjectAlternativeName):
@@ -1316,7 +1316,7 @@ class IssuerAlternativeName:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self):
-        return "<IssuerAlternativeName({})>".format(self._general_names)
+        return f"<IssuerAlternativeName({self._general_names})>"
 
     def __eq__(self, other):
         if not isinstance(other, IssuerAlternativeName):
@@ -1344,7 +1344,7 @@ class CertificateIssuer:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self):
-        return "<CertificateIssuer({})>".format(self._general_names)
+        return f"<CertificateIssuer({self._general_names})>"
 
     def __eq__(self, other):
         if not isinstance(other, CertificateIssuer):
@@ -1370,7 +1370,7 @@ class CRLReason:
         self._reason = reason
 
     def __repr__(self):
-        return "<CRLReason(reason={})>".format(self._reason)
+        return f"<CRLReason(reason={self._reason})>"
 
     def __eq__(self, other):
         if not isinstance(other, CRLReason):
@@ -1520,7 +1520,7 @@ class OCSPNonce:
         return hash(self.nonce)
 
     def __repr__(self):
-        return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
+        return f"<OCSPNonce(nonce={self.nonce!r})>"
 
     nonce = utils.read_only_property("_nonce")
 

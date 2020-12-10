@@ -26,9 +26,7 @@ def _int_to_u32be(n):
 def _common_args_checks(algorithm, length, otherinfo):
     max_length = algorithm.digest_size * (2 ** 32 - 1)
     if length > max_length:
-        raise ValueError(
-            "Can not derive keys larger than {} bits.".format(max_length)
-        )
+        raise ValueError(f"Can not derive keys larger than {max_length} bits.")
     if otherinfo is not None:
         utils._check_bytes("otherinfo", otherinfo)
 

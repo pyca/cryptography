@@ -37,11 +37,11 @@ class _Certificate:
             self._version = x509.Version.v3
         else:
             raise x509.InvalidVersion(
-                "{} is not a valid X509 version".format(version), version
+                f"{version} is not a valid X509 version", version
             )
 
     def __repr__(self):
-        return "<Certificate(subject={}, ...)>".format(self.subject)
+        return f"<Certificate(subject={self.subject}, ...)>"
 
     def __eq__(self, other):
         if not isinstance(other, x509.Certificate):
@@ -112,7 +112,7 @@ class _Certificate:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{} not recognized".format(oid)
+                f"Signature algorithm OID:{oid} not recognized"
             )
 
     @property
@@ -255,7 +255,7 @@ class _CertificateRevocationList:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{} not recognized".format(oid)
+                f"Signature algorithm OID:{oid} not recognized"
             )
 
     @property
@@ -411,7 +411,7 @@ class _CertificateSigningRequest:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{} not recognized".format(oid)
+                f"Signature algorithm OID:{oid} not recognized"
             )
 
     @property
@@ -490,9 +490,7 @@ class _CertificateSigningRequest:
             self._x509_req, obj, -1
         )
         if pos == -1:
-            raise x509.AttributeNotFound(
-                "No {} attribute was found".format(oid), oid
-            )
+            raise x509.AttributeNotFound(f"No {oid} attribute was found", oid)
 
         attr = self._backend._lib.X509_REQ_get_attr(self._x509_req, pos)
         self._backend.openssl_assert(attr != self._backend._ffi.NULL)

@@ -42,7 +42,7 @@ def test_hmac(backend, wycheproof):
     if wycheproof.testgroup["tagSize"] // 8 != hash_algo.digest_size:
         pytest.skip("Truncated HMAC not supported")
     if not backend.hash_supported(hash_algo):
-        pytest.skip("Hash {} not supported".format(hash_algo.name))
+        pytest.skip(f"Hash {hash_algo.name} not supported")
 
     h = hmac.HMAC(
         key=binascii.unhexlify(wycheproof.testcase["key"]),

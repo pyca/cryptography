@@ -103,7 +103,7 @@ def load_cryptrec_vectors(vector_data):
                 {"key": key, "plaintext": pt, "ciphertext": ct}
             )
         else:
-            raise ValueError("Invalid line in file '{}'".format(line))
+            raise ValueError(f"Invalid line in file '{line}'")
     return cryptrec_list
 
 

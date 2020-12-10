@@ -96,7 +96,7 @@ def _hash_algorithm(backend, cert_id):
         return _OIDS_TO_HASH[oid]
     except KeyError:
         raise UnsupportedAlgorithm(
-            "Signature algorithm OID: {} not recognized".format(oid)
+            f"Signature algorithm OID: {oid} not recognized"
         )
 
 
@@ -152,7 +152,7 @@ class _OCSPResponse:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{} not recognized".format(oid)
+                f"Signature algorithm OID:{oid} not recognized"
             )
 
     @property

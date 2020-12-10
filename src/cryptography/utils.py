@@ -25,14 +25,14 @@ DeprecatedIn34 = CryptographyDeprecationWarning
 
 def _check_bytes(name, value):
     if not isinstance(value, bytes):
-        raise TypeError("{} must be bytes".format(name))
+        raise TypeError(f"{name} must be bytes")
 
 
 def _check_byteslike(name, value):
     try:
         memoryview(value)
     except TypeError:
-        raise TypeError("{} must be bytes-like".format(name))
+        raise TypeError(f"{name} must be bytes-like")
 
 
 def read_only_property(name):
@@ -72,7 +72,7 @@ def verify_interface(iface, klass):
     for method in iface.__abstractmethods__:
         if not hasattr(klass, method):
             raise InterfaceNotImplemented(
-                "{} is missing a {!r} method".format(klass, method)
+                f"{klass} is missing a {method!r} method"
             )
         if isinstance(getattr(iface, method), abc.abstractproperty):
             # Can't properly verify these yet.
@@ -126,7 +126,7 @@ def deprecated(value, module_name, message, warning_class):
 
 
 def cached_property(func):
-    cached_name = "_cached_{}".format(func)
+    cached_name = f"_cached_{func}"
     sentinel = object()
 
     def inner(instance):

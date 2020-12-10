@@ -13,8 +13,8 @@ from .utils import check_backend_support
 def pytest_report_header(config):
     return "\n".join(
         [
-            "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
-            "FIPS Enabled: {}".format(openssl_backend._fips_enabled),
+            f"OpenSSL: {openssl_backend.openssl_version_text()}",
+            f"FIPS Enabled: {openssl_backend._fips_enabled}",
         ]
     )
 
