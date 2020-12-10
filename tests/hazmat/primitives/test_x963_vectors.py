@@ -26,7 +26,7 @@ def _skip_hashfn_unsupported(backend, hashfn):
 
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestX963(object):
+class TestX963:
     _algorithms_dict = {
         "SHA-1": hashes.SHA1,
         "SHA-224": hashes.SHA224,

@@ -13,7 +13,7 @@ from cryptography import x509
 from cryptography.hazmat.backends.interfaces import X509Backend
 
 
-class TestRevokedCertificateBuilder(object):
+class TestRevokedCertificateBuilder:
     def test_serial_number_must_be_integer(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().serial_number("notanx509name")

@@ -19,7 +19,7 @@ HASHLIB_HASH_TYPES = {
 }
 
 
-class TruncatedHash(object):
+class TruncatedHash:
     def __init__(self, hasher):
         self.hasher = hasher
 
@@ -41,7 +41,7 @@ def build_vectors(fips_vectors):
             continue
 
         yield ""
-        yield "[K-256,{0}]".format(digest_algorithm)
+        yield "[K-256,{}]".format(digest_algorithm)
         yield ""
 
         for message in messages:
@@ -57,12 +57,12 @@ def build_vectors(fips_vectors):
 
             r, s = sigdecode_der(signature, None)
 
-            yield "Msg = {0}".format(hexlify(message))
-            yield "d = {0:x}".format(secret_key.privkey.secret_multiplier)
-            yield "Qx = {0:x}".format(public_key.pubkey.point.x())
-            yield "Qy = {0:x}".format(public_key.pubkey.point.y())
-            yield "R = {0:x}".format(r)
-            yield "S = {0:x}".format(s)
+            yield "Msg = {}".format(hexlify(message))
+            yield "d = {:x}".format(secret_key.privkey.secret_multiplier)
+            yield "Qx = {:x}".format(public_key.pubkey.point.x())
+            yield "Qy = {:x}".format(public_key.pubkey.point.y())
+            yield "R = {:x}".format(r)
+            yield "S = {:x}".format(s)
             yield ""
 
 

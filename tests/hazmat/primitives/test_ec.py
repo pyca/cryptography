@@ -82,13 +82,13 @@ def test_get_curve_for_oid():
 
 
 @utils.register_interface(ec.EllipticCurve)
-class DummyCurve(object):
+class DummyCurve:
     name = "dummy-curve"
     key_size = 1
 
 
 @utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
-class DummySignatureAlgorithm(object):
+class DummySignatureAlgorithm:
     algorithm = None
 
 
@@ -277,7 +277,7 @@ def test_ec_key_key_size(backend):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECWithNumbers(object):
+class TestECWithNumbers:
     def test_with_numbers(self, backend, subtests):
         vectors = itertools.product(
             load_vectors_from_file(
@@ -310,7 +310,7 @@ class TestECWithNumbers(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDSAVectors(object):
+class TestECDSAVectors:
     def test_signing_with_example_keys(self, backend, subtests):
         vectors = itertools.product(
             load_vectors_from_file(
@@ -626,7 +626,7 @@ class TestECDSAVectors(object):
             public_key.verifier(b"0" * 64, ec.ECDSA(Prehashed(hashes.SHA1())))
 
 
-class TestECNumbersEquality(object):
+class TestECNumbersEquality:
     def test_public_numbers_eq(self):
         pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
         assert pub == ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
@@ -665,7 +665,7 @@ class TestECNumbersEquality(object):
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestECSerialization(object):
+class TestECSerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -917,7 +917,7 @@ class TestECSerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestEllipticCurvePEMPublicKeySerialization(object):
+class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [
@@ -1170,7 +1170,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDSAVerification(object):
+class TestECDSAVerification:
     def test_signature_not_bytes(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -1182,7 +1182,7 @@ class TestECDSAVerification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDH(object):
+class TestECDH:
     def test_key_exchange_with_vectors(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join(

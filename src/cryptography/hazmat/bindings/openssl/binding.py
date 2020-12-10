@@ -18,7 +18,7 @@ _OpenSSLErrorWithText = collections.namedtuple(
 )
 
 
-class _OpenSSLError(object):
+class _OpenSSLError:
     def __init__(self, code, lib, func, reason):
         self._code = code
         self._lib = lib
@@ -83,7 +83,7 @@ def _openssl_assert(lib, ok, errors=None):
             "OpenSSL try disabling it before reporting a bug. Otherwise "
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
-            "this. ({0!r})".format(errors_with_text),
+            "this. ({!r})".format(errors_with_text),
             errors_with_text,
         )
 
@@ -103,7 +103,7 @@ def build_conditional_library(lib, conditional_names):
     return conditional_lib
 
 
-class Binding(object):
+class Binding:
     """
     OpenSSL API wrapper.
     """

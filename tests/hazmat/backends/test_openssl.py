@@ -42,7 +42,7 @@ def skip_if_libre_ssl(openssl_version):
         pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
 
 
-class TestLibreSkip(object):
+class TestLibreSkip:
     def test_skip_no(self):
         assert skip_if_libre_ssl("OpenSSL 1.0.2h  3 May 2016") is None
 
@@ -51,11 +51,11 @@ class TestLibreSkip(object):
             skip_if_libre_ssl("LibreSSL 2.1.6")
 
 
-class DummyMGF(object):
+class DummyMGF:
     _salt_length = 0
 
 
-class TestOpenSSL(object):
+class TestOpenSSL:
     def test_backend_exists(self):
         assert backend
 
@@ -171,7 +171,7 @@ class TestOpenSSL(object):
     reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d",
 )
 @pytest.mark.skip_fips(reason="osrandom engine disabled for FIPS")
-class TestOpenSSLRandomEngine(object):
+class TestOpenSSLRandomEngine:
     def setup(self):
         # The default RAND engine is global and shared between
         # tests. We make sure that the default engine is osrandom
@@ -300,7 +300,7 @@ class TestOpenSSLRandomEngine(object):
     backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
     reason="Requires OpenSSL without ENGINE support or OpenSSL >=1.1.1d",
 )
-class TestOpenSSLNoEngine(object):
+class TestOpenSSLNoEngine:
     def test_no_engine_support(self):
         assert (
             backend._ffi.string(backend._lib.Cryptography_osrandom_engine_id)
@@ -318,7 +318,7 @@ class TestOpenSSLNoEngine(object):
         backend.activate_osrandom_engine()
 
 
-class TestOpenSSLRSA(object):
+class TestOpenSSLRSA:
     def test_generate_rsa_parameters_supported(self):
         assert backend.generate_rsa_parameters_supported(1, 1024) is False
         assert backend.generate_rsa_parameters_supported(4, 1024) is False
@@ -465,13 +465,13 @@ class TestOpenSSLRSA(object):
             )
 
 
-class TestOpenSSLCMAC(object):
+class TestOpenSSLCMAC:
     def test_unsupported_cipher(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(DummyCipherAlgorithm())
 
 
-class TestOpenSSLSignX509Certificate(object):
+class TestOpenSSLSignX509Certificate:
     def test_requires_certificate_builder(self):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -481,7 +481,7 @@ class TestOpenSSLSignX509Certificate(object):
             )
 
 
-class TestOpenSSLSignX509CSR(object):
+class TestOpenSSLSignX509CSR:
     def test_requires_csr_builder(self):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -491,7 +491,7 @@ class TestOpenSSLSignX509CSR(object):
             )
 
 
-class TestOpenSSLSignX509CertificateRevocationList(object):
+class TestOpenSSLSignX509CertificateRevocationList:
     def test_invalid_builder(self):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -499,13 +499,13 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
 
-class TestOpenSSLCreateRevokedCertificate(object):
+class TestOpenSSLCreateRevokedCertificate:
     def test_invalid_builder(self):
         with pytest.raises(TypeError):
             backend.create_x509_revoked_certificate(object())
 
 
-class TestOpenSSLSerializationWithOpenSSL(object):
+class TestOpenSSLSerializationWithOpenSSL:
     def test_pem_password_cb(self):
         userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         pw = b"abcdefg"
@@ -558,14 +558,14 @@ class TestOpenSSLSerializationWithOpenSSL(object):
             )
 
 
-class TestOpenSSLEllipticCurve(object):
+class TestOpenSSLEllipticCurve:
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSAPEMSerialization(object):
+class TestRSAPEMSerialization:
     def test_password_length_limit(self):
         password = b"x" * 1024
         key = RSA_KEY_2048.private_key(backend)
@@ -577,7 +577,7 @@ class TestRSAPEMSerialization(object):
             )
 
 
-class TestGOSTCertificate(object):
+class TestGOSTCertificate:
     def test_numeric_string_x509_name_entry(self):
         cert = _load_cert(
             os.path.join("x509", "e-trust.ru.der"),
@@ -606,7 +606,7 @@ class TestGOSTCertificate(object):
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
 )
 @pytest.mark.requires_backend_interface(interface=DHBackend)
-class TestOpenSSLDHSerialization(object):
+class TestOpenSSLDHSerialization:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

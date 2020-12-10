@@ -22,7 +22,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support AES GCM",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeGCM(object):
+class TestAESModeGCM:
     test_gcm = generate_aead_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "GCM"),

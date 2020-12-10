@@ -29,7 +29,7 @@ def encode_dss_signature(r, s):
     )
 
 
-class Prehashed(object):
+class Prehashed:
     def __init__(self, algorithm):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError("Expected instance of HashAlgorithm.")

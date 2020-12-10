@@ -29,7 +29,7 @@ UTC_TIME = 0x17
 GENERALIZED_TIME = 0x18
 
 
-class DERReader(object):
+class DERReader:
     def __init__(self, data):
         self.data = memoryview(data)
 

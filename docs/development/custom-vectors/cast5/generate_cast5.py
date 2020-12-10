@@ -27,7 +27,7 @@ def build_vectors(mode, filename):
     iv = None
     plaintext = None
 
-    with open(filename, "r") as vector_file:
+    with open(filename) as vector_file:
         for line in vector_file:
             line = line.strip()
             if line.startswith("KEY"):

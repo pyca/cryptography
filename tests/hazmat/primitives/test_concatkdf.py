@@ -18,7 +18,7 @@ from ...utils import raises_unsupported_algorithm
 
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
-class TestConcatKDFHash(object):
+class TestConcatKDFHash:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
 
@@ -125,7 +125,7 @@ class TestConcatKDFHash(object):
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestConcatKDFHMAC(object):
+class TestConcatKDFHMAC:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
 

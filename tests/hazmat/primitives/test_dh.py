@@ -140,7 +140,7 @@ def test_dh_public_numbers_equality():
 
 
 @pytest.mark.requires_backend_interface(interface=DHBackend)
-class TestDH(object):
+class TestDH:
     def test_small_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 511, backend)
@@ -445,7 +445,7 @@ class TestDH(object):
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestDHPrivateKeySerialization(object):
+class TestDHPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [
@@ -635,7 +635,7 @@ class TestDHPrivateKeySerialization(object):
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestDHPublicKeySerialization(object):
+class TestDHPublicKeySerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [
@@ -764,7 +764,7 @@ class TestDHPublicKeySerialization(object):
 @pytest.mark.requires_backend_interface(interface=DHBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestDHParameterSerialization(object):
+class TestDHParameterSerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [

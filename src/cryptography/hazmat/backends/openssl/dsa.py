@@ -47,7 +47,7 @@ def _dsa_sig_verify(backend, public_key, signature, data):
 
 
 @utils.register_interface(AsymmetricVerificationContext)
-class _DSAVerificationContext(object):
+class _DSAVerificationContext:
     def __init__(self, backend, public_key, signature, algorithm):
         self._backend = backend
         self._public_key = public_key
@@ -68,7 +68,7 @@ class _DSAVerificationContext(object):
 
 
 @utils.register_interface(AsymmetricSignatureContext)
-class _DSASignatureContext(object):
+class _DSASignatureContext:
     def __init__(self, backend, private_key, algorithm):
         self._backend = backend
         self._private_key = private_key
@@ -84,7 +84,7 @@ class _DSASignatureContext(object):
 
 
 @utils.register_interface(dsa.DSAParametersWithNumbers)
-class _DSAParameters(object):
+class _DSAParameters:
     def __init__(self, backend, dsa_cdata):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
@@ -108,7 +108,7 @@ class _DSAParameters(object):
 
 
 @utils.register_interface(dsa.DSAPrivateKeyWithSerialization)
-class _DSAPrivateKey(object):
+class _DSAPrivateKey:
     def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
@@ -198,7 +198,7 @@ class _DSAPrivateKey(object):
 
 
 @utils.register_interface(dsa.DSAPublicKeyWithSerialization)
-class _DSAPublicKey(object):
+class _DSAPublicKey:
     def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata

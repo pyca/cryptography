@@ -10,7 +10,7 @@ from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.backend import backend
 
 
-class ChaCha20Poly1305(object):
+class ChaCha20Poly1305:
     _MAX_SIZE = 2 ** 32
 
     def __init__(self, key):
@@ -58,7 +58,7 @@ class ChaCha20Poly1305(object):
             raise ValueError("Nonce must be 12 bytes")
 
 
-class AESCCM(object):
+class AESCCM:
     _MAX_SIZE = 2 ** 32
 
     def __init__(self, key, tag_length=16):
@@ -125,7 +125,7 @@ class AESCCM(object):
             raise ValueError("Nonce must be between 7 and 13 bytes")
 
 
-class AESGCM(object):
+class AESGCM:
     _MAX_SIZE = 2 ** 32
 
     def __init__(self, key):

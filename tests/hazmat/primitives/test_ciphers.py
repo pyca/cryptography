@@ -30,7 +30,7 @@ from ...utils import (
 )
 
 
-class TestAES(object):
+class TestAES:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
@@ -48,7 +48,7 @@ class TestAES(object):
             AES("0" * 32)
 
 
-class TestAESXTS(object):
+class TestAESXTS:
     @pytest.mark.requires_backend_interface(interface=CipherBackend)
     @pytest.mark.parametrize(
         "mode", (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
@@ -71,14 +71,14 @@ class TestAESXTS(object):
             ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
 
 
-class TestGCM(object):
+class TestGCM:
     @pytest.mark.parametrize("size", [7, 129])
     def test_gcm_min_max(self, size):
         with pytest.raises(ValueError):
             modes.GCM(b"0" * size)
 
 
-class TestCamellia(object):
+class TestCamellia:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
@@ -96,7 +96,7 @@ class TestCamellia(object):
             Camellia("0" * 32)
 
 
-class TestTripleDES(object):
+class TestTripleDES:
     @pytest.mark.parametrize("key", [b"0" * 16, b"0" * 32, b"0" * 48])
     def test_key_size(self, key):
         cipher = TripleDES(binascii.unhexlify(key))
@@ -111,7 +111,7 @@ class TestTripleDES(object):
             TripleDES("0" * 16)
 
 
-class TestBlowfish(object):
+class TestBlowfish:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * (keysize // 4), keysize) for keysize in range(32, 449, 8)],
@@ -129,7 +129,7 @@ class TestBlowfish(object):
             Blowfish("0" * 8)
 
 
-class TestCAST5(object):
+class TestCAST5:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * (keysize // 4), keysize) for keysize in range(40, 129, 8)],
@@ -147,7 +147,7 @@ class TestCAST5(object):
             CAST5("0" * 10)
 
 
-class TestARC4(object):
+class TestARC4:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [
@@ -173,7 +173,7 @@ class TestARC4(object):
             ARC4("0" * 10)
 
 
-class TestIDEA(object):
+class TestIDEA:
     def test_key_size(self):
         cipher = IDEA(b"\x00" * 16)
         assert cipher.key_size == 128
@@ -187,7 +187,7 @@ class TestIDEA(object):
             IDEA("0" * 16)
 
 
-class TestSEED(object):
+class TestSEED:
     def test_key_size(self):
         cipher = SEED(b"\x00" * 16)
         assert cipher.key_size == 128
@@ -215,7 +215,7 @@ def test_invalid_backend():
     skip_message="Does not support AES ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCipherUpdateInto(object):
+class TestCipherUpdateInto:
     @pytest.mark.parametrize(
         "params",
         load_vectors_from_file(

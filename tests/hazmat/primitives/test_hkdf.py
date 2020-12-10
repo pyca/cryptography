@@ -21,7 +21,7 @@ from ...utils import (
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHKDF(object):
+class TestHKDF:
     def test_length_limit(self, backend):
         big_length = 255 * hashes.SHA256().digest_size + 1
 
@@ -127,7 +127,7 @@ class TestHKDF(object):
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHKDFExpand(object):
+class TestHKDFExpand:
     def test_derive(self, backend):
         prk = binascii.unhexlify(
             b"077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5"

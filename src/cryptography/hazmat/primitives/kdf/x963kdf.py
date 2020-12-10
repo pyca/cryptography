@@ -23,7 +23,7 @@ def _int_to_u32be(n):
 
 
 @utils.register_interface(KeyDerivationFunction)
-class X963KDF(object):
+class X963KDF:
     def __init__(self, algorithm, length, sharedinfo, backend=None):
         backend = _get_backend(backend)
 

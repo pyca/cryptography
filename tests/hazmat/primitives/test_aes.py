@@ -23,7 +23,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support AES XTS",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeXTS(object):
+class TestAESModeXTS:
     @pytest.mark.parametrize(
         "vector",
         # This list comprehension excludes any vector that does not have a
@@ -61,7 +61,7 @@ class TestAESModeXTS(object):
     skip_message="Does not support AES CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeCBC(object):
+class TestAESModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
@@ -94,7 +94,7 @@ class TestAESModeCBC(object):
     skip_message="Does not support AES ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeECB(object):
+class TestAESModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
@@ -127,7 +127,7 @@ class TestAESModeECB(object):
     skip_message="Does not support AES OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeOFB(object):
+class TestAESModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
@@ -160,7 +160,7 @@ class TestAESModeOFB(object):
     skip_message="Does not support AES CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeCFB(object):
+class TestAESModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -193,7 +193,7 @@ class TestAESModeCFB(object):
     skip_message="Does not support AES CFB8",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeCFB8(object):
+class TestAESModeCFB8:
     test_cfb8 = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -226,7 +226,7 @@ class TestAESModeCFB8(object):
     skip_message="Does not support AES CTR",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESModeCTR(object):
+class TestAESModeCTR:
     test_ctr = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CTR"),

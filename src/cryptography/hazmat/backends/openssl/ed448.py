@@ -15,7 +15,7 @@ _ED448_SIG_SIZE = 114
 
 
 @utils.register_interface(Ed448PublicKey)
-class _Ed448PublicKey(object):
+class _Ed448PublicKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
@@ -72,7 +72,7 @@ class _Ed448PublicKey(object):
 
 
 @utils.register_interface(Ed448PrivateKey)
-class _Ed448PrivateKey(object):
+class _Ed448PrivateKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey

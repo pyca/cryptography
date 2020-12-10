@@ -45,7 +45,7 @@ def test_memory_limit_skip():
 
 
 @pytest.mark.requires_backend_interface(interface=ScryptBackend)
-class TestScrypt(object):
+class TestScrypt:
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)

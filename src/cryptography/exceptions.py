@@ -23,7 +23,7 @@ class _Reasons(Enum):
 
 class UnsupportedAlgorithm(Exception):
     def __init__(self, message, reason=None):
-        super(UnsupportedAlgorithm, self).__init__(message)
+        super().__init__(message)
         self._reason = reason
 
 
@@ -49,7 +49,7 @@ class InvalidSignature(Exception):
 
 class InternalError(Exception):
     def __init__(self, msg, err_code):
-        super(InternalError, self).__init__(msg)
+        super().__init__(msg)
         self.err_code = err_code
 
 

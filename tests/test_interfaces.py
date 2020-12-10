@@ -18,7 +18,7 @@ def test_register_interface_if_true():
         pass
 
     @register_interface_if(1 == 1, SimpleInterface)
-    class SimpleClass(object):
+    class SimpleClass:
         pass
 
     assert issubclass(SimpleClass, SimpleInterface) is True
@@ -29,20 +29,20 @@ def test_register_interface_if_false():
         pass
 
     @register_interface_if(1 == 2, SimpleInterface)
-    class SimpleClass(object):
+    class SimpleClass:
         pass
 
     assert issubclass(SimpleClass, SimpleInterface) is False
 
 
-class TestVerifyInterface(object):
+class TestVerifyInterface:
     def test_verify_missing_method(self):
         class SimpleInterface(metaclass=abc.ABCMeta):
             @abc.abstractmethod
             def method(self):
                 """A simple method"""
 
-        class NonImplementer(object):
+        class NonImplementer:
             pass
 
         with pytest.raises(InterfaceNotImplemented):
@@ -54,7 +54,7 @@ class TestVerifyInterface(object):
             def method(self, a):
                 """Method with one argument"""
 
-        class NonImplementer(object):
+        class NonImplementer:
             def method(self):
                 """Method with no arguments"""
 
@@ -69,7 +69,7 @@ class TestVerifyInterface(object):
             def property(self):
                 """An abstract property"""
 
-        class NonImplementer(object):
+        class NonImplementer:
             @property
             def property(self):
                 """A concrete property"""

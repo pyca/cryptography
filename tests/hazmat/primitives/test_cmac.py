@@ -49,7 +49,7 @@ fake_key = b"\x00" * 16
 
 
 @pytest.mark.requires_backend_interface(interface=CMACBackend)
-class TestCMAC(object):
+class TestCMAC:
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
             AES(fake_key)

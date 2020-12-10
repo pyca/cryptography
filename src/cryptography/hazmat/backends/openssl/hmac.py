@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import constant_time, hashes
 
 
 @utils.register_interface(hashes.HashContext)
-class _HMACContext(object):
+class _HMACContext:
     def __init__(self, backend, key, algorithm, ctx=None):
         self._algorithm = algorithm
         self._backend = backend

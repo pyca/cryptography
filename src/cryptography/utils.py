@@ -86,14 +86,14 @@ def verify_interface(iface, klass):
             )
 
 
-class _DeprecatedValue(object):
+class _DeprecatedValue:
     def __init__(self, value, message, warning_class):
         self.value = value
         self.message = message
         self.warning_class = warning_class
 
 
-class _ModuleWithDeprecations(object):
+class _ModuleWithDeprecations:
     def __init__(self, module):
         self.__dict__["_module"] = module
 

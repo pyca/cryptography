@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives import hashes
 
 
 @utils.register_interface(hashes.HashContext)
-class HMAC(object):
+class HMAC:
     def __init__(self, key, algorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):

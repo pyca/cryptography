@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives import hashes
 
 
 @utils.register_interface(hashes.HashContext)
-class _HashContext(object):
+class _HashContext:
     def __init__(self, backend, algorithm, ctx=None):
         self._algorithm = algorithm
 

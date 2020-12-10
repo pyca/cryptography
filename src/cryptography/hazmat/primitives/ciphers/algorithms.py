@@ -27,7 +27,7 @@ def _verify_key_size(algorithm, key):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class AES(object):
+class AES:
     name = "AES"
     block_size = 128
     # 512 added to support AES-256-XTS, which uses 512-bit keys
@@ -43,7 +43,7 @@ class AES(object):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class Camellia(object):
+class Camellia:
     name = "camellia"
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
@@ -58,7 +58,7 @@ class Camellia(object):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class TripleDES(object):
+class TripleDES:
     name = "3DES"
     block_size = 64
     key_sizes = frozenset([64, 128, 192])
@@ -77,7 +77,7 @@ class TripleDES(object):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class Blowfish(object):
+class Blowfish:
     name = "Blowfish"
     block_size = 64
     key_sizes = frozenset(range(32, 449, 8))
@@ -92,7 +92,7 @@ class Blowfish(object):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class CAST5(object):
+class CAST5:
     name = "CAST5"
     block_size = 64
     key_sizes = frozenset(range(40, 129, 8))
@@ -106,7 +106,7 @@ class CAST5(object):
 
 
 @utils.register_interface(CipherAlgorithm)
-class ARC4(object):
+class ARC4:
     name = "RC4"
     key_sizes = frozenset([40, 56, 64, 80, 128, 160, 192, 256])
 
@@ -119,7 +119,7 @@ class ARC4(object):
 
 
 @utils.register_interface(CipherAlgorithm)
-class IDEA(object):
+class IDEA:
     name = "IDEA"
     block_size = 64
     key_sizes = frozenset([128])
@@ -134,7 +134,7 @@ class IDEA(object):
 
 @utils.register_interface(BlockCipherAlgorithm)
 @utils.register_interface(CipherAlgorithm)
-class SEED(object):
+class SEED:
     name = "SEED"
     block_size = 128
     key_sizes = frozenset([128])
@@ -149,7 +149,7 @@ class SEED(object):
 
 @utils.register_interface(CipherAlgorithm)
 @utils.register_interface(ModeWithNonce)
-class ChaCha20(object):
+class ChaCha20:
     name = "ChaCha20"
     key_sizes = frozenset([256])
 

@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives import ciphers
 
 
-class CMAC(object):
+class CMAC:
     def __init__(self, algorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, CMACBackend):

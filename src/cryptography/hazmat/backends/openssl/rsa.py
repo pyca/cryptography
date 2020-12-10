@@ -295,7 +295,7 @@ def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
 
 
 @utils.register_interface(AsymmetricSignatureContext)
-class _RSASignatureContext(object):
+class _RSASignatureContext:
     def __init__(self, backend, private_key, padding, algorithm):
         self._backend = backend
         self._private_key = private_key
@@ -322,7 +322,7 @@ class _RSASignatureContext(object):
 
 
 @utils.register_interface(AsymmetricVerificationContext)
-class _RSAVerificationContext(object):
+class _RSAVerificationContext:
     def __init__(self, backend, public_key, signature, padding, algorithm):
         self._backend = backend
         self._public_key = public_key
@@ -352,7 +352,7 @@ class _RSAVerificationContext(object):
 
 
 @utils.register_interface(RSAPrivateKeyWithSerialization)
-class _RSAPrivateKey(object):
+class _RSAPrivateKey:
     def __init__(self, backend, rsa_cdata, evp_pkey):
         res = backend._lib.RSA_check_key(rsa_cdata)
         if res != 1:
@@ -452,7 +452,7 @@ class _RSAPrivateKey(object):
 
 
 @utils.register_interface(RSAPublicKeyWithSerialization)
-class _RSAPublicKey(object):
+class _RSAPublicKey:
     def __init__(self, backend, rsa_cdata, evp_pkey):
         self._backend = backend
         self._rsa_cdata = rsa_cdata

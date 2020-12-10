@@ -19,12 +19,12 @@ class AsymmetricPadding(metaclass=abc.ABCMeta):
 
 
 @utils.register_interface(AsymmetricPadding)
-class PKCS1v15(object):
+class PKCS1v15:
     name = "EMSA-PKCS1-v1_5"
 
 
 @utils.register_interface(AsymmetricPadding)
-class PSS(object):
+class PSS:
     MAX_LENGTH = object()
     name = "EMSA-PSS"
 
@@ -44,7 +44,7 @@ class PSS(object):
 
 
 @utils.register_interface(AsymmetricPadding)
-class OAEP(object):
+class OAEP:
     name = "EME-OAEP"
 
     def __init__(self, mgf, algorithm, label):
@@ -56,7 +56,7 @@ class OAEP(object):
         self._label = label
 
 
-class MGF1(object):
+class MGF1:
     MAX_LENGTH = object()
 
     def __init__(self, algorithm):

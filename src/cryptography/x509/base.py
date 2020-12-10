@@ -26,7 +26,7 @@ _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
 class AttributeNotFound(Exception):
     def __init__(self, msg, oid):
-        super(AttributeNotFound, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
@@ -95,7 +95,7 @@ def load_der_x509_crl(data, backend=None):
 
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
-        super(InvalidVersion, self).__init__(msg)
+        super().__init__(msg)
         self.parsed_version = parsed_version
 
 
@@ -412,7 +412,7 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
         """
 
 
-class CertificateSigningRequestBuilder(object):
+class CertificateSigningRequestBuilder:
     def __init__(self, subject_name=None, extensions=[], attributes=[]):
         """
         Creates an empty X.509 certificate request (v1).
@@ -477,7 +477,7 @@ class CertificateSigningRequestBuilder(object):
         return backend.create_x509_csr(self, private_key, algorithm)
 
 
-class CertificateBuilder(object):
+class CertificateBuilder:
     def __init__(
         self,
         issuer_name=None,
@@ -698,7 +698,7 @@ class CertificateBuilder(object):
         return backend.create_x509_certificate(self, private_key, algorithm)
 
 
-class CertificateRevocationListBuilder(object):
+class CertificateRevocationListBuilder:
     def __init__(
         self,
         issuer_name=None,
@@ -816,7 +816,7 @@ class CertificateRevocationListBuilder(object):
         return backend.create_x509_crl(self, private_key, algorithm)
 
 
-class RevokedCertificateBuilder(object):
+class RevokedCertificateBuilder:
     def __init__(
         self, serial_number=None, revocation_date=None, extensions=[]
     ):

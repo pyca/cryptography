@@ -87,13 +87,13 @@ def _make_sequence_methods(field_name):
 
 class DuplicateExtension(Exception):
     def __init__(self, msg, oid):
-        super(DuplicateExtension, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
 class ExtensionNotFound(Exception):
     def __init__(self, msg, oid):
-        super(ExtensionNotFound, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
@@ -105,7 +105,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
         """
 
 
-class Extensions(object):
+class Extensions:
     def __init__(self, extensions):
         self._extensions = extensions
 
@@ -139,7 +139,7 @@ class Extensions(object):
 
 
 @utils.register_interface(ExtensionType)
-class CRLNumber(object):
+class CRLNumber:
     oid = ExtensionOID.CRL_NUMBER
 
     def __init__(self, crl_number):
@@ -167,7 +167,7 @@ class CRLNumber(object):
 
 
 @utils.register_interface(ExtensionType)
-class AuthorityKeyIdentifier(object):
+class AuthorityKeyIdentifier:
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
     def __init__(
@@ -259,7 +259,7 @@ class AuthorityKeyIdentifier(object):
 
 
 @utils.register_interface(ExtensionType)
-class SubjectKeyIdentifier(object):
+class SubjectKeyIdentifier:
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
     def __init__(self, digest):
@@ -272,7 +272,7 @@ class SubjectKeyIdentifier(object):
     digest = utils.read_only_property("_digest")
 
     def __repr__(self):
-        return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
+        return "<SubjectKeyIdentifier(digest={!r})>".format(self.digest)
 
     def __eq__(self, other):
         if not isinstance(other, SubjectKeyIdentifier):
@@ -288,7 +288,7 @@ class SubjectKeyIdentifier(object):
 
 
 @utils.register_interface(ExtensionType)
-class AuthorityInformationAccess(object):
+class AuthorityInformationAccess:
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
@@ -320,7 +320,7 @@ class AuthorityInformationAccess(object):
 
 
 @utils.register_interface(ExtensionType)
-class SubjectInformationAccess(object):
+class SubjectInformationAccess:
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
@@ -351,7 +351,7 @@ class SubjectInformationAccess(object):
         return hash(tuple(self._descriptions))
 
 
-class AccessDescription(object):
+class AccessDescription:
     def __init__(self, access_method, access_location):
         if not isinstance(access_method, ObjectIdentifier):
             raise TypeError("access_method must be an ObjectIdentifier")
@@ -388,7 +388,7 @@ class AccessDescription(object):
 
 
 @utils.register_interface(ExtensionType)
-class BasicConstraints(object):
+class BasicConstraints:
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
     def __init__(self, ca, path_length):
@@ -430,7 +430,7 @@ class BasicConstraints(object):
 
 
 @utils.register_interface(ExtensionType)
-class DeltaCRLIndicator(object):
+class DeltaCRLIndicator:
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
     def __init__(self, crl_number):
@@ -458,7 +458,7 @@ class DeltaCRLIndicator(object):
 
 
 @utils.register_interface(ExtensionType)
-class CRLDistributionPoints(object):
+class CRLDistributionPoints:
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(self, distribution_points):
@@ -494,7 +494,7 @@ class CRLDistributionPoints(object):
 
 
 @utils.register_interface(ExtensionType)
-class FreshestCRL(object):
+class FreshestCRL:
     oid = ExtensionOID.FRESHEST_CRL
 
     def __init__(self, distribution_points):
@@ -529,7 +529,7 @@ class FreshestCRL(object):
         return hash(tuple(self._distribution_points))
 
 
-class DistributionPoint(object):
+class DistributionPoint:
     def __init__(self, full_name, relative_name, reasons, crl_issuer):
         if full_name and relative_name:
             raise ValueError(
@@ -637,7 +637,7 @@ class ReasonFlags(Enum):
 
 
 @utils.register_interface(ExtensionType)
-class PolicyConstraints(object):
+class PolicyConstraints:
     oid = ExtensionOID.POLICY_CONSTRAINTS
 
     def __init__(self, require_explicit_policy, inhibit_policy_mapping):
@@ -698,7 +698,7 @@ class PolicyConstraints(object):
 
 
 @utils.register_interface(ExtensionType)
-class CertificatePolicies(object):
+class CertificatePolicies:
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
     def __init__(self, policies):
@@ -729,7 +729,7 @@ class CertificatePolicies(object):
         return hash(tuple(self._policies))
 
 
-class PolicyInformation(object):
+class PolicyInformation:
     def __init__(self, policy_identifier, policy_qualifiers):
         if not isinstance(policy_identifier, ObjectIdentifier):
             raise TypeError("policy_identifier must be an ObjectIdentifier")
@@ -778,7 +778,7 @@ class PolicyInformation(object):
     policy_qualifiers = utils.read_only_property("_policy_qualifiers")
 
 
-class UserNotice(object):
+class UserNotice:
     def __init__(self, notice_reference, explicit_text):
         if notice_reference and not isinstance(
             notice_reference, NoticeReference
@@ -815,7 +815,7 @@ class UserNotice(object):
     explicit_text = utils.read_only_property("_explicit_text")
 
 
-class NoticeReference(object):
+class NoticeReference:
     def __init__(self, organization, notice_numbers):
         self._organization = organization
         notice_numbers = list(notice_numbers)
@@ -850,7 +850,7 @@ class NoticeReference(object):
 
 
 @utils.register_interface(ExtensionType)
-class ExtendedKeyUsage(object):
+class ExtendedKeyUsage:
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
     def __init__(self, usages):
@@ -881,7 +881,7 @@ class ExtendedKeyUsage(object):
 
 
 @utils.register_interface(ExtensionType)
-class OCSPNoCheck(object):
+class OCSPNoCheck:
     oid = ExtensionOID.OCSP_NO_CHECK
 
     def __eq__(self, other):
@@ -901,7 +901,7 @@ class OCSPNoCheck(object):
 
 
 @utils.register_interface(ExtensionType)
-class PrecertPoison(object):
+class PrecertPoison:
     oid = ExtensionOID.PRECERT_POISON
 
     def __eq__(self, other):
@@ -921,7 +921,7 @@ class PrecertPoison(object):
 
 
 @utils.register_interface(ExtensionType)
-class TLSFeature(object):
+class TLSFeature:
     oid = ExtensionOID.TLS_FEATURE
 
     def __init__(self, features):
@@ -970,7 +970,7 @@ _TLS_FEATURE_TYPE_TO_ENUM = {x.value: x for x in TLSFeatureType}
 
 
 @utils.register_interface(ExtensionType)
-class InhibitAnyPolicy(object):
+class InhibitAnyPolicy:
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
     def __init__(self, skip_certs):
@@ -1001,7 +1001,7 @@ class InhibitAnyPolicy(object):
 
 
 @utils.register_interface(ExtensionType)
-class KeyUsage(object):
+class KeyUsage:
     oid = ExtensionOID.KEY_USAGE
 
     def __init__(
@@ -1115,7 +1115,7 @@ class KeyUsage(object):
 
 
 @utils.register_interface(ExtensionType)
-class NameConstraints(object):
+class NameConstraints:
     oid = ExtensionOID.NAME_CONSTRAINTS
 
     def __init__(self, permitted_subtrees, excluded_subtrees):
@@ -1196,7 +1196,7 @@ class NameConstraints(object):
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
 
 
-class Extension(object):
+class Extension:
     def __init__(self, oid, critical, value):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -1237,7 +1237,7 @@ class Extension(object):
         return hash((self.oid, self.critical, self.value))
 
 
-class GeneralNames(object):
+class GeneralNames:
     def __init__(self, general_names):
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
@@ -1276,7 +1276,7 @@ class GeneralNames(object):
 
 
 @utils.register_interface(ExtensionType)
-class SubjectAlternativeName(object):
+class SubjectAlternativeName:
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
@@ -1304,7 +1304,7 @@ class SubjectAlternativeName(object):
 
 
 @utils.register_interface(ExtensionType)
-class IssuerAlternativeName(object):
+class IssuerAlternativeName:
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
@@ -1332,7 +1332,7 @@ class IssuerAlternativeName(object):
 
 
 @utils.register_interface(ExtensionType)
-class CertificateIssuer(object):
+class CertificateIssuer:
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
     def __init__(self, general_names):
@@ -1360,7 +1360,7 @@ class CertificateIssuer(object):
 
 
 @utils.register_interface(ExtensionType)
-class CRLReason(object):
+class CRLReason:
     oid = CRLEntryExtensionOID.CRL_REASON
 
     def __init__(self, reason):
@@ -1388,7 +1388,7 @@ class CRLReason(object):
 
 
 @utils.register_interface(ExtensionType)
-class InvalidityDate(object):
+class InvalidityDate:
     oid = CRLEntryExtensionOID.INVALIDITY_DATE
 
     def __init__(self, invalidity_date):
@@ -1418,7 +1418,7 @@ class InvalidityDate(object):
 
 
 @utils.register_interface(ExtensionType)
-class PrecertificateSignedCertificateTimestamps(object):
+class PrecertificateSignedCertificateTimestamps:
     oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 
     def __init__(self, signed_certificate_timestamps):
@@ -1459,7 +1459,7 @@ class PrecertificateSignedCertificateTimestamps(object):
 
 
 @utils.register_interface(ExtensionType)
-class SignedCertificateTimestamps(object):
+class SignedCertificateTimestamps:
     oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
 
     def __init__(self, signed_certificate_timestamps):
@@ -1498,7 +1498,7 @@ class SignedCertificateTimestamps(object):
 
 
 @utils.register_interface(ExtensionType)
-class OCSPNonce(object):
+class OCSPNonce:
     oid = OCSPExtensionOID.NONCE
 
     def __init__(self, nonce):
@@ -1526,7 +1526,7 @@ class OCSPNonce(object):
 
 
 @utils.register_interface(ExtensionType)
-class IssuingDistributionPoint(object):
+class IssuingDistributionPoint:
     oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 
     def __init__(
@@ -1668,7 +1668,7 @@ class IssuingDistributionPoint(object):
 
 
 @utils.register_interface(ExtensionType)
-class UnrecognizedExtension(object):
+class UnrecognizedExtension:
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError("oid must be an ObjectIdentifier")

@@ -25,7 +25,7 @@ from ...utils import (
 )
 
 
-class FakeData(object):
+class FakeData:
     def __len__(self):
         return 2 ** 32 + 1
 
@@ -53,7 +53,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
     reason="Does not support ChaCha20Poly1305",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestChaCha20Poly1305(object):
+class TestChaCha20Poly1305:
     def test_data_too_large(self):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
@@ -186,7 +186,7 @@ class TestChaCha20Poly1305(object):
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESCCM(object):
+class TestAESCCM:
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
@@ -360,7 +360,7 @@ def _load_gcm_vectors():
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESGCM(object):
+class TestAESGCM:
     def test_data_too_large(self):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)

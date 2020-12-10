@@ -67,7 +67,7 @@ def test_ed25519_unsupported(backend):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-class TestEd25519Signing(object):
+class TestEd25519Signing:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

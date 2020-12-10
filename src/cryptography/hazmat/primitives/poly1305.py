@@ -11,7 +11,7 @@ from cryptography.exceptions import (
 )
 
 
-class Poly1305(object):
+class Poly1305:
     def __init__(self, key):
         from cryptography.hazmat.backends.openssl.backend import backend
 

@@ -84,7 +84,7 @@ def build_vectors(mgf1alg, hashalg, filename):
                 ),
             )
             output.append(
-                b"# OAEP Example {0} alg={1} mgf1={2}".format(
+                b"# OAEP Example {} alg={} mgf1={}".format(
                     count, hashalg.name, mgf1alg.name
                 )
             )
@@ -120,5 +120,5 @@ for hashtuple in itertools.product(hashalgs, hashalgs):
 
     write_file(
         build_vectors(hashtuple[0], hashtuple[1], oaep_path),
-        "oaep-{0}-{1}.txt".format(hashtuple[0].name, hashtuple[1].name),
+        "oaep-{}-{}.txt".format(hashtuple[0].name, hashtuple[1].name),
     )

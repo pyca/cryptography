@@ -17,7 +17,7 @@ def generate_parameters(generator, key_size, backend=None):
     return backend.generate_dh_parameters(generator, key_size)
 
 
-class DHPrivateNumbers(object):
+class DHPrivateNumbers:
     def __init__(self, x, public_numbers):
         if not isinstance(x, int):
             raise TypeError("x must be an integer.")
@@ -50,7 +50,7 @@ class DHPrivateNumbers(object):
     x = utils.read_only_property("_x")
 
 
-class DHPublicNumbers(object):
+class DHPublicNumbers:
     def __init__(self, y, parameter_numbers):
         if not isinstance(y, int):
             raise TypeError("y must be an integer.")
@@ -83,7 +83,7 @@ class DHPublicNumbers(object):
     parameter_numbers = utils.read_only_property("_parameter_numbers")
 
 
-class DHParameterNumbers(object):
+class DHParameterNumbers:
     def __init__(self, p, g, q=None):
         if not isinstance(p, int) or not isinstance(g, int):
             raise TypeError("p and g must be integers")

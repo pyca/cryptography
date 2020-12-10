@@ -101,7 +101,7 @@ def _hash_algorithm(backend, cert_id):
 
 
 @utils.register_interface(OCSPResponse)
-class _OCSPResponse(object):
+class _OCSPResponse:
     def __init__(self, backend, ocsp_response):
         self._backend = backend
         self._ocsp_response = ocsp_response
@@ -355,7 +355,7 @@ class _OCSPResponse(object):
 
 
 @utils.register_interface(OCSPRequest)
-class _OCSPRequest(object):
+class _OCSPRequest:
     def __init__(self, backend, ocsp_request):
         if backend._lib.OCSP_request_onereq_count(ocsp_request) > 1:
             raise NotImplementedError(

@@ -156,7 +156,7 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
 # Not actually supported, just used as a marker for some serialization tests.
-class _RC2(object):
+class _RC2:
     pass
 
 
@@ -175,7 +175,7 @@ class _RC2(object):
 @utils.register_interface_if(
     binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
 )
-class Backend(object):
+class Backend:
     """
     OpenSSL API binding interfaces.
     """
@@ -2732,7 +2732,7 @@ class Backend(object):
         return self._read_mem_bio(bio_out)
 
 
-class GetCipherByName(object):
+class GetCipherByName:
     def __init__(self, fmt):
         self._fmt = fmt
 

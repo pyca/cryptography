@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 @utils.register_interface(ciphers.AEADCipherContext)
 @utils.register_interface(ciphers.AEADEncryptionContext)
 @utils.register_interface(ciphers.AEADDecryptionContext)
-class _CipherContext(object):
+class _CipherContext:
     _ENCRYPT = 1
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2 ** 31 - 1

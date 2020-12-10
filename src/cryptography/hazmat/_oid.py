@@ -6,7 +6,7 @@
 from cryptography import utils
 
 
-class ObjectIdentifier(object):
+class ObjectIdentifier:
     def __init__(self, dotted_string):
         self._dotted_string = dotted_string
 

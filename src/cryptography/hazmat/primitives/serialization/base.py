@@ -74,7 +74,7 @@ class KeySerializationEncryption(metaclass=abc.ABCMeta):
 
 
 @utils.register_interface(KeySerializationEncryption)
-class BestAvailableEncryption(object):
+class BestAvailableEncryption:
     def __init__(self, password):
         if not isinstance(password, bytes) or len(password) == 0:
             raise ValueError("Password must be 1 or more bytes.")
@@ -83,5 +83,5 @@ class BestAvailableEncryption(object):
 
 
 @utils.register_interface(KeySerializationEncryption)
-class NoEncryption(object):
+class NoEncryption:
     pass

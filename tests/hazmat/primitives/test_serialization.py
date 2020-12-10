@@ -62,7 +62,7 @@ def _skip_fips_format(key_path, password, backend):
             pytest.skip("Encrypted PEM_Serialization blocked in FIPS mode")
 
 
-class TestBufferProtocolSerialization(object):
+class TestBufferProtocolSerialization:
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.parametrize(
         ("key_path", "password"),
@@ -115,7 +115,7 @@ class TestBufferProtocolSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestDERSerialization(object):
+class TestDERSerialization:
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.parametrize(
         ("key_path", "password"),
@@ -387,7 +387,7 @@ class TestDERSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestPEMSerialization(object):
+class TestPEMSerialization:
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
@@ -972,7 +972,7 @@ class TestPEMSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSASSHSerialization(object):
+class TestRSASSHSerialization:
     def test_load_ssh_public_key_unsupported(self, backend):
         ssh_key = b"ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY="
 
@@ -1085,7 +1085,7 @@ class TestRSASSHSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
-class TestDSSSSHSerialization(object):
+class TestDSSSSHSerialization:
     def test_load_ssh_public_key_dss_too_short(self, backend):
         ssh_key = b"ssh-dss"
 
@@ -1199,7 +1199,7 @@ class TestDSSSSHSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDSASSHSerialization(object):
+class TestECDSASSHSerialization:
     def test_load_ssh_public_key_ecdsa_nist_p256(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
@@ -1335,7 +1335,7 @@ class TestECDSASSHSerialization(object):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-class TestEd25519SSHSerialization(object):
+class TestEd25519SSHSerialization:
     def test_load_ssh_public_key(self, backend):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
@@ -1376,7 +1376,7 @@ class TestEd25519SSHSerialization(object):
             load_ssh_public_key(ssh_key, backend)
 
 
-class TestKeySerializationEncryptionTypes(object):
+class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
         with pytest.raises(ValueError):
             BestAvailableEncryption(object())
@@ -1390,7 +1390,7 @@ class TestKeySerializationEncryptionTypes(object):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-class TestEd25519Serialization(object):
+class TestEd25519Serialization:
     def test_load_der_private_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8-enc.der"),
@@ -1478,7 +1478,7 @@ class TestEd25519Serialization(object):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-class TestX448Serialization(object):
+class TestX448Serialization:
     def test_load_der_private_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "X448", "x448-pkcs8-enc.der"),
@@ -1569,7 +1569,7 @@ class TestX448Serialization(object):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-class TestX25519Serialization(object):
+class TestX25519Serialization:
     def test_load_der_private_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "X25519", "x25519-pkcs8-enc.der"),
@@ -1660,7 +1660,7 @@ class TestX25519Serialization(object):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-class TestEd448Serialization(object):
+class TestEd448Serialization:
     def test_load_der_private_key(self, backend):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "Ed448", "ed448-pkcs8-enc.der"),
@@ -1750,7 +1750,7 @@ class TestEd448Serialization(object):
             )
 
 
-class TestDHSerialization(object):
+class TestDHSerialization:
     """Test all options with least-supported key type."""
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
@@ -1818,7 +1818,7 @@ class TestDHSerialization(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestOpenSSHSerialization(object):
+class TestOpenSSHSerialization:
     @pytest.mark.parametrize(
         ("key_file", "cert_file"),
         [

@@ -62,7 +62,7 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
 
 
 @utils.register_interface(HashContext)
-class Hash(object):
+class Hash:
     def __init__(self, algorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
@@ -106,81 +106,81 @@ class Hash(object):
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA1(object):
+class SHA1:
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA512_224(object):  # noqa: N801
+class SHA512_224:  # noqa: N801
     name = "sha512-224"
     digest_size = 28
     block_size = 128
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA512_256(object):  # noqa: N801
+class SHA512_256:  # noqa: N801
     name = "sha512-256"
     digest_size = 32
     block_size = 128
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA224(object):
+class SHA224:
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA256(object):
+class SHA256:
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA384(object):
+class SHA384:
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA512(object):
+class SHA512:
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA3_224(object):  # noqa: N801
+class SHA3_224:  # noqa: N801
     name = "sha3-224"
     digest_size = 28
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA3_256(object):  # noqa: N801
+class SHA3_256:  # noqa: N801
     name = "sha3-256"
     digest_size = 32
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA3_384(object):  # noqa: N801
+class SHA3_384:  # noqa: N801
     name = "sha3-384"
     digest_size = 48
 
 
 @utils.register_interface(HashAlgorithm)
-class SHA3_512(object):  # noqa: N801
+class SHA3_512:  # noqa: N801
     name = "sha3-512"
     digest_size = 64
 
 
 @utils.register_interface(HashAlgorithm)
 @utils.register_interface(ExtendableOutputFunction)
-class SHAKE128(object):
+class SHAKE128:
     name = "shake128"
 
     def __init__(self, digest_size):
@@ -197,7 +197,7 @@ class SHAKE128(object):
 
 @utils.register_interface(HashAlgorithm)
 @utils.register_interface(ExtendableOutputFunction)
-class SHAKE256(object):
+class SHAKE256:
     name = "shake256"
 
     def __init__(self, digest_size):
@@ -213,14 +213,14 @@ class SHAKE256(object):
 
 
 @utils.register_interface(HashAlgorithm)
-class MD5(object):
+class MD5:
     name = "md5"
     digest_size = 16
     block_size = 64
 
 
 @utils.register_interface(HashAlgorithm)
-class BLAKE2b(object):
+class BLAKE2b:
     name = "blake2b"
     _max_digest_size = 64
     _min_digest_size = 1
@@ -237,7 +237,7 @@ class BLAKE2b(object):
 
 
 @utils.register_interface(HashAlgorithm)
-class BLAKE2s(object):
+class BLAKE2s:
     name = "blake2s"
     block_size = 64
     _max_digest_size = 32

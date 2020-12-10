@@ -22,7 +22,7 @@ from ...doubles import DummyKeySerializationEncryption
 
 
 @pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
-class TestPKCS12Loading(object):
+class TestPKCS12Loading:
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
@@ -165,7 +165,7 @@ def _load_ca(backend):
     return cert, key
 
 
-class TestPKCS12Creation(object):
+class TestPKCS12Creation:
     @pytest.mark.parametrize("name", [None, b"name"])
     @pytest.mark.parametrize(
         ("encryption_algorithm", "password"),

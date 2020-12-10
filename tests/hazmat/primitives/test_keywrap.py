@@ -17,7 +17,7 @@ from ...utils import load_nist_vectors
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESKeyWrap(object):
+class TestAESKeyWrap:
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES(b"\x00" * 16), modes.ECB()
@@ -125,7 +125,7 @@ class TestAESKeyWrap(object):
     " is unsupported",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestAESKeyWrapWithPadding(object):
+class TestAESKeyWrapWithPadding:
     def test_wrap(self, backend, subtests):
         params = _load_all_params(
             os.path.join("keywrap", "kwtestvectors"),

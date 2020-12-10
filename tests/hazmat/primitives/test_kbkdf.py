@@ -19,7 +19,7 @@ from ...utils import raises_unsupported_algorithm
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestKBKDFHMAC(object):
+class TestKBKDFHMAC:
     def test_invalid_key(self, backend):
         kdf = KBKDFHMAC(
             hashes.SHA256(),

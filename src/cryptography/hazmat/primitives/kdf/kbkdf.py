@@ -28,7 +28,7 @@ class CounterLocation(Enum):
 
 
 @utils.register_interface(KeyDerivationFunction)
-class KBKDFHMAC(object):
+class KBKDFHMAC:
     def __init__(
         self,
         algorithm,

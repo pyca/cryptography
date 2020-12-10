@@ -47,7 +47,7 @@ def test_skip_if_dsa_not_supported(backend):
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
-class TestDSA(object):
+class TestDSA:
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(2048, backend)
         assert isinstance(parameters, dsa.DSAParameters)
@@ -377,7 +377,7 @@ class TestDSA(object):
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
-class TestDSAVerification(object):
+class TestDSAVerification:
     _algorithms_dict = {
         "SHA1": hashes.SHA1,
         "SHA224": hashes.SHA224,
@@ -485,7 +485,7 @@ class TestDSAVerification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
-class TestDSASignature(object):
+class TestDSASignature:
     _algorithms_dict = {
         "SHA1": hashes.SHA1,
         "SHA224": hashes.SHA224,
@@ -564,7 +564,7 @@ class TestDSASignature(object):
             private_key.sign(digest, prehashed_alg)
 
 
-class TestDSANumbers(object):
+class TestDSANumbers:
     def test_dsa_parameter_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
         assert parameter_numbers.p == 1
@@ -634,7 +634,7 @@ class TestDSANumbers(object):
         )
 
 
-class TestDSANumberEquality(object):
+class TestDSANumberEquality:
     def test_parameter_numbers_eq(self):
         param = dsa.DSAParameterNumbers(1, 2, 3)
         assert param == dsa.DSAParameterNumbers(1, 2, 3)
@@ -688,7 +688,7 @@ class TestDSANumberEquality(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestDSASerialization(object):
+class TestDSASerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -907,7 +907,7 @@ class TestDSASerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestDSAPEMPublicKeySerialization(object):
+class TestDSAPEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [

@@ -11,14 +11,14 @@ from cryptography.hazmat.primitives.ciphers.modes import Mode
 
 
 @utils.register_interface(CipherAlgorithm)
-class DummyCipherAlgorithm(object):
+class DummyCipherAlgorithm:
     name = "dummy-cipher"
     block_size = 128
     key_size = None
 
 
 @utils.register_interface(Mode)
-class DummyMode(object):
+class DummyMode:
     name = "dummy-mode"
 
     def validate_for_algorithm(self, algorithm):
@@ -26,17 +26,17 @@ class DummyMode(object):
 
 
 @utils.register_interface(hashes.HashAlgorithm)
-class DummyHashAlgorithm(object):
+class DummyHashAlgorithm:
     name = "dummy-hash"
     block_size = None
     digest_size = None
 
 
 @utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeySerializationEncryption(object):
+class DummyKeySerializationEncryption:
     pass
 
 
 @utils.register_interface(padding.AsymmetricPadding)
-class DummyAsymmetricPadding(object):
+class DummyAsymmetricPadding:
     name = "dummy-padding"

@@ -69,7 +69,7 @@ from ...utils import (
 )
 
 
-class DummyMGF(object):
+class DummyMGF:
     _salt_length = 0
 
 
@@ -169,7 +169,7 @@ def test_modular_inverse():
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSA(object):
+class TestRSA:
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
         itertools.product(
@@ -390,7 +390,7 @@ def test_rsa_generate_invalid_backend():
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSASignature(object):
+class TestRSASignature:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -749,7 +749,7 @@ class TestRSASignature(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSAVerification(object):
+class TestRSAVerification:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -1201,7 +1201,7 @@ class TestRSAVerification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSAPSSMGF1Verification(object):
+class TestRSAPSSMGF1Verification:
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(
@@ -1339,7 +1339,7 @@ class TestRSAPSSMGF1Verification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSAPKCS1Verification(object):
+class TestRSAPKCS1Verification:
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
             backend.hash_supported(hashes.SHA1())
@@ -1441,7 +1441,7 @@ class TestRSAPKCS1Verification(object):
     )
 
 
-class TestPSS(object):
+class TestPSS:
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
             padding.calculate_max_pss_salt_length(object(), hashes.SHA256())
@@ -1472,7 +1472,7 @@ class TestPSS(object):
         assert pss._salt_length == padding.PSS.MAX_LENGTH
 
 
-class TestMGF1(object):
+class TestMGF1:
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
             padding.MGF1(b"not_a_hash")
@@ -1483,7 +1483,7 @@ class TestMGF1(object):
         assert mgf._algorithm == algorithm
 
 
-class TestOAEP(object):
+class TestOAEP:
     def test_invalid_algorithm(self):
         mgf = padding.MGF1(hashes.SHA1())
         with pytest.raises(TypeError):
@@ -1491,7 +1491,7 @@ class TestOAEP(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSADecryption(object):
+class TestRSADecryption:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -1734,7 +1734,7 @@ class TestRSADecryption(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSAEncryption(object):
+class TestRSAEncryption:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.OAEP(
@@ -1918,7 +1918,7 @@ class TestRSAEncryption(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestRSANumbers(object):
+class TestRSANumbers:
     def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
         assert public_numbers.e == 1
@@ -2045,7 +2045,7 @@ class TestRSANumbers(object):
         assert repr(num) == "<RSAPublicNumbers(e=1, n=1)>"
 
 
-class TestRSANumbersEquality(object):
+class TestRSANumbersEquality:
     def test_public_numbers_eq(self):
         num = RSAPublicNumbers(1, 2)
         num2 = RSAPublicNumbers(1, 2)
@@ -2110,7 +2110,7 @@ class TestRSANumbersEquality(object):
         assert hash(priv1) != hash(priv3)
 
 
-class TestRSAPrimeFactorRecovery(object):
+class TestRSAPrimeFactorRecovery:
     @pytest.mark.parametrize(
         "vector",
         _flatten_pkcs1_examples(
@@ -2141,7 +2141,7 @@ class TestRSAPrimeFactorRecovery(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestRSAPrivateKeySerialization(object):
+class TestRSAPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -2330,7 +2330,7 @@ class TestRSAPrivateKeySerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestRSAPEMPublicKeySerialization(object):
+class TestRSAPEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "format"),
         [

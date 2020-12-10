@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 
 
 @utils.register_interface(Ed25519PublicKey)
-class _Ed25519PublicKey(object):
+class _Ed25519PublicKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
@@ -71,7 +71,7 @@ class _Ed25519PublicKey(object):
 
 
 @utils.register_interface(Ed25519PrivateKey)
-class _Ed25519PrivateKey(object):
+class _Ed25519PrivateKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey

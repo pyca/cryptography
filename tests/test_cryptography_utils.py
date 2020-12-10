@@ -8,11 +8,11 @@ import pytest
 from cryptography import utils
 
 
-class TestCachedProperty(object):
+class TestCachedProperty:
     def test_simple(self):
         accesses = []
 
-        class T(object):
+        class T:
             @utils.cached_property
             def t(self):
                 accesses.append(None)
@@ -34,7 +34,7 @@ class TestCachedProperty(object):
     def test_set(self):
         accesses = []
 
-        class T(object):
+        class T:
             @utils.cached_property
             def t(self):
                 accesses.append(None)

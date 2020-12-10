@@ -13,7 +13,7 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
-class TestPBKDF2HMAC(object):
+class TestPBKDF2HMAC:
     def test_already_finalized(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, backend)
         kdf.derive(b"password")

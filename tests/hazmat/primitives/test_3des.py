@@ -26,7 +26,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support TripleDES CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestTripleDESModeCBC(object):
+class TestTripleDESModeCBC:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
@@ -59,7 +59,7 @@ class TestTripleDESModeCBC(object):
     skip_message="Does not support TripleDES OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestTripleDESModeOFB(object):
+class TestTripleDESModeOFB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
@@ -92,7 +92,7 @@ class TestTripleDESModeOFB(object):
     skip_message="Does not support TripleDES CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestTripleDESModeCFB(object):
+class TestTripleDESModeCFB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
@@ -125,7 +125,7 @@ class TestTripleDESModeCFB(object):
     skip_message="Does not support TripleDES CFB8",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestTripleDESModeCFB8(object):
+class TestTripleDESModeCFB8:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
@@ -158,7 +158,7 @@ class TestTripleDESModeCFB8(object):
     skip_message="Does not support TripleDES ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestTripleDESModeECB(object):
+class TestTripleDESModeECB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "ECB"),

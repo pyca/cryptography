@@ -11,7 +11,7 @@ _POLY1305_TAG_SIZE = 16
 _POLY1305_KEY_SIZE = 32
 
 
-class _Poly1305Context(object):
+class _Poly1305Context:
     def __init__(self, backend, key):
         self._backend = backend
 

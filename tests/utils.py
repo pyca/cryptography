@@ -873,7 +873,7 @@ def load_nist_ccm_vectors(vector_data):
     return data
 
 
-class WycheproofTest(object):
+class WycheproofTest:
     def __init__(self, testfiledata, testgroup, testcase):
         self.testfiledata = testfiledata
         self.testgroup = testgroup

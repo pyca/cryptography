@@ -22,12 +22,12 @@ from ...utils import load_nist_vectors
     skip_message="Does not support SEED ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestSEEDModeECB(object):
+class TestSEEDModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["rfc-4269.txt"],
-        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
     )
 
@@ -39,12 +39,12 @@ class TestSEEDModeECB(object):
     skip_message="Does not support SEED CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestSEEDModeCBC(object):
+class TestSEEDModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["rfc-4196.txt"],
-        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -56,12 +56,12 @@ class TestSEEDModeCBC(object):
     skip_message="Does not support SEED OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestSEEDModeOFB(object):
+class TestSEEDModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["seed-ofb.txt"],
-        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -73,11 +73,11 @@ class TestSEEDModeOFB(object):
     skip_message="Does not support SEED CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestSEEDModeCFB(object):
+class TestSEEDModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
         ["seed-cfb.txt"],
-        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SEED(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

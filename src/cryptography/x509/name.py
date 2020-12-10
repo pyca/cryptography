@@ -73,7 +73,7 @@ def _escape_dn_value(val):
     return val
 
 
-class NameAttribute(object):
+class NameAttribute:
     def __init__(self, oid, value, _type=_SENTINEL):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -119,7 +119,7 @@ class NameAttribute(object):
         dotted string.
         """
         key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
-        return "%s=%s" % (key, _escape_dn_value(self.value))
+        return "{}={}".format(key, _escape_dn_value(self.value))
 
     def __eq__(self, other):
         if not isinstance(other, NameAttribute):
@@ -137,7 +137,7 @@ class NameAttribute(object):
         return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
 
-class RelativeDistinguishedName(object):
+class RelativeDistinguishedName:
     def __init__(self, attributes):
         attributes = list(attributes)
         if not attributes:
@@ -186,7 +186,7 @@ class RelativeDistinguishedName(object):
         return "<RelativeDistinguishedName({})>".format(self.rfc4514_string())
 
 
-class Name(object):
+class Name:
     def __init__(self, attributes):
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
@@ -243,8 +243,7 @@ class Name(object):
 
     def __iter__(self):
         for rdn in self._attributes:
-            for ava in rdn:
-                yield ava
+            yield from rdn
 
     def __len__(self):
         return sum(len(rdn) for rdn in self._attributes)

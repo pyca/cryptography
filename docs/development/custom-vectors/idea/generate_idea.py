@@ -17,7 +17,7 @@ def encrypt(mode, key, iv, plaintext):
 
 
 def build_vectors(mode, filename):
-    with open(filename, "r") as f:
+    with open(filename) as f:
         vector_file = f.read().splitlines()
 
     count = 0
@@ -30,23 +30,21 @@ def build_vectors(mode, filename):
         if line.startswith("KEY"):
             if count != 0:
                 output.append(
-                    "CIPHERTEXT = {0}".format(
-                        encrypt(mode, key, iv, plaintext)
-                    )
+                    "CIPHERTEXT = {}".format(encrypt(mode, key, iv, plaintext))
                 )
-            output.append("\nCOUNT = {0}".format(count))
+            output.append("\nCOUNT = {}".format(count))
             count += 1
             name, key = line.split(" = ")
-            output.append("KEY = {0}".format(key))
+            output.append("KEY = {}".format(key))
         elif line.startswith("IV"):
             name, iv = line.split(" = ")
             iv = iv[0:16]
-            output.append("IV = {0}".format(iv))
+            output.append("IV = {}".format(iv))
         elif line.startswith("PLAINTEXT"):
             name, plaintext = line.split(" = ")
-            output.append("PLAINTEXT = {0}".format(plaintext))
+            output.append("PLAINTEXT = {}".format(plaintext))
 
-    output.append("CIPHERTEXT = {0}".format(encrypt(mode, key, iv, plaintext)))
+    output.append("CIPHERTEXT = {}".format(encrypt(mode, key, iv, plaintext)))
     return "\n".join(output)
 
 

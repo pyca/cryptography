@@ -25,7 +25,7 @@ from cryptography.x509.name import _ASN1Type
 
 
 @utils.register_interface(x509.Certificate)
-class _Certificate(object):
+class _Certificate:
     def __init__(self, backend, x509_cert):
         self._backend = backend
         self._x509 = x509_cert
@@ -162,7 +162,7 @@ class _Certificate(object):
 
 
 @utils.register_interface(x509.RevokedCertificate)
-class _RevokedCertificate(object):
+class _RevokedCertificate:
     def __init__(self, backend, crl, x509_revoked):
         self._backend = backend
         # The X509_REVOKED_value is a X509_REVOKED * that has
@@ -200,7 +200,7 @@ class _RevokedCertificate(object):
 
 
 @utils.register_interface(x509.CertificateRevocationList)
-class _CertificateRevocationList(object):
+class _CertificateRevocationList:
     def __init__(self, backend, x509_crl):
         self._backend = backend
         self._x509_crl = x509_crl
@@ -373,7 +373,7 @@ class _CertificateRevocationList(object):
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
-class _CertificateSigningRequest(object):
+class _CertificateSigningRequest:
     def __init__(self, backend, x509_req):
         self._backend = backend
         self._x509_req = x509_req
@@ -529,7 +529,7 @@ class _CertificateSigningRequest(object):
 @utils.register_interface(
     x509.certificate_transparency.SignedCertificateTimestamp
 )
-class _SignedCertificateTimestamp(object):
+class _SignedCertificateTimestamp:
     def __init__(self, backend, sct_list, sct):
         self._backend = backend
         # Keep the SCT_LIST that this SCT came from alive.

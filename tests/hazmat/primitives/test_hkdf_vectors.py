@@ -19,7 +19,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support SHA1.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHKDFSHA1(object):
+class TestHKDFSHA1:
     test_hkdfsha1 = generate_hkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
@@ -33,7 +33,7 @@ class TestHKDFSHA1(object):
     skip_message="Does not support SHA256.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHKDFSHA256(object):
+class TestHKDFSHA256:
     test_hkdfsha256 = generate_hkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),

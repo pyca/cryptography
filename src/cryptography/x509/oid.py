@@ -7,7 +7,7 @@ from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import hashes
 
 
-class ExtensionOID(object):
+class ExtensionOID:
     SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
     SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
     KEY_USAGE = ObjectIdentifier("2.5.29.15")
@@ -37,17 +37,17 @@ class ExtensionOID(object):
     SIGNED_CERTIFICATE_TIMESTAMPS = ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
 
 
-class OCSPExtensionOID(object):
+class OCSPExtensionOID:
     NONCE = ObjectIdentifier("1.3.6.1.5.5.7.48.1.2")
 
 
-class CRLEntryExtensionOID(object):
+class CRLEntryExtensionOID:
     CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
     CRL_REASON = ObjectIdentifier("2.5.29.21")
     INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
 
 
-class NameOID(object):
+class NameOID:
     COMMON_NAME = ObjectIdentifier("2.5.4.3")
     COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
     LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
@@ -80,7 +80,7 @@ class NameOID(object):
     UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
 
 
-class SignatureAlgorithmOID(object):
+class SignatureAlgorithmOID:
     RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
     RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
     # This is an alternate OID for RSA with SHA1 that is occasionally seen
@@ -129,7 +129,7 @@ _SIG_OIDS_TO_HASH = {
 }
 
 
-class ExtendedKeyUsageOID(object):
+class ExtendedKeyUsageOID:
     SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
     CLIENT_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.2")
     CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
@@ -139,22 +139,22 @@ class ExtendedKeyUsageOID(object):
     ANY_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37.0")
 
 
-class AuthorityInformationAccessOID(object):
+class AuthorityInformationAccessOID:
     CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
     OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
 
 
-class SubjectInformationAccessOID(object):
+class SubjectInformationAccessOID:
     CA_REPOSITORY = ObjectIdentifier("1.3.6.1.5.5.7.48.5")
 
 
-class CertificatePoliciesOID(object):
+class CertificatePoliciesOID:
     CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
     CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
     ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 
-class AttributeOID(object):
+class AttributeOID:
     CHALLENGE_PASSWORD = ObjectIdentifier("1.2.840.113549.1.9.7")
     UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
 

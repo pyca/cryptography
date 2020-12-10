@@ -12,7 +12,7 @@ import pytest
 from cryptography.utils import deprecated
 
 
-class TestDeprecated(object):
+class TestDeprecated:
     def test_deprecated(self, monkeypatch):
         mod = types.ModuleType("TestDeprecated/test_deprecated")
         monkeypatch.setitem(sys.modules, mod.__name__, mod)

@@ -77,7 +77,7 @@ def load_der_ocsp_response(data):
     return backend.load_der_ocsp_response(data)
 
 
-class OCSPRequestBuilder(object):
+class OCSPRequestBuilder:
     def __init__(self, request=None, extensions=[]):
         self._request = request
         self._extensions = extensions
@@ -114,7 +114,7 @@ class OCSPRequestBuilder(object):
         return backend.create_ocsp_request(self)
 
 
-class _SingleResponse(object):
+class _SingleResponse:
     def __init__(
         self,
         cert,
@@ -184,7 +184,7 @@ class _SingleResponse(object):
         self._revocation_reason = revocation_reason
 
 
-class OCSPResponseBuilder(object):
+class OCSPResponseBuilder:
     def __init__(
         self, response=None, responder_id=None, certs=None, extensions=[]
     ):

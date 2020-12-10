@@ -24,7 +24,7 @@ class InvalidToken(Exception):
 _MAX_CLOCK_SKEW = 60
 
 
-class Fernet(object):
+class Fernet:
     def __init__(self, key, backend=None):
         backend = _get_backend(backend)
 
@@ -141,7 +141,7 @@ class Fernet(object):
         return unpadded
 
 
-class MultiFernet(object):
+class MultiFernet:
     def __init__(self, fernets):
         fernets = list(fernets)
         if not fernets:

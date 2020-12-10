@@ -22,7 +22,7 @@ def load_der_pkcs7_certificates(data):
     return backend.load_der_pkcs7_certificates(data)
 
 
-class PKCS7SignatureBuilder(object):
+class PKCS7SignatureBuilder:
     def __init__(self, data=None, signers=[], additional_certs=[]):
         self._data = data
         self._signers = signers

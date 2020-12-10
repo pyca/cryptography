@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
 @utils.register_interface(KeyDerivationFunction)
-class PBKDF2HMAC(object):
+class PBKDF2HMAC:
     def __init__(self, algorithm, length, salt, iterations, backend=None):
         backend = _get_backend(backend)
         if not isinstance(backend, PBKDF2HMACBackend):

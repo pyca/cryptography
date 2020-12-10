@@ -17,7 +17,7 @@ import requests
 
 
 def run(*args, **kwargs):
-    print("[running] {0}".format(list(args)))
+    print("[running] {}".format(list(args)))
     subprocess.check_call(list(args), **kwargs)
 
 
@@ -120,14 +120,14 @@ def release(version):
     """
     github_token = getpass.getpass("Github person access token: ")
 
-    run("git", "tag", "-s", version, "-m", "{0} release".format(version))
+    run("git", "tag", "-s", version, "-m", "{} release".format(version))
     run("git", "push", "--tags")
 
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
 
-    packages = glob.glob("dist/cryptography-{0}*".format(version)) + glob.glob(
-        "vectors/dist/cryptography_vectors-{0}*".format(version)
+    packages = glob.glob("dist/cryptography-{}*".format(version)) + glob.glob(
+        "vectors/dist/cryptography_vectors-{}*".format(version)
     )
     run("twine", "upload", "-s", *packages)
 

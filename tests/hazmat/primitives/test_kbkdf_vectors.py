@@ -14,7 +14,7 @@ from ...utils import load_nist_kbkdf_vectors
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestCounterKDFCounterMode(object):
+class TestCounterKDFCounterMode:
     test_kbkdfctr = generate_kbkdf_counter_mode_test(
         load_nist_kbkdf_vectors,
         os.path.join("KDF"),

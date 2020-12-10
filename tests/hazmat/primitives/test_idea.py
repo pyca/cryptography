@@ -22,12 +22,12 @@ from ...utils import load_nist_vectors
     skip_message="Does not support IDEA ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestIDEAModeECB(object):
+class TestIDEAModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ecb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
     )
 
@@ -39,12 +39,12 @@ class TestIDEAModeECB(object):
     skip_message="Does not support IDEA CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestIDEAModeCBC(object):
+class TestIDEAModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cbc.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -56,12 +56,12 @@ class TestIDEAModeCBC(object):
     skip_message="Does not support IDEA OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestIDEAModeOFB(object):
+class TestIDEAModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ofb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -73,11 +73,11 @@ class TestIDEAModeOFB(object):
     skip_message="Does not support IDEA CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestIDEAModeCFB(object):
+class TestIDEAModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cfb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

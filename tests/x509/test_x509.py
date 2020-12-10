@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is dual licensed under the terms of the Apache License, Version
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
@@ -67,12 +66,12 @@ from ..utils import load_nist_vectors, load_vectors_from_file
 
 
 @utils.register_interface(x509.ExtensionType)
-class DummyExtension(object):
+class DummyExtension:
     oid = x509.ObjectIdentifier("1.2.3.4")
 
 
 @utils.register_interface(x509.GeneralName)
-class FakeGeneralName(object):
+class FakeGeneralName:
     def __init__(self, value):
         self._value = value
 
@@ -135,7 +134,7 @@ def _parse_cert(der):
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestCertificateRevocationList(object):
+class TestCertificateRevocationList:
     def test_load_pem_crl(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -485,7 +484,7 @@ class TestCertificateRevocationList(object):
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestRevokedCertificate(object):
+class TestRevokedCertificate:
     def test_revoked_basics(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -674,7 +673,7 @@ class TestRevokedCertificate(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestRSACertificate(object):
+class TestRSACertificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
@@ -1249,7 +1248,7 @@ class TestRSACertificate(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestRSACertificateRequest(object):
+class TestRSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -1821,7 +1820,7 @@ class TestRSACertificateRequest(object):
             assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
 
 
-class TestCertificateBuilder(object):
+class TestCertificateBuilder:
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_checks_for_unsupported_extensions(self, backend):
@@ -3331,7 +3330,7 @@ class TestCertificateBuilder(object):
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestCertificateSigningRequestBuilder(object):
+class TestCertificateSigningRequestBuilder:
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_sign_invalid_hash_algorithm(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
@@ -4321,7 +4320,7 @@ class TestCertificateSigningRequestBuilder(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestDSACertificate(object):
+class TestDSACertificate:
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
@@ -4445,7 +4444,7 @@ class TestDSACertificate(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestDSACertificateRequest(object):
+class TestDSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -4519,7 +4518,7 @@ class TestDSACertificateRequest(object):
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestECDSACertificate(object):
+class TestECDSACertificate:
     def test_load_ecdsa_cert(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
@@ -4610,7 +4609,7 @@ class TestECDSACertificate(object):
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDSACertificateRequest(object):
+class TestECDSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -4678,7 +4677,7 @@ class TestECDSACertificateRequest(object):
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestOtherCertificate(object):
+class TestOtherCertificate:
     def test_unsupported_subject_public_key_info(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -4702,7 +4701,7 @@ class TestOtherCertificate(object):
             cert.not_valid_after
 
 
-class TestNameAttribute(object):
+class TestNameAttribute:
     EXPECTED_TYPES = [
         (NameOID.COMMON_NAME, _ASN1Type.UTF8String),
         (NameOID.COUNTRY_NAME, _ASN1Type.PrintableString),
@@ -4807,7 +4806,7 @@ class TestNameAttribute(object):
         assert na.rfc4514_string() == r"ST="
 
 
-class TestRelativeDistinguishedName(object):
+class TestRelativeDistinguishedName:
     def test_init_empty(self):
         with pytest.raises(ValueError):
             x509.RelativeDistinguishedName([])
@@ -4901,7 +4900,7 @@ class TestRelativeDistinguishedName(object):
         assert rdn.get_attributes_for_oid(x509.ObjectIdentifier("1.2.3")) == []
 
 
-class TestObjectIdentifier(object):
+class TestObjectIdentifier:
     def test_eq(self):
         oid1 = x509.ObjectIdentifier("2.999.1")
         oid2 = x509.ObjectIdentifier("2.999.1")
@@ -4948,7 +4947,7 @@ class TestObjectIdentifier(object):
         x509.ObjectIdentifier("2.25.305821105408246119474742976030998643995")
 
 
-class TestName(object):
+class TestName:
     def test_eq(self):
         ava1 = x509.NameAttribute(x509.ObjectIdentifier("2.999.1"), "value1")
         ava2 = x509.NameAttribute(x509.ObjectIdentifier("2.999.2"), "value2")
@@ -5131,7 +5130,7 @@ class TestName(object):
     skip_message="Requires OpenSSL with Ed25519 support",
 )
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestEd25519Certificate(object):
+class TestEd25519Certificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
@@ -5159,7 +5158,7 @@ class TestEd25519Certificate(object):
     skip_message="Requires OpenSSL with Ed448 support",
 )
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestEd448Certificate(object):
+class TestEd448Certificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed448", "root-ed448.pem"),
@@ -5175,7 +5174,7 @@ class TestEd448Certificate(object):
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestSignatureRejection(object):
+class TestSignatureRejection:
     """Test if signing rejects DH keys properly."""
 
     def load_key(self, backend):

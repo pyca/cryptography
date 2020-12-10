@@ -88,7 +88,7 @@ def _byte_unpadding_check(buffer_, block_size, checkfn):
     return buffer_[:-pad_size]
 
 
-class PKCS7(object):
+class PKCS7:
     def __init__(self, block_size):
         _byte_padding_check(block_size)
         self.block_size = block_size
@@ -101,7 +101,7 @@ class PKCS7(object):
 
 
 @utils.register_interface(PaddingContext)
-class _PKCS7PaddingContext(object):
+class _PKCS7PaddingContext:
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)
@@ -125,7 +125,7 @@ class _PKCS7PaddingContext(object):
 
 
 @utils.register_interface(PaddingContext)
-class _PKCS7UnpaddingContext(object):
+class _PKCS7UnpaddingContext:
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)
@@ -145,7 +145,7 @@ class _PKCS7UnpaddingContext(object):
         return result
 
 
-class ANSIX923(object):
+class ANSIX923:
     def __init__(self, block_size):
         _byte_padding_check(block_size)
         self.block_size = block_size
@@ -158,7 +158,7 @@ class ANSIX923(object):
 
 
 @utils.register_interface(PaddingContext)
-class _ANSIX923PaddingContext(object):
+class _ANSIX923PaddingContext:
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)
@@ -182,7 +182,7 @@ class _ANSIX923PaddingContext(object):
 
 
 @utils.register_interface(PaddingContext)
-class _ANSIX923UnpaddingContext(object):
+class _ANSIX923UnpaddingContext:
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)

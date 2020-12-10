@@ -16,7 +16,7 @@ _X25519_KEY_SIZE = 32
 
 
 @utils.register_interface(X25519PublicKey)
-class _X25519PublicKey(object):
+class _X25519PublicKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
@@ -54,7 +54,7 @@ class _X25519PublicKey(object):
 
 
 @utils.register_interface(X25519PrivateKey)
-class _X25519PrivateKey(object):
+class _X25519PrivateKey:
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey

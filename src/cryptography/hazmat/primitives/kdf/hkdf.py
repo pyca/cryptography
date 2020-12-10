@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
 @utils.register_interface(KeyDerivationFunction)
-class HKDF(object):
+class HKDF:
     def __init__(self, algorithm, length, salt, info, backend=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
@@ -54,7 +54,7 @@ class HKDF(object):
 
 
 @utils.register_interface(KeyDerivationFunction)
-class HKDFExpand(object):
+class HKDFExpand:
     def __init__(self, algorithm, length, info, backend=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):

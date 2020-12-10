@@ -78,7 +78,7 @@ def _check_iv_and_key_length(self, algorithm):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
-class CBC(object):
+class CBC:
     name = "CBC"
 
     def __init__(self, initialization_vector):
@@ -91,7 +91,7 @@ class CBC(object):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithTweak)
-class XTS(object):
+class XTS:
     name = "XTS"
 
     def __init__(self, tweak):
@@ -113,7 +113,7 @@ class XTS(object):
 
 
 @utils.register_interface(Mode)
-class ECB(object):
+class ECB:
     name = "ECB"
 
     validate_for_algorithm = _check_aes_key_length
@@ -121,7 +121,7 @@ class ECB(object):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
-class OFB(object):
+class OFB:
     name = "OFB"
 
     def __init__(self, initialization_vector):
@@ -134,7 +134,7 @@ class OFB(object):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
-class CFB(object):
+class CFB:
     name = "CFB"
 
     def __init__(self, initialization_vector):
@@ -147,7 +147,7 @@ class CFB(object):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
-class CFB8(object):
+class CFB8:
     name = "CFB8"
 
     def __init__(self, initialization_vector):
@@ -160,7 +160,7 @@ class CFB8(object):
 
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithNonce)
-class CTR(object):
+class CTR:
     name = "CTR"
 
     def __init__(self, nonce):
@@ -182,7 +182,7 @@ class CTR(object):
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
 @utils.register_interface(ModeWithAuthenticationTag)
-class GCM(object):
+class GCM:
     name = "GCM"
     _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
     _MAX_AAD_BYTES = (2 ** 64) // 8

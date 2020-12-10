@@ -144,7 +144,7 @@ def _check_dsa_private_numbers(numbers):
         raise ValueError("y must be equal to (g ** x % p).")
 
 
-class DSAParameterNumbers(object):
+class DSAParameterNumbers:
     def __init__(self, p, q, g):
         if (
             not isinstance(p, int)
@@ -183,7 +183,7 @@ class DSAParameterNumbers(object):
         )
 
 
-class DSAPublicNumbers(object):
+class DSAPublicNumbers:
     def __init__(self, y, parameter_numbers):
         if not isinstance(y, int):
             raise TypeError("DSAPublicNumbers y argument must be an integer.")
@@ -222,7 +222,7 @@ class DSAPublicNumbers(object):
         )
 
 
-class DSAPrivateNumbers(object):
+class DSAPrivateNumbers:
     def __init__(self, x, public_numbers):
         if not isinstance(x, int):
             raise TypeError("DSAPrivateNumbers x argument must be an integer.")

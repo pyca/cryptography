@@ -105,7 +105,7 @@ def _ecdsa_sig_verify(backend, public_key, signature, data):
 
 
 @utils.register_interface(AsymmetricSignatureContext)
-class _ECDSASignatureContext(object):
+class _ECDSASignatureContext:
     def __init__(self, backend, private_key, algorithm):
         self._backend = backend
         self._private_key = private_key
@@ -121,7 +121,7 @@ class _ECDSASignatureContext(object):
 
 
 @utils.register_interface(AsymmetricVerificationContext)
-class _ECDSAVerificationContext(object):
+class _ECDSAVerificationContext:
     def __init__(self, backend, public_key, signature, algorithm):
         self._backend = backend
         self._public_key = public_key
@@ -139,7 +139,7 @@ class _ECDSAVerificationContext(object):
 
 
 @utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
-class _EllipticCurvePrivateKey(object):
+class _EllipticCurvePrivateKey:
     def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend
         self._ec_key = ec_key_cdata
@@ -237,7 +237,7 @@ class _EllipticCurvePrivateKey(object):
 
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
-class _EllipticCurvePublicKey(object):
+class _EllipticCurvePublicKey:
     def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend
         self._ec_key = ec_key_cdata

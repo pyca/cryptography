@@ -22,12 +22,12 @@ from ...utils import load_nist_vectors
     skip_message="Does not support CAST5 ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCAST5ModeECB(object):
+class TestCAST5ModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
-        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
     )
 
@@ -39,12 +39,12 @@ class TestCAST5ModeECB(object):
     skip_message="Does not support CAST5 CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCAST5ModeCBC(object):
+class TestCAST5ModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-cbc.txt"],
-        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -56,12 +56,12 @@ class TestCAST5ModeCBC(object):
     skip_message="Does not support CAST5 OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCAST5ModeOFB(object):
+class TestCAST5ModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ofb.txt"],
-        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -73,11 +73,11 @@ class TestCAST5ModeOFB(object):
     skip_message="Does not support CAST5 CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestCAST5ModeCFB(object):
+class TestCAST5ModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-cfb.txt"],
-        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

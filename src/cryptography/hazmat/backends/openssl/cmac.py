@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
-class _CMACContext(object):
+class _CMACContext:
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm(

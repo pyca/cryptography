@@ -27,7 +27,7 @@ _GENERAL_NAMES = {
 
 class UnsupportedGeneralNameType(Exception):
     def __init__(self, msg, type):
-        super(UnsupportedGeneralNameType, self).__init__(msg)
+        super().__init__(msg)
         self.type = type
 
 
@@ -40,7 +40,7 @@ class GeneralName(metaclass=abc.ABCMeta):
 
 
 @utils.register_interface(GeneralName)
-class RFC822Name(object):
+class RFC822Name:
     def __init__(self, value):
         if isinstance(value, str):
             try:
@@ -71,7 +71,7 @@ class RFC822Name(object):
         return instance
 
     def __repr__(self):
-        return "<RFC822Name(value={0!r})>".format(self.value)
+        return "<RFC822Name(value={!r})>".format(self.value)
 
     def __eq__(self, other):
         if not isinstance(other, RFC822Name):
@@ -87,7 +87,7 @@ class RFC822Name(object):
 
 
 @utils.register_interface(GeneralName)
-class DNSName(object):
+class DNSName:
     def __init__(self, value):
         if isinstance(value, str):
             try:
@@ -112,7 +112,7 @@ class DNSName(object):
         return instance
 
     def __repr__(self):
-        return "<DNSName(value={0!r})>".format(self.value)
+        return "<DNSName(value={!r})>".format(self.value)
 
     def __eq__(self, other):
         if not isinstance(other, DNSName):
@@ -128,7 +128,7 @@ class DNSName(object):
 
 
 @utils.register_interface(GeneralName)
-class UniformResourceIdentifier(object):
+class UniformResourceIdentifier:
     def __init__(self, value):
         if isinstance(value, str):
             try:
@@ -153,7 +153,7 @@ class UniformResourceIdentifier(object):
         return instance
 
     def __repr__(self):
-        return "<UniformResourceIdentifier(value={0!r})>".format(self.value)
+        return "<UniformResourceIdentifier(value={!r})>".format(self.value)
 
     def __eq__(self, other):
         if not isinstance(other, UniformResourceIdentifier):
@@ -169,7 +169,7 @@ class UniformResourceIdentifier(object):
 
 
 @utils.register_interface(GeneralName)
-class DirectoryName(object):
+class DirectoryName:
     def __init__(self, value):
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
@@ -195,7 +195,7 @@ class DirectoryName(object):
 
 
 @utils.register_interface(GeneralName)
-class RegisteredID(object):
+class RegisteredID:
     def __init__(self, value):
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
@@ -221,7 +221,7 @@ class RegisteredID(object):
 
 
 @utils.register_interface(GeneralName)
-class IPAddress(object):
+class IPAddress:
     def __init__(self, value):
         if not isinstance(
             value,
@@ -259,7 +259,7 @@ class IPAddress(object):
 
 
 @utils.register_interface(GeneralName)
-class OtherName(object):
+class OtherName:
     def __init__(self, type_id, value):
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")

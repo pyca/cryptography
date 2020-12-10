@@ -88,7 +88,7 @@ class AEADEncryptionContext(metaclass=abc.ABCMeta):
         """
 
 
-class Cipher(object):
+class Cipher:
     def __init__(self, algorithm, mode, backend=None):
         backend = _get_backend(backend)
         if not isinstance(backend, CipherBackend):
@@ -135,7 +135,7 @@ class Cipher(object):
 
 
 @utils.register_interface(CipherContext)
-class _CipherContext(object):
+class _CipherContext:
     def __init__(self, ctx):
         self._ctx = ctx
 
@@ -160,7 +160,7 @@ class _CipherContext(object):
 @utils.register_interface(AEADCipherContext)
 @utils.register_interface(CipherContext)
 @utils.register_interface(AEADDecryptionContext)
-class _AEADCipherContext(object):
+class _AEADCipherContext:
     def __init__(self, ctx):
         self._ctx = ctx
         self._bytes_processed = 0

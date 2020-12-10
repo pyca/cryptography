@@ -28,7 +28,7 @@ vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
     skip_message="Does not support HMAC-SHA1.",
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestHOTP(object):
+class TestHOTP:
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
 

@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
-class HOTP(object):
+class HOTP:
     def __init__(
         self, key, length, algorithm, backend=None, enforce_key_length=True
     ):

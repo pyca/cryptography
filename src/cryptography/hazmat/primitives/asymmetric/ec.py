@@ -11,7 +11,7 @@ from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.backends import _get_backend
 
 
-class EllipticCurveOID(object):
+class EllipticCurveOID:
     SECP192R1 = ObjectIdentifier("1.2.840.10045.3.1.1")
     SECP224R1 = ObjectIdentifier("1.3.132.0.33")
     SECP256K1 = ObjectIdentifier("1.3.132.0.10")
@@ -169,115 +169,115 @@ EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 
 
 @utils.register_interface(EllipticCurve)
-class SECT571R1(object):
+class SECT571R1:
     name = "sect571r1"
     key_size = 570
 
 
 @utils.register_interface(EllipticCurve)
-class SECT409R1(object):
+class SECT409R1:
     name = "sect409r1"
     key_size = 409
 
 
 @utils.register_interface(EllipticCurve)
-class SECT283R1(object):
+class SECT283R1:
     name = "sect283r1"
     key_size = 283
 
 
 @utils.register_interface(EllipticCurve)
-class SECT233R1(object):
+class SECT233R1:
     name = "sect233r1"
     key_size = 233
 
 
 @utils.register_interface(EllipticCurve)
-class SECT163R2(object):
+class SECT163R2:
     name = "sect163r2"
     key_size = 163
 
 
 @utils.register_interface(EllipticCurve)
-class SECT571K1(object):
+class SECT571K1:
     name = "sect571k1"
     key_size = 571
 
 
 @utils.register_interface(EllipticCurve)
-class SECT409K1(object):
+class SECT409K1:
     name = "sect409k1"
     key_size = 409
 
 
 @utils.register_interface(EllipticCurve)
-class SECT283K1(object):
+class SECT283K1:
     name = "sect283k1"
     key_size = 283
 
 
 @utils.register_interface(EllipticCurve)
-class SECT233K1(object):
+class SECT233K1:
     name = "sect233k1"
     key_size = 233
 
 
 @utils.register_interface(EllipticCurve)
-class SECT163K1(object):
+class SECT163K1:
     name = "sect163k1"
     key_size = 163
 
 
 @utils.register_interface(EllipticCurve)
-class SECP521R1(object):
+class SECP521R1:
     name = "secp521r1"
     key_size = 521
 
 
 @utils.register_interface(EllipticCurve)
-class SECP384R1(object):
+class SECP384R1:
     name = "secp384r1"
     key_size = 384
 
 
 @utils.register_interface(EllipticCurve)
-class SECP256R1(object):
+class SECP256R1:
     name = "secp256r1"
     key_size = 256
 
 
 @utils.register_interface(EllipticCurve)
-class SECP256K1(object):
+class SECP256K1:
     name = "secp256k1"
     key_size = 256
 
 
 @utils.register_interface(EllipticCurve)
-class SECP224R1(object):
+class SECP224R1:
     name = "secp224r1"
     key_size = 224
 
 
 @utils.register_interface(EllipticCurve)
-class SECP192R1(object):
+class SECP192R1:
     name = "secp192r1"
     key_size = 192
 
 
 @utils.register_interface(EllipticCurve)
-class BrainpoolP256R1(object):
+class BrainpoolP256R1:
     name = "brainpoolP256r1"
     key_size = 256
 
 
 @utils.register_interface(EllipticCurve)
-class BrainpoolP384R1(object):
+class BrainpoolP384R1:
     name = "brainpoolP384r1"
     key_size = 384
 
 
 @utils.register_interface(EllipticCurve)
-class BrainpoolP512R1(object):
+class BrainpoolP512R1:
     name = "brainpoolP512r1"
     key_size = 512
 
@@ -308,7 +308,7 @@ _CURVE_TYPES = {
 
 
 @utils.register_interface(EllipticCurveSignatureAlgorithm)
-class ECDSA(object):
+class ECDSA:
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
@@ -334,7 +334,7 @@ def derive_private_key(private_value, curve, backend=None):
     return backend.derive_elliptic_curve_private_key(private_value, curve)
 
 
-class EllipticCurvePublicNumbers(object):
+class EllipticCurvePublicNumbers:
     def __init__(self, x, y, curve):
         if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError("x and y must be integers.")
@@ -420,7 +420,7 @@ class EllipticCurvePublicNumbers(object):
         )
 
 
-class EllipticCurvePrivateNumbers(object):
+class EllipticCurvePrivateNumbers:
     def __init__(self, private_value, public_numbers):
         if not isinstance(private_value, int):
             raise TypeError("private_value must be an integer.")
@@ -457,7 +457,7 @@ class EllipticCurvePrivateNumbers(object):
         return hash((self.private_value, self.public_numbers))
 
 
-class ECDH(object):
+class ECDH:
     pass
 
 

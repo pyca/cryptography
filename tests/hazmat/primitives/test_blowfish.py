@@ -22,7 +22,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support Blowfish ECB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestBlowfishModeECB(object):
+class TestBlowfishModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -39,7 +39,7 @@ class TestBlowfishModeECB(object):
     skip_message="Does not support Blowfish CBC",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestBlowfishModeCBC(object):
+class TestBlowfishModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -56,7 +56,7 @@ class TestBlowfishModeCBC(object):
     skip_message="Does not support Blowfish OFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestBlowfishModeOFB(object):
+class TestBlowfishModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -73,7 +73,7 @@ class TestBlowfishModeOFB(object):
     skip_message="Does not support Blowfish CFB",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-class TestBlowfishModeCFB(object):
+class TestBlowfishModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),

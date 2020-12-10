@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
-class TOTP(object):
+class TOTP:
     def __init__(
         self,
         key,

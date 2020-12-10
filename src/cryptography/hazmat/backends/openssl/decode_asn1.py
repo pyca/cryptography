@@ -177,7 +177,7 @@ def _decode_delta_crl_indicator(backend, ext):
     return x509.DeltaCRLIndicator(_asn1_integer_to_int(backend, asn1_int))
 
 
-class _X509ExtensionParser(object):
+class _X509ExtensionParser:
     def __init__(self, backend, ext_count, get_ext, handlers):
         self.ext_count = ext_count
         self.get_ext = get_ext

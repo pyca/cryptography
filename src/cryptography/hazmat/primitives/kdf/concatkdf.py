@@ -52,7 +52,7 @@ def _concatkdf_derive(key_material, length, auxfn, otherinfo):
 
 
 @utils.register_interface(KeyDerivationFunction)
-class ConcatKDFHash(object):
+class ConcatKDFHash:
     def __init__(self, algorithm, length, otherinfo, backend=None):
         backend = _get_backend(backend)
 
@@ -88,7 +88,7 @@ class ConcatKDFHash(object):
 
 
 @utils.register_interface(KeyDerivationFunction)
-class ConcatKDFHMAC(object):
+class ConcatKDFHMAC:
     def __init__(self, algorithm, length, salt, otherinfo, backend=None):
         backend = _get_backend(backend)
 
