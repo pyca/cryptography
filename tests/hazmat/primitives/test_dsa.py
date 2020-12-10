@@ -386,34 +386,33 @@ class TestDSAVerification(object):
         "SHA512": hashes.SHA512,
     }
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
+    def test_dsa_verification(self, backend, subtests):
+        vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigVer.rsp"),
             load_fips_dsa_sig_vectors,
-        ),
-    )
-    def test_dsa_verification(self, vector, backend):
-        digest_algorithm = vector["digest_algorithm"].replace("-", "")
-        algorithm = self._algorithms_dict[digest_algorithm]
-
-        _skip_if_dsa_not_supported(
-            backend, algorithm, vector["p"], vector["q"], vector["g"]
         )
+        for vector in vectors:
+            with subtests.test():
+                digest_algorithm = vector["digest_algorithm"].replace("-", "")
+                algorithm = self._algorithms_dict[digest_algorithm]
 
-        public_key = dsa.DSAPublicNumbers(
-            parameter_numbers=dsa.DSAParameterNumbers(
-                vector["p"], vector["q"], vector["g"]
-            ),
-            y=vector["y"],
-        ).public_key(backend)
-        sig = encode_dss_signature(vector["r"], vector["s"])
+                _skip_if_dsa_not_supported(
+                    backend, algorithm, vector["p"], vector["q"], vector["g"]
+                )
 
-        if vector["result"] == "F":
-            with pytest.raises(InvalidSignature):
-                public_key.verify(sig, vector["msg"], algorithm())
-        else:
-            public_key.verify(sig, vector["msg"], algorithm())
+                public_key = dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        vector["p"], vector["q"], vector["g"]
+                    ),
+                    y=vector["y"],
+                ).public_key(backend)
+                sig = encode_dss_signature(vector["r"], vector["s"])
+
+                if vector["result"] == "F":
+                    with pytest.raises(InvalidSignature):
+                        public_key.verify(sig, vector["msg"], algorithm())
+                else:
+                    public_key.verify(sig, vector["msg"], algorithm())
 
     def test_dsa_verify_invalid_asn1(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
@@ -494,34 +493,35 @@ class TestDSASignature(object):
         "SHA512": hashes.SHA512,
     }
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
+    def test_dsa_signing(self, backend, subtests):
+        vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigGen.txt"),
             load_fips_dsa_sig_vectors,
-        ),
-    )
-    def test_dsa_signing(self, vector, backend):
-        digest_algorithm = vector["digest_algorithm"].replace("-", "")
-        algorithm = self._algorithms_dict[digest_algorithm]
-
-        _skip_if_dsa_not_supported(
-            backend, algorithm, vector["p"], vector["q"], vector["g"]
         )
+        for vector in vectors:
+            with subtests.test():
+                digest_algorithm = vector["digest_algorithm"].replace("-", "")
+                algorithm = self._algorithms_dict[digest_algorithm]
 
-        private_key = dsa.DSAPrivateNumbers(
-            public_numbers=dsa.DSAPublicNumbers(
-                parameter_numbers=dsa.DSAParameterNumbers(
-                    vector["p"], vector["q"], vector["g"]
-                ),
-                y=vector["y"],
-            ),
-            x=vector["x"],
-        ).private_key(backend)
-        signature = private_key.sign(vector["msg"], algorithm())
-        assert signature
+                _skip_if_dsa_not_supported(
+                    backend, algorithm, vector["p"], vector["q"], vector["g"]
+                )
 
-        private_key.public_key().verify(signature, vector["msg"], algorithm())
+                private_key = dsa.DSAPrivateNumbers(
+                    public_numbers=dsa.DSAPublicNumbers(
+                        parameter_numbers=dsa.DSAParameterNumbers(
+                            vector["p"], vector["q"], vector["g"]
+                        ),
+                        y=vector["y"],
+                    ),
+                    x=vector["x"],
+                ).private_key(backend)
+                signature = private_key.sign(vector["msg"], algorithm())
+                assert signature
+
+                private_key.public_key().verify(
+                    signature, vector["msg"], algorithm()
+                )
 
     def test_use_after_finalize(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)

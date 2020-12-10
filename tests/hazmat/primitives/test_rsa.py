@@ -1623,29 +1623,30 @@ class TestRSADecryption(object):
             "Does not support OAEP using SHA224 MGF1 and SHA224 hash."
         ),
     )
-    @pytest.mark.parametrize("vector", _build_oaep_sha2_vectors())
-    def test_decrypt_oaep_sha2_vectors(self, vector, backend):
-        private, public, example, mgf1_alg, hash_alg = vector
-        skey = rsa.RSAPrivateNumbers(
-            p=private["p"],
-            q=private["q"],
-            d=private["private_exponent"],
-            dmp1=private["dmp1"],
-            dmq1=private["dmq1"],
-            iqmp=private["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"], n=private["modulus"]
-            ),
-        ).private_key(backend)
-        message = skey.decrypt(
-            binascii.unhexlify(example["encryption"]),
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=mgf1_alg),
-                algorithm=hash_alg,
-                label=None,
-            ),
-        )
-        assert message == binascii.unhexlify(example["message"])
+    def test_decrypt_oaep_sha2_vectors(self, backend, subtests):
+        vectors = _build_oaep_sha2_vectors()
+        for private, public, example, mgf1_alg, hash_alg in vectors:
+            with subtests.test():
+                skey = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend)
+                message = skey.decrypt(
+                    binascii.unhexlify(example["encryption"]),
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=mgf1_alg),
+                        algorithm=hash_alg,
+                        label=None,
+                    ),
+                )
+                assert message == binascii.unhexlify(example["message"])
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
