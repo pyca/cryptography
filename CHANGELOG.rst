@@ -1,12 +1,17 @@
 Changelog
 =========
 
+.. _v3-3-1:
+
+3.3.1 - 2020-12-09
+~~~~~~~~~~~~~~~~~~
+
+* Re-added a legacy symbol causing problems for older ``pyOpenSSL`` users.
+
 .. _v3-3:
 
 3.3 - 2020-12-08
 ~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.5 has been removed due to
   low usage and maintenance burden.

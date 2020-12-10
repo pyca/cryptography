@@ -25,6 +25,7 @@ static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
+static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -504,6 +505,11 @@ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
 """
 
 CUSTOMIZATIONS = """
+// This symbol is being preserved because removing it will break users with
+// pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
+// users have upgraded. PersistentlyDeprecated2020
+static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
+
 #if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
