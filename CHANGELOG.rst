@@ -8,6 +8,13 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
 
+.. _v3-3-1:
+
+3.3.1 - 2020-12-09
+~~~~~~~~~~~~~~~~~~
+
+* Re-added a legacy symbol causing problems for older ``pyOpenSSL`` users.
+
 .. _v3-3:
 
 3.3 - 2020-12-08
