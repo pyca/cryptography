@@ -130,9 +130,9 @@ def assert_no_memory_leaks(s, argv=[]):
     # When using pytest-cov it attempts to instrument subprocesses. This
     # causes the memleak tests to raise exceptions.
     # we don't need coverage so we remove the env vars.
-    env.pop("COV_CORE_CONFIG")
-    env.pop("COV_CORE_DATAFILE")
-    env.pop("COV_CORE_SOURCE")
+    env.pop("COV_CORE_CONFIG", None)
+    env.pop("COV_CORE_DATAFILE", None)
+    env.pop("COV_CORE_SOURCE", None)
 
     argv = [
         sys.executable,
