@@ -5,7 +5,6 @@
 # for complete details.
 
 import os
-import platform
 import sys
 
 from setuptools import find_packages, setup
@@ -25,14 +24,6 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 # `setup_requirements` must be kept in sync with `pyproject.toml`
 setup_requirements = ["cffi>=1.12"]
-
-if platform.python_implementation() == "PyPy":
-    if sys.pypy_version_info < (5, 4):
-        raise RuntimeError(
-            "cryptography is not compatible with PyPy < 5.4. Please upgrade "
-            "PyPy to use this library."
-        )
-
 
 with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
