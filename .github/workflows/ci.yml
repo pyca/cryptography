@@ -85,7 +85,7 @@ jobs:
       matrix:
         IMAGE:
           - {IMAGE: "centos8", TOXENV: "py36"}
-          - {IMAGE: "centos8-fips", fips", TOXENV: "py36", FIPS: true}
+          - {IMAGE: "centos8-fips", TOXENV: "py36", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
           - {IMAGE: "sid", TOXENV: "py39"}
