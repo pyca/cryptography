@@ -107,7 +107,7 @@ jobs:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
       - uses: ./.github/actions/upload-coverage
         with:
-          name: "tox -e ${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+          name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
 
   macos:
     runs-on: macos-latest
