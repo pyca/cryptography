@@ -27,6 +27,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.3"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.1"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -95,6 +96,7 @@ jobs:
           - {IMAGE: "pyca/cryptography-runner-fedora", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-alpine", TOXENV: "py38"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
@@ -117,6 +119,7 @@ jobs:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -160,6 +163,7 @@ jobs:
           - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }}"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -201,6 +205,7 @@ jobs:
           - certbot
           - certbot-josepy
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -217,6 +222,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     name: "linkcheck"
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
