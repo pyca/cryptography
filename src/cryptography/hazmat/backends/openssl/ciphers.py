@@ -198,7 +198,7 @@ class _CipherContext(object):
             self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
 
-        res = self._backend._lib.EVP_CIPHER_CTX_cleanup(self._ctx)
+        res = self._backend._lib.EVP_CIPHER_CTX_reset(self._ctx)
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 

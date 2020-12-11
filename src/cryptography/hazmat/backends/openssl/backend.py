@@ -1101,12 +1101,12 @@ class Backend(object):
 
         # Set the last update time.
         last_update = self._create_asn1_time(builder._last_update)
-        res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
+        res = self._lib.X509_CRL_set1_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
         # Set the next update time.
         next_update = self._create_asn1_time(builder._next_update)
-        res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
+        res = self._lib.X509_CRL_set1_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
         # Add extensions.
