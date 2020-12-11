@@ -160,7 +160,8 @@ jobs:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
-    name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }}"
+        JOB_NUMBER: [0, 1, 2, 3]
+    name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
@@ -182,13 +183,13 @@ jobs:
         shell: bash
       - run: git clone https://github.com/google/wycheproof
 
-      - run: tox -r -- --color=yes --wycheproof-root=wycheproof
+      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
 
       - uses: ./.github/actions/upload-coverage
         with:
-          name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }}"
+          name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
 
   linux-downstream:
     runs-on: ubuntu-latest
