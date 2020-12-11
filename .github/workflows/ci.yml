@@ -156,8 +156,6 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
-          - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019", CL_FLAGS: ""}
-          - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019", CL_FLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }}"
     steps:
