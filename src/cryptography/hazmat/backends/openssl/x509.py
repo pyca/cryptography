@@ -85,12 +85,12 @@ class _Certificate(object):
 
     @property
     def not_valid_before(self):
-        asn1_time = self._backend._lib.X509_getm_notBefore(self._x509)
+        asn1_time = self._backend._lib.X509_get0_notBefore(self._x509)
         return _parse_asn1_time(self._backend, asn1_time)
 
     @property
     def not_valid_after(self):
-        asn1_time = self._backend._lib.X509_getm_notAfter(self._x509)
+        asn1_time = self._backend._lib.X509_get0_notAfter(self._x509)
         return _parse_asn1_time(self._backend, asn1_time)
 
     @property
@@ -276,13 +276,13 @@ class _CertificateRevocationList(object):
 
     @property
     def next_update(self):
-        nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
+        nu = self._backend._lib.X509_CRL_get0_nextUpdate(self._x509_crl)
         self._backend.openssl_assert(nu != self._backend._ffi.NULL)
         return _parse_asn1_time(self._backend, nu)
 
     @property
     def last_update(self):
-        lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
+        lu = self._backend._lib.X509_CRL_get0_lastUpdate(self._x509_crl)
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
         return _parse_asn1_time(self._backend, lu)
 

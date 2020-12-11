@@ -155,8 +155,12 @@ int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
                         Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
                                   Cryptography_STACK_OF_X509 *);
+void X509_STORE_CTX_set0_trusted_stack(X509_STORE_CTX *,
+                                  Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
 void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
+void X509_STORE_CTX_set0_untrusted(X509_STORE_CTX *,
+                                  Cryptography_STACK_OF_X509 *);
 X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
 void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
 int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
