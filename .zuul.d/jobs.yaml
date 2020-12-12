@@ -55,3 +55,7 @@
           image: ghcr.io/pyca/cryptography-manylinux2010:x86_64
           pythons:
             - cp36-cp36m
+        - platform: manylinux2014_x86_64
+          image: ghcr.io/pyca/cryptography-manylinux2014:x86_64
+          pythons:
+            - cp36-cp36m

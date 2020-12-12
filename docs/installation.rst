@@ -70,9 +70,9 @@ Building cryptography on Linux
 ------------------------------
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
-are included. For users on pip 8.1 or above running on a ``manylinux1`` or
-``manylinux2010`` compatible distribution (almost everything except Alpine)
-all you should need to do is:
+are included. For users on pip 8.1 or above running on a ``manylinux1`` (or
+greater) compatible distribution (almost everything except Alpine) all you
+should need to do is:
 
 .. code-block:: console
 
