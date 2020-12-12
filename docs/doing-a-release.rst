@@ -21,10 +21,9 @@ Verifying OpenSSL version
 -------------------------
 
 The release process creates wheels bundling OpenSSL for Windows, macOS, and
-Linux. Check that the Windows, macOS, and Linux builders (both
-``pyca/cryptography-manylinux1`` and ``pyca/cryptography-manylinux2010``) have
-the latest OpenSSL. If anything is out of date follow the instructions for
-upgrading OpenSSL.
+Linux. Check that the Windows, macOS, and Linux builders (the ``manylinux``
+containers) have the latest OpenSSL. If anything is out of date follow the
+instructions for upgrading OpenSSL.
 
 Upgrading OpenSSL
 -----------------

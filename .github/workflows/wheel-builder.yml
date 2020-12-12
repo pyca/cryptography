@@ -17,6 +17,8 @@ jobs:
             CONTAINER: "cryptography-manylinux1:x86_64"
           - NAME: manylinux2010_x86_64
             CONTAINER: "cryptography-manylinux2010:x86_64"
+          - NAME: manylinux2014_x86_64
+            CONTAINER: "cryptography-manylinux2014:x86_64"
     name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
       - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv

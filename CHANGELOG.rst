@@ -7,6 +7,8 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
+* We now ship ``manylinux2014`` wheels in addition to our ``manylinux1`` and
+  ``manylinux2010`` wheels.
 
 .. _v3-3-1:
 
