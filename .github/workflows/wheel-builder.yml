@@ -8,15 +8,15 @@ on:
 jobs:
   manylinux:
     runs-on: ubuntu-latest
-    container: ${{ matrix.MANYLINUX.CONTAINER }}
+    container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       matrix:
         PYTHON: ["cp36-cp36m"]
         MANYLINUX:
           - NAME: manylinux1_x86_64
-            CONTAINER: "pyca/cryptography-manylinux1:x86_64"
+            CONTAINER: "cryptography-manylinux1:x86_64"
           - NAME: manylinux2010_x86_64
-            CONTAINER: "pyca/cryptography-manylinux2010:x86_64"
+            CONTAINER: "cryptography-manylinux2010:x86_64"
     name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
       - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv
