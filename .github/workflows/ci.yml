@@ -80,7 +80,7 @@ jobs:
 
   linux-distros:
     runs-on: ubuntu-latest
-    container: pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
+    container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
       matrix:
         IMAGE:
