@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+    - name: Clone wycheproof
+      git:
+        repo: https://github.com/google/wycheproof
+        dest: "{{ ansible_facts.env['HOME'] }}/wycheproof"
+        depth: 1

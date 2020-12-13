@@ -2,6 +2,7 @@
     name: pyca-cryptography-base
     abstract: true
     description: Run pyca/cryptography unit testing
+    pre-run: .zuul.playbooks/playbooks/clone-wycheproof/main.yaml
     run: .zuul.playbooks/playbooks/tox/main.yaml
 
 - job:
