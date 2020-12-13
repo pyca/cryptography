@@ -122,6 +122,8 @@ static const long X509_V_FLAG_SUITEB_128_LOS_ONLY;
 static const long X509_V_FLAG_SUITEB_192_LOS;
 static const long X509_V_FLAG_SUITEB_128_LOS;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
+static const long X509_V_FLAG_NO_ALT_CHAINS;
+static const long X509_V_FLAG_NO_CHECK_TIME;
 
 static const long X509_LU_X509;
 static const long X509_LU_CRL;
