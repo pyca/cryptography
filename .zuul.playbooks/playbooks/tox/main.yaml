@@ -27,15 +27,8 @@
       become: yes
       when: ansible_distribution == 'CentOS'
 
-    - name: Clone wycheproof
-      git:
-        repo: https://github.com/google/wycheproof
-        dest: "{{ ansible_facts.env['HOME'] }}/wycheproof"
-        depth: 1
-
     - name: Run tox
       include_role:
         name: tox
       vars:
         tox_extra_args: "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
-
