@@ -29,6 +29,7 @@
 - job:
     name: pyca-cryptography-build-wheel
     abstract: true
+    pre-run: .zuul.playbooks/playbooks/wheel/pre.yaml
     run: .zuul.playbooks/playbooks/wheel/main.yaml
 
 - job:
