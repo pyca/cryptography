@@ -18,7 +18,7 @@ recursive-exclude vectors *
 
 recursive-exclude .github *
 
-exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt rtd-requirements.txt tox.ini
+exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt tox.ini
 
 recursive-exclude .zuul.d *
 recursive-exclude .zuul.playbooks *
