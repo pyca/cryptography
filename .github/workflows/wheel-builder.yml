@@ -55,7 +55,7 @@ jobs:
           path: cryptography-wheelhouse/
 
   macos:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os.VERSION }}
     strategy:
       matrix:
         PYTHON:
@@ -63,7 +63,9 @@ jobs:
             ABI_VERSION: 'cp36'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
-    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
+        os:
+          - {VERSION: macos-10.15, NAME: Catalina}
+    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.os.NAME }}"
     steps:
       - uses: actions/checkout@v2
       - run: |

@@ -112,13 +112,16 @@ jobs:
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
 
   macos:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os.VERSION }}
     strategy:
       matrix:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
           - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
-    name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+        os:
+          - {VERSION: macos-10.15, NAME: Catalina}
+          - {VERSION: macos-11.0, NAME: Big Sur}
+    name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.os.NAME }}"
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
