@@ -23,7 +23,7 @@ __uri__ = "https://github.com/pyca/cryptography"
 
 __version__ = "3.4.dev1"
 
-__author__ = "The cryptography developers"
+__author__ = "The Python Cryptographic Authority and individual contributors"
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "BSD or Apache License, Version 2.0"
