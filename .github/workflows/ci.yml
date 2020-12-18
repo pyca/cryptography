@@ -16,7 +16,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "pep8,packaging,docs", COVERAGE: "false"}
-          - {VERSION: "pypy3", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "pypy3", TOXENV: "pypy3"}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1i"}}
           - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1i"}}
