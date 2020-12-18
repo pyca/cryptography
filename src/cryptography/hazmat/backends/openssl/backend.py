@@ -1878,6 +1878,8 @@ class Backend(object):
             return self._lib.NID_hmacWithSHA384
         elif prf == b"HMAC-SHA512":
             return self._lib.NID_hmacWithSHA512
+        elif prf == b"HMAC-SHA1":
+            return self._lib.NID_hmacWithSHA1
         else:
             raise ValueError(f"Unsupport PRF {prf}")
 
@@ -2027,17 +2029,37 @@ class Backend(object):
         self.openssl_assert(p8inf != self._ffi.NULL)
         p8inf = self._ffi.gc(p8inf, self._lib.PKCS8_PRIV_KEY_INFO_free)
 
-        pbe = self._lib.PKCS5_pbe2_set_iv(
-            evp_cipher, iterations, self._ffi.NULL, 0, self._ffi.NULL, pbe_nid
-        )
-        self.openssl_assert(pbe != self._ffi.NULL)
+        if self._lib.Cryptography_HAS_PKCS8_SET0_PBE:
+            # OpenSSL 1.1.0+
+            pbe = self._lib.PKCS5_pbe2_set_iv(
+                evp_cipher,
+                iterations,
+                self._ffi.NULL,
+                0,
+                self._ffi.NULL,
+                pbe_nid,
+            )
+            self.openssl_assert(pbe != self._ffi.NULL)
 
-        p8 = self._lib.PKCS8_set0_pbe(password, len(password), p8inf, pbe)
-        if p8 == self._ffi.NULL:
-            # PKCS8_set0_pbe takes ownership of pbe only on success
-            self._lib.X509_ALGOR_free(pbe)
-            self.openssl_assert(False)
-        p8 = self._ffi.gc(p8, self._lib.X509_SIG_free)
+            p8 = self._lib.PKCS8_set0_pbe(password, len(password), p8inf, pbe)
+            if p8 == self._ffi.NULL:
+                # On success PKCS8_set0_pbe takes ownership of pbe
+                self._lib.X509_ALGOR_free(pbe)
+                self.openssl_assert(False)
+            p8 = self._ffi.gc(p8, self._lib.X509_SIG_free)
+        else:
+            # LibreSSL
+            p8 = self._lib.PKCS8_encrypt(
+                pbe_nid,
+                evp_cipher,
+                password,
+                len(password),
+                self._ffi.NULL,
+                0,
+                iterations,
+                p8inf,
+            )
+            p8 = self._ffi.gc(p8, self._lib.X509_SIG_free)
 
         return self._bio_func_output(write_bio, p8)
 

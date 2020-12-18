@@ -12,6 +12,8 @@ typedef ... PKCS12;
 typedef ... X509_SIG;
 
 static const int PKCS12_DEFAULT_ITER;
+
+static const int Cryptography_HAS_PKCS8_SET0_PBE;
 """
 
 FUNCTIONS = """
@@ -27,7 +29,6 @@ PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
 void X509_SIG_free(X509_SIG *);
 X509_SIG *PKCS8_set0_pbe(const char *, int, PKCS8_PRIV_KEY_INFO *,
                          X509_ALGOR *);
-/* LibreSSL does not have PKCS8_set0_pbe() */
 X509_SIG *PKCS8_encrypt(int, const EVP_CIPHER *, const char *, int,
                         unsigned char *, int, int, PKCS8_PRIV_KEY_INFO *);
 """
