@@ -397,34 +397,32 @@ class TestRSASignature(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    @pytest.mark.parametrize(
-        "pkcs1_example",
-        _flatten_pkcs1_examples(
+    def test_pkcs1v15_signing(self, backend, subtests):
+        vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_pkcs1v15_signing(self, pkcs1_example, backend):
-        private, public, example = pkcs1_example
-        private_key = rsa.RSAPrivateNumbers(
-            p=private["p"],
-            q=private["q"],
-            d=private["private_exponent"],
-            dmp1=private["dmp1"],
-            dmq1=private["dmq1"],
-            iqmp=private["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"], n=private["modulus"]
-            ),
-        ).private_key(backend)
-        signature = private_key.sign(
-            binascii.unhexlify(example["message"]),
-            padding.PKCS1v15(),
-            hashes.SHA1(),
         )
-        assert binascii.hexlify(signature) == example["signature"]
+        for private, public, example in vectors:
+            with subtests.test():
+                private_key = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend)
+                signature = private_key.sign(
+                    binascii.unhexlify(example["message"]),
+                    padding.PKCS1v15(),
+                    hashes.SHA1(),
+                )
+                assert binascii.hexlify(signature) == example["signature"]
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -756,41 +754,40 @@ class TestRSAVerification(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    @pytest.mark.parametrize(
-        "pkcs1_example",
-        _flatten_pkcs1_examples(
+    def test_pkcs1v15_verification(self, backend, subtests):
+        vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_pkcs1v15_verification(self, pkcs1_example, backend):
-        private, public, example = pkcs1_example
-        public_key = rsa.RSAPublicNumbers(
-            e=public["public_exponent"], n=public["modulus"]
-        ).public_key(backend)
-        signature = binascii.unhexlify(example["signature"])
-        message = binascii.unhexlify(example["message"])
-        public_key.verify(
-            signature, message, padding.PKCS1v15(), hashes.SHA1()
         )
+        for private, public, example in vectors:
+            with subtests.test():
+                public_key = rsa.RSAPublicNumbers(
+                    e=public["public_exponent"], n=public["modulus"]
+                ).public_key(backend)
+                signature = binascii.unhexlify(example["signature"])
+                message = binascii.unhexlify(example["message"])
+                public_key.verify(
+                    signature, message, padding.PKCS1v15(), hashes.SHA1()
+                )
 
-        # Test digest recovery by providing hash
-        digest = hashes.Hash(hashes.SHA1())
-        digest.update(message)
-        msg_digest = digest.finalize()
-        rec_msg_digest = public_key.recover_data_from_signature(
-            signature, padding.PKCS1v15(), hashes.SHA1()
-        )
-        assert msg_digest == rec_msg_digest
+                # Test digest recovery by providing hash
+                digest = hashes.Hash(hashes.SHA1())
+                digest.update(message)
+                msg_digest = digest.finalize()
+                rec_msg_digest = public_key.recover_data_from_signature(
+                    signature, padding.PKCS1v15(), hashes.SHA1()
+                )
+                assert msg_digest == rec_msg_digest
 
-        # Test recovery of all data (full DigestInfo) with hash alg. as None
-        rec_sig_data = public_key.recover_data_from_signature(
-            signature, padding.PKCS1v15(), None
-        )
-        assert len(rec_sig_data) > len(msg_digest)
-        assert msg_digest == rec_sig_data[-len(msg_digest) :]
+                # Test recovery of all data (full DigestInfo) with hash alg. as
+                # None
+                rec_sig_data = public_key.recover_data_from_signature(
+                    signature, padding.PKCS1v15(), None
+                )
+                assert len(rec_sig_data) > len(msg_digest)
+                assert msg_digest == rec_sig_data[-len(msg_digest) :]
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1498,32 +1495,30 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    @pytest.mark.parametrize(
-        "vector",
-        _flatten_pkcs1_examples(
+    def test_decrypt_pkcs1v15_vectors(self, backend, subtests):
+        vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_decrypt_pkcs1v15_vectors(self, vector, backend):
-        private, public, example = vector
-        skey = rsa.RSAPrivateNumbers(
-            p=private["p"],
-            q=private["q"],
-            d=private["private_exponent"],
-            dmp1=private["dmp1"],
-            dmq1=private["dmq1"],
-            iqmp=private["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"], n=private["modulus"]
-            ),
-        ).private_key(backend)
-        ciphertext = binascii.unhexlify(example["encryption"])
-        assert len(ciphertext) == (skey.key_size + 7) // 8
-        message = skey.decrypt(ciphertext, padding.PKCS1v15())
-        assert message == binascii.unhexlify(example["message"])
+        )
+        for private, public, example in vectors:
+            with subtests.test():
+                skey = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend)
+                ciphertext = binascii.unhexlify(example["encryption"])
+                assert len(ciphertext) == (skey.key_size + 7) // 8
+                message = skey.decrypt(ciphertext, padding.PKCS1v15())
+                assert message == binascii.unhexlify(example["message"])
 
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -2112,28 +2107,28 @@ class TestRSANumbersEquality(object):
 
 
 class TestRSAPrimeFactorRecovery(object):
-    @pytest.mark.parametrize(
-        "vector",
-        _flatten_pkcs1_examples(
+    def test_recover_prime_factors(self, subtests):
+        vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_recover_prime_factors(self, vector):
-        private, public, example = vector
-        p, q = rsa.rsa_recover_prime_factors(
-            private["modulus"],
-            private["public_exponent"],
-            private["private_exponent"],
         )
-        # Unfortunately there is no convention on which prime should be p
-        # and which one q. The function we use always makes p > q, but the
-        # NIST vectors are not so consistent. Accordingly, we verify we've
-        # recovered the proper (p, q) by sorting them and asserting on that.
-        assert sorted([p, q]) == sorted([private["p"], private["q"]])
-        assert p > q
+        for vector in vectors:
+            with subtests.test():
+                private, public, example = vector
+                p, q = rsa.rsa_recover_prime_factors(
+                    private["modulus"],
+                    private["public_exponent"],
+                    private["private_exponent"],
+                )
+                # Unfortunately there is no convention on which prime should be
+                # p and which one q. The function we use always makes p > q,
+                # but the NIST vectors are not so consistent. Accordingly, we
+                # verify we've recovered the proper (p, q) by sorting them and
+                # asserting on that.
+                assert sorted([p, q]) == sorted([private["p"], private["q"]])
+                assert p > q
 
     def test_invalid_recover_prime_factors(self):
         with pytest.raises(ValueError):
