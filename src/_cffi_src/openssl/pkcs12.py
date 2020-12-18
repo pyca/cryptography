@@ -27,7 +27,17 @@ PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
 void X509_SIG_free(X509_SIG *);
 X509_SIG *PKCS8_set0_pbe(const char *, int, PKCS8_PRIV_KEY_INFO *,
                          X509_ALGOR *);
+/* LibreSSL does not have PKCS8_set0_pbe() */
+X509_SIG *PKCS8_encrypt(int, const EVP_CIPHER *, const char *, int,
+                        unsigned char *, int, int, PKCS8_PRIV_KEY_INFO *);
 """
 
 CUSTOMIZATIONS = """
+#if !CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_PKCS8_SET0_PBE = 1;
+#else
+static const long Cryptography_HAS_PKCS8_SET0_PBE = 0;
+X509_SIG* (*PKCS8_set0_pbe)(const char *, int, PKCS8_PRIV_KEY_INFO *,
+                            X509_ALGOR *) = NULL;
+#endif
 """
