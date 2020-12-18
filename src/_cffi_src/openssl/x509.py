@@ -273,6 +273,14 @@ int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
 int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
 void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
                              const X509_ALGOR **);
+
+void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
+PKCS8_PRIV_KEY_INFO *EVP_PKEY2PKCS8(EVP_PKEY *);
+
+void X509_ALGOR_free(X509_ALGOR *);
+X509_ALGOR *PKCS5_pbe2_set(const EVP_CIPHER *, int, unsigned char *, int);
+X509_ALGOR *PKCS5_pbe2_set_iv(const EVP_CIPHER *, int, unsigned char *, int,
+                              unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """

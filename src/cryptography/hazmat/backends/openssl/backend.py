@@ -1858,6 +1858,29 @@ class Backend(object):
 
         return ctx
 
+    def _evp_cipher_from_encryption_algorithm(self, encryption_algorithm):
+        cipher = getattr(encryption_algorithm, "_cipher", None)
+        if cipher is None:
+            cipher = b"aes-256-cbc"
+        evp_cipher = self._lib.EVP_get_cipherbyname(cipher)
+        if evp_cipher == self._ffi.NULL:
+            errors = self._consume_errors_with_text()
+            raise ValueError(f"Unsupported encryption cipher {cipher}", errors)
+        return evp_cipher
+
+    def _pbkdf2_prf_from_encryption_algorithm(self, encryption_algorithm):
+        prf = getattr(encryption_algorithm, "_prf", None)
+        if prf is None:
+            return None
+        elif prf == b"HMAC-SHA256":
+            return self._lib.NID_hmacWithSHA256
+        elif prf == b"HMAC-SHA384":
+            return self._lib.NID_hmacWithSHA384
+        elif prf == b"HMAC-SHA512":
+            return self._lib.NID_hmacWithSHA512
+        else:
+            raise ValueError(f"Unsupport PRF {prf}")
+
     def _private_key_bytes(
         self, encoding, format, encryption_algorithm, key, evp_pkey, cdata
     ):
@@ -1879,6 +1902,8 @@ class Backend(object):
         # validate password
         if isinstance(encryption_algorithm, serialization.NoEncryption):
             password = b""
+            evp_cipher = self._ffi.NULL
+            prf_nid = None
         elif isinstance(
             encryption_algorithm, serialization.BestAvailableEncryption
         ):
@@ -1888,20 +1913,37 @@ class Backend(object):
                     "Passwords longer than 1023 bytes are not supported by "
                     "this backend"
                 )
+            evp_cipher = self._evp_cipher_from_encryption_algorithm(
+                encryption_algorithm
+            )
+            prf_nid = self._pbkdf2_prf_from_encryption_algorithm(
+                encryption_algorithm
+            )
         else:
             raise ValueError("Unsupported encryption type")
 
         # PKCS8 + PEM/DER
         if format is serialization.PrivateFormat.PKCS8:
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
-            elif encoding is serialization.Encoding.DER:
-                write_bio = self._lib.i2d_PKCS8PrivateKey_bio
+            if prf_nid is None:
+                if encoding is serialization.Encoding.PEM:
+                    write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
+                elif encoding is serialization.Encoding.DER:
+                    write_bio = self._lib.i2d_PKCS8PrivateKey_bio
+                else:
+                    raise ValueError("Unsupported encoding for PKCS8")
+                return self._private_key_bytes_via_bio(
+                    write_bio, evp_pkey, password, evp_cipher
+                )
             else:
-                raise ValueError("Unsupported encoding for PKCS8")
-            return self._private_key_bytes_via_bio(
-                write_bio, evp_pkey, password
-            )
+                if encoding is serialization.Encoding.PEM:
+                    write_bio = self._lib.PEM_write_bio_PKCS8
+                elif encoding is serialization.Encoding.DER:
+                    write_bio = self._lib.i2d_PKCS8_bio
+                else:
+                    raise ValueError("Unsupported encoding for PKCS8")
+                return self._private_key_pkcs8(
+                    write_bio, evp_pkey, prf_nid, password, evp_cipher
+                )
 
         # TraditionalOpenSSL + PEM/DER
         if format is serialization.PrivateFormat.TraditionalOpenSSL:
@@ -1926,7 +1968,7 @@ class Backend(object):
                         "Unsupported key type for TraditionalOpenSSL"
                     )
                 return self._private_key_bytes_via_bio(
-                    write_bio, cdata, password
+                    write_bio, cdata, password, evp_cipher
                 )
 
             if encoding is serialization.Encoding.DER:
@@ -1963,13 +2005,9 @@ class Backend(object):
         # like Raw.
         raise ValueError("format is invalid with this key")
 
-    def _private_key_bytes_via_bio(self, write_bio, evp_pkey, password):
-        if not password:
-            evp_cipher = self._ffi.NULL
-        else:
-            # This is a curated value that we will update over time.
-            evp_cipher = self._lib.EVP_get_cipherbyname(b"aes-256-cbc")
-
+    def _private_key_bytes_via_bio(
+        self, write_bio, evp_pkey, password, evp_cipher
+    ):
         return self._bio_func_output(
             write_bio,
             evp_pkey,
@@ -1979,6 +2017,29 @@ class Backend(object):
             self._ffi.NULL,
             self._ffi.NULL,
         )
+
+    def _private_key_pkcs8(
+        self, write_bio, evp_pkey, pbe_nid, password, evp_cipher
+    ):
+        iterations = self._lib.PKCS12_DEFAULT_ITER
+
+        p8inf = self._lib.EVP_PKEY2PKCS8(evp_pkey)
+        self.openssl_assert(p8inf != self._ffi.NULL)
+        p8inf = self._ffi.gc(p8inf, self._lib.PKCS8_PRIV_KEY_INFO_free)
+
+        pbe = self._lib.PKCS5_pbe2_set_iv(
+            evp_cipher, iterations, self._ffi.NULL, 0, self._ffi.NULL, pbe_nid
+        )
+        self.openssl_assert(pbe != self._ffi.NULL)
+
+        p8 = self._lib.PKCS8_set0_pbe(password, len(password), p8inf, pbe)
+        if p8 == self._ffi.NULL:
+            # PKCS8_set0_pbe takes ownership of pbe only on success
+            self._lib.X509_ALGOR_free(pbe)
+            self.openssl_assert(False)
+        p8 = self._ffi.gc(p8, self._lib.X509_SIG_free)
+
+        return self._bio_func_output(write_bio, p8)
 
     def _bio_func_output(self, write_bio, *args):
         bio = self._create_mem_bio_gc()

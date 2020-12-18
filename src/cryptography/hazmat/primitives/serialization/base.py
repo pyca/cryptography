@@ -75,6 +75,9 @@ class KeySerializationEncryption(metaclass=abc.ABCMeta):
 
 @utils.register_interface(KeySerializationEncryption)
 class BestAvailableEncryption(object):
+    _cipher = b"aes-256-cbc"
+    _prf = b"HMAC-SHA256"
+
     def __init__(self, password):
         if not isinstance(password, bytes) or len(password) == 0:
             raise ValueError("Password must be 1 or more bytes.")

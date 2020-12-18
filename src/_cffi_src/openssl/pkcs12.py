@@ -9,6 +9,9 @@ INCLUDES = """
 
 TYPES = """
 typedef ... PKCS12;
+typedef ... X509_SIG;
+
+static const int PKCS12_DEFAULT_ITER;
 """
 
 FUNCTIONS = """
@@ -20,6 +23,10 @@ int PKCS12_parse(PKCS12 *, const char *, EVP_PKEY **, X509 **,
                  Cryptography_STACK_OF_X509 **);
 PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
                       Cryptography_STACK_OF_X509 *, int, int, int, int, int);
+
+void X509_SIG_free(X509_SIG *);
+X509_SIG *PKCS8_set0_pbe(const char *, int, PKCS8_PRIV_KEY_INFO *,
+                         X509_ALGOR *);
 """
 
 CUSTOMIZATIONS = """

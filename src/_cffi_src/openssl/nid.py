@@ -24,6 +24,11 @@ static const int NID_subject_alt_name;
 static const int NID_crl_reason;
 
 static const int NID_pkcs7_signed;
+
+static const int NID_hmacWithSHA1;
+static const int NID_hmacWithSHA256;
+static const int NID_hmacWithSHA384;
+static const int NID_hmacWithSHA512;
 """
 
 FUNCTIONS = """
