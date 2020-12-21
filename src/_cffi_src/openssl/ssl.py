@@ -683,11 +683,7 @@ SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_TLSv1_3 = 0;
-/*
-don't set this to 0,
-SSL_CTX_set_min_proto_version(TLS1_3_VERSION) would silently allow all version
-*/
-static const long TLS1_3_VERSION = -1;
+static const long TLS1_3_VERSION = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
 static const long SSL_VERIFY_POST_HANDSHAKE = 0;
 int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
