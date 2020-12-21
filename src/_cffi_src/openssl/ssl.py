@@ -590,7 +590,7 @@ static const long TLS_ST_OK = 0;
 #if CRYPTOGRAPHY_IS_LIBRESSL
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
-static const long DTLS1_VERSION = 0;
+/* it's not really clear why DTLS1_VERSION is defined, but it is */
 static const long DTLS1_2_VERSION = 0;
 long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
