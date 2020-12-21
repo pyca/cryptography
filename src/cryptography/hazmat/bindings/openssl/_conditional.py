@@ -198,6 +198,7 @@ def cryptography_has_openssl_cleanup():
 
 def cryptography_has_tlsv13():
     return [
+        "TLS1_3_VERSION",
         "SSL_OP_NO_TLSv1_3",
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
