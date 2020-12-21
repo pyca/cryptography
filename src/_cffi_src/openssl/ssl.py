@@ -136,8 +136,6 @@ static const long TLS1_VERSION;
 static const long TLS1_1_VERSION;
 static const long TLS1_2_VERSION;
 static const long TLS1_3_VERSION;
-static const long DTLS1_VERSION;
-static const long DTLS1_2_VERSION;
 
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
@@ -590,12 +588,6 @@ static const long TLS_ST_OK = 0;
 #if CRYPTOGRAPHY_IS_LIBRESSL
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
-/* it's not really clear why DTLS1_VERSION is defined, but it is. */
-/*
-don't set this to 0,
-SSL_CTX_set_min_proto_version(TLS1_3_VERSION) would silently allow all version
-*/
-static const long DTLS1_2_VERSION = -1;
 long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
