@@ -9,11 +9,13 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
-* We now ship ``manylinux2014`` wheels, and no longer ship ``manylinux1``
-  wheels.
+* We now ship ``manylinux2014`` wheels and no longer ship ``manylinux1``
+  wheels. Users should upgrade to the latest ``pip`` to ensure this doesn't
+  cause issues downloading wheels on their platform.
 * ``cryptography`` now incorporates Rust code. Users building ``cryptography``
-  themselves will need to have the Rust toolchain installed, users who use an
-  officially produced wheel will not need to make any changes.
+  themselves will need to have the Rust toolchain installed. Users who use an
+  officially produced wheel will not need to make any changes. The minimum
+  supported Rust version is 1.45.0.
 
 .. _v3-3-1:
 
