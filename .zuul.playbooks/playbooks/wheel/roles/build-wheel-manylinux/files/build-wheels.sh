@@ -11,7 +11,7 @@ for P in ${PYTHONS}; do
 
     "${PYBIN}"/python -m virtualenv .venv
 
-    .venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'"
+    .venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'" setuptools-rust
 
     REGEX="cp3([0-9])*"
     if [[ "${PYBIN}" =~ $REGEX ]]; then

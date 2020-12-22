@@ -49,10 +49,6 @@
     nodeset: ubuntu-bionic
     vars:
       wheel_builds:
-        - platform: manylinux1_x86_64
-          image: ghcr.io/pyca/cryptography-manylinux1:x86_64
-          pythons:
-            - cp36-cp36m
         - platform: manylinux2010_x86_64
           image: ghcr.io/pyca/cryptography-manylinux2010:x86_64
           pythons:

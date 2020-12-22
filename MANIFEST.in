@@ -10,6 +10,7 @@ include pyproject.toml
 
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
+recursive-include src/rust Cargo.toml Cargo.lock *.rs
 prune docs/_build
 recursive-include tests *.py
 exclude vectors
