@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -12,6 +11,8 @@ from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+
+from .utils import wycheproof_tests
 
 
 _DIGESTS = {
@@ -28,7 +29,7 @@ _DIGESTS = {
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "ecdsa_test.json",
     "ecdsa_brainpoolP224r1_sha224_test.json",
     "ecdsa_brainpoolP256r1_sha256_test.json",
@@ -75,9 +76,8 @@ def test_ecdsa_signature(backend, wycheproof):
     if not backend.hash_supported(digest):
         pytest.skip("Hash {} not supported".format(digest))
 
-    if (
-        wycheproof.valid or
-        (wycheproof.acceptable and not wycheproof.has_flag("MissingZero"))
+    if wycheproof.valid or (
+        wycheproof.acceptable and not wycheproof.has_flag("MissingZero")
     ):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),

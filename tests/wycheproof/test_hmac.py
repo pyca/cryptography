@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -10,6 +9,8 @@ import pytest
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, hmac
+
+from .utils import wycheproof_tests
 
 
 _HMAC_ALGORITHMS = {
@@ -25,7 +26,7 @@ _HMAC_ALGORITHMS = {
 }
 
 
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "hmac_sha1_test.json",
     "hmac_sha224_test.json",
     "hmac_sha256_test.json",

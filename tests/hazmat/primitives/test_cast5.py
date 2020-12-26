@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
@@ -46,7 +45,7 @@ class TestCAST5ModeCBC(object):
         os.path.join("ciphers", "CAST5"),
         ["cast5-cbc.txt"],
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
 
@@ -63,7 +62,7 @@ class TestCAST5ModeOFB(object):
         os.path.join("ciphers", "CAST5"),
         ["cast5-ofb.txt"],
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
@@ -80,5 +79,5 @@ class TestCAST5ModeCFB(object):
         os.path.join("ciphers", "CAST5"),
         ["cast5-cfb.txt"],
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
-        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv))
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

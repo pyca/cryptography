@@ -5,7 +5,7 @@ C bindings are bindings to C libraries, using cffi_ whenever possible.
 
 .. _cffi: https://cffi.readthedocs.io
 
-Bindings live in :py:mod:`cryptography.hazmat.bindings`.
+Bindings live in ``cryptography.hazmat.bindings``.
 
 When modifying the bindings you will need to recompile the C extensions to
 test the changes. This can be accomplished with ``pip install -e .`` in the
@@ -189,9 +189,9 @@ Caveats
 Sometimes, a set of loosely related features are added in the same
 version, and it's impractical to create ``#ifdef`` statements for each
 one. In that case, it may make sense to either check for a particular
-version. For example, to check for OpenSSL 1.1.0 or newer::
+version. For example, to check for OpenSSL 1.1.1 or newer::
 
-    #if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+    #if CRYPTOGRAPHY_OPENSSL_111_OR_GREATER
 
 Sometimes, the version of a library on a particular platform will have
 features that you thought it wouldn't, based on its version.

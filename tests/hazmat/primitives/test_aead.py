@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
@@ -12,13 +11,17 @@ import pytest
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import (
-    AESCCM, AESGCM, ChaCha20Poly1305
+    AESCCM,
+    AESGCM,
+    ChaCha20Poly1305,
 )
 
 from .utils import _load_all_params
 from ...utils import (
-    load_nist_ccm_vectors, load_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
+    load_nist_ccm_vectors,
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
 )
 
 
@@ -37,7 +40,7 @@ def _aead_supported(cls):
 
 @pytest.mark.skipif(
     _aead_supported(ChaCha20Poly1305),
-    reason="Requires OpenSSL without ChaCha20Poly1305 support"
+    reason="Requires OpenSSL without ChaCha20Poly1305 support",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_chacha20poly1305_unsupported_on_older_openssl(backend):
@@ -47,7 +50,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 
 @pytest.mark.skipif(
     not _aead_supported(ChaCha20Poly1305),
-    reason="Does not support ChaCha20Poly1305"
+    reason="Does not support ChaCha20Poly1305",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20Poly1305(object):
@@ -78,11 +81,12 @@ class TestChaCha20Poly1305(object):
         [
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
-            [b"0" * 12, b"data", object()]
-        ]
+            [b"0" * 12, b"data", object()],
+        ],
     )
-    def test_params_not_bytes_encrypt(self, nonce, data, associated_data,
-                                      backend):
+    def test_params_not_bytes_encrypt(
+        self, nonce, data, associated_data, backend
+    ):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(TypeError):
@@ -117,55 +121,53 @@ class TestChaCha20Poly1305(object):
         pt2 = chacha.decrypt(nonce, ct2, b"")
         assert pt1 == pt2
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
+    def test_openssl_vectors(self, subtests, backend):
+        vectors = load_vectors_from_file(
             os.path.join("ciphers", "ChaCha20Poly1305", "openssl.txt"),
-            load_nist_vectors
+            load_nist_vectors,
         )
-    )
-    def test_openssl_vectors(self, vector, backend):
-        key = binascii.unhexlify(vector["key"])
-        nonce = binascii.unhexlify(vector["iv"])
-        aad = binascii.unhexlify(vector["aad"])
-        tag = binascii.unhexlify(vector["tag"])
-        pt = binascii.unhexlify(vector["plaintext"])
-        ct = binascii.unhexlify(vector["ciphertext"])
-        chacha = ChaCha20Poly1305(key)
-        if vector.get("result") == b"CIPHERFINAL_ERROR":
-            with pytest.raises(InvalidTag):
-                chacha.decrypt(nonce, ct + tag, aad)
-        else:
-            computed_pt = chacha.decrypt(nonce, ct + tag, aad)
-            assert computed_pt == pt
-            computed_ct = chacha.encrypt(nonce, pt, aad)
-            assert computed_ct == ct + tag
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                nonce = binascii.unhexlify(vector["iv"])
+                aad = binascii.unhexlify(vector["aad"])
+                tag = binascii.unhexlify(vector["tag"])
+                pt = binascii.unhexlify(vector["plaintext"])
+                ct = binascii.unhexlify(vector["ciphertext"])
+                chacha = ChaCha20Poly1305(key)
+                if vector.get("result") == b"CIPHERFINAL_ERROR":
+                    with pytest.raises(InvalidTag):
+                        chacha.decrypt(nonce, ct + tag, aad)
+                else:
+                    computed_pt = chacha.decrypt(nonce, ct + tag, aad)
+                    assert computed_pt == pt
+                    computed_ct = chacha.encrypt(nonce, pt, aad)
+                    assert computed_ct == ct + tag
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
+    def test_boringssl_vectors(self, subtests, backend):
+        vectors = load_vectors_from_file(
             os.path.join("ciphers", "ChaCha20Poly1305", "boringssl.txt"),
-            load_nist_vectors
+            load_nist_vectors,
         )
-    )
-    def test_boringssl_vectors(self, vector, backend):
-        key = binascii.unhexlify(vector["key"])
-        nonce = binascii.unhexlify(vector["nonce"])
-        if vector["ad"].startswith(b'"'):
-            aad = vector["ad"][1:-1]
-        else:
-            aad = binascii.unhexlify(vector["ad"])
-        tag = binascii.unhexlify(vector["tag"])
-        if vector["in"].startswith(b'"'):
-            pt = vector["in"][1:-1]
-        else:
-            pt = binascii.unhexlify(vector["in"])
-        ct = binascii.unhexlify(vector["ct"].strip(b'"'))
-        chacha = ChaCha20Poly1305(key)
-        computed_pt = chacha.decrypt(nonce, ct + tag, aad)
-        assert computed_pt == pt
-        computed_ct = chacha.encrypt(nonce, pt, aad)
-        assert computed_ct == ct + tag
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                nonce = binascii.unhexlify(vector["nonce"])
+                if vector["ad"].startswith(b'"'):
+                    aad = vector["ad"][1:-1]
+                else:
+                    aad = binascii.unhexlify(vector["ad"])
+                tag = binascii.unhexlify(vector["tag"])
+                if vector["in"].startswith(b'"'):
+                    pt = vector["in"][1:-1]
+                else:
+                    pt = binascii.unhexlify(vector["in"])
+                ct = binascii.unhexlify(vector["ct"].strip(b'"'))
+                chacha = ChaCha20Poly1305(key)
+                computed_pt = chacha.decrypt(nonce, ct + tag, aad)
+                assert computed_pt == pt
+                computed_ct = chacha.encrypt(nonce, pt, aad)
+                assert computed_ct == ct + tag
 
     def test_buffer_protocol(self, backend):
         key = ChaCha20Poly1305.generate_key()
@@ -226,33 +228,40 @@ class TestAESCCM(object):
         with pytest.raises(ValueError):
             aesccm.encrypt(nonce[:6], pt, None)
 
-    @pytest.mark.parametrize(
-        "vector",
-        _load_all_params(
+    def test_vectors(self, subtests, backend):
+        vectors = _load_all_params(
             os.path.join("ciphers", "AES", "CCM"),
             [
-                "DVPT128.rsp", "DVPT192.rsp", "DVPT256.rsp",
-                "VADT128.rsp", "VADT192.rsp", "VADT256.rsp",
-                "VNT128.rsp", "VNT192.rsp", "VNT256.rsp",
-                "VPT128.rsp", "VPT192.rsp", "VPT256.rsp",
+                "DVPT128.rsp",
+                "DVPT192.rsp",
+                "DVPT256.rsp",
+                "VADT128.rsp",
+                "VADT192.rsp",
+                "VADT256.rsp",
+                "VNT128.rsp",
+                "VNT192.rsp",
+                "VNT256.rsp",
+                "VPT128.rsp",
+                "VPT192.rsp",
+                "VPT256.rsp",
             ],
-            load_nist_ccm_vectors
+            load_nist_ccm_vectors,
         )
-    )
-    def test_vectors(self, vector, backend):
-        key = binascii.unhexlify(vector["key"])
-        nonce = binascii.unhexlify(vector["nonce"])
-        adata = binascii.unhexlify(vector["adata"])[:vector["alen"]]
-        ct = binascii.unhexlify(vector["ct"])
-        pt = binascii.unhexlify(vector["payload"])[:vector["plen"]]
-        aesccm = AESCCM(key, vector["tlen"])
-        if vector.get('fail'):
-            with pytest.raises(InvalidTag):
-                aesccm.decrypt(nonce, ct, adata)
-        else:
-            computed_pt = aesccm.decrypt(nonce, ct, adata)
-            assert computed_pt == pt
-            assert aesccm.encrypt(nonce, pt, adata) == ct
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                nonce = binascii.unhexlify(vector["nonce"])
+                adata = binascii.unhexlify(vector["adata"])[: vector["alen"]]
+                ct = binascii.unhexlify(vector["ct"])
+                pt = binascii.unhexlify(vector["payload"])[: vector["plen"]]
+                aesccm = AESCCM(key, vector["tlen"])
+                if vector.get("fail"):
+                    with pytest.raises(InvalidTag):
+                        aesccm.decrypt(nonce, ct, adata)
+                else:
+                    computed_pt = aesccm.decrypt(nonce, ct, adata)
+                    assert computed_pt == pt
+                    assert aesccm.encrypt(nonce, pt, adata) == ct
 
     def test_roundtrip(self, backend):
         key = AESCCM.generate_key(128)
@@ -279,7 +288,7 @@ class TestAESCCM(object):
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
             [b"0" * 12, b"data", object()],
-        ]
+        ],
     )
     def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESCCM.generate_key(128)
@@ -345,9 +354,9 @@ def _load_gcm_vectors():
             "gcmEncryptExtIV192.rsp",
             "gcmEncryptExtIV256.rsp",
         ],
-        load_nist_vectors
+        load_nist_vectors,
     )
-    return [x for x in vectors if len(x["tag"]) == 32]
+    return [x for x in vectors if len(x["tag"]) == 32 and len(x["iv"]) >= 16]
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -363,32 +372,40 @@ class TestAESGCM(object):
         with pytest.raises(OverflowError):
             aesgcm.encrypt(nonce, b"", FakeData())
 
-    @pytest.mark.parametrize("vector", _load_gcm_vectors())
-    def test_vectors(self, vector):
-        key = binascii.unhexlify(vector["key"])
-        nonce = binascii.unhexlify(vector["iv"])
-        aad = binascii.unhexlify(vector["aad"])
-        ct = binascii.unhexlify(vector["ct"])
-        pt = binascii.unhexlify(vector.get("pt", b""))
-        tag = binascii.unhexlify(vector["tag"])
-        aesgcm = AESGCM(key)
-        if vector.get("fail") is True:
-            with pytest.raises(InvalidTag):
-                aesgcm.decrypt(nonce, ct + tag, aad)
-        else:
-            computed_ct = aesgcm.encrypt(nonce, pt, aad)
-            assert computed_ct[:-16] == ct
-            assert computed_ct[-16:] == tag
-            computed_pt = aesgcm.decrypt(nonce, ct + tag, aad)
-            assert computed_pt == pt
+    def test_vectors(self, backend, subtests):
+        vectors = _load_gcm_vectors()
+        for vector in vectors:
+            with subtests.test():
+                nonce = binascii.unhexlify(vector["iv"])
+
+                if backend._fips_enabled and len(nonce) != 12:
+                    # Red Hat disables non-96-bit IV support as part of its
+                    # FIPS patches.
+                    pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
+                key = binascii.unhexlify(vector["key"])
+                aad = binascii.unhexlify(vector["aad"])
+                ct = binascii.unhexlify(vector["ct"])
+                pt = binascii.unhexlify(vector.get("pt", b""))
+                tag = binascii.unhexlify(vector["tag"])
+                aesgcm = AESGCM(key)
+                if vector.get("fail") is True:
+                    with pytest.raises(InvalidTag):
+                        aesgcm.decrypt(nonce, ct + tag, aad)
+                else:
+                    computed_ct = aesgcm.encrypt(nonce, pt, aad)
+                    assert computed_ct[:-16] == ct
+                    assert computed_ct[-16:] == tag
+                    computed_pt = aesgcm.decrypt(nonce, ct + tag, aad)
+                    assert computed_pt == pt
 
     @pytest.mark.parametrize(
         ("nonce", "data", "associated_data"),
         [
             [object(), b"data", b""],
             [b"0" * 12, object(), b""],
-            [b"0" * 12, b"data", object()]
-        ]
+            [b"0" * 12, b"data", object()],
+        ],
     )
     def test_params_not_bytes(self, nonce, data, associated_data, backend):
         key = AESGCM.generate_key(128)
@@ -399,11 +416,17 @@ class TestAESGCM(object):
         with pytest.raises(TypeError):
             aesgcm.decrypt(nonce, data, associated_data)
 
-    def test_invalid_nonce_length(self, backend):
+    @pytest.mark.parametrize("length", [7, 129])
+    def test_invalid_nonce_length(self, length, backend):
+        if backend._fips_enabled:
+            # Red Hat disables non-96-bit IV support as part of its FIPS
+            # patches.
+            pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
+
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
         with pytest.raises(ValueError):
-            aesgcm.encrypt(b"", b"hi", None)
+            aesgcm.encrypt(b"\x00" * length, b"hi", None)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):

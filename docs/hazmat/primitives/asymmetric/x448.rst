@@ -21,7 +21,6 @@ present.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric.x448 import X448PrivateKey
     >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -39,7 +38,6 @@ present.
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(shared_key)
     >>> # For the next handshake we MUST generate another private key.
     >>> private_key_2 = X448PrivateKey.generate()
@@ -50,7 +48,6 @@ present.
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(shared_key_2)
 
 Key interfaces

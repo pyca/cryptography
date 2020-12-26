@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -13,6 +12,7 @@ from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from .utils import wycheproof_tests
 from ..hazmat.primitives.test_ec import _skip_exchange_algorithm_unsupported
 
 
@@ -37,7 +37,7 @@ _CURVES = {
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "ecdh_test.json",
     "ecdh_brainpoolP224r1_test.json",
     "ecdh_brainpoolP256r1_test.json",
@@ -85,7 +85,7 @@ def test_ecdh(backend, wycheproof):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "ecdh_secp224r1_ecpoint_test.json",
     "ecdh_secp256r1_ecpoint_test.json",
     "ecdh_secp384r1_ecpoint_test.json",

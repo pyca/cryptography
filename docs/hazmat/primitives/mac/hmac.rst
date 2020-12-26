@@ -15,7 +15,7 @@ message authentication codes using a cryptographic hash function coupled with a
 secret key. You can use an HMAC to verify both the integrity and authenticity
 of a message.
 
-.. class:: HMAC(key, algorithm, backend)
+.. class:: HMAC(key, algorithm, backend=None)
 
     HMAC objects take a ``key`` and a
     :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` instance.
@@ -27,9 +27,8 @@ of a message.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes, hmac
-        >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        >>> h = hmac.HMAC(key, hashes.SHA256())
         >>> h.update(b"message to hash")
         >>> h.finalize()
         b'#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
@@ -47,7 +46,7 @@ of a message.
 
     .. doctest::
 
-        >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        >>> h = hmac.HMAC(key, hashes.SHA256())
         >>> h.update(b"message to hash")
         >>> h.verify(b"an incorrect signature")
         Traceback (most recent call last):
@@ -60,7 +59,7 @@ of a message.
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         instance such as those described in
         :ref:`Cryptographic Hashes <cryptographic-hash-algorithms>`.
-    :param backend: An
+    :param backend: An optional
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         instance.
 

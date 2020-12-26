@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -11,16 +10,15 @@ import pytest
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives.ciphers import (
-    Cipher, algorithms, modes
-)
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
 
+from .utils import wycheproof_tests
 from ..hazmat.primitives.test_aead import _aead_supported
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.wycheproof_tests("aes_cbc_pkcs5_test.json")
+@wycheproof_tests("aes_cbc_pkcs5_test.json")
 def test_aes_cbc_pkcs5(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     iv = binascii.unhexlify(wycheproof.testcase["iv"])
@@ -31,8 +29,9 @@ def test_aes_cbc_pkcs5(backend, wycheproof):
 
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
     enc = cipher.encryptor()
-    computed_ct = enc.update(
-        padder.update(msg) + padder.finalize()) + enc.finalize()
+    computed_ct = (
+        enc.update(padder.update(msg) + padder.finalize()) + enc.finalize()
+    )
     dec = cipher.decryptor()
     padded_msg = dec.update(ct) + dec.finalize()
     unpadder = padding.PKCS7(128).unpadder()
@@ -47,7 +46,7 @@ def test_aes_cbc_pkcs5(backend, wycheproof):
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.wycheproof_tests("aes_gcm_test.json")
+@wycheproof_tests("aes_gcm_test.json")
 def test_aes_gcm(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     iv = binascii.unhexlify(wycheproof.testcase["iv"])
@@ -55,6 +54,15 @@ def test_aes_gcm(backend, wycheproof):
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     ct = binascii.unhexlify(wycheproof.testcase["ct"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if len(iv) < 8 or len(iv) > 128:
+        pytest.skip(
+            "Less than 64-bit IVs (and greater than 1024-bit) are no longer "
+            "supported"
+        )
+    if backend._fips_enabled and len(iv) != 12:
+        # Red Hat disables non-96-bit IV support as part of its FIPS
+        # patches.
+        pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
     if wycheproof.valid or wycheproof.acceptable:
         enc = Cipher(algorithms.AES(key), modes.GCM(iv), backend).encryptor()
         enc.authenticate_additional_data(aad)
@@ -65,19 +73,16 @@ def test_aes_gcm(backend, wycheproof):
         dec = Cipher(
             algorithms.AES(key),
             modes.GCM(iv, tag, min_tag_length=len(tag)),
-            backend
+            backend,
         ).decryptor()
         dec.authenticate_additional_data(aad)
         computed_msg = dec.update(ct) + dec.finalize()
         assert computed_msg == msg
-    elif len(iv) == 0:
-        with pytest.raises(ValueError):
-            Cipher(algorithms.AES(key), modes.GCM(iv), backend)
     else:
         dec = Cipher(
             algorithms.AES(key),
             modes.GCM(iv, tag, min_tag_length=len(tag)),
-            backend
+            backend,
         ).decryptor()
         dec.authenticate_additional_data(aad)
         dec.update(ct)
@@ -86,7 +91,7 @@ def test_aes_gcm(backend, wycheproof):
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.wycheproof_tests("aes_gcm_test.json")
+@wycheproof_tests("aes_gcm_test.json")
 def test_aes_gcm_aead_api(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     iv = binascii.unhexlify(wycheproof.testcase["iv"])
@@ -94,15 +99,22 @@ def test_aes_gcm_aead_api(backend, wycheproof):
     msg = binascii.unhexlify(wycheproof.testcase["msg"])
     ct = binascii.unhexlify(wycheproof.testcase["ct"])
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
+    if len(iv) < 8 or len(iv) > 128:
+        pytest.skip(
+            "Less than 64-bit IVs (and greater than 1024-bit) are no longer "
+            "supported"
+        )
+
+    if backend._fips_enabled and len(iv) != 12:
+        # Red Hat disables non-96-bit IV support as part of its FIPS
+        # patches.
+        pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
     aesgcm = AESGCM(key)
     if wycheproof.valid or wycheproof.acceptable:
         computed_ct = aesgcm.encrypt(iv, msg, aad)
         assert computed_ct == ct + tag
         computed_msg = aesgcm.decrypt(iv, ct + tag, aad)
         assert computed_msg == msg
-    elif len(iv) == 0:
-        with pytest.raises(ValueError):
-            aesgcm.encrypt(iv, msg, aad)
     else:
         with pytest.raises(InvalidTag):
             aesgcm.decrypt(iv, ct + tag, aad)
@@ -113,7 +125,7 @@ def test_aes_gcm_aead_api(backend, wycheproof):
     reason="Requires OpenSSL with AES-CCM support",
 )
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.wycheproof_tests("aes_ccm_test.json")
+@wycheproof_tests("aes_ccm_test.json")
 def test_aes_ccm_aead_api(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     iv = binascii.unhexlify(wycheproof.testcase["iv"])
@@ -123,8 +135,8 @@ def test_aes_ccm_aead_api(backend, wycheproof):
     tag = binascii.unhexlify(wycheproof.testcase["tag"])
 
     if (
-        wycheproof.invalid and
-        wycheproof.testcase["comment"] == "Invalid tag size"
+        wycheproof.invalid
+        and wycheproof.testcase["comment"] == "Invalid tag size"
     ):
         with pytest.raises(ValueError):
             AESCCM(key, tag_length=wycheproof.testgroup["tagSize"] // 8)

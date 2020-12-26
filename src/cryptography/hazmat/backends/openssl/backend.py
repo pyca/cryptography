@@ -117,6 +117,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
+    dh,
     dsa,
     ec,
     ed25519,
@@ -151,7 +152,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     XTS,
 )
 from cryptography.hazmat.primitives.kdf import scrypt
-from cryptography.hazmat.primitives.serialization import ssh
+from cryptography.hazmat.primitives.serialization import pkcs7, ssh
 from cryptography.x509 import ocsp
 
 
@@ -622,8 +623,6 @@ class Backend(object):
         res = self._lib.RSA_set0_key(rsa_cdata, n, e, d)
         self.openssl_assert(res == 1)
         res = self._lib.RSA_set0_crt_params(rsa_cdata, dmp1, dmq1, iqmp)
-        self.openssl_assert(res == 1)
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
@@ -1370,8 +1369,9 @@ class Backend(object):
         if x509 == self._ffi.NULL:
             self._consume_errors()
             raise ValueError(
-                "Unable to load certificate. See https://cryptography.io/en/la"
-                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+                "Unable to load certificate. See https://cryptography.io/en/"
+                "latest/faq.html#why-can-t-i-import-my-pem-file for more"
+                " details."
             )
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
@@ -1396,7 +1396,8 @@ class Backend(object):
             self._consume_errors()
             raise ValueError(
                 "Unable to load CRL. See https://cryptography.io/en/la"
-                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+                "test/faq.html#why-can-t-i-import-my-pem-file for more"
+                " details."
             )
 
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
@@ -1420,8 +1421,9 @@ class Backend(object):
         if x509_req == self._ffi.NULL:
             self._consume_errors()
             raise ValueError(
-                "Unable to load request. See https://cryptography.io/en/la"
-                "test/faq/#why-can-t-i-import-my-pem-file for more details."
+                "Unable to load request. See https://cryptography.io/en/"
+                "latest/faq.html#why-can-t-i-import-my-pem-file for more"
+                " details."
             )
 
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
@@ -1458,8 +1460,7 @@ class Backend(object):
 
         if evp_pkey == self._ffi.NULL:
             if userdata.error != 0:
-                errors = self._consume_errors()
-                self.openssl_assert(errors)
+                self._consume_errors()
                 if userdata.error == -1:
                     raise TypeError(
                         "Password was not given but private key is encrypted"
@@ -1490,8 +1491,11 @@ class Backend(object):
         errors = self._consume_errors()
 
         if not errors:
-            raise ValueError("Could not deserialize key data.")
-
+            raise ValueError(
+                "Could not deserialize key data. The data may be in an "
+                "incorrect format or it may be encrypted with an unsupported "
+                "algorithm."
+            )
         elif errors[0]._lib_reason_match(
             self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
         ) or errors[0]._lib_reason_match(
@@ -1499,16 +1503,6 @@ class Backend(object):
             self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
-
-        elif errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_PEM, self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
-        ):
-            raise UnsupportedAlgorithm(
-                "PEM data is encrypted with an unsupported cipher",
-                _Reasons.UNSUPPORTED_CIPHER,
-            )
 
         elif any(
             error._lib_reason_match(
@@ -1520,12 +1514,11 @@ class Backend(object):
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            assert errors[0].lib in (
-                self._lib.ERR_LIB_EVP,
-                self._lib.ERR_LIB_PEM,
-                self._lib.ERR_LIB_ASN1,
+            raise ValueError(
+                "Could not deserialize key data. The data may be in an "
+                "incorrect format or it may be encrypted with an unsupported "
+                "algorithm."
             )
-            raise ValueError("Could not deserialize key data.")
 
     def elliptic_curve_supported(self, curve):
         try:
@@ -1662,14 +1655,6 @@ class Backend(object):
     def _ec_key_new_by_curve_nid(self, curve_nid):
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
         self.openssl_assert(ec_cdata != self._ffi.NULL)
-        # Setting the ASN.1 flag to OPENSSL_EC_NAMED_CURVE is
-        # only necessary on OpenSSL 1.0.2t/u. Once we drop support for 1.0.2
-        # we can remove this as it's done automatically when getting an EC_KEY
-        # from new_by_curve_name
-        # CRYPTOGRAPHY_OPENSSL_102U_OR_GREATER
-        self._lib.EC_KEY_set_asn1_flag(
-            ec_cdata, backend._lib.OPENSSL_EC_NAMED_CURVE
-        )
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
     def load_der_ocsp_request(self, data):
@@ -2102,8 +2087,12 @@ class Backend(object):
         return self._read_mem_bio(bio)
 
     def generate_dh_parameters(self, generator, key_size):
-        if key_size < 512:
-            raise ValueError("DH key_size must be at least 512 bits")
+        if key_size < dh._MIN_MODULUS_SIZE:
+            raise ValueError(
+                "DH key_size must be at least {} bits".format(
+                    dh._MIN_MODULUS_SIZE
+                )
+            )
 
         if generator not in (2, 5):
             raise ValueError("DH generator must be 2 or 5")
@@ -2336,7 +2325,7 @@ class Backend(object):
     def x25519_supported(self):
         if self._fips_enabled:
             return False
-        return self._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+        return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
 
     def x448_load_public_bytes(self, data):
         if len(data) != 56:
@@ -2689,6 +2678,85 @@ class Backend(object):
             certs.append(_Certificate(self, x509))
 
         return certs
+
+    def pkcs7_sign(self, builder, encoding, options):
+        bio = self._bytes_to_bio(builder._data)
+        init_flags = self._lib.PKCS7_PARTIAL
+        final_flags = 0
+
+        if len(builder._additional_certs) == 0:
+            certs = self._ffi.NULL
+        else:
+            certs = self._lib.sk_X509_new_null()
+            certs = self._ffi.gc(certs, self._lib.sk_X509_free)
+            for cert in builder._additional_certs:
+                res = self._lib.sk_X509_push(certs, cert._x509)
+                self.openssl_assert(res >= 1)
+
+        if pkcs7.PKCS7Options.DetachedSignature in options:
+            # Don't embed the data in the PKCS7 structure
+            init_flags |= self._lib.PKCS7_DETACHED
+            final_flags |= self._lib.PKCS7_DETACHED
+
+        # This just inits a structure for us. However, there
+        # are flags we need to set, joy.
+        p7 = self._lib.PKCS7_sign(
+            self._ffi.NULL,
+            self._ffi.NULL,
+            certs,
+            self._ffi.NULL,
+            init_flags,
+        )
+        self.openssl_assert(p7 != self._ffi.NULL)
+        p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
+        signer_flags = 0
+        # These flags are configurable on a per-signature basis
+        # but we've deliberately chosen to make the API only allow
+        # setting it across all signatures for now.
+        if pkcs7.PKCS7Options.NoCapabilities in options:
+            signer_flags |= self._lib.PKCS7_NOSMIMECAP
+        elif pkcs7.PKCS7Options.NoAttributes in options:
+            signer_flags |= self._lib.PKCS7_NOATTR
+
+        if pkcs7.PKCS7Options.NoCerts in options:
+            signer_flags |= self._lib.PKCS7_NOCERTS
+
+        for certificate, private_key, hash_algorithm in builder._signers:
+            md = self._evp_md_non_null_from_algorithm(hash_algorithm)
+            p7signerinfo = self._lib.PKCS7_sign_add_signer(
+                p7, certificate._x509, private_key._evp_pkey, md, signer_flags
+            )
+            self.openssl_assert(p7signerinfo != self._ffi.NULL)
+
+        for option in options:
+            # DetachedSignature, NoCapabilities, and NoAttributes are already
+            # handled so we just need to check these last two options.
+            if option is pkcs7.PKCS7Options.Text:
+                final_flags |= self._lib.PKCS7_TEXT
+            elif option is pkcs7.PKCS7Options.Binary:
+                final_flags |= self._lib.PKCS7_BINARY
+
+        bio_out = self._create_mem_bio_gc()
+        if encoding is serialization.Encoding.SMIME:
+            # This finalizes the structure
+            res = self._lib.SMIME_write_PKCS7(
+                bio_out, p7, bio.bio, final_flags
+            )
+        elif encoding is serialization.Encoding.PEM:
+            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
+            self.openssl_assert(res == 1)
+            res = self._lib.PEM_write_bio_PKCS7_stream(
+                bio_out, p7, bio.bio, final_flags
+            )
+        else:
+            assert encoding is serialization.Encoding.DER
+            # We need to call finalize here becauase i2d_PKCS7_bio does not
+            # finalize.
+            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
+            self.openssl_assert(res == 1)
+            res = self._lib.i2d_PKCS7_bio(bio_out, p7)
+        self.openssl_assert(res == 1)
+        return self._read_mem_bio(bio_out)
 
 
 class GetCipherByName(object):

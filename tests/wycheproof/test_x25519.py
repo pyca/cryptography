@@ -2,25 +2,28 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
-    X25519PrivateKey, X25519PublicKey
+    X25519PrivateKey,
+    X25519PublicKey,
 )
+
+from .utils import wycheproof_tests
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.x25519_supported(),
-    skip_message="Requires OpenSSL with X25519 support"
+    skip_message="Requires OpenSSL with X25519 support",
 )
-@pytest.mark.wycheproof_tests("x25519_test.json")
+@wycheproof_tests("x25519_test.json")
 def test_x25519(backend, wycheproof):
     assert set(wycheproof.testgroup.items()) == {
-        ("curve", "curve25519"), ("type", "XdhComp")
+        ("curve", "curve25519"),
+        ("type", "XdhComp"),
     }
 
     private_key = X25519PrivateKey.from_private_bytes(

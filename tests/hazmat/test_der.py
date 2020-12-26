@@ -2,13 +2,17 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import pytest
 
 from cryptography.hazmat._der import (
-    DERReader, INTEGER, NULL, OCTET_STRING, SEQUENCE, encode_der,
-    encode_der_integer
+    DERReader,
+    INTEGER,
+    NULL,
+    OCTET_STRING,
+    SEQUENCE,
+    encode_der,
+    encode_der_integer,
 )
 
 
@@ -103,7 +107,7 @@ def test_der():
             encode_der(NULL),
             encode_der(INTEGER, encode_der_integer(42)),
             encode_der(OCTET_STRING, b"hello"),
-        )
+        ),
     )
     assert der2 == der
 
@@ -122,9 +126,9 @@ def test_der():
         (255, b"\x04\x81\xff"),
         (0x100, b"\x04\x82\x01\x00"),
         (0x101, b"\x04\x82\x01\x01"),
-        (0xffff, b"\x04\x82\xff\xff"),
+        (0xFFFF, b"\x04\x82\xff\xff"),
         (0x10000, b"\x04\x83\x01\x00\x00"),
-    ]
+    ],
 )
 def test_der_lengths(length, header):
     body = length * b"a"
@@ -161,7 +165,7 @@ def test_der_lengths(length, header):
         b"\x9f\x00",
         b"\xbf\x00",
         b"\xff\x00",
-    ]
+    ],
 )
 def test_der_reader_bad_input(bad_input):
     reader = DERReader(bad_input)
@@ -178,15 +182,17 @@ def test_der_reader_wrong_tag():
 @pytest.mark.parametrize(
     "value,der",
     [
-        (0, b'\x00'),
-        (1, b'\x01'),
-        (2, b'\x02'),
-        (3, b'\x03'),
-        (127, b'\x7f'),
-        (128, b'\x00\x80'),
-        (0x112233445566778899aabbccddeeff,
-         b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff'),
-    ]
+        (0, b"\x00"),
+        (1, b"\x01"),
+        (2, b"\x02"),
+        (3, b"\x03"),
+        (127, b"\x7f"),
+        (128, b"\x00\x80"),
+        (
+            0x112233445566778899AABBCCDDEEFF,
+            b"\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff",
+        ),
+    ],
 )
 def test_integer(value, der):
     assert encode_der_integer(value) == der
@@ -209,7 +215,7 @@ def test_integer(value, der):
         b"\x81",
         b"\x80\x00\x00",
         b"\xff",
-    ]
+    ],
 )
 def test_invalid_integer(bad_input):
     reader = DERReader(bad_input)

@@ -27,14 +27,12 @@ are the most common types of keys on the web right now):
 
 .. code-block:: pycon
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
     >>> from cryptography.hazmat.primitives.asymmetric import rsa
     >>> # Generate our key
     >>> key = rsa.generate_private_key(
     ...     public_exponent=65537,
     ...     key_size=2048,
-    ...     backend=default_backend()
     ... )
     >>> # Write our key to disk for safe keeping
     >>> with open("path/to/store/key.pem", "wb") as f:
@@ -76,7 +74,7 @@ a few details:
     ...     ]),
     ...     critical=False,
     ... # Sign the CSR with our private key.
-    ... ).sign(key, hashes.SHA256(), default_backend())
+    ... ).sign(key, hashes.SHA256())
     >>> # Write our CSR out to disk.
     >>> with open("path/to/csr.pem", "wb") as f:
     ...     f.write(csr.public_bytes(serialization.Encoding.PEM))
@@ -105,7 +103,6 @@ Like generating a CSR, we start with creating a new private key:
     >>> key = rsa.generate_private_key(
     ...     public_exponent=65537,
     ...     key_size=2048,
-    ...     backend=default_backend()
     ... )
     >>> # Write our key to disk for safe keeping
     >>> with open("path/to/store/key.pem", "wb") as f:
@@ -145,7 +142,7 @@ Then we generate the certificate itself:
     ...     x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
     ...     critical=False,
     ... # Sign our certificate with our private key
-    ... ).sign(key, hashes.SHA256(), default_backend())
+    ... ).sign(key, hashes.SHA256())
     >>> # Write our certificate out to disk.
     >>> with open("path/to/certificate.pem", "wb") as f:
     ...     f.write(cert.public_bytes(serialization.Encoding.PEM))

@@ -1,3 +1,0 @@
-[console_scripts]
-pep8 = pep8:_main
-

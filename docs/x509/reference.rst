@@ -22,22 +22,20 @@ X.509 Reference
 
     pem_req_data = b"""
     -----BEGIN CERTIFICATE REQUEST-----
-    MIIC0zCCAbsCAQAwWTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw
-    DgYDVQQHDAdDaGljYWdvMREwDwYDVQQKDAhyNTA5IExMQzESMBAGA1UEAwwJaGVs
-    bG8uY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqhZx+Mo9VRd9
-    vsnWWa6NBCws21rZ0+1B/JGgB4hDsZS7iDE4Bj5z4idheFRtl8bBbdjPknq7BfoF
-    8v15Zq/Zv7i2xMSDL+LUrTBZezRd4bRTGqCm6YJ5EYkhqdcqeZleHCFImguHoq1J
-    Fh0+kObQrTHXw3ZP57a3o1IvyIUA3nNoCBL0QQhwBXaDXOojMKNR+bqB5ve8GS1y
-    Elr0AM/+cJsfaIahNQUgFKx3Eu3GeEOMKYOAG1lycgdQdmTUybLrT3U7vkClTseM
-    xHg1r5En7ALjONIhqRuq3rddYahrP8HXozb3zUy3cJ7P6IeaosuvNzvMXOX9P6HD
-    Ha9urDAJ1wIDAQABoDUwMwYJKoZIhvcNAQkOMSYwJDAiBgNVHREEGzAZggl3b3Js
-    ZC5jb22CDHdoYXRldmVyLmNvbTANBgkqhkiG9w0BAQUFAAOCAQEAS4Ro6h+z52SK
-    YSLCYARpnEu/rmh4jdqndt8naqcNb6uLx9mlKZ2W9on9XDjnSdQD9q+ZP5aZfESw
-    R0+rJhW9ZrNa/g1pt6M24ihclHYDAxYMWxT1z/TXXGM3TmZZ6gfYlNE1kkBuODHa
-    UYsR/1Ht1E1EsmmUimt2n+zQR2K8T9Coa+boaUW/GsTEuz1aaJAkj5ZvTDiIhRG4
-    AOCqFZOLAQmCCNgJnnspD9hDz/Ons085LF5wnYjN4/Nsk5tS6AGs3xjZ3jPoOGGn
-    82WQ9m4dBGoVDZXsobVTaN592JEYwN5iu72zRn7Einb4V4H5y3yD2dD4yWPlt4pk
-    5wFkeYsZEA==
+    MIICcDCCAVgCAQAwDTELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+    DwAwggEKAoIBAQCb+ec0zYAYLzk/MDdDJYvzdvEO2ZUrBYM6z1r8NedwpJfxUWqC
+    hvK1cpc9EbQeCwS1eooTIGoNveeCrwL+pWdmf1sh6gz7SsxdN/07nyhSM8M6Xkec
+    +tGrjyi1H/N1afwWXox3WcvBNbxu3Df5RKLDb0yt9aqhmJylbl/tbvgJesXymwmp
+    Rc1vXL0fOedUtuAJ3xQ15M0pgLF8qDn4lySJz25x76pMYPeN5/a7x+SR/jj81kep
+    VaVpuh/2hePV5uwUX3uWoj5sAkrBCifi4NPge0Npd6KeKVvXytLOymH/4+WvV719
+    wCO+MyrkhpdHSakJDTIaQIxsqVeVVKdPLAPJAgMBAAGgHjAcBgkqhkiG9w0BCQcx
+    DwwNY2hhbGxlbmdlIG1lITANBgkqhkiG9w0BAQsFAAOCAQEAMmgeSa8szbjPFD/4
+    vcPBr/vBEROFGgL8mX3o5pF9gpr7nRjhLKBkgJvlRm6Ma3Xvdfc/r5Hp2ZBTA7sZ
+    ZYhyeezGfCQN/Qhda1v+sCwG58IjvGfCSS7Y5tGlEBQ4MDf0Q7PYPSxaNUEBH7vo
+    +M7U+nFuNSmyWlt6SFBSkohZkWoVSGx3KsAO+SAHYZ7JtqsAS/dm7Dflp8KxeDg7
+    wzGBDQRpGF4CpI1VQjGSJQXSEdD+J7mtvBEOD34abRfV6zOUGzOOo3NWE6wNpYgt
+    0A7gVlzSYpdwqjBdvACfXR2r/mu+4KkAvYh8WwCiTcYgGjl2pT1bO4hEmcJ0RSWy
+    /fGD8Q==
     -----END CERTIFICATE REQUEST-----
     """.strip()
 
@@ -151,7 +149,7 @@ X.509 Reference
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_certificate(data, backend)
+.. function:: load_pem_x509_certificate(data, backend=None)
 
     .. versionadded:: 0.7
 
@@ -161,7 +159,7 @@ Loading Certificates
 
     :param bytes data: The PEM encoded certificate data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -170,12 +168,11 @@ Loading Certificates
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+        >>> cert = x509.load_pem_x509_certificate(pem_data)
         >>> cert.serial_number
         2
 
-.. function:: load_der_x509_certificate(data, backend)
+.. function:: load_der_x509_certificate(data, backend=None)
 
     .. versionadded:: 0.7
 
@@ -185,7 +182,7 @@ Loading Certificates
 
     :param bytes data: The DER encoded certificate data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -194,7 +191,7 @@ Loading Certificates
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_crl(data, backend)
+.. function:: load_pem_x509_crl(data, backend=None)
 
     .. versionadded:: 1.1
 
@@ -204,7 +201,7 @@ Loading Certificate Revocation Lists
 
     :param bytes data: The PEM encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -214,13 +211,12 @@ Loading Certificate Revocation Lists
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
-        >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+        >>> crl = x509.load_pem_x509_crl(pem_crl_data)
         >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_crl(data, backend)
+.. function:: load_der_x509_crl(data, backend=None)
 
     .. versionadded:: 1.1
 
@@ -229,7 +225,7 @@ Loading Certificate Revocation Lists
 
     :param bytes data: The DER encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -239,7 +235,7 @@ Loading Certificate Revocation Lists
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_csr(data, backend)
+.. function:: load_pem_x509_csr(data, backend=None)
 
     .. versionadded:: 0.9
 
@@ -250,7 +246,7 @@ Loading Certificate Signing Requests
 
     :param bytes data: The PEM encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -260,13 +256,12 @@ Loading Certificate Signing Requests
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
-        >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
-        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+        >>> csr = x509.load_pem_x509_csr(pem_req_data)
+        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_csr(data, backend)
+.. function:: load_der_x509_csr(data, backend=None)
 
     .. versionadded:: 0.9
 
@@ -275,7 +270,7 @@ Loading Certificate Signing Requests
 
     :param bytes data: The DER encoded request data.
 
-    :param backend: A backend supporting the
+    :param backend: An optional backend supporting the
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
@@ -434,16 +429,13 @@ X.509 Certificate Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
-        :raises UnicodeError: If an extension contains IDNA encoding that is
-            invalid or not compliant with IDNA 2008.
-
         .. doctest::
 
             >>> for ext in cert.extensions:
             ...     print(ext)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.35, name=authorityKeyIdentifier)>, critical=False, value=<AuthorityKeyIdentifier(key_identifier=b'\xe4}_\xd1\\\x95\x86\x08,\x05\xae\xbeu\xb6e\xa7\xd9]\xa8f', authority_cert_issuer=None, authority_cert_serial_number=None)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(digest=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>)>
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.15, name=keyUsage)>, critical=True, value=<KeyUsage(digital_signature=False, content_commitment=False, key_encipherment=False, data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True, encipher_only=None, decipher_only=None)>)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.15, name=keyUsage)>, critical=True, value=<KeyUsage(digital_signature=False, content_commitment=False, key_encipherment=False, data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True, encipher_only=False, decipher_only=False)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
@@ -479,8 +471,8 @@ X.509 Certificate Object
 
            >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
            >>> from cryptography.hazmat.primitives.asymmetric import padding
-           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key, default_backend())
-           >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check, default_backend())
+           >>> issuer_public_key = load_pem_public_key(pem_issuer_public_key)
+           >>> cert_to_check = x509.load_pem_x509_certificate(pem_data_to_check)
            >>> issuer_public_key.verify(
            ...     cert_to_check.signature,
            ...     cert_to_check.tbs_certificate_bytes,
@@ -676,7 +668,6 @@ X.509 Certificate Builder
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.x509.oid import NameOID
@@ -685,7 +676,6 @@ X.509 Certificate Builder
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
         ...     key_size=2048,
-        ...     backend=default_backend()
         ... )
         >>> public_key = private_key.public_key()
         >>> builder = x509.CertificateBuilder()
@@ -710,7 +700,6 @@ X.509 Certificate Builder
         ... )
         >>> certificate = builder.sign(
         ...     private_key=private_key, algorithm=hashes.SHA256(),
-        ...     backend=default_backend()
         ... )
         >>> isinstance(certificate, x509.Certificate)
         True
@@ -785,7 +774,7 @@ X.509 Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: sign(private_key, algorithm, backend=None)
 
         Sign the certificate using the CA's private key.
 
@@ -808,7 +797,7 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
 
-        :param backend: Backend that will be used to build the certificate.
+        :param backend: An optional backend used to build the certificate.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -861,7 +850,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import hashes
-            >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+            >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
             True
 
     .. attribute:: signature_algorithm_oid
@@ -877,7 +866,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. doctest::
 
             >>> csr.signature_algorithm_oid
-            <ObjectIdentifier(oid=1.2.840.113549.1.1.5, name=sha1WithRSAEncryption)>
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
 
     .. attribute:: extensions
 
@@ -891,9 +880,17 @@ X.509 CSR (Certificate Signing Request) Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
-        :raises UnicodeError: If an extension contains IDNA encoding that is
-            invalid or not compliant with IDNA 2008.
+    .. method:: get_attribute_for_oid(oid)
 
+        .. versionadded:: 3.0
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: The bytes value of the attribute or an exception if not
+            found.
+
+        :raises cryptography.x509.AttributeNotFound: If the request does
+            not have the attribute requested.
 
     .. method:: public_bytes(encoding)
 
@@ -942,7 +939,6 @@ X.509 Certificate Revocation List Builder
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.x509.oid import NameOID
@@ -951,7 +947,6 @@ X.509 Certificate Revocation List Builder
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
         ...     key_size=2048,
-        ...     backend=default_backend()
         ... )
         >>> builder = x509.CertificateRevocationListBuilder()
         >>> builder = builder.issuer_name(x509.Name([
@@ -963,11 +958,10 @@ X.509 Certificate Revocation List Builder
         ...     333
         ... ).revocation_date(
         ...     datetime.datetime.today()
-        ... ).build(default_backend())
+        ... ).build()
         >>> builder = builder.add_revoked_certificate(revoked_cert)
         >>> crl = builder.sign(
         ...     private_key=private_key, algorithm=hashes.SHA256(),
-        ...     backend=default_backend()
         ... )
         >>> len(crl)
         1
@@ -1018,7 +1012,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: sign(private_key, algorithm, backend=None)
 
         Sign this CRL using the CA's private key.
 
@@ -1041,7 +1035,7 @@ X.509 Certificate Revocation List Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
 
-        :param backend: Backend that will be used to build the CRL.
+        :param backend: An optional backend used to build the CRL.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1104,12 +1098,11 @@ X.509 Revoked Certificate Builder
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> import datetime
         >>> builder = x509.RevokedCertificateBuilder()
         >>> builder = builder.revocation_date(datetime.datetime.today())
         >>> builder = builder.serial_number(3333)
-        >>> revoked_certificate = builder.build(default_backend())
+        >>> revoked_certificate = builder.build()
         >>> isinstance(revoked_certificate, x509.RevokedCertificate)
         True
 
@@ -1137,11 +1130,11 @@ X.509 Revoked Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled.
 
-    .. method:: build(backend)
+    .. method:: build(backend=None)
 
         Create a revoked certificate object using the provided backend.
 
-        :param backend: Backend that will be used to build the revoked
+        :param backend: An optional backend used to build the revoked
             certificate.  Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1158,14 +1151,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. doctest::
 
         >>> from cryptography import x509
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import rsa
-        >>> from cryptography.x509.oid import NameOID
+        >>> from cryptography.x509.oid import AttributeOID, NameOID
         >>> private_key = rsa.generate_private_key(
         ...     public_exponent=65537,
         ...     key_size=2048,
-        ...     backend=default_backend()
         ... )
         >>> builder = x509.CertificateSigningRequestBuilder()
         >>> builder = builder.subject_name(x509.Name([
@@ -1174,8 +1165,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ... )
+        >>> builder = builder.add_attribute(
+        ...     AttributeOID.CHALLENGE_PASSWORD, b"changeit"
+        ... )
         >>> request = builder.sign(
-        ...     private_key, hashes.SHA256(), default_backend()
+        ...     private_key, hashes.SHA256()
         ... )
         >>> isinstance(request, x509.CertificateSigningRequest)
         True
@@ -1196,9 +1190,19 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend)
+    .. method:: add_attribute(oid, value)
 
-        :param backend: Backend that will be used to sign the request.
+        .. versionadded:: 3.0
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+        :param value: The value of the attribute.
+        :type value: bytes
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+    .. method:: sign(private_key, algorithm, backend=None)
+
+        :param backend: An optional backend used to sign the request.
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
@@ -1278,11 +1282,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='Good CA')>]
 
-    .. method:: public_bytes(backend)
+    .. method:: public_bytes(backend=None)
 
         .. versionadded:: 1.6
 
-        :param backend: A backend supporting the
+        :param backend: An optional backend supporting the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
 
@@ -1390,23 +1394,18 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
-
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to an email address. For example, ``user@example.com``.
 
     :param value: The email address. If the address contains an
         internationalized domain name then it must be encoded to an
         :term:`A-label` string before being passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
     .. attribute:: value
 
@@ -1416,22 +1415,18 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to a domain name. For example, ``cryptography.io``.
 
     :param value: The domain name. If it is an internationalized domain
         name then it must be encoded to an :term:`A-label` string before being
         passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
         :type: :term:`text`
 
@@ -1453,16 +1448,10 @@ General Name Classes
 
     .. versionadded:: 0.9
 
-    .. versionchanged:: 2.1
+    .. versionchanged:: 3.1
 
-    .. warning::
-
-        Starting with version 2.1 :term:`U-label` input is deprecated. If
-        passing an internationalized domain name (IDN) you should first IDNA
-        encode the value and then pass the result as a string. Accessing
-        ``value`` will return the :term:`A-label` encoded form even if you pass
-        a U-label. This breaks backwards compatibility, but only for
-        internationalized domain names.
+        :term:`U-label` support has been removed. Encode them to
+        :term:`A-label` before use.
 
     This corresponds to a uniform resource identifier.  For example,
     ``https://cryptography.io``.
@@ -1470,6 +1459,8 @@ General Name Classes
     :param value: The URI. If it contains an internationalized domain
         name then it must be encoded to an :term:`A-label` string before
         being passed.
+
+    :raises ValueError: If the provided string is not an :term:`A-label`.
 
     .. attribute:: value
 
@@ -1904,8 +1895,7 @@ X.509 Extensions
         .. doctest::
 
             >>> from cryptography import x509
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data)
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
             <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
@@ -1934,8 +1924,7 @@ X.509 Extensions
         .. doctest::
 
             >>> from cryptography import x509
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data)
             >>> ski_ext = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
             >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski_ext.value)
             <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
@@ -1982,10 +1971,9 @@ X.509 Extensions
         .. doctest::
 
             >>> from cryptography import x509
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+            >>> csr = x509.load_pem_x509_csr(pem_req_data)
             >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
-            <SubjectKeyIdentifier(digest=b'\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
+            <SubjectKeyIdentifier(digest=b'\x8c"\x98\xe2\xb5\xbf]\xe8*2\xf8\xd2\'?\x00\xd2\xc7#\xe4c')>
 
 .. class:: SubjectAlternativeName(general_names)
 
@@ -2018,9 +2006,8 @@ X.509 Extensions
         .. doctest::
 
             >>> from cryptography import x509
-            >>> from cryptography.hazmat.backends import default_backend
             >>> from cryptography.hazmat.primitives import hashes
-            >>> cert = x509.load_pem_x509_certificate(cryptography_cert_pem, default_backend())
+            >>> cert = x509.load_pem_x509_certificate(cryptography_cert_pem)
             >>> # Get the subjectAltName extension from the certificate
             >>> ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
             >>> # Get the dNSName entries from the SAN extension
@@ -2099,6 +2086,33 @@ X.509 Extensions
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
 
 
+.. class:: SignedCertificateTimestamps(scts)
+
+    .. versionadded:: 3.0
+
+    This extension contains
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    instances. These can be used to verify that the certificate is included
+    in a public Certificate Transparency log. This extension is only found
+    in OCSP responses. For SCTs in an X.509 certificate see
+    :class:`~cryptography.x509.PrecertificateSignedCertificateTimestamps`.
+
+    It is an iterable containing one or more
+    :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+    objects.
+
+    :param list scts: A ``list`` of
+        :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+        objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS`.
+
+
 .. class:: DeltaCRLIndicator(crl_number)
 
     .. versionadded:: 2.1
@@ -2146,6 +2160,29 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.AUTHORITY_INFORMATION_ACCESS`.
 
 
+.. class:: SubjectInformationAccess(descriptions)
+
+    .. versionadded:: 3.0
+
+    The subject information access extension indicates how to access
+    information and services for the subject of the certificate in which
+    the extension appears. When the subject is a CA, information and
+    services may include certificate validation services and CA policy
+    data. When the subject is an end entity, the information describes
+    the type of services offered and how to access them. It is an iterable,
+    containing one or more :class:`~cryptography.x509.AccessDescription`
+    instances.
+
+    :param list descriptions: A list of :class:`AccessDescription` objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_INFORMATION_ACCESS`.
+
+
 .. class:: AccessDescription(access_method, access_location)
 
     .. versionadded:: 0.9
@@ -2155,16 +2192,23 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         The access method defines what the ``access_location`` means. It must
-        be either
+        be
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.OCSP` or
-        :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`.
+        :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`
+        when used with :class:`~cryptography.x509.AuthorityInformationAccess`
+        or
+        :attr:`~cryptography.x509.oid.SubjectInformationAccessOID.CA_REPOSITORY`
+        when used with :class:`~cryptography.x509.SubjectInformationAccess`.
+
         If it is
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.OCSP`
         the access location will be where to obtain OCSP
         information for the certificate. If it is
         :attr:`~cryptography.x509.oid.AuthorityInformationAccessOID.CA_ISSUERS`
         the access location will provide additional information about the
-        issuing certificate.
+        issuing certificate. Finally, if it is
+        :attr:`~cryptography.x509.oid.SubjectInformationAccessOID.CA_REPOSITORY`
+        the access location will be the location of the CA's repository.
 
     .. attribute:: access_location
 
@@ -2808,6 +2852,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.17"``.
 
+    .. attribute:: UNSTRUCTURED_NAME
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.2"``.
+
 
 .. class:: SignatureAlgorithmOID
 
@@ -2973,6 +3023,17 @@ instances. The following common OIDs are available as constants.
         :class:`~cryptography.x509.AccessDescription` objects.
 
 
+.. class:: SubjectInformationAccessOID
+
+    .. versionadded:: 3.0
+
+    .. attribute:: CA_REPOSITORY
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.5"``. Used as the
+        identifier for CA repository data in
+        :class:`~cryptography.x509.AccessDescription` objects.
+
+
 .. class:: CertificatePoliciesOID
 
     .. versionadded:: 1.0
@@ -3050,6 +3111,14 @@ instances. The following common OIDs are available as constants.
         for the :class:`~cryptography.x509.AuthorityInformationAccess` extension
         type.
 
+    .. attribute:: SUBJECT_INFORMATION_ACCESS
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.11"``. The
+        identifier for the :class:`~cryptography.x509.SubjectInformationAccess`
+        extension type.
+
     .. attribute:: INHIBIT_ANY_POLICY
 
         Corresponds to the dotted string ``"2.5.29.54"``. The identifier
@@ -3093,6 +3162,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
 
+    .. attribute:: SIGNED_CERTIFICATE_TIMESTAMPS
+
+        .. versionadded:: 3.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.5"``.
+
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
@@ -3135,6 +3210,19 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.2"``.
 
+
+.. class:: AttributeOID
+
+    .. versionadded:: 3.0
+
+    .. attribute:: CHALLENGE_PASSWORD
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.7"``.
+
+    .. attribute:: UNSTRUCTURED_NAME
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.9.2"``.
+
 Helper Functions
 ~~~~~~~~~~~~~~~~
 .. currentmodule:: cryptography.x509
@@ -3175,6 +3263,18 @@ Exceptions
 
     This is raised when calling :meth:`Extensions.get_extension_for_oid` with
     an extension OID that is not present in the certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID.
+
+.. class:: AttributeNotFound
+
+    This is raised when calling
+    :meth:`CertificateSigningRequest.get_attribute_for_oid` with
+    an attribute OID that is not present in the request.
 
     .. attribute:: oid
 

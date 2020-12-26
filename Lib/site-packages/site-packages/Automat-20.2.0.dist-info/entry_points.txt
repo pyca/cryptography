@@ -1,3 +1,0 @@
-[console_scripts]
-automat-visualize = automat._visualize:tool
-

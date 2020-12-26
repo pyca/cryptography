@@ -4,8 +4,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
 import os
 
 from setuptools import find_packages, setup
@@ -15,7 +13,7 @@ base_dir = os.path.dirname(__file__)
 
 about = {}
 with open(os.path.join(base_dir, "cryptography_vectors", "__about__.py")) as f:
-    exec (f.read(), about)
+    exec(f.read(), about)
 
 
 setup(

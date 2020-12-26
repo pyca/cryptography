@@ -1,4 +1,4 @@
-# Reformatted from https://www.schneier.com/code/vectors.txt
+# Reformatted from https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 # to look like the NIST vectors
 
 [ENCRYPT]

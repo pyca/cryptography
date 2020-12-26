@@ -2,8 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
 import binascii
 
 from cryptography.hazmat.backends import default_backend
@@ -14,7 +12,7 @@ def encrypt(mode, key, iv, plaintext):
     cipher = base.Cipher(
         algorithms.CAST5(binascii.unhexlify(key)),
         mode(binascii.unhexlify(iv)),
-        default_backend()
+        default_backend(),
     )
     encryptor = cipher.encryptor()
     ct = encryptor.update(binascii.unhexlify(plaintext))
@@ -34,8 +32,10 @@ def build_vectors(mode, filename):
             line = line.strip()
             if line.startswith("KEY"):
                 if count != 0:
-                    output.append("CIPHERTEXT = {}".format(
-                        encrypt(mode, key, iv, plaintext))
+                    output.append(
+                        "CIPHERTEXT = {}".format(
+                            encrypt(mode, key, iv, plaintext)
+                        )
                     )
                 output.append("\nCOUNT = {}".format(count))
                 count += 1

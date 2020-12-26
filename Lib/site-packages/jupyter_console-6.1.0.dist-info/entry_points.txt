@@ -1,3 +1,0 @@
-[console_scripts]
-jupyter-console = jupyter_console.app:main
-

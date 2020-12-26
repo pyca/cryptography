@@ -6,7 +6,6 @@
 Test using the NIST Test Vectors
 """
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
@@ -45,11 +44,7 @@ class TestTripleDESModeCBC(object):
     test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
-        [
-            "TCBCMMT1.rsp",
-            "TCBCMMT2.rsp",
-            "TCBCMMT3.rsp",
-        ],
+        ["TCBCMMT1.rsp", "TCBCMMT2.rsp", "TCBCMMT3.rsp"],
         lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
             binascii.unhexlify(key1 + key2 + key3)
         ),
@@ -82,11 +77,7 @@ class TestTripleDESModeOFB(object):
     test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
-        [
-            "TOFBMMT1.rsp",
-            "TOFBMMT2.rsp",
-            "TOFBMMT3.rsp",
-        ],
+        ["TOFBMMT1.rsp", "TOFBMMT2.rsp", "TOFBMMT3.rsp"],
         lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
             binascii.unhexlify(key1 + key2 + key3)
         ),
@@ -119,11 +110,7 @@ class TestTripleDESModeCFB(object):
     test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
-        [
-            "TCFB64MMT1.rsp",
-            "TCFB64MMT2.rsp",
-            "TCFB64MMT3.rsp",
-        ],
+        ["TCFB64MMT1.rsp", "TCFB64MMT2.rsp", "TCFB64MMT3.rsp"],
         lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
             binascii.unhexlify(key1 + key2 + key3)
         ),
@@ -156,11 +143,7 @@ class TestTripleDESModeCFB8(object):
     test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
-        [
-            "TCFB8MMT1.rsp",
-            "TCFB8MMT2.rsp",
-            "TCFB8MMT3.rsp",
-        ],
+        ["TCFB8MMT1.rsp", "TCFB8MMT2.rsp", "TCFB8MMT3.rsp"],
         lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
             binascii.unhexlify(key1 + key2 + key3)
         ),
@@ -193,11 +176,7 @@ class TestTripleDESModeECB(object):
     test_mmt = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "ECB"),
-        [
-            "TECBMMT1.rsp",
-            "TECBMMT2.rsp",
-            "TECBMMT3.rsp",
-        ],
+        ["TECBMMT1.rsp", "TECBMMT2.rsp", "TECBMMT3.rsp"],
         lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
             binascii.unhexlify(key1 + key2 + key3)
         ),

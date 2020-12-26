@@ -49,6 +49,7 @@ class Encoding(Enum):
     OpenSSH = "OpenSSH"
     Raw = "Raw"
     X962 = "ANSI X9.62"
+    SMIME = "S/MIME"
 
 
 class PrivateFormat(Enum):

@@ -5,26 +5,36 @@ DSA
 
 .. module:: cryptography.hazmat.primitives.asymmetric.dsa
 
+.. note::
+
+    DSA is a **legacy algorithm** and should generally be avoided in favor of
+    choices like
+    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>` or
+    :doc:`ECDSA</hazmat/primitives/asymmetric/ec>`.
+
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 
 Generation
 ~~~~~~~~~~
 
-.. function:: generate_private_key(key_size, backend)
+.. function:: generate_private_key(key_size, backend=None)
 
     .. versionadded:: 0.5
+
+    .. versionchanged:: 3.0
+
+        Added support for 4096-bit keys for some legacy applications that
+        continue to use DSA despite the wider cryptographic community's
+        `ongoing protestations`_.
 
     Generate a DSA private key from the given key size. This function will
     generate a new set of parameters and key in one step.
 
     :param int key_size: The length of the modulus in :term:`bits`. It should
-        be either 1024, 2048 or 3072. For keys generated in 2015 this should
-        be `at least 2048`_ (See page 41).  Note that some applications
-        (such as SSH) have not yet gained support for larger key sizes
-        specified in FIPS 186-3 and are still restricted to only the
-        1024-bit keys specified in FIPS 186-2.
+        be either 1024, 2048, 3072, or 4096. For keys generated in 2015 this
+        should be `at least 2048`_ (See page 41).
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
     :return: An instance of
@@ -34,20 +44,23 @@ Generation
         the provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
 
-.. function:: generate_parameters(key_size, backend)
+.. function:: generate_parameters(key_size, backend=None)
 
     .. versionadded:: 0.5
+
+    .. versionchanged:: 3.0
+
+        Added support for 4096-bit keys for some legacy applications that
+        continue to use DSA despite the wider cryptographic community's
+        `ongoing protestations`_.
 
     Generate DSA parameters using the provided ``backend``.
 
     :param int key_size: The length of :attr:`~DSAParameterNumbers.q`. It
-        should be either 1024, 2048 or 3072. For keys generated in 2015 this
-        should be `at least 2048`_ (See page 41).  Note that some applications
-        (such as SSH) have not yet gained support for larger key sizes
-        specified in FIPS 186-3 and are still restricted to only the
-        1024-bit keys specified in FIPS 186-2.
+        should be either 1024, 2048, 3072, or 4096. For keys generated in 2015
+        this should be `at least 2048`_ (See page 41).
 
-    :param backend: An instance of
+    :param backend: An optional instance of
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
     :return: An instance of
@@ -65,12 +78,10 @@ instance.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric import dsa
     >>> private_key = dsa.generate_private_key(
     ...     key_size=1024,
-    ...     backend=default_backend()
     ... )
     >>> data = b"this is some data I'd like to sign"
     >>> signature = private_key.sign(
@@ -90,7 +101,7 @@ separately and pass that value using
 
     >>> from cryptography.hazmat.primitives.asymmetric import utils
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()
@@ -133,7 +144,7 @@ separately and pass that value using
 .. doctest::
 
     >>> chosen_hash = hashes.SHA256()
-    >>> hasher = hashes.Hash(chosen_hash, default_backend())
+    >>> hasher = hashes.Hash(chosen_hash)
     >>> hasher.update(b"data & ")
     >>> hasher.update(b"more data")
     >>> digest = hasher.finalize()
@@ -170,9 +181,9 @@ Numbers
 
         The generator.
 
-    .. method:: parameters(backend)
+    .. method:: parameters(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of
@@ -197,9 +208,9 @@ Numbers
         The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
         associated with the public key.
 
-    .. method:: public_key(backend)
+    .. method:: public_key(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of
@@ -229,9 +240,9 @@ Numbers
         The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
         associated with the private key.
 
-    .. method:: private_key(backend)
+    .. method:: private_key(backend=None)
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns: A new instance of
@@ -344,7 +355,8 @@ Key interfaces
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`,
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`
         or
         :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`)
         and encryption algorithm (such as
@@ -445,3 +457,4 @@ Key interfaces
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
 .. _`at least 2048`: https://www.cosic.esat.kuleuven.be/ecrypt/ecrypt2/documents/D.SPA.20.pdf
+.. _`ongoing protestations`: https://buttondown.email/cryptography-dispatches/archive/cryptography-dispatches-dsa-is-past-its-prime/

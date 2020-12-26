@@ -2,6 +2,7 @@
     name: pyca-cryptography-base
     abstract: true
     description: Run pyca/cryptography unit testing
+    pre-run: .zuul.playbooks/playbooks/tox/pre.yaml
     run: .zuul.playbooks/playbooks/tox/main.yaml
 
 - job:
@@ -26,15 +27,9 @@
       tox_envlist: py36
 
 - job:
-    name: pyca-cryptography-centos-8-py27-arm64
-    parent: pyca-cryptography-base
-    nodeset: centos-8-arm64
-    vars:
-      tox_envlist: py27
-
-- job:
     name: pyca-cryptography-build-wheel
     abstract: true
+    pre-run: .zuul.playbooks/playbooks/wheel/pre.yaml
     run: .zuul.playbooks/playbooks/wheel/main.yaml
 
 - job:
@@ -44,9 +39,9 @@
     vars:
       wheel_builds:
         - platform: manylinux2014_aarch64
-          image: pyca/cryptography-manylinux2014_aarch64
+          image: ghcr.io/pyca/cryptography-manylinux2014_aarch64
           pythons:
-            - cp35-cp35m
+            - cp36-cp36m
 
 - job:
     name: pyca-cryptography-build-wheel-x86_64
@@ -54,15 +49,11 @@
     nodeset: ubuntu-bionic
     vars:
       wheel_builds:
-        - platform: manylinux1_x86_64
-          image: pyca/cryptography-manylinux1:x86_64
-          pythons:
-            - cp27-cp27m
-            - cp27-cp27mu
-            - cp35-cp35m
         - platform: manylinux2010_x86_64
-          image: pyca/cryptography-manylinux2010:x86_64
+          image: ghcr.io/pyca/cryptography-manylinux2010:x86_64
           pythons:
-            - cp27-cp27m
-            - cp27-cp27mu
-            - cp35-cp35m
+            - cp36-cp36m
+        - platform: manylinux2014_x86_64
+          image: ghcr.io/pyca/cryptography-manylinux2014:x86_64
+          pythons:
+            - cp36-cp36m

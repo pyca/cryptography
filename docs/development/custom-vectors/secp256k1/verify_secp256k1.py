@@ -1,17 +1,13 @@
-from __future__ import absolute_import, print_function
-
 import os
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_dss_signature
+    encode_dss_signature,
 )
 
-from tests.utils import (
-    load_fips_ecdsa_signing_vectors, load_vectors_from_file
-)
+from tests.utils import load_fips_ecdsa_signing_vectors, load_vectors_from_file
 
 CRYPTOGRAPHY_HASH_TYPES = {
     "SHA-1": hashes.SHA1,
@@ -23,37 +19,32 @@ CRYPTOGRAPHY_HASH_TYPES = {
 
 
 def verify_one_vector(vector):
-    digest_algorithm = vector['digest_algorithm']
-    message = vector['message']
-    x = vector['x']
-    y = vector['y']
-    signature = encode_dss_signature(vector['r'], vector['s'])
+    digest_algorithm = vector["digest_algorithm"]
+    message = vector["message"]
+    x = vector["x"]
+    y = vector["y"]
+    signature = encode_dss_signature(vector["r"], vector["s"])
 
-    numbers = ec.EllipticCurvePublicNumbers(
-        x, y,
-        ec.SECP256K1()
-    )
+    numbers = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256K1())
 
     key = numbers.public_key(default_backend())
 
     verifier = key.verifier(
-        signature,
-        ec.ECDSA(CRYPTOGRAPHY_HASH_TYPES[digest_algorithm]())
+        signature, ec.ECDSA(CRYPTOGRAPHY_HASH_TYPES[digest_algorithm]())
     )
     verifier.update(message)
-    return verifier.verify()
+    verifier.verify()
 
 
 def verify_vectors(vectors):
     for vector in vectors:
-        assert verify_one_vector(vector)
+        verify_one_vector(vector)
 
 
 vector_path = os.path.join("asymmetric", "ECDSA", "SECP256K1", "SigGen.txt")
 
 secp256k1_vectors = load_vectors_from_file(
-    vector_path,
-    load_fips_ecdsa_signing_vectors
+    vector_path, load_fips_ecdsa_signing_vectors
 )
 
 verify_vectors(secp256k1_vectors)

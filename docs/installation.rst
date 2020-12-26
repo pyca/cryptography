@@ -10,13 +10,14 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.7, 3.5+,
-PyPy 7.1+, and PyPy3 7.0 on these operating systems.
+Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.1 on these
+operating systems.
 
-* x86-64 CentOS 7.x
+* x86-64 & AArch64 CentOS 8.x
 * x86-64 Fedora (latest)
-* macOS 10.15 Catalina
-* x86-64 Ubuntu 16.04 and rolling
+* x86-64 macOS 10.15 Catalina
+* x86-64 & AArch64 Ubuntu 18.04, 20.04
+* x86-64 Ubuntu rolling
 * x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), and Sid
   (unstable)
 * x86-64 Alpine (latest)
@@ -25,9 +26,9 @@ PyPy 7.1+, and PyPy3 7.0 on these operating systems.
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 1.0.2-latest``
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
+
 
 Building cryptography on Windows
 --------------------------------
@@ -43,9 +44,9 @@ just run
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
 Be sure to download the proper version for your architecture and Python
-(VC2010 works for Python 2.7 while VC2015 is required for 3.5 and above).
-Wherever you place your copy of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE``
-environment variables to include the proper locations. For example:
+(VC2015 is required for 3.6 and above). Wherever you place your copy of OpenSSL
+you'll need to set the ``LIB`` and ``INCLUDE`` environment variables to include
+the proper locations. For example:
 
 .. code-block:: console
 
@@ -60,6 +61,9 @@ platforms). ``cryptography`` links against the new 1.1.0 names by default. If
 you need to compile ``cryptography`` against an older version then you **must**
 set ``CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL`` or else installation will fail.
 
+You will also need to have :ref:`Rust installed and
+available<installation:Rust>`.
+
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
@@ -69,9 +73,9 @@ Building cryptography on Linux
 ------------------------------
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
-are included. For users on pip 8.1 or above running on a ``manylinux1`` or
-``manylinux2010`` compatible distribution (almost everything except Alpine)
-all you should need to do is:
+are included. For users on pip 19.0 or above running on a ``manylinux2010`` (or
+greater) compatible distribution (almost everything except Alpine) all you
+should need to do is:
 
 .. code-block:: console
 
@@ -82,10 +86,11 @@ If you are on Alpine or just want to compile it yourself then
 using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
 available on your system.
 
+On all Linux distributions you will need to have :ref:`Rust installed and
+available<installation:Rust>`.
+
 Alpine
 ~~~~~~
-
-Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
 
 .. code-block:: console
 
@@ -95,8 +100,6 @@ If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
-
-Replace ``python3-dev`` with ``python-dev`` if you're using Python 2.
 
 .. code-block:: console
 
@@ -222,7 +225,7 @@ users with pip 8 or above you only need one step:
 If you want to build cryptography yourself or are on an older macOS version,
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On macOS much of this is provided by Apple's Xcode
-development tools.  To install the Xcode command line tools (on macOS 10.9+)
+development tools.  To install the Xcode command line tools (on macOS 10.10+)
 open a terminal window and run:
 
 .. code-block:: console
@@ -231,6 +234,9 @@ open a terminal window and run:
 
 This will install a compiler (clang) along with (most of) the required
 development headers.
+
+You will also need to have :ref:`Rust installed and
+available<installation:Rust>`.
 
 You'll also need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
 Cryptography does **not** support Apple's deprecated OpenSSL distribution.
@@ -270,6 +276,13 @@ You can also build cryptography statically:
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
+Rust
+----
+
+Building ``cryptography`` requires having a working Rust toolchain. The current
+minimum supported Rust version is 1.45.0.
+
+Instructions for installing Rust can be found on `the Rust Project's website`_.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
@@ -277,3 +290,4 @@ local `wheel cache`_.
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
+.. _`the Rust Project's website`: https://www.rust-lang.org/tools/install

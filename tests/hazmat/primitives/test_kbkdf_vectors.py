@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -19,5 +18,5 @@ class TestCounterKDFCounterMode(object):
     test_kbkdfctr = generate_kbkdf_counter_mode_test(
         load_nist_kbkdf_vectors,
         os.path.join("KDF"),
-        ["nist-800-108-KBKDF-CTR.txt"]
+        ["nist-800-108-KBKDF-CTR.txt"],
     )

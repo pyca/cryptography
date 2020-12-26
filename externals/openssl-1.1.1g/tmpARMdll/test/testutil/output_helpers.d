@@ -1,7 +1,7 @@
 output_helpers.c
-Nota: inclusión del archivo: C:\cpython\externals\openssl-1.1.1g\test\testutil\output.h
-Nota: inclusión del archivo:  C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include\stdarg.h
-Nota: inclusión del archivo:   C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include\vcruntime.h
-Nota: inclusión del archivo:    C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include\sal.h
-Nota: inclusión del archivo:     C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include\concurrencysal.h
-Nota: inclusión del archivo:    C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include\vadefs.h
+Note: including file: C:\CPython\externals\openssl-1.1.1g\test\testutil\output.h
+Note: including file:  D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\stdarg.h
+Note: including file:   D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vcruntime.h
+Note: including file:    D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\sal.h
+Note: including file:     D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\concurrencysal.h
+Note: including file:    D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vadefs.h

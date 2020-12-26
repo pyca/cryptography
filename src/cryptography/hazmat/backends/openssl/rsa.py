@@ -119,23 +119,19 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
 
     outlen = backend._ffi.new("size_t *", buf_size)
     buf = backend._ffi.new("unsigned char[]", buf_size)
+    # Everything from this line onwards is written with the goal of being as
+    # constant-time as is practical given the constraints of Python and our
+    # API. See Bleichenbacher's '98 attack on RSA, and its many many variants.
+    # As such, you should not attempt to change this (particularly to "clean it
+    # up") without understanding why it was written this way (see
+    # Chesterton's Fence), and without measuring to verify you have not
+    # introduced observable time differences.
     res = crypt(pkey_ctx, buf, outlen, data, len(data))
+    resbuf = backend._ffi.buffer(buf)[: outlen[0]]
+    backend._lib.ERR_clear_error()
     if res <= 0:
-        _handle_rsa_enc_dec_error(backend, key)
-
-    return backend._ffi.buffer(buf)[: outlen[0]]
-
-
-def _handle_rsa_enc_dec_error(backend, key):
-    errors = backend._consume_errors_with_text()
-    if isinstance(key, _RSAPublicKey):
-        raise ValueError(
-            "Data too long for key size. Encrypt less data or use a "
-            "larger key size.",
-            errors,
-        )
-    else:
-        raise ValueError("Decryption failed.", errors)
+        raise ValueError("Encryption/decryption failed.")
+    return resbuf
 
 
 def _rsa_sig_determine_padding(backend, key, padding, algorithm):
@@ -146,6 +142,7 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     backend.openssl_assert(pkey_size > 0)
 
     if isinstance(padding, PKCS1v15):
+        # Hash algorithm is ignored for PKCS1v15-padding, may be None.
         padding_enum = backend._lib.RSA_PKCS1_PADDING
     elif isinstance(padding, PSS):
         if not isinstance(padding._mgf, MGF1):
@@ -153,6 +150,10 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
                 "Only MGF1 is supported by this backend.",
                 _Reasons.UNSUPPORTED_MGF,
             )
+
+        # PSS padding requires a hash algorithm
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         # Size of key in bytes - 2 is the maximum
         # PSS signature length (salt length is checked later)
@@ -172,25 +173,37 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     return padding_enum
 
 
-def _rsa_sig_setup(backend, padding, algorithm, key, data, init_func):
+# Hash algorithm can be absent (None) to initialize the context without setting
+# any message digest algorithm. This is currently only valid for the PKCS1v15
+# padding type, where it means that the signature data is encoded/decoded
+# as provided, without being wrapped in a DigestInfo structure.
+def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
-    evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init_func(pkey_ctx)
     backend.openssl_assert(res == 1)
-    res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
-    if res == 0:
+    if algorithm is not None:
+        evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
+        res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
+        if res == 0:
+            backend._consume_errors()
+            raise UnsupportedAlgorithm(
+                "{} is not supported by this backend for RSA signing.".format(
+                    algorithm.name
+                ),
+                _Reasons.UNSUPPORTED_HASH,
+            )
+    res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
+    if res <= 0:
         backend._consume_errors()
         raise UnsupportedAlgorithm(
-            "{} is not supported by this backend for RSA signing.".format(
-                algorithm.name
+            "{} is not supported for the RSA signature operation.".format(
+                padding.name
             ),
-            _Reasons.UNSUPPORTED_HASH,
+            _Reasons.UNSUPPORTED_PADDING,
         )
-    res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
-    backend.openssl_assert(res > 0)
     if isinstance(padding, PSS):
         res = backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
             pkey_ctx, _get_rsa_pss_salt_length(padding, key, algorithm)
@@ -212,7 +225,6 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
         padding,
         algorithm,
         private_key,
-        data,
         backend._lib.EVP_PKEY_sign_init,
     )
     buflen = backend._ffi.new("size_t *")
@@ -239,7 +251,6 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         padding,
         algorithm,
         public_key,
-        data,
         backend._lib.EVP_PKEY_verify_init,
     )
     res = backend._lib.EVP_PKEY_verify(
@@ -252,6 +263,36 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
     if res == 0:
         backend._consume_errors()
         raise InvalidSignature
+
+
+def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
+    pkey_ctx = _rsa_sig_setup(
+        backend,
+        padding,
+        algorithm,
+        public_key,
+        backend._lib.EVP_PKEY_verify_recover_init,
+    )
+
+    # Attempt to keep the rest of the code in this function as constant/time
+    # as possible. See the comment in _enc_dec_rsa_pkey_ctx. Note that the
+    # outlen parameter is used even though its value may be undefined in the
+    # error case. Due to the tolerant nature of Python slicing this does not
+    # trigger any exceptions.
+    maxlen = backend._lib.EVP_PKEY_size(public_key._evp_pkey)
+    backend.openssl_assert(maxlen > 0)
+    buf = backend._ffi.new("unsigned char[]", maxlen)
+    buflen = backend._ffi.new("size_t *", maxlen)
+    res = backend._lib.EVP_PKEY_verify_recover(
+        pkey_ctx, buf, buflen, signature, len(signature)
+    )
+    resbuf = backend._ffi.buffer(buf)[: buflen[0]]
+    backend._lib.ERR_clear_error()
+    # Assume that all parameter errors are handled during the setup phase and
+    # any error here is due to invalid signature.
+    if res != 1:
+        raise InvalidSignature
+    return resbuf
 
 
 @utils.register_interface(AsymmetricSignatureContext)
@@ -319,6 +360,11 @@ class _RSAPrivateKey(object):
             errors = backend._consume_errors_with_text()
             raise ValueError("Invalid private key", errors)
 
+        # Blinding is on by default in many versions of OpenSSL, but let's
+        # just be conservative here.
+        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
+        backend.openssl_assert(res == 1)
+
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
@@ -351,8 +397,6 @@ class _RSAPrivateKey(object):
         ctx = self._backend._lib.RSAPublicKey_dup(self._rsa_cdata)
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
-        res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
-        self._backend.openssl_assert(res == 1)
         evp_pkey = self._backend._rsa_cdata_to_evp_pkey(ctx)
         return _RSAPublicKey(self._backend, ctx, evp_pkey)
 
@@ -463,4 +507,10 @@ class _RSAPublicKey(object):
         )
         return _rsa_sig_verify(
             self._backend, padding, algorithm, self, signature, data
+        )
+
+    def recover_data_from_signature(self, signature, padding, algorithm):
+        _check_not_prehashed(algorithm)
+        return _rsa_sig_recover(
+            self._backend, padding, algorithm, self, signature
         )

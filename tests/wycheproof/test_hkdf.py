@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -10,6 +9,8 @@ import pytest
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
+from .utils import wycheproof_tests
 
 
 _HASH_ALGORITHMS = {
@@ -20,7 +21,7 @@ _HASH_ALGORITHMS = {
 }
 
 
-@pytest.mark.wycheproof_tests(
+@wycheproof_tests(
     "hkdf_sha1_test.json",
     "hkdf_sha256_test.json",
     "hkdf_sha384_test.json",
@@ -35,7 +36,7 @@ def test_hkdf(backend, wycheproof):
                 length=wycheproof.testcase["size"],
                 salt=binascii.unhexlify(wycheproof.testcase["salt"]),
                 info=binascii.unhexlify(wycheproof.testcase["info"]),
-                backend=backend
+                backend=backend,
             )
         return
 
@@ -44,7 +45,7 @@ def test_hkdf(backend, wycheproof):
         length=wycheproof.testcase["size"],
         salt=binascii.unhexlify(wycheproof.testcase["salt"]),
         info=binascii.unhexlify(wycheproof.testcase["info"]),
-        backend=backend
+        backend=backend,
     )
     result = h.derive(binascii.unhexlify(wycheproof.testcase["ikm"]))
     assert result == binascii.unhexlify(wycheproof.testcase["okm"])

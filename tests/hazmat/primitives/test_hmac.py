@@ -2,14 +2,15 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
 import pytest
 
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, _Reasons
+    AlreadyFinalized,
+    InvalidSignature,
+    _Reasons,
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac
@@ -35,7 +36,7 @@ class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update(u"\u00FC")
+            h.update("\u00FC")
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
@@ -55,27 +56,27 @@ class TestHMAC(object):
             h.finalize()
 
     def test_verify(self, backend):
-        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         digest = h.finalize()
 
-        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         h.verify(digest)
 
         with pytest.raises(AlreadyFinalized):
-            h.verify(b'')
+            h.verify(b"")
 
     def test_invalid_verify(self, backend):
-        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         with pytest.raises(InvalidSignature):
-            h.verify(b'')
+            h.verify(b"")
 
         with pytest.raises(AlreadyFinalized):
-            h.verify(b'')
+            h.verify(b"")
 
     def test_verify_reject_unicode(self, backend):
-        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify(u'')
+            h.verify("")
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):

@@ -1,4 +1,0 @@
-[console_scripts]
-crypto = crypto.app:main
-decrypto = crypto.decryptoapp:main
-

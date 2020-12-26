@@ -19,9 +19,10 @@ Code
 ----
 
 When in doubt, refer to :pep:`8` for Python code. You can check if your code
-meets our automated requirements by running ``flake8`` against it. If you've
-installed the development requirements this will automatically use our
-configuration. You can also run the ``tox`` job with ``tox -e pep8``.
+meets our automated requirements by formatting it with ``black`` and running
+``flake8`` against it. If you've installed the development requirements this
+will automatically use our configuration. You can also run the ``tox`` job with
+``tox -e pep8``.
 
 `Write comments as complete sentences.`_
 
@@ -35,12 +36,6 @@ Every code file must start with the boilerplate licensing notice:
     # This file is dual licensed under the terms of the Apache License, Version
     # 2.0, and the BSD License. See the LICENSE file in the root of this repository
     # for complete details.
-
-Additionally, every Python code file must contain
-
-.. code-block:: python
-
-    from __future__ import absolute_import, division, print_function
 
 API considerations
 ~~~~~~~~~~~~~~~~~~
@@ -80,10 +75,9 @@ Every recipe should include a version or algorithmic marker of some sort in its
 output in order to allow transparent upgrading of the algorithms in use, as
 the algorithms or parameters needed to achieve a given security margin evolve.
 
-APIs at the :doc:`/hazmat/primitives/index` layer should always take an
-explicit backend, APIs at the recipes layer should automatically use the
-:func:`~cryptography.hazmat.backends.default_backend`, but optionally allow
-specifying a different backend.
+APIs at the :doc:`/hazmat/primitives/index` and recipes layer should
+automatically use the :func:`~cryptography.hazmat.backends.default_backend`,
+but optionally allow specifying a different backend.
 
 C bindings
 ~~~~~~~~~~

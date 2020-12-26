@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import sys
 import types
@@ -21,7 +20,7 @@ class TestDeprecated(object):
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
-            warning_class=DeprecationWarning
+            warning_class=DeprecationWarning,
         )
         mod.Y = deprecated(
             value=2,
@@ -55,7 +54,7 @@ class TestDeprecated(object):
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
-            warning_class=DeprecationWarning
+            warning_class=DeprecationWarning,
         )
         mod.Y = deprecated(
             value=2,

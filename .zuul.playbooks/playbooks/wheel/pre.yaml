@@ -1,0 +1,42 @@
+- hosts: all
+  tasks:
+    - name: Sanity check build list
+      assert:
+        that: wheel_builds is defined
+
+    - name: Run ensure-docker
+      include_role:
+        name: ensure-docker
+
+    - name: Workaround Linaro aarch64 cloud MTU issues
+      # NOTE(ianw) : Docker default networking, the Linaro NAT setup and
+      # *insert random things here* cause PMTU issues, resulting in hung
+      # connections, particularly to fastly CDN (particularly annoying
+      # because pypi and pythonhosted live behind that).  Can remove after
+      # upstream changes merge, or we otherwise find a solution in the
+      # upstream cloud.
+      #  https://review.opendev.org/747062
+      #  https://review.opendev.org/746833
+      #  https://review.opendev.org/747064
+      when: ansible_architecture == 'aarch64'
+      block:
+        - name: Install jq
+          package:
+            name: jq
+            state: present
+          become: yes
+
+        - name: Reset docker MTU
+          shell: |
+              jq --arg mtu 1400 '. + {mtu: $mtu|tonumber}' /etc/docker/daemon.json > /etc/docker/daemon.json.new
+              cat /etc/docker/daemon.json.new
+              mv /etc/docker/daemon.json.new /etc/docker/daemon.json
+              service docker restart
+          become: yes
+
+    - name: Pre-pull containers
+      command: >-
+        docker pull {{ item.image }}
+      become: yes
+      loop: '{{ wheel_builds }}'
+

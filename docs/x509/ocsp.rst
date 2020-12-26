@@ -167,12 +167,11 @@ Creating Requests
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import serialization
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
-        >>> cert = load_pem_x509_certificate(pem_cert, default_backend())
-        >>> issuer = load_pem_x509_certificate(pem_issuer, default_backend())
+        >>> cert = load_pem_x509_certificate(pem_cert)
+        >>> issuer = load_pem_x509_certificate(pem_issuer)
         >>> builder = ocsp.OCSPRequestBuilder()
         >>> # SHA1 is in this example because RFC 5019 mandates its use.
         >>> builder = builder.add_certificate(cert, issuer, SHA1())
@@ -315,13 +314,12 @@ Creating Responses
     .. doctest::
 
         >>> import datetime
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes, serialization
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
-        >>> cert = load_pem_x509_certificate(pem_cert, default_backend())
-        >>> issuer = load_pem_x509_certificate(pem_issuer, default_backend())
-        >>> responder_cert = load_pem_x509_certificate(pem_responder_cert, default_backend())
-        >>> responder_key = serialization.load_pem_private_key(pem_responder_key, None, default_backend())
+        >>> cert = load_pem_x509_certificate(pem_cert)
+        >>> issuer = load_pem_x509_certificate(pem_issuer)
+        >>> responder_cert = load_pem_x509_certificate(pem_responder_cert)
+        >>> responder_key = serialization.load_pem_private_key(pem_responder_key, None)
         >>> builder = ocsp.OCSPResponseBuilder()
         >>> # SHA1 is in this example because RFC 5019 mandates its use.
         >>> builder = builder.add_response(
@@ -350,7 +348,6 @@ Creating Responses
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes, serialization
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
         >>> response = ocsp.OCSPResponseBuilder.build_unsuccessful(

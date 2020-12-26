@@ -2,17 +2,10 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import pytest
 
 from cryptography import utils
-
-
-def test_int_from_bytes_bytearray():
-    assert utils.int_from_bytes(bytearray(b"\x02\x10"), "big") == 528
-    with pytest.raises(TypeError):
-        utils.int_from_bytes(["list", "is", "not", "bytes"], "big")
 
 
 class TestCachedProperty(object):
@@ -58,8 +51,3 @@ class TestCachedProperty(object):
         assert len(accesses) == 1
         assert t.t == 14
         assert len(accesses) == 1
-
-
-def test_bit_length():
-    assert utils.bit_length(1) == 1
-    assert utils.bit_length(11) == 4

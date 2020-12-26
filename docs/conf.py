@@ -16,8 +16,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import sys
 
@@ -35,7 +33,7 @@ except ImportError:
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))
 
 # -- General configuration ----------------------------------------------------
 
@@ -45,33 +43,34 @@ sys.path.insert(0, os.path.abspath('.'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions  coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
-    'cryptography-docs',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "cryptography-docs",
 ]
 
 if spelling is not None:
-    extensions.append('sphinxcontrib.spelling')
+    extensions.append("sphinxcontrib.spelling")
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 nitpicky = True
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Cryptography'
-copyright = '2013-2017, Individual Contributors'
+project = "Cryptography"
+copyright = "2013-2020, Individual Contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -97,7 +96,7 @@ version = release = about["__version__"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all documents
 # default_role = None
@@ -114,7 +113,7 @@ exclude_patterns = ['_build']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -130,22 +129,26 @@ else:
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Cryptographydoc'
+htmlhelp_basename = "Cryptographydoc"
 
 
 # -- Options for LaTeX output -------------------------------------------------
 
-latex_elements = {
-}
+latex_elements = {}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual])
 latex_documents = [
-    ('index', 'Cryptography.tex', 'Cryptography Documentation',
-        'Individual Contributors', 'manual'),
+    (
+        "index",
+        "Cryptography.tex",
+        "Cryptography Documentation",
+        "Individual Contributors",
+        "manual",
+    ),
 ]
 
 # -- Options for manual page output -------------------------------------------
@@ -153,8 +156,13 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cryptography', 'Cryptography Documentation',
-        ['Individual Contributors'], 1)
+    (
+        "index",
+        "cryptography",
+        "Cryptography Documentation",
+        ["Individual Contributors"],
+        1,
+    )
 ]
 
 # -- Options for Texinfo output -----------------------------------------------
@@ -163,16 +171,21 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'Cryptography', 'Cryptography Documentation',
-        'Individual Contributors', 'Cryptography',
-        'One line description of project.',
-        'Miscellaneous'),
+    (
+        "index",
+        "Cryptography",
+        "Cryptography Documentation",
+        "Individual Contributors",
+        "Cryptography",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3': None}
+intersphinx_mapping = {"https://docs.python.org/3": None}
 
-epub_theme = 'epub'
+epub_theme = "epub"
 
 # Retry requests in the linkcheck builder so that we're resillient against
 # transient network errors.
@@ -185,8 +198,6 @@ linkcheck_ignore = [
     r"https://info.isl.ntt.co.jp/crypt/eng/camellia/",
     # Inconsistent small DH params they seem incapable of fixing
     r"https://www.secg.org/sec1-v2.pdf",
-    # 403ing from Travis
-    r"https://devblogs.microsoft.com/oldnewthing/\?p=4223",
-    # Incomplete cert chain
-    r"https://cveform.mitre.org/",
 ]
+
+autosectionlabel_prefix_document = True

@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
@@ -35,7 +34,7 @@ class TestARC4(object):
             "rfc-6229-128.txt",
             "rfc-6229-192.txt",
             "rfc-6229-256.txt",
-            "arc4.txt"
+            "arc4.txt",
         ],
         lambda key, **kwargs: algorithms.ARC4(binascii.unhexlify(key)),
     )

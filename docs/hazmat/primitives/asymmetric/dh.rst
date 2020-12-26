@@ -31,13 +31,11 @@ present.
 
 .. code-block:: pycon
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric import dh
     >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     >>> # Generate some parameters. These can be reused.
-    >>> parameters = dh.generate_parameters(generator=2, key_size=2048,
-    ...                                     backend=default_backend())
+    >>> parameters = dh.generate_parameters(generator=2, key_size=2048)
     >>> # Generate a private key for use in the exchange.
     >>> server_private_key = parameters.generate_private_key()
     >>> # In a real handshake the peer is a remote client. For this
@@ -51,7 +49,6 @@ present.
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(shared_key)
     >>> # And now we can demonstrate that the handshake performed in the
     >>> # opposite direction gives the same final value
@@ -63,7 +60,6 @@ present.
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(same_shared_key)
     >>> derived_key == same_derived_key
 
@@ -75,13 +71,11 @@ example of the ephemeral form:
 
 .. code-block:: pycon
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.asymmetric import dh
     >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     >>> # Generate some parameters. These can be reused.
-    >>> parameters = dh.generate_parameters(generator=2, key_size=2048,
-    ...                                     backend=default_backend())
+    >>> parameters = dh.generate_parameters(generator=2, key_size=2048)
     >>> # Generate a private key for use in the exchange.
     >>> private_key = parameters.generate_private_key()
     >>> # In a real handshake the peer_public_key will be received from the
@@ -96,7 +90,6 @@ example of the ephemeral form:
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(shared_key)
     >>> # For the next handshake we MUST generate another private key, but
     >>> # we can reuse the parameters.
@@ -108,7 +101,6 @@ example of the ephemeral form:
     ...     length=32,
     ...     salt=None,
     ...     info=b'handshake data',
-    ...     backend=default_backend()
     ... ).derive(shared_key_2)
 
 To assemble a :class:`~DHParameters` and a :class:`~DHPublicKey` from
@@ -118,9 +110,9 @@ example, if **p**, **g**, and **y** are :class:`int` objects received from a
 peer::
 
     pn = dh.DHParameterNumbers(p, g)
-    parameters = pn.parameters(default_backend())
+    parameters = pn.parameters()
     peer_public_numbers = dh.DHPublicNumbers(y, pn)
-    peer_public_key = peer_public_numbers.public_key(default_backend())
+    peer_public_key = peer_public_numbers.public_key()
 
 
 See also the :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
@@ -129,7 +121,7 @@ API for additional functionality.
 Group parameters
 ~~~~~~~~~~~~~~~~
 
-.. function:: generate_parameters(generator, key_size, backend)
+.. function:: generate_parameters(generator, key_size, backend=None)
 
     .. versionadded:: 1.7
 
@@ -140,7 +132,7 @@ Group parameters
 
     :param key_size: The bit length of the prime modulus to generate.
 
-    :param backend: A
+    :param backend: An optional
         :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
         instance.
 
@@ -349,11 +341,11 @@ Numbers
 
         p subgroup order value.
 
-    .. method:: parameters(backend)
+    .. method:: parameters(backend=None)
 
         .. versionadded:: 1.7
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHParameters`.
@@ -377,11 +369,11 @@ Numbers
 
         The private value.
 
-    .. method:: private_key(backend)
+    .. method:: private_key(backend=None)
 
         .. versionadded:: 1.7
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHPrivateKey`.
@@ -405,11 +397,11 @@ Numbers
 
         The public value.
 
-    .. method:: public_key(backend)
+    .. method:: public_key(backend=None)
 
         .. versionadded:: 1.7
 
-        :param backend: An instance of
+        :param backend: An optional instance of
             :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHPublicKey`.

@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
@@ -25,10 +24,7 @@ class TestSHA1(object):
     test_sha1 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA1"),
-        [
-            "SHA1LongMsg.rsp",
-            "SHA1ShortMsg.rsp",
-        ],
+        ["SHA1LongMsg.rsp", "SHA1ShortMsg.rsp"],
         hashes.SHA1(),
     )
 
@@ -42,10 +38,7 @@ class TestSHA224(object):
     test_sha224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA224LongMsg.rsp",
-            "SHA224ShortMsg.rsp",
-        ],
+        ["SHA224LongMsg.rsp", "SHA224ShortMsg.rsp"],
         hashes.SHA224(),
     )
 
@@ -59,10 +52,7 @@ class TestSHA256(object):
     test_sha256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA256LongMsg.rsp",
-            "SHA256ShortMsg.rsp",
-        ],
+        ["SHA256LongMsg.rsp", "SHA256ShortMsg.rsp"],
         hashes.SHA256(),
     )
 
@@ -76,10 +66,7 @@ class TestSHA384(object):
     test_sha384 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA384LongMsg.rsp",
-            "SHA384ShortMsg.rsp",
-        ],
+        ["SHA384LongMsg.rsp", "SHA384ShortMsg.rsp"],
         hashes.SHA384(),
     )
 
@@ -93,10 +80,7 @@ class TestSHA512(object):
     test_sha512 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA512LongMsg.rsp",
-            "SHA512ShortMsg.rsp",
-        ],
+        ["SHA512LongMsg.rsp", "SHA512ShortMsg.rsp"],
         hashes.SHA512(),
     )
 
@@ -110,10 +94,7 @@ class TestSHA512224(object):
     test_sha512_224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA512_224LongMsg.rsp",
-            "SHA512_224ShortMsg.rsp",
-        ],
+        ["SHA512_224LongMsg.rsp", "SHA512_224ShortMsg.rsp"],
         hashes.SHA512_224(),
     )
 
@@ -127,10 +108,7 @@ class TestSHA512256(object):
     test_sha512_256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA2"),
-        [
-            "SHA512_256LongMsg.rsp",
-            "SHA512_256ShortMsg.rsp",
-        ],
+        ["SHA512_256LongMsg.rsp", "SHA512_256ShortMsg.rsp"],
         hashes.SHA512_256(),
     )
 
@@ -144,16 +122,15 @@ class TestMD5(object):
     test_md5 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "MD5"),
-        [
-            "rfc-1321.txt",
-        ],
+        ["rfc-1321.txt"],
         hashes.MD5(),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.BLAKE2b(digest_size=64)),
+        hashes.BLAKE2b(digest_size=64)
+    ),
     skip_message="Does not support BLAKE2b",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -161,16 +138,15 @@ class TestBLAKE2b(object):
     test_b2b = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "blake2"),
-        [
-            "blake2b.txt",
-        ],
+        ["blake2b.txt"],
         hashes.BLAKE2b(digest_size=64),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.BLAKE2s(digest_size=32)),
+        hashes.BLAKE2s(digest_size=32)
+    ),
     skip_message="Does not support BLAKE2s",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -178,9 +154,7 @@ class TestBLAKE2s256(object):
     test_b2s = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "blake2"),
-        [
-            "blake2s.txt",
-        ],
+        ["blake2s.txt"],
         hashes.BLAKE2s(digest_size=32),
     )
 
@@ -194,10 +168,7 @@ class TestSHA3224(object):
     test_sha3_224 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
-        [
-            "SHA3_224LongMsg.rsp",
-            "SHA3_224ShortMsg.rsp",
-        ],
+        ["SHA3_224LongMsg.rsp", "SHA3_224ShortMsg.rsp"],
         hashes.SHA3_224(),
     )
 
@@ -211,10 +182,7 @@ class TestSHA3256(object):
     test_sha3_256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
-        [
-            "SHA3_256LongMsg.rsp",
-            "SHA3_256ShortMsg.rsp",
-        ],
+        ["SHA3_256LongMsg.rsp", "SHA3_256ShortMsg.rsp"],
         hashes.SHA3_256(),
     )
 
@@ -228,10 +196,7 @@ class TestSHA3384(object):
     test_sha3_384 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
-        [
-            "SHA3_384LongMsg.rsp",
-            "SHA3_384ShortMsg.rsp",
-        ],
+        ["SHA3_384LongMsg.rsp", "SHA3_384ShortMsg.rsp"],
         hashes.SHA3_384(),
     )
 
@@ -245,17 +210,15 @@ class TestSHA3512(object):
     test_sha3_512 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHA3"),
-        [
-            "SHA3_512LongMsg.rsp",
-            "SHA3_512ShortMsg.rsp",
-        ],
+        ["SHA3_512LongMsg.rsp", "SHA3_512ShortMsg.rsp"],
         hashes.SHA3_512(),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.SHAKE128(digest_size=16)),
+        hashes.SHAKE128(digest_size=16)
+    ),
     skip_message="Does not support SHAKE128",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -263,35 +226,30 @@ class TestSHAKE128(object):
     test_shake128 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHAKE"),
-        [
-            "SHAKE128LongMsg.rsp",
-            "SHAKE128ShortMsg.rsp",
-        ],
+        ["SHAKE128LongMsg.rsp", "SHAKE128ShortMsg.rsp"],
         hashes.SHAKE128(digest_size=16),
     )
 
-    @pytest.mark.parametrize(
-        "vector",
-        _load_all_params(
+    def test_shake128_variable(self, backend, subtests):
+        vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
-            [
-                "SHAKE128VariableOut.rsp",
-            ],
+            ["SHAKE128VariableOut.rsp"],
             load_nist_vectors,
         )
-    )
-    def test_shake128_variable(self, vector, backend):
-        output_length = int(vector['outputlen']) // 8
-        msg = binascii.unhexlify(vector['msg'])
-        shake = hashes.SHAKE128(digest_size=output_length)
-        m = hashes.Hash(shake, backend=backend)
-        m.update(msg)
-        assert m.finalize() == binascii.unhexlify(vector['output'])
+        for vector in vectors:
+            with subtests.test():
+                output_length = int(vector["outputlen"]) // 8
+                msg = binascii.unhexlify(vector["msg"])
+                shake = hashes.SHAKE128(digest_size=output_length)
+                m = hashes.Hash(shake, backend=backend)
+                m.update(msg)
+                assert m.finalize() == binascii.unhexlify(vector["output"])
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.SHAKE256(digest_size=32)),
+        hashes.SHAKE256(digest_size=32)
+    ),
     skip_message="Does not support SHAKE256",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -299,27 +257,21 @@ class TestSHAKE256(object):
     test_shake256 = generate_hash_test(
         load_hash_vectors,
         os.path.join("hashes", "SHAKE"),
-        [
-            "SHAKE256LongMsg.rsp",
-            "SHAKE256ShortMsg.rsp",
-        ],
+        ["SHAKE256LongMsg.rsp", "SHAKE256ShortMsg.rsp"],
         hashes.SHAKE256(digest_size=32),
     )
 
-    @pytest.mark.parametrize(
-        "vector",
-        _load_all_params(
+    def test_shake256_variable(self, backend, subtests):
+        vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
-            [
-                "SHAKE256VariableOut.rsp",
-            ],
+            ["SHAKE256VariableOut.rsp"],
             load_nist_vectors,
         )
-    )
-    def test_shake256_variable(self, vector, backend):
-        output_length = int(vector['outputlen']) // 8
-        msg = binascii.unhexlify(vector['msg'])
-        shake = hashes.SHAKE256(digest_size=output_length)
-        m = hashes.Hash(shake, backend=backend)
-        m.update(msg)
-        assert m.finalize() == binascii.unhexlify(vector['output'])
+        for vector in vectors:
+            with subtests.test():
+                output_length = int(vector["outputlen"]) // 8
+                msg = binascii.unhexlify(vector["msg"])
+                shake = hashes.SHAKE256(digest_size=output_length)
+                m = hashes.Hash(shake, backend=backend)
+                m.update(msg)
+                assert m.finalize() == binascii.unhexlify(vector["output"])

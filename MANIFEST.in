@@ -1,4 +1,3 @@
-include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
 include LICENSE
@@ -11,13 +10,15 @@ include pyproject.toml
 
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
+recursive-include src/rust Cargo.toml Cargo.lock *.rs
 prune docs/_build
 recursive-include tests *.py
 exclude vectors
 recursive-exclude vectors *
 
-exclude .travis.yml .travis
-recursive-exclude .travis *
 recursive-exclude .github *
 
-exclude release.py .coveragerc codecov.yml dev-requirements.txt rtd-requirements.txt tox.ini
+exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt tox.ini
+
+recursive-exclude .zuul.d *
+recursive-exclude .zuul.playbooks *

@@ -6,16 +6,15 @@ import abc
 
 import pytest
 
-import six
-
 from cryptography.utils import (
-    InterfaceNotImplemented, register_interface_if, verify_interface
+    InterfaceNotImplemented,
+    register_interface_if,
+    verify_interface,
 )
 
 
 def test_register_interface_if_true():
-    @six.add_metaclass(abc.ABCMeta)
-    class SimpleInterface(object):
+    class SimpleInterface(metaclass=abc.ABCMeta):
         pass
 
     @register_interface_if(1 == 1, SimpleInterface)
@@ -26,8 +25,7 @@ def test_register_interface_if_true():
 
 
 def test_register_interface_if_false():
-    @six.add_metaclass(abc.ABCMeta)
-    class SimpleInterface(object):
+    class SimpleInterface(metaclass=abc.ABCMeta):
         pass
 
     @register_interface_if(1 == 2, SimpleInterface)
@@ -39,8 +37,7 @@ def test_register_interface_if_false():
 
 class TestVerifyInterface(object):
     def test_verify_missing_method(self):
-        @six.add_metaclass(abc.ABCMeta)
-        class SimpleInterface(object):
+        class SimpleInterface(metaclass=abc.ABCMeta):
             @abc.abstractmethod
             def method(self):
                 """A simple method"""
@@ -52,8 +49,7 @@ class TestVerifyInterface(object):
             verify_interface(SimpleInterface, NonImplementer)
 
     def test_different_arguments(self):
-        @six.add_metaclass(abc.ABCMeta)
-        class SimpleInterface(object):
+        class SimpleInterface(metaclass=abc.ABCMeta):
             @abc.abstractmethod
             def method(self, a):
                 """Method with one argument"""
@@ -68,8 +64,7 @@ class TestVerifyInterface(object):
             verify_interface(SimpleInterface, NonImplementer)
 
     def test_handles_abstract_property(self):
-        @six.add_metaclass(abc.ABCMeta)
-        class SimpleInterface(object):
+        class SimpleInterface(metaclass=abc.ABCMeta):
             @abc.abstractproperty
             def property(self):
                 """An abstract property"""

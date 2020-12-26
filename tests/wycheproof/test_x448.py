@@ -2,25 +2,28 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric.x448 import (
-    X448PrivateKey, X448PublicKey
+    X448PrivateKey,
+    X448PublicKey,
 )
+
+from .utils import wycheproof_tests
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.x448_supported(),
-    skip_message="Requires OpenSSL with X448 support"
+    skip_message="Requires OpenSSL with X448 support",
 )
-@pytest.mark.wycheproof_tests("x448_test.json")
+@wycheproof_tests("x448_test.json")
 def test_x448(backend, wycheproof):
     assert set(wycheproof.testgroup.items()) == {
-        ("curve", "curve448"), ("type", "XdhComp")
+        ("curve", "curve448"),
+        ("type", "XdhComp"),
     }
 
     private_key = X448PrivateKey.from_private_bytes(

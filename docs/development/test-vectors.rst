@@ -78,6 +78,8 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/rsa_public_key.pem`` and
   ``asymmetric/DER_Serialization/rsa_public_key.der``- Contains an RSA 2048
   bit public generated using OpenSSL from ``rsa_private_key.pem``.
+* ``asymmetric/PEM_Serialization/dsa_4096.pem`` - Contains a 4096-bit DSA
+  private key generated using OpenSSL.
 * ``asymmetric/PEM_Serialization/dsaparam.pem`` - Contains 2048-bit DSA
   parameters generated using OpenSSL; contains no keys.
 * ``asymmetric/PEM_Serialization/dsa_private_key.pem`` - Contains a DSA 2048
@@ -107,6 +109,8 @@ Custom asymmetric vectors
 * ``x509/custom/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
   the private key for the certificate ``x509/custom/ca/ca.pem``. This key is
   encoded in several of the PKCS12 custom vectors.
+* ``x509/custom/ca/rsa_key.pem`` - An unencrypted PCKS8 4096 bit RSA key. It is
+  the private key for the certificate ``x509/custom/ca/rsa_ca.pem``.
 * ``asymmetric/EC/compressed_points.txt`` - Contains compressed public points
   generated using OpenSSL.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
@@ -180,6 +184,8 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.der`` and
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
   are the above parameters and keys in DER format.
+* ``vectors/cryptography_vectors/asymmetric/DH/dh_key_256.pem`` contains
+  a PEM PKCS8 encoded DH key with a 256-bit key size.
 
 * ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
   Brainpool vectors from :rfc:`7027`.
@@ -401,6 +407,9 @@ Custom X.509 Vectors
   a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
 * ``freshestcrl.pem`` - A self-signed certificate containing a ``freshestCRL``
   extension.
+* ``sia.pem`` - An RSA 2048 bit self-signed certificate containing a subject
+  information access extension with both a CA repository entry and a custom
+  OID entry.
 * ``ca/ca.pem`` - A self-signed certificate with ``basicConstraints`` set to
   true. Its private key is ``ca/ca_key.pem``. This certificate is encoded in
   several of the PKCS12 custom vectors.
@@ -409,6 +418,8 @@ Custom X.509 Vectors
 * ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
 * ``root-ed448.pem`` - An ``ed448`` self-signed CA certificate
   using ``ed448-pkcs8.pem`` as key.
+* ``ca/rsa_ca.pem`` - A self-signed RSA certificate with ``basicConstraints``
+  set to true. Its private key is ``ca/rsa_key.pem``.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -443,6 +454,12 @@ Custom X.509 Request Vectors
   1024 bit key containing an invalid signature with correct padding.
 * ``challenge.pem`` - A certificate signing request for an RSA 2048 bit key
   containing a challenge password.
+* ``challenge-invalid.der`` - A certificate signing request for an RSA 2048 bit
+  key containing a challenge password attribute that has been encoded as an
+  ASN.1 integer rather than a string.
+* ``challenge-unstructured.pem`` - A certificate signing request for an RSA
+  2048 bit key containing a challenge password attribute and an unstructured
+  name attribute.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -521,6 +538,8 @@ X.509 OCSP Test Vectors
   contains a ``CRLReason`` single extension.
 * ``x509/ocsp/resp-sct-extension.der`` - An OCSP response containing a
   ``CT Certificate SCTs`` single extension, from the SwissSign OCSP responder.
+* ``x509/ocsp/ocsp-army.deps.mil-resp.der`` - An OCSP response containing
+  multiple ``SINGLERESP`` values.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -555,6 +574,14 @@ Custom PKCS12 Test Vectors
 * ``pkcs12/cert-aes256cbc-no-key.p12`` - A PKCS12 file containing a cert
   (``x509/custom/ca/ca.pem``) encrypted via AES 256 CBC with the
   password ``cryptography`` and no private key.
+
+Custom PKCS7 Test Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``pkcs7/isrg.pem`` - A PEM encoded PKCS7 file containing the ISRG X1 root
+  CA.
+* ``pkcs7/amazon-roots.p7b`` - A DER encoded PCKS7 file containing Amazon Root
+  CA 2 and 3.
+* ``pkcs7/enveloped.pem`` - A PEM encoded PKCS7 file with enveloped data.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -710,7 +737,7 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`Project Wycheproof`: https://github.com/google/wycheproof
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
-.. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
+.. _`Bruce Schneier's vectors`: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
@@ -739,7 +766,7 @@ header format (substituting the correct information):
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
-.. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
+.. _`Russian CA`: https://e-trust.gosuslugi.ru/
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
 .. _`unknown signature OID`: https://bugzilla.mozilla.org/show_bug.cgi?id=405966
 .. _`botan`: https://github.com/randombit/botan/blob/57789bdfc55061002b2727d0b32587612829a37c/src/tests/data/pubkey/dh.vec

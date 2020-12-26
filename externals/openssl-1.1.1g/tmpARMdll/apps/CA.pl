@@ -1,4 +1,4 @@
-#!C:\Strawberryx64\perl\bin\perl.exe
+#!C:\Perl64\bin\perl.exe
 # Copyright 2000-2018 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the OpenSSL license (the "License").  You may not use

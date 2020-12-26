@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import pytest
 
@@ -12,13 +11,13 @@ from cryptography.hazmat.primitives import constant_time
 class TestConstantTimeBytesEq(object):
     def test_reject_unicode(self):
         with pytest.raises(TypeError):
-            constant_time.bytes_eq(b"foo", u"foo")
+            constant_time.bytes_eq(b"foo", "foo")
 
         with pytest.raises(TypeError):
-            constant_time.bytes_eq(u"foo", b"foo")
+            constant_time.bytes_eq("foo", b"foo")
 
         with pytest.raises(TypeError):
-            constant_time.bytes_eq(u"foo", u"foo")
+            constant_time.bytes_eq("foo", "foo")
 
     def test_compares(self):
         assert constant_time.bytes_eq(b"foo", b"foo") is True

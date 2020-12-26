@@ -6,7 +6,6 @@
         - pyca-cryptography-ubuntu-focal-py38-arm64
         - pyca-cryptography-ubuntu-bionic-py36-arm64
         - pyca-cryptography-centos-8-py36-arm64
-        - pyca-cryptography-centos-8-py27-arm64
     release:
       jobs:
         - pyca-cryptography-build-wheel-arm64

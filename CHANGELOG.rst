@@ -1,12 +1,122 @@
 Changelog
 =========
 
-.. _v3-0:
+.. _v3-4:
 
-3.0 - `master`_
+3.4 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
+* We now ship ``manylinux2014`` wheels and no longer ship ``manylinux1``
+  wheels. Users should upgrade to the latest ``pip`` to ensure this doesn't
+  cause issues downloading wheels on their platform.
+* ``cryptography`` now incorporates Rust code. Users building ``cryptography``
+  themselves will need to have the Rust toolchain installed. Users who use an
+  officially produced wheel will not need to make any changes. The minimum
+  supported Rust version is 1.45.0.
+
+.. _v3-3-1:
+
+3.3.1 - 2020-12-09
+~~~~~~~~~~~~~~~~~~
+
+* Re-added a legacy symbol causing problems for older ``pyOpenSSL`` users.
+
+.. _v3-3:
+
+3.3 - 2020-12-08
+~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.5 has been removed due to
+  low usage and maintenance burden.
+* **BACKWARDS INCOMPATIBLE:** The
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` now require
+  64-bit to 1024-bit (8 byte to 128 byte) initialization vectors. This change
+  is to conform with an upcoming OpenSSL release that will no longer support
+  sizes outside this window.
+* **BACKWARDS INCOMPATIBLE:** When deserializing asymmetric keys we now
+  raise ``ValueError`` rather than ``UnsupportedAlgorithm`` when an
+  unsupported cipher is used. This change is to conform with an upcoming
+  OpenSSL release that will no longer distinguish between error types.
+* **BACKWARDS INCOMPATIBLE:** We no longer allow loading of finite field
+  Diffie-Hellman parameters of less than 512 bits in length. This change is to
+  conform with an upcoming OpenSSL release that no longer supports smaller
+  sizes. These keys were already wildly insecure and should not have been used
+  in any application outside of testing.
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1i.
+* Python 2 support is deprecated in ``cryptography``. This is the last release
+  that will support Python 2.
+* Added the
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.recover_data_from_signature`
+  function to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+  for recovering the signed data from an RSA signature.
+
+.. _v3-2-1:
+
+3.2.1 - 2020-10-27
+~~~~~~~~~~~~~~~~~~
+
+* Disable blinding on RSA public keys to address an error with some versions
+  of OpenSSL.
+
+.. _v3-2:
+
+3.2 - 2020-10-25
+~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE:** Attempted to make RSA PKCS#1v1.5 decryption more constant
+  time, to protect against Bleichenbacher vulnerabilities. Due to limitations
+  imposed by our API, we cannot completely mitigate this vulnerability and a
+  future release will contain a new API which is designed to be resilient to
+  these for contexts where it is required. Credit to **Hubert Kario** for
+  reporting the issue. *CVE-2020-25659*
+* Support for OpenSSL 1.0.2 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
+* Added basic support for PKCS7 signing (including SMIME) via
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`.
+
+.. _v3-1-1:
+
+3.1.1 - 2020-09-22
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1h.
+
+.. _v3-1:
+
+3.1 - 2020-08-26
+~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Removed support for ``idna`` based
+  :term:`U-label` parsing in various X.509 classes. This support was originally
+  deprecated in version 2.1 and moved to an extra in 2.5.
+* Deprecated OpenSSL 1.0.2 support. OpenSSL 1.0.2 is no longer supported by
+  the OpenSSL project. The next version of ``cryptography`` will drop support
+  for it.
+* Deprecated support for Python 3.5. This version sees very little use and will
+  be removed in the next release.
+* ``backend`` arguments to functions are no longer required and the
+  default backend will automatically be selected if no ``backend`` is provided.
+* Added initial support for parsing certificates from PKCS7 files with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
+  .
+* Calling ``update`` or ``update_into`` on
+  :class:`~cryptography.hazmat.primitives.ciphers.CipherContext` with ``data``
+  longer than 2\ :sup:`31` bytes no longer raises an ``OverflowError``. This
+  also resolves the same issue in :doc:`/fernet`.
+
+.. _v3-0:
+
+3.0 - 2020-07-20
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Removed support for passing an
   :class:`~cryptography.x509.Extension` instance to
@@ -14,10 +124,47 @@ Changelog
   as per our deprecation policy.
 * **BACKWARDS INCOMPATIBLE:** Support for LibreSSL 2.7.x, 2.8.x, and 2.9.0 has
   been removed (2.9.1+ is still supported).
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.9, macOS users must
+  upgrade to 10.10 or newer.
+* **BACKWARDS INCOMPATIBLE:** RSA
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
+  no longer accepts ``public_exponent`` values except 65537 and 3 (the latter
+  for legacy purposes).
+* **BACKWARDS INCOMPATIBLE:** X.509 certificate parsing now enforces that the
+  ``version`` field contains a valid value, rather than deferring this check
+  until :attr:`~cryptography.x509.Certificate.version` is accessed.
 * Deprecated support for Python 2. At the time there is no time table for
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2 no longer receives support from the Python core
   team.
+
+  If you have trouble suppressing this warning in tests view the :ref:`FAQ
+  entry addressing this issue <faq-howto-handle-deprecation-warning>`.
+
+* Added support for ``OpenSSH`` serialization format for
+  ``ec``, ``ed25519``, ``rsa`` and ``dsa`` private keys:
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
+  for loading and
+  :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`
+  for writing.
+* Added support for ``OpenSSH`` certificates to
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
+* Added :meth:`~cryptography.fernet.Fernet.encrypt_at_time` and
+  :meth:`~cryptography.fernet.Fernet.decrypt_at_time` to
+  :class:`~cryptography.fernet.Fernet`.
+* Added support for the :class:`~cryptography.x509.SubjectInformationAccess`
+  X.509 extension.
+* Added support for parsing
+  :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
+* Added support for parsing attributes in certificate signing requests via
+  :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
+* Added support for encoding attributes in certificate signing requests via
+  :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
+* On OpenSSL 1.1.1d and higher ``cryptography`` now uses OpenSSL's
+  built-in CSPRNG instead of its own OS random engine because these versions of
+  OpenSSL properly reseed on fork.
+* Added initial support for creating PKCS12 files with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`.
 
 .. _v2-9-2:
 

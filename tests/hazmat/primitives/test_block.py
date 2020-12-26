@@ -2,22 +2,23 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
 import pytest
 
-from cryptography.exceptions import (
-    AlreadyFinalized, _Reasons
-)
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import (
-    Cipher, algorithms, base, modes
+    Cipher,
+    algorithms,
+    base,
+    modes,
 )
 
 from .utils import (
-    generate_aead_exception_test, generate_aead_tag_exception_test
+    generate_aead_exception_test,
+    generate_aead_tag_exception_test,
 )
 from ...doubles import DummyCipherAlgorithm, DummyMode
 from ...utils import raises_unsupported_algorithm
@@ -29,7 +30,7 @@ class TestCipher(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         assert isinstance(cipher.encryptor(), base.CipherContext)
 
@@ -37,7 +38,7 @@ class TestCipher(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         assert isinstance(cipher.decryptor(), base.CipherContext)
 
@@ -53,7 +54,7 @@ class TestCipherContext(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -74,7 +75,7 @@ class TestCipherContext(object):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend
+            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -85,9 +86,7 @@ class TestCipherContext(object):
 
     def test_unaligned_block_encryption(self, backend):
         cipher = Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.ECB(),
-            backend
+            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.ECB(), backend
         )
         encryptor = cipher.encryptor()
         ct = encryptor.update(b"a" * 15)
@@ -105,9 +104,7 @@ class TestCipherContext(object):
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
     def test_nonexistent_cipher(self, backend, mode):
-        cipher = Cipher(
-            DummyCipherAlgorithm(), mode, backend
-        )
+        cipher = Cipher(DummyCipherAlgorithm(), mode, backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
@@ -116,9 +113,7 @@ class TestCipherContext(object):
 
     def test_incorrectly_padded(self, backend):
         cipher = Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.CBC(b"\x00" * 16),
-            backend
+            algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16), backend
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"1")

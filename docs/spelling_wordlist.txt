@@ -1,3 +1,4 @@
+AArch
 accessor
 affine
 Authenticator
@@ -6,6 +7,7 @@ backend
 Backends
 backends
 bcrypt
+Bleichenbacher
 Blowfish
 boolean
 Botan
@@ -19,6 +21,7 @@ codebook
 committer
 committers
 conda
+CPython
 Cryptanalysis
 crypto
 cryptographic
@@ -53,7 +56,6 @@ Google
 hazmat
 Homebrew
 hostname
-idna
 indistinguishability
 initialisms
 interoperability
@@ -88,6 +90,7 @@ preprocessors
 presentational
 pseudorandom
 pyOpenSSL
+pytest
 relicensed
 responder
 runtime
@@ -100,8 +103,10 @@ Solaris
 syscall
 Tanja
 testability
+Thawte
 timestamp
 timestamps
+toolchain
 tunable
 Ubuntu
 unencrypted

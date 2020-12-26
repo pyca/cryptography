@@ -8,10 +8,13 @@ Getting a backend
 
 .. currentmodule:: cryptography.hazmat.backends
 
-``cryptography`` was originally designed to support multiple backends, but
-this design has been deprecated.
+``cryptography`` was designed to support multiple cryptographic backends, but
+consumers rarely need this flexibility. Starting with version 3.1 ``backend``
+arguments are optional and the default backend will automatically be selected
+if none is specified.
 
-You can get the default backend by calling :func:`~default_backend`.
+On older versions you can get the default backend by calling
+:func:`~default_backend`.
 
 
 .. function:: default_backend()

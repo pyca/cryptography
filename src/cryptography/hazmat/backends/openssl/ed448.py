@@ -51,10 +51,10 @@ class _Ed448PublicKey(object):
         return self._backend._ffi.buffer(buf, _ED448_KEY_SIZE)[:]
 
     def verify(self, signature, data):
-        evp_md_ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
+        evp_md_ctx = self._backend._lib.EVP_MD_CTX_new()
         self._backend.openssl_assert(evp_md_ctx != self._backend._ffi.NULL)
         evp_md_ctx = self._backend._ffi.gc(
-            evp_md_ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
+            evp_md_ctx, self._backend._lib.EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_DigestVerifyInit(
             evp_md_ctx,
@@ -90,10 +90,10 @@ class _Ed448PrivateKey(object):
         return self._backend.ed448_load_public_bytes(public_bytes)
 
     def sign(self, data):
-        evp_md_ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
+        evp_md_ctx = self._backend._lib.EVP_MD_CTX_new()
         self._backend.openssl_assert(evp_md_ctx != self._backend._ffi.NULL)
         evp_md_ctx = self._backend._ffi.gc(
-            evp_md_ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
+            evp_md_ctx, self._backend._lib.EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_DigestSignInit(
             evp_md_ctx,

@@ -64,7 +64,7 @@ def _decode_x509_name(backend, x509_name):
     for x in range(count):
         entry = backend._lib.X509_NAME_get_entry(x509_name, x)
         attribute = _decode_x509_name_entry(backend, entry)
-        set_id = backend._lib.Cryptography_X509_NAME_ENTRY_set(entry)
+        set_id = backend._lib.X509_NAME_ENTRY_set(entry)
         if set_id != prev_set_id:
             attributes.append({attribute})
         else:

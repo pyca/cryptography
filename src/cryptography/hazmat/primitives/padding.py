@@ -40,9 +40,12 @@ def _byte_padding_update(buffer_, data, block_size):
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
-    utils._check_bytes("data", data)
+    utils._check_byteslike("data", data)
 
-    buffer_ += data
+    # six.PY2: Only coerce non-bytes objects to avoid triggering bad behavior
+    # of future's newbytes type. Unconditionally call bytes() after Python 2
+    # support is gone.
+    buffer_ += data if isinstance(data, bytes) else bytes(data)
 
     finished_blocks = len(buffer_) // (block_size // 8)
 
@@ -64,9 +67,12 @@ def _byte_unpadding_update(buffer_, data, block_size):
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
-    utils._check_bytes("data", data)
+    utils._check_byteslike("data", data)
 
-    buffer_ += data
+    # six.PY2: Only coerce non-bytes objects to avoid triggering bad behavior
+    # of future's newbytes type. Unconditionally call bytes() after Python 2
+    # support is gone.
+    buffer_ += data if isinstance(data, bytes) else bytes(data)
 
     finished_blocks = max(len(buffer_) // (block_size // 8) - 1, 0)
 

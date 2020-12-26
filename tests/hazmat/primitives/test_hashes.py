@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 
@@ -22,7 +21,7 @@ class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            m.update(u"\u00FC")
+            m.update("\u00FC")
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
@@ -120,7 +119,8 @@ class TestMD5(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.BLAKE2b(digest_size=64)),
+        hashes.BLAKE2b(digest_size=64)
+    ),
     skip_message="Does not support BLAKE2b",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -143,7 +143,8 @@ class TestBLAKE2b(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(
-        hashes.BLAKE2s(digest_size=32)),
+        hashes.BLAKE2s(digest_size=32)
+    ),
     skip_message="Does not support BLAKE2s",
 )
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -182,18 +183,12 @@ def test_buffer_protocol_hash(backend):
 
 
 class TestSHAKE(object):
-    @pytest.mark.parametrize(
-        "xof",
-        [hashes.SHAKE128, hashes.SHAKE256]
-    )
+    @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_invalid_digest_type(self, xof):
         with pytest.raises(TypeError):
             xof(digest_size=object())
 
-    @pytest.mark.parametrize(
-        "xof",
-        [hashes.SHAKE128, hashes.SHAKE256]
-    )
+    @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_invalid_digest_size(self, xof):
         with pytest.raises(ValueError):
             xof(digest_size=-5)
