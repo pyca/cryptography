@@ -103,7 +103,7 @@ try:
             ],
             "docs": [
                 "sphinx >= 1.6.5,!=1.8.0,!=3.1.0,!=3.1.1",
-                "sphinx_rtd_theme",
+                "furo",
             ],
             "docstest": [
                 "doc8",
