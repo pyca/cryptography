@@ -654,6 +654,10 @@ Key interfaces
 
         :return bytes: Encrypted data.
 
+        :raises ValueError: The data could not be encrypted. One possible cause
+            is if ``data`` is too large; RSA keys can only encrypt data that
+            is smaller than the key size.
+
     .. attribute:: key_size
 
         :type: int
