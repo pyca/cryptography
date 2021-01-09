@@ -260,7 +260,6 @@ is the recommended choice for any new protocols or applications, ``PKCS1v15``
 should only be used to support legacy protocols.
 
 
-
 Decryption
 ~~~~~~~~~~
 
@@ -655,12 +654,9 @@ Key interfaces
 
         :return bytes: Encrypted data.
 
-        :raises ValueError: The backend could not encrypt the data.
-
-        .. note::
-
-            An RSA key can only encrypt data smaller than itself, using this with a message that is too big will raise a ``ValueError``
-
+        :raises ValueError: The data could not be encrypted. One possible cause
+            is if ``data`` is too large; RSA keys can only encrypted data that
+            is smaller than the key size.
 
     .. attribute:: key_size
 
