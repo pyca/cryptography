@@ -654,9 +654,9 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :return bytes: Encrypted data.
-        
+
         :raises ValueError: The backend could not encrypt the data.
-        
+
         .. note::
 
             An RSA key can only encrypt data smaller than itself, using this with a message that is too big will raise a ``ValueError``
