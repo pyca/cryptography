@@ -6,7 +6,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-pyo3 = { version = "0.13.0", features = ["extension-module"] }
+pyo3 = { version = "0.13.1", features = ["extension-module"] }
 
 [lib]
 name = "cryptography_rust"
