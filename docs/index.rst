@@ -14,9 +14,9 @@ key derivation functions. For example, to encrypt something with
     >>> f = Fernet(key)
     >>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
     >>> token
-    '...'
+    b'...'
     >>> f.decrypt(token)
-    'A really secret message. Not for prying eyes.'
+    b'A really secret message. Not for prying eyes.'
 
 If you are interested in learning more about the field of cryptography, we
 recommend `Crypto 101, by Laurens Van Houtven`_ and `The Cryptopals Crypto
