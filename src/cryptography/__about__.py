@@ -27,4 +27,4 @@ __author__ = "The Python Cryptographic Authority and individual contributors"
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "BSD or Apache License, Version 2.0"
-__copyright__ = "Copyright 2013-2020 {}".format(__author__)
+__copyright__ = "Copyright 2013-2021 {}".format(__author__)
