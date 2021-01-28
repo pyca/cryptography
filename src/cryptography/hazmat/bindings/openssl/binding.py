@@ -6,6 +6,7 @@
 import collections
 import threading
 import types
+import typing
 
 import cryptography
 from cryptography import utils
@@ -108,7 +109,7 @@ class Binding(object):
     OpenSSL API wrapper.
     """
 
-    lib = None
+    lib: typing.ClassVar = None
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()

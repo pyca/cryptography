@@ -28,7 +28,13 @@ try:
 except ImportError:
     _bcrypt_supported = False
 
-    def _bcrypt_kdf(*args, **kwargs):
+    def _bcrypt_kdf(
+        password: bytes,
+        salt: bytes,
+        desired_key_bytes: int,
+        rounds: int,
+        ignore_few_rounds: bool = False,
+    ) -> bytes:
         raise UnsupportedAlgorithm("Need bcrypt module")
 
 
