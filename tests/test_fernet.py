@@ -11,6 +11,8 @@ import time
 
 import iso8601
 
+import pretend
+
 import pytest
 
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
@@ -118,9 +120,7 @@ class TestFernet(object):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
-        ts = "1985-10-26T01:20:01-07:00"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
+        monkeypatch.setattr(time, "time", pretend.raiser(ValueError))
         assert f.decrypt(token, ttl=None) == pt
 
     def test_ttl_required_in_decrypt_at_time(self, monkeypatch, backend):
