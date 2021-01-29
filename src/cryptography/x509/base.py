@@ -6,9 +6,11 @@
 import abc
 import datetime
 import os
+import typing
 from enum import Enum
 
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -22,6 +24,13 @@ from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
+_PRIVATE_KEY_TYPES = typing.Union[
+    ed25519.Ed25519PrivateKey,
+    ed448.Ed448PrivateKey,
+    rsa.RSAPrivateKey,
+    dsa.DSAPrivateKey,
+    ec.EllipticCurvePrivateKey,
+]
 
 
 class AttributeNotFound(Exception):
@@ -421,7 +430,7 @@ class CertificateSigningRequestBuilder(object):
         self._extensions = extensions
         self._attributes = attributes
 
-    def subject_name(self, name):
+    def subject_name(self, name: Name):
         """
         Sets the certificate requestor's distinguished name.
         """
@@ -433,14 +442,14 @@ class CertificateSigningRequestBuilder(object):
             name, self._extensions, self._attributes
         )
 
-    def add_extension(self, extension, critical):
+    def add_extension(self, extval: ExtensionType, critical: bool):
         """
         Adds an X.509 extension to the certificate request.
         """
-        if not isinstance(extension, ExtensionType):
+        if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
-        extension = Extension(extension.oid, critical, extension)
+        extension = Extension(extval.oid, critical, extval)
         _reject_duplicate_extension(extension, self._extensions)
 
         return CertificateSigningRequestBuilder(
@@ -449,7 +458,7 @@ class CertificateSigningRequestBuilder(object):
             self._attributes,
         )
 
-    def add_attribute(self, oid, value):
+    def add_attribute(self, oid: ObjectIdentifier, value: bytes):
         """
         Adds an X.509 attribute with an OID and associated value.
         """
@@ -467,7 +476,12 @@ class CertificateSigningRequestBuilder(object):
             self._attributes + [(oid, value)],
         )
 
-    def sign(self, private_key, algorithm, backend=None):
+    def sign(
+        self,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+    ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
         """
@@ -497,7 +511,7 @@ class CertificateBuilder(object):
         self._not_valid_after = not_valid_after
         self._extensions = extensions
 
-    def issuer_name(self, name):
+    def issuer_name(self, name: Name):
         """
         Sets the CA's distinguished name.
         """
@@ -515,7 +529,7 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def subject_name(self, name):
+    def subject_name(self, name: Name):
         """
         Sets the requestor's distinguished name.
         """
@@ -533,7 +547,16 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def public_key(self, key):
+    def public_key(
+        self,
+        key: typing.Union[
+            dsa.DSAPublicKey,
+            rsa.RSAPublicKey,
+            ec.EllipticCurvePublicKey,
+            ed25519.Ed25519PublicKey,
+            ed448.Ed448PublicKey,
+        ],
+    ):
         """
         Sets the requestor's public key (as found in the signing request).
         """
@@ -564,7 +587,7 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def serial_number(self, number):
+    def serial_number(self, number: int):
         """
         Sets the certificate serial number.
         """
@@ -591,7 +614,7 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def not_valid_before(self, time):
+    def not_valid_before(self, time: datetime.datetime):
         """
         Sets the certificate activation time.
         """
@@ -620,7 +643,7 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def not_valid_after(self, time):
+    def not_valid_after(self, time: datetime.datetime):
         """
         Sets the certificate expiration time.
         """
@@ -652,14 +675,14 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
-    def add_extension(self, extension, critical):
+    def add_extension(self, extval: ExtensionType, critical: bool):
         """
         Adds an X.509 extension to the certificate.
         """
-        if not isinstance(extension, ExtensionType):
+        if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
-        extension = Extension(extension.oid, critical, extension)
+        extension = Extension(extval.oid, critical, extval)
         _reject_duplicate_extension(extension, self._extensions)
 
         return CertificateBuilder(
@@ -672,7 +695,12 @@ class CertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def sign(self, private_key, algorithm, backend=None):
+    def sign(
+        self,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+    ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
         """
@@ -713,7 +741,7 @@ class CertificateRevocationListBuilder(object):
         self._extensions = extensions
         self._revoked_certificates = revoked_certificates
 
-    def issuer_name(self, issuer_name):
+    def issuer_name(self, issuer_name: Name):
         if not isinstance(issuer_name, Name):
             raise TypeError("Expecting x509.Name object.")
         if self._issuer_name is not None:
@@ -726,7 +754,7 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
-    def last_update(self, last_update):
+    def last_update(self, last_update: datetime.datetime):
         if not isinstance(last_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._last_update is not None:
@@ -748,7 +776,7 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
-    def next_update(self, next_update):
+    def next_update(self, next_update: datetime.datetime):
         if not isinstance(next_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._next_update is not None:
@@ -770,14 +798,14 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
-    def add_extension(self, extension, critical):
+    def add_extension(self, extval: ExtensionType, critical: bool):
         """
         Adds an X.509 extension to the certificate revocation list.
         """
-        if not isinstance(extension, ExtensionType):
+        if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
-        extension = Extension(extension.oid, critical, extension)
+        extension = Extension(extval.oid, critical, extval)
         _reject_duplicate_extension(extension, self._extensions)
         return CertificateRevocationListBuilder(
             self._issuer_name,
@@ -787,7 +815,7 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
-    def add_revoked_certificate(self, revoked_certificate):
+    def add_revoked_certificate(self, revoked_certificate: RevokedCertificate):
         """
         Adds a revoked certificate to the CRL.
         """
@@ -802,7 +830,12 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates + [revoked_certificate],
         )
 
-    def sign(self, private_key, algorithm, backend=None):
+    def sign(
+        self,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+    ) -> CertificateRevocationList:
         backend = _get_backend(backend)
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
@@ -824,7 +857,7 @@ class RevokedCertificateBuilder(object):
         self._revocation_date = revocation_date
         self._extensions = extensions
 
-    def serial_number(self, number):
+    def serial_number(self, number: int):
         if not isinstance(number, int):
             raise TypeError("Serial number must be of integral type.")
         if self._serial_number is not None:
@@ -842,7 +875,7 @@ class RevokedCertificateBuilder(object):
             number, self._revocation_date, self._extensions
         )
 
-    def revocation_date(self, time):
+    def revocation_date(self, time: datetime.datetime):
         if not isinstance(time, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._revocation_date is not None:
@@ -856,11 +889,11 @@ class RevokedCertificateBuilder(object):
             self._serial_number, time, self._extensions
         )
 
-    def add_extension(self, extension, critical):
-        if not isinstance(extension, ExtensionType):
+    def add_extension(self, extval: ExtensionType, critical: bool):
+        if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
-        extension = Extension(extension.oid, critical, extension)
+        extension = Extension(extval.oid, critical, extval)
         _reject_duplicate_extension(extension, self._extensions)
         return RevokedCertificateBuilder(
             self._serial_number,
@@ -868,7 +901,7 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def build(self, backend=None):
+    def build(self, backend=None) -> RevokedCertificate:
         backend = _get_backend(backend)
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")
@@ -880,5 +913,5 @@ class RevokedCertificateBuilder(object):
         return backend.create_x509_revoked_certificate(self)
 
 
-def random_serial_number():
+def random_serial_number() -> int:
     return int.from_bytes(os.urandom(20), "big") >> 1
