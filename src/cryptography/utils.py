@@ -6,6 +6,7 @@
 import abc
 import inspect
 import sys
+import typing
 import warnings
 
 
@@ -23,19 +24,19 @@ PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn34 = CryptographyDeprecationWarning
 
 
-def _check_bytes(name, value):
+def _check_bytes(name: str, value: bytes):
     if not isinstance(value, bytes):
         raise TypeError("{} must be bytes".format(name))
 
 
-def _check_byteslike(name, value):
+def _check_byteslike(name: str, value: bytes):
     try:
         memoryview(value)
     except TypeError:
         raise TypeError("{} must be bytes-like".format(name))
 
 
-def read_only_property(name):
+def read_only_property(name: str):
     return property(lambda self: getattr(self, name))
 
 
@@ -58,7 +59,7 @@ def register_interface_if(predicate, iface):
     return register_decorator
 
 
-def int_to_bytes(integer, length=None):
+def int_to_bytes(integer: int, length: typing.Optional[int] = None):
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"
     )

@@ -764,11 +764,11 @@ X.509 Certificate Builder
             expiration time for the certificate.  The certificate may not be
             trusted clients if it is used after this time.
 
-    .. method:: add_extension(extension, critical)
+    .. method:: add_extension(extval, critical)
 
         Adds an X.509 extension to the certificate.
 
-        :param extension: An extension conforming to the
+        :param extval: An extension conforming to the
             :class:`~cryptography.x509.ExtensionType` interface.
 
         :param critical: Set to ``True`` if the extension must be understood and
@@ -993,11 +993,11 @@ X.509 Certificate Revocation List Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks
             the next update time for this CRL.
 
-    .. method:: add_extension(extension, critical)
+    .. method:: add_extension(extval, critical)
 
         Adds an X.509 extension to this CRL.
 
-        :param extension: An extension with the
+        :param extval: An extension with the
             :class:`~cryptography.x509.ExtensionType` interface.
 
         :param critical: Set to ``True`` if the extension must be understood and
@@ -1120,11 +1120,11 @@ X.509 Revoked Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             revocation time for the certificate.
 
-    .. method:: add_extension(extension, critical)
+    .. method:: add_extension(extval, critical)
 
         Adds an X.509 extension to this revoked certificate.
 
-        :param extension: An instance of one of the
+        :param extval: An instance of one of the
             :ref:`CRL entry extensions <crl_entry_extensions>`.
 
         :param critical: Set to ``True`` if the extension must be understood and
