@@ -16,6 +16,9 @@ Changelog
   themselves will need to have the Rust toolchain installed. Users who use an
   officially produced wheel will not need to make any changes. The minimum
   supported Rust version is 1.45.0.
+* ``cryptography`` has begun including :pep:`484` type hints on its APIs. While
+  they do not yet cover all public APIs, users can begin using them to type
+  check their code with ``mypy``.
 
 .. _v3-3-1:
 
