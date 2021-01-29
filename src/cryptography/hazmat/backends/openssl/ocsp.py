@@ -3,8 +3,6 @@
 # for complete details.
 
 
-import functools
-
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
@@ -26,20 +24,6 @@ from cryptography.x509.ocsp import (
     _OIDS_TO_HASH,
     _RESPONSE_STATUS_TO_ENUM,
 )
-
-
-def _requires_successful_response(func):
-    @functools.wraps(func)
-    def wrapper(self, *args):
-        if self.response_status != OCSPResponseStatus.SUCCESSFUL:
-            raise ValueError(
-                "OCSP response status is not successful so the property "
-                "has no value"
-            )
-        else:
-            return func(self, *args)
-
-    return wrapper
 
 
 def _issuer_key_hash(backend, cert_id):
@@ -136,17 +120,24 @@ class _OCSPResponse(object):
 
     response_status = utils.read_only_property("_status")
 
+    def _requires_successful_response(self):
+        if self.response_status != OCSPResponseStatus.SUCCESSFUL:
+            raise ValueError(
+                "OCSP response status is not successful so the property "
+                "has no value"
+            )
+
     @property
-    @_requires_successful_response
     def signature_algorithm_oid(self):
+        self._requires_successful_response()
         alg = self._backend._lib.OCSP_resp_get0_tbs_sigalg(self._basic)
         self._backend.openssl_assert(alg != self._backend._ffi.NULL)
         oid = _obj2txt(self._backend, alg.algorithm)
         return x509.ObjectIdentifier(oid)
 
     @property
-    @_requires_successful_response
     def signature_hash_algorithm(self):
+        self._requires_successful_response()
         oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
@@ -156,15 +147,15 @@ class _OCSPResponse(object):
             )
 
     @property
-    @_requires_successful_response
     def signature(self):
+        self._requires_successful_response()
         sig = self._backend._lib.OCSP_resp_get0_signature(self._basic)
         self._backend.openssl_assert(sig != self._backend._ffi.NULL)
         return _asn1_string_to_bytes(self._backend, sig)
 
     @property
-    @_requires_successful_response
     def tbs_response_bytes(self):
+        self._requires_successful_response()
         respdata = self._backend._lib.OCSP_resp_get0_respdata(self._basic)
         self._backend.openssl_assert(respdata != self._backend._ffi.NULL)
         pp = self._backend._ffi.new("unsigned char **")
@@ -177,8 +168,8 @@ class _OCSPResponse(object):
         return self._backend._ffi.buffer(pp[0], res)[:]
 
     @property
-    @_requires_successful_response
     def certificates(self):
+        self._requires_successful_response()
         sk_x509 = self._backend._lib.OCSP_resp_get0_certs(self._basic)
         num = self._backend._lib.sk_X509_num(sk_x509)
         certs = []
@@ -195,8 +186,8 @@ class _OCSPResponse(object):
         return certs
 
     @property
-    @_requires_successful_response
     def responder_key_hash(self):
+        self._requires_successful_response()
         _, asn1_string = self._responder_key_name()
         if asn1_string == self._backend._ffi.NULL:
             return None
@@ -204,8 +195,8 @@ class _OCSPResponse(object):
             return _asn1_string_to_bytes(self._backend, asn1_string)
 
     @property
-    @_requires_successful_response
     def responder_name(self):
+        self._requires_successful_response()
         x509_name, _ = self._responder_key_name()
         if x509_name == self._backend._ffi.NULL:
             return None
@@ -222,16 +213,16 @@ class _OCSPResponse(object):
         return x509_name[0], asn1_string[0]
 
     @property
-    @_requires_successful_response
     def produced_at(self):
+        self._requires_successful_response()
         produced_at = self._backend._lib.OCSP_resp_get0_produced_at(
             self._basic
         )
         return _parse_asn1_generalized_time(self._backend, produced_at)
 
     @property
-    @_requires_successful_response
     def certificate_status(self):
+        self._requires_successful_response()
         status = self._backend._lib.OCSP_single_get0_status(
             self._single,
             self._backend._ffi.NULL,
@@ -243,8 +234,8 @@ class _OCSPResponse(object):
         return _CERT_STATUS_TO_ENUM[status]
 
     @property
-    @_requires_successful_response
     def revocation_time(self):
+        self._requires_successful_response()
         if self.certificate_status is not OCSPCertStatus.REVOKED:
             return None
 
@@ -260,8 +251,8 @@ class _OCSPResponse(object):
         return _parse_asn1_generalized_time(self._backend, asn1_time[0])
 
     @property
-    @_requires_successful_response
     def revocation_reason(self):
+        self._requires_successful_response()
         if self.certificate_status is not OCSPCertStatus.REVOKED:
             return None
 
@@ -283,8 +274,8 @@ class _OCSPResponse(object):
             return _CRL_ENTRY_REASON_CODE_TO_ENUM[reason_ptr[0]]
 
     @property
-    @_requires_successful_response
     def this_update(self):
+        self._requires_successful_response()
         asn1_time = self._backend._ffi.new("ASN1_GENERALIZEDTIME **")
         self._backend._lib.OCSP_single_get0_status(
             self._single,
@@ -297,8 +288,8 @@ class _OCSPResponse(object):
         return _parse_asn1_generalized_time(self._backend, asn1_time[0])
 
     @property
-    @_requires_successful_response
     def next_update(self):
+        self._requires_successful_response()
         asn1_time = self._backend._ffi.new("ASN1_GENERALIZEDTIME **")
         self._backend._lib.OCSP_single_get0_status(
             self._single,
@@ -313,33 +304,33 @@ class _OCSPResponse(object):
             return None
 
     @property
-    @_requires_successful_response
     def issuer_key_hash(self):
+        self._requires_successful_response()
         return _issuer_key_hash(self._backend, self._cert_id)
 
     @property
-    @_requires_successful_response
     def issuer_name_hash(self):
+        self._requires_successful_response()
         return _issuer_name_hash(self._backend, self._cert_id)
 
     @property
-    @_requires_successful_response
     def hash_algorithm(self):
+        self._requires_successful_response()
         return _hash_algorithm(self._backend, self._cert_id)
 
     @property
-    @_requires_successful_response
     def serial_number(self):
+        self._requires_successful_response()
         return _serial_number(self._backend, self._cert_id)
 
     @utils.cached_property
-    @_requires_successful_response
     def extensions(self):
+        self._requires_successful_response()
         return self._backend._ocsp_basicresp_ext_parser.parse(self._basic)
 
     @utils.cached_property
-    @_requires_successful_response
     def single_extensions(self):
+        self._requires_successful_response()
         return self._backend._ocsp_singleresp_ext_parser.parse(self._single)
 
     def public_bytes(self, encoding):
