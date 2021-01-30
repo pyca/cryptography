@@ -105,75 +105,64 @@ class Hash(object):
         return digest
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA1(object):
+class SHA1(HashAlgorithm):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA512_224(object):  # noqa: N801
+class SHA512_224(HashAlgorithm):  # noqa: N801
     name = "sha512-224"
     digest_size = 28
     block_size = 128
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA512_256(object):  # noqa: N801
+class SHA512_256(HashAlgorithm):  # noqa: N801
     name = "sha512-256"
     digest_size = 32
     block_size = 128
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA224(object):
+class SHA224(HashAlgorithm):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA256(object):
+class SHA256(HashAlgorithm):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA384(object):
+class SHA384(HashAlgorithm):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA512(object):
+class SHA512(HashAlgorithm):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA3_224(object):  # noqa: N801
+class SHA3_224(HashAlgorithm):  # noqa: N801
     name = "sha3-224"
     digest_size = 28
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA3_256(object):  # noqa: N801
+class SHA3_256(HashAlgorithm):  # noqa: N801
     name = "sha3-256"
     digest_size = 32
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA3_384(object):  # noqa: N801
+class SHA3_384(HashAlgorithm):  # noqa: N801
     name = "sha3-384"
     digest_size = 48
 
 
-@utils.register_interface(HashAlgorithm)
-class SHA3_512(object):  # noqa: N801
+class SHA3_512(HashAlgorithm):  # noqa: N801
     name = "sha3-512"
     digest_size = 64
 
@@ -212,8 +201,7 @@ class SHAKE256(object):
     digest_size = utils.read_only_property("_digest_size")
 
 
-@utils.register_interface(HashAlgorithm)
-class MD5(object):
+class MD5(HashAlgorithm):
     name = "md5"
     digest_size = 16
     block_size = 64
