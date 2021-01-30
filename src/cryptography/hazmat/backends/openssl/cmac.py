@@ -51,11 +51,11 @@ class _CMACContext(object):
 
     algorithm = utils.read_only_property("_algorithm")
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
         self._backend.openssl_assert(res == 1)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         buf = self._backend._ffi.new("unsigned char[]", self._output_length)
         length = self._backend._ffi.new("size_t *", self._output_length)
         res = self._backend._lib.CMAC_Final(self._ctx, buf, length)
@@ -65,7 +65,7 @@ class _CMACContext(object):
 
         return self._backend._ffi.buffer(buf)[:]
 
-    def copy(self):
+    def copy(self) -> "_CMACContext":
         copied_ctx = self._backend._lib.CMAC_CTX_new()
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.CMAC_CTX_free
@@ -74,7 +74,7 @@ class _CMACContext(object):
         self._backend.openssl_assert(res == 1)
         return _CMACContext(self._backend, self._algorithm, ctx=copied_ctx)
 
-    def verify(self, signature):
+    def verify(self, signature: bytes) -> None:
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")

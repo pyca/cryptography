@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-
 import abc
 
 from cryptography import utils
@@ -17,13 +16,13 @@ from cryptography.hazmat.backends.interfaces import HashBackend
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def name(self):
+    def name(self) -> str:
         """
         A string naming this algorithm (e.g. "sha256", "md5").
         """
 
     @abc.abstractproperty
-    def digest_size(self):
+    def digest_size(self) -> int:
         """
         The size of the resulting digest in bytes.
         """
@@ -31,25 +30,25 @@ class HashAlgorithm(metaclass=abc.ABCMeta):
 
 class HashContext(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def algorithm(self):
+    def algorithm(self) -> HashAlgorithm:
         """
         A HashAlgorithm that will be used by this context.
         """
 
     @abc.abstractmethod
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         """
         Processes the provided bytes through the hash.
         """
 
     @abc.abstractmethod
-    def finalize(self):
+    def finalize(self) -> bytes:
         """
         Finalizes the hash context and returns the hash digest as bytes.
         """
 
     @abc.abstractmethod
-    def copy(self):
+    def copy(self) -> "HashContext":
         """
         Return a HashContext that is a copy of the current context.
         """
@@ -61,9 +60,8 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
     """
 
 
-@utils.register_interface(HashContext)
-class Hash(object):
-    def __init__(self, algorithm, backend=None, ctx=None):
+class Hash(HashContext):
+    def __init__(self, algorithm: HashAlgorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
@@ -84,20 +82,20 @@ class Hash(object):
 
     algorithm = utils.read_only_property("_algorithm")
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         utils._check_byteslike("data", data)
         self._ctx.update(data)
 
-    def copy(self):
+    def copy(self) -> "Hash":
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return Hash(
             self.algorithm, backend=self._backend, ctx=self._ctx.copy()
         )
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
@@ -167,12 +165,10 @@ class SHA3_512(HashAlgorithm):  # noqa: N801
     digest_size = 64
 
 
-@utils.register_interface(HashAlgorithm)
-@utils.register_interface(ExtendableOutputFunction)
-class SHAKE128(object):
+class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
     name = "shake128"
 
-    def __init__(self, digest_size):
+    def __init__(self, digest_size: int):
         if not isinstance(digest_size, int):
             raise TypeError("digest_size must be an integer")
 
@@ -184,12 +180,10 @@ class SHAKE128(object):
     digest_size = utils.read_only_property("_digest_size")
 
 
-@utils.register_interface(HashAlgorithm)
-@utils.register_interface(ExtendableOutputFunction)
-class SHAKE256(object):
+class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     name = "shake256"
 
-    def __init__(self, digest_size):
+    def __init__(self, digest_size: int):
         if not isinstance(digest_size, int):
             raise TypeError("digest_size must be an integer")
 
@@ -207,14 +201,13 @@ class MD5(HashAlgorithm):
     block_size = 64
 
 
-@utils.register_interface(HashAlgorithm)
-class BLAKE2b(object):
+class BLAKE2b(HashAlgorithm):
     name = "blake2b"
     _max_digest_size = 64
     _min_digest_size = 1
     block_size = 128
 
-    def __init__(self, digest_size):
+    def __init__(self, digest_size: int):
 
         if digest_size != 64:
             raise ValueError("Digest size must be 64")
@@ -224,14 +217,13 @@ class BLAKE2b(object):
     digest_size = utils.read_only_property("_digest_size")
 
 
-@utils.register_interface(HashAlgorithm)
-class BLAKE2s(object):
+class BLAKE2s(HashAlgorithm):
     name = "blake2s"
     block_size = 64
     _max_digest_size = 32
     _min_digest_size = 1
 
-    def __init__(self, digest_size):
+    def __init__(self, digest_size: int):
 
         if digest_size != 32:
             raise ValueError("Digest size must be 32")
