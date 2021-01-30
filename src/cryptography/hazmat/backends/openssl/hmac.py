@@ -12,9 +12,10 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import constant_time, hashes
 
 
-@utils.register_interface(hashes.HashContext)
-class _HMACContext(object):
-    def __init__(self, backend, key, algorithm, ctx=None):
+class _HMACContext(hashes.HashContext):
+    def __init__(
+        self, backend, key: bytes, algorithm: hashes.HashAlgorithm, ctx=None
+    ):
         self._algorithm = algorithm
         self._backend = backend
 
@@ -41,7 +42,7 @@ class _HMACContext(object):
 
     algorithm = utils.read_only_property("_algorithm")
 
-    def copy(self):
+    def copy(self) -> "_HMACContext":
         copied_ctx = self._backend._lib.HMAC_CTX_new()
         self._backend.openssl_assert(copied_ctx != self._backend._ffi.NULL)
         copied_ctx = self._backend._ffi.gc(
@@ -53,12 +54,12 @@ class _HMACContext(object):
             self._backend, self._key, self.algorithm, ctx=copied_ctx
         )
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         data_ptr = self._backend._ffi.from_buffer(data)
         res = self._backend._lib.HMAC_Update(self._ctx, data_ptr, len(data))
         self._backend.openssl_assert(res != 0)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         buf = self._backend._ffi.new(
             "unsigned char[]", self._backend._lib.EVP_MAX_MD_SIZE
         )
@@ -68,7 +69,7 @@ class _HMACContext(object):
         self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
-    def verify(self, signature):
+    def verify(self, signature: bytes) -> None:
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")
