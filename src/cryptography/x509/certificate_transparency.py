@@ -4,6 +4,7 @@
 
 
 import abc
+import datetime
 from enum import Enum
 
 
@@ -18,25 +19,25 @@ class Version(Enum):
 
 class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def version(self):
+    def version(self) -> Version:
         """
         Returns the SCT version.
         """
 
     @abc.abstractproperty
-    def log_id(self):
+    def log_id(self) -> bytes:
         """
         Returns an identifier indicating which log this SCT is for.
         """
 
     @abc.abstractproperty
-    def timestamp(self):
+    def timestamp(self) -> datetime.datetime:
         """
         Returns the timestamp for this SCT.
         """
 
     @abc.abstractproperty
-    def entry_type(self):
+    def entry_type(self) -> LogEntryType:
         """
         Returns whether this is an SCT for a certificate or pre-certificate.
         """
