@@ -157,8 +157,8 @@ class Fernet(object):
 
 
 class MultiFernet(object):
-    def __init__(self, fernets_it: typing.Iterator[Fernet]):
-        fernets = list(fernets_it)
+    def __init__(self, fernets: typing.Iterable[Fernet]):
+        fernets = list(fernets)
         if not fernets:
             raise ValueError(
                 "MultiFernet requires at least one Fernet instance"

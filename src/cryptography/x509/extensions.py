@@ -7,6 +7,7 @@ import abc
 import datetime
 import hashlib
 import ipaddress
+import typing
 from enum import Enum
 
 from cryptography import utils
@@ -86,27 +87,27 @@ def _make_sequence_methods(field_name):
 
 
 class DuplicateExtension(Exception):
-    def __init__(self, msg, oid):
+    def __init__(self, msg: str, oid: ObjectIdentifier):
         super(DuplicateExtension, self).__init__(msg)
         self.oid = oid
 
 
 class ExtensionNotFound(Exception):
-    def __init__(self, msg, oid):
+    def __init__(self, msg: str, oid: ObjectIdentifier):
         super(ExtensionNotFound, self).__init__(msg)
         self.oid = oid
 
 
 class ExtensionType(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def oid(self):
+    def oid(self) -> ObjectIdentifier:
         """
         Returns the oid associated with the given extension type.
         """
 
 
 class Extensions(object):
-    def __init__(self, extensions):
+    def __init__(self, extensions: typing.List[ExtensionType]):
         self._extensions = extensions
 
     def get_extension_for_oid(self, oid):

@@ -26,8 +26,10 @@ from cryptography.x509.base import _PUBLIC_KEY_TYPES
 from cryptography.x509.name import _ASN1Type
 
 
-@utils.register_interface(x509.Certificate)
-class _Certificate(object):
+class _Certificate(x509.Certificate):
+    # Keep-alive reference used by OCSP
+    _ocsp_resp_ref: typing.Any
+
     def __init__(self, backend, x509_cert):
         self._backend = backend
         self._x509 = x509_cert
