@@ -474,14 +474,18 @@ class TestDSAVerification(object):
         with pytest.raises(TypeError), pytest.warns(
             CryptographyDeprecationWarning
         ):
-            private_key.signer(Prehashed(hashes.SHA1()))
+            private_key.signer(
+                Prehashed(hashes.SHA1())  # type: ignore[arg-type]
+            )
 
     def test_prehashed_unsupported_in_verifier_ctx(self, backend):
         public_key = DSA_KEY_1024.private_key(backend).public_key()
         with pytest.raises(TypeError), pytest.warns(
             CryptographyDeprecationWarning
         ):
-            public_key.verifier(b"0" * 64, Prehashed(hashes.SHA1()))
+            public_key.verifier(
+                b"0" * 64, Prehashed(hashes.SHA1())  # type: ignore[arg-type]
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
@@ -566,13 +570,13 @@ class TestDSANumbers(object):
 
     def test_dsa_parameter_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=None, q=2, g=3)
+            dsa.DSAParameterNumbers(p=None, q=2, g=3)  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=1, q=None, g=3)
+            dsa.DSAParameterNumbers(p=1, q=None, g=3)  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=1, q=2, g=None)
+            dsa.DSAParameterNumbers(p=1, q=2, g=None)  # type: ignore[arg-type]
 
     def test_dsa_public_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -584,11 +588,16 @@ class TestDSANumbers(object):
 
     def test_dsa_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            dsa.DSAPublicNumbers(y=4, parameter_numbers=None)
+            dsa.DSAPublicNumbers(
+                y=4, parameter_numbers=None  # type: ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
             parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
-            dsa.DSAPublicNumbers(y=None, parameter_numbers=parameter_numbers)
+            dsa.DSAPublicNumbers(
+                y=None,  # type: ignore[arg-type]
+                parameter_numbers=parameter_numbers,
+            )
 
     def test_dsa_private_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -607,10 +616,15 @@ class TestDSANumbers(object):
             y=4, parameter_numbers=parameter_numbers
         )
         with pytest.raises(TypeError):
-            dsa.DSAPrivateNumbers(x=4, public_numbers=None)
+            dsa.DSAPrivateNumbers(
+                x=4,
+                public_numbers=None,  # type: ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
-            dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)
+            dsa.DSAPrivateNumbers(
+                x=None, public_numbers=public_numbers  # type: ignore[arg-type]
+            )
 
     def test_repr(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -965,13 +979,17 @@ class TestDSAPEMPublicKeySerialization(object):
         key = DSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                "notencoding", serialization.PublicFormat.SubjectPublicKeyInfo
+                "notencoding",  # type: ignore[arg-type]
+                serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
     def test_public_bytes_invalid_format(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
-            key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",  # type: ignore[arg-type]
+            )
 
     def test_public_bytes_pkcs1_unsupported(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
