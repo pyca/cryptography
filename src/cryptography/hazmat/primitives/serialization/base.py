@@ -14,12 +14,12 @@ from cryptography.hazmat.primitives.asymmetric import dh
 
 def load_pem_private_key(
     data: bytes, password: typing.Optional[bytes], backend=None
-) -> "_PRIVATE_KEY_TYPES":
+) -> _PRIVATE_KEY_TYPES:
     backend = _get_backend(backend)
     return backend.load_pem_private_key(data, password)
 
 
-def load_pem_public_key(data: bytes, backend=None) -> "_PUBLIC_KEY_TYPES":
+def load_pem_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
     backend = _get_backend(backend)
     return backend.load_pem_public_key(data)
 
@@ -31,12 +31,12 @@ def load_pem_parameters(data: bytes, backend=None) -> dh.DHParameters:
 
 def load_der_private_key(
     data: bytes, password: typing.Optional[bytes], backend=None
-) -> "_PRIVATE_KEY_TYPES":
+) -> _PRIVATE_KEY_TYPES:
     backend = _get_backend(backend)
     return backend.load_der_private_key(data, password)
 
 
-def load_der_public_key(data: bytes, backend=None) -> "_PUBLIC_KEY_TYPES":
+def load_der_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
     backend = _get_backend(backend)
     return backend.load_der_public_key(data)
 
