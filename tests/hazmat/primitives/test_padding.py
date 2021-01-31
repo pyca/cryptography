@@ -158,10 +158,10 @@ class TestANSIX923(object):
     def test_non_bytes(self):
         padder = padding.ANSIX923(128).padder()
         with pytest.raises(TypeError):
-            padder.update("abc")
+            padder.update("abc")  # type: ignore[arg-type]
         unpadder = padding.ANSIX923(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update("abc")
+            unpadder.update("abc")  # type: ignore[arg-type]
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801

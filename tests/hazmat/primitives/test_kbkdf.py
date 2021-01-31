@@ -284,6 +284,7 @@ class TestKBKDFHMAC(object):
                 CounterLocation.BeforeFixed,
                 "label",
                 b"context",
+                None,
                 backend=backend,
             )
 

@@ -6,6 +6,7 @@
 import binascii
 import itertools
 import os
+import typing
 
 import pytest
 
@@ -203,7 +204,7 @@ class TestDH(object):
             )[0]
             p = int(vector["p"], 16)
             g = int(vector["g"], 16)
-            q = int(vector["q"], 16)
+            q: typing.Optional[int] = int(vector["q"], 16)
         else:
             parameters = backend.generate_dh_private_key_and_parameters(2, 512)
 
@@ -388,6 +389,7 @@ class TestDH(object):
             mode="rb",
         )
         key = serialization.load_pem_private_key(data, None, backend)
+        assert isinstance(key, dh.DHPrivateKey)
         assert key.key_size == 256
 
     @pytest.mark.parametrize(

@@ -6,6 +6,7 @@
 import binascii
 import itertools
 import os
+import typing
 from binascii import hexlify
 
 import pytest
@@ -35,7 +36,7 @@ from ...utils import (
     raises_unsupported_algorithm,
 )
 
-_HASH_TYPES = {
+_HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
     "SHA-1": hashes.SHA1,
     "SHA-224": hashes.SHA224,
     "SHA-256": hashes.SHA256,
@@ -81,14 +82,12 @@ def test_get_curve_for_oid():
         ec.get_curve_for_oid(x509.ObjectIdentifier("1.1.1.1"))
 
 
-@utils.register_interface(ec.EllipticCurve)
-class DummyCurve(object):
+class DummyCurve(ec.EllipticCurve):
     name = "dummy-curve"
     key_size = 1
 
 
-@utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
-class DummySignatureAlgorithm(object):
+class DummySignatureAlgorithm(ec.EllipticCurveSignatureAlgorithm):
     algorithm = None
 
 
@@ -290,7 +289,9 @@ class TestECWithNumbers(object):
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
+                    vector["curve"]
+                ]
 
                 _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -502,7 +503,9 @@ class TestECDSAVectors(object):
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
+                    vector["curve"]
+                ]
 
                 _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -689,6 +692,7 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
@@ -697,6 +701,7 @@ class TestECSerialization(object):
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -732,6 +737,7 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
@@ -740,6 +746,7 @@ class TestECSerialization(object):
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -778,10 +785,12 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             encoding, fmt, serialization.NoEncryption()
         )
         loaded_key = loader_func(serialized, None, backend)
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num

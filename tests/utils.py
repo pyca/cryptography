@@ -8,6 +8,7 @@ import collections
 import json
 import os
 import re
+import typing
 from contextlib import contextmanager
 
 import pytest
@@ -42,6 +43,7 @@ def load_vectors_from_file(filename, loader, mode="r"):
         return loader(vector_file)
 
 
+@typing.no_type_check
 def load_nist_vectors(vector_data):
     test_data = None
     data = []
@@ -107,6 +109,7 @@ def load_cryptrec_vectors(vector_data):
     return cryptrec_list
 
 
+@typing.no_type_check
 def load_hash_vectors(vector_data):
     vectors = []
     key = None
@@ -146,6 +149,7 @@ def load_hash_vectors(vector_data):
     return vectors
 
 
+@typing.no_type_check
 def load_pkcs1_vectors(vector_data):
     """
     Loads data out of RSA PKCS #1 vector files.
@@ -276,6 +280,7 @@ def load_pkcs1_vectors(vector_data):
     return vectors
 
 
+@typing.no_type_check
 def load_rsa_nist_vectors(vector_data):
     test_data = None
     p = None
@@ -532,6 +537,7 @@ def load_fips_ecdsa_signing_vectors(vector_data):
     return vectors
 
 
+@typing.no_type_check
 def load_kasvs_dh_vectors(vector_data):
     """
     Loads data out of the KASVS key exchange vector data
@@ -588,6 +594,7 @@ def load_kasvs_dh_vectors(vector_data):
     return vectors
 
 
+@typing.no_type_check
 def load_kasvs_ecdh_vectors(vector_data):
     """
     Loads data out of the KASVS key exchange vector data
@@ -696,6 +703,7 @@ def load_kasvs_ecdh_vectors(vector_data):
     return vectors
 
 
+@typing.no_type_check
 def load_x963_vectors(vector_data):
     """
     Loads data out of the X9.63 vector data
@@ -800,6 +808,7 @@ def load_ed25519_vectors(vector_data):
     return data
 
 
+@typing.no_type_check
 def load_nist_ccm_vectors(vector_data):
     test_data = None
     section_data = None

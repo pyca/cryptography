@@ -1669,10 +1669,10 @@ class TestDNSName(object):
         assert name.value == "*.xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
-            x509.DNSName(1.3)
+            x509.DNSName(1.3)  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            x509.DNSName(b"bytes not allowed")
+            x509.DNSName(b"bytes not allowed")  # type:ignore[arg-type]
 
     def test_ne(self):
         n1 = x509.DNSName("test1")
@@ -1692,10 +1692,10 @@ class TestDNSName(object):
 class TestDirectoryName(object):
     def test_not_name(self):
         with pytest.raises(TypeError):
-            x509.DirectoryName(b"notaname")
+            x509.DirectoryName(b"notaname")  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            x509.DirectoryName(1.3)
+            x509.DirectoryName(1.3)  # type:ignore[arg-type]
 
     def test_repr(self):
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "value1")])
@@ -1754,10 +1754,10 @@ class TestRFC822Name(object):
 
     def test_not_text(self):
         with pytest.raises(TypeError):
-            x509.RFC822Name(1.3)
+            x509.RFC822Name(1.3)  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            x509.RFC822Name(b"bytes")
+            x509.RFC822Name(b"bytes")  # type:ignore[arg-type]
 
     def test_invalid_email(self):
         with pytest.raises(ValueError):
@@ -1794,7 +1794,7 @@ class TestUniformResourceIdentifier(object):
 
     def test_not_text(self):
         with pytest.raises(TypeError):
-            x509.UniformResourceIdentifier(1.3)
+            x509.UniformResourceIdentifier(1.3)  # type:ignore[arg-type]
 
     def test_no_parsed_hostname(self):
         gn = x509.UniformResourceIdentifier("singlelabel")
@@ -1830,10 +1830,10 @@ class TestUniformResourceIdentifier(object):
 class TestRegisteredID(object):
     def test_not_oid(self):
         with pytest.raises(TypeError):
-            x509.RegisteredID(b"notanoid")
+            x509.RegisteredID(b"notanoid")  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            x509.RegisteredID(1.3)
+            x509.RegisteredID(1.3)  # type:ignore[arg-type]
 
     def test_repr(self):
         gn = x509.RegisteredID(NameOID.COMMON_NAME)
@@ -1864,10 +1864,10 @@ class TestRegisteredID(object):
 class TestIPAddress(object):
     def test_not_ipaddress(self):
         with pytest.raises(TypeError):
-            x509.IPAddress(b"notanipaddress")
+            x509.IPAddress(b"notanipaddress")  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            x509.IPAddress(1.3)
+            x509.IPAddress(1.3)  # type:ignore[arg-type]
 
     def test_repr(self):
         gn = x509.IPAddress(ipaddress.IPv4Address("127.0.0.1"))
@@ -1904,10 +1904,16 @@ class TestIPAddress(object):
 class TestOtherName(object):
     def test_invalid_args(self):
         with pytest.raises(TypeError):
-            x509.OtherName(b"notanobjectidentifier", b"derdata")
+            x509.OtherName(
+                b"notanobjectidentifier",  # type:ignore[arg-type]
+                b"derdata",
+            )
 
         with pytest.raises(TypeError):
-            x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), "notderdata")
+            x509.OtherName(
+                x509.ObjectIdentifier("1.2.3.4"),
+                "notderdata",  # type:ignore[arg-type]
+            )
 
     def test_repr(self):
         gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")

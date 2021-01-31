@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import textwrap
+import typing
 
 import pytest
 
@@ -123,6 +124,7 @@ main(sys.argv)
 """
 
 
+@typing.no_type_check
 def assert_no_memory_leaks(s, argv=[]):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)

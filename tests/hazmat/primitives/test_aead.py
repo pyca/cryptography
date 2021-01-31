@@ -25,7 +25,7 @@ from ...utils import (
 )
 
 
-class FakeData(object):
+class FakeData(bytes):
     def __len__(self):
         return 2 ** 32 + 1
 
@@ -71,7 +71,7 @@ class TestChaCha20Poly1305(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            ChaCha20Poly1305(object())
+            ChaCha20Poly1305(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             ChaCha20Poly1305(b"0" * 31)
@@ -215,7 +215,7 @@ class TestAESCCM(object):
             AESCCM(key, tag_length=2)
 
         with pytest.raises(TypeError):
-            AESCCM(key, tag_length="notanint")
+            AESCCM(key, tag_length="notanint")  # type:ignore[arg-type]
 
     def test_invalid_nonce_length(self, backend):
         key = AESCCM.generate_key(128)
@@ -298,14 +298,14 @@ class TestAESCCM(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM(object())
+            AESCCM(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESCCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM.generate_key(object())
+            AESCCM.generate_key(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESCCM.generate_key(129)
@@ -430,14 +430,14 @@ class TestAESGCM(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM(object())
+            AESGCM(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESGCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM.generate_key(object())
+            AESGCM.generate_key(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESGCM.generate_key(129)

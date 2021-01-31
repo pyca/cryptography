@@ -276,6 +276,7 @@ class TestRSA(object):
         private_key = serialization.load_der_private_key(
             binascii.unhexlify(vector["key"]), None, backend
         )
+        assert isinstance(private_key, rsa.RSAPrivateKey)
         assert vector["oaepdigest"] == b"SHA512"
         decrypted = private_key.decrypt(
             binascii.unhexlify(vector["input"]),
@@ -844,6 +845,7 @@ class TestRSAVerification(object):
             b"bda3b33946490057b9a3003d3fd9daf7c4778b43fd46144d945d815f12628ff4"
         )
         public_key = serialization.load_der_public_key(key_der, backend)
+        assert isinstance(public_key, rsa.RSAPublicKey)
         with pytest.raises(InvalidSignature):
             public_key.verify(
                 sig,
@@ -2164,6 +2166,7 @@ class TestRSAPrivateKeySerialization(object):
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -2201,6 +2204,7 @@ class TestRSAPrivateKeySerialization(object):
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num

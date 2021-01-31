@@ -10,7 +10,7 @@ import pytest
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from .utils import wycheproof_tests
 
@@ -69,6 +69,7 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
+    assert isinstance(key, rsa.RSAPublicKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if digest is None or not backend.hash_supported(digest):
@@ -100,6 +101,7 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
         password=None,
         backend=backend,
     )
+    assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     sig = key.sign(
@@ -126,6 +128,7 @@ def test_rsa_pss_signature(backend, wycheproof):
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
+    assert isinstance(key, rsa.RSAPublicKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
 
@@ -187,6 +190,7 @@ def test_rsa_oaep_encryption(backend, wycheproof):
         password=None,
         backend=backend,
     )
+    assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
 
@@ -227,6 +231,7 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
         password=None,
         backend=backend,
     )
+    assert isinstance(key, rsa.RSAPrivateKey)
 
     if wycheproof.valid:
         pt = key.decrypt(
