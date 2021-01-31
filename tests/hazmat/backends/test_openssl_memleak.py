@@ -124,7 +124,6 @@ main(sys.argv)
 """
 
 
-@typing.no_type_check
 def assert_no_memory_leaks(s, argv=[]):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
@@ -149,8 +148,12 @@ def assert_no_memory_leaks(s, argv=[]):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    assert proc.stdout is not None
+    assert proc.stderr is not None
     try:
         proc.wait()
+        # stdout/stderr are Optional types, so we need to assert not None and
+        # then re-assign to a narrower type to make the type checker happy.
         if proc.returncode == 255:
             # 255 means there was a leak, load the info about what mallocs
             # weren't freed.

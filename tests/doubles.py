@@ -25,7 +25,7 @@ class DummyMode(Mode):
 class DummyHashAlgorithm(hashes.HashAlgorithm):
     name = "dummy-hash"
     block_size = None
-    digest_size = None  # type: ignore[assignment]
+    digest_size = 32
 
 
 class DummyKeySerializationEncryption(
