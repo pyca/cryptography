@@ -221,13 +221,9 @@ class TestDH(object):
         deserialized_public = public.public_key(backend)
         deserialized_private = private.private_key(backend)
 
-        assert isinstance(
-            deserialized_params, dh.DHParameters
-        )
+        assert isinstance(deserialized_params, dh.DHParameters)
         assert isinstance(deserialized_public, dh.DHPublicKey)
-        assert isinstance(
-            deserialized_private, dh.DHPrivateKey
-        )
+        assert isinstance(deserialized_private, dh.DHPrivateKey)
 
     @pytest.mark.skip_fips(reason="FIPS requires specific parameters")
     def test_numbers_unsupported_parameters(self, backend):
