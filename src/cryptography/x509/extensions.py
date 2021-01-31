@@ -107,7 +107,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
 
 
 class Extensions(object):
-    def __init__(self, extensions: typing.List[ExtensionType]):
+    def __init__(self, extensions: typing.List["Extension"]):
         self._extensions = extensions
 
     def get_extension_for_oid(self, oid):
@@ -139,8 +139,7 @@ class Extensions(object):
         return "<Extensions({})>".format(self._extensions)
 
 
-@utils.register_interface(ExtensionType)
-class CRLNumber(object):
+class CRLNumber(ExtensionType):
     oid = ExtensionOID.CRL_NUMBER
 
     def __init__(self, crl_number):
@@ -167,8 +166,7 @@ class CRLNumber(object):
     crl_number = utils.read_only_property("_crl_number")
 
 
-@utils.register_interface(ExtensionType)
-class AuthorityKeyIdentifier(object):
+class AuthorityKeyIdentifier(ExtensionType):
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
     def __init__(
@@ -259,8 +257,7 @@ class AuthorityKeyIdentifier(object):
     )
 
 
-@utils.register_interface(ExtensionType)
-class SubjectKeyIdentifier(object):
+class SubjectKeyIdentifier(ExtensionType):
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
     def __init__(self, digest):
@@ -288,8 +285,7 @@ class SubjectKeyIdentifier(object):
         return hash(self.digest)
 
 
-@utils.register_interface(ExtensionType)
-class AuthorityInformationAccess(object):
+class AuthorityInformationAccess(ExtensionType):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
@@ -320,8 +316,7 @@ class AuthorityInformationAccess(object):
         return hash(tuple(self._descriptions))
 
 
-@utils.register_interface(ExtensionType)
-class SubjectInformationAccess(object):
+class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
@@ -388,8 +383,7 @@ class AccessDescription(object):
     access_location = utils.read_only_property("_access_location")
 
 
-@utils.register_interface(ExtensionType)
-class BasicConstraints(object):
+class BasicConstraints(ExtensionType):
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
     def __init__(self, ca, path_length):
@@ -430,8 +424,7 @@ class BasicConstraints(object):
         return hash((self.ca, self.path_length))
 
 
-@utils.register_interface(ExtensionType)
-class DeltaCRLIndicator(object):
+class DeltaCRLIndicator(ExtensionType):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
     def __init__(self, crl_number):
@@ -458,8 +451,7 @@ class DeltaCRLIndicator(object):
         return "<DeltaCRLIndicator(crl_number={0.crl_number})>".format(self)
 
 
-@utils.register_interface(ExtensionType)
-class CRLDistributionPoints(object):
+class CRLDistributionPoints(ExtensionType):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(self, distribution_points):
@@ -494,8 +486,7 @@ class CRLDistributionPoints(object):
         return hash(tuple(self._distribution_points))
 
 
-@utils.register_interface(ExtensionType)
-class FreshestCRL(object):
+class FreshestCRL(ExtensionType):
     oid = ExtensionOID.FRESHEST_CRL
 
     def __init__(self, distribution_points):
@@ -607,12 +598,12 @@ class DistributionPoint(object):
 
     def __hash__(self):
         if self.full_name is not None:
-            fn = tuple(self.full_name)
+            fn: typing.Optional[tuple] = tuple(self.full_name)
         else:
             fn = None
 
         if self.crl_issuer is not None:
-            crl_issuer = tuple(self.crl_issuer)
+            crl_issuer: typing.Optional[tuple] = tuple(self.crl_issuer)
         else:
             crl_issuer = None
 
@@ -637,8 +628,7 @@ class ReasonFlags(Enum):
     remove_from_crl = "removeFromCRL"
 
 
-@utils.register_interface(ExtensionType)
-class PolicyConstraints(object):
+class PolicyConstraints(ExtensionType):
     oid = ExtensionOID.POLICY_CONSTRAINTS
 
     def __init__(self, require_explicit_policy, inhibit_policy_mapping):
@@ -698,8 +688,7 @@ class PolicyConstraints(object):
     )
 
 
-@utils.register_interface(ExtensionType)
-class CertificatePolicies(object):
+class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
     def __init__(self, policies):
@@ -769,7 +758,7 @@ class PolicyInformation(object):
 
     def __hash__(self):
         if self.policy_qualifiers is not None:
-            pq = tuple(self.policy_qualifiers)
+            pq: typing.Optional[tuple] = tuple(self.policy_qualifiers)
         else:
             pq = None
 
@@ -850,8 +839,7 @@ class NoticeReference(object):
     notice_numbers = utils.read_only_property("_notice_numbers")
 
 
-@utils.register_interface(ExtensionType)
-class ExtendedKeyUsage(object):
+class ExtendedKeyUsage(ExtensionType):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
     def __init__(self, usages):
@@ -881,8 +869,7 @@ class ExtendedKeyUsage(object):
         return hash(tuple(self._usages))
 
 
-@utils.register_interface(ExtensionType)
-class OCSPNoCheck(object):
+class OCSPNoCheck(ExtensionType):
     oid = ExtensionOID.OCSP_NO_CHECK
 
     def __eq__(self, other):
@@ -901,8 +888,7 @@ class OCSPNoCheck(object):
         return "<OCSPNoCheck()>"
 
 
-@utils.register_interface(ExtensionType)
-class PrecertPoison(object):
+class PrecertPoison(ExtensionType):
     oid = ExtensionOID.PRECERT_POISON
 
     def __eq__(self, other):
@@ -921,8 +907,7 @@ class PrecertPoison(object):
         return "<PrecertPoison()>"
 
 
-@utils.register_interface(ExtensionType)
-class TLSFeature(object):
+class TLSFeature(ExtensionType):
     oid = ExtensionOID.TLS_FEATURE
 
     def __init__(self, features):
@@ -970,8 +955,7 @@ class TLSFeatureType(Enum):
 _TLS_FEATURE_TYPE_TO_ENUM = {x.value: x for x in TLSFeatureType}
 
 
-@utils.register_interface(ExtensionType)
-class InhibitAnyPolicy(object):
+class InhibitAnyPolicy(ExtensionType):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
     def __init__(self, skip_certs):
@@ -1001,8 +985,7 @@ class InhibitAnyPolicy(object):
     skip_certs = utils.read_only_property("_skip_certs")
 
 
-@utils.register_interface(ExtensionType)
-class KeyUsage(object):
+class KeyUsage(ExtensionType):
     oid = ExtensionOID.KEY_USAGE
 
     def __init__(
@@ -1115,8 +1098,7 @@ class KeyUsage(object):
         )
 
 
-@utils.register_interface(ExtensionType)
-class NameConstraints(object):
+class NameConstraints(ExtensionType):
     oid = ExtensionOID.NAME_CONSTRAINTS
 
     def __init__(self, permitted_subtrees, excluded_subtrees):
@@ -1182,12 +1164,12 @@ class NameConstraints(object):
 
     def __hash__(self):
         if self.permitted_subtrees is not None:
-            ps = tuple(self.permitted_subtrees)
+            ps: typing.Optional[tuple] = tuple(self.permitted_subtrees)
         else:
             ps = None
 
         if self.excluded_subtrees is not None:
-            es = tuple(self.excluded_subtrees)
+            es: typing.Optional[tuple] = tuple(self.excluded_subtrees)
         else:
             es = None
 
@@ -1276,8 +1258,7 @@ class GeneralNames(object):
         return hash(tuple(self._general_names))
 
 
-@utils.register_interface(ExtensionType)
-class SubjectAlternativeName(object):
+class SubjectAlternativeName(ExtensionType):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
@@ -1304,8 +1285,7 @@ class SubjectAlternativeName(object):
         return hash(self._general_names)
 
 
-@utils.register_interface(ExtensionType)
-class IssuerAlternativeName(object):
+class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
@@ -1332,8 +1312,7 @@ class IssuerAlternativeName(object):
         return hash(self._general_names)
 
 
-@utils.register_interface(ExtensionType)
-class CertificateIssuer(object):
+class CertificateIssuer(ExtensionType):
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
     def __init__(self, general_names):
@@ -1360,8 +1339,7 @@ class CertificateIssuer(object):
         return hash(self._general_names)
 
 
-@utils.register_interface(ExtensionType)
-class CRLReason(object):
+class CRLReason(ExtensionType):
     oid = CRLEntryExtensionOID.CRL_REASON
 
     def __init__(self, reason):
@@ -1388,8 +1366,7 @@ class CRLReason(object):
     reason = utils.read_only_property("_reason")
 
 
-@utils.register_interface(ExtensionType)
-class InvalidityDate(object):
+class InvalidityDate(ExtensionType):
     oid = CRLEntryExtensionOID.INVALIDITY_DATE
 
     def __init__(self, invalidity_date):
@@ -1418,8 +1395,7 @@ class InvalidityDate(object):
     invalidity_date = utils.read_only_property("_invalidity_date")
 
 
-@utils.register_interface(ExtensionType)
-class PrecertificateSignedCertificateTimestamps(object):
+class PrecertificateSignedCertificateTimestamps(ExtensionType):
     oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 
     def __init__(self, signed_certificate_timestamps):
@@ -1459,8 +1435,7 @@ class PrecertificateSignedCertificateTimestamps(object):
         return not self == other
 
 
-@utils.register_interface(ExtensionType)
-class SignedCertificateTimestamps(object):
+class SignedCertificateTimestamps(ExtensionType):
     oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
 
     def __init__(self, signed_certificate_timestamps):
@@ -1498,8 +1473,7 @@ class SignedCertificateTimestamps(object):
         return not self == other
 
 
-@utils.register_interface(ExtensionType)
-class OCSPNonce(object):
+class OCSPNonce(ExtensionType):
     oid = OCSPExtensionOID.NONCE
 
     def __init__(self, nonce):
@@ -1526,8 +1500,7 @@ class OCSPNonce(object):
     nonce = utils.read_only_property("_nonce")
 
 
-@utils.register_interface(ExtensionType)
-class IssuingDistributionPoint(object):
+class IssuingDistributionPoint(ExtensionType):
     oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 
     def __init__(
@@ -1668,8 +1641,7 @@ class IssuingDistributionPoint(object):
     )
 
 
-@utils.register_interface(ExtensionType)
-class UnrecognizedExtension(object):
+class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError("oid must be an ObjectIdentifier")

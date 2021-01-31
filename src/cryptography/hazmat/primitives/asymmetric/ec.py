@@ -4,6 +4,7 @@
 
 
 import abc
+import typing
 import warnings
 
 from cryptography import utils
@@ -167,121 +168,102 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 
 
-@utils.register_interface(EllipticCurve)
-class SECT571R1(object):
+class SECT571R1(EllipticCurve):
     name = "sect571r1"
     key_size = 570
 
 
-@utils.register_interface(EllipticCurve)
-class SECT409R1(object):
+class SECT409R1(EllipticCurve):
     name = "sect409r1"
     key_size = 409
 
 
-@utils.register_interface(EllipticCurve)
-class SECT283R1(object):
+class SECT283R1(EllipticCurve):
     name = "sect283r1"
     key_size = 283
 
 
-@utils.register_interface(EllipticCurve)
-class SECT233R1(object):
+class SECT233R1(EllipticCurve):
     name = "sect233r1"
     key_size = 233
 
 
-@utils.register_interface(EllipticCurve)
-class SECT163R2(object):
+class SECT163R2(EllipticCurve):
     name = "sect163r2"
     key_size = 163
 
 
-@utils.register_interface(EllipticCurve)
-class SECT571K1(object):
+class SECT571K1(EllipticCurve):
     name = "sect571k1"
     key_size = 571
 
 
-@utils.register_interface(EllipticCurve)
-class SECT409K1(object):
+class SECT409K1(EllipticCurve):
     name = "sect409k1"
     key_size = 409
 
 
-@utils.register_interface(EllipticCurve)
-class SECT283K1(object):
+class SECT283K1(EllipticCurve):
     name = "sect283k1"
     key_size = 283
 
 
-@utils.register_interface(EllipticCurve)
-class SECT233K1(object):
+class SECT233K1(EllipticCurve):
     name = "sect233k1"
     key_size = 233
 
 
-@utils.register_interface(EllipticCurve)
-class SECT163K1(object):
+class SECT163K1(EllipticCurve):
     name = "sect163k1"
     key_size = 163
 
 
-@utils.register_interface(EllipticCurve)
-class SECP521R1(object):
+class SECP521R1(EllipticCurve):
     name = "secp521r1"
     key_size = 521
 
 
-@utils.register_interface(EllipticCurve)
-class SECP384R1(object):
+class SECP384R1(EllipticCurve):
     name = "secp384r1"
     key_size = 384
 
 
-@utils.register_interface(EllipticCurve)
-class SECP256R1(object):
+class SECP256R1(EllipticCurve):
     name = "secp256r1"
     key_size = 256
 
 
-@utils.register_interface(EllipticCurve)
-class SECP256K1(object):
+class SECP256K1(EllipticCurve):
     name = "secp256k1"
     key_size = 256
 
 
-@utils.register_interface(EllipticCurve)
-class SECP224R1(object):
+class SECP224R1(EllipticCurve):
     name = "secp224r1"
     key_size = 224
 
 
-@utils.register_interface(EllipticCurve)
-class SECP192R1(object):
+class SECP192R1(EllipticCurve):
     name = "secp192r1"
     key_size = 192
 
 
-@utils.register_interface(EllipticCurve)
-class BrainpoolP256R1(object):
+class BrainpoolP256R1(EllipticCurve):
     name = "brainpoolP256r1"
     key_size = 256
 
 
-@utils.register_interface(EllipticCurve)
-class BrainpoolP384R1(object):
+class BrainpoolP384R1(EllipticCurve):
     name = "brainpoolP384r1"
     key_size = 384
 
 
-@utils.register_interface(EllipticCurve)
-class BrainpoolP512R1(object):
+class BrainpoolP512R1(EllipticCurve):
     name = "brainpoolP512r1"
     key_size = 512
 
 
-_CURVE_TYPES = {
+_CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
     "secp192r1": SECP192R1,

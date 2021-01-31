@@ -36,7 +36,7 @@ class TOTP(object):
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend, enforce_key_length)
 
-    def generate(self, time: int):
+    def generate(self, time: typing.Union[int, float]):
         counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 

@@ -304,6 +304,12 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         The list of single response extensions. Not response extensions.
         """
 
+    @abc.abstractmethod
+    def public_bytes(self, encoding: serialization.Encoding) -> bytes:
+        """
+        Serializes the response to DER
+        """
+
 
 class OCSPRequestBuilder(object):
     def __init__(self, request=None, extensions=[]):
@@ -365,9 +371,9 @@ class OCSPResponseBuilder(object):
         algorithm: hashes.HashAlgorithm,
         cert_status: OCSPCertStatus,
         this_update: datetime.datetime,
-        next_update: datetime.datetime,
-        revocation_time: datetime.datetime,
-        revocation_reason: x509.ReasonFlags,
+        next_update: typing.Optional[datetime.datetime],
+        revocation_time: typing.Optional[datetime.datetime],
+        revocation_reason: typing.Optional[x509.ReasonFlags],
     ) -> "OCSPResponseBuilder":
         if self._response is not None:
             raise ValueError("Only one response per OCSPResponse.")
@@ -442,7 +448,9 @@ class OCSPResponseBuilder(object):
         )
 
     def sign(
-        self, private_key: _PRIVATE_KEY_TYPES, algorithm: hashes.HashAlgorithm
+        self,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
         from cryptography.hazmat.backends.openssl.backend import backend
 
@@ -456,7 +464,9 @@ class OCSPResponseBuilder(object):
         )
 
     @classmethod
-    def build_unsuccessful(cls, response_status: OCSPResponse) -> OCSPResponse:
+    def build_unsuccessful(
+        cls, response_status: OCSPResponseStatus
+    ) -> OCSPResponse:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not isinstance(response_status, OCSPResponseStatus):

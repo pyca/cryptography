@@ -91,7 +91,7 @@ def _openssl_assert(lib, ok, errors=None):
 
 def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
-    conditional_lib._original_lib = lib
+    conditional_lib._original_lib = lib  # type: ignore[attr-defined]
     excluded_names = set()
     for condition, names_cb in conditional_names.items():
         if not getattr(lib, condition):
