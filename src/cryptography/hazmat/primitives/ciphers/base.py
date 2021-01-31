@@ -15,21 +15,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend
+from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
-
-
-class CipherAlgorithm(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
-    def name(self):
-        """
-        A string naming this mode (e.g. "AES", "Camellia").
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The size of the key being used as an integer in bits (e.g. 128, 256).
-        """
 
 
 class BlockCipherAlgorithm(metaclass=abc.ABCMeta):
