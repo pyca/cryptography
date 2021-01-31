@@ -10,8 +10,8 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
-    _ALLOWED_HASH_TYPES,
     HOTP,
+    _ALLOWED_HASH_TYPES,
 )
 from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
