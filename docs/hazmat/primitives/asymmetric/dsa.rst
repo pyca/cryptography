@@ -267,13 +267,6 @@ Key interfaces
         :return: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
-
-.. class:: DSAParametersWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`DSAParameters`.
-
     .. method:: parameter_numbers()
 
         Create a
