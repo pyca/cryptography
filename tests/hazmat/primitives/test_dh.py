@@ -50,13 +50,13 @@ def test_dh_parameternumbers():
     assert params.g == 2
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(None, 2)
+        dh.DHParameterNumbers(None, 2)  # type: ignore[arg-type]
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(P_1536, None)
+        dh.DHParameterNumbers(P_1536, None)  # type: ignore[arg-type]
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(None, None)
+        dh.DHParameterNumbers(None, None)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
         dh.DHParameterNumbers(P_1536, 1)
@@ -72,7 +72,7 @@ def test_dh_parameternumbers():
     assert params.q == 1245
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(P_1536, 2, "hello")
+        dh.DHParameterNumbers(P_1536, 2, "hello")  # type: ignore[arg-type]
 
 
 def test_dh_numbers():
@@ -84,7 +84,7 @@ def test_dh_numbers():
     assert public.y == 1
 
     with pytest.raises(TypeError):
-        dh.DHPublicNumbers(1, None)
+        dh.DHPublicNumbers(1, None)  # type: ignore[arg-type]
 
     with pytest.raises(TypeError):
         dh.DHPublicNumbers(None, params)
@@ -95,7 +95,7 @@ def test_dh_numbers():
     assert private.x == 1
 
     with pytest.raises(TypeError):
-        dh.DHPrivateNumbers(1, None)
+        dh.DHPrivateNumbers(1, None)  # type: ignore[arg-type]
 
     with pytest.raises(TypeError):
         dh.DHPrivateNumbers(None, public)
