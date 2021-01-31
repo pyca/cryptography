@@ -9,6 +9,7 @@ import os
 import typing
 from enum import Enum
 
+from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -24,20 +25,6 @@ from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
-_PUBLIC_KEY_TYPES = typing.Union[
-    dsa.DSAPublicKey,
-    rsa.RSAPublicKey,
-    ec.EllipticCurvePublicKey,
-    ed25519.Ed25519PublicKey,
-    ed448.Ed448PublicKey,
-]
-_PRIVATE_KEY_TYPES = typing.Union[
-    ed25519.Ed25519PrivateKey,
-    ed448.Ed448PrivateKey,
-    rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
-    ec.EllipticCurvePrivateKey,
-]
 
 
 class AttributeNotFound(Exception):

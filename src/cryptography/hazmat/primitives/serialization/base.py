@@ -7,12 +7,9 @@ import abc
 import typing
 from enum import Enum
 
-from cryptography import utils
+from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import dh
-
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from cryptography.x509.base import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 
 
 def load_pem_private_key(
