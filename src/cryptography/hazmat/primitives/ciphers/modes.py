@@ -4,19 +4,21 @@
 
 
 import abc
+import typing
 
 from cryptography import utils
+from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 
 
 class Mode(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def name(self):
+    def name(self) -> str:
         """
         A string naming this mode (e.g. "ECB", "CBC").
         """
 
     @abc.abstractmethod
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
         """
         Checks that all the necessary invariants of this (mode, algorithm)
         combination are met.
@@ -25,7 +27,7 @@ class Mode(metaclass=abc.ABCMeta):
 
 class ModeWithInitializationVector(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def initialization_vector(self):
+    def initialization_vector(self) -> bytes:
         """
         The value of the initialization vector for this mode as bytes.
         """
@@ -33,7 +35,7 @@ class ModeWithInitializationVector(metaclass=abc.ABCMeta):
 
 class ModeWithTweak(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def tweak(self):
+    def tweak(self) -> bytes:
         """
         The value of the tweak for this mode as bytes.
         """
@@ -41,7 +43,7 @@ class ModeWithTweak(metaclass=abc.ABCMeta):
 
 class ModeWithNonce(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def nonce(self):
+    def nonce(self) -> bytes:
         """
         The value of the nonce for this mode as bytes.
         """
@@ -49,7 +51,7 @@ class ModeWithNonce(metaclass=abc.ABCMeta):
 
 class ModeWithAuthenticationTag(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def tag(self):
+    def tag(self) -> bytes:
         """
         The value of the tag supplied to the constructor of this mode.
         """
@@ -71,17 +73,22 @@ def _check_iv_length(self, algorithm):
         )
 
 
+def _check_nonce_length(nonce: bytes, name: str, algorithm):
+    if len(nonce) * 8 != algorithm.block_size:
+        raise ValueError(
+            "Invalid nonce size ({}) for {}.".format(len(nonce), name)
+        )
+
+
 def _check_iv_and_key_length(self, algorithm):
     _check_aes_key_length(self, algorithm)
     _check_iv_length(self, algorithm)
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithInitializationVector)
-class CBC(object):
+class CBC(Mode, ModeWithInitializationVector):
     name = "CBC"
 
-    def __init__(self, initialization_vector):
+    def __init__(self, initialization_vector: bytes):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
@@ -89,12 +96,10 @@ class CBC(object):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithTweak)
-class XTS(object):
+class XTS(Mode, ModeWithTweak):
     name = "XTS"
 
-    def __init__(self, tweak):
+    def __init__(self, tweak: bytes):
         utils._check_byteslike("tweak", tweak)
 
         if len(tweak) != 16:
@@ -104,7 +109,7 @@ class XTS(object):
 
     tweak = utils.read_only_property("_tweak")
 
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         if algorithm.key_size not in (256, 512):
             raise ValueError(
                 "The XTS specification requires a 256-bit key for AES-128-XTS"
@@ -112,19 +117,16 @@ class XTS(object):
             )
 
 
-@utils.register_interface(Mode)
-class ECB(object):
+class ECB(Mode):
     name = "ECB"
 
     validate_for_algorithm = _check_aes_key_length
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithInitializationVector)
-class OFB(object):
+class OFB(Mode, ModeWithInitializationVector):
     name = "OFB"
 
-    def __init__(self, initialization_vector):
+    def __init__(self, initialization_vector: bytes):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
@@ -132,12 +134,10 @@ class OFB(object):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithInitializationVector)
-class CFB(object):
+class CFB(Mode, ModeWithInitializationVector):
     name = "CFB"
 
-    def __init__(self, initialization_vector):
+    def __init__(self, initialization_vector: bytes):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
@@ -145,12 +145,10 @@ class CFB(object):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithInitializationVector)
-class CFB8(object):
+class CFB8(Mode, ModeWithInitializationVector):
     name = "CFB8"
 
-    def __init__(self, initialization_vector):
+    def __init__(self, initialization_vector: bytes):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
@@ -158,36 +156,31 @@ class CFB8(object):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithNonce)
-class CTR(object):
+class CTR(Mode, ModeWithNonce):
     name = "CTR"
 
-    def __init__(self, nonce):
+    def __init__(self, nonce: bytes):
         utils._check_byteslike("nonce", nonce)
         self._nonce = nonce
 
     nonce = utils.read_only_property("_nonce")
 
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         _check_aes_key_length(self, algorithm)
-        if len(self.nonce) * 8 != algorithm.block_size:
-            raise ValueError(
-                "Invalid nonce size ({}) for {}.".format(
-                    len(self.nonce), self.name
-                )
-            )
+        _check_nonce_length(self.nonce, self.name, algorithm)
 
 
-@utils.register_interface(Mode)
-@utils.register_interface(ModeWithInitializationVector)
-@utils.register_interface(ModeWithAuthenticationTag)
-class GCM(object):
+class GCM(Mode, ModeWithInitializationVector, ModeWithAuthenticationTag):
     name = "GCM"
     _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
     _MAX_AAD_BYTES = (2 ** 64) // 8
 
-    def __init__(self, initialization_vector, tag=None, min_tag_length=16):
+    def __init__(
+        self,
+        initialization_vector: bytes,
+        tag: typing.Optional[bytes] = None,
+        min_tag_length: int = 16,
+    ):
         # OpenSSL 3.0.0 constrains GCM IVs to [64, 1024] bits inclusive
         # This is a sane limit anyway so we'll enforce it here.
         utils._check_byteslike("initialization_vector", initialization_vector)
@@ -213,5 +206,5 @@ class GCM(object):
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
 
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         _check_aes_key_length(self, algorithm)
