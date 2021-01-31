@@ -4,38 +4,47 @@
 
 
 import abc
+import typing
 from enum import Enum
 
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.primitives.asymmetric import dh
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from cryptography.x509.base import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 
 
-def load_pem_private_key(data, password, backend=None):
+def load_pem_private_key(
+    data: bytes, password: typing.Optional[bytes], backend=None
+) -> "_PRIVATE_KEY_TYPES":
     backend = _get_backend(backend)
     return backend.load_pem_private_key(data, password)
 
 
-def load_pem_public_key(data, backend=None):
+def load_pem_public_key(data: bytes, backend=None) -> "_PUBLIC_KEY_TYPES":
     backend = _get_backend(backend)
     return backend.load_pem_public_key(data)
 
 
-def load_pem_parameters(data, backend=None):
+def load_pem_parameters(data: bytes, backend=None) -> dh.DHParameters:
     backend = _get_backend(backend)
     return backend.load_pem_parameters(data)
 
 
-def load_der_private_key(data, password, backend=None):
+def load_der_private_key(
+    data: bytes, password: typing.Optional[bytes], backend=None
+) -> "_PRIVATE_KEY_TYPES":
     backend = _get_backend(backend)
     return backend.load_der_private_key(data, password)
 
 
-def load_der_public_key(data, backend=None):
+def load_der_public_key(data: bytes, backend=None) -> "_PUBLIC_KEY_TYPES":
     backend = _get_backend(backend)
     return backend.load_der_public_key(data)
 
 
-def load_der_parameters(data, backend=None):
+def load_der_parameters(data: bytes, backend=None) -> dh.DHParameters:
     backend = _get_backend(backend)
     return backend.load_der_parameters(data)
 
@@ -73,15 +82,13 @@ class KeySerializationEncryption(metaclass=abc.ABCMeta):
     pass
 
 
-@utils.register_interface(KeySerializationEncryption)
-class BestAvailableEncryption(object):
-    def __init__(self, password):
+class BestAvailableEncryption(KeySerializationEncryption):
+    def __init__(self, password: bytes):
         if not isinstance(password, bytes) or len(password) == 0:
             raise ValueError("Password must be 1 or more bytes.")
 
         self.password = password
 
 
-@utils.register_interface(KeySerializationEncryption)
-class NoEncryption(object):
+class NoEncryption(KeySerializationEncryption):
     pass

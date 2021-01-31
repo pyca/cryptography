@@ -7,6 +7,7 @@ import binascii
 import os
 import re
 import struct
+import typing
 from base64 import encodebytes as _base64_encode
 
 from cryptography import utils
@@ -464,7 +465,17 @@ def _lookup_kformat(key_type):
     raise UnsupportedAlgorithm("Unsupported key type: %r" % key_type)
 
 
-def load_ssh_private_key(data, password, backend=None):
+_SSH_PRIVATE_KEY_TYPES = typing.Union[
+    ec.EllipticCurvePrivateKey,
+    rsa.RSAPrivateKey,
+    dsa.DSAPrivateKey,
+    ed25519.Ed25519PrivateKey,
+]
+
+
+def load_ssh_private_key(
+    data: bytes, password: typing.Optional[bytes], backend=None
+) -> _SSH_PRIVATE_KEY_TYPES:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
     backend = _get_backend(backend)
@@ -538,7 +549,10 @@ def load_ssh_private_key(data, password, backend=None):
     return private_key
 
 
-def serialize_ssh_private_key(private_key, password=None):
+def serialize_ssh_private_key(
+    private_key: _SSH_PRIVATE_KEY_TYPES,
+    password: typing.Optional[bytes] = None,
+):
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
@@ -613,11 +627,21 @@ def serialize_ssh_private_key(private_key, password=None):
         ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
 
     txt = _ssh_pem_encode(buf[:mlen])
-    buf[ofs:mlen] = bytearray(slen)
+    # Ignore the following type because mypy wants
+    # Sequence[bytes] but what we're passing is fine.
+    buf[ofs:mlen] = bytearray(slen)  # type: ignore
     return txt
 
 
-def load_ssh_public_key(data, backend=None):
+_SSH_PUBLIC_KEY_TYPES = typing.Union[
+    ec.EllipticCurvePublicKey,
+    rsa.RSAPublicKey,
+    dsa.DSAPublicKey,
+    ed25519.Ed25519PublicKey,
+]
+
+
+def load_ssh_public_key(data: bytes, backend=None) -> _SSH_PUBLIC_KEY_TYPES:
     """Load public key from OpenSSH one-line format."""
     backend = _get_backend(backend)
     utils._check_byteslike("data", data)
@@ -660,7 +684,7 @@ def load_ssh_public_key(data, backend=None):
     return public_key
 
 
-def serialize_ssh_public_key(public_key):
+def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     """One-line public key format for OpenSSH"""
     if isinstance(public_key, ec.EllipticCurvePublicKey):
         key_type = _ecdsa_key_type(public_key)
