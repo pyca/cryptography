@@ -29,8 +29,8 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     calculate_max_pss_salt_length,
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKeyWithSerialization,
-    RSAPublicKeyWithSerialization,
+    RSAPrivateKey,
+    RSAPublicKey,
 )
 
 
@@ -351,7 +351,7 @@ class _RSAVerificationContext(object):
         )
 
 
-@utils.register_interface(RSAPrivateKeyWithSerialization)
+@utils.register_interface(RSAPrivateKey)
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata, evp_pkey):
         res = backend._lib.RSA_check_key(rsa_cdata)
@@ -451,7 +451,7 @@ class _RSAPrivateKey(object):
         return _rsa_sig_sign(self._backend, padding, algorithm, self, data)
 
 
-@utils.register_interface(RSAPublicKeyWithSerialization)
+@utils.register_interface(RSAPublicKey)
 class _RSAPublicKey(object):
     def __init__(self, backend, rsa_cdata, evp_pkey):
         self._backend = backend

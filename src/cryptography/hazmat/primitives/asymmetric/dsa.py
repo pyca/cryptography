@@ -56,8 +56,6 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         Signs the data
         """
 
-
-class DSAPrivateKeyWithSerialization(DSAPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -69,6 +67,9 @@ class DSAPrivateKeyWithSerialization(DSAPrivateKey, metaclass=abc.ABCMeta):
         """
         Returns the key serialized as bytes.
         """
+
+
+DSAPrivateKeyWithSerialization = DSAPrivateKey
 
 
 class DSAPublicKey(metaclass=abc.ABCMeta):

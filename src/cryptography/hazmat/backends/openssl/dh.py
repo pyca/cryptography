@@ -32,7 +32,7 @@ def _dh_cdata_to_parameters(dh_cdata, backend):
     return _DHParameters(backend, param_cdata)
 
 
-@utils.register_interface(dh.DHParametersWithSerialization)
+@utils.register_interface(dh.DHParameters)
 class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
@@ -85,7 +85,7 @@ def _get_dh_num_bits(backend, dh_cdata):
     return backend._lib.BN_num_bits(p[0])
 
 
-@utils.register_interface(dh.DHPrivateKeyWithSerialization)
+@utils.register_interface(dh.DHPrivateKey)
 class _DHPrivateKey(object):
     def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend
@@ -204,7 +204,7 @@ class _DHPrivateKey(object):
         )
 
 
-@utils.register_interface(dh.DHPublicKeyWithSerialization)
+@utils.register_interface(dh.DHPublicKey)
 class _DHPublicKey(object):
     def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend

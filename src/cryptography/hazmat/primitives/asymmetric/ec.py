@@ -93,10 +93,6 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         Signs the data
         """
 
-
-class EllipticCurvePrivateKeyWithSerialization(
-    EllipticCurvePrivateKey, metaclass=abc.ABCMeta
-):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -108,6 +104,9 @@ class EllipticCurvePrivateKeyWithSerialization(
         """
         Returns the key serialized as bytes.
         """
+
+
+EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
 
 
 class EllipticCurvePublicKey(metaclass=abc.ABCMeta):

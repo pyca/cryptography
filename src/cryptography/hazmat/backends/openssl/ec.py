@@ -138,7 +138,7 @@ class _ECDSAVerificationContext(object):
         )
 
 
-@utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
+@utils.register_interface(ec.EllipticCurvePrivateKey)
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend
@@ -236,7 +236,7 @@ class _EllipticCurvePrivateKey(object):
         return _ecdsa_sig_sign(self._backend, self, data)
 
 
-@utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
+@utils.register_interface(ec.EllipticCurvePublicKey)
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend

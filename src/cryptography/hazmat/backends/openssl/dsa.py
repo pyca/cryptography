@@ -107,7 +107,7 @@ class _DSAParameters(object):
         return self._backend.generate_dsa_private_key(self)
 
 
-@utils.register_interface(dsa.DSAPrivateKeyWithSerialization)
+@utils.register_interface(dsa.DSAPrivateKey)
 class _DSAPrivateKey(object):
     def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend
@@ -197,7 +197,7 @@ class _DSAPrivateKey(object):
         return _dsa_sig_sign(self._backend, self, data)
 
 
-@utils.register_interface(dsa.DSAPublicKeyWithSerialization)
+@utils.register_interface(dsa.DSAPublicKey)
 class _DSAPublicKey(object):
     def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend

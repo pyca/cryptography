@@ -74,7 +74,7 @@ class DummyMGF(object):
 
 
 def _check_rsa_private_numbers_if_serializable(key):
-    if isinstance(key, rsa.RSAPrivateKeyWithSerialization):
+    if isinstance(key, rsa.RSAPrivateKey):
         _check_rsa_private_numbers(key.private_numbers())
 
 
