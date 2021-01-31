@@ -83,7 +83,7 @@ class _DSASignatureContext(object):
         return _dsa_sig_sign(self._backend, self._private_key, data_to_sign)
 
 
-@utils.register_interface(dsa.DSAParametersWithNumbers)
+@utils.register_interface(dsa.DSAParameters)
 class _DSAParameters(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend

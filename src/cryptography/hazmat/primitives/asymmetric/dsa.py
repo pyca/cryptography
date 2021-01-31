@@ -16,13 +16,14 @@ class DSAParameters(metaclass=abc.ABCMeta):
         Generates and returns a DSAPrivateKey.
         """
 
-
-class DSAParametersWithNumbers(DSAParameters, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def parameter_numbers(self):
         """
         Returns a DSAParameterNumbers.
         """
+
+
+DSAParametersWithNumbers = DSAParameters
 
 
 class DSAPrivateKey(metaclass=abc.ABCMeta):
