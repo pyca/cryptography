@@ -25,7 +25,7 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
 
 
 def serialize_key_and_certificates(
-    name: bytes,
+    name: typing.Optional[bytes],
     key: typing.Optional[_ALLOWED_PKCS12_TYPES],
     cert: typing.Optional[x509.Certificate],
     cas: typing.Optional[typing.Iterable[x509.Certificate]],

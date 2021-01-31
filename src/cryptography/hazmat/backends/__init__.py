@@ -2,8 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
-_default_backend = None
+_default_backend: typing.Any = None
 
 
 def default_backend():

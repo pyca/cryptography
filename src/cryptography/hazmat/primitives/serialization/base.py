@@ -7,7 +7,10 @@ import abc
 import typing
 from enum import Enum
 
-from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
+from cryptography.hazmat._types import (
+    _PRIVATE_KEY_TYPES,
+    _PUBLIC_KEY_TYPES,
+)
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives.asymmetric import dh
 
