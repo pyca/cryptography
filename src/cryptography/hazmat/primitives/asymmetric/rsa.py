@@ -43,8 +43,6 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         Signs the data.
         """
 
-
-class RSAPrivateKeyWithSerialization(RSAPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -56,6 +54,9 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey, metaclass=abc.ABCMeta):
         """
         Returns the key serialized as bytes.
         """
+
+
+RSAPrivateKeyWithSerialization = RSAPrivateKey
 
 
 class RSAPublicKey(metaclass=abc.ABCMeta):

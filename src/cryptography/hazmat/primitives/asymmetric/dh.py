@@ -171,8 +171,6 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
         return shared key as bytes.
         """
 
-
-class DHPrivateKeyWithSerialization(DHPrivateKey, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_numbers(self):
         """
@@ -184,6 +182,9 @@ class DHPrivateKeyWithSerialization(DHPrivateKey, metaclass=abc.ABCMeta):
         """
         Returns the key serialized as bytes.
         """
+
+
+DHPrivateKeyWithSerialization = DHPrivateKey
 
 
 class DHPublicKey(metaclass=abc.ABCMeta):

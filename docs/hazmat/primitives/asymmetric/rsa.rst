@@ -85,10 +85,8 @@ There is also support for :func:`loading public keys in the SSH format
 Key serialization
 ~~~~~~~~~~~~~~~~~
 
-If you have a private key that you've loaded or generated which implements the
-:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
-interface you can use
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`
+If you have a private key that you've loaded you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.private_bytes`
 to serialize the key.
 
 .. doctest::
@@ -536,9 +534,7 @@ Key interfaces
 
     .. versionadded:: 0.2
 
-    An `RSA`_ private key. An RSA private key that is not an
-    :term:`opaque key` also implements :class:`RSAPrivateKeyWithSerialization`
-    to provide serialization methods.
+    An `RSA`_ private key.
 
     .. method:: decrypt(ciphertext, padding)
 
@@ -587,15 +583,6 @@ Key interfaces
 
         :return bytes: Signature.
 
-
-.. class:: RSAPrivateKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    This interface contains additional methods relating to serialization.
-    Any object with this interface also has all the methods from
-    :class:`RSAPrivateKey`.
-
     .. method:: private_numbers()
 
         Create a
@@ -633,6 +620,13 @@ Key interfaces
             interface.
 
         :return bytes: Serialized key.
+
+
+.. class:: RSAPrivateKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias for :class:`RSAPrivateKey`.
 
 
 .. class:: RSAPublicKey
