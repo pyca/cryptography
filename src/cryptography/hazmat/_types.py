@@ -5,7 +5,11 @@
 import typing
 
 from cryptography.hazmat.primitives.asymmetric import (
-    dsa, ec, ed25519, ed448, rsa
+    dsa,
+    ec,
+    ed25519,
+    ed448,
+    rsa,
 )
 
 
