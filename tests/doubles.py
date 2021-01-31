@@ -21,7 +21,7 @@ class DummyCipherAlgorithm(object):
 class DummyMode(object):
     name = "dummy-mode"
 
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
         pass
 
 
