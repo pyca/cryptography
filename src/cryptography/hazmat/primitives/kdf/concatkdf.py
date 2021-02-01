@@ -116,14 +116,13 @@ class ConcatKDFHMAC(KeyDerivationFunction):
         self._length = length
         self._otherinfo: bytes = otherinfo if otherinfo is not None else b""
 
-        block_size = getattr(algorithm, "block_size", None)
-        if block_size is None:
+        if algorithm.block_size is None:
             raise TypeError(
                 "{} is unsupported for ConcatKDF".format(algorithm.name)
             )
 
         if salt is None:
-            salt = b"\x00" * block_size
+            salt = b"\x00" * algorithm.block_size
         else:
             utils._check_bytes("salt", salt)
 
