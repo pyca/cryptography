@@ -36,17 +36,17 @@ class TOTP(object):
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend, enforce_key_length)
 
-    def generate(self, time: typing.Union[int, float]):
+    def generate(self, time: typing.Union[int, float]) -> bytes:
         counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 
-    def verify(self, totp: bytes, time: int):
+    def verify(self, totp: bytes, time: int) -> None:
         if not constant_time.bytes_eq(self.generate(time), totp):
             raise InvalidToken("Supplied TOTP value does not match.")
 
     def get_provisioning_uri(
         self, account_name: str, issuer: typing.Optional[str]
-    ):
+    ) -> str:
         return _generate_uri(
             self._hotp,
             "totp",

@@ -78,8 +78,7 @@ class TestHOTP(object):
         hotp_value = params["hotp"]
 
         hotp = HOTP(secret, 6, SHA1(), backend)
-
-        assert hotp.verify(hotp_value, counter) is None
+        hotp.verify(hotp_value, counter)
 
     def test_invalid_verify(self, backend):
         secret = b"12345678901234567890"

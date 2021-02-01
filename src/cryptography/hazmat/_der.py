@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.utils import int_to_bytes
 
@@ -47,21 +48,21 @@ class DERReader(object):
         if not self.is_empty():
             raise ValueError("Invalid DER input: trailing data")
 
-    def read_byte(self):
+    def read_byte(self) -> int:
         if len(self.data) < 1:
             raise ValueError("Invalid DER input: insufficient data")
         ret = self.data[0]
         self.data = self.data[1:]
         return ret
 
-    def read_bytes(self, n):
+    def read_bytes(self, n) -> memoryview:
         if len(self.data) < n:
             raise ValueError("Invalid DER input: insufficient data")
         ret = self.data[:n]
         self.data = self.data[n:]
         return ret
 
-    def read_any_element(self):
+    def read_any_element(self) -> typing.Tuple[int, "DERReader"]:
         tag = self.read_byte()
         # Tag numbers 31 or higher are stored in multiple bytes. No supported
         # ASN.1 types use such tags, so reject these.
@@ -97,22 +98,24 @@ class DERReader(object):
         body = self.read_bytes(length)
         return tag, DERReader(body)
 
-    def read_element(self, expected_tag):
+    def read_element(self, expected_tag: int) -> "DERReader":
         tag, body = self.read_any_element()
         if tag != expected_tag:
             raise ValueError("Invalid DER input: unexpected tag")
         return body
 
-    def read_single_element(self, expected_tag):
+    def read_single_element(self, expected_tag: int) -> "DERReader":
         with self:
             return self.read_element(expected_tag)
 
-    def read_optional_element(self, expected_tag):
+    def read_optional_element(
+        self, expected_tag: int
+    ) -> typing.Optional["DERReader"]:
         if len(self.data) > 0 and self.data[0] == expected_tag:
             return self.read_element(expected_tag)
         return None
 
-    def as_integer(self):
+    def as_integer(self) -> int:
         if len(self.data) == 0:
             raise ValueError("Invalid DER input: empty integer contents")
         first = self.data[0]
@@ -129,7 +132,7 @@ class DERReader(object):
         return int.from_bytes(self.data, "big")
 
 
-def encode_der_integer(x):
+def encode_der_integer(x: int) -> bytes:
     if not isinstance(x, int):
         raise ValueError("Value must be an integer")
     if x < 0:
@@ -138,7 +141,7 @@ def encode_der_integer(x):
     return int_to_bytes(x, n)
 
 
-def encode_der(tag, *children):
+def encode_der(tag: int, *children: bytes) -> bytes:
     length = 0
     for child in children:
         length += len(child)

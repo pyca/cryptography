@@ -7,7 +7,7 @@ from cryptography import utils
 
 
 class ObjectIdentifier(object):
-    def __init__(self, dotted_string):
+    def __init__(self, dotted_string: str):
         self._dotted_string = dotted_string
 
         nodes = self._dotted_string.split(".")

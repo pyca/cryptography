@@ -90,6 +90,7 @@ def test_der():
 
     # Parsing a present optional element should work.
     integer = inner.read_optional_element(INTEGER)
+    assert integer is not None
     assert integer.as_integer() == 42
 
     octet_string = inner.read_element(OCTET_STRING)
@@ -228,4 +229,4 @@ def test_invalid_integer_encode():
         encode_der_integer(-1)
 
     with pytest.raises(ValueError):
-        encode_der_integer("not an integer")
+        encode_der_integer("not an integer")  # type: ignore[arg-type]

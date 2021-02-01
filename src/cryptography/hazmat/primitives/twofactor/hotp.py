@@ -51,16 +51,16 @@ class HOTP(object):
         self._algorithm = algorithm
         self._backend = backend
 
-    def generate(self, counter: int):
+    def generate(self, counter: int) -> bytes:
         truncated_value = self._dynamic_truncate(counter)
         hotp = truncated_value % (10 ** self._length)
         return "{0:0{1}}".format(hotp, self._length).encode()
 
-    def verify(self, hotp: bytes, counter: int):
+    def verify(self, hotp: bytes, counter: int) -> None:
         if not constant_time.bytes_eq(self.generate(counter), hotp):
             raise InvalidToken("Supplied HOTP value does not match.")
 
-    def _dynamic_truncate(self, counter: int):
+    def _dynamic_truncate(self, counter: int) -> int:
         ctx = hmac.HMAC(self._key, self._algorithm, self._backend)
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
@@ -71,7 +71,7 @@ class HOTP(object):
 
     def get_provisioning_uri(
         self, account_name: str, counter: int, issuer: typing.Optional[str]
-    ):
+    ) -> str:
         return _generate_uri(
             self, "hotp", account_name, issuer, [("counter", int(counter))]
         )
