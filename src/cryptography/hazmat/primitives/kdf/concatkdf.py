@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-def _int_to_u32be(n: int):
+def _int_to_u32be(n: int) -> bytes:
     return struct.pack(">I", n)
 
 
@@ -39,8 +39,11 @@ def _common_args_checks(
 
 
 def _concatkdf_derive(
-    key_material: bytes, length: int, auxfn: typing.Callable, otherinfo: bytes
-):
+    key_material: bytes,
+    length: int,
+    auxfn: typing.Callable[[], hashes.HashContext],
+    otherinfo: bytes,
+) -> bytes:
     utils._check_byteslike("key_material", key_material)
     output = [b""]
     outlen = 0
