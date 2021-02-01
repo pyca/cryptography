@@ -42,7 +42,7 @@ def _get_rsa_pss_salt_length(
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
-):
+) -> int:
     salt = pss._salt_length
 
     if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
