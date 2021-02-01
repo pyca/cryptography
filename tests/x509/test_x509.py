@@ -2158,7 +2158,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.public_key(private_key)
+            builder.public_key(private_key)  # type: ignore[arg-type]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

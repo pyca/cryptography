@@ -103,6 +103,7 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     )
     assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
+    assert digest is not None
 
     sig = key.sign(
         binascii.unhexlify(wycheproof.testcase["msg"]),
