@@ -35,19 +35,19 @@ def test_dss_signature():
 
 def test_encode_dss_non_integer():
     with pytest.raises(ValueError):
-        encode_dss_signature("h", 3)
+        encode_dss_signature("h", 3)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        encode_dss_signature("3", "2")
+        encode_dss_signature("3", "2")  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        encode_dss_signature(3, "h")
+        encode_dss_signature(3, "h")  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        encode_dss_signature(3.3, 1.2)
+        encode_dss_signature(3.3, 1.2)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        encode_dss_signature("hello", "world")
+        encode_dss_signature("hello", "world")  # type: ignore[arg-type]
 
 
 def test_encode_dss_negative():
@@ -73,4 +73,4 @@ def test_decode_dss_invalid_asn1():
 
 def test_pass_invalid_prehashed_arg():
     with pytest.raises(TypeError):
-        Prehashed(object())
+        Prehashed(object())  # type: ignore[arg-type]
