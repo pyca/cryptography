@@ -5,7 +5,6 @@
 
 import abc
 
-from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 
