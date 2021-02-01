@@ -49,7 +49,7 @@ class TestHOTP(object):
         secret = os.urandom(16)
 
         with pytest.raises(TypeError):
-            HOTP(secret, 6, MD5(), backend)
+            HOTP(secret, 6, MD5(), backend)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):
@@ -94,7 +94,7 @@ class TestHOTP(object):
         secret = b"12345678901234567890"
 
         with pytest.raises(TypeError):
-            HOTP(secret, b"foo", SHA1(), backend)
+            HOTP(secret, b"foo", SHA1(), backend)  # type: ignore[arg-type]
 
     def test_get_provisioning_uri(self, backend):
         secret = b"12345678901234567890"

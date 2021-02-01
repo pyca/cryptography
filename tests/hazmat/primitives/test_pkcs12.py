@@ -114,7 +114,9 @@ class TestPKCS12Loading(object):
 
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):
-            load_key_and_certificates(b"irrelevant", object(), backend)
+            load_key_and_certificates(
+                b"irrelevant", object(), backend  # type: ignore[arg-type]
+            )
 
     def test_not_a_pkcs12(self, backend):
         with pytest.raises(ValueError):

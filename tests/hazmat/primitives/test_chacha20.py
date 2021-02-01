@@ -66,8 +66,8 @@ class TestChaCha20(object):
             algorithms.ChaCha20(b"0" * 32, b"0")
 
         with pytest.raises(TypeError):
-            algorithms.ChaCha20(b"0" * 32, object())
+            algorithms.ChaCha20(b"0" * 32, object())  # type:ignore[arg-type]
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            algorithms.ChaCha20("0" * 32, b"0" * 16)
+            algorithms.ChaCha20("0" * 32, b"0" * 16)  # type:ignore[arg-type]

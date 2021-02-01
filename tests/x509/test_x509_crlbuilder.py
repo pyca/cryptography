@@ -34,7 +34,7 @@ class TestCertificateRevocationListBuilder(object):
     def test_issuer_name_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.issuer_name("notanx509name")
+            builder.issuer_name("notanx509name")  # type:ignore[arg-type]
 
     def test_set_issuer_name_twice(self):
         builder = x509.CertificateRevocationListBuilder().issuer_name(
@@ -75,7 +75,7 @@ class TestCertificateRevocationListBuilder(object):
     def test_last_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.last_update("notadatetime")
+            builder.last_update("notadatetime")  # type:ignore[arg-type]
 
     def test_last_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -119,7 +119,7 @@ class TestCertificateRevocationListBuilder(object):
     def test_next_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.next_update("notadatetime")
+            builder.next_update("notadatetime")  # type:ignore[arg-type]
 
     def test_next_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -159,13 +159,13 @@ class TestCertificateRevocationListBuilder(object):
         builder = x509.CertificateRevocationListBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_extension(object(), False)
+            builder.add_extension(object(), False)  # type:ignore[arg-type]
 
     def test_add_invalid_revoked_certificate(self):
         builder = x509.CertificateRevocationListBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_revoked_certificate(object())
+            builder.add_revoked_certificate(object())  # type:ignore[arg-type]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

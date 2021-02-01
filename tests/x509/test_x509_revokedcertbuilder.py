@@ -16,7 +16,9 @@ from cryptography.hazmat.backends.interfaces import X509Backend
 class TestRevokedCertificateBuilder(object):
     def test_serial_number_must_be_integer(self):
         with pytest.raises(TypeError):
-            x509.RevokedCertificateBuilder().serial_number("notanx509name")
+            x509.RevokedCertificateBuilder().serial_number(
+                "notanx509name"  # type: ignore[arg-type]
+            )
 
     def test_serial_number_must_be_non_negative(self):
         with pytest.raises(ValueError):
@@ -77,7 +79,9 @@ class TestRevokedCertificateBuilder(object):
 
     def test_revocation_date_invalid(self):
         with pytest.raises(TypeError):
-            x509.RevokedCertificateBuilder().revocation_date("notadatetime")
+            x509.RevokedCertificateBuilder().revocation_date(
+                "notadatetime"  # type: ignore[arg-type]
+            )
 
     def test_revocation_date_before_1950(self):
         with pytest.raises(ValueError):
@@ -105,7 +109,7 @@ class TestRevokedCertificateBuilder(object):
     def test_add_invalid_extension(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().add_extension(
-                "notanextension", False
+                "notanextension", False  # type: ignore[arg-type]
             )
 
     @pytest.mark.requires_backend_interface(interface=X509Backend)

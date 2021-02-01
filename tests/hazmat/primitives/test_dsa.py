@@ -5,6 +5,7 @@
 
 import itertools
 import os
+import typing
 
 import pytest
 
@@ -29,6 +30,14 @@ from ...utils import (
     load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
+
+_ALGORITHMS_DICT: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
+    "SHA1": hashes.SHA1,
+    "SHA224": hashes.SHA224,
+    "SHA256": hashes.SHA256,
+    "SHA384": hashes.SHA384,
+    "SHA512": hashes.SHA512,
+}
 
 
 def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
@@ -378,14 +387,6 @@ class TestDSA(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSAVerification(object):
-    _algorithms_dict = {
-        "SHA1": hashes.SHA1,
-        "SHA224": hashes.SHA224,
-        "SHA256": hashes.SHA256,
-        "SHA384": hashes.SHA384,
-        "SHA512": hashes.SHA512,
-    }
-
     def test_dsa_verification(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigVer.rsp"),
@@ -394,7 +395,7 @@ class TestDSAVerification(object):
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = self._algorithms_dict[digest_algorithm]
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
@@ -485,14 +486,6 @@ class TestDSAVerification(object):
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSASignature(object):
-    _algorithms_dict = {
-        "SHA1": hashes.SHA1,
-        "SHA224": hashes.SHA224,
-        "SHA256": hashes.SHA256,
-        "SHA384": hashes.SHA384,
-        "SHA512": hashes.SHA512,
-    }
-
     def test_dsa_signing(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigGen.txt"),
@@ -501,7 +494,7 @@ class TestDSASignature(object):
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = self._algorithms_dict[digest_algorithm]
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
@@ -711,6 +704,7 @@ class TestDSASerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, dsa.DSAPrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
@@ -719,6 +713,7 @@ class TestDSASerialization(object):
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, dsa.DSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -752,6 +747,7 @@ class TestDSASerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, dsa.DSAPrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
@@ -760,6 +756,7 @@ class TestDSASerialization(object):
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, dsa.DSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
