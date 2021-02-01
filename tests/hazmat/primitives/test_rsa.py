@@ -591,7 +591,11 @@ class TestRSASignature(object):
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(TypeError):
-            private_key.sign(b"msg", "notpadding", hashes.SHA1())
+            private_key.sign(
+                b"msg",
+                "notpadding",  # type: ignore[arg-type]
+                hashes.SHA1(),
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -708,7 +712,8 @@ class TestRSASignature(object):
             CryptographyDeprecationWarning
         ):
             private_key.signer(
-                padding.PKCS1v15(), asym_utils.Prehashed(hashes.SHA1())
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
             )
 
     @pytest.mark.supported(
@@ -725,7 +730,7 @@ class TestRSASignature(object):
             public_key.verifier(
                 b"0" * 64,
                 padding.PKCS1v15(),
-                asym_utils.Prehashed(hashes.SHA1()),
+                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
             )
 
     def test_prehashed_unsupported_in_signature_recover(self, backend):
@@ -737,7 +742,9 @@ class TestRSASignature(object):
         prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
-                signature, padding.PKCS1v15(), prehashed_alg
+                signature,
+                padding.PKCS1v15(),
+                prehashed_alg,  # type: ignore[arg-type]
             )
 
     def test_corrupted_private_key(self, backend):
@@ -1018,7 +1025,7 @@ class TestRSAVerification(object):
         # Hash algorithm can not be absent for PSS padding
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
-                signature, pss_padding, None
+                signature, pss_padding, None  # type: ignore[arg-type]
             )
 
         # Signature data recovery not supported with PSS
@@ -1078,7 +1085,12 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
-            public_key.verify(b"sig", b"msg", "notpadding", hashes.SHA1())
+            public_key.verify(
+                b"sig",
+                b"msg",
+                "notpadding",  # type: ignore[arg-type]
+                hashes.SHA1(),
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1900,7 +1912,9 @@ class TestRSAEncryption(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.encrypt(b"somedata", DummyAsymmetricPadding())
         with pytest.raises(TypeError):
-            public_key.encrypt(b"somedata", padding=object())
+            public_key.encrypt(
+                b"somedata", padding=object()  # type: ignore[arg-type]
+            )
 
     def test_unsupported_oaep_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -1955,10 +1969,10 @@ class TestRSANumbers(object):
 
     def test_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=None, n=15)
+            rsa.RSAPublicNumbers(e=None, n=15)  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=1, n=None)
+            rsa.RSAPublicNumbers(e=1, n=None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         ("p", "q", "d", "dmp1", "dmq1", "iqmp", "public_numbers"),
@@ -2295,7 +2309,7 @@ class TestRSAPrivateKeySerialization(object):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",
+                "notencoding",  # type: ignore[arg-type]
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -2305,7 +2319,7 @@ class TestRSAPrivateKeySerialization(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",
+                "invalidformat",  # type: ignore[arg-type]
                 serialization.NoEncryption(),
             )
 
@@ -2315,7 +2329,7 @@ class TestRSAPrivateKeySerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",
+                "notanencalg",  # type: ignore[arg-type]
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
@@ -2414,12 +2428,18 @@ class TestRSAPEMPublicKeySerialization(object):
     def test_public_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
-            key.public_bytes("notencoding", serialization.PublicFormat.PKCS1)
+            key.public_bytes(
+                "notencoding",  # type: ignore[arg-type]
+                serialization.PublicFormat.PKCS1,
+            )
 
     def test_public_bytes_invalid_format(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
-            key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",  # type: ignore[arg-type]
+            )
 
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
