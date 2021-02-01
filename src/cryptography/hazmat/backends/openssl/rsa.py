@@ -56,7 +56,7 @@ def _enc_dec_rsa(
     key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
     data: bytes,
     padding: AsymmetricPadding,
-):
+) -> bytes:
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Padding must be an instance of AsymmetricPadding.")
 
