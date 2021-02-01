@@ -187,7 +187,7 @@ class TestPKCS7Builder(object):
         key = ed25519.Ed25519PrivateKey.generate()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                cert, key, hashes.SHA256()
+                cert, key, hashes.SHA256()  # type: ignore[arg-type]
             )
 
     def test_sign_invalid_options(self):

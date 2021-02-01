@@ -118,11 +118,15 @@ class TestEd25519Signing(object):
 
     def test_invalid_type_public_bytes(self, backend):
         with pytest.raises(TypeError):
-            Ed25519PublicKey.from_public_bytes(object())
+            Ed25519PublicKey.from_public_bytes(
+                object()  # type: ignore[arg-type]
+            )
 
     def test_invalid_type_private_bytes(self, backend):
         with pytest.raises(TypeError):
-            Ed25519PrivateKey.from_private_bytes(object())
+            Ed25519PrivateKey.from_private_bytes(
+                object()  # type: ignore[arg-type]
+            )
 
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
@@ -142,14 +146,14 @@ class TestEd25519Signing(object):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):
