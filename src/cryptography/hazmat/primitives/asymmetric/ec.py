@@ -10,6 +10,12 @@ import warnings
 from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.primitives import _serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricSignatureContext,
+    AsymmetricVerificationContext,
+    utils as asym_utils,
+)
 
 
 class EllipticCurveOID(object):
@@ -36,13 +42,13 @@ class EllipticCurveOID(object):
 
 class EllipticCurve(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def name(self):
+    def name(self) -> str:
         """
         The name of the curve. e.g. secp256r1.
         """
 
     @abc.abstractproperty
-    def key_size(self):
+    def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.
         """
@@ -50,7 +56,9 @@ class EllipticCurve(metaclass=abc.ABCMeta):
 
 class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def algorithm(self):
+    def algorithm(
+        self,
+    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
         """
         The digest algorithm used with this signature.
         """
@@ -58,50 +66,64 @@ class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
 
 class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def signer(self, signature_algorithm):
+    def signer(
+        self,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> AsymmetricSignatureContext:
         """
         Returns an AsymmetricSignatureContext used for signing data.
         """
 
     @abc.abstractmethod
-    def exchange(self, algorithm, peer_public_key):
+    def exchange(
+        self, algorithm: "ECDH", peer_public_key: "EllipticCurvePublicKey"
+    ) -> bytes:
         """
         Performs a key exchange operation using the provided algorithm with the
         provided peer's public key.
         """
 
     @abc.abstractmethod
-    def public_key(self):
+    def public_key(self) -> "EllipticCurvePublicKey":
         """
         The EllipticCurvePublicKey for this private key.
         """
 
     @abc.abstractproperty
-    def curve(self):
+    def curve(self) -> EllipticCurve:
         """
         The EllipticCurve that this key is on.
         """
 
     @abc.abstractproperty
-    def key_size(self):
+    def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.
         """
 
     @abc.abstractmethod
-    def sign(self, data, signature_algorithm):
+    def sign(
+        self,
+        data,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> bytes:
         """
         Signs the data
         """
 
     @abc.abstractmethod
-    def private_numbers(self):
+    def private_numbers(self) -> "EllipticCurvePrivateNumbers":
         """
         Returns an EllipticCurvePrivateNumbers.
         """
 
     @abc.abstractmethod
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
         """
         Returns the key serialized as bytes.
         """
@@ -112,43 +134,58 @@ EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
 
 class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def verifier(self, signature, signature_algorithm):
+    def verifier(
+        self,
+        signature: bytes,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> AsymmetricVerificationContext:
         """
         Returns an AsymmetricVerificationContext used for signing data.
         """
 
     @abc.abstractproperty
-    def curve(self):
+    def curve(self) -> EllipticCurve:
         """
         The EllipticCurve that this key is on.
         """
 
     @abc.abstractproperty
-    def key_size(self):
+    def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.
         """
 
     @abc.abstractmethod
-    def public_numbers(self):
+    def public_numbers(self) -> "EllipticCurvePublicNumbers":
         """
         Returns an EllipticCurvePublicNumbers.
         """
 
     @abc.abstractmethod
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
         """
         Returns the key serialized as bytes.
         """
 
     @abc.abstractmethod
-    def verify(self, signature, data, signature_algorithm):
+    def verify(
+        self,
+        signature: bytes,
+        data: bytes,
+        algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> None:
         """
         Verifies the signature of the data.
         """
 
     @classmethod
-    def from_encoded_point(cls, curve, data):
+    def from_encoded_point(
+        cls, curve: EllipticCurve, data: bytes
+    ) -> "EllipticCurvePublicKey":
         utils._check_bytes("data", data)
 
         if not isinstance(curve, EllipticCurve):
@@ -288,20 +325,23 @@ _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
 }
 
 
-@utils.register_interface(EllipticCurveSignatureAlgorithm)
-class ECDSA(object):
+class ECDSA(EllipticCurveSignatureAlgorithm):
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
     algorithm = utils.read_only_property("_algorithm")
 
 
-def generate_private_key(curve, backend=None):
+def generate_private_key(
+    curve: EllipticCurve, backend=None
+) -> EllipticCurvePrivateKey:
     backend = _get_backend(backend)
     return backend.generate_elliptic_curve_private_key(curve)
 
 
-def derive_private_key(private_value, curve, backend=None):
+def derive_private_key(
+    private_value: int, curve: EllipticCurve, backend=None
+) -> EllipticCurvePrivateKey:
     backend = _get_backend(backend)
     if not isinstance(private_value, int):
         raise TypeError("private_value must be an integer type.")
@@ -316,7 +356,7 @@ def derive_private_key(private_value, curve, backend=None):
 
 
 class EllipticCurvePublicNumbers(object):
-    def __init__(self, x, y, curve):
+    def __init__(self, x: int, y: int, curve: EllipticCurve):
         if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError("x and y must be integers.")
 
@@ -327,11 +367,11 @@ class EllipticCurvePublicNumbers(object):
         self._x = x
         self._curve = curve
 
-    def public_key(self, backend=None):
+    def public_key(self, backend=None) -> EllipticCurvePublicKey:
         backend = _get_backend(backend)
         return backend.load_elliptic_curve_public_numbers(self)
 
-    def encode_point(self):
+    def encode_point(self) -> bytes:
         warnings.warn(
             "encode_point has been deprecated on EllipticCurvePublicNumbers"
             " and will be removed in a future version. Please use "
@@ -349,7 +389,9 @@ class EllipticCurvePublicNumbers(object):
         )
 
     @classmethod
-    def from_encoded_point(cls, curve, data):
+    def from_encoded_point(
+        cls, curve: EllipticCurve, data: bytes
+    ) -> "EllipticCurvePublicNumbers":
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
@@ -402,7 +444,9 @@ class EllipticCurvePublicNumbers(object):
 
 
 class EllipticCurvePrivateNumbers(object):
-    def __init__(self, private_value, public_numbers):
+    def __init__(
+        self, private_value: int, public_numbers: EllipticCurvePublicNumbers
+    ):
         if not isinstance(private_value, int):
             raise TypeError("private_value must be an integer.")
 
@@ -415,7 +459,7 @@ class EllipticCurvePrivateNumbers(object):
         self._private_value = private_value
         self._public_numbers = public_numbers
 
-    def private_key(self, backend=None):
+    def private_key(self, backend=None) -> EllipticCurvePrivateKey:
         backend = _get_backend(backend)
         return backend.load_elliptic_curve_private_numbers(self)
 
