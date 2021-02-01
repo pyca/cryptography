@@ -101,18 +101,14 @@ def _enc_dec_rsa_pkey_ctx(
         init = backend._lib.EVP_PKEY_decrypt_init
         crypt = backend._lib.EVP_PKEY_decrypt
 
-    pkey_ctx = backend._lib.EVP_PKEY_CTX_new(
-        key._evp_pkey, backend._ffi.NULL
-    )
+    pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init(pkey_ctx)
     backend.openssl_assert(res == 1)
     res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
     backend.openssl_assert(res > 0)
-    buf_size = backend._lib.EVP_PKEY_size(
-        key._evp_pkey
-    )
+    buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
     backend.openssl_assert(buf_size > 0)
     if isinstance(padding, OAEP) and backend._lib.Cryptography_HAS_RSA_OAEP_MD:
         mgf1_md = backend._evp_md_non_null_from_algorithm(
