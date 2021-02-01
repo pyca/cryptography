@@ -53,7 +53,7 @@ def _get_rsa_pss_salt_length(
 
 def _enc_dec_rsa(
     backend,
-    key: typing.Union[RSAPrivateKey, RSAPublicKey],
+    key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
     data: bytes,
     padding: AsymmetricPadding,
 ):
@@ -89,11 +89,11 @@ def _enc_dec_rsa(
 
 def _enc_dec_rsa_pkey_ctx(
     backend,
-    key: typing.Union[RSAPrivateKey, RSAPublicKey],
+    key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
     data: bytes,
     padding_enum: int,
     padding: AsymmetricPadding,
-):
+) -> bytes:
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
         crypt = backend._lib.EVP_PKEY_encrypt
