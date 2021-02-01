@@ -71,7 +71,7 @@ class TestX963KDF(object):
 
         xkdf = X963KDF(hashes.SHA256(), 128, sharedinfo, backend)
 
-        assert xkdf.verify(key, derivedkey) is None
+        xkdf.verify(key, derivedkey)
 
     def test_invalid_verify(self, backend):
         key = binascii.unhexlify(
@@ -85,28 +85,33 @@ class TestX963KDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            X963KDF(hashes.SHA256(), 16, sharedinfo="foo", backend=backend)
+            X963KDF(
+                hashes.SHA256(),
+                16,
+                sharedinfo="foo",  # type: ignore[arg-type]
+                backend=backend,
+            )
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.derive("foo")
+            xkdf.derive("foo")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify("foo", b"bar")
+            xkdf.verify("foo", b"bar")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify(b"foo", "bar")
+            xkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
 
 
 def test_invalid_backend():

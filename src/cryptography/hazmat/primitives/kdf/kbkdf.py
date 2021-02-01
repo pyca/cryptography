@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import typing
 from enum import Enum
 
 from cryptography import utils
@@ -27,19 +28,18 @@ class CounterLocation(Enum):
     AfterFixed = "after_fixed"
 
 
-@utils.register_interface(KeyDerivationFunction)
-class KBKDFHMAC(object):
+class KBKDFHMAC(KeyDerivationFunction):
     def __init__(
         self,
-        algorithm,
-        mode,
-        length,
-        rlen,
-        llen,
-        location,
-        label,
-        context,
-        fixed,
+        algorithm: hashes.HashAlgorithm,
+        mode: Mode,
+        length: int,
+        rlen: int,
+        llen: typing.Optional[int],
+        location: CounterLocation,
+        label: typing.Optional[bytes],
+        context: typing.Optional[bytes],
+        fixed: typing.Optional[bytes],
         backend=None,
     ):
         backend = _get_backend(backend)
@@ -101,7 +101,7 @@ class KBKDFHMAC(object):
         self._used = False
         self._fixed_data = fixed
 
-    def _valid_byte_length(self, value):
+    def _valid_byte_length(self, value: int) -> bool:
         if not isinstance(value, int):
             raise TypeError("value must be of type int")
 
@@ -110,7 +110,7 @@ class KBKDFHMAC(object):
             return False
         return True
 
-    def derive(self, key_material):
+    def derive(self, key_material: bytes) -> bytes:
         if self._used:
             raise AlreadyFinalized
 
@@ -146,7 +146,7 @@ class KBKDFHMAC(object):
 
         return b"".join(output)[: self._length]
 
-    def _generate_fixed_input(self):
+    def _generate_fixed_input(self) -> bytes:
         if self._fixed_data and isinstance(self._fixed_data, bytes):
             return self._fixed_data
 
@@ -154,6 +154,6 @@ class KBKDFHMAC(object):
 
         return b"".join([self._label, b"\x00", self._context, l_val])
 
-    def verify(self, key_material, expected_key):
+    def verify(self, key_material: bytes, expected_key: bytes) -> None:
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey
