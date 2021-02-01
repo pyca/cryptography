@@ -3,6 +3,7 @@
 # for complete details.
 
 import abc
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -25,6 +26,13 @@ class HashAlgorithm(metaclass=abc.ABCMeta):
     def digest_size(self) -> int:
         """
         The size of the resulting digest in bytes.
+        """
+
+    @abc.abstractproperty
+    def block_size(self) -> typing.Optional[int]:
+        """
+        The internal block size of the hash function, or None if the hash
+        function does not use blocks internally (e.g. SHA3).
         """
 
 
@@ -148,25 +156,30 @@ class SHA512(HashAlgorithm):
 class SHA3_224(HashAlgorithm):  # noqa: N801
     name = "sha3-224"
     digest_size = 28
+    block_size = None
 
 
 class SHA3_256(HashAlgorithm):  # noqa: N801
     name = "sha3-256"
     digest_size = 32
+    block_size = None
 
 
 class SHA3_384(HashAlgorithm):  # noqa: N801
     name = "sha3-384"
     digest_size = 48
+    block_size = None
 
 
 class SHA3_512(HashAlgorithm):  # noqa: N801
     name = "sha3-512"
     digest_size = 64
+    block_size = None
 
 
 class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
     name = "shake128"
+    block_size = None
 
     def __init__(self, digest_size: int):
         if not isinstance(digest_size, int):
@@ -182,6 +195,7 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
 
 class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     name = "shake256"
+    block_size = None
 
     def __init__(self, digest_size: int):
         if not isinstance(digest_size, int):
