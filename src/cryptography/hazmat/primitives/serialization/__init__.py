@@ -3,7 +3,7 @@
 # for complete details.
 
 
-from cryptography.hazmat.primitives.serialization.base import (
+from cryptography.hazmat.primitives._serialization import (
     BestAvailableEncryption,
     Encoding,
     KeySerializationEncryption,
@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives.serialization.base import (
     ParameterFormat,
     PrivateFormat,
     PublicFormat,
+)
+from cryptography.hazmat.primitives.serialization.base import (
     load_der_parameters,
     load_der_private_key,
     load_der_public_key,
