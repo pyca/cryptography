@@ -97,9 +97,13 @@ class TestX25519Exchange(object):
     def test_public_bytes_bad_args(self, backend):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
-            key.public_bytes(None, serialization.PublicFormat.Raw)
+            key.public_bytes(
+                None, serialization.PublicFormat.Raw  # type: ignore[arg-type]
+            )
         with pytest.raises(TypeError):
-            key.public_bytes(serialization.Encoding.Raw)
+            key.public_bytes(
+                serialization.Encoding.Raw  # type: ignore[call-arg]
+            )
 
     # These vectors are also from RFC 7748
     # https://tools.ietf.org/html/rfc7748#section-6.1
@@ -160,7 +164,7 @@ class TestX25519Exchange(object):
     def test_invalid_type_exchange(self, backend):
         key = X25519PrivateKey.generate()
         with pytest.raises(TypeError):
-            key.exchange(object())
+            key.exchange(object())  # type: ignore[arg-type]
 
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
@@ -182,14 +186,14 @@ class TestX25519Exchange(object):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):
