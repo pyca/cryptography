@@ -45,7 +45,9 @@ class TestCipher(object):
     def test_instantiate_with_non_algorithm(self, backend):
         algorithm = object()
         with pytest.raises(TypeError):
-            Cipher(algorithm, mode=None, backend=backend)
+            Cipher(
+                algorithm, mode=None, backend=backend  # type: ignore[arg-type]
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)

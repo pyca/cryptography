@@ -12,7 +12,8 @@ from cryptography.hazmat.primitives.ciphers.modes import Mode
 class DummyCipherAlgorithm(CipherAlgorithm):
     name = "dummy-cipher"
     block_size = 128
-    key_size = None
+    key_size = 256
+    key_sizes = frozenset([256])
 
 
 class DummyMode(Mode):
