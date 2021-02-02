@@ -35,7 +35,7 @@ def _byte_padding_check(block_size: int) -> None:
 
 def _byte_padding_update(
     buffer_: typing.Optional[bytes], data: bytes, block_size: int
-):
+) -> typing.Tuple[bytes, bytes]:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
@@ -55,7 +55,7 @@ def _byte_padding_pad(
     buffer_: typing.Optional[bytes],
     block_size: int,
     paddingfn: typing.Callable[[int], bytes],
-):
+) -> bytes:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
@@ -65,7 +65,7 @@ def _byte_padding_pad(
 
 def _byte_unpadding_update(
     buffer_: typing.Optional[bytes], data: bytes, block_size: int
-):
+) -> typing.Tuple[bytes, bytes]:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 
@@ -85,7 +85,7 @@ def _byte_unpadding_check(
     buffer_: typing.Optional[bytes],
     block_size: int,
     checkfn: typing.Callable[[bytes, int], int],
-):
+) -> bytes:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
 

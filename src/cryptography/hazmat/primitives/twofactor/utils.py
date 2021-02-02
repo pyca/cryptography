@@ -14,7 +14,7 @@ def _generate_uri(
     account_name: str,
     issuer: typing.Optional[str],
     extra_parameters,
-):
+) -> str:
     parameters = [
         ("digits", hotp._length),
         ("secret", base64.b32encode(hotp._key)),
