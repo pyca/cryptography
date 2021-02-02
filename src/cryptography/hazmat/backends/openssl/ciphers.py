@@ -118,12 +118,12 @@ class _CipherContext(object):
         self._backend._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         self._ctx = ctx
 
-    def update(self, data):
+    def update(self, data: bytes) -> bytes:
         buf = bytearray(len(data) + self._block_size_bytes - 1)
         n = self.update_into(data, buf)
         return bytes(buf[:n])
 
-    def update_into(self, data, buf):
+    def update_into(self, data: bytes, buf) -> int:
         total_data_len = len(data)
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
@@ -151,7 +151,7 @@ class _CipherContext(object):
 
         return total_out
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         if (
             self._operation == self._DECRYPT
             and isinstance(self._mode, modes.ModeWithAuthenticationTag)
@@ -202,7 +202,7 @@ class _CipherContext(object):
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
-    def finalize_with_tag(self, tag):
+    def finalize_with_tag(self, tag: bytes) -> bytes:
         if len(tag) < self._mode._min_tag_length:
             raise ValueError(
                 "Authentication tag must be {} bytes or longer.".format(
@@ -216,7 +216,7 @@ class _CipherContext(object):
         self._tag = tag
         return self.finalize()
 
-    def authenticate_additional_data(self, data):
+    def authenticate_additional_data(self, data: bytes) -> None:
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx,
