@@ -139,7 +139,7 @@ class ConcatKDFHMAC(KeyDerivationFunction):
     def _hmac(self) -> hmac.HMAC:
         return hmac.HMAC(self._salt, self._algorithm, self._backend)
 
-    def derive(self, key_material: bytes):
+    def derive(self, key_material: bytes) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True

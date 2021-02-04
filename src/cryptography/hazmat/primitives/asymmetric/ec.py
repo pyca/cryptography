@@ -509,7 +509,7 @@ _OID_TO_CURVE = {
 }
 
 
-def get_curve_for_oid(oid):
+def get_curve_for_oid(oid: ObjectIdentifier) -> typing.Type[EllipticCurve]:
     try:
         return _OID_TO_CURVE[oid]
     except KeyError:

@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import serialization
 _MIN_MODULUS_SIZE = 512
 
 
-def generate_parameters(generator, key_size, backend=None):
+def generate_parameters(generator, key_size, backend=None) -> "DHParameters":
     backend = _get_backend(backend)
     return backend.generate_dh_parameters(generator, key_size)
 
@@ -83,7 +83,7 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def public_key(self, backend=None):
+    def public_key(self, backend=None) -> "DHPublicKey":
         backend = _get_backend(backend)
         return backend.load_dh_public_numbers(self)
 
@@ -136,7 +136,7 @@ class DHParameters(metaclass=abc.ABCMeta):
         self,
         encoding: "serialization.Encoding",
         format: "serialization.ParameterFormat",
-    ):
+    ) -> bytes:
         """
         Returns the parameters serialized as bytes.
         """
@@ -222,7 +222,7 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
         encoding: "serialization.Encoding",
         format: "serialization.PrivateFormat",
         encryption_algorithm: "serialization.KeySerializationEncryption",
-    ):
+    ) -> bytes:
         """
         Returns the key serialized as bytes.
         """

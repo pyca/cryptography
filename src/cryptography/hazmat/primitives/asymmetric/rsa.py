@@ -160,7 +160,7 @@ def generate_private_key(
     return backend.generate_rsa_private_key(public_exponent, key_size)
 
 
-def _verify_rsa_parameters(public_exponent: int, key_size: int):
+def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
     if public_exponent not in (3, 65537):
         raise ValueError(
             "public_exponent must be either 3 (for legacy compatibility) or "
@@ -180,7 +180,7 @@ def _check_private_key_components(
     iqmp: int,
     public_exponent: int,
     modulus: int,
-):
+) -> None:
     if modulus < 3:
         raise ValueError("modulus must be >= 3.")
 
@@ -218,7 +218,7 @@ def _check_private_key_components(
         raise ValueError("p*q must equal modulus.")
 
 
-def _check_public_key_components(e: int, n: int):
+def _check_public_key_components(e: int, n: int) -> None:
     if n < 3:
         raise ValueError("n must be >= 3.")
 
@@ -229,7 +229,7 @@ def _check_public_key_components(e: int, n: int):
         raise ValueError("e must be odd.")
 
 
-def _modinv(e: int, m: int):
+def _modinv(e: int, m: int) -> int:
     """
     Modular Multiplicative Inverse. Returns x such that: (x*e) mod m == 1
     """
@@ -242,14 +242,14 @@ def _modinv(e: int, m: int):
     return x1 % m
 
 
-def rsa_crt_iqmp(p: int, q: int):
+def rsa_crt_iqmp(p: int, q: int) -> int:
     """
     Compute the CRT (q ** -1) % p value from RSA primes p and q.
     """
     return _modinv(q, p)
 
 
-def rsa_crt_dmp1(private_exponent: int, p: int):
+def rsa_crt_dmp1(private_exponent: int, p: int) -> int:
     """
     Compute the CRT private_exponent % (p - 1) value from the RSA
     private_exponent (d) and p.
@@ -257,7 +257,7 @@ def rsa_crt_dmp1(private_exponent: int, p: int):
     return private_exponent % (p - 1)
 
 
-def rsa_crt_dmq1(private_exponent: int, q: int):
+def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
     """
     Compute the CRT private_exponent % (q - 1) value from the RSA
     private_exponent (d) and q.
@@ -271,7 +271,9 @@ def rsa_crt_dmq1(private_exponent: int, q: int):
 _MAX_RECOVERY_ATTEMPTS = 1000
 
 
-def rsa_recover_prime_factors(n: int, e: int, d: int):
+def rsa_recover_prime_factors(
+    n: int, e: int, d: int
+) -> typing.Tuple[int, int]:
     """
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.

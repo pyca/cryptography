@@ -37,7 +37,7 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify(self, signature: bytes, data: bytes):
+    def verify(self, signature: bytes, data: bytes) -> None:
         """
         Verify the signature.
         """

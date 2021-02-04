@@ -10,18 +10,22 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
-def load_key_and_certificates(
-    data: bytes, password: typing.Optional[bytes], backend=None
-):
-    backend = _get_backend(backend)
-    return backend.load_key_and_certificates_from_pkcs12(data, password)
-
-
 _ALLOWED_PKCS12_TYPES = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
 ]
+
+
+def load_key_and_certificates(
+    data: bytes, password: typing.Optional[bytes], backend=None
+) -> typing.Tuple[
+    typing.Optional[_ALLOWED_PKCS12_TYPES],
+    typing.Optional[x509.Certificate],
+    typing.List[x509.Certificate],
+]:
+    backend = _get_backend(backend)
+    return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
 def serialize_key_and_certificates(
@@ -30,7 +34,7 @@ def serialize_key_and_certificates(
     cert: typing.Optional[x509.Certificate],
     cas: typing.Optional[typing.Iterable[x509.Certificate]],
     encryption_algorithm: serialization.KeySerializationEncryption,
-):
+) -> bytes:
     if key is not None and not isinstance(
         key,
         (

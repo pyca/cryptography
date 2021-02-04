@@ -194,6 +194,8 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+    assert digest is not None
+    assert mgf_digest is not None
 
     padding_algo = padding.OAEP(
         mgf=padding.MGF1(algorithm=mgf_digest),
