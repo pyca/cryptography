@@ -609,7 +609,8 @@ class TestRSASignature(object):
             private_key.sign(
                 b"msg",
                 padding.PSS(
-                    mgf=DummyMGF(), salt_length=padding.PSS.MAX_LENGTH
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    salt_length=padding.PSS.MAX_LENGTH,
                 ),
                 hashes.SHA1(),
             )
@@ -1455,7 +1456,9 @@ class TestRSAPKCS1Verification(object):
 class TestPSS(object):
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
-            padding.calculate_max_pss_salt_length(object(), hashes.SHA256())
+            padding.calculate_max_pss_salt_length(
+                object(), hashes.SHA256()  # type:ignore[arg-type]
+            )
 
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
@@ -1486,7 +1489,7 @@ class TestPSS(object):
 class TestMGF1(object):
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
-            padding.MGF1(b"not_a_hash")
+            padding.MGF1(b"not_a_hash")  # type:ignore[arg-type]
 
     def test_valid_mgf1_parameters(self):
         algorithm = hashes.SHA1()
@@ -1498,7 +1501,9 @@ class TestOAEP(object):
     def test_invalid_algorithm(self):
         mgf = padding.MGF1(hashes.SHA1())
         with pytest.raises(TypeError):
-            padding.OAEP(mgf=mgf, algorithm=b"", label=None)
+            padding.OAEP(
+                mgf=mgf, algorithm=b"", label=None  # type:ignore[arg-type]
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1738,7 +1743,9 @@ class TestRSADecryption(object):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
 
@@ -1924,7 +1931,9 @@ class TestRSAEncryption(object):
             public_key.encrypt(
                 b"ciphertext",
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
 

@@ -407,7 +407,9 @@ class TestOpenSSLRSA(object):
         assert (
             backend.rsa_padding_supported(
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
             is False
