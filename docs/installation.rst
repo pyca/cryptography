@@ -143,17 +143,7 @@ this when configuring OpenSSL:
 
 .. code-block:: console
 
-    $ ./config -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared
-
-You'll also need to generate your own ``openssl.ld`` file. For example::
-
-    OPENSSL_1.1.0E_CUSTOM {
-        global:
-            *;
-    };
-
-You should replace the version string on the first line as appropriate for your
-build.
+    $ ./config -Wl,-Bsymbolic-functions -fPIC shared
 
 Static Wheels
 ~~~~~~~~~~~~~
