@@ -82,7 +82,7 @@ jobs:
 
   linux-distros:
     runs-on: ubuntu-latest
-    container: ${{ matrix.IMAGE.IMAGE }}
+    container: ghcr.io/${{ matrix.IMAGE.IMAGE }}
     strategy:
       matrix:
         IMAGE:

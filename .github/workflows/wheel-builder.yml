@@ -8,7 +8,7 @@ on:
 jobs:
   manylinux:
     runs-on: ubuntu-latest
-    container: ${{ matrix.MANYLINUX.CONTAINER }}
+    container: ghcr.io/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       matrix:
         PYTHON: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m"]
