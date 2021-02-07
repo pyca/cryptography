@@ -91,7 +91,7 @@ jobs:
           - {IMAGE: "pyca/cryptography-runner-centos8-fips", TOXENV: "py36", FIPS: true}
           - {IMAGE: "pyca/cryptography-runner-stretch", TOXENV: "py27"}
           - {IMAGE: "pyca/cryptography-runner-buster", TOXENV: "py37"}
-          - {IMAGE: "pyca/cryptography-runner-bullseye", TOXENV: "py38"}
+          - {IMAGE: "pyca/cryptography-runner-bullseye", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-sid", TOXENV: "py39"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "pyca/cryptography-runner-ubuntu-focal", TOXENV: "py38"}
