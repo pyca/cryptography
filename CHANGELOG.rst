@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v3-3-2:
+
+3.3.2 - 2021-02-07
+~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE:** Fixed a bug where certain sequences of ``update()`` calls
+  when symmetrically encrypting very large payloads (>2GB) could result in an
+  integer overflow, leading to buffer overflows. *CVE-2020-36242*
+
 .. _v3-3-1:
 
 3.3.1 - 2020-12-09
