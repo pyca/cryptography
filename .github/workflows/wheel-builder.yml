@@ -92,6 +92,8 @@ jobs:
               LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
               CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
               ../venv/bin/python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
+        env:
+          MACOSX_DEPLOYMENT_TARGET:  "10.10"
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
       - run: |
           venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
