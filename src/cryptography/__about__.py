@@ -21,7 +21,7 @@ __summary__ = (
 )
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "3.4.dev1"
+__version__ = "3.4"
 
 __author__ = "The Python Cryptographic Authority and individual contributors"
 __email__ = "cryptography-dev@python.org"
