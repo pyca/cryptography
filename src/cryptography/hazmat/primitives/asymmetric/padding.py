@@ -3,19 +3,11 @@
 # for complete details.
 
 
-import abc
 import typing
 
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import rsa
-
-
-class AsymmetricPadding(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
-    def name(self) -> str:
-        """
-        A string naming this padding (e.g. "PSS", "PKCS1").
-        """
 
 
 class PKCS1v15(AsymmetricPadding):
