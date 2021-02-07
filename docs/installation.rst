@@ -94,7 +94,7 @@ Alpine
 
 .. code-block:: console
 
-    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo
 
 If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
