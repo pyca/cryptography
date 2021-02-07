@@ -18,7 +18,7 @@ except ImportError:
         =============================DEBUG ASSISTANCE==========================
         If you are seeing an error here please try the following to
         successfully install cryptography:
-        
+
         Upgrade to the latest pip and try again. This will fix errors for most
         users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
         =============================DEBUG ASSISTANCE==========================
