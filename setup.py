@@ -10,7 +10,21 @@ import sys
 
 from setuptools import find_packages, setup
 
-from setuptools_rust import RustExtension
+try:
+    from setuptools_rust import RustExtension
+except ImportError:
+    print(
+        """
+        =============================DEBUG ASSISTANCE==========================
+        If you are seeing an error here please try the following to
+        successfully install cryptography:
+
+        Upgrade to the latest pip and try again. This will fix errors for most
+        users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
+        =============================DEBUG ASSISTANCE==========================
+        """
+    )
+    raise
 
 
 base_dir = os.path.dirname(__file__)
