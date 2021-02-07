@@ -12,12 +12,12 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import _serialization, hashes
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext,
     AsymmetricVerificationContext,
     utils as asym_utils,
 )
-from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
 
 
 class RSAPrivateKey(metaclass=abc.ABCMeta):

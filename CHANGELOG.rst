@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v3-4-1:
+
+3.4.1 - 2021-02-07
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a circular import issue.
+* Added additional debug output to assist users seeing installation errors
+  due to outdated ``pip`` or missing ``rustc``.
+
 .. _v3-4:
 
 3.4 - 2021-02-07
