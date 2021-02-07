@@ -4,7 +4,7 @@ Changelog
 .. _v3-5:
 
 3.5 - `master`_
- ~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
  .. note:: This version is not yet released and is under active development.
 
