@@ -10,7 +10,14 @@ import sys
 
 from setuptools import find_packages, setup
 
-from setuptools_rust import RustExtension
+try:
+    from setuptools_rust import RustExtension
+except ImportError:
+    print(
+        "You are likely using a version of pip that's too old -- try "
+        "upgrading!"
+    )
+    raise
 
 
 base_dir = os.path.dirname(__file__)
