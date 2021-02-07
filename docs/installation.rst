@@ -103,16 +103,16 @@ Debian/Ubuntu
 
 .. code-block:: console
 
-    $ sudo apt-get install build-essential libssl-dev libffi-dev python3-dev
+    $ sudo apt-get install build-essential libssl-dev libffi-dev \
+        python3-dev cargo
 
-RHEL/CentOS
-~~~~~~~~~~~
+Fedora/RHEL 8/CentOS 8
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 
-    $ sudo yum install redhat-rpm-config gcc libffi-devel python-devel \
-        openssl-devel
-
+    $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
+        openssl-devel cargo
 
 Building
 ~~~~~~~~
