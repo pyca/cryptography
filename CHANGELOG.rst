@@ -3,10 +3,8 @@ Changelog
 
 .. _v3-4:
 
-3.4 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+3.4 - 2021-02-07
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 2 has been removed.
 * We now ship ``manylinux2014`` wheels and no longer ship ``manylinux1``
@@ -16,9 +14,8 @@ Changelog
   themselves will need to have the Rust toolchain installed. Users who use an
   officially produced wheel will not need to make any changes. The minimum
   supported Rust version is 1.45.0.
-* ``cryptography`` has begun including :pep:`484` type hints on its APIs. While
-  they do not yet cover all public APIs, users can begin using them to type
-  check their code with ``mypy``.
+* ``cryptography`` now has :pep:`484` type hints on nearly all of of its public
+  APIs. Users can begin using them to type check their code with ``mypy``.
 
 .. _v3-3-2:
 
