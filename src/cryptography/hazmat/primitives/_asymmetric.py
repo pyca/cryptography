@@ -6,7 +6,7 @@ import abc
 
 
 # This exists to break an import cycle. It is normally accessible from the
-# ciphers module.
+# asymmetric padding module.
 
 
 class AsymmetricPadding(metaclass=abc.ABCMeta):
