@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
-    _MAX_CHUNK_SIZE = 2 ** 31 - 1
+    _MAX_CHUNK_SIZE = 2 ** 30 - 1
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
