@@ -135,6 +135,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     ChaCha20,
     IDEA,
     SEED,
+    SM4,
     TripleDES,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
@@ -411,6 +412,10 @@ class Backend(object):
             ChaCha20, type(None), GetCipherByName("chacha20")
         )
         self.register_cipher_adapter(AES, XTS, _get_xts_cipher)
+        for mode_cls in [ECB, CBC, OFB, CFB, CTR]:
+            self.register_cipher_adapter(
+                SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
+            )
 
     def _register_x509_ext_parsers(self):
         ext_handlers = _EXTENSION_HANDLERS_BASE.copy()
