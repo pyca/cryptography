@@ -8,7 +8,7 @@ Changelog
 
 * Improvements to make the rust transition a bit easier. This includes some
   better error messages and small dependency fixes. If you experience
-  installation problems **Be sure to update ``pip``** first, then check the
+  installation problems **Be sure to update pip** first, then check the
   :doc:`FAQ </faq>`.
 
 .. _v3-4-1:
