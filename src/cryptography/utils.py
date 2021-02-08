@@ -72,12 +72,7 @@ class InterfaceNotImplemented(Exception):
 def strip_annotation(signature):
     return inspect.Signature(
         [
-            inspect.Parameter(
-                param.name,
-                param.kind,
-                default=param.default,
-                annotation=inspect.Parameter.empty,
-            )
+            param.replace(annotation=inspect.Parameter.empty)
             for param in signature.parameters.values()
         ]
     )
