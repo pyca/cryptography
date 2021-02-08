@@ -123,7 +123,9 @@ Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
 Building ``cryptography`` from source requires you have :ref:`Rust installed
 and available<installation:Rust>` on your ``PATH``. You may be able to fix this
 by upgrading to a newer version of ``pip`` which will install a pre-compiled
-``cryptography`` wheel. If not, you'll need to install Rust.
+``cryptography`` wheel. If not, you'll need to install Rust. Follow the
+:ref:`instructions<installation:Rust>` to ensure you install a recent Rust
+version.
 
 For the current release *only* you can temporarily bypass the requirement to
 have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
