@@ -1,33 +1,6 @@
 Frequently asked questions
 ==========================
 
-.. _faq-howto-handle-deprecation-warning:
-
-I cannot suppress the deprecation warning that ``cryptography`` emits on import
--------------------------------------------------------------------------------
-
-.. hint::
-
-   The deprecation warning emitted on import does not inherit
-   :py:exc:`DeprecationWarning` but inherits :py:exc:`UserWarning`
-   instead.
-
-If your pytest setup follows the best practices of failing on
-emitted warnings (``filterwarnings = error``), you may ignore it
-by adding the following line at the end of the list::
-
-   ignore:Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography, and will be removed in a future release.:UserWarning
-
-**Note:** Using ``cryptography.utils.CryptographyDeprecationWarning``
-is not possible here because specifying it triggers
-``import cryptography`` internally that emits the warning before
-the ignore rule even kicks in.
-
-Ref: https://github.com/pytest-dev/pytest/issues/7524
-
-The same applies when you use :py:func:`~warnings.filterwarnings` in
-your code or invoke CPython with :std:option:`-W` command line option.
-
 ``cryptography`` failed to install!
 -----------------------------------
 
@@ -37,6 +10,19 @@ take the form of ``pip install -U pip``, but on Windows you should do
 ``python -m pip install -U pip``. If you are still seeing errors after upgrading
 and trying ``pip install cryptography`` again, please see the :doc:`/installation`
 documentation.
+
+Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
+----------------------------------------------------------------------------
+
+Building ``cryptography`` from source requires you have :ref:`Rust installed
+and available<installation:Rust>` on your ``PATH``. You may be able to fix this
+by upgrading to a newer version of ``pip`` which will install a pre-compiled
+``cryptography`` wheel. If not, you'll need to install Rust.
+
+For the current release *only* you can temporarily bypass the requirement to
+have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
+variable. Note that this option will be removed in the next release and not
+having Rust available will be a hard error.
 
 How does ``cryptography`` compare to NaCl (Networking and Cryptography Library)?
 --------------------------------------------------------------------------------
@@ -116,19 +102,6 @@ release series. Since they are no longer receiving security patches from
 upstream, ``cryptography`` is also dropping support for them. To fix this issue
 you should upgrade to a newer version of OpenSSL (1.1.0 or later). This may
 require you to upgrade to a newer operating system.
-
-Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
-----------------------------------------------------------------------------
-
-Building ``cryptography`` from source requires you have :ref:`Rust installed
-and available<installation:Rust>` on your ``PATH``. You may be able to fix this
-by upgrading to a newer version of ``pip`` which will install a pre-compiled
-``cryptography`` wheel. If not, you'll need to install Rust.
-
-For the current release *only* you can temporarily bypass the requirement to
-have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
-variable. Note that this option will be removed in the next release and not
-having Rust available will be a hard error.
 
 Why are there no wheels for my Python3.x version?
 -------------------------------------------------
