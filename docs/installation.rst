@@ -273,6 +273,8 @@ Building ``cryptography`` requires having a working Rust toolchain. The current
 minimum supported Rust version is 1.45.0.
 
 Instructions for installing Rust can be found on `the Rust Project's website`_.
+We recommend installing Rust with ``rustup`` (as documented by the Rust
+Project) in order to ensure you have a recent version.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org

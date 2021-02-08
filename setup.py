@@ -169,7 +169,10 @@ except:  # noqa: E722
        instructions for your platform.
     3) Check our frequently asked questions for more information:
        https://cryptography.io/en/latest/faq.html
-    4) Ensure you have a recent Rust toolchain installed.
+    4) Ensure you have a recent Rust toolchain installed:
+       https://cryptography.io/en/latest/installation.html#rust
+    5) If you are experiencing issues with Rust for *this release only* you may
+       set the environment variable `CRYPTOGRAPHY_DONT_BUILD_RUST=1`.
     =============================DEBUG ASSISTANCE=============================
     """
     )
