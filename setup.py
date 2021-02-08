@@ -39,8 +39,10 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
-# `setup_requirements` must be kept in sync with `pyproject.toml`
-setup_requirements = ["cffi>=1.12", "setuptools-rust>=0.11.4"]
+# `install_requirements` and `setup_requirements` must be kept in sync with
+# `pyproject.toml`
+install_requirements = ["cffi>=1.12"]
+setup_requirements = install_requirements + ["setuptools-rust>=0.11.4"]
 
 if os.environ.get("CRYPTOGRAPHY_DONT_BUILD_RUST"):
     rust_extensions = []
@@ -102,7 +104,7 @@ try:
         ),
         include_package_data=True,
         python_requires=">=3.6",
-        install_requires=setup_requirements,
+        install_requires=install_requirements,
         setup_requires=setup_requirements,
         extras_require={
             "test": [
