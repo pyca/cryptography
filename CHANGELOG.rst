@@ -1,6 +1,16 @@
 Changelog
 =========
 
+.. _v3-4-2:
+
+3.4.2 - 2021-02-08
+~~~~~~~~~~~~~~~~~~
+
+* Improvements to make the rust transition a bit easier. This includes some
+  better error messages and small dependency fixes. If you experience
+  installation problems **Be sure to update ``pip``** first, then check the
+  :doc:`FAQ </faq>`.
+
 .. _v3-4-1:
 
 3.4.1 - 2021-02-07
