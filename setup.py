@@ -102,7 +102,6 @@ try:
         ),
         include_package_data=True,
         python_requires=">=3.6",
-        install_requires=setup_requirements,
         setup_requires=setup_requirements,
         extras_require={
             "test": [
