@@ -120,9 +120,11 @@ Debian/Ubuntu
 
 .. warning::
 
-    The Rust available by default in most Debian/Ubuntu versions is older than
-    the minimum supported version. See the :ref:`Rust installation instructions
-    <installation:Rust>` for information about installing a newer Rust.
+    The Rust available in current Debian stable and some Ubuntu versions is
+    older than the minimum supported version. Ubuntu 18.04 and 20.04 are
+    sufficiently new, but otherwise please see the
+    :ref:`Rust installation instructions <installation:Rust>` for information
+    about installing a newer Rust.
 
 .. code-block:: console
 
@@ -131,6 +133,13 @@ Debian/Ubuntu
 
 Fedora/RHEL 8/CentOS 8
 ~~~~~~~~~~~~~~~~~~~~~~
+
+.. warning::
+
+    For RHEL and CentOS you must be on version 8.3 or newer for the command
+    below to install a sufficiently new Rust. If your Rust is less than 1.45.0
+    please see the :ref:`Rust installation instructions <installation:Rust>`
+    for information about installing a newer Rust.
 
 .. code-block:: console
 
@@ -310,10 +319,10 @@ Rust
 .. note::
 
     If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
-    derived from the preceding list, then you should **upgrade ``pip``** and
-    attempt to install ``cryptography`` again before trying to install the Rust
-    toolchain. These platforms will receive a binary wheel and require no
-    compiler if you have an updated ``pip``!
+    derived from the preceding list, then you should **upgrade ``pip``** (in
+    a virtual environment!) and attempt to install ``cryptography`` again
+    before trying to install the Rust toolchain. These platforms will receive
+    a binary wheel and require no compiler if you have an updated ``pip``!
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
 minimum supported Rust version is 1.45.0. **This is newer than the Rust most
