@@ -41,8 +41,9 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 
 # `install_requirements` and `setup_requirements` must be kept in sync with
 # `pyproject.toml`
+setuptools_rust = "setuptools-rust>=0.11.4"
 install_requirements = ["cffi>=1.12"]
-setup_requirements = install_requirements + ["setuptools-rust>=0.11.4"]
+setup_requirements = install_requirements + [setuptools_rust]
 
 if os.environ.get("CRYPTOGRAPHY_DONT_BUILD_RUST"):
     rust_extensions = []
@@ -126,6 +127,9 @@ try:
                 "pyenchant >= 1.6.11",
                 "twine >= 1.12.0",
                 "sphinxcontrib-spelling >= 4.0.1",
+            ],
+            "sdist": [
+                setuptools_rust,
             ],
             "pep8test": [
                 "black",
