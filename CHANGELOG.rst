@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v3-4-4:
+
+3.4.4 - 2021-02-09
+~~~~~~~~~~~~~~~~~~
+
+* Added a ``py.typed`` file so that ``mypy`` will know to use our type
+  annotations.
+* Fixed an import cycle that coule be triggered by certain import sequences.
+
 .. _v3-4-3:
 
 3.4.3 - 2021-02-08
