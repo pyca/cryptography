@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v3-4-3:
+
+3.4.3 - 2021-02-08
+~~~~~~~~~~~~~~~~~~
+
+* Specify our supported Rust version (>=1.45.0) in our ``setup.py`` so users
+  on older versions will get a clear error message.
+
 .. _v3-4-2:
 
 3.4.2 - 2021-02-08
