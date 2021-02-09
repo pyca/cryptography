@@ -8,7 +8,7 @@ Changelog
 
 * Added a ``py.typed`` file so that ``mypy`` will know to use our type
   annotations.
-* Fixed an import cycle that coule be triggered by certain import sequences.
+* Fixed an import cycle that could be triggered by certain import sequences.
 
 .. _v3-4-3:
 
