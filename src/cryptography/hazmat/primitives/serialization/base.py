@@ -25,7 +25,7 @@ def load_pem_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
     return backend.load_pem_public_key(data)
 
 
-def load_pem_parameters(data: bytes, backend=None) -> dh.DHParameters:
+def load_pem_parameters(data: bytes, backend=None) -> "dh.DHParameters":
     backend = _get_backend(backend)
     return backend.load_pem_parameters(data)
 
@@ -42,6 +42,6 @@ def load_der_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
     return backend.load_der_public_key(data)
 
 
-def load_der_parameters(data: bytes, backend=None) -> dh.DHParameters:
+def load_der_parameters(data: bytes, backend=None) -> "dh.DHParameters":
     backend = _get_backend(backend)
     return backend.load_der_parameters(data)
