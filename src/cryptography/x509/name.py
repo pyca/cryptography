@@ -216,7 +216,7 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
-    def get_attributes_for_oid(self, oid) -> typing.Iterable[NameAttribute]:
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
