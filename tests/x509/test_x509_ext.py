@@ -56,12 +56,16 @@ class TestExtension(object):
     def test_not_an_oid(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension("notanoid", True, bc)
+            x509.Extension("notanoid", True, bc)  # type:ignore[arg-type]
 
     def test_critical_not_a_bool(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension(ExtensionOID.BASIC_CONSTRAINTS, "notabool", bc)
+            x509.Extension(
+                ExtensionOID.BASIC_CONSTRAINTS,
+                "notabool",  # type:ignore[arg-type]
+                bc,
+            )
 
     def test_repr(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
@@ -73,16 +77,38 @@ class TestExtension(object):
         )
 
     def test_eq(self):
-        ext1 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
-        ext2 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
         assert ext1 == ext2
 
     def test_ne(self):
-        ext1 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
-        ext2 = x509.Extension(x509.ObjectIdentifier("1.2.3.5"), False, "value")
-        ext3 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), True, "value")
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.5"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext3 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            True,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
         ext4 = x509.Extension(
-            x509.ObjectIdentifier("1.2.3.4"), False, "value4"
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=True, path_length=None),
         )
         assert ext1 != ext2
         assert ext1 != ext3
@@ -181,7 +207,9 @@ class TestTLSFeature(object):
 class TestUnrecognizedExtension(object):
     def test_invalid_oid(self):
         with pytest.raises(TypeError):
-            x509.UnrecognizedExtension("notanoid", b"somedata")
+            x509.UnrecognizedExtension(
+                "notanoid", b"somedata"  # type:ignore[arg-type]
+            )
 
     def test_eq(self):
         ext1 = x509.UnrecognizedExtension(
@@ -289,7 +317,7 @@ class TestCertificateIssuer(object):
 class TestCRLReason(object):
     def test_invalid_reason_flags(self):
         with pytest.raises(TypeError):
-            x509.CRLReason("notareason")
+            x509.CRLReason("notareason")  # type:ignore[arg-type]
 
     def test_eq(self):
         reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
@@ -346,7 +374,7 @@ class TestDeltaCRLIndicator(object):
 class TestInvalidityDate(object):
     def test_invalid_invalidity_date(self):
         with pytest.raises(TypeError):
-            x509.InvalidityDate("notadate")
+            x509.InvalidityDate("notadate")  # type:ignore[arg-type]
 
     def test_eq(self):
         invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
@@ -1990,7 +2018,12 @@ class TestGeneralNames(object):
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
-            x509.GeneralNames([x509.DNSName("cryptography.io"), "invalid"])
+            x509.GeneralNames(
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
+            )
 
     def test_repr(self):
         gns = x509.GeneralNames([x509.DNSName("cryptography.io")])
@@ -2049,7 +2082,10 @@ class TestIssuerAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.IssuerAlternativeName(
-                [x509.DNSName("cryptography.io"), "invalid"]
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
             )
 
     def test_repr(self):
@@ -2157,7 +2193,10 @@ class TestSubjectAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.SubjectAlternativeName(
-                [x509.DNSName("cryptography.io"), "invalid"]
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
             )
 
     def test_repr(self):
@@ -3335,11 +3374,11 @@ class TestNameConstraints(object):
 
     def test_invalid_permitted_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints("badpermitted", None)
+            x509.NameConstraints("badpermitted", None)  # type:ignore[arg-type]
 
     def test_invalid_excluded_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints(None, "badexcluded")
+            x509.NameConstraints(None, "badexcluded")  # type:ignore[arg-type]
 
     def test_no_subtrees(self):
         with pytest.raises(ValueError):
@@ -5365,7 +5404,9 @@ class TestSignedCertificateTimestamps(object):
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
-            x509.PrecertificateSignedCertificateTimestamps([object()])
+            x509.PrecertificateSignedCertificateTimestamps(
+                [object()]  # type:ignore[list-item]
+            )
 
     def test_repr(self):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
@@ -5566,7 +5607,7 @@ class TestInvalidExtension(object):
 class TestOCSPNonce(object):
     def test_non_bytes(self):
         with pytest.raises(TypeError):
-            x509.OCSPNonce(38)
+            x509.OCSPNonce(38)  # type:ignore[arg-type]
 
     def test_eq(self):
         nonce1 = x509.OCSPNonce(b"0" * 5)
