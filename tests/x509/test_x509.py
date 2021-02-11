@@ -4070,7 +4070,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "SAN")])
             )
             .add_extension(
-                x509.SubjectAlternativeName([FakeGeneralName("")]),
+                x509.SubjectAlternativeName(
+                    [FakeGeneralName("")]  # type:ignore[list-item]
+                ),
                 critical=False,
             )
         )
