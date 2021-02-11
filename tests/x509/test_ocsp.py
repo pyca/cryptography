@@ -726,7 +726,9 @@ class TestOCSPResponseBuilder(object):
 class TestSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
-            x509.SignedCertificateTimestamps([object()])
+            x509.SignedCertificateTimestamps(
+                [object()]  # type: ignore[list-item]
+            )
 
     def test_repr(self):
         assert repr(x509.SignedCertificateTimestamps([])) == (
