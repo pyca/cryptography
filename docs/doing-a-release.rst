@@ -13,7 +13,11 @@ security vulnerability, you should also include the following steps:
   included in the :doc:`changelog`. Ideally you should request the CVE before
   starting the release process so that the CVE is available at the time of the
   release.
-* Ensure that the :doc:`changelog` entry credits whoever reported the issue.
+* Document the CVE in the git commit that fixes the issue.
+* Ensure that the :doc:`changelog` entry credits whoever reported the issue and
+  contains the assigned CVE.
+* Publish a GitHub Security Advisory on the repository with all relevant
+  information.
 * The release should be announced on the `oss-security`_ mailing list, in
   addition to the regular announcement lists.
 
