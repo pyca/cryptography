@@ -337,7 +337,7 @@ Project) in order to ensure you have a recent version.
 
 Rust is only required when building ``cryptography``, meaning that you may
 install it for the duration of your ``pip install`` command and then remove it
-from a system, a Rust toolchain is not required to *use* ``cryptography``. In
+from a system. A Rust toolchain is not required to **use** ``cryptography``. In
 deployments such as ``docker``, you may use a multi-stage ``Dockerfile`` where
 you install Rust during the build phase but do not install it in the runtime
 image. This is the same as the C compiler toolchain which is also required to
