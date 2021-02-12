@@ -127,6 +127,11 @@ by upgrading to a newer version of ``pip`` which will install a pre-compiled
 :ref:`instructions<installation:Rust>` to ensure you install a recent Rust
 version.
 
+Rust is only required during the build phase of ``cryptography``, you do not
+need to have Rust installed after you've built ``cryptography``. This is the
+same as the C compiler toolchain which is also required to build
+``cryptography``, but not afterwards
+
 For the current release *only* you can temporarily bypass the requirement to
 have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
 variable. Note that this option will be removed in the next release and not

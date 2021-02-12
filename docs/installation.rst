@@ -335,6 +335,14 @@ Instructions for installing Rust can be found on `the Rust Project's website`_.
 We recommend installing Rust with ``rustup`` (as documented by the Rust
 Project) in order to ensure you have a recent version.
 
+Rust is only required when building ``cryptography``, meaning that you may
+install it for the duration of your ``pip install`` command and then remove it
+from a system, a Rust toolchain is not required to *use* ``cryptography``. In
+deployments such as ``docker``, you may use a multi-stage ``Dockerfile`` where
+you install Rust during the build phase but do not install it in the runtime
+image. This is the same as the C compiler toolchain which is also required to
+build ``cryptography``, but not afterwards.
+
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`a binary distribution`: https://wiki.openssl.org/index.php/Binaries
