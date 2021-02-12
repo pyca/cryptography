@@ -3,8 +3,8 @@ Changelog
 
 .. _v3-5:
 
-3.5 - `master`_
-~~~~~~~~~~~~~~~~
+3.5 - `main`_
+~~~~~~~~~~~~~
 
  .. note:: This version is not yet released and is under active development.
 
@@ -1691,5 +1691,5 @@ Changelog
 
 * Initial release.
 
-.. _`master`: https://github.com/pyca/cryptography/
+.. _`main`: https://github.com/pyca/cryptography/
 .. _`cffi`: https://cffi.readthedocs.io/
