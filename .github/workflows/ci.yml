@@ -3,7 +3,7 @@ on:
   pull_request: {}
   push:
     branches:
-      - master
+      - main
       - '*.*.x'
     tags:
       - '*.*'
@@ -338,7 +338,7 @@ jobs:
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: "linkcheck"
     timeout-minutes: 30
