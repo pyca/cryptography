@@ -52,7 +52,7 @@ Given a version ``cryptography X.Y.Z``,
   releases (such as fixing security issues or correcting regressions in a major
   release).
 
-This scheme is compatible with `SemVer`_, though many major releases will *not*
+This scheme is compatible with `SemVer`_, though many major releases will **not**
 include any backwards-incompatible changes.
 
 Deprecation
