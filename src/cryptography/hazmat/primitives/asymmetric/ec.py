@@ -176,7 +176,7 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         data: bytes,
-        algorithm: EllipticCurveSignatureAlgorithm,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
     ) -> None:
         """
         Verifies the signature of the data.

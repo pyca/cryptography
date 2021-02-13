@@ -7,6 +7,7 @@ import binascii
 import datetime
 import ipaddress
 import os
+import typing
 
 import pretend
 
@@ -56,12 +57,16 @@ class TestExtension(object):
     def test_not_an_oid(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension("notanoid", True, bc)
+            x509.Extension("notanoid", True, bc)  # type:ignore[arg-type]
 
     def test_critical_not_a_bool(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension(ExtensionOID.BASIC_CONSTRAINTS, "notabool", bc)
+            x509.Extension(
+                ExtensionOID.BASIC_CONSTRAINTS,
+                "notabool",  # type:ignore[arg-type]
+                bc,
+            )
 
     def test_repr(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
@@ -73,16 +78,38 @@ class TestExtension(object):
         )
 
     def test_eq(self):
-        ext1 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
-        ext2 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
         assert ext1 == ext2
 
     def test_ne(self):
-        ext1 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), False, "value")
-        ext2 = x509.Extension(x509.ObjectIdentifier("1.2.3.5"), False, "value")
-        ext3 = x509.Extension(x509.ObjectIdentifier("1.2.3.4"), True, "value")
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.5"),
+            False,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
+        ext3 = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            True,
+            x509.BasicConstraints(ca=False, path_length=None),
+        )
         ext4 = x509.Extension(
-            x509.ObjectIdentifier("1.2.3.4"), False, "value4"
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            x509.BasicConstraints(ca=True, path_length=None),
         )
         assert ext1 != ext2
         assert ext1 != ext3
@@ -112,7 +139,7 @@ class TestExtension(object):
 class TestTLSFeature(object):
     def test_not_enum_type(self):
         with pytest.raises(TypeError):
-            x509.TLSFeature([3])
+            x509.TLSFeature([3])  # type:ignore[list-item]
 
     def test_empty_list(self):
         with pytest.raises(TypeError):
@@ -181,7 +208,9 @@ class TestTLSFeature(object):
 class TestUnrecognizedExtension(object):
     def test_invalid_oid(self):
         with pytest.raises(TypeError):
-            x509.UnrecognizedExtension("notanoid", b"somedata")
+            x509.UnrecognizedExtension(
+                "notanoid", b"somedata"  # type:ignore[arg-type]
+            )
 
     def test_eq(self):
         ext1 = x509.UnrecognizedExtension(
@@ -289,7 +318,7 @@ class TestCertificateIssuer(object):
 class TestCRLReason(object):
     def test_invalid_reason_flags(self):
         with pytest.raises(TypeError):
-            x509.CRLReason("notareason")
+            x509.CRLReason("notareason")  # type:ignore[arg-type]
 
     def test_eq(self):
         reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
@@ -318,7 +347,7 @@ class TestCRLReason(object):
 class TestDeltaCRLIndicator(object):
     def test_not_int(self):
         with pytest.raises(TypeError):
-            x509.DeltaCRLIndicator("notanint")
+            x509.DeltaCRLIndicator("notanint")  # type:ignore[arg-type]
 
     def test_eq(self):
         delta1 = x509.DeltaCRLIndicator(1)
@@ -346,7 +375,7 @@ class TestDeltaCRLIndicator(object):
 class TestInvalidityDate(object):
     def test_invalid_invalidity_date(self):
         with pytest.raises(TypeError):
-            x509.InvalidityDate("notadate")
+            x509.InvalidityDate("notadate")  # type:ignore[arg-type]
 
     def test_eq(self):
         invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
@@ -376,11 +405,13 @@ class TestInvalidityDate(object):
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):
         with pytest.raises(TypeError):
-            x509.NoticeReference("org", [1, 2, "three"])
+            x509.NoticeReference(
+                "org", [1, 2, "three"]  # type:ignore[list-item]
+            )
 
     def test_notice_numbers_none(self):
         with pytest.raises(TypeError):
-            x509.NoticeReference("org", None)
+            x509.NoticeReference("org", None)  # type:ignore[arg-type]
 
     def test_iter_input(self):
         numbers = [1, 3, 4]
@@ -419,7 +450,7 @@ class TestNoticeReference(object):
 class TestUserNotice(object):
     def test_notice_reference_invalid(self):
         with pytest.raises(TypeError):
-            x509.UserNotice("invalid", None)
+            x509.UserNotice("invalid", None)  # type:ignore[arg-type]
 
     def test_notice_reference_none(self):
         un = x509.UserNotice(None, "text")
@@ -463,7 +494,7 @@ class TestUserNotice(object):
 class TestPolicyInformation(object):
     def test_invalid_policy_identifier(self):
         with pytest.raises(TypeError):
-            x509.PolicyInformation("notanoid", None)
+            x509.PolicyInformation("notanoid", None)  # type:ignore[arg-type]
 
     def test_none_policy_qualifiers(self):
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), None)
@@ -478,7 +509,10 @@ class TestPolicyInformation(object):
 
     def test_invalid_policy_identifiers(self):
         with pytest.raises(TypeError):
-            x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [1, 2])
+            x509.PolicyInformation(
+                x509.ObjectIdentifier("1.2.3"),
+                [1, 2],  # type:ignore[list-item]
+            )
 
     def test_iter_input(self):
         qual = ["foo", "bar"]
@@ -486,7 +520,10 @@ class TestPolicyInformation(object):
         assert list(pi.policy_qualifiers) == qual
 
     def test_repr(self):
-        pq = ["string", x509.UserNotice(None, "hi")]
+        pq: typing.List[typing.Union[str, x509.UserNotice]] = [
+            "string",
+            x509.UserNotice(None, "hi"),
+        ]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         assert repr(pi) == (
             "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
@@ -537,7 +574,7 @@ class TestCertificatePolicies(object):
         pq = ["string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         with pytest.raises(TypeError):
-            x509.CertificatePolicies([1, pi])
+            x509.CertificatePolicies([1, pi])  # type:ignore[list-item]
 
     def test_iter_len(self):
         pq = ["string"]
@@ -620,7 +657,7 @@ class TestCertificatePolicies(object):
         )
         cp2 = x509.CertificatePolicies([pi2])
         pi3 = x509.PolicyInformation(
-            x509.ObjectIdentifier("1.2.3"), [x509.UserNotice(None, b"text")]
+            x509.ObjectIdentifier("1.2.3"), [x509.UserNotice(None, "text")]
         )
         cp3 = x509.CertificatePolicies([pi3])
         assert hash(cp) == hash(cp2)
@@ -1005,7 +1042,9 @@ class TestSubjectKeyIdentifier(object):
 class TestAuthorityKeyIdentifier(object):
     def test_authority_cert_issuer_not_generalname(self):
         with pytest.raises(TypeError):
-            x509.AuthorityKeyIdentifier(b"identifier", ["notname"], 3)
+            x509.AuthorityKeyIdentifier(
+                b"identifier", ["notname"], 3  # type:ignore[list-item]
+            )
 
     def test_authority_cert_serial_number_not_integer(self):
         dirname = x509.DirectoryName(
@@ -1021,7 +1060,9 @@ class TestAuthorityKeyIdentifier(object):
             )
         )
         with pytest.raises(TypeError):
-            x509.AuthorityKeyIdentifier(b"identifier", [dirname], "notanint")
+            x509.AuthorityKeyIdentifier(
+                b"identifier", [dirname], "notanint"  # type:ignore[arg-type]
+            )
 
     def test_authority_issuer_none_serial_not_none(self):
         with pytest.raises(ValueError):
@@ -1120,7 +1161,9 @@ class TestAuthorityKeyIdentifier(object):
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):
-            x509.BasicConstraints(ca="notbool", path_length=None)
+            x509.BasicConstraints(
+                ca="notbool", path_length=None  # type:ignore[arg-type]
+            )
 
     def test_path_length_not_ca(self):
         with pytest.raises(ValueError):
@@ -1128,10 +1171,14 @@ class TestBasicConstraints(object):
 
     def test_path_length_not_int(self):
         with pytest.raises(TypeError):
-            x509.BasicConstraints(ca=True, path_length=1.1)
+            x509.BasicConstraints(
+                ca=True, path_length=1.1  # type:ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
-            x509.BasicConstraints(ca=True, path_length="notint")
+            x509.BasicConstraints(
+                ca=True, path_length="notint"  # type:ignore[arg-type]
+            )
 
     def test_path_length_negative(self):
         with pytest.raises(TypeError):
@@ -1165,7 +1212,7 @@ class TestBasicConstraints(object):
 class TestExtendedKeyUsage(object):
     def test_not_all_oids(self):
         with pytest.raises(TypeError):
-            x509.ExtendedKeyUsage(["notoid"])
+            x509.ExtendedKeyUsage(["notoid"])  # type:ignore[list-item]
 
     def test_iter_len(self):
         eku = x509.ExtendedKeyUsage(
@@ -1990,7 +2037,12 @@ class TestGeneralNames(object):
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
-            x509.GeneralNames([x509.DNSName("cryptography.io"), "invalid"])
+            x509.GeneralNames(
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
+            )
 
     def test_repr(self):
         gns = x509.GeneralNames([x509.DNSName("cryptography.io")])
@@ -2049,7 +2101,10 @@ class TestIssuerAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.IssuerAlternativeName(
-                [x509.DNSName("cryptography.io"), "invalid"]
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
             )
 
     def test_repr(self):
@@ -2115,7 +2170,7 @@ class TestCRLNumber(object):
 
     def test_invalid_number(self):
         with pytest.raises(TypeError):
-            x509.CRLNumber("notanumber")
+            x509.CRLNumber("notanumber")  # type:ignore[arg-type]
 
     def test_hash(self):
         c1 = x509.CRLNumber(1)
@@ -2157,7 +2212,10 @@ class TestSubjectAlternativeName(object):
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.SubjectAlternativeName(
-                [x509.DNSName("cryptography.io"), "invalid"]
+                [
+                    x509.DNSName("cryptography.io"),
+                    "invalid",  # type:ignore[list-item]
+                ]
             )
 
     def test_repr(self):
@@ -2521,12 +2579,15 @@ class TestExtendedKeyUsageExtension(object):
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
         with pytest.raises(TypeError):
-            x509.AccessDescription("notanoid", x509.DNSName("test"))
+            x509.AccessDescription(
+                "notanoid", x509.DNSName("test")  # type:ignore[arg-type]
+            )
 
     def test_invalid_access_location(self):
         with pytest.raises(TypeError):
             x509.AccessDescription(
-                AuthorityInformationAccessOID.CA_ISSUERS, "invalid"
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                "invalid",  # type:ignore[arg-type]
             )
 
     def test_valid_nonstandard_method(self):
@@ -2595,11 +2656,11 @@ class TestAccessDescription(object):
 class TestPolicyConstraints(object):
     def test_invalid_explicit_policy(self):
         with pytest.raises(TypeError):
-            x509.PolicyConstraints("invalid", None)
+            x509.PolicyConstraints("invalid", None)  # type:ignore[arg-type]
 
     def test_invalid_inhibit_policy(self):
         with pytest.raises(TypeError):
-            x509.PolicyConstraints(None, "invalid")
+            x509.PolicyConstraints(None, "invalid")  # type:ignore[arg-type]
 
     def test_both_none(self):
         with pytest.raises(ValueError):
@@ -2672,7 +2733,9 @@ class TestPolicyConstraintsExtension(object):
 class TestAuthorityInformationAccess(object):
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
-            x509.AuthorityInformationAccess(["notanAccessDescription"])
+            x509.AuthorityInformationAccess(
+                ["notanAccessDescription"]  # type:ignore[list-item]
+            )
 
     def test_iter_len(self):
         aia = x509.AuthorityInformationAccess(
@@ -2856,7 +2919,9 @@ class TestAuthorityInformationAccess(object):
 class TestSubjectInformationAccess(object):
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
-            x509.SubjectInformationAccess(["notanAccessDescription"])
+            x509.SubjectInformationAccess(
+                ["notanAccessDescription"]  # type:ignore[list-item]
+            )
 
     def test_iter_len(self):
         sia = x509.SubjectInformationAccess(
@@ -3335,11 +3400,11 @@ class TestNameConstraints(object):
 
     def test_invalid_permitted_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints("badpermitted", None)
+            x509.NameConstraints("badpermitted", None)  # type:ignore[arg-type]
 
     def test_invalid_excluded_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints(None, "badexcluded")
+            x509.NameConstraints(None, "badexcluded")  # type:ignore[arg-type]
 
     def test_no_subtrees(self):
         with pytest.raises(ValueError):
@@ -3577,26 +3642,34 @@ class TestNameConstraintsExtension(object):
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):
         with pytest.raises(TypeError):
-            x509.DistributionPoint(["notgn"], None, None, None)
+            x509.DistributionPoint(
+                ["notgn"], None, None, None  # type:ignore[list-item]
+            )
 
     def test_distribution_point_relative_name_not_name(self):
         with pytest.raises(TypeError):
-            x509.DistributionPoint(None, "notname", None, None)
+            x509.DistributionPoint(
+                None, "notname", None, None  # type:ignore[arg-type]
+            )
 
     def test_distribution_point_full_and_relative_not_none(self):
         with pytest.raises(ValueError):
-            x509.DistributionPoint("data", "notname", None, None)
+            x509.DistributionPoint(
+                "data", "notname", None, None  # type:ignore[arg-type]
+            )
 
     def test_crl_issuer_not_general_names(self):
         with pytest.raises(TypeError):
-            x509.DistributionPoint(None, None, None, ["notgn"])
+            x509.DistributionPoint(
+                None, None, None, ["notgn"]  # type:ignore[list-item]
+            )
 
     def test_reason_not_reasonflags(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier("http://crypt.og/crl")],
                 None,
-                frozenset(["notreasonflags"]),
+                frozenset(["notreasonflags"]),  # type:ignore[list-item]
                 None,
             )
 
@@ -3605,7 +3678,7 @@ class TestDistributionPoint(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier("http://crypt.og/crl")],
                 None,
-                [x509.ReasonFlags.ca_compromise],
+                [x509.ReasonFlags.ca_compromise],  # type:ignore[arg-type]
                 None,
             )
 
@@ -3785,7 +3858,9 @@ class TestDistributionPoint(object):
 class TestFreshestCRL(object):
     def test_invalid_distribution_points(self):
         with pytest.raises(TypeError):
-            x509.FreshestCRL(["notadistributionpoint"])
+            x509.FreshestCRL(
+                ["notadistributionpoint"]  # type:ignore[list-item]
+            )
 
     def test_iter_len(self):
         fcrl = x509.FreshestCRL(
@@ -4018,7 +4093,9 @@ class TestFreshestCRL(object):
 class TestCRLDistributionPoints(object):
     def test_invalid_distribution_points(self):
         with pytest.raises(TypeError):
-            x509.CRLDistributionPoints(["notadistributionpoint"])
+            x509.CRLDistributionPoints(
+                ["notadistributionpoint"],  # type:ignore[list-item]
+            )
 
     def test_iter_len(self):
         cdp = x509.CRLDistributionPoints(
@@ -4646,7 +4723,7 @@ class TestOCSPNoCheckExtension(object):
 class TestInhibitAnyPolicy(object):
     def test_not_int(self):
         with pytest.raises(TypeError):
-            x509.InhibitAnyPolicy("notint")
+            x509.InhibitAnyPolicy("notint")  # type:ignore[arg-type]
 
     def test_negative_int(self):
         with pytest.raises(ValueError):
@@ -5365,7 +5442,9 @@ class TestSignedCertificateTimestamps(object):
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
-            x509.PrecertificateSignedCertificateTimestamps([object()])
+            x509.PrecertificateSignedCertificateTimestamps(
+                [object()]  # type:ignore[list-item]
+            )
 
     def test_repr(self):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
@@ -5566,7 +5645,7 @@ class TestInvalidExtension(object):
 class TestOCSPNonce(object):
     def test_non_bytes(self):
         with pytest.raises(TypeError):
-            x509.OCSPNonce(38)
+            x509.OCSPNonce(38)  # type:ignore[arg-type]
 
     def test_eq(self):
         nonce1 = x509.OCSPNonce(b"0" * 5)

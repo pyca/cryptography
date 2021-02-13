@@ -40,8 +40,7 @@ class GeneralName(metaclass=abc.ABCMeta):
         """
 
 
-@utils.register_interface(GeneralName)
-class RFC822Name(object):
+class RFC822Name(GeneralName):
     def __init__(self, value: str):
         if isinstance(value, str):
             try:
@@ -87,8 +86,7 @@ class RFC822Name(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class DNSName(object):
+class DNSName(GeneralName):
     def __init__(self, value: str):
         if isinstance(value, str):
             try:
@@ -128,8 +126,7 @@ class DNSName(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class UniformResourceIdentifier(object):
+class UniformResourceIdentifier(GeneralName):
     def __init__(self, value: str):
         if isinstance(value, str):
             try:
@@ -169,8 +166,7 @@ class UniformResourceIdentifier(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class DirectoryName(object):
+class DirectoryName(GeneralName):
     def __init__(self, value: Name):
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
@@ -195,8 +191,7 @@ class DirectoryName(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class RegisteredID(object):
+class RegisteredID(GeneralName):
     def __init__(self, value: ObjectIdentifier):
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
@@ -221,8 +216,7 @@ class RegisteredID(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class IPAddress(object):
+class IPAddress(GeneralName):
     def __init__(
         self,
         value: typing.Union[
@@ -267,8 +261,7 @@ class IPAddress(object):
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class OtherName(object):
+class OtherName(GeneralName):
     def __init__(self, type_id: ObjectIdentifier, value: bytes):
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")

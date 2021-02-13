@@ -17,6 +17,7 @@ from cryptography.hazmat._der import (
     OBJECT_IDENTIFIER,
     SEQUENCE,
 )
+from cryptography.hazmat._types import _PUBLIC_KEY_TYPES
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
@@ -33,7 +34,7 @@ from cryptography.x509.oid import (
 )
 
 
-def _key_identifier_from_public_key(public_key):
+def _key_identifier_from_public_key(public_key: _PUBLIC_KEY_TYPES) -> bytes:
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
             serialization.Encoding.DER,
@@ -54,7 +55,7 @@ def _key_identifier_from_public_key(public_key):
         reader = DERReader(serialized)
         with reader.read_single_element(SEQUENCE) as public_key_info:
             algorithm = public_key_info.read_element(SEQUENCE)
-            public_key = public_key_info.read_element(BIT_STRING)
+            public_key_data = public_key_info.read_element(BIT_STRING)
 
         # Double-check the algorithm structure.
         with algorithm:
@@ -65,10 +66,10 @@ def _key_identifier_from_public_key(public_key):
 
         # BIT STRING contents begin with the number of padding bytes added. It
         # must be zero for SubjectPublicKeyInfo structures.
-        if public_key.read_byte() != 0:
+        if public_key_data.read_byte() != 0:
             raise ValueError("Invalid public key encoding")
 
-        data = public_key.data
+        data = public_key_data.data
 
     return hashlib.sha1(data).digest()
 
@@ -110,14 +111,14 @@ class Extensions(object):
     def __init__(self, extensions: typing.List["Extension"]):
         self._extensions = extensions
 
-    def get_extension_for_oid(self, oid):
+    def get_extension_for_oid(self, oid: ObjectIdentifier) -> "Extension":
         for ext in self:
             if ext.oid == oid:
                 return ext
 
         raise ExtensionNotFound("No {} extension was found".format(oid), oid)
 
-    def get_extension_for_class(self, extclass):
+    def get_extension_for_class(self, extclass) -> "Extension":
         if extclass is UnrecognizedExtension:
             raise TypeError(
                 "UnrecognizedExtension can't be used with "
@@ -142,7 +143,7 @@ class Extensions(object):
 class CRLNumber(ExtensionType):
     oid = ExtensionOID.CRL_NUMBER
 
-    def __init__(self, crl_number):
+    def __init__(self, crl_number: int):
         if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
 
@@ -171,9 +172,9 @@ class AuthorityKeyIdentifier(ExtensionType):
 
     def __init__(
         self,
-        key_identifier,
-        authority_cert_issuer,
-        authority_cert_serial_number,
+        key_identifier: typing.Optional[bytes],
+        authority_cert_issuer: typing.Optional[typing.Iterable[GeneralName]],
+        authority_cert_serial_number: typing.Optional[int],
     ):
         if (authority_cert_issuer is None) != (
             authority_cert_serial_number is None
@@ -203,7 +204,9 @@ class AuthorityKeyIdentifier(ExtensionType):
         self._authority_cert_serial_number = authority_cert_serial_number
 
     @classmethod
-    def from_issuer_public_key(cls, public_key):
+    def from_issuer_public_key(
+        cls, public_key: _PUBLIC_KEY_TYPES
+    ) -> "AuthorityKeyIdentifier":
         digest = _key_identifier_from_public_key(public_key)
         return cls(
             key_identifier=digest,
@@ -212,7 +215,9 @@ class AuthorityKeyIdentifier(ExtensionType):
         )
 
     @classmethod
-    def from_issuer_subject_key_identifier(cls, ski):
+    def from_issuer_subject_key_identifier(
+        cls, ski: "SubjectKeyIdentifier"
+    ) -> "AuthorityKeyIdentifier":
         return cls(
             key_identifier=ski.digest,
             authority_cert_issuer=None,
@@ -260,11 +265,13 @@ class AuthorityKeyIdentifier(ExtensionType):
 class SubjectKeyIdentifier(ExtensionType):
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
-    def __init__(self, digest):
+    def __init__(self, digest: bytes):
         self._digest = digest
 
     @classmethod
-    def from_public_key(cls, public_key):
+    def from_public_key(
+        cls, public_key: _PUBLIC_KEY_TYPES
+    ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 
     digest = utils.read_only_property("_digest")
@@ -288,7 +295,7 @@ class SubjectKeyIdentifier(ExtensionType):
 class AuthorityInformationAccess(ExtensionType):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
-    def __init__(self, descriptions):
+    def __init__(self, descriptions: typing.Iterable["AccessDescription"]):
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -319,7 +326,7 @@ class AuthorityInformationAccess(ExtensionType):
 class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
-    def __init__(self, descriptions):
+    def __init__(self, descriptions: typing.Iterable["AccessDescription"]):
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -348,7 +355,9 @@ class SubjectInformationAccess(ExtensionType):
 
 
 class AccessDescription(object):
-    def __init__(self, access_method, access_location):
+    def __init__(
+        self, access_method: ObjectIdentifier, access_location: GeneralName
+    ):
         if not isinstance(access_method, ObjectIdentifier):
             raise TypeError("access_method must be an ObjectIdentifier")
 
@@ -386,7 +395,7 @@ class AccessDescription(object):
 class BasicConstraints(ExtensionType):
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
-    def __init__(self, ca, path_length):
+    def __init__(self, ca: bool, path_length: typing.Optional[int]):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
@@ -427,7 +436,7 @@ class BasicConstraints(ExtensionType):
 class DeltaCRLIndicator(ExtensionType):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
-    def __init__(self, crl_number):
+    def __init__(self, crl_number: int):
         if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
 
@@ -454,7 +463,9 @@ class DeltaCRLIndicator(ExtensionType):
 class CRLDistributionPoints(ExtensionType):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
-    def __init__(self, distribution_points):
+    def __init__(
+        self, distribution_points: typing.Iterable["DistributionPoint"]
+    ):
         distribution_points = list(distribution_points)
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
@@ -489,7 +500,9 @@ class CRLDistributionPoints(ExtensionType):
 class FreshestCRL(ExtensionType):
     oid = ExtensionOID.FRESHEST_CRL
 
-    def __init__(self, distribution_points):
+    def __init__(
+        self, distribution_points: typing.Iterable["DistributionPoint"]
+    ):
         distribution_points = list(distribution_points)
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
@@ -522,7 +535,13 @@ class FreshestCRL(ExtensionType):
 
 
 class DistributionPoint(object):
-    def __init__(self, full_name, relative_name, reasons, crl_issuer):
+    def __init__(
+        self,
+        full_name: typing.Optional[typing.Iterable[GeneralName]],
+        relative_name: typing.Optional[RelativeDistinguishedName],
+        reasons: typing.Optional[typing.FrozenSet["ReasonFlags"]],
+        crl_issuer: typing.Optional[typing.Iterable[GeneralName]],
+    ):
         if full_name and relative_name:
             raise ValueError(
                 "You cannot provide both full_name and relative_name, at "
@@ -631,7 +650,11 @@ class ReasonFlags(Enum):
 class PolicyConstraints(ExtensionType):
     oid = ExtensionOID.POLICY_CONSTRAINTS
 
-    def __init__(self, require_explicit_policy, inhibit_policy_mapping):
+    def __init__(
+        self,
+        require_explicit_policy: typing.Optional[int],
+        inhibit_policy_mapping: typing.Optional[int],
+    ):
         if require_explicit_policy is not None and not isinstance(
             require_explicit_policy, int
         ):
@@ -691,7 +714,7 @@ class PolicyConstraints(ExtensionType):
 class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
-    def __init__(self, policies):
+    def __init__(self, policies: typing.Iterable["PolicyInformation"]):
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
@@ -720,7 +743,13 @@ class CertificatePolicies(ExtensionType):
 
 
 class PolicyInformation(object):
-    def __init__(self, policy_identifier, policy_qualifiers):
+    def __init__(
+        self,
+        policy_identifier: ObjectIdentifier,
+        policy_qualifiers: typing.Optional[
+            typing.Iterable[typing.Union[str, "UserNotice"]]
+        ],
+    ):
         if not isinstance(policy_identifier, ObjectIdentifier):
             raise TypeError("policy_identifier must be an ObjectIdentifier")
 
@@ -769,7 +798,11 @@ class PolicyInformation(object):
 
 
 class UserNotice(object):
-    def __init__(self, notice_reference, explicit_text):
+    def __init__(
+        self,
+        notice_reference: typing.Optional["NoticeReference"],
+        explicit_text: typing.Optional[str],
+    ):
         if notice_reference and not isinstance(
             notice_reference, NoticeReference
         ):
@@ -806,7 +839,11 @@ class UserNotice(object):
 
 
 class NoticeReference(object):
-    def __init__(self, organization, notice_numbers):
+    def __init__(
+        self,
+        organization: typing.Optional[str],
+        notice_numbers: typing.Iterable[int],
+    ):
         self._organization = organization
         notice_numbers = list(notice_numbers)
         if not all(isinstance(x, int) for x in notice_numbers):
@@ -842,7 +879,7 @@ class NoticeReference(object):
 class ExtendedKeyUsage(ExtensionType):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
-    def __init__(self, usages):
+    def __init__(self, usages: typing.Iterable[ObjectIdentifier]):
         usages = list(usages)
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
             raise TypeError(
@@ -910,7 +947,7 @@ class PrecertPoison(ExtensionType):
 class TLSFeature(ExtensionType):
     oid = ExtensionOID.TLS_FEATURE
 
-    def __init__(self, features):
+    def __init__(self, features: typing.Iterable["TLSFeatureType"]):
         features = list(features)
         if (
             not all(isinstance(x, TLSFeatureType) for x in features)
@@ -958,7 +995,7 @@ _TLS_FEATURE_TYPE_TO_ENUM = {x.value: x for x in TLSFeatureType}
 class InhibitAnyPolicy(ExtensionType):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
-    def __init__(self, skip_certs):
+    def __init__(self, skip_certs: int):
         if not isinstance(skip_certs, int):
             raise TypeError("skip_certs must be an integer")
 
@@ -990,15 +1027,15 @@ class KeyUsage(ExtensionType):
 
     def __init__(
         self,
-        digital_signature,
-        content_commitment,
-        key_encipherment,
-        data_encipherment,
-        key_agreement,
-        key_cert_sign,
-        crl_sign,
-        encipher_only,
-        decipher_only,
+        digital_signature: bool,
+        content_commitment: bool,
+        key_encipherment: bool,
+        data_encipherment: bool,
+        key_agreement: bool,
+        key_cert_sign: bool,
+        crl_sign: bool,
+        encipher_only: bool,
+        decipher_only: bool,
     ):
         if not key_agreement and (encipher_only or decipher_only):
             raise ValueError(
@@ -1101,7 +1138,11 @@ class KeyUsage(ExtensionType):
 class NameConstraints(ExtensionType):
     oid = ExtensionOID.NAME_CONSTRAINTS
 
-    def __init__(self, permitted_subtrees, excluded_subtrees):
+    def __init__(
+        self,
+        permitted_subtrees: typing.Optional[typing.Iterable[GeneralName]],
+        excluded_subtrees: typing.Optional[typing.Iterable[GeneralName]],
+    ):
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
             if not all(isinstance(x, GeneralName) for x in permitted_subtrees):
@@ -1180,7 +1221,9 @@ class NameConstraints(ExtensionType):
 
 
 class Extension(object):
-    def __init__(self, oid, critical, value):
+    def __init__(
+        self, oid: ObjectIdentifier, critical: bool, value: ExtensionType
+    ):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
@@ -1221,7 +1264,7 @@ class Extension(object):
 
 
 class GeneralNames(object):
-    def __init__(self, general_names):
+    def __init__(self, general_names: typing.Iterable[GeneralName]):
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
             raise TypeError(
@@ -1233,7 +1276,7 @@ class GeneralNames(object):
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
-    def get_values_for_type(self, type):
+    def get_values_for_type(self, type: typing.Type[GeneralName]):
         # Return the value of each GeneralName, except for OtherName instances
         # which we return directly because it has two important properties not
         # just one value.
@@ -1261,7 +1304,7 @@ class GeneralNames(object):
 class SubjectAlternativeName(ExtensionType):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
-    def __init__(self, general_names):
+    def __init__(self, general_names: typing.Iterable[GeneralName]):
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1288,7 +1331,7 @@ class SubjectAlternativeName(ExtensionType):
 class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
-    def __init__(self, general_names):
+    def __init__(self, general_names: typing.Iterable[GeneralName]):
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1315,7 +1358,7 @@ class IssuerAlternativeName(ExtensionType):
 class CertificateIssuer(ExtensionType):
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
-    def __init__(self, general_names):
+    def __init__(self, general_names: typing.Iterable[GeneralName]):
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1342,7 +1385,7 @@ class CertificateIssuer(ExtensionType):
 class CRLReason(ExtensionType):
     oid = CRLEntryExtensionOID.CRL_REASON
 
-    def __init__(self, reason):
+    def __init__(self, reason: ReasonFlags):
         if not isinstance(reason, ReasonFlags):
             raise TypeError("reason must be an element from ReasonFlags")
 
@@ -1369,7 +1412,7 @@ class CRLReason(ExtensionType):
 class InvalidityDate(ExtensionType):
     oid = CRLEntryExtensionOID.INVALIDITY_DATE
 
-    def __init__(self, invalidity_date):
+    def __init__(self, invalidity_date: datetime.datetime):
         if not isinstance(invalidity_date, datetime.datetime):
             raise TypeError("invalidity_date must be a datetime.datetime")
 
@@ -1398,7 +1441,12 @@ class InvalidityDate(ExtensionType):
 class PrecertificateSignedCertificateTimestamps(ExtensionType):
     oid = ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
 
-    def __init__(self, signed_certificate_timestamps):
+    def __init__(
+        self,
+        signed_certificate_timestamps: typing.Iterable[
+            SignedCertificateTimestamp
+        ],
+    ):
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
             isinstance(sct, SignedCertificateTimestamp)
@@ -1438,7 +1486,12 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
 class SignedCertificateTimestamps(ExtensionType):
     oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
 
-    def __init__(self, signed_certificate_timestamps):
+    def __init__(
+        self,
+        signed_certificate_timestamps: typing.Iterable[
+            SignedCertificateTimestamp
+        ],
+    ):
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
             isinstance(sct, SignedCertificateTimestamp)
@@ -1476,7 +1529,7 @@ class SignedCertificateTimestamps(ExtensionType):
 class OCSPNonce(ExtensionType):
     oid = OCSPExtensionOID.NONCE
 
-    def __init__(self, nonce):
+    def __init__(self, nonce: bytes):
         if not isinstance(nonce, bytes):
             raise TypeError("nonce must be bytes")
 
@@ -1642,7 +1695,7 @@ class IssuingDistributionPoint(ExtensionType):
 
 
 class UnrecognizedExtension(ExtensionType):
-    def __init__(self, oid, value):
+    def __init__(self, oid: ObjectIdentifier, value: bytes):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError("oid must be an ObjectIdentifier")
         self._oid = oid
