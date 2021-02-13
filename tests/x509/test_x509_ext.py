@@ -1104,6 +1104,7 @@ class TestAuthorityKeyIdentifier(object):
             )
         ]
         aki = x509.AuthorityKeyIdentifier(b"digest", iter(dirnames), 1234)
+        assert isinstance(aki.authority_cert_issuer, list)
         assert list(aki.authority_cert_issuer) == dirnames
 
     def test_repr(self):
@@ -3429,7 +3430,9 @@ class TestNameConstraints(object):
     def test_iter_input(self):
         subtrees = [x509.IPAddress(ipaddress.IPv4Network("192.168.0.0/24"))]
         nc = x509.NameConstraints(iter(subtrees), iter(subtrees))
+        assert isinstance(nc.permitted_subtrees, list)
         assert list(nc.permitted_subtrees) == subtrees
+        assert isinstance(nc.excluded_subtrees, list)
         assert list(nc.excluded_subtrees) == subtrees
 
     def test_repr(self):
@@ -3781,7 +3784,9 @@ class TestDistributionPoint(object):
             frozenset([x509.ReasonFlags.ca_compromise]),
             iter(issuer),
         )
+        assert isinstance(dp.full_name, list)
         assert list(dp.full_name) == name
+        assert isinstance(dp.crl_issuer, list)
         assert list(dp.crl_issuer) == issuer
 
     def test_repr(self):
