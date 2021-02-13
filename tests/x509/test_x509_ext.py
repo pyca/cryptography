@@ -517,6 +517,7 @@ class TestPolicyInformation(object):
     def test_iter_input(self):
         qual = ["foo", "bar"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), iter(qual))
+        assert isinstance(pi.policy_qualifiers, list)
         assert list(pi.policy_qualifiers) == qual
 
     def test_repr(self):
