@@ -164,7 +164,7 @@ class CRLNumber(ExtensionType):
     def __repr__(self):
         return "<CRLNumber({})>".format(self.crl_number)
 
-    crl_number = utils.read_only_property("_crl_number")
+    crl_number: int = utils.read_only_property("_crl_number")
 
 
 class AuthorityKeyIdentifier(ExtensionType):
@@ -255,11 +255,15 @@ class AuthorityKeyIdentifier(ExtensionType):
             (self.key_identifier, aci, self.authority_cert_serial_number)
         )
 
-    key_identifier = utils.read_only_property("_key_identifier")
-    authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
-    authority_cert_serial_number = utils.read_only_property(
-        "_authority_cert_serial_number"
+    key_identifier: typing.Optional[bytes] = utils.read_only_property(
+        "_key_identifier"
     )
+    authority_cert_issuer: typing.Optional[
+        typing.Iterable[GeneralName]
+    ] = utils.read_only_property("_authority_cert_issuer")
+    authority_cert_serial_number: typing.Optional[
+        int
+    ] = utils.read_only_property("_authority_cert_serial_number")
 
 
 class SubjectKeyIdentifier(ExtensionType):
@@ -274,7 +278,7 @@ class SubjectKeyIdentifier(ExtensionType):
     ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 
-    digest = utils.read_only_property("_digest")
+    digest: bytes = utils.read_only_property("_digest")
 
     def __repr__(self):
         return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
@@ -388,8 +392,10 @@ class AccessDescription(object):
     def __hash__(self):
         return hash((self.access_method, self.access_location))
 
-    access_method = utils.read_only_property("_access_method")
-    access_location = utils.read_only_property("_access_location")
+    access_method: ObjectIdentifier = utils.read_only_property(
+        "_access_method"
+    )
+    access_location: GeneralName = utils.read_only_property("_access_location")
 
 
 class BasicConstraints(ExtensionType):
@@ -412,8 +418,10 @@ class BasicConstraints(ExtensionType):
         self._ca = ca
         self._path_length = path_length
 
-    ca = utils.read_only_property("_ca")
-    path_length = utils.read_only_property("_path_length")
+    ca: bool = utils.read_only_property("_ca")
+    path_length: typing.Optional[int] = utils.read_only_property(
+        "_path_length"
+    )
 
     def __repr__(self):
         return (
@@ -442,7 +450,7 @@ class DeltaCRLIndicator(ExtensionType):
 
         self._crl_number = crl_number
 
-    crl_number = utils.read_only_property("_crl_number")
+    crl_number: int = utils.read_only_property("_crl_number")
 
     def __eq__(self, other):
         if not isinstance(other, DeltaCRLIndicator):
@@ -628,10 +636,18 @@ class DistributionPoint(object):
 
         return hash((fn, self.relative_name, self.reasons, crl_issuer))
 
-    full_name = utils.read_only_property("_full_name")
-    relative_name = utils.read_only_property("_relative_name")
-    reasons = utils.read_only_property("_reasons")
-    crl_issuer = utils.read_only_property("_crl_issuer")
+    full_name: typing.Optional[
+        typing.Iterable[GeneralName]
+    ] = utils.read_only_property("_full_name")
+    relative_name: typing.Optional[
+        RelativeDistinguishedName
+    ] = utils.read_only_property("_relative_name")
+    reasons: typing.Optional[
+        typing.FrozenSet["ReasonFlags"]
+    ] = utils.read_only_property("_reasons")
+    crl_issuer: typing.Optional[
+        typing.Iterable[GeneralName]
+    ] = utils.read_only_property("_crl_issuer")
 
 
 class ReasonFlags(Enum):
@@ -703,10 +719,10 @@ class PolicyConstraints(ExtensionType):
             (self.require_explicit_policy, self.inhibit_policy_mapping)
         )
 
-    require_explicit_policy = utils.read_only_property(
+    require_explicit_policy: typing.Optional[int] = utils.read_only_property(
         "_require_explicit_policy"
     )
-    inhibit_policy_mapping = utils.read_only_property(
+    inhibit_policy_mapping: typing.Optional[int] = utils.read_only_property(
         "_inhibit_policy_mapping"
     )
 
@@ -793,8 +809,12 @@ class PolicyInformation(object):
 
         return hash((self.policy_identifier, pq))
 
-    policy_identifier = utils.read_only_property("_policy_identifier")
-    policy_qualifiers = utils.read_only_property("_policy_qualifiers")
+    policy_identifier: ObjectIdentifier = utils.read_only_property(
+        "_policy_identifier"
+    )
+    policy_qualifiers: typing.Optional[
+        typing.Iterable[typing.Union[str, "UserNotice"]]
+    ] = utils.read_only_property("_policy_qualifiers")
 
 
 class UserNotice(object):
@@ -834,8 +854,12 @@ class UserNotice(object):
     def __hash__(self):
         return hash((self.notice_reference, self.explicit_text))
 
-    notice_reference = utils.read_only_property("_notice_reference")
-    explicit_text = utils.read_only_property("_explicit_text")
+    notice_reference: typing.Optional[
+        "NoticeReference"
+    ] = utils.read_only_property("_notice_reference")
+    explicit_text: typing.Optional[str] = utils.read_only_property(
+        "_explicit_text"
+    )
 
 
 class NoticeReference(object):
@@ -872,8 +896,12 @@ class NoticeReference(object):
     def __hash__(self):
         return hash((self.organization, tuple(self.notice_numbers)))
 
-    organization = utils.read_only_property("_organization")
-    notice_numbers = utils.read_only_property("_notice_numbers")
+    organization: typing.Optional[str] = utils.read_only_property(
+        "_organization"
+    )
+    notice_numbers: typing.Iterable[int] = utils.read_only_property(
+        "_notice_numbers"
+    )
 
 
 class ExtendedKeyUsage(ExtensionType):
@@ -1019,7 +1047,7 @@ class InhibitAnyPolicy(ExtensionType):
     def __hash__(self):
         return hash(self.skip_certs)
 
-    skip_certs = utils.read_only_property("_skip_certs")
+    skip_certs: int = utils.read_only_property("_skip_certs")
 
 
 class KeyUsage(ExtensionType):
@@ -1053,13 +1081,13 @@ class KeyUsage(ExtensionType):
         self._encipher_only = encipher_only
         self._decipher_only = decipher_only
 
-    digital_signature = utils.read_only_property("_digital_signature")
-    content_commitment = utils.read_only_property("_content_commitment")
-    key_encipherment = utils.read_only_property("_key_encipherment")
-    data_encipherment = utils.read_only_property("_data_encipherment")
-    key_agreement = utils.read_only_property("_key_agreement")
-    key_cert_sign = utils.read_only_property("_key_cert_sign")
-    crl_sign = utils.read_only_property("_crl_sign")
+    digital_signature: bool = utils.read_only_property("_digital_signature")
+    content_commitment: bool = utils.read_only_property("_content_commitment")
+    key_encipherment: bool = utils.read_only_property("_key_encipherment")
+    data_encipherment: bool = utils.read_only_property("_data_encipherment")
+    key_agreement: bool = utils.read_only_property("_key_agreement")
+    key_cert_sign: bool = utils.read_only_property("_key_cert_sign")
+    crl_sign: bool = utils.read_only_property("_crl_sign")
 
     @property
     def encipher_only(self):
@@ -1216,8 +1244,12 @@ class NameConstraints(ExtensionType):
 
         return hash((ps, es))
 
-    permitted_subtrees = utils.read_only_property("_permitted_subtrees")
-    excluded_subtrees = utils.read_only_property("_excluded_subtrees")
+    permitted_subtrees: typing.Optional[
+        typing.Iterable[GeneralName]
+    ] = utils.read_only_property("_permitted_subtrees")
+    excluded_subtrees: typing.Optional[
+        typing.Iterable[GeneralName]
+    ] = utils.read_only_property("_excluded_subtrees")
 
 
 class Extension(object):
@@ -1236,9 +1268,9 @@ class Extension(object):
         self._critical = critical
         self._value = value
 
-    oid = utils.read_only_property("_oid")
-    critical = utils.read_only_property("_critical")
-    value = utils.read_only_property("_value")
+    oid: ObjectIdentifier = utils.read_only_property("_oid")
+    critical: bool = utils.read_only_property("_critical")
+    value: ExtensionType = utils.read_only_property("_value")
 
     def __repr__(self):
         return (
@@ -1406,7 +1438,7 @@ class CRLReason(ExtensionType):
     def __hash__(self):
         return hash(self.reason)
 
-    reason = utils.read_only_property("_reason")
+    reason: ReasonFlags = utils.read_only_property("_reason")
 
 
 class InvalidityDate(ExtensionType):
@@ -1435,7 +1467,9 @@ class InvalidityDate(ExtensionType):
     def __hash__(self):
         return hash(self.invalidity_date)
 
-    invalidity_date = utils.read_only_property("_invalidity_date")
+    invalidity_date: datetime.datetime = utils.read_only_property(
+        "_invalidity_date"
+    )
 
 
 class PrecertificateSignedCertificateTimestamps(ExtensionType):
@@ -1550,7 +1584,7 @@ class OCSPNonce(ExtensionType):
     def __repr__(self):
         return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
 
-    nonce = utils.read_only_property("_nonce")
+    nonce: bytes = utils.read_only_property("_nonce")
 
 
 class IssuingDistributionPoint(ExtensionType):
@@ -1701,7 +1735,7 @@ class UnrecognizedExtension(ExtensionType):
         self._oid = oid
         self._value = value
 
-    oid = utils.read_only_property("_oid")
+    oid: ObjectIdentifier = utils.read_only_property("_oid")
     value = utils.read_only_property("_value")
 
     def __repr__(self):
