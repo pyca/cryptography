@@ -5,6 +5,7 @@
 
 import pytest
 
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed,
     decode_dss_signature,
@@ -74,3 +75,8 @@ def test_decode_dss_invalid_asn1():
 def test_pass_invalid_prehashed_arg():
     with pytest.raises(TypeError):
         Prehashed(object())  # type: ignore[arg-type]
+
+
+def test_prehashed_digest_size():
+    p = Prehashed(hashes.SHA256())
+    assert p.digest_size == 32

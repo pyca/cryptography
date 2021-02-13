@@ -326,10 +326,17 @@ _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
 
 
 class ECDSA(EllipticCurveSignatureAlgorithm):
-    def __init__(self, algorithm):
+    def __init__(
+        self,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ):
         self._algorithm = algorithm
 
-    algorithm = utils.read_only_property("_algorithm")
+    @property
+    def algorithm(
+        self,
+    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+        return self._algorithm
 
 
 def generate_private_key(
@@ -415,9 +422,9 @@ class EllipticCurvePublicNumbers(object):
         else:
             raise ValueError("Unsupported elliptic curve point type")
 
-    curve = utils.read_only_property("_curve")
-    x = utils.read_only_property("_x")
-    y = utils.read_only_property("_y")
+    curve = property(lambda self: self._curve)
+    x = property(lambda self: self._x)
+    y = property(lambda self: self._y)
 
     def __eq__(self, other):
         if not isinstance(other, EllipticCurvePublicNumbers):
@@ -463,8 +470,8 @@ class EllipticCurvePrivateNumbers(object):
         backend = _get_backend(backend)
         return backend.load_elliptic_curve_private_numbers(self)
 
-    private_value = utils.read_only_property("_private_value")
-    public_numbers = utils.read_only_property("_public_numbers")
+    private_value = property(lambda self: self._private_value)
+    public_numbers = property(lambda self: self._public_numbers)
 
     def __eq__(self, other):
         if not isinstance(other, EllipticCurvePrivateNumbers):
