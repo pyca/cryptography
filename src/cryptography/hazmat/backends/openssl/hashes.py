@@ -34,7 +34,7 @@ class _HashContext(hashes.HashContext):
 
         self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    algorithm: hashes.HashAlgorithm = utils.read_only_property("_algorithm")
 
     def copy(self) -> "_HashContext":
         copied_ctx = self._backend._lib.EVP_MD_CTX_new()

@@ -40,7 +40,7 @@ class _HMACContext(hashes.HashContext):
         self._ctx = ctx
         self._key = key
 
-    algorithm = utils.read_only_property("_algorithm")
+    algorithm: hashes.HashAlgorithm = utils.read_only_property("_algorithm")
 
     def copy(self) -> "_HMACContext":
         copied_ctx = self._backend._lib.HMAC_CTX_new()

@@ -108,8 +108,8 @@ class NameAttribute(object):
         self._value = value
         self._type = _type
 
-    oid = utils.read_only_property("_oid")
-    value = utils.read_only_property("_value")
+    oid: ObjectIdentifier = utils.read_only_property("_oid")
+    value: str = utils.read_only_property("_value")
 
     def rfc4514_string(self) -> str:
         """

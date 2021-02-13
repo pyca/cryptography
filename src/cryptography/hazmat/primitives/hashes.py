@@ -88,7 +88,7 @@ class Hash(HashContext):
         else:
             self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    algorithm: HashAlgorithm = utils.read_only_property("_algorithm")
 
     def update(self, data: bytes) -> None:
         if self._ctx is None:
@@ -190,7 +190,7 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    digest_size: int = utils.read_only_property("_digest_size")
 
 
 class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
@@ -206,7 +206,7 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    digest_size: int = utils.read_only_property("_digest_size")
 
 
 class MD5(HashAlgorithm):
@@ -228,7 +228,7 @@ class BLAKE2b(HashAlgorithm):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    digest_size: int = utils.read_only_property("_digest_size")
 
 
 class BLAKE2s(HashAlgorithm):
@@ -244,4 +244,4 @@ class BLAKE2s(HashAlgorithm):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    digest_size: int = utils.read_only_property("_digest_size")

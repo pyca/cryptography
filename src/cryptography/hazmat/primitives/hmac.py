@@ -40,7 +40,7 @@ class HMAC(hashes.HashContext):
         else:
             self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    algorithm: hashes.HashAlgorithm = utils.read_only_property("_algorithm")
 
     def update(self, data: bytes) -> None:
         if self._ctx is None:

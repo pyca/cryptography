@@ -73,4 +73,4 @@ class ObjectIdentifier(object):
 
         return _OID_NAMES.get(self, "Unknown OID")
 
-    dotted_string = utils.read_only_property("_dotted_string")
+    dotted_string: str = utils.read_only_property("_dotted_string")
