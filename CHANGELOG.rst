@@ -1,10 +1,10 @@
 Changelog
 =========
 
-.. _v3-5:
+.. _v35-0-0:
 
-3.5 - `main`_
-~~~~~~~~~~~~~
+35.0.0 - `main`_
+~~~~~~~~~~~~~~~~
 
  .. note:: This version is not yet released and is under active development.
 
