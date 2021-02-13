@@ -105,7 +105,7 @@ Alpine
 
 .. warning::
 
-    The Rust available by default in Alpine < 3.13 is older than the minimum
+    The Rust available by default in Alpine < 3.12 is older than the minimum
     supported version. See the :ref:`Rust installation instructions
     <installation:Rust>` for information about installing a newer Rust.
 
@@ -137,7 +137,7 @@ Fedora/RHEL 8/CentOS 8
 .. warning::
 
     For RHEL and CentOS you must be on version 8.3 or newer for the command
-    below to install a sufficiently new Rust. If your Rust is less than 1.45.0
+    below to install a sufficiently new Rust. If your Rust is less than 1.41.0
     please see the :ref:`Rust installation instructions <installation:Rust>`
     for information about installing a newer Rust.
 
@@ -327,7 +327,7 @@ Rust
     a binary wheel and require no compiler if you have an updated ``pip``!
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.45.0. **This is newer than the Rust most
+minimum supported Rust version is 1.41.0. **This is newer than the Rust most
 package managers ship**, so users will likely need to install with the
 instructions below.
 

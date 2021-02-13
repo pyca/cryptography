@@ -1,12 +1,25 @@
 Changelog
 =========
 
-.. _v3-5:
+.. _v35-0-0:
 
-3.5 - `main`_
-~~~~~~~~~~~~~
+35.0.0 - `main`_
+~~~~~~~~~~~~~~~~
 
  .. note:: This version is not yet released and is under active development.
+
+.. _v3-4-5:
+
+3.4.5 - 2021-02-13
+~~~~~~~~~~~~~~~~~~
+
+* Various improvements to type hints.
+* Lower the minimum supported Rust version (MSRV) to >=1.41.0. This change
+  improves compatibility with system-provided Rust on several Linux
+  distributions.
+* ``cryptography`` will be switching to a new versioning scheme with its next
+  feature release. More information is available in our
+  :doc:`/api-stability` documentation.
 
 .. _v3-4-4:
 

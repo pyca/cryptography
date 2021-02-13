@@ -6,7 +6,6 @@
 import abc
 import typing
 
-from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives import serialization
 
@@ -53,9 +52,9 @@ class DHParameterNumbers(object):
         backend = _get_backend(backend)
         return backend.load_dh_parameter_numbers(self)
 
-    p = utils.read_only_property("_p")
-    g = utils.read_only_property("_g")
-    q = utils.read_only_property("_q")
+    p = property(lambda self: self._p)
+    g = property(lambda self: self._g)
+    q = property(lambda self: self._q)
 
 
 class DHPublicNumbers(object):
@@ -87,8 +86,8 @@ class DHPublicNumbers(object):
         backend = _get_backend(backend)
         return backend.load_dh_public_numbers(self)
 
-    y = utils.read_only_property("_y")
-    parameter_numbers = utils.read_only_property("_parameter_numbers")
+    y = property(lambda self: self._y)
+    parameter_numbers = property(lambda self: self._parameter_numbers)
 
 
 class DHPrivateNumbers(object):
@@ -120,8 +119,8 @@ class DHPrivateNumbers(object):
         backend = _get_backend(backend)
         return backend.load_dh_private_numbers(self)
 
-    public_numbers = utils.read_only_property("_public_numbers")
-    x = utils.read_only_property("_x")
+    public_numbers = property(lambda self: self._public_numbers)
+    x = property(lambda self: self._x)
 
 
 class DHParameters(metaclass=abc.ABCMeta):

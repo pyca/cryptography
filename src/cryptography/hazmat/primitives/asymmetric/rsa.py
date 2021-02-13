@@ -7,7 +7,6 @@ import abc
 import typing
 from math import gcd
 
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import RSABackend
@@ -354,13 +353,13 @@ class RSAPrivateNumbers(object):
         self._iqmp = iqmp
         self._public_numbers = public_numbers
 
-    p = utils.read_only_property("_p")
-    q = utils.read_only_property("_q")
-    d = utils.read_only_property("_d")
-    dmp1 = utils.read_only_property("_dmp1")
-    dmq1 = utils.read_only_property("_dmq1")
-    iqmp = utils.read_only_property("_iqmp")
-    public_numbers = utils.read_only_property("_public_numbers")
+    p = property(lambda self: self._p)
+    q = property(lambda self: self._q)
+    d = property(lambda self: self._d)
+    dmp1 = property(lambda self: self._dmp1)
+    dmq1 = property(lambda self: self._dmq1)
+    iqmp = property(lambda self: self._iqmp)
+    public_numbers = property(lambda self: self._public_numbers)
 
     def private_key(self, backend=None) -> RSAPrivateKey:
         backend = _get_backend(backend)
@@ -405,8 +404,8 @@ class RSAPublicNumbers(object):
         self._e = e
         self._n = n
 
-    e = utils.read_only_property("_e")
-    n = utils.read_only_property("_n")
+    e = property(lambda self: self._e)
+    n = property(lambda self: self._n)
 
     def public_key(self, backend=None) -> RSAPublicKey:
         backend = _get_backend(backend)
