@@ -220,7 +220,7 @@ class Name(object):
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self) -> typing.Iterable[RelativeDistinguishedName]:
+    def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
     def public_bytes(self, backend=None) -> bytes:

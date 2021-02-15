@@ -264,7 +264,7 @@ class AuthorityKeyIdentifier(ExtensionType):
     @property
     def authority_cert_issuer(
         self,
-    ) -> typing.Optional[typing.Iterable[GeneralName]]:
+    ) -> typing.Optional[typing.List[GeneralName]]:
         return self._authority_cert_issuer
 
     @property
@@ -653,7 +653,7 @@ class DistributionPoint(object):
         return hash((fn, self.relative_name, self.reasons, crl_issuer))
 
     @property
-    def full_name(self) -> typing.Optional[typing.Iterable[GeneralName]]:
+    def full_name(self) -> typing.Optional[typing.List[GeneralName]]:
         return self._full_name
 
     @property
@@ -665,7 +665,7 @@ class DistributionPoint(object):
         return self._reasons
 
     @property
-    def crl_issuer(self) -> typing.Optional[typing.Iterable[GeneralName]]:
+    def crl_issuer(self) -> typing.Optional[typing.List[GeneralName]]:
         return self._crl_issuer
 
 
@@ -836,7 +836,7 @@ class PolicyInformation(object):
     @property
     def policy_qualifiers(
         self,
-    ) -> typing.Optional[typing.Iterable[typing.Union[str, "UserNotice"]]]:
+    ) -> typing.Optional[typing.List[typing.Union[str, "UserNotice"]]]:
         return self._policy_qualifiers
 
 
@@ -925,7 +925,7 @@ class NoticeReference(object):
         return self._organization
 
     @property
-    def notice_numbers(self) -> typing.Iterable[int]:
+    def notice_numbers(self) -> typing.List[int]:
         return self._notice_numbers
 
 
@@ -1294,13 +1294,13 @@ class NameConstraints(ExtensionType):
     @property
     def permitted_subtrees(
         self,
-    ) -> typing.Optional[typing.Iterable[GeneralName]]:
+    ) -> typing.Optional[typing.List[GeneralName]]:
         return self._permitted_subtrees
 
     @property
     def excluded_subtrees(
         self,
-    ) -> typing.Optional[typing.Iterable[GeneralName]]:
+    ) -> typing.Optional[typing.List[GeneralName]]:
         return self._excluded_subtrees
 
 
