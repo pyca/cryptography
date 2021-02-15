@@ -92,9 +92,10 @@ class CBC(Mode, ModeWithInitializationVector):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
-    initialization_vector: bytes = utils.read_only_property(
-        "_initialization_vector"
-    )
+    @property
+    def initialization_vector(self) -> bytes:
+        return self._initialization_vector
+
     validate_for_algorithm = _check_iv_and_key_length
 
 
@@ -109,7 +110,9 @@ class XTS(Mode, ModeWithTweak):
 
         self._tweak = tweak
 
-    tweak: bytes = utils.read_only_property("_tweak")
+    @property
+    def tweak(self) -> bytes:
+        return self._tweak
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         if algorithm.key_size not in (256, 512):
@@ -132,9 +135,10 @@ class OFB(Mode, ModeWithInitializationVector):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
-    initialization_vector: bytes = utils.read_only_property(
-        "_initialization_vector"
-    )
+    @property
+    def initialization_vector(self) -> bytes:
+        return self._initialization_vector
+
     validate_for_algorithm = _check_iv_and_key_length
 
 
@@ -145,9 +149,10 @@ class CFB(Mode, ModeWithInitializationVector):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
-    initialization_vector: bytes = utils.read_only_property(
-        "_initialization_vector"
-    )
+    @property
+    def initialization_vector(self) -> bytes:
+        return self._initialization_vector
+
     validate_for_algorithm = _check_iv_and_key_length
 
 
@@ -158,9 +163,10 @@ class CFB8(Mode, ModeWithInitializationVector):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
-    initialization_vector: bytes = utils.read_only_property(
-        "_initialization_vector"
-    )
+    @property
+    def initialization_vector(self) -> bytes:
+        return self._initialization_vector
+
     validate_for_algorithm = _check_iv_and_key_length
 
 
@@ -171,7 +177,9 @@ class CTR(Mode, ModeWithNonce):
         utils._check_byteslike("nonce", nonce)
         self._nonce = nonce
 
-    nonce: bytes = utils.read_only_property("_nonce")
+    @property
+    def nonce(self) -> bytes:
+        return self._nonce
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         _check_aes_key_length(self, algorithm)
@@ -211,10 +219,13 @@ class GCM(Mode, ModeWithInitializationVector, ModeWithAuthenticationTag):
         self._tag = tag
         self._min_tag_length = min_tag_length
 
-    tag: typing.Optional[bytes] = utils.read_only_property("_tag")
-    initialization_vector: bytes = utils.read_only_property(
-        "_initialization_vector"
-    )
+    @property
+    def tag(self) -> typing.Optional[bytes]:
+        return self._tag
+
+    @property
+    def initialization_vector(self) -> bytes:
+        return self._initialization_vector
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm):
         _check_aes_key_length(self, algorithm)
