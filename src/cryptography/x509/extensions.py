@@ -572,7 +572,7 @@ class DistributionPoint(object):
                 "least one must be None."
             )
 
-        if full_name:
+        if full_name is not None:
             full_name = list(full_name)
             if not all(isinstance(x, GeneralName) for x in full_name):
                 raise TypeError(
@@ -585,7 +585,7 @@ class DistributionPoint(object):
                     "relative_name must be a RelativeDistinguishedName"
                 )
 
-        if crl_issuer:
+        if crl_issuer is not None:
             crl_issuer = list(crl_issuer)
             if not all(isinstance(x, GeneralName) for x in crl_issuer):
                 raise TypeError(
@@ -791,7 +791,7 @@ class PolicyInformation(object):
 
         self._policy_identifier = policy_identifier
 
-        if policy_qualifiers:
+        if policy_qualifiers is not None:
             policy_qualifiers = list(policy_qualifiers)
             if not all(
                 isinstance(x, (str, UserNotice)) for x in policy_qualifiers
