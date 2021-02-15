@@ -8,7 +8,6 @@ import ipaddress
 import typing
 from email.utils import parseaddr
 
-from cryptography import utils
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
