@@ -146,7 +146,9 @@ class ChaCha20(CipherAlgorithm, ModeWithNonce):
 
         self._nonce = nonce
 
-    nonce = utils.read_only_property("_nonce")
+    @property
+    def nonce(self) -> bytes:
+        return self._nonce
 
     @property
     def key_size(self) -> int:

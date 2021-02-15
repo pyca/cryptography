@@ -366,6 +366,7 @@ class TestCertificateRevocationListBuilder(object):
         ext1 = crl.extensions.get_extension_for_class(x509.FreshestCRL)
         assert ext1.critical is False
         assert isinstance(ext1.value[0], x509.DistributionPoint)
+        assert ext1.value[0].full_name is not None
         uri = ext1.value[0].full_name[0]
         assert isinstance(uri, x509.UniformResourceIdentifier)
         assert uri.value == "http://d.om/delta"

@@ -8,7 +8,6 @@ import ipaddress
 import typing
 from email.utils import parseaddr
 
-from cryptography import utils
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
@@ -62,7 +61,9 @@ class RFC822Name(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -102,7 +103,9 @@ class DNSName(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -142,7 +145,9 @@ class UniformResourceIdentifier(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -173,7 +178,9 @@ class DirectoryName(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> Name:
+        return self._value
 
     def __repr__(self) -> str:
         return "<DirectoryName(value={})>".format(self.value)
@@ -198,7 +205,9 @@ class RegisteredID(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> ObjectIdentifier:
+        return self._value
 
     def __repr__(self) -> str:
         return "<RegisteredID(value={})>".format(self.value)
@@ -243,7 +252,16 @@ class IPAddress(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(
+        self,
+    ) -> typing.Union[
+        ipaddress.IPv4Address,
+        ipaddress.IPv6Address,
+        ipaddress.IPv4Network,
+        ipaddress.IPv6Network,
+    ]:
+        return self._value
 
     def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)
@@ -271,8 +289,13 @@ class OtherName(GeneralName):
         self._type_id = type_id
         self._value = value
 
-    type_id = utils.read_only_property("_type_id")
-    value = utils.read_only_property("_value")
+    @property
+    def type_id(self) -> ObjectIdentifier:
+        return self._type_id
+
+    @property
+    def value(self) -> bytes:
+        return self._value
 
     def __repr__(self) -> str:
         return "<OtherName(type_id={}, value={!r})>".format(

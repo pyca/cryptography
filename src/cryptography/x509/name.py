@@ -5,7 +5,6 @@
 import typing
 from enum import Enum
 
-from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
@@ -108,8 +107,13 @@ class NameAttribute(object):
         self._value = value
         self._type = _type
 
-    oid = utils.read_only_property("_oid")
-    value = utils.read_only_property("_value")
+    @property
+    def oid(self) -> ObjectIdentifier:
+        return self._oid
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     def rfc4514_string(self) -> str:
         """
@@ -220,7 +224,7 @@ class Name(object):
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self) -> typing.Iterable[RelativeDistinguishedName]:
+    def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
     def public_bytes(self, backend=None) -> bytes:

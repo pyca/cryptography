@@ -517,6 +517,7 @@ class TestPolicyInformation(object):
     def test_iter_input(self):
         qual = ["foo", "bar"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), iter(qual))
+        assert pi.policy_qualifiers is not None
         assert list(pi.policy_qualifiers) == qual
 
     def test_repr(self):
@@ -1104,6 +1105,7 @@ class TestAuthorityKeyIdentifier(object):
             )
         ]
         aki = x509.AuthorityKeyIdentifier(b"digest", iter(dirnames), 1234)
+        assert aki.authority_cert_issuer is not None
         assert list(aki.authority_cert_issuer) == dirnames
 
     def test_repr(self):
@@ -3429,7 +3431,9 @@ class TestNameConstraints(object):
     def test_iter_input(self):
         subtrees = [x509.IPAddress(ipaddress.IPv4Network("192.168.0.0/24"))]
         nc = x509.NameConstraints(iter(subtrees), iter(subtrees))
+        assert nc.permitted_subtrees is not None
         assert list(nc.permitted_subtrees) == subtrees
+        assert nc.excluded_subtrees is not None
         assert list(nc.excluded_subtrees) == subtrees
 
     def test_repr(self):
@@ -3781,7 +3785,9 @@ class TestDistributionPoint(object):
             frozenset([x509.ReasonFlags.ca_compromise]),
             iter(issuer),
         )
+        assert dp.full_name is not None
         assert list(dp.full_name) == name
+        assert dp.crl_issuer is not None
         assert list(dp.crl_issuer) == issuer
 
     def test_repr(self):

@@ -3,9 +3,6 @@
 # for complete details.
 
 
-from cryptography import utils
-
-
 class ObjectIdentifier(object):
     def __init__(self, dotted_string: str):
         self._dotted_string = dotted_string
@@ -73,4 +70,6 @@ class ObjectIdentifier(object):
 
         return _OID_NAMES.get(self, "Unknown OID")
 
-    dotted_string = utils.read_only_property("_dotted_string")
+    @property
+    def dotted_string(self) -> str:
+        return self._dotted_string
