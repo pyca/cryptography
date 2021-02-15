@@ -5,7 +5,6 @@
 import typing
 from enum import Enum
 
-from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
@@ -108,8 +107,13 @@ class NameAttribute(object):
         self._value = value
         self._type = _type
 
-    oid: ObjectIdentifier = utils.read_only_property("_oid")
-    value: str = utils.read_only_property("_value")
+    @property
+    def oid(self) -> ObjectIdentifier:
+        return self._oid
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     def rfc4514_string(self) -> str:
         """
