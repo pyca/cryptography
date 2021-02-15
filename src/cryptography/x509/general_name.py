@@ -62,7 +62,9 @@ class RFC822Name(GeneralName):
 
         self._value = value
 
-    value: str = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -102,7 +104,9 @@ class DNSName(GeneralName):
 
         self._value = value
 
-    value: str = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -142,7 +146,9 @@ class UniformResourceIdentifier(GeneralName):
 
         self._value = value
 
-    value: str = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
     def _init_without_validation(cls, value):
@@ -173,7 +179,9 @@ class DirectoryName(GeneralName):
 
         self._value = value
 
-    value: Name = utils.read_only_property("_value")
+    @property
+    def value(self) -> Name:
+        return self._value
 
     def __repr__(self) -> str:
         return "<DirectoryName(value={})>".format(self.value)
@@ -198,7 +206,9 @@ class RegisteredID(GeneralName):
 
         self._value = value
 
-    value: ObjectIdentifier = utils.read_only_property("_value")
+    @property
+    def value(self) -> ObjectIdentifier:
+        return self._value
 
     def __repr__(self) -> str:
         return "<RegisteredID(value={})>".format(self.value)
@@ -243,12 +253,16 @@ class IPAddress(GeneralName):
 
         self._value = value
 
-    value: typing.Union[
+    @property
+    def value(
+        self,
+    ) -> typing.Union[
         ipaddress.IPv4Address,
         ipaddress.IPv6Address,
         ipaddress.IPv4Network,
         ipaddress.IPv6Network,
-    ] = utils.read_only_property("_value")
+    ]:
+        return self._value
 
     def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)
@@ -276,8 +290,13 @@ class OtherName(GeneralName):
         self._type_id = type_id
         self._value = value
 
-    type_id: ObjectIdentifier = utils.read_only_property("_type_id")
-    value: bytes = utils.read_only_property("_value")
+    @property
+    def type_id(self) -> ObjectIdentifier:
+        return self._type_id
+
+    @property
+    def value(self) -> bytes:
+        return self._value
 
     def __repr__(self) -> str:
         return "<OtherName(type_id={}, value={!r})>".format(
