@@ -18,9 +18,9 @@ jobs:
           - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
           - {VERSION: "pypy3", TOXENV: "pypy3"}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1i"}}
-          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1i"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1i", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
