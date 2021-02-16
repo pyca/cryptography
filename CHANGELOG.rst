@@ -89,7 +89,7 @@ Changelog
 * **SECURITY ISSUE:** Fixed a bug where certain sequences of ``update()`` calls
   when symmetrically encrypting very large payloads (>2GB) could result in an
   integer overflow, leading to buffer overflows. *CVE-2020-36242* **Update:**
-  This fix is a workaround for *CVE-2021-23840* in OpenSSL, fixed in OpenSSL 
+  This fix is a workaround for *CVE-2021-23840* in OpenSSL, fixed in OpenSSL
   1.1.1j.
 
 .. _v3-3-1:
