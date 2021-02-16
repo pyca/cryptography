@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v3-4-6:
+
+3.4.6 - 2021-02-16
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1j.
+
 .. _v3-4-5:
 
 3.4.5 - 2021-02-13
