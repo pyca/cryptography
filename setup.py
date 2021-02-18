@@ -110,7 +110,7 @@ try:
         setup_requires=setup_requirements,
         extras_require={
             "test": [
-                "pytest>=6.0",
+                "pytest>=6.2.0",
                 "pytest-cov",
                 "pytest-subtests",
                 "pytest-xdist",
