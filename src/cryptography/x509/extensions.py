@@ -288,6 +288,10 @@ class SubjectKeyIdentifier(ExtensionType):
     def digest(self) -> bytes:
         return self._digest
 
+    @property
+    def key_identifier(self) -> bytes:
+        return self._digest
+
     def __repr__(self):
         return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
 

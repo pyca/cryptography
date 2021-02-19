@@ -1945,6 +1945,15 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_KEY_IDENTIFIER`.
 
+    .. attribute:: key_identifier
+
+        .. versionadded:: 35.0.0
+
+        :type: bytes
+
+        A value derived from the public key used to verify the certificate's
+        signature.
+
     .. attribute:: digest
 
         :type: bytes
