@@ -12,6 +12,11 @@ def test_basic_oid():
     assert ObjectIdentifier("1.2.3.4").dotted_string == "1.2.3.4"
 
 
+def test_name():
+    assert ObjectIdentifier("2.5.29.15").name == "keyUsage"
+    assert ObjectIdentifier("2.5.4.3").name == "commonName"
+
+
 def test_oid_constraint():
     # Too short
     with pytest.raises(ValueError):

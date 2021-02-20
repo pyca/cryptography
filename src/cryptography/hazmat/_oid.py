@@ -71,5 +71,9 @@ class ObjectIdentifier(object):
         return _OID_NAMES.get(self, "Unknown OID")
 
     @property
+    def name(self) -> str:
+        return self._name
+
+    @property
     def dotted_string(self) -> str:
         return self._dotted_string

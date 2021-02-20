@@ -1377,6 +1377,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+    .. attribute:: name
+
+        :type: :class:`str`
+
+        The name of the OID (e.g. ``"commonName"`` or ``"extendedKeyUsage"``)
+
 
 .. _general_name_classes:
 
