@@ -1023,7 +1023,7 @@ class TestRSAVerification(object):
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA1())
 
-        # Hash algorithm can not be absent for PSS padding
+        # Hash algorithm cannot be absent for PSS padding
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
                 signature, pss_padding, None  # type: ignore[arg-type]
