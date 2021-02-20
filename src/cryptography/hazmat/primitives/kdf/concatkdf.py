@@ -32,7 +32,7 @@ def _common_args_checks(
     max_length = algorithm.digest_size * (2 ** 32 - 1)
     if length > max_length:
         raise ValueError(
-            "Can not derive keys larger than {} bits.".format(max_length)
+            "Cannot derive keys larger than {} bits.".format(max_length)
         )
     if otherinfo is not None:
         utils._check_bytes("otherinfo", otherinfo)
