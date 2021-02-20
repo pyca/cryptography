@@ -33,6 +33,8 @@ from cryptography.x509.oid import (
     ObjectIdentifier,
 )
 
+ExtensionTypeVar = typing.TypeVar("ExtensionTypeVar", bound="ExtensionType")
+
 
 def _key_identifier_from_public_key(public_key: _PUBLIC_KEY_TYPES) -> bytes:
     if isinstance(public_key, RSAPublicKey):
@@ -108,17 +110,19 @@ class ExtensionType(metaclass=abc.ABCMeta):
 
 
 class Extensions(object):
-    def __init__(self, extensions: typing.List["Extension"]):
+    def __init__(self, extensions: typing.List["Extension[ExtensionType]"]):
         self._extensions = extensions
 
-    def get_extension_for_oid(self, oid: ObjectIdentifier) -> "Extension":
+    def get_extension_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> "Extension[ExtensionType]":
         for ext in self:
             if ext.oid == oid:
                 return ext
 
         raise ExtensionNotFound("No {} extension was found".format(oid), oid)
 
-    def get_extension_for_class(self, extclass) -> "Extension":
+    def get_extension_for_class(self, extclass) -> "Extension[ExtensionType]":
         if extclass is UnrecognizedExtension:
             raise TypeError(
                 "UnrecognizedExtension can't be used with "
@@ -1304,9 +1308,9 @@ class NameConstraints(ExtensionType):
         return self._excluded_subtrees
 
 
-class Extension(object):
+class Extension(typing.Generic[ExtensionTypeVar]):
     def __init__(
-        self, oid: ObjectIdentifier, critical: bool, value: ExtensionType
+        self, oid: ObjectIdentifier, critical: bool, value: ExtensionTypeVar
     ):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
