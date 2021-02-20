@@ -8,6 +8,8 @@ Changelog
 
  .. note:: This version is not yet released and is under active development.
 
+* Add a ``name`` property to :class:`cryptography.x509.ObjectIdentifier`.
+
 .. _v3-4-6:
 
 3.4.6 - 2021-02-16
