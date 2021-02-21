@@ -1951,14 +1951,13 @@ X.509 Extensions
 
         :type: bytes
 
-        A value derived from the public key used to verify the certificate's
-        signature.
+        The binary value of the identifier.
 
     .. attribute:: digest
 
         :type: bytes
 
-        The binary value of the identifier.
+        The binary value of the identifier. An alias of ``key_identifier``.
 
     .. classmethod:: from_public_key(public_key)
 
