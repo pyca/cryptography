@@ -257,4 +257,10 @@ void (*X509_STORE_set_get_issuer)(X509_STORE *,
 #else
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
 #endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define X509_STORE_CTX_trusted_stack X509_STORE_CTX_set0_trusted_stack
+#define X509_STORE_CTX_set_chain X509_STORE_CTX_set0_untrusted
+#define X509_STORE_CTX_get_chain X509_STORE_CTX_get1_chain
+#endif
 """

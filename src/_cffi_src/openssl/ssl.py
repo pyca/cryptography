@@ -745,4 +745,9 @@ long (*SSL_get_max_proto_version)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
 #endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define SSL_library_init() 1
+#define SSL_load_error_strings() 0
+#endif
 """

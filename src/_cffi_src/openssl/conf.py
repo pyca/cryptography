@@ -17,4 +17,8 @@ void OPENSSL_no_config(void);
 """
 
 CUSTOMIZATIONS = """
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define OPENSSL_config(x) 0
+#define OPENSSL_no_config() 0
+#endif
 """

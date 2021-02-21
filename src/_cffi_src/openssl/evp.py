@@ -269,4 +269,9 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 #ifndef EVP_PKEY_POLY1305
 #define EVP_PKEY_POLY1305 NID_poly1305
 #endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define EVP_CIPHER_CTX_cleanup EVP_CIPHER_CTX_reset
+#define OpenSSL_add_all_algorithms() do {} while(0)
+#endif
 """

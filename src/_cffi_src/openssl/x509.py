@@ -305,4 +305,16 @@ int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
     return i2d_X509_CRL_INFO(crl->crl, pp);
 }
 #endif
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define X509_get_notBefore X509_get0_notBefore
+#define X509_get_notAfter X509_get0_notAfter
+#define X509_set_notBefore X509_set1_notBefore
+#define X509_set_notAfter X509_set1_notAfter
+
+#define X509_CRL_get_lastUpdate X509_CRL_get0_lastUpdate
+#define X509_CRL_get_nextUpdate X509_CRL_get0_nextUpdate
+#define X509_CRL_set_lastUpdate X509_CRL_set1_lastUpdate
+#define X509_CRL_set_nextUpdate X509_CRL_set1_nextUpdate
+#endif
 """

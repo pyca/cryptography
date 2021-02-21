@@ -113,4 +113,8 @@ void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
 void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
     free(ptr);
 }
+
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define CRYPTO_get_locking_callback() 0
+#endif
 """

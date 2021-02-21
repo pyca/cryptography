@@ -17,4 +17,7 @@ long SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
 """
 
 CUSTOMIZATIONS = """
+#if (OPENSSL_API_COMPAT >= 0x10100000L) && !CRYPTOGRAPHY_IS_LIBRESSL
+#define SSL_CTX_set_ecdh_auto(a, b) ((b) != 0)
+#endif
 """
