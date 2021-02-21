@@ -994,6 +994,7 @@ class TestSubjectKeyIdentifier(object):
         value = binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         ski = x509.SubjectKeyIdentifier(value)
         assert ski.digest == value
+        assert ski.key_identifier == value
 
     def test_repr(self):
         ski = x509.SubjectKeyIdentifier(
