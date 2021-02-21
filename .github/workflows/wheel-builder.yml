@@ -19,7 +19,7 @@ jobs:
             CONTAINER: "cryptography-manylinux2014:x86_64"
     name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv
+      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m venv .venv
       - name: Install Python dependencies
         run: .venv/bin/pip install -U pip wheel cffi six ipaddress setuptools-rust
       - run: .venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir tmpwheelhouse
@@ -71,7 +71,7 @@ jobs:
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv requests
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
       - name: Download OpenSSL
         run: |
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-x86-64
@@ -84,7 +84,7 @@ jobs:
           override: true
           default: true
 
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m virtualenv venv
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
       - run: venv/bin/pip install -U pip wheel cffi six ipaddress setuptools-rust
       - run: venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
       - name: Build the wheel
