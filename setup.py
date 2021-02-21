@@ -45,24 +45,6 @@ setuptools_rust = "setuptools-rust>=0.11.4"
 install_requirements = ["cffi>=1.12"]
 setup_requirements = install_requirements + [setuptools_rust]
 
-if os.environ.get("CRYPTOGRAPHY_DONT_BUILD_RUST"):
-    rust_extensions = []
-else:
-    rust_extensions = [
-        RustExtension(
-            "_rust",
-            "src/rust/Cargo.toml",
-            py_limited_api=True,
-            # Enable abi3 mode if we're not using PyPy.
-            features=(
-                []
-                if platform.python_implementation() == "PyPy"
-                else ["pyo3/abi3-py36"]
-            ),
-            rust_version=">=1.41.0",
-        )
-    ]
-
 with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
 
@@ -147,9 +129,21 @@ try:
         ext_package="cryptography.hazmat.bindings",
         cffi_modules=[
             "src/_cffi_src/build_openssl.py:ffi",
-            "src/_cffi_src/build_padding.py:ffi",
         ],
-        rust_extensions=rust_extensions,
+        rust_extensions=[
+            RustExtension(
+                "_rust",
+                "src/rust/Cargo.toml",
+                py_limited_api=True,
+                # Enable abi3 mode if we're not using PyPy.
+                features=(
+                    []
+                    if platform.python_implementation() == "PyPy"
+                    else ["pyo3/abi3-py36"]
+                ),
+                rust_version=">=1.41.0",
+            )
+        ],
     )
 except:  # noqa: E722
     # Note: This is a bare exception that re-raises so that we don't interfere
@@ -172,8 +166,6 @@ except:  # noqa: E722
        https://cryptography.io/en/latest/faq.html
     4) Ensure you have a recent Rust toolchain installed:
        https://cryptography.io/en/latest/installation.html#rust
-    5) If you are experiencing issues with Rust for *this release only* you may
-       set the environment variable `CRYPTOGRAPHY_DONT_BUILD_RUST=1`.
     =============================DEBUG ASSISTANCE=============================
     """
     )
