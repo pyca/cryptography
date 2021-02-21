@@ -11,22 +11,23 @@ jobs:
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       matrix:
-        PYTHON: ["cp36-cp36m"]
+        PYTHON:
+          - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
+          - { VERSION: "pypy3.6", PATH: "/opt/pypy3.6/bin/pypy" }
+          - { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
         MANYLINUX:
-          - NAME: manylinux2010_x86_64
-            CONTAINER: "cryptography-manylinux2010:x86_64"
-          - NAME: manylinux2014_x86_64
-            CONTAINER: "cryptography-manylinux2014:x86_64"
-    name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
+          - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
+          - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
+    name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m venv .venv
+      - run: ${{ matrix.PYTHON.PATH }} -m venv .venv
       - name: Install Python dependencies
         run: .venv/bin/pip install -U pip wheel cffi six ipaddress setuptools-rust
       - run: .venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir tmpwheelhouse
-      - run: |
-          REGEX="cp3([0-9])*"
-          if [[ "${{ matrix.PYTHON }}" =~ $REGEX ]]; then
-              PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
+      - name: Build the wheel
+        run: |
+          if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
+              PY_LIMITED_API="--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }}"
           fi
           cd cryptography*
           LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
@@ -51,7 +52,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - uses: actions/upload-artifact@v1
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}"
           path: cryptography-wheelhouse/
 
   macos:
