@@ -64,7 +64,7 @@ class ObjectIdentifier(object):
         return hash(self.dotted_string)
 
     @property
-    def _name(self):
+    def _name(self) -> str:
         # Lazy import to avoid an import cycle
         from cryptography.x509.oid import _OID_NAMES
 
