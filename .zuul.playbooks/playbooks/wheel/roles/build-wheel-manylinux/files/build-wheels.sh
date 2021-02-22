@@ -9,7 +9,7 @@ for P in ${PYTHONS}; do
 
     PYBIN=/opt/python/${P}/bin
 
-    "${PYBIN}"/python -m virtualenv .venv
+    "${PYBIN}"/python -m venv .venv
 
     .venv/bin/pip install cffi six ipaddress "enum34; python_version < '3'" setuptools-rust
 
