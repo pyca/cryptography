@@ -275,3 +275,17 @@ class TestSHAKE256(object):
                 m = hashes.Hash(shake, backend=backend)
                 m.update(msg)
                 assert m.finalize() == binascii.unhexlify(vector["output"])
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SM3()),
+    skip_message="Does not support SM3",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSM3(object):
+    test_sm3 = generate_hash_test(
+        load_hash_vectors,
+        os.path.join("hashes", "SM3"),
+        ["oscca.txt"],
+        hashes.SM3(),
+    )

@@ -195,3 +195,15 @@ class TestSHAKE(object):
 
         with pytest.raises(ValueError):
             xof(digest_size=0)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SM3()),
+    skip_message="Does not support SM3",
+)
+@pytest.mark.requires_backend_interface(interface=HashBackend)
+class TestSM3(object):
+    test_sm3 = generate_base_hash_test(
+        hashes.SM3(),
+        digest_size=32,
+    )
