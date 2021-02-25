@@ -45,7 +45,9 @@ class TestCipher(object):
     def test_instantiate_with_non_algorithm(self, backend):
         algorithm = object()
         with pytest.raises(TypeError):
-            Cipher(algorithm, mode=None, backend=backend)
+            Cipher(
+                algorithm, mode=None, backend=backend  # type: ignore[arg-type]
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -194,28 +196,28 @@ class TestModeValidation(object):
 class TestModesRequireBytes(object):
     def test_cbc(self):
         with pytest.raises(TypeError):
-            modes.CBC([1] * 16)
+            modes.CBC([1] * 16)  # type:ignore[arg-type]
 
     def test_cfb(self):
         with pytest.raises(TypeError):
-            modes.CFB([1] * 16)
+            modes.CFB([1] * 16)  # type:ignore[arg-type]
 
     def test_cfb8(self):
         with pytest.raises(TypeError):
-            modes.CFB8([1] * 16)
+            modes.CFB8([1] * 16)  # type:ignore[arg-type]
 
     def test_ofb(self):
         with pytest.raises(TypeError):
-            modes.OFB([1] * 16)
+            modes.OFB([1] * 16)  # type:ignore[arg-type]
 
     def test_ctr(self):
         with pytest.raises(TypeError):
-            modes.CTR([1] * 16)
+            modes.CTR([1] * 16)  # type:ignore[arg-type]
 
     def test_gcm_iv(self):
         with pytest.raises(TypeError):
-            modes.GCM([1] * 16)
+            modes.GCM([1] * 16)  # type:ignore[arg-type]
 
     def test_gcm_tag(self):
         with pytest.raises(TypeError):
-            modes.GCM(b"\x00" * 16, [1] * 16)
+            modes.GCM(b"\x00" * 16, [1] * 16)  # type:ignore[arg-type]

@@ -2,9 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
-from cryptography import exceptions, utils
+from cryptography import exceptions
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed448 import (
     Ed448PrivateKey,
@@ -15,13 +14,16 @@ _ED448_KEY_SIZE = 57
 _ED448_SIG_SIZE = 114
 
 
-@utils.register_interface(Ed448PublicKey)
-class _Ed448PublicKey(object):
+class _Ed448PublicKey(Ed448PublicKey):
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PublicFormat,
+    ) -> bytes:
         if (
             encoding is serialization.Encoding.Raw
             or format is serialization.PublicFormat.Raw
@@ -40,7 +42,7 @@ class _Ed448PublicKey(object):
             encoding, format, self, self._evp_pkey, None
         )
 
-    def _raw_public_bytes(self):
+    def _raw_public_bytes(self) -> bytes:
         buf = self._backend._ffi.new("unsigned char []", _ED448_KEY_SIZE)
         buflen = self._backend._ffi.new("size_t *", _ED448_KEY_SIZE)
         res = self._backend._lib.EVP_PKEY_get_raw_public_key(
@@ -50,7 +52,7 @@ class _Ed448PublicKey(object):
         self._backend.openssl_assert(buflen[0] == _ED448_KEY_SIZE)
         return self._backend._ffi.buffer(buf, _ED448_KEY_SIZE)[:]
 
-    def verify(self, signature, data):
+    def verify(self, signature: bytes, data: bytes) -> None:
         evp_md_ctx = self._backend._lib.EVP_MD_CTX_new()
         self._backend.openssl_assert(evp_md_ctx != self._backend._ffi.NULL)
         evp_md_ctx = self._backend._ffi.gc(
@@ -72,13 +74,12 @@ class _Ed448PublicKey(object):
             raise exceptions.InvalidSignature
 
 
-@utils.register_interface(Ed448PrivateKey)
-class _Ed448PrivateKey(object):
+class _Ed448PrivateKey(Ed448PrivateKey):
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
-    def public_key(self):
+    def public_key(self) -> Ed448PublicKey:
         buf = self._backend._ffi.new("unsigned char []", _ED448_KEY_SIZE)
         buflen = self._backend._ffi.new("size_t *", _ED448_KEY_SIZE)
         res = self._backend._lib.EVP_PKEY_get_raw_public_key(
@@ -89,7 +90,7 @@ class _Ed448PrivateKey(object):
         public_bytes = self._backend._ffi.buffer(buf)[:]
         return self._backend.ed448_load_public_bytes(public_bytes)
 
-    def sign(self, data):
+    def sign(self, data: bytes) -> bytes:
         evp_md_ctx = self._backend._lib.EVP_MD_CTX_new()
         self._backend.openssl_assert(evp_md_ctx != self._backend._ffi.NULL)
         evp_md_ctx = self._backend._ffi.gc(
@@ -112,7 +113,12 @@ class _Ed448PrivateKey(object):
         self._backend.openssl_assert(buflen[0] == _ED448_SIG_SIZE)
         return self._backend._ffi.buffer(buf, buflen[0])[:]
 
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PrivateFormat,
+        encryption_algorithm: serialization.KeySerializationEncryption,
+    ) -> bytes:
         if (
             encoding is serialization.Encoding.Raw
             or format is serialization.PublicFormat.Raw
@@ -135,7 +141,7 @@ class _Ed448PrivateKey(object):
             encoding, format, encryption_algorithm, self, self._evp_pkey, None
         )
 
-    def _raw_private_bytes(self):
+    def _raw_private_bytes(self) -> bytes:
         buf = self._backend._ffi.new("unsigned char []", _ED448_KEY_SIZE)
         buflen = self._backend._ffi.new("size_t *", _ED448_KEY_SIZE)
         res = self._backend._lib.EVP_PKEY_get_raw_private_key(

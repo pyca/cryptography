@@ -11,13 +11,13 @@ from cryptography.hazmat.primitives import constant_time
 class TestConstantTimeBytesEq(object):
     def test_reject_unicode(self):
         with pytest.raises(TypeError):
-            constant_time.bytes_eq(b"foo", "foo")
+            constant_time.bytes_eq(b"foo", "foo")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            constant_time.bytes_eq("foo", b"foo")
+            constant_time.bytes_eq("foo", b"foo")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            constant_time.bytes_eq("foo", "foo")
+            constant_time.bytes_eq("foo", "foo")  # type: ignore[arg-type]
 
     def test_compares(self):
         assert constant_time.bytes_eq(b"foo", b"foo") is True

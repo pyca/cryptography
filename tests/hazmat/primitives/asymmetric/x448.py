@@ -2,19 +2,16 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import abc
 
-import six
-
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.primitives import _serialization
 
 
-@six.add_metaclass(abc.ABCMeta)
-class X448PublicKey(object):
+class X448PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data):
+    def from_public_bytes(cls, data) -> "X448PublicKey":
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():
@@ -26,16 +23,19 @@ class X448PublicKey(object):
         return backend.x448_load_public_bytes(data)
 
     @abc.abstractmethod
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
         """
         The serialized bytes of the public key.
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class X448PrivateKey(object):
+class X448PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls):
+    def generate(cls) -> "X448PrivateKey":
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():
@@ -46,7 +46,7 @@ class X448PrivateKey(object):
         return backend.x448_generate_key()
 
     @classmethod
-    def from_private_bytes(cls, data):
+    def from_private_bytes(cls, data: bytes) -> "X448PrivateKey":
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():
@@ -58,19 +58,24 @@ class X448PrivateKey(object):
         return backend.x448_load_private_bytes(data)
 
     @abc.abstractmethod
-    def public_key(self):
+    def public_key(self) -> X448PublicKey:
         """
         The serialized bytes of the public key.
         """
 
     @abc.abstractmethod
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
         """
         The serialized bytes of the private key.
         """
 
     @abc.abstractmethod
-    def exchange(self, peer_public_key):
+    def exchange(self, peer_public_key: X448PublicKey) -> bytes:
         """
         Performs a key exchange operation using the provided peer's public key.
         """

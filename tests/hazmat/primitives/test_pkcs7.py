@@ -4,6 +4,7 @@
 
 
 import os
+import typing
 
 import pytest
 
@@ -28,11 +29,11 @@ class TestPKCS7Loading(object):
 
     def test_not_bytes_der(self):
         with pytest.raises(TypeError):
-            pkcs7.load_der_pkcs7_certificates(38)
+            pkcs7.load_der_pkcs7_certificates(38)  # type: ignore[arg-type]
 
     def test_not_bytes_pem(self):
         with pytest.raises(TypeError):
-            pkcs7.load_pem_pkcs7_certificates(38)
+            pkcs7.load_pem_pkcs7_certificates(38)  # type: ignore[arg-type]
 
     def test_load_pkcs7_pem(self):
         certs = load_vectors_from_file(
@@ -143,7 +144,7 @@ class TestPKCS7Builder(object):
     def test_invalid_data(self):
         builder = pkcs7.PKCS7SignatureBuilder()
         with pytest.raises(TypeError):
-            builder.set_data("not bytes")
+            builder.set_data("not bytes")  # type: ignore[arg-type]
 
     def test_set_data_twice(self):
         builder = pkcs7.PKCS7SignatureBuilder().set_data(b"test")
@@ -167,14 +168,14 @@ class TestPKCS7Builder(object):
         cert, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                cert, key, hashes.SHA512_256()
+                cert, key, hashes.SHA512_256()  # type: ignore[arg-type]
             )
 
     def test_not_a_cert(self):
         cert, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                b"notacert", key, hashes.SHA256()
+                b"notacert", key, hashes.SHA256()  # type: ignore[arg-type]
             )
 
     @pytest.mark.supported(
@@ -186,7 +187,7 @@ class TestPKCS7Builder(object):
         key = ed25519.Ed25519PrivateKey.generate()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                cert, key, hashes.SHA256()
+                cert, key, hashes.SHA256()  # type: ignore[arg-type]
             )
 
     def test_sign_invalid_options(self):
@@ -197,7 +198,10 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
         with pytest.raises(ValueError):
-            builder.sign(serialization.Encoding.SMIME, [b"invalid"])
+            builder.sign(
+                serialization.Encoding.SMIME,
+                [b"invalid"],  # type: ignore[list-item]
+            )
 
     def test_sign_invalid_encoding(self):
         cert, key = _load_cert_key()
@@ -298,7 +302,7 @@ class TestPKCS7Builder(object):
     def test_sign_pem(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         builder = (
             pkcs7.PKCS7SignatureBuilder()
             .set_data(data)
@@ -334,7 +338,7 @@ class TestPKCS7Builder(object):
             .set_data(data)
             .add_signer(cert, key, hash_alg)
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         assert expected_value in sig
         _pkcs7_verify(
@@ -367,7 +371,7 @@ class TestPKCS7Builder(object):
     def test_sign_attached(self, backend):
         data = b"hello world"
         cert, key = _load_cert_key()
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         builder = (
             pkcs7.PKCS7SignatureBuilder()
             .set_data(data)
@@ -395,7 +399,7 @@ class TestPKCS7Builder(object):
             .set_data(data)
             .add_signer(cert, key, hashes.SHA256())
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig_no_binary = builder.sign(serialization.Encoding.DER, options)
         sig_binary = builder.sign(
             serialization.Encoding.DER, [pkcs7.PKCS7Options.Binary]
@@ -431,7 +435,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
 
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig_binary = builder.sign(serialization.Encoding.DER, options)
         # LF gets converted to CR+LF (SMIME canonical form)
         # so data should not be present in the sig
@@ -541,7 +545,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA256())
         )
 
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         assert sig.count(cert.public_bytes(serialization.Encoding.DER)) == 1
 
@@ -572,7 +576,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA512())
             .add_signer(rsa_cert, rsa_key, hashes.SHA512())
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         # There should be three SHA512 OIDs in this structure
         assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 3
@@ -608,7 +612,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA384())
             .add_signer(rsa_cert, rsa_key, hashes.SHA512())
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         # There should be two SHA384 and two SHA512 OIDs in this structure
         assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x02") == 2
@@ -624,7 +628,9 @@ class TestPKCS7Builder(object):
 
     def test_add_additional_cert_not_a_cert(self, backend):
         with pytest.raises(TypeError):
-            pkcs7.PKCS7SignatureBuilder().add_certificate(b"notacert")
+            pkcs7.PKCS7SignatureBuilder().add_certificate(
+                b"notacert"  # type: ignore[arg-type]
+            )
 
     def test_add_additional_cert(self, backend):
         data = b"hello world"
@@ -642,7 +648,7 @@ class TestPKCS7Builder(object):
             .add_signer(cert, key, hashes.SHA384())
             .add_certificate(rsa_cert)
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         assert (
             sig.count(rsa_cert.public_bytes(serialization.Encoding.DER)) == 1
@@ -665,7 +671,7 @@ class TestPKCS7Builder(object):
             .add_certificate(rsa_cert)
             .add_certificate(rsa_cert)
         )
-        options = []
+        options: typing.List[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
         assert (
             sig.count(rsa_cert.public_bytes(serialization.Encoding.DER)) == 2

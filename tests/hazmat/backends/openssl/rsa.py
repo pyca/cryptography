@@ -2,7 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
+
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -15,11 +16,11 @@ from cryptography.hazmat.backends.openssl.utils import (
     _check_not_prehashed,
     _warn_sign_verify_deprecated,
 )
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext,
     AsymmetricVerificationContext,
-    rsa,
+    utils as asym_utils,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding,
@@ -30,12 +31,18 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     calculate_max_pss_salt_length,
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKeyWithSerialization,
-    RSAPublicKeyWithSerialization,
+    RSAPrivateKey,
+    RSAPrivateNumbers,
+    RSAPublicKey,
+    RSAPublicNumbers,
 )
 
 
-def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
+def _get_rsa_pss_salt_length(
+    pss: PSS,
+    key: typing.Union[RSAPrivateKey, RSAPublicKey],
+    hash_algorithm: hashes.HashAlgorithm,
+) -> int:
     salt = pss._salt_length
 
     if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
@@ -44,7 +51,12 @@ def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
         return salt
 
 
-def _enc_dec_rsa(backend, key, data, padding):
+def _enc_dec_rsa(
+    backend,
+    key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
+    data: bytes,
+    padding: AsymmetricPadding,
+) -> bytes:
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Padding must be an instance of AsymmetricPadding.")
 
@@ -75,7 +87,13 @@ def _enc_dec_rsa(backend, key, data, padding):
     return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding)
 
 
-def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
+def _enc_dec_rsa_pkey_ctx(
+    backend,
+    key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
+    data: bytes,
+    padding_enum: int,
+    padding: AsymmetricPadding,
+) -> bytes:
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
         crypt = backend._lib.EVP_PKEY_encrypt
@@ -119,23 +137,19 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
 
     outlen = backend._ffi.new("size_t *", buf_size)
     buf = backend._ffi.new("unsigned char[]", buf_size)
+    # Everything from this line onwards is written with the goal of being as
+    # constant-time as is practical given the constraints of Python and our
+    # API. See Bleichenbacher's '98 attack on RSA, and its many many variants.
+    # As such, you should not attempt to change this (particularly to "clean it
+    # up") without understanding why it was written this way (see
+    # Chesterton's Fence), and without measuring to verify you have not
+    # introduced observable time differences.
     res = crypt(pkey_ctx, buf, outlen, data, len(data))
+    resbuf = backend._ffi.buffer(buf)[: outlen[0]]
+    backend._lib.ERR_clear_error()
     if res <= 0:
-        _handle_rsa_enc_dec_error(backend, key)
-
-    return backend._ffi.buffer(buf)[: outlen[0]]
-
-
-def _handle_rsa_enc_dec_error(backend, key):
-    errors = backend._consume_errors_with_text()
-    if isinstance(key, _RSAPublicKey):
-        raise ValueError(
-            "Data too long for key size. Encrypt less data or use a "
-            "larger key size.",
-            errors,
-        )
-    else:
-        raise ValueError("Decryption failed.", errors)
+        raise ValueError("Encryption/decryption failed.")
+    return resbuf
 
 
 def _rsa_sig_determine_padding(backend, key, padding, algorithm):
@@ -146,6 +160,7 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     backend.openssl_assert(pkey_size > 0)
 
     if isinstance(padding, PKCS1v15):
+        # Hash algorithm is ignored for PKCS1v15-padding, may be None.
         padding_enum = backend._lib.RSA_PKCS1_PADDING
     elif isinstance(padding, PSS):
         if not isinstance(padding._mgf, MGF1):
@@ -153,6 +168,10 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
                 "Only MGF1 is supported by this backend.",
                 _Reasons.UNSUPPORTED_MGF,
             )
+
+        # PSS padding requires a hash algorithm
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         # Size of key in bytes - 2 is the maximum
         # PSS signature length (salt length is checked later)
@@ -172,25 +191,37 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
     return padding_enum
 
 
-def _rsa_sig_setup(backend, padding, algorithm, key, data, init_func):
+# Hash algorithm can be absent (None) to initialize the context without setting
+# any message digest algorithm. This is currently only valid for the PKCS1v15
+# padding type, where it means that the signature data is encoded/decoded
+# as provided, without being wrapped in a DigestInfo structure.
+def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
-    evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init_func(pkey_ctx)
     backend.openssl_assert(res == 1)
-    res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
-    if res == 0:
+    if algorithm is not None:
+        evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
+        res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
+        if res == 0:
+            backend._consume_errors()
+            raise UnsupportedAlgorithm(
+                "{} is not supported by this backend for RSA signing.".format(
+                    algorithm.name
+                ),
+                _Reasons.UNSUPPORTED_HASH,
+            )
+    res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
+    if res <= 0:
         backend._consume_errors()
         raise UnsupportedAlgorithm(
-            "{} is not supported by this backend for RSA signing.".format(
-                algorithm.name
+            "{} is not supported for the RSA signature operation.".format(
+                padding.name
             ),
-            _Reasons.UNSUPPORTED_HASH,
+            _Reasons.UNSUPPORTED_PADDING,
         )
-    res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, padding_enum)
-    backend.openssl_assert(res > 0)
     if isinstance(padding, PSS):
         res = backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
             pkey_ctx, _get_rsa_pss_salt_length(padding, key, algorithm)
@@ -212,7 +243,6 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
         padding,
         algorithm,
         private_key,
-        data,
         backend._lib.EVP_PKEY_sign_init,
     )
     buflen = backend._ffi.new("size_t *")
@@ -239,7 +269,6 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         padding,
         algorithm,
         public_key,
-        data,
         backend._lib.EVP_PKEY_verify_init,
     )
     res = backend._lib.EVP_PKEY_verify(
@@ -254,9 +283,44 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         raise InvalidSignature
 
 
-@utils.register_interface(AsymmetricSignatureContext)
-class _RSASignatureContext(object):
-    def __init__(self, backend, private_key, padding, algorithm):
+def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
+    pkey_ctx = _rsa_sig_setup(
+        backend,
+        padding,
+        algorithm,
+        public_key,
+        backend._lib.EVP_PKEY_verify_recover_init,
+    )
+
+    # Attempt to keep the rest of the code in this function as constant/time
+    # as possible. See the comment in _enc_dec_rsa_pkey_ctx. Note that the
+    # buflen parameter is used even though its value may be undefined in the
+    # error case. Due to the tolerant nature of Python slicing this does not
+    # trigger any exceptions.
+    maxlen = backend._lib.EVP_PKEY_size(public_key._evp_pkey)
+    backend.openssl_assert(maxlen > 0)
+    buf = backend._ffi.new("unsigned char[]", maxlen)
+    buflen = backend._ffi.new("size_t *", maxlen)
+    res = backend._lib.EVP_PKEY_verify_recover(
+        pkey_ctx, buf, buflen, signature, len(signature)
+    )
+    resbuf = backend._ffi.buffer(buf)[: buflen[0]]
+    backend._lib.ERR_clear_error()
+    # Assume that all parameter errors are handled during the setup phase and
+    # any error here is due to invalid signature.
+    if res != 1:
+        raise InvalidSignature
+    return resbuf
+
+
+class _RSASignatureContext(AsymmetricSignatureContext):
+    def __init__(
+        self,
+        backend,
+        private_key: RSAPrivateKey,
+        padding: AsymmetricPadding,
+        algorithm: hashes.HashAlgorithm,
+    ):
         self._backend = backend
         self._private_key = private_key
 
@@ -268,10 +332,10 @@ class _RSASignatureContext(object):
         self._algorithm = algorithm
         self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         self._hash_ctx.update(data)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         return _rsa_sig_sign(
             self._backend,
             self._padding,
@@ -281,9 +345,15 @@ class _RSASignatureContext(object):
         )
 
 
-@utils.register_interface(AsymmetricVerificationContext)
-class _RSAVerificationContext(object):
-    def __init__(self, backend, public_key, signature, padding, algorithm):
+class _RSAVerificationContext(AsymmetricVerificationContext):
+    def __init__(
+        self,
+        backend,
+        public_key: RSAPublicKey,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: hashes.HashAlgorithm,
+    ):
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
@@ -297,10 +367,10 @@ class _RSAVerificationContext(object):
         self._algorithm = algorithm
         self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         self._hash_ctx.update(data)
 
-    def verify(self):
+    def verify(self) -> None:
         return _rsa_sig_verify(
             self._backend,
             self._padding,
@@ -311,13 +381,17 @@ class _RSAVerificationContext(object):
         )
 
 
-@utils.register_interface(RSAPrivateKeyWithSerialization)
-class _RSAPrivateKey(object):
+class _RSAPrivateKey(RSAPrivateKey):
     def __init__(self, backend, rsa_cdata, evp_pkey):
         res = backend._lib.RSA_check_key(rsa_cdata)
         if res != 1:
             errors = backend._consume_errors_with_text()
             raise ValueError("Invalid private key", errors)
+
+        # Blinding is on by default in many versions of OpenSSL, but let's
+        # just be conservative here.
+        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
+        backend.openssl_assert(res == 1)
 
         self._backend = backend
         self._rsa_cdata = rsa_cdata
@@ -335,28 +409,28 @@ class _RSAPrivateKey(object):
 
     key_size = utils.read_only_property("_key_size")
 
-    def signer(self, padding, algorithm):
+    def signer(
+        self, padding: AsymmetricPadding, algorithm: hashes.HashAlgorithm
+    ) -> AsymmetricSignatureContext:
         _warn_sign_verify_deprecated()
         _check_not_prehashed(algorithm)
         return _RSASignatureContext(self._backend, self, padding, algorithm)
 
-    def decrypt(self, ciphertext, padding):
+    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
         key_size_bytes = (self.key_size + 7) // 8
         if key_size_bytes != len(ciphertext):
             raise ValueError("Ciphertext length must be equal to key size.")
 
         return _enc_dec_rsa(self._backend, self, ciphertext, padding)
 
-    def public_key(self):
+    def public_key(self) -> RSAPublicKey:
         ctx = self._backend._lib.RSAPublicKey_dup(self._rsa_cdata)
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
-        res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
-        self._backend.openssl_assert(res == 1)
         evp_pkey = self._backend._rsa_cdata_to_evp_pkey(ctx)
         return _RSAPublicKey(self._backend, ctx, evp_pkey)
 
-    def private_numbers(self):
+    def private_numbers(self) -> RSAPrivateNumbers:
         n = self._backend._ffi.new("BIGNUM **")
         e = self._backend._ffi.new("BIGNUM **")
         d = self._backend._ffi.new("BIGNUM **")
@@ -378,20 +452,25 @@ class _RSAPrivateKey(object):
         self._backend.openssl_assert(dmp1[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(dmq1[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(iqmp[0] != self._backend._ffi.NULL)
-        return rsa.RSAPrivateNumbers(
+        return RSAPrivateNumbers(
             p=self._backend._bn_to_int(p[0]),
             q=self._backend._bn_to_int(q[0]),
             d=self._backend._bn_to_int(d[0]),
             dmp1=self._backend._bn_to_int(dmp1[0]),
             dmq1=self._backend._bn_to_int(dmq1[0]),
             iqmp=self._backend._bn_to_int(iqmp[0]),
-            public_numbers=rsa.RSAPublicNumbers(
+            public_numbers=RSAPublicNumbers(
                 e=self._backend._bn_to_int(e[0]),
                 n=self._backend._bn_to_int(n[0]),
             ),
         )
 
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PrivateFormat,
+        encryption_algorithm: serialization.KeySerializationEncryption,
+    ) -> bytes:
         return self._backend._private_key_bytes(
             encoding,
             format,
@@ -401,15 +480,19 @@ class _RSAPrivateKey(object):
             self._rsa_cdata,
         )
 
-    def sign(self, data, padding, algorithm):
+    def sign(
+        self,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ) -> bytes:
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
         return _rsa_sig_sign(self._backend, padding, algorithm, self, data)
 
 
-@utils.register_interface(RSAPublicKeyWithSerialization)
-class _RSAPublicKey(object):
+class _RSAPublicKey(RSAPublicKey):
     def __init__(self, backend, rsa_cdata, evp_pkey):
         self._backend = backend
         self._rsa_cdata = rsa_cdata
@@ -427,7 +510,12 @@ class _RSAPublicKey(object):
 
     key_size = utils.read_only_property("_key_size")
 
-    def verifier(self, signature, padding, algorithm):
+    def verifier(
+        self,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: hashes.HashAlgorithm,
+    ) -> AsymmetricVerificationContext:
         _warn_sign_verify_deprecated()
         utils._check_bytes("signature", signature)
 
@@ -436,10 +524,10 @@ class _RSAPublicKey(object):
             self._backend, self, signature, padding, algorithm
         )
 
-    def encrypt(self, plaintext, padding):
+    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
         return _enc_dec_rsa(self._backend, self, plaintext, padding)
 
-    def public_numbers(self):
+    def public_numbers(self) -> RSAPublicNumbers:
         n = self._backend._ffi.new("BIGNUM **")
         e = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.RSA_get0_key(
@@ -447,20 +535,41 @@ class _RSAPublicKey(object):
         )
         self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
         self._backend.openssl_assert(e[0] != self._backend._ffi.NULL)
-        return rsa.RSAPublicNumbers(
+        return RSAPublicNumbers(
             e=self._backend._bn_to_int(e[0]),
             n=self._backend._bn_to_int(n[0]),
         )
 
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PublicFormat,
+    ) -> bytes:
         return self._backend._public_key_bytes(
             encoding, format, self, self._evp_pkey, self._rsa_cdata
         )
 
-    def verify(self, signature, data, padding, algorithm):
+    def verify(
+        self,
+        signature: bytes,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ) -> None:
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
         return _rsa_sig_verify(
             self._backend, padding, algorithm, self, signature, data
+        )
+
+    def recover_data_from_signature(
+        self,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> bytes:
+        _check_not_prehashed(algorithm)
+        return _rsa_sig_recover(
+            self._backend, padding, algorithm, self, signature
         )

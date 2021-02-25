@@ -2,14 +2,19 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import base64
+import typing
+from urllib.parse import quote, urlencode
 
-from six.moves.urllib.parse import quote, urlencode
 
-
-def _generate_uri(hotp, type_name, account_name, issuer, extra_parameters):
+def _generate_uri(
+    hotp,
+    type_name: str,
+    account_name: str,
+    issuer: typing.Optional[str],
+    extra_parameters,
+) -> str:
     parameters = [
         ("digits", hotp._length),
         ("secret", base64.b32encode(hotp._key)),

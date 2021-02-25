@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import typing
 
 import pytest
 
@@ -27,7 +28,7 @@ def _skip_hashfn_unsupported(backend, hashfn):
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestX963(object):
-    _algorithms_dict = {
+    _algorithms_dict: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
         "SHA-1": hashes.SHA1,
         "SHA-224": hashes.SHA224,
         "SHA-256": hashes.SHA256,

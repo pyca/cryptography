@@ -2107,10 +2107,10 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.issuer_name("subject")
+            builder.issuer_name("subject")  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            builder.issuer_name(object)
+            builder.issuer_name(object)  # type:ignore[arg-type]
 
     def test_issuer_name_may_only_be_set_once(self):
         name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
@@ -2123,10 +2123,10 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.subject_name("subject")
+            builder.subject_name("subject")  # type:ignore[arg-type]
 
         with pytest.raises(TypeError):
-            builder.subject_name(object)
+            builder.subject_name(object)  # type:ignore[arg-type]
 
     def test_subject_name_may_only_be_set_once(self):
         name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
@@ -2158,7 +2158,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.public_key(private_key)
+            builder.public_key(private_key)  # type: ignore[arg-type]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2172,7 +2172,9 @@ class TestCertificateBuilder(object):
 
     def test_serial_number_must_be_an_integer_type(self):
         with pytest.raises(TypeError):
-            x509.CertificateBuilder().serial_number(10.0)
+            x509.CertificateBuilder().serial_number(
+                10.0  # type:ignore[arg-type]
+            )
 
     def test_serial_number_must_be_non_negative(self):
         with pytest.raises(ValueError):
@@ -2283,10 +2285,14 @@ class TestCertificateBuilder(object):
 
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
-            x509.CertificateBuilder().not_valid_after(104204304504)
+            x509.CertificateBuilder().not_valid_after(
+                104204304504  # type:ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
-            x509.CertificateBuilder().not_valid_after(datetime.time())
+            x509.CertificateBuilder().not_valid_after(
+                datetime.time()  # type:ignore[arg-type]
+            )
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_after(
@@ -2327,10 +2333,14 @@ class TestCertificateBuilder(object):
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
-            x509.CertificateBuilder().not_valid_before(104204304504)
+            x509.CertificateBuilder().not_valid_before(
+                104204304504  # type:ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
-            x509.CertificateBuilder().not_valid_before(datetime.time())
+            x509.CertificateBuilder().not_valid_before(
+                datetime.time()  # type:ignore[arg-type]
+            )
 
         with pytest.raises(ValueError):
             x509.CertificateBuilder().not_valid_before(
@@ -2361,7 +2371,10 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_extension(object(), False)
+            builder.add_extension(
+                object(),  # type:ignore[arg-type]
+                False,
+            )
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -3756,13 +3769,16 @@ class TestCertificateSigningRequestBuilder(object):
     def test_set_invalid_subject(self):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.subject_name("NotAName")
+            builder.subject_name("NotAName")  # type:ignore[arg-type]
 
     def test_add_invalid_extension_type(self):
         builder = x509.CertificateSigningRequestBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_extension(object(), False)
+            builder.add_extension(
+                object(),  # type:ignore[arg-type]
+                False,
+            )
 
     def test_add_unsupported_extension(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
@@ -3935,11 +3951,15 @@ class TestCertificateSigningRequestBuilder(object):
     def test_add_attribute_bad_types(self, backend):
         request = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            request.add_attribute(b"not an oid", b"val")
+            request.add_attribute(
+                b"not an oid",  # type:ignore[arg-type]
+                b"val",
+            )
 
         with pytest.raises(TypeError):
             request.add_attribute(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD, 383
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+                383,  # type:ignore[arg-type]
             )
 
     def test_duplicate_attribute(self, backend):
@@ -4050,7 +4070,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "SAN")])
             )
             .add_extension(
-                x509.SubjectAlternativeName([FakeGeneralName("")]),
+                x509.SubjectAlternativeName(
+                    [FakeGeneralName("")]  # type:ignore[list-item]
+                ),
                 critical=False,
             )
         )
@@ -4743,15 +4765,23 @@ class TestNameAttribute(object):
 
     def test_init_bad_oid(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(None, "value")
+            x509.NameAttribute(
+                None,  # type:ignore[arg-type]
+                "value",
+            )
 
     def test_init_bad_value(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(x509.ObjectIdentifier("2.999.1"), b"bytes")
+            x509.NameAttribute(
+                x509.ObjectIdentifier("2.999.1"),
+                b"bytes",  # type:ignore[arg-type]
+            )
 
     def test_init_none_value(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, None)
+            x509.NameAttribute(
+                NameOID.ORGANIZATION_NAME, None  # type:ignore[arg-type]
+            )
 
     def test_init_bad_country_code_value(self):
         with pytest.raises(ValueError):
@@ -4814,7 +4844,9 @@ class TestRelativeDistinguishedName(object):
 
     def test_init_not_nameattribute(self):
         with pytest.raises(TypeError):
-            x509.RelativeDistinguishedName(["not-a-NameAttribute"])
+            x509.RelativeDistinguishedName(
+                ["not-a-NameAttribute"]  # type:ignore[list-item]
+            )
 
     def test_init_duplicate_attribute(self):
         with pytest.raises(ValueError):

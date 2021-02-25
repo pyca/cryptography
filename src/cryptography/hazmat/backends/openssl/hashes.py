@@ -2,17 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
-
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(hashes.HashContext)
-class _HashContext(object):
-    def __init__(self, backend, algorithm, ctx=None):
+class _HashContext(hashes.HashContext):
+    def __init__(self, backend, algorithm: hashes.HashAlgorithm, ctx=None):
         self._algorithm = algorithm
 
         self._backend = backend
@@ -37,9 +33,11 @@ class _HashContext(object):
 
         self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    @property
+    def algorithm(self) -> hashes.HashAlgorithm:
+        return self._algorithm
 
-    def copy(self):
+    def copy(self) -> "_HashContext":
         copied_ctx = self._backend._lib.EVP_MD_CTX_new()
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.EVP_MD_CTX_free
@@ -48,14 +46,14 @@ class _HashContext(object):
         self._backend.openssl_assert(res != 0)
         return _HashContext(self._backend, self.algorithm, ctx=copied_ctx)
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         data_ptr = self._backend._ffi.from_buffer(data)
         res = self._backend._lib.EVP_DigestUpdate(
             self._ctx, data_ptr, len(data)
         )
         self._backend.openssl_assert(res != 0)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         if isinstance(self.algorithm, hashes.ExtendableOutputFunction):
             # extendable output functions use a different finalize
             return self._finalize_xof()
@@ -71,7 +69,7 @@ class _HashContext(object):
             )
             return self._backend._ffi.buffer(buf)[: outlen[0]]
 
-    def _finalize_xof(self):
+    def _finalize_xof(self) -> bytes:
         buf = self._backend._ffi.new(
             "unsigned char[]", self.algorithm.digest_size
         )

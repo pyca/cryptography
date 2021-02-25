@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import time
 import zipfile
 
 import requests
@@ -9,11 +10,25 @@ from urllib3.util.retry import Retry
 
 
 def get_response(session, url, token):
+    # Retry on non-502s
+    for i in range(5):
+        response = session.get(
+            url, headers={"Authorization": "token " + token}
+        )
+        if response.status_code != 200:
+            print(
+                "HTTP error ({}) fetching {}, retrying".format(
+                    response.status_code, url
+                )
+            )
+            time.sleep(2)
+            continue
+        return response
     response = session.get(url, headers={"Authorization": "token " + token})
     if response.status_code != 200:
-        raise ValueError("Got HTTP {} fetching {}: ".format(
-            response.status_code, url
-        ))
+        raise ValueError(
+            "Got HTTP {} fetching {}: ".format(response.status_code, url)
+        )
     return response
 
 
@@ -28,9 +43,7 @@ def main(platform, target):
         raise ValueError("Invalid platform")
 
     session = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(
-        max_retries=Retry()
-    )
+    adapter = requests.adapters.HTTPAdapter(max_retries=Retry())
     session.mount("https://", adapter)
     session.mount("http://", adapter)
 
@@ -38,7 +51,7 @@ def main(platform, target):
     print("Looking for: {}".format(target))
     runs_url = (
         "https://api.github.com/repos/pyca/infra/actions/workflows/"
-        "{}/runs?branch=master&status=success".format(workflow)
+        "{}/runs?branch=main&status=success".format(workflow)
     )
 
     response = get_response(session, runs_url, token).json()
@@ -54,6 +67,7 @@ def main(platform, target):
                 os.path.join(path, artifact["name"])
             )
             return
+    raise ValueError("Didn't find {} in {}".format(target, response))
 
 
 if __name__ == "__main__":

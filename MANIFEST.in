@@ -7,6 +7,7 @@ include LICENSE.PSF
 include README.rst
 
 include pyproject.toml
+recursive-include src py.typed
 
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
@@ -18,7 +19,7 @@ recursive-exclude vectors *
 
 recursive-exclude .github *
 
-exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt tox.ini
+exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt tox.ini mypy.ini
 
 recursive-exclude .zuul.d *
 recursive-exclude .zuul.playbooks *

@@ -80,7 +80,7 @@ class TestCMAC(object):
 
         cmac = CMAC(AES(binascii.unhexlify(key)), backend)
         cmac.update(binascii.unhexlify(message))
-        assert cmac.verify(binascii.unhexlify(output)) is None
+        cmac.verify(binascii.unhexlify(output))
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
@@ -122,7 +122,7 @@ class TestCMAC(object):
 
         cmac = CMAC(TripleDES(binascii.unhexlify(key)), backend)
         cmac.update(binascii.unhexlify(message))
-        assert cmac.verify(binascii.unhexlify(output)) is None
+        cmac.verify(binascii.unhexlify(output))
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
@@ -145,7 +145,7 @@ class TestCMAC(object):
     def test_invalid_algorithm(self, backend):
         key = b"0102030405"
         with pytest.raises(TypeError):
-            CMAC(ARC4(key), backend)
+            CMAC(ARC4(key), backend)  # type: ignore[arg-type]
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
@@ -181,10 +181,10 @@ class TestCMAC(object):
         cmac = CMAC(AES(key), backend)
 
         with pytest.raises(TypeError):
-            cmac.update("")
+            cmac.update("")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            cmac.verify("")
+            cmac.verify("")  # type: ignore[arg-type]
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(

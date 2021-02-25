@@ -2,13 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
-from cryptography import utils
-
 
 class ObjectIdentifier(object):
-    def __init__(self, dotted_string):
+    def __init__(self, dotted_string: str):
         self._dotted_string = dotted_string
 
         nodes = self._dotted_string.split(".")
@@ -68,10 +64,12 @@ class ObjectIdentifier(object):
         return hash(self.dotted_string)
 
     @property
-    def _name(self):
+    def _name(self) -> str:
         # Lazy import to avoid an import cycle
         from cryptography.x509.oid import _OID_NAMES
 
         return _OID_NAMES.get(self, "Unknown OID")
 
-    dotted_string = utils.read_only_property("_dotted_string")
+    @property
+    def dotted_string(self) -> str:
+        return self._dotted_string

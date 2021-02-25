@@ -179,7 +179,7 @@ class TestX448Exchange(object):
     def test_invalid_type_exchange(self, backend):
         key = X448PrivateKey.generate()
         with pytest.raises(TypeError):
-            key.exchange(object())
+            key.exchange(object())  # type: ignore[arg-type]
 
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
@@ -201,14 +201,14 @@ class TestX448Exchange(object):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None,
+                None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(ValueError):

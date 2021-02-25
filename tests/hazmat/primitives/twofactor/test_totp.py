@@ -80,8 +80,7 @@ class TestTOTP(object):
         totp_value = params["totp"]
 
         totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
-
-        assert totp.verify(totp_value, time) is None
+        totp.verify(totp_value, time)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
@@ -96,8 +95,7 @@ class TestTOTP(object):
         totp_value = params["totp"]
 
         totp = TOTP(secret, 8, hashes.SHA256(), 30, backend)
-
-        assert totp.verify(totp_value, time) is None
+        totp.verify(totp_value, time)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
@@ -112,8 +110,7 @@ class TestTOTP(object):
         totp_value = params["totp"]
 
         totp = TOTP(secret, 8, hashes.SHA512(), 30, backend)
-
-        assert totp.verify(totp_value, time) is None
+        totp.verify(totp_value, time)
 
     def test_invalid_verify(self, backend):
         secret = b"12345678901234567890"

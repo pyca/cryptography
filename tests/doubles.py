@@ -3,40 +3,37 @@
 # for complete details.
 
 
-from cryptography import utils
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers.modes import Mode
 
 
-@utils.register_interface(CipherAlgorithm)
-class DummyCipherAlgorithm(object):
+class DummyCipherAlgorithm(CipherAlgorithm):
     name = "dummy-cipher"
     block_size = 128
-    key_size = None
+    key_size = 256
+    key_sizes = frozenset([256])
 
 
-@utils.register_interface(Mode)
-class DummyMode(object):
+class DummyMode(Mode):
     name = "dummy-mode"
 
-    def validate_for_algorithm(self, algorithm):
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
         pass
 
 
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHashAlgorithm(object):
+class DummyHashAlgorithm(hashes.HashAlgorithm):
     name = "dummy-hash"
     block_size = None
-    digest_size = None
+    digest_size = 32
 
 
-@utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeySerializationEncryption(object):
+class DummyKeySerializationEncryption(
+    serialization.KeySerializationEncryption
+):
     pass
 
 
-@utils.register_interface(padding.AsymmetricPadding)
-class DummyAsymmetricPadding(object):
+class DummyAsymmetricPadding(padding.AsymmetricPadding):
     name = "dummy-padding"

@@ -64,31 +64,43 @@ class TestHKDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt="foo", info=None, backend=backend)
+            HKDF(
+                hashes.SHA256(),
+                16,
+                salt="foo",  # type: ignore[arg-type]
+                info=None,
+                backend=backend,
+            )
 
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=None, info="foo", backend=backend)
+            HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info="foo",  # type: ignore[arg-type]
+                backend=backend,
+            )
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.derive("foo")
+            hkdf.derive("foo")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify("foo", b"bar")
+            hkdf.verify("foo", b"bar")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify(b"foo", "bar")
+            hkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
 
     def test_derive_short_output(self, backend):
         hkdf = HKDF(hashes.SHA256(), 4, salt=None, info=None, backend=backend)
@@ -174,7 +186,7 @@ class TestHKDFExpand(object):
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
         hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
-        assert hkdf.verify(prk, binascii.unhexlify(okm)) is None
+        hkdf.verify(prk, binascii.unhexlify(okm))
 
     def test_invalid_verify(self, backend):
         prk = binascii.unhexlify(
@@ -201,7 +213,7 @@ class TestHKDFExpand(object):
         hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(TypeError):
-            hkdf.derive("first")
+            hkdf.derive("first")  # type: ignore[arg-type]
 
 
 def test_invalid_backend():

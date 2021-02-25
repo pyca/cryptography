@@ -2,11 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import collections
 import threading
 import types
+import typing
 
 import cryptography
 from cryptography import utils
@@ -91,7 +91,7 @@ def _openssl_assert(lib, ok, errors=None):
 
 def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
-    conditional_lib._original_lib = lib
+    conditional_lib._original_lib = lib  # type: ignore[attr-defined]
     excluded_names = set()
     for condition, names_cb in conditional_names.items():
         if not getattr(lib, condition):
@@ -109,7 +109,7 @@ class Binding(object):
     OpenSSL API wrapper.
     """
 
-    lib = None
+    lib: typing.ClassVar = None
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()

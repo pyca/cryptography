@@ -2,8 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
 
 def cryptography_has_ec2m():
     return [
@@ -200,6 +198,7 @@ def cryptography_has_openssl_cleanup():
 
 def cryptography_has_tlsv13():
     return [
+        "TLS1_3_VERSION",
         "SSL_OP_NO_TLSv1_3",
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",

@@ -41,15 +41,15 @@ Merge requirements
 Because cryptography is so complex, and the implications of getting it wrong so
 devastating, ``cryptography`` has a strict merge policy for committers:
 
-* Patches must *never* be pushed directly to ``master``, all changes (even the
+* Patches must *never* be pushed directly to ``main``, all changes (even the
   most trivial typo fixes!) must be submitted as a pull request.
 * A committer may *never* merge their own pull request, a second party must
   merge their changes. If multiple people work on a pull request, it must be
   merged by someone who did not work on it.
 * A patch that breaks tests, or introduces regressions by changing or removing
   existing tests should not be merged. Tests must always be passing on
-  ``master``.
-* If somehow the tests get into a failing state on ``master`` (such as by a
+  ``main``.
+* If somehow the tests get into a failing state on ``main`` (such as by a
   backwards incompatible release of a dependency) no pull requests may be
   merged until this is rectified.
 * All merged patches must have 100% test coverage.

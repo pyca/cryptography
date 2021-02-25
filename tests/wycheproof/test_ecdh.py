@@ -66,6 +66,7 @@ def test_ecdh(backend, wycheproof):
         public_key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testcase["public"]), backend
         )
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
     except NotImplementedError:
         assert wycheproof.has_flag("UnnamedCurve")
         return
@@ -93,6 +94,7 @@ def test_ecdh(backend, wycheproof):
 )
 def test_ecdh_ecpoint(backend, wycheproof):
     curve = _CURVES[wycheproof.testgroup["curve"]]
+    assert isinstance(curve, ec.EllipticCurve)
     _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
 
     private_key = ec.derive_private_key(

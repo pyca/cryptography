@@ -3,29 +3,216 @@ on:
   pull_request: {}
   push:
     branches:
-      - master
+      - main
       - '*.*.x'
     tags:
+      - '*.*'
       - '*.*.*'
 
 jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
+          - {VERSION: "pypy-3.6", TOXENV: "pypy3"}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3"}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.4"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.1"}}
+        RUST:
+          - stable
+    name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.RUST }}
+          override: true
+          default: true
+      - run: git clone --depth=1 https://github.com/google/wycheproof
+      - run: python -m pip install tox requests coverage
+      - name: Compute config hash and set config vars
+        run: |
+          DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
+          CONFIG_FLAGS="$DEFAULT_CONFIG_FLAGS $CONFIG_FLAGS"
+          CONFIG_HASH=$(echo "$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
+          echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
+          echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "OSSL_INFO=${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_FLAGS}" >> $GITHUB_ENV
+          echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_HASH}" >> $GITHUB_ENV
+        env:
+          CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
+        if: matrix.PYTHON.OPENSSL
+      - name: Load cache
+        uses: actions/cache@v2.1.4
+        id: ossl-cache
+        with:
+          path: ${{ github.workspace }}/osslcache
+          # When altering the openssl build process you may need to increment the value on the end of this cache key
+          # so that you can prevent it from fetching the cache and skipping the build step.
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-1
+        if: matrix.PYTHON.OPENSSL
+      - name: Build custom OpenSSL/LibreSSL
+        run: .github/workflows/build_openssl.sh
+        env:
+          TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
+          VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
+        if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
+      - name: Set CFLAGS/LDFLAGS
+        run: |
+          echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
+          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib" >> $GITHUB_ENV
+        if: matrix.PYTHON.OPENSSL
+      - name: Tests
+        run: |
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
+        if: matrix.PYTHON.COVERAGE != 'false'
+
+  linux-distros:
+    runs-on: ubuntu-latest
+    container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
+    strategy:
+      matrix:
+        IMAGE:
+          - {IMAGE: "centos8", TOXENV: "py36"}
+          - {IMAGE: "centos8-fips", TOXENV: "py36", FIPS: true}
+          - {IMAGE: "buster", TOXENV: "py37"}
+          - {IMAGE: "bullseye", TOXENV: "py39"}
+          - {IMAGE: "sid", TOXENV: "py39"}
+          - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
+          - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py38"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py38-randomorder"}
+          - {IMAGE: "fedora", TOXENV: "py39"}
+          - {IMAGE: "alpine", TOXENV: "py38"}
+    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
+      - run: |
+          echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
+          echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
+        if: matrix.IMAGE.FIPS
+      - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
+        env:
+          TOXENV: ${{ matrix.IMAGE.TOXENV }}
+          RUSTUP_HOME: /root/.rustup
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+
+  linux-rust:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - {VERSION: "3.9", TOXENV: "py39"}
+        RUST:
+          # Cover MSRV (and likely next MSRV) and in-dev versions
+          - 1.41.0
+          - 1.45.0
+          - beta
+          - nightly
+    name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
+
+      - name: Setup python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.RUST }}
+          override: true
+          default: true
+      - run: git clone --depth=1 https://github.com/google/wycheproof
+      - run: python -m pip install tox coverage
+      - name: Tests
+        run: |
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
+
   macos:
     runs-on: macos-latest
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27"}
-          - {VERSION: "3.5", TOXENV: "py35"}
-          - {VERSION: "3.6", TOXENV: "py36"}
-          - {VERSION: "3.7", TOXENV: "py37"}
-          - {VERSION: "3.8", TOXENV: "py38"}
-    name: "Python ${{ matrix.PYTHON.VERSION }} on macOS"
+          - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
+        RUST:
+          - stable
+    name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Setup python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.2.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.RUST }}
+          override: true
+          default: true
 
       - run: python -m pip install tox requests coverage
 
@@ -33,67 +220,143 @@ jobs:
 
       - name: Download OpenSSL
         run: |
-          python .github/workflows/download_openssl.py macos openssl-macos
+          python .github/workflows/download_openssl.py macos openssl-macos-x86-64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tests
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-            LDFLAGS="${HOME}/openssl-macos/lib/libcrypto.a ${HOME}/openssl-macos/lib/libssl.a" \
-            CFLAGS="-I${HOME}/openssl-macos/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9 -march=core2" \
+            LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
+            CFLAGS="-I${HOME}/openssl-macos-x86-64/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
 
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on macOS"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "${{ matrix.PYTHON.TOXENV }} on macOS"
 
   windows:
     runs-on: windows-latest
     strategy:
       matrix:
         WINDOWS:
-          - {ARCH: 'x86', WINDOWS: 'win32'}
-          - {ARCH: 'x64', WINDOWS: 'win64'}
+          - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
+          - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "2.7", TOXENV: "py27", MSVC_VERSION: "2010"}
-          - {VERSION: "3.5", TOXENV: "py35", MSVC_VERSION: "2019"}
-          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019"}
-          - {VERSION: "3.7", TOXENV: "py37", MSVC_VERSION: "2019"}
-          - {VERSION: "3.8", TOXENV: "py38", MSVC_VERSION: "2019"}
-    name: "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
+          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
+          - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+        RUST:
+          - stable
+        JOB_NUMBER: [0, 1, 2, 3]
+    name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Setup python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.2.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.RUST }}
+          override: true
+          default: true
+          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - name: Install MSVC for Python 2.7
-        run: |
-            Invoke-WebRequest -Uri https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/VCForPython27.msi -OutFile VCForPython27.msi
-            Start-Process msiexec -Wait -ArgumentList @('/i', 'VCForPython27.msi', '/qn', 'ALLUSERS=1')
-            Remove-Item VCForPython27.msi -Force
-        shell: powershell
-        if: matrix.PYTHON.VERSION == '2.7'
       - run: python -m pip install tox requests coverage
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "::set-env name=INCLUDE::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;%INCLUDE%"
-            echo "::set-env name=LIB::C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;%LIB%"
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_ENV
+            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
       - run: git clone https://github.com/google/wycheproof
 
-      - run: tox -r -- --color=yes --wycheproof-root=wycheproof
+      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
 
-      - name: Upload coverage
-        run: |
-          curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash || curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Python ${{ matrix.PYTHON.VERSION }} on ${{ matrix.WINDOWS.WINDOWS }}"
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
+
+  linux-downstream:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        DOWNSTREAM:
+          - paramiko
+          - pyopenssl
+          - twisted
+          - aws-encryption-sdk
+          - dynamodb-encryption-sdk
+          - certbot
+          - certbot-josepy
+        RUST:
+          - stable
+        PYTHON:
+          - 3.7
+    name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: ${{ matrix.PYTHON }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.RUST }}
+          override: true
+          default: true
+      - run: python -m pip install -U pip wheel
+      - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
+      - run: pip uninstall -y enum34
+      - run: pip install .
+      - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
+
+  docs-linkcheck:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    name: "linkcheck"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: 3.9
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          default: true
+      - run: python -m pip install -U tox
+      - run: tox -r --  --color=yes
+        env:
+          TOXENV: docs-linkcheck
