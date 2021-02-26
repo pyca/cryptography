@@ -2,9 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
+
 
 class ObjectIdentifier(object):
-    def __init__(self, dotted_string: str):
+    def __init__(self, dotted_string: str) -> None:
         self._dotted_string = dotted_string
 
         nodes = self._dotted_string.split(".")
@@ -46,21 +48,21 @@ class ObjectIdentifier(object):
                 % (self._dotted_string)
             )
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
         return self.dotted_string == other.dotted_string
 
-    def __ne__(self, other):
+    def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<ObjectIdentifier(oid={}, name={})>".format(
             self.dotted_string, self._name
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.dotted_string)
 
     @property
