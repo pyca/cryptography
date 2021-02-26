@@ -10,7 +10,6 @@ import ipaddress
 import typing
 from enum import Enum
 
-from cryptography import utils
 from cryptography.hazmat._der import (
     BIT_STRING,
     DERReader,
@@ -1844,7 +1843,9 @@ class IssuingDistributionPoint(ExtensionType):
         return self._only_contains_ca_certs
 
     @property
-    def only_some_reasons(self) -> typing.Optional[typing.FrozenSet[ReasonFlags]]:
+    def only_some_reasons(
+        self,
+    ) -> typing.Optional[typing.FrozenSet[ReasonFlags]]:
         return self._only_some_reasons
 
     @property
