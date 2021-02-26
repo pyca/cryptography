@@ -4,7 +4,7 @@
 
 import typing
 
-from cryptography.hazmat._oid import ObjectIdentifier
+from cryptography.hazmat._oid import ObjectIdentifier as ObjectIdentifier
 from cryptography.hazmat.primitives import hashes
 
 
