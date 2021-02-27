@@ -101,11 +101,7 @@ class ExtensionNotFound(Exception):
 
 
 class ExtensionType(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
-    def oid(self) -> ObjectIdentifier:
-        """
-        Returns the oid associated with the given extension type.
-        """
+    oid: ObjectIdentifier
 
 
 class Extensions(object):
@@ -137,9 +133,8 @@ class Extensions(object):
             if isinstance(ext.value, extclass):
                 return ext
 
-        oid = typing.cast(ObjectIdentifier, extclass.oid)
         raise ExtensionNotFound(
-            "No {} extension was found".format(extclass), oid
+            "No {} extension was found".format(extclass), extclass.oid
         )
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_extensions")
