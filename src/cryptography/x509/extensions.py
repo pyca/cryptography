@@ -101,7 +101,7 @@ class ExtensionNotFound(Exception):
 
 
 class ExtensionType(metaclass=abc.ABCMeta):
-    oid: ObjectIdentifier
+    oid: typing.ClassVar[ObjectIdentifier]
 
 
 class Extensions(object):
