@@ -106,9 +106,9 @@ class ExtensionType(metaclass=abc.ABCMeta):
 
 class Extensions(object):
     def __init__(
-        self, extensions: typing.List["Extension[ExtensionType]"]
+        self, extensions: typing.Iterable["Extension[ExtensionType]"]
     ) -> None:
-        self._extensions = extensions
+        self._extensions = list(extensions)
 
     def get_extension_for_oid(
         self, oid: ObjectIdentifier
@@ -1685,7 +1685,7 @@ class IssuingDistributionPoint(ExtensionType):
 
     def __init__(
         self,
-        full_name: typing.Optional[typing.List[GeneralName]],
+        full_name: typing.Optional[typing.Iterable[GeneralName]],
         relative_name: typing.Optional[RelativeDistinguishedName],
         only_contains_user_certs: bool,
         only_contains_ca_certs: bool,
@@ -1693,6 +1693,9 @@ class IssuingDistributionPoint(ExtensionType):
         indirect_crl: bool,
         only_contains_attribute_certs: bool,
     ) -> None:
+        if full_name is not None:
+            full_name = list(full_name)
+
         if only_some_reasons and (
             not isinstance(only_some_reasons, frozenset)
             or not all(isinstance(x, ReasonFlags) for x in only_some_reasons)
