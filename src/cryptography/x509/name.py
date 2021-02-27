@@ -48,7 +48,7 @@ _NAMEOID_TO_NAME = {
 }
 
 
-def _escape_dn_value(val):
+def _escape_dn_value(val: str) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
@@ -73,7 +73,9 @@ def _escape_dn_value(val):
 
 
 class NameAttribute(object):
-    def __init__(self, oid: ObjectIdentifier, value: str, _type=_SENTINEL):
+    def __init__(
+        self, oid: ObjectIdentifier, value: str, _type=_SENTINEL
+    ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
@@ -156,7 +158,9 @@ class RelativeDistinguishedName(object):
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(self) -> str:
@@ -220,7 +224,9 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
