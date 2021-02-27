@@ -1576,9 +1576,9 @@ X.509 Extensions
 
     .. attribute:: oid
 
-        :type: :class:`~cryptography.x509.ObjectIdentifier`
+        :type: :class:`ObjectIdentifier`
 
-        Returns the oid associated with the given extension type.
+        Returns the OID associated with the given extension type.
 
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
 
