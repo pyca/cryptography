@@ -142,28 +142,7 @@ class Extensions(object):
             "No {} extension was found".format(extclass), oid
         )
 
-    @typing.overload
-    def __getitem__(self, idx: int) -> "Extension[ExtensionType]":
-        ...
-
-    @typing.overload
-    def __getitem__(
-        self, idx: slice
-    ) -> typing.Sequence["Extension[ExtensionType]"]:
-        ...
-
-    def __getitem__(
-        self, idx: typing.Union[int, slice]
-    ) -> typing.Union[
-        "Extension[ExtensionType]", typing.Sequence["Extension[ExtensionType]"]
-    ]:
-        return self._extensions[idx]
-
-    def __len__(self) -> int:
-        return len(self._extensions)
-
-    def __iter__(self) -> typing.Iterator["Extension[ExtensionType]"]:
-        return iter(self._extensions)
+    __len__, __iter__, __getitem__ = _make_sequence_methods("_extensions")
 
     def __repr__(self) -> str:
         return "<Extensions({})>".format(self._extensions)
