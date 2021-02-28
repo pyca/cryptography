@@ -1814,7 +1814,7 @@ class TestRSACertificateRequest(object):
         assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
         assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
         if (
-            # This only works correctly in OpenSSL 1.1.0f+ and 1.0.2l+
+            # This only works correctly in OpenSSL 1.1.0f+
             backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
         ):
             assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
