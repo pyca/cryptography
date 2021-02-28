@@ -12,8 +12,8 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
     HOTP,
     _ALLOWED_HASH_TYPES,
+    _generate_uri,
 )
-from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
 class TOTP(object):
