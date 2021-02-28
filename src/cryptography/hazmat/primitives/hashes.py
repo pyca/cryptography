@@ -255,3 +255,9 @@ class BLAKE2s(HashAlgorithm):
     @property
     def digest_size(self) -> int:
         return self._digest_size
+
+
+class SM3(HashAlgorithm):
+    name = "sm3"
+    digest_size = 32
+    block_size = 64
