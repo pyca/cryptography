@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
     HOTP,
     _ALLOWED_HASH_TYPES,
-    _generate_uri
+    _generate_uri,
 )
 
 
