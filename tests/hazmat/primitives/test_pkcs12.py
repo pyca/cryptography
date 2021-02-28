@@ -327,8 +327,5 @@ def test_pkcs12_ordering():
     a_idx = p12.find(a_name.encode("utf-8"))
     b_idx = p12.find(b_name.encode("utf-8"))
     c_idx = p12.find(c_name.encode("utf-8"))
-    assert a_idx >= 0
-    assert b_idx >= 0
-    assert c_idx >= 0
 
-    assert a_idx < b_idx < c_idx  # This assertion trips.
+    assert a_idx < b_idx < c_idx
