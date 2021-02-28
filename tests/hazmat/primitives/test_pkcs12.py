@@ -284,25 +284,25 @@ def test_pkcs12_ordering():
     https://github.com/pyca/cryptography/issues/5872
     This test ensures our ordering is correct going forward.
     """
+
     def make_cert(name):
         key = ec.generate_private_key(ec.SECP256R1)
-        subject = x509.Name([
-            x509.NameAttribute(x509.NameOID.COMMON_NAME, name),
-        ])
+        subject = x509.Name(
+            [
+                x509.NameAttribute(x509.NameOID.COMMON_NAME, name),
+            ]
+        )
         now = datetime.utcnow()
-        cert = x509.CertificateBuilder().subject_name(
-            subject
-        ).issuer_name(
-            subject
-        ).public_key(
-            key.public_key()
-        ).serial_number(
-            x509.random_serial_number()
-        ).not_valid_before(
-            now
-        ).not_valid_after(
-            now
-        ).sign(key, hashes.SHA256())
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(subject)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now)
+            .sign(key, hashes.SHA256())
+        )
         return (key, cert)
 
     # Make some certificates with distinct names.
@@ -315,8 +315,8 @@ def test_pkcs12_ordering():
 
     # Bundle them in a PKCS#12 file in order A, B, C.
     p12 = serialize_key_and_certificates(
-        b"p12", a_key, a_cert, [b_cert, c_cert],
-        serialization.NoEncryption())
+        b"p12", a_key, a_cert, [b_cert, c_cert], serialization.NoEncryption()
+    )
 
     # Parse them out. The API should report them in the same order.
     (key, cert, certs) = load_key_and_certificates(p12, None)
