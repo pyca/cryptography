@@ -286,7 +286,7 @@ def test_pkcs12_ordering():
     """
 
     def make_cert(name):
-        key = ec.generate_private_key(ec.SECP256R1)
+        key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name(
             [
                 x509.NameAttribute(x509.NameOID.COMMON_NAME, name),
