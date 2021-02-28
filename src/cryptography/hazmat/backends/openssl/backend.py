@@ -2524,7 +2524,9 @@ class Backend(object):
         if sk_x509_ptr[0] != self._ffi.NULL:
             sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
             num = self._lib.sk_X509_num(sk_x509_ptr[0])
-            for i in range(num):
+            # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
+            # certificates.
+            for i in reversed(range(num)):
                 x509 = self._lib.sk_X509_value(sk_x509, i)
                 self.openssl_assert(x509 != self._ffi.NULL)
                 x509 = self._ffi.gc(x509, self._lib.X509_free)
@@ -2567,9 +2569,7 @@ class Backend(object):
             sk_x509 = self._lib.sk_X509_new_null()
             sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
 
-            # reverse the list when building the stack so that they're encoded
-            # in the order they were originally provided. it is a mystery
-            for ca in reversed(cas):
+            for ca in cas:
                 res = self._lib.sk_X509_push(sk_x509, ca._x509)
                 backend.openssl_assert(res >= 1)
 
