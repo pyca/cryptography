@@ -324,8 +324,8 @@ def test_pkcs12_ordering():
     assert certs == [b_cert, c_cert]
 
     # The ordering in the PKCS#12 file itself should also match.
-    a_idx = p12.find(a_name.encode("utf-8"))
-    b_idx = p12.find(b_name.encode("utf-8"))
-    c_idx = p12.find(c_name.encode("utf-8"))
+    a_idx = p12.index(a_name.encode("utf-8"))
+    b_idx = p12.index(b_name.encode("utf-8"))
+    c_idx = p12.index(c_name.encode("utf-8"))
 
     assert a_idx < b_idx < c_idx
