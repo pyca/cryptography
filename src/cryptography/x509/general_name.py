@@ -26,14 +26,14 @@ _GENERAL_NAMES = {
 
 
 class UnsupportedGeneralNameType(Exception):
-    def __init__(self, msg, type):
+    def __init__(self, msg: str, type: int) -> None:
         super(UnsupportedGeneralNameType, self).__init__(msg)
         self.type = type
 
 
 class GeneralName(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def value(self):
+    def value(self) -> typing.Any:
         """
         Return the value of the object
         """
@@ -66,7 +66,7 @@ class RFC822Name(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(cls, value: str) -> "RFC822Name":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
@@ -108,12 +108,12 @@ class DNSName(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(cls, value: str) -> "DNSName":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<DNSName(value={0!r})>".format(self.value)
 
     def __eq__(self, other: object) -> bool:
@@ -150,7 +150,9 @@ class UniformResourceIdentifier(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(
+        cls, value: str
+    ) -> "UniformResourceIdentifier":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
