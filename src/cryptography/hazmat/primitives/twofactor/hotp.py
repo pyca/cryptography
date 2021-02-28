@@ -3,8 +3,10 @@
 # for complete details.
 
 
+import base64
 import struct
 import typing
+from urllib.parse import quote, urlencode
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
@@ -12,10 +14,39 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 from cryptography.hazmat.primitives.twofactor import InvalidToken
-from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
 _ALLOWED_HASH_TYPES = typing.Union[SHA1, SHA256, SHA512]
+
+
+def _generate_uri(
+    hotp: "HOTP",
+    type_name: str,
+    account_name: str,
+    issuer: typing.Optional[str],
+    extra_parameters,
+) -> str:
+    parameters = [
+        ("digits", hotp._length),
+        ("secret", base64.b32encode(hotp._key)),
+        ("algorithm", hotp._algorithm.name.upper()),
+    ]
+
+    if issuer is not None:
+        parameters.append(("issuer", issuer))
+
+    parameters.extend(extra_parameters)
+
+    uriparts = {
+        "type": type_name,
+        "label": (
+            "%s:%s" % (quote(issuer), quote(account_name))
+            if issuer
+            else quote(account_name)
+        ),
+        "parameters": urlencode(parameters),
+    }
+    return "otpauth://{type}/{label}?{parameters}".format(**uriparts)
 
 
 class HOTP(object):
