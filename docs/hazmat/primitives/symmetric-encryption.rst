@@ -201,7 +201,7 @@ Algorithms
     .. versionadded:: 35.0.0
 
     SM4 is a block cipher developed by the Chinese Government and standardized
-    in the `GB/T 32907-2016`_. It is used in the Chinese WAPI
+    in the GB/T 32907-2016. It is used in the Chinese WAPI
     (Wired Authentication and Privacy Infrastructure) standard. (An English
     description is available at `draft-ribose-cfrg-sm4-10`_.) This block
     cipher should generally be used for compliance and compatibility
@@ -830,5 +830,4 @@ Exceptions
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: https://www.openpgp.org/
 .. _`disk encryption`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS
-.. _`GB/T 32907-2016`: http://www.cnnic.cn/gcjsyj/qyjsyj/mmsfbz/sm4/201312/t20131204_43341.htm
 .. _`draft-ribose-cfrg-sm4-10`: https://tools.ietf.org/html/draft-ribose-cfrg-sm4-10
