@@ -331,5 +331,4 @@ def test_pkcs12_ordering():
     assert b_idx >= 0
     assert c_idx >= 0
 
-    print(f"{a_idx} {b_idx} {c_idx}")
     assert a_idx < b_idx < c_idx  # This assertion trips.
