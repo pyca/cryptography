@@ -1,0 +1,17 @@
+# Vectors from draft-ribose-cfrg-sm4-10.txt. Reformatted to work with the NIST loader
+# SM4 OFB
+[ENCRYPT]
+
+# A.2.3.1
+COUNT = 0
+KEY = 0123456789abcdeffedcba9876543210
+PLAINTEXT = aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffaaaaaaaabbbbbbbb
+IV = 000102030405060708090a0b0c0d0e0f
+CIPHERTEXT = ac3236cb861dd316e6413b4e3c7524b71d01aca2487ca582cbf5463e6698539b
+
+# A.2.3.2
+COUNT = 1
+KEY = fedcba98765432100123456789abcdef
+PLAINTEXT = aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffaaaaaaaabbbbbbbb
+IV = 000102030405060708090a0b0c0d0e0f
+CIPHERTEXT = 5dcccd25a84ba16560d7f2658870684933fa16bd5cd9c856cacaa1e101897a97

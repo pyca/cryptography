@@ -1,0 +1,28 @@
+# Vectors from draft-ribose-cfrg-sm4-10.txt. Reformatted to work with the NIST loader
+# Originally from GB/T 32907-2016 Example 1
+# SM4 ECB
+[ENCRYPT]
+
+# A.1.1/A.1.2
+COUNT = 0
+KEY = 0123456789abcdeffedcba9876543210
+PLAINTEXT = 0123456789abcdeffedcba9876543210
+CIPHERTEXT = 681edf34d206965e86b3e94f536e4246
+
+# A.1.4/A.1.5
+COUNT = 1
+KEY = fedcba98765432100123456789abcdef
+PLAINTEXT = 000102030405060708090a0b0c0d0e0f
+CIPHERTEXT = f766678f13f01adeac1b3ea955adb594
+
+# A.2.1.1
+COUNT = 2
+KEY = 0123456789abcdeffedcba9876543210
+PLAINTEXT = aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffaaaaaaaabbbbbbbb
+CIPHERTEXT = 5ec8143de509cff7b5179f8f474b86192f1d305a7fb17df985f81c8482192304
+
+# A.2.1.2
+COUNT = 3
+KEY = fedcba98765432100123456789abcdef
+PLAINTEXT = aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffaaaaaaaabbbbbbbb
+CIPHERTEXT = c5876897e4a59bbba72a10c83872245b12dd90bc2d200692b529a4155ac9e600
