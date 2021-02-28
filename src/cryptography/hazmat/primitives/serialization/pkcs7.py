@@ -7,18 +7,19 @@ from enum import Enum
 
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.utils import _check_byteslike
 
 
 def load_pem_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
-    backend = _get_backend(None)
+    backend: Backend = _get_backend(None)
     return backend.load_pem_pkcs7_certificates(data)
 
 
 def load_der_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
-    backend = _get_backend(None)
+    backend: Backend = _get_backend(None)
     return backend.load_der_pkcs7_certificates(data)
 
 
@@ -104,7 +105,7 @@ class PKCS7SignatureBuilder(object):
         self,
         encoding: serialization.Encoding,
         options: typing.Iterable[PKCS7Options],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ) -> bytes:
         if len(self._signers) == 0:
             raise ValueError("Must have at least one signer")

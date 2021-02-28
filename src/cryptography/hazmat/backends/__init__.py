@@ -18,7 +18,10 @@ def default_backend():
     return _default_backend
 
 
-def _get_backend(backend):
+T = typing.TypeVar("T")
+
+
+def _get_backend(backend: typing.Optional[T]) -> T:
     if backend is None:
         return default_backend()
     else:

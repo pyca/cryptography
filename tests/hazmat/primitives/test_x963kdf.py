@@ -116,4 +116,9 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        X963KDF(hashes.SHA256(), 16, None, pretend_backend)
+        X963KDF(
+            hashes.SHA256(),
+            16,
+            None,
+            pretend_backend,  # type: ignore[arg-type]
+        )

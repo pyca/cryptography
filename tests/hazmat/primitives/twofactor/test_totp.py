@@ -155,4 +155,10 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        TOTP(secret, 8, hashes.SHA1(), 30, pretend_backend)
+        TOTP(
+            secret,
+            8,
+            hashes.SHA1(),
+            30,
+            pretend_backend,  # type: ignore[arg-type]
+        )

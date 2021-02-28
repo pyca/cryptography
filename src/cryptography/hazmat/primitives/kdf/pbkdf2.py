@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -11,7 +13,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, PBKDF2HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -23,7 +25,7 @@ class PBKDF2HMAC(KeyDerivationFunction):
         length: int,
         salt: bytes,
         iterations: int,
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, PBKDF2HMACBackend):

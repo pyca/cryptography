@@ -13,6 +13,7 @@ from base64 import encodebytes as _base64_encode
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
@@ -584,7 +585,7 @@ def serialize_ssh_private_key(
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
-        backend = _get_backend(None)
+        backend: Backend = _get_backend(None)
         ciph = _init_cipher(ciphername, password, salt, rounds, backend)
     else:
         ciphername = kdfname = _NONE
