@@ -44,6 +44,10 @@ def test_memory_limit_skip():
     _skip_if_memory_limited(2 ** 31, {"p": 16, "r": 64, "n": 1024})
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.scrypt_supported(),
+    skip_message="Does not support Scrypt",
+)
 @pytest.mark.requires_backend_interface(interface=ScryptBackend)
 class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
