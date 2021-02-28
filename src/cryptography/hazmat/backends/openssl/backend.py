@@ -161,22 +161,21 @@ class _RC2(object):
     pass
 
 
-@utils.register_interface(CipherBackend)
-@utils.register_interface(CMACBackend)
-@utils.register_interface(DERSerializationBackend)
-@utils.register_interface(DHBackend)
-@utils.register_interface(DSABackend)
-@utils.register_interface(EllipticCurveBackend)
-@utils.register_interface(HashBackend)
-@utils.register_interface(HMACBackend)
-@utils.register_interface(PBKDF2HMACBackend)
-@utils.register_interface(RSABackend)
-@utils.register_interface(PEMSerializationBackend)
-@utils.register_interface(X509Backend)
-@utils.register_interface_if(
-    binding.Binding().lib.Cryptography_HAS_SCRYPT, ScryptBackend
-)
-class Backend(object):
+class Backend(
+    CipherBackend,
+    CMACBackend,
+    DERSerializationBackend,
+    DHBackend,
+    DSABackend,
+    EllipticCurveBackend,
+    HashBackend,
+    HMACBackend,
+    PBKDF2HMACBackend,
+    RSABackend,
+    PEMSerializationBackend,
+    ScryptBackend,
+    X509Backend,
+):
     """
     OpenSSL API binding interfaces.
     """
@@ -342,6 +341,9 @@ class Backend(object):
 
         evp_md = self._evp_md_from_algorithm(algorithm)
         return evp_md != self._ffi.NULL
+
+    def scrypt_supported(self):
+        return self._lib.Cryptography_HAS_SCRYPT == 1
 
     def hmac_supported(self, algorithm):
         return self.hash_supported(algorithm)

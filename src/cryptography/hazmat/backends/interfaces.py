@@ -378,3 +378,9 @@ class ScryptBackend(metaclass=abc.ABCMeta):
         """
         Return bytes derived from provided Scrypt parameters.
         """
+
+    @abc.abstractmethod
+    def scrypt_supported(self):
+        """
+        Return True if Scrypt is supported.
+        """
