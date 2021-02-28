@@ -12,8 +12,7 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
-  and compliance in regions where they may be required, and are not generally
-  recommended.
+  in regions where they may be required, and are not generally recommended.
 
 .. _v3-4-6:
 

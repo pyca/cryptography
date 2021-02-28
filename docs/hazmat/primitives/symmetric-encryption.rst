@@ -204,8 +204,8 @@ Algorithms
     in the GB/T 32907-2016. It is used in the Chinese WAPI
     (Wired Authentication and Privacy Infrastructure) standard. (An English
     description is available at `draft-ribose-cfrg-sm4-10`_.) This block
-    cipher should generally be used for compliance and compatibility
-    purposes where required.
+    cipher should be used for compatibility purposes where required and is
+    not otherwise recommended for use.
 
     :param key: The secret key. This must be kept secret. ``128``
         :term:`bits` in length.
