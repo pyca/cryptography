@@ -6,7 +6,6 @@
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation,
@@ -18,7 +17,6 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestKBKDFHMAC(object):
     def test_invalid_key(self, backend):
         kdf = KBKDFHMAC(

@@ -9,7 +9,6 @@ from datetime import datetime
 import pytest
 
 from cryptography import x509
-from cryptography.hazmat.backends.interfaces import DERSerializationBackend
 from cryptography.hazmat.backends.openssl.backend import _RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -23,7 +22,6 @@ from .utils import load_vectors_from_file
 from ...doubles import DummyKeySerializationEncryption
 
 
-@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestPKCS12Loading(object):
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(

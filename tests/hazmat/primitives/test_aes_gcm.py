@@ -8,7 +8,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from .utils import generate_aead_test
@@ -21,7 +20,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support AES GCM",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeGCM(object):
     test_gcm = generate_aead_test(
         load_nist_vectors,

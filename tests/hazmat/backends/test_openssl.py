@@ -13,7 +13,6 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -566,7 +565,6 @@ class TestOpenSSLEllipticCurve(object):
             _sn_to_elliptic_curve(backend, b"fake")
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPEMSerialization(object):
     def test_password_length_limit(self):
         password = b"x" * 1024
@@ -607,7 +605,6 @@ class TestGOSTCertificate(object):
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestOpenSSLDHSerialization(object):
     @pytest.mark.parametrize(
         "vector",

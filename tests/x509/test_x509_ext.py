@@ -14,12 +14,6 @@ import pretend
 import pytest
 
 from cryptography import x509
-from cryptography.hazmat.backends.interfaces import (
-    DSABackend,
-    EllipticCurveBackend,
-    RSABackend,
-    X509Backend,
-)
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
@@ -569,7 +563,6 @@ class TestPolicyInformation(object):
         assert hash(pi) != hash(pi3)
 
 
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificatePolicies(object):
     def test_invalid_policies(self):
         pq = ["string"]
@@ -665,8 +658,6 @@ class TestCertificatePolicies(object):
         assert hash(cp) != hash(cp3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificatePoliciesExtension(object):
     def test_cps_uri_policy_qualifier(self, backend):
         cert = _load_cert(
@@ -1278,8 +1269,6 @@ class TestExtendedKeyUsage(object):
         assert hash(eku) != hash(eku3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestExtensions(object):
     def test_no_extensions(self, backend):
         cert = _load_cert(
@@ -1332,7 +1321,6 @@ class TestExtensions(object):
         )
         assert ext.value.value == b"value"
 
-    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_unsupported_extension(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "unsupported_extension_2.pem"),
@@ -1410,8 +1398,6 @@ class TestExtensions(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestBasicConstraintsExtension(object):
     def test_ca_true_pathlen_6(self, backend):
         cert = _load_cert(
@@ -1504,8 +1490,6 @@ class TestBasicConstraintsExtension(object):
 
 
 class TestSubjectKeyIdentifierExtension(object):
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_subject_key_identifier(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
@@ -1522,8 +1506,6 @@ class TestSubjectKeyIdentifierExtension(object):
             b"580184241bbc2b52944a3da510721451f5af3ac9"
         )
 
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_subject_key_identifier(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "bc_path_length_zero.pem"),
@@ -1535,8 +1517,6 @@ class TestSubjectKeyIdentifierExtension(object):
                 ExtensionOID.SUBJECT_KEY_IDENTIFIER
             )
 
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_from_rsa_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
@@ -1549,8 +1529,6 @@ class TestSubjectKeyIdentifierExtension(object):
         ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
         assert ext.value == ski
 
-    @pytest.mark.requires_backend_interface(interface=DSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_from_dsa_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
@@ -1564,8 +1542,6 @@ class TestSubjectKeyIdentifierExtension(object):
         ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
         assert ext.value == ski
 
-    @pytest.mark.requires_backend_interface(interface=DSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_invalid_bit_string_padding_from_public_key(self, backend):
         data = load_vectors_from_file(
             filename=os.path.join(
@@ -1580,8 +1556,6 @@ class TestSubjectKeyIdentifierExtension(object):
         with pytest.raises(ValueError):
             _key_identifier_from_public_key(pretend_key)
 
-    @pytest.mark.requires_backend_interface(interface=DSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_optional_params_allowed_from_public_key(self, backend):
         data = load_vectors_from_file(
             filename=os.path.join(
@@ -1598,8 +1572,6 @@ class TestSubjectKeyIdentifierExtension(object):
             b"24c0133a6a492f2c48a18c7648e515db5ac76749"
         )
 
-    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_from_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
@@ -1618,7 +1590,6 @@ class TestSubjectKeyIdentifierExtension(object):
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 support",
     )
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_from_ed25519_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
@@ -1636,7 +1607,6 @@ class TestSubjectKeyIdentifierExtension(object):
         only_if=lambda backend: backend.ed448_supported(),
         skip_message="Requires OpenSSL with Ed448 support",
     )
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_from_ed448_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed448", "root-ed448.pem"),
@@ -1651,8 +1621,6 @@ class TestSubjectKeyIdentifierExtension(object):
         assert ext.value == ski
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestKeyUsageExtension(object):
     def test_no_key_usage(self, backend):
         cert = _load_cert(
@@ -2140,8 +2108,6 @@ class TestIssuerAlternativeName(object):
         assert hash(ian) != hash(ian3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRSAIssuerAlternativeNameExtension(object):
     def test_uri(self, backend):
         cert = _load_cert(
@@ -2251,8 +2217,6 @@ class TestSubjectAlternativeName(object):
         assert hash(san) != hash(san3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRSASubjectAlternativeNameExtension(object):
     def test_dns_name(self, backend):
         cert = _load_cert(
@@ -2552,8 +2516,6 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert result == sans
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestExtendedKeyUsageExtension(object):
     def test_eku(self, backend):
         cert = _load_cert(
@@ -2698,8 +2660,6 @@ class TestPolicyConstraints(object):
         assert hash(pc) != hash(pc3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPolicyConstraintsExtension(object):
     def test_inhibit_policy_mapping(self, backend):
         cert = _load_cert(
@@ -3098,8 +3058,6 @@ class TestSubjectInformationAccess(object):
         assert hash(sia) != hash(sia3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSubjectInformationAccessExtension(object):
     def test_sia(self, backend):
         cert = _load_cert(
@@ -3129,8 +3087,6 @@ class TestSubjectInformationAccessExtension(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestAuthorityInformationAccessExtension(object):
     def test_aia_ocsp_ca_issuers(self, backend):
         cert = _load_cert(
@@ -3253,8 +3209,6 @@ class TestAuthorityInformationAccessExtension(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestAuthorityKeyIdentifierExtension(object):
     def test_aki_keyid(self, backend):
         cert = _load_cert(
@@ -3499,8 +3453,6 @@ class TestNameConstraints(object):
         assert hash(nc3) != hash(nc4)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestNameConstraintsExtension(object):
     def test_permitted_excluded(self, backend):
         cert = _load_cert(
@@ -4354,8 +4306,6 @@ class TestCRLDistributionPoints(object):
         assert ci[2:6:2] == [ci[2], ci[4]]
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCRLDistributionPointsExtension(object):
     def test_fullname_and_crl_issuer(self, backend):
         cert = _load_cert(
@@ -4641,8 +4591,6 @@ class TestCRLDistributionPointsExtension(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestFreshestCRLExtension(object):
     def test_vector(self, backend):
         cert = _load_cert(
@@ -4689,8 +4637,6 @@ class TestFreshestCRLExtension(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestOCSPNoCheckExtension(object):
     def test_nocheck(self, backend):
         cert = _load_cert(
@@ -4759,8 +4705,6 @@ class TestInhibitAnyPolicy(object):
         assert hash(iap) != hash(iap3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestInhibitAnyPolicyExtension(object):
     def test_inhibit_any_policy(self, backend):
         cert = _load_cert(
@@ -4926,8 +4870,6 @@ class TestIssuingDistributionPointExtension(object):
             ),
         ],
     )
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_vectors(self, filename, expected, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", filename),
@@ -5132,8 +5074,6 @@ class TestIssuingDistributionPointExtension(object):
         assert hash(idp1) == hash(idp2)
         assert hash(idp1) != hash(idp3)
 
-    @pytest.mark.requires_backend_interface(interface=RSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     @pytest.mark.parametrize(
         "idp",
         [
@@ -5284,8 +5224,6 @@ class TestIssuingDistributionPointExtension(object):
         assert ext.value == idp
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertPoisonExtension(object):
     def test_load(self, backend):
         cert = _load_cert(
@@ -5340,8 +5278,6 @@ class TestPrecertPoisonExtension(object):
         assert repr(pcp) == "<PrecertPoison()>"
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSignedCertificateTimestamps(object):
     @pytest.mark.supported(
         only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
@@ -5444,8 +5380,6 @@ class TestSignedCertificateTimestamps(object):
         assert hash(sct) != hash(sct3)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
     def test_init(self):
         with pytest.raises(TypeError):
@@ -5636,8 +5570,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert isinstance(ext.value, x509.UnrecognizedExtension)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestInvalidExtension(object):
     def test_invalid_certificate_policies_data(self, backend):
         cert = _load_cert(

@@ -8,7 +8,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -21,7 +20,6 @@ from ...utils import load_cryptrec_vectors, load_nist_vectors
     ),
     skip_message="Does not support Camellia ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCamelliaModeECB(object):
     test_ecb = generate_encrypt_test(
         load_cryptrec_vectors,
@@ -42,7 +40,6 @@ class TestCamelliaModeECB(object):
     ),
     skip_message="Does not support Camellia CBC",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCamelliaModeCBC(object):
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
@@ -59,7 +56,6 @@ class TestCamelliaModeCBC(object):
     ),
     skip_message="Does not support Camellia OFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCamelliaModeOFB(object):
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
@@ -76,7 +72,6 @@ class TestCamelliaModeOFB(object):
     ),
     skip_message="Does not support Camellia CFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCamelliaModeCFB(object):
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
