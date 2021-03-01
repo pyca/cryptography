@@ -6,7 +6,6 @@
 import pytest
 
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
@@ -20,7 +19,6 @@ from ....utils import (
 vectors = load_vectors_from_file("twofactor/rfc-6238.txt", load_nist_vectors)
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestTOTP(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),

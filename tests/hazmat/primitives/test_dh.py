@@ -10,11 +10,6 @@ import typing
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import (
-    DERSerializationBackend,
-    DHBackend,
-    PEMSerializationBackend,
-)
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
@@ -140,7 +135,6 @@ def test_dh_public_numbers_equality():
     assert public != object()
 
 
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestDH(object):
     def test_small_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
@@ -440,9 +434,6 @@ class TestDH(object):
         assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
 
-@pytest.mark.requires_backend_interface(interface=DHBackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHPrivateKeySerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
@@ -630,9 +621,6 @@ class TestDHPrivateKeySerialization(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=DHBackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
@@ -759,9 +747,6 @@ class TestDHPublicKeySerialization(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=DHBackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestDHParameterSerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),

@@ -9,7 +9,6 @@ import os
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -49,7 +48,6 @@ class TestAES(object):
 
 
 class TestAESXTS(object):
-    @pytest.mark.requires_backend_interface(interface=CipherBackend)
     @pytest.mark.parametrize(
         "mode", (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
     )
@@ -65,7 +63,6 @@ class TestAESXTS(object):
         with pytest.raises(ValueError):
             modes.XTS(b"0")
 
-    @pytest.mark.requires_backend_interface(interface=CipherBackend)
     def test_xts_wrong_key_size(self, backend):
         with pytest.raises(ValueError):
             ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
@@ -214,7 +211,6 @@ def test_invalid_backend():
     ),
     skip_message="Does not support AES ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipherUpdateInto(object):
     @pytest.mark.parametrize(
         "params",

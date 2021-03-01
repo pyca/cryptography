@@ -9,7 +9,6 @@ import os
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
@@ -20,7 +19,6 @@ from ...utils import (
 )
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDF(object):
     def test_length_limit(self, backend):
         big_length = 255 * hashes.SHA256().digest_size + 1
@@ -138,7 +136,6 @@ class TestHKDF(object):
         assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFExpand(object):
     def test_derive(self, backend):
         prk = binascii.unhexlify(

@@ -12,7 +12,6 @@ from cryptography.exceptions import (
     InvalidSignature,
     _Reasons,
 )
-from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -48,7 +47,6 @@ vectors_3des = load_vectors_from_file(
 fake_key = b"\x00" * 16
 
 
-@pytest.mark.requires_backend_interface(interface=CMACBackend)
 class TestCMAC(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(

@@ -7,7 +7,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -20,7 +19,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support SM4 ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSM4ModeECB(object):
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
@@ -37,7 +35,6 @@ class TestSM4ModeECB(object):
     ),
     skip_message="Does not support SM4 CBC",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSM4ModeCBC(object):
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
@@ -54,7 +51,6 @@ class TestSM4ModeCBC(object):
     ),
     skip_message="Does not support SM4 OFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSM4ModeOFB(object):
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
@@ -71,7 +67,6 @@ class TestSM4ModeOFB(object):
     ),
     skip_message="Does not support SM4 CFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSM4ModeCFB(object):
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
@@ -88,7 +83,6 @@ class TestSM4ModeCFB(object):
     ),
     skip_message="Does not support SM4 CTR",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSM4ModeCTR(object):
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
