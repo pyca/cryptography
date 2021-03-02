@@ -268,7 +268,7 @@ class TestKBKDFHMAC(object):
                 b"label",
                 b"context",
                 None,
-                backend=object(),
+                backend=object(),  # type: ignore[arg-type]
             )
 
     def test_unicode_error_label(self, backend):

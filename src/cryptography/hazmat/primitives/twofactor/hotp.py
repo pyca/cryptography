@@ -10,7 +10,7 @@ from urllib.parse import quote, urlencode
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -24,7 +24,7 @@ def _generate_uri(
     type_name: str,
     account_name: str,
     issuer: typing.Optional[str],
-    extra_parameters,
+    extra_parameters: typing.List[typing.Tuple[str, int]],
 ) -> str:
     parameters = [
         ("digits", hotp._length),
@@ -55,9 +55,9 @@ class HOTP(object):
         key: bytes,
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
-        backend=None,
+        backend: typing.Optional[Backend] = None,
         enforce_key_length: bool = True,
-    ):
+    ) -> None:
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(

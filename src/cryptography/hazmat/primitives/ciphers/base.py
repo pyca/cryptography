@@ -15,7 +15,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import CipherBackend
+from cryptography.hazmat.backends.interfaces import Backend, CipherBackend
 from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
 
@@ -81,7 +81,7 @@ class Cipher(object):
         self,
         algorithm: CipherAlgorithm,
         mode: typing.Optional[modes.Mode],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, CipherBackend):
@@ -161,7 +161,7 @@ class _AEADCipherContext(object):
         self._tag = None
         self._updated = False
 
-    def _check_limit(self, data_size: int):
+    def _check_limit(self, data_size: int) -> None:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         self._updated = True

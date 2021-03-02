@@ -6,7 +6,7 @@ import typing
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
@@ -23,7 +23,7 @@ class TOTP(object):
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
         time_step: int,
-        backend=None,
+        backend: typing.Optional[Backend] = None,
         enforce_key_length: bool = True,
     ):
         backend = _get_backend(backend)

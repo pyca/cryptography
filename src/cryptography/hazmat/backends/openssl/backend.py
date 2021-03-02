@@ -18,21 +18,7 @@ from cryptography.hazmat._der import (
     encode_der,
     encode_der_integer,
 )
-from cryptography.hazmat.backends.interfaces import (
-    CMACBackend,
-    CipherBackend,
-    DERSerializationBackend,
-    DHBackend,
-    DSABackend,
-    EllipticCurveBackend,
-    HMACBackend,
-    HashBackend,
-    PBKDF2HMACBackend,
-    PEMSerializationBackend,
-    RSABackend,
-    ScryptBackend,
-    X509Backend,
-)
+from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
@@ -161,21 +147,7 @@ class _RC2(object):
     pass
 
 
-class Backend(
-    CipherBackend,
-    CMACBackend,
-    DERSerializationBackend,
-    DHBackend,
-    DSABackend,
-    EllipticCurveBackend,
-    HashBackend,
-    HMACBackend,
-    PBKDF2HMACBackend,
-    RSABackend,
-    PEMSerializationBackend,
-    ScryptBackend,
-    X509Backend,
-):
+class Backend(BackendInterface):
     """
     OpenSSL API binding interfaces.
     """

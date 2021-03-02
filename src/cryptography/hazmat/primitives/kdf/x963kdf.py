@@ -14,7 +14,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HashBackend
+from cryptography.hazmat.backends.interfaces import Backend, HashBackend
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -29,7 +29,7 @@ class X963KDF(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         sharedinfo: typing.Optional[bytes],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
 

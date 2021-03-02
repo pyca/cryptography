@@ -6,6 +6,7 @@ import typing
 from enum import Enum
 
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
@@ -233,7 +234,7 @@ class Name(object):
     def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend=None) -> bytes:
+    def public_bytes(self, backend: typing.Optional[Backend] = None) -> bytes:
         backend = _get_backend(backend)
         return backend.x509_name_bytes(self)
 

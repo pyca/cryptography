@@ -298,6 +298,17 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        ConcatKDFHash(hashes.SHA256(), 16, None, pretend_backend)
+        ConcatKDFHash(
+            hashes.SHA256(),
+            16,
+            None,
+            pretend_backend,  # type: ignore[arg-type]
+        )
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        ConcatKDFHMAC(hashes.SHA256(), 16, None, None, pretend_backend)
+        ConcatKDFHMAC(
+            hashes.SHA256(),
+            16,
+            None,
+            None,
+            pretend_backend,  # type: ignore[arg-type]
+        )

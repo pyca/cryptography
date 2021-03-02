@@ -136,14 +136,16 @@ class AESCCM(object):
             backend, self, nonce, data, associated_data, self._tag_length
         )
 
-    def _validate_lengths(self, nonce: bytes, data_len: int):
+    def _validate_lengths(self, nonce: bytes, data_len: int) -> None:
         # For information about computing this, see
         # https://tools.ietf.org/html/rfc3610#section-2.1
         l_val = 15 - len(nonce)
         if 2 ** (8 * l_val) < data_len:
             raise ValueError("Data too long for nonce")
 
-    def _check_params(self, nonce: bytes, data: bytes, associated_data: bytes):
+    def _check_params(
+        self, nonce: bytes, data: bytes, associated_data: bytes
+    ) -> None:
         utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)

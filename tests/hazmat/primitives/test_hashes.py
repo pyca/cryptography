@@ -159,7 +159,7 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        hashes.Hash(hashes.SHA1(), pretend_backend)
+        hashes.Hash(hashes.SHA1(), pretend_backend)  # type:ignore[arg-type]
 
 
 def test_buffer_protocol_hash(backend):

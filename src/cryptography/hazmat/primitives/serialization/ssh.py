@@ -13,6 +13,7 @@ from base64 import encodebytes as _base64_encode
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
@@ -474,7 +475,9 @@ _SSH_PRIVATE_KEY_TYPES = typing.Union[
 
 
 def load_ssh_private_key(
-    data: bytes, password: typing.Optional[bytes], backend=None
+    data: bytes,
+    password: typing.Optional[bytes],
+    backend: typing.Optional[Backend] = None,
 ) -> _SSH_PRIVATE_KEY_TYPES:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
@@ -552,7 +555,7 @@ def load_ssh_private_key(
 def serialize_ssh_private_key(
     private_key: _SSH_PRIVATE_KEY_TYPES,
     password: typing.Optional[bytes] = None,
-):
+) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
@@ -584,7 +587,7 @@ def serialize_ssh_private_key(
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
-        backend = _get_backend(None)
+        backend: Backend = _get_backend(None)
         ciph = _init_cipher(ciphername, password, salt, rounds, backend)
     else:
         ciphername = kdfname = _NONE
@@ -642,7 +645,9 @@ _SSH_PUBLIC_KEY_TYPES = typing.Union[
 ]
 
 
-def load_ssh_public_key(data: bytes, backend=None) -> _SSH_PUBLIC_KEY_TYPES:
+def load_ssh_public_key(
+    data: bytes, backend: typing.Optional[Backend] = None
+) -> _SSH_PUBLIC_KEY_TYPES:
     """Load public key from OpenSSH one-line format."""
     backend = _get_backend(backend)
     utils._check_byteslike("data", data)

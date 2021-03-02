@@ -84,7 +84,7 @@ class TestScrypt(object):
                 work_factor,
                 block_size,
                 parallelization_factor,
-                backend,
+                backend,  # type: ignore[arg-type]
             )
 
     def test_salt_not_bytes(self, backend):

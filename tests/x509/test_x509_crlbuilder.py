@@ -341,6 +341,7 @@ class TestCertificateRevocationListBuilder(object):
         assert len(crl.extensions) == 1
         ext1 = crl.extensions.get_extension_for_class(x509.FreshestCRL)
         assert ext1.critical is False
+        assert isinstance(ext1.value, x509.FreshestCRL)
         assert isinstance(ext1.value[0], x509.DistributionPoint)
         assert ext1.value[0].full_name is not None
         uri = ext1.value[0].full_name[0]
@@ -411,7 +412,9 @@ class TestCertificateRevocationListBuilder(object):
         )
 
         with pytest.raises(TypeError):
-            builder.sign(private_key, object(), backend)
+            builder.sign(
+                private_key, object(), backend  # type: ignore[arg-type]
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
@@ -437,7 +440,11 @@ class TestCertificateRevocationListBuilder(object):
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, object(), backend)
+            builder.sign(
+                private_key,
+                object(),  # type:ignore[arg-type]
+                backend,
+            )
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
@@ -465,7 +472,11 @@ class TestCertificateRevocationListBuilder(object):
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, object(), backend)
+            builder.sign(
+                private_key,
+                object(),  # type:ignore[arg-type]
+                backend,
+            )
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 

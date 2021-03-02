@@ -94,4 +94,6 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        hmac.HMAC(b"key", hashes.SHA1(), pretend_backend)
+        hmac.HMAC(
+            b"key", hashes.SHA1(), pretend_backend  # type:ignore[arg-type]
+        )
