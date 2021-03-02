@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -10,7 +12,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import hashes
 
 
@@ -19,7 +21,7 @@ class HMAC(hashes.HashContext):
         self,
         key: bytes,
         algorithm: hashes.HashAlgorithm,
-        backend=None,
+        backend: typing.Optional[Backend] = None,
         ctx=None,
     ):
         backend = _get_backend(backend)

@@ -24,12 +24,12 @@ PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn34 = CryptographyDeprecationWarning
 
 
-def _check_bytes(name: str, value: bytes):
+def _check_bytes(name: str, value: bytes) -> None:
     if not isinstance(value, bytes):
         raise TypeError("{} must be bytes".format(name))
 
 
-def _check_byteslike(name: str, value: bytes):
+def _check_byteslike(name: str, value: bytes) -> None:
     try:
         memoryview(value)
     except TypeError:

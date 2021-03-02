@@ -7,6 +7,7 @@ import abc
 import typing
 
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext,
@@ -136,7 +137,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         signature: bytes,
         data: bytes,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
-    ):
+    ) -> None:
         """
         Verifies the signature of the data.
         """
@@ -164,7 +165,9 @@ class DSAParameterNumbers(object):
     q = property(lambda self: self._q)
     g = property(lambda self: self._g)
 
-    def parameters(self, backend=None) -> DSAParameters:
+    def parameters(
+        self, backend: typing.Optional[Backend] = None
+    ) -> DSAParameters:
         backend = _get_backend(backend)
         return backend.load_dsa_parameter_numbers(self)
 
@@ -200,7 +203,9 @@ class DSAPublicNumbers(object):
     y = property(lambda self: self._y)
     parameter_numbers = property(lambda self: self._parameter_numbers)
 
-    def public_key(self, backend=None) -> DSAPublicKey:
+    def public_key(
+        self, backend: typing.Optional[Backend] = None
+    ) -> DSAPublicKey:
         backend = _get_backend(backend)
         return backend.load_dsa_public_numbers(self)
 
@@ -238,7 +243,9 @@ class DSAPrivateNumbers(object):
     x = property(lambda self: self._x)
     public_numbers = property(lambda self: self._public_numbers)
 
-    def private_key(self, backend=None) -> DSAPrivateKey:
+    def private_key(
+        self, backend: typing.Optional[Backend] = None
+    ) -> DSAPrivateKey:
         backend = _get_backend(backend)
         return backend.load_dsa_private_numbers(self)
 
@@ -254,17 +261,21 @@ class DSAPrivateNumbers(object):
         return not self == other
 
 
-def generate_parameters(key_size: int, backend=None) -> DSAParameters:
+def generate_parameters(
+    key_size: int, backend: typing.Optional[Backend] = None
+) -> DSAParameters:
     backend = _get_backend(backend)
     return backend.generate_dsa_parameters(key_size)
 
 
-def generate_private_key(key_size: int, backend=None) -> DSAPrivateKey:
+def generate_private_key(
+    key_size: int, backend: typing.Optional[Backend] = None
+) -> DSAPrivateKey:
     backend = _get_backend(backend)
     return backend.generate_dsa_private_key_and_parameters(key_size)
 
 
-def _check_dsa_parameters(parameters: DSAParameterNumbers):
+def _check_dsa_parameters(parameters: DSAParameterNumbers) -> None:
     if parameters.p.bit_length() not in [1024, 2048, 3072, 4096]:
         raise ValueError(
             "p must be exactly 1024, 2048, 3072, or 4096 bits long"
@@ -276,7 +287,7 @@ def _check_dsa_parameters(parameters: DSAParameterNumbers):
         raise ValueError("g, p don't satisfy 1 < g < p.")
 
 
-def _check_dsa_private_numbers(numbers: DSAPrivateNumbers):
+def _check_dsa_private_numbers(numbers: DSAPrivateNumbers) -> None:
     parameters = numbers.public_numbers.parameter_numbers
     _check_dsa_parameters(parameters)
     if numbers.x <= 0 or numbers.x >= parameters.q:

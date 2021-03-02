@@ -933,7 +933,9 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def build(self, backend=None) -> RevokedCertificate:
+    def build(
+        self, backend: typing.Optional[Backend] = None
+    ) -> RevokedCertificate:
         backend = _get_backend(backend)
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")

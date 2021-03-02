@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.ciphers import (
 from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
-def _verify_key_size(algorithm: CipherAlgorithm, key: bytes):
+def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
     # Verify that the key is instance of bytes
     utils._check_byteslike("key", key)
 

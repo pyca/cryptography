@@ -12,7 +12,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HashBackend
+from cryptography.hazmat.backends.interfaces import Backend, HashBackend
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
@@ -69,7 +69,12 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
 
 
 class Hash(HashContext):
-    def __init__(self, algorithm: HashAlgorithm, backend=None, ctx=None):
+    def __init__(
+        self,
+        algorithm: HashAlgorithm,
+        backend: typing.Optional[Backend] = None,
+        ctx: typing.Optional["HashContext"] = None,
+    ):
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(

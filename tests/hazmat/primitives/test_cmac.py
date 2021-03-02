@@ -217,4 +217,4 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        CMAC(AES(key), pretend_backend)
+        CMAC(AES(key), pretend_backend)  # type: ignore[arg-type]
