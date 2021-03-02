@@ -66,7 +66,7 @@ def serialize_key_and_certificates(
     if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
-    backend: Backend = _get_backend(None)
+    backend = _get_backend(None)
     return backend.serialize_key_and_certificates_to_pkcs12(
         name, key, cert, cas, encryption_algorithm
     )

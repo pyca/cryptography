@@ -14,12 +14,12 @@ from cryptography.utils import _check_byteslike
 
 
 def load_pem_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
-    backend: Backend = _get_backend(None)
+    backend = _get_backend(None)
     return backend.load_pem_pkcs7_certificates(data)
 
 
 def load_der_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
-    backend: Backend = _get_backend(None)
+    backend = _get_backend(None)
     return backend.load_der_pkcs7_certificates(data)
 
 
