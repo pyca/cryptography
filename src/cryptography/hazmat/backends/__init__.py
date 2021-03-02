@@ -4,7 +4,9 @@
 
 import typing
 
-_default_backend: typing.Any = None
+from cryptography.hazmat.backends.interfaces import Backend
+
+_default_backend: typing.Optional[Backend] = None
 
 
 def default_backend():
@@ -18,10 +20,7 @@ def default_backend():
     return _default_backend
 
 
-T = typing.TypeVar("T")
-
-
-def _get_backend(backend: typing.Optional[T]) -> T:
+def _get_backend(backend: typing.Optional[Backend]) -> Backend:
     if backend is None:
         return default_backend()
     else:
