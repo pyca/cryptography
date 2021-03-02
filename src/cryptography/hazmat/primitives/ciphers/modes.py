@@ -7,9 +7,7 @@ import abc
 import typing
 
 from cryptography import utils
-from cryptography.hazmat.primitives._cipheralgorithm import (
-    BlockCipherAlgorithm, CipherAlgorithm
-)
+from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 
 
 class Mode(metaclass=abc.ABCMeta):

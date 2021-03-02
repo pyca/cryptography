@@ -205,7 +205,7 @@ def test_invalid_backend():
         ciphers.Cipher(
             AES(b"AAAAAAAAAAAAAAAA"),
             modes.ECB(),
-            pretend_backend  # type: ignore[arg-type]
+            pretend_backend,  # type: ignore[arg-type]
         )
 
 
