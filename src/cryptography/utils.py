@@ -131,7 +131,7 @@ def deprecated(value, module_name, message, warning_class):
     return _DeprecatedValue(value, message, warning_class)
 
 
-_F = typing.TypeVar('_F', bound=typing.Callable[..., typing.Any])
+_F = typing.TypeVar("_F", bound=typing.Callable[..., typing.Any])
 
 
 def cached_property(func: _F) -> _F:
