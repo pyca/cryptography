@@ -42,12 +42,12 @@ class TestCachedProperty(object):
         accesses: typing.List[typing.Optional[T]] = []
         t = T()
         with pytest.raises(AttributeError):
-            t.t = None
+            t.t = None  # type: ignore[assignment]
         assert len(accesses) == 0
         assert t.t == 14
         assert len(accesses) == 1
         with pytest.raises(AttributeError):
-            t.t = None
+            t.t = None  # type: ignore[assignment]
         assert len(accesses) == 1
         assert t.t == 14
         assert len(accesses) == 1

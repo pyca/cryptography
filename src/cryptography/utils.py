@@ -131,7 +131,10 @@ def deprecated(value, module_name, message, warning_class):
     return _DeprecatedValue(value, message, warning_class)
 
 
-def cached_property(func):
+_F = typing.TypeVar('_F', bound=typing.Callable[..., typing.Any])
+
+
+def cached_property(func: _F) -> _F:
     cached_name = "_cached_{}".format(func)
     sentinel = object()
 
@@ -143,7 +146,7 @@ def cached_property(func):
         setattr(instance, cached_name, result)
         return result
 
-    return property(inner)
+    return typing.cast(_F, property(inner))
 
 
 int_from_bytes = deprecated(
