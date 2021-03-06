@@ -5019,7 +5019,7 @@ class TestName(object):
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
-            x509.Name(["not-a-NameAttribute"])
+            x509.Name(["not-a-NameAttribute"])  # type: ignore[list-item]
 
     def test_bytes(self, backend):
         name = x509.Name(
