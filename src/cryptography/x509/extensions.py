@@ -1350,7 +1350,7 @@ class Extension(typing.Generic[ExtensionTypeVar]):
         return self._critical
 
     @property
-    def value(self) -> ExtensionType:
+    def value(self) -> ExtensionTypeVar:
         return self._value
 
     def __repr__(self) -> str:
