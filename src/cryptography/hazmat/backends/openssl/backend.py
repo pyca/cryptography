@@ -970,6 +970,8 @@ class Backend(BackendInterface):
     def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError("Builder type mismatch.")
+        if builder._public_key is None:
+            raise TypeError("Builder has no public key.")
         self._x509_check_signature_params(private_key, algorithm)
 
         # Resolve the signature algorithm.

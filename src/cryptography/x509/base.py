@@ -29,13 +29,14 @@ _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
 
 class AttributeNotFound(Exception):
-    def __init__(self, msg, oid):
+    def __init__(self, msg: str, oid: ObjectIdentifier) -> None:
         super(AttributeNotFound, self).__init__(msg)
         self.oid = oid
 
 
 def _reject_duplicate_extension(
-    extension: Extension, extensions: typing.List[Extension]
+    extension: Extension[ExtensionType],
+    extensions: typing.List[Extension[ExtensionType]],
 ) -> None:
     # This is quadratic in the number of extensions
     for e in extensions:
@@ -73,7 +74,7 @@ class Version(Enum):
 
 
 class InvalidVersion(Exception):
-    def __init__(self, msg, parsed_version):
+    def __init__(self, msg: str, parsed_version: typing.Any):
         super(InvalidVersion, self).__init__(msg)
         self.parsed_version = parsed_version
 
@@ -294,14 +295,24 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         Number of revoked certificates in the CRL.
         """
 
+    @typing.overload
+    def __getitem__(self, idx: int) -> RevokedCertificate:
+        ...
+
+    @typing.overload
+    def __getitem__(self, idx: slice) -> typing.List[RevokedCertificate]:
+        ...
+
     @abc.abstractmethod
-    def __getitem__(self, idx):
+    def __getitem__(
+        self, idx: typing.Union[int, slice]
+    ) -> typing.Union[RevokedCertificate, typing.List[RevokedCertificate]]:
         """
         Returns a revoked certificate (or slice of revoked certificates).
         """
 
     @abc.abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[RevokedCertificate]:
         """
         Iterator over the revoked certificates
         """
@@ -512,16 +523,25 @@ class CertificateSigningRequestBuilder(object):
 
 
 class CertificateBuilder(object):
+    _extensions: typing.List[Extension[ExtensionType]]
+
     def __init__(
         self,
-        issuer_name=None,
-        subject_name=None,
-        public_key=None,
-        serial_number=None,
-        not_valid_before=None,
-        not_valid_after=None,
-        extensions=[],
+        issuer_name: typing.Optional[Name] = None,
+        subject_name: typing.Optional[Name] = None,
+        public_key: typing.Optional[_PUBLIC_KEY_TYPES] = None,
+        serial_number: typing.Optional[int] = None,
+        not_valid_before: typing.Optional[datetime.datetime] = None,
+        not_valid_after: typing.Optional[datetime.datetime] = None,
+        extensions: typing.Optional[
+            typing.Iterable[Extension[ExtensionType]]
+        ] = None,
     ) -> None:
+        if extensions is None:
+            extensions = []
+        else:
+            extensions = list(extensions)
+
         self._version = Version.v3
         self._issuer_name = issuer_name
         self._subject_name = subject_name
@@ -745,14 +765,30 @@ class CertificateBuilder(object):
 
 
 class CertificateRevocationListBuilder(object):
+    _extensions: typing.List[Extension[ExtensionType]]
+    _revoked_certificates: typing.List[RevokedCertificate]
+
     def __init__(
         self,
-        issuer_name=None,
-        last_update=None,
-        next_update=None,
-        extensions=[],
-        revoked_certificates=[],
+        issuer_name: typing.Optional[Name] = None,
+        last_update: typing.Optional[datetime.datetime] = None,
+        next_update: typing.Optional[datetime.datetime] = None,
+        extensions: typing.Optional[
+            typing.Iterable[Extension[ExtensionType]]
+        ] = None,
+        revoked_certificates: typing.Optional[
+            typing.Iterable[RevokedCertificate]
+        ] = None,
     ):
+        if extensions is None:
+            extensions = []
+        else:
+            extensions = list(extensions)
+        if revoked_certificates is None:
+            revoked_certificates = []
+        else:
+            revoked_certificates = list(revoked_certificates)
+
         self._issuer_name = issuer_name
         self._last_update = last_update
         self._next_update = next_update
@@ -879,8 +915,18 @@ class CertificateRevocationListBuilder(object):
 
 class RevokedCertificateBuilder(object):
     def __init__(
-        self, serial_number=None, revocation_date=None, extensions=[]
+        self,
+        serial_number: typing.Optional[int] = None,
+        revocation_date: typing.Optional[datetime.datetime] = None,
+        extensions: typing.Optional[
+            typing.Iterable[Extension[ExtensionType]]
+        ] = None,
     ):
+        if extensions is None:
+            extensions = []
+        else:
+            extensions = list(extensions)
+
         self._serial_number = serial_number
         self._revocation_date = revocation_date
         self._extensions = extensions
