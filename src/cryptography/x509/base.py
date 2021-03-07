@@ -74,7 +74,7 @@ class Version(Enum):
 
 
 class InvalidVersion(Exception):
-    def __init__(self, msg: str, parsed_version: typing.Any):
+    def __init__(self, msg: str, parsed_version: int) -> None:
         super(InvalidVersion, self).__init__(msg)
         self.parsed_version = parsed_version
 
