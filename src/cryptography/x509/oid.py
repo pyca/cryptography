@@ -265,3 +265,18 @@ _OID_NAMES = {
     OCSPExtensionOID.NONCE: "OCSPNonce",
     AttributeOID.CHALLENGE_PASSWORD: "challengePassword",
 }
+
+
+__all__ = [
+    "AttributeOID",
+    "AuthorityInformationAccessOID",
+    "CRLEntryExtensionOID",
+    "CertificatePoliciesOID",
+    "ExtendedKeyUsageOID",
+    "ExtensionOID",
+    "NameOID",
+    "OCSPExtensionOID",
+    "ObjectIdentifier",
+    "SignatureAlgorithmOID",
+    "SubjectInformationAccessOID",
+]
