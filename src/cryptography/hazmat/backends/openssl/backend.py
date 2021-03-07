@@ -6,6 +6,7 @@
 import collections
 import contextlib
 import itertools
+import typing
 import warnings
 from contextlib import contextmanager
 
@@ -18,6 +19,7 @@ from cryptography.hazmat._der import (
     encode_der,
     encode_der_integer,
 )
+from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
 from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
@@ -137,6 +139,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import pkcs7, ssh
 from cryptography.x509 import ocsp
+from cryptography.x509.name import Name
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -895,7 +898,12 @@ class Backend(BackendInterface):
                 "MD5 hash algorithm is only supported with RSA keys"
             )
 
-    def create_x509_csr(self, builder, private_key, algorithm):
+    def create_x509_csr(
+        self,
+        builder: x509.CertificateSigningRequestBuilder,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> _CertificateSigningRequest:
         if not isinstance(builder, x509.CertificateSigningRequestBuilder):
             raise TypeError("Builder type mismatch.")
         self._x509_check_signature_params(private_key, algorithm)
@@ -967,7 +975,12 @@ class Backend(BackendInterface):
 
         return _CertificateSigningRequest(self, x509_req)
 
-    def create_x509_certificate(self, builder, private_key, algorithm):
+    def create_x509_certificate(
+        self,
+        builder: x509.CertificateBuilder,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> _Certificate:
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError("Builder type mismatch.")
         if builder._public_key is None:
@@ -1059,7 +1072,12 @@ class Backend(BackendInterface):
         self._set_asn1_time(asn1_time, time)
         return asn1_time
 
-    def create_x509_crl(self, builder, private_key, algorithm):
+    def create_x509_crl(
+        self,
+        builder: x509.CertificateRevocationListBuilder,
+        private_key: _PRIVATE_KEY_TYPES,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> _CertificateRevocationList:
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
             raise TypeError("Builder type mismatch.")
         self._x509_check_signature_params(private_key, algorithm)
@@ -1169,7 +1187,9 @@ class Backend(BackendInterface):
                 nid, 1 if extension.critical else 0, ext_struct
             )
 
-    def create_x509_revoked_certificate(self, builder):
+    def create_x509_revoked_certificate(
+        self, builder: x509.RevokedCertificateBuilder
+    ) -> _RevokedCertificate:
         if not isinstance(builder, x509.RevokedCertificateBuilder):
             raise TypeError("Builder type mismatch.")
 
@@ -1315,7 +1335,7 @@ class Backend(BackendInterface):
 
         self._handle_key_loading_error()
 
-    def load_pem_x509_certificate(self, data):
+    def load_pem_x509_certificate(self, data: bytes) -> _Certificate:
         mem_bio = self._bytes_to_bio(data)
         x509 = self._lib.PEM_read_bio_X509(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
@@ -1331,7 +1351,7 @@ class Backend(BackendInterface):
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
 
-    def load_der_x509_certificate(self, data):
+    def load_der_x509_certificate(self, data: bytes) -> _Certificate:
         mem_bio = self._bytes_to_bio(data)
         x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
         if x509 == self._ffi.NULL:
@@ -1341,7 +1361,7 @@ class Backend(BackendInterface):
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
 
-    def load_pem_x509_crl(self, data):
+    def load_pem_x509_crl(self, data: bytes) -> _CertificateRevocationList:
         mem_bio = self._bytes_to_bio(data)
         x509_crl = self._lib.PEM_read_bio_X509_CRL(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
@@ -1357,7 +1377,7 @@ class Backend(BackendInterface):
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
         return _CertificateRevocationList(self, x509_crl)
 
-    def load_der_x509_crl(self, data):
+    def load_der_x509_crl(self, data: bytes) -> _CertificateRevocationList:
         mem_bio = self._bytes_to_bio(data)
         x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
         if x509_crl == self._ffi.NULL:
@@ -1367,7 +1387,7 @@ class Backend(BackendInterface):
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
         return _CertificateRevocationList(self, x509_crl)
 
-    def load_pem_x509_csr(self, data):
+    def load_pem_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
         mem_bio = self._bytes_to_bio(data)
         x509_req = self._lib.PEM_read_bio_X509_REQ(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
@@ -1383,7 +1403,7 @@ class Backend(BackendInterface):
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)
 
-    def load_der_x509_csr(self, data):
+    def load_der_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
         mem_bio = self._bytes_to_bio(data)
         x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
         if x509_req == self._ffi.NULL:
@@ -2199,7 +2219,7 @@ class Backend(BackendInterface):
     def dh_x942_serialization_supported(self):
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
-    def x509_name_bytes(self, name):
+    def x509_name_bytes(self, name: Name) -> bytes:
         x509_name = _encode_name_gc(self, name)
         pp = self._ffi.new("unsigned char **")
         res = self._lib.i2d_X509_NAME(x509_name, pp)
