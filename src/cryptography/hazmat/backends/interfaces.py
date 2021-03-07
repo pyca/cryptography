@@ -8,14 +8,16 @@ import typing
 
 from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
 from cryptography.hazmat.primitives import hashes
-from cryptography.x509.base import Certificate
-from cryptography.x509.base import CertificateBuilder
-from cryptography.x509.base import CertificateRevocationList
-from cryptography.x509.base import CertificateRevocationListBuilder
-from cryptography.x509.base import CertificateSigningRequest
-from cryptography.x509.base import CertificateSigningRequestBuilder
-from cryptography.x509.base import RevokedCertificate
-from cryptography.x509.base import RevokedCertificateBuilder
+from cryptography.x509.base import (
+    Certificate,
+    CertificateBuilder,
+    CertificateRevocationList,
+    CertificateRevocationListBuilder,
+    CertificateSigningRequest,
+    CertificateSigningRequestBuilder,
+    RevokedCertificate,
+    RevokedCertificateBuilder,
+)
 from cryptography.x509.name import Name
 
 
