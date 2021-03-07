@@ -255,7 +255,9 @@ class _CertificateRevocationList(x509.CertificateRevocationList):
             )
 
     @property
-    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+    def signature_hash_algorithm(
+        self,
+    ) -> typing.Optional[hashes.HashAlgorithm]:
         oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
@@ -414,7 +416,9 @@ class _CertificateSigningRequest(x509.CertificateSigningRequest):
         return _decode_x509_name(self._backend, subject)
 
     @property
-    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+    def signature_hash_algorithm(
+        self,
+    ) -> typing.Optional[hashes.HashAlgorithm]:
         oid = self.signature_algorithm_oid
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
