@@ -23,6 +23,12 @@ _GENERAL_NAMES = {
     7: "iPAddress",
     8: "registeredID",
 }
+_IPADDRESS_TYPES = typing.Union[
+    ipaddress.IPv4Address,
+    ipaddress.IPv6Address,
+    ipaddress.IPv4Network,
+    ipaddress.IPv6Network,
+]
 
 
 class UnsupportedGeneralNameType(Exception):
@@ -228,15 +234,7 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
-    def __init__(
-        self,
-        value: typing.Union[
-            ipaddress.IPv4Address,
-            ipaddress.IPv6Address,
-            ipaddress.IPv4Network,
-            ipaddress.IPv6Network,
-        ],
-    ):
+    def __init__(self, value: _IPADDRESS_TYPES):
         if not isinstance(
             value,
             (
@@ -255,14 +253,7 @@ class IPAddress(GeneralName):
         self._value = value
 
     @property
-    def value(
-        self,
-    ) -> typing.Union[
-        ipaddress.IPv4Address,
-        ipaddress.IPv6Address,
-        ipaddress.IPv4Network,
-        ipaddress.IPv6Network,
-    ]:
+    def value(self) -> _IPADDRESS_TYPES:
         return self._value
 
     def __repr__(self) -> str:
