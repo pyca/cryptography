@@ -229,7 +229,9 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+    def signature_hash_algorithm(
+        self,
+    ) -> typing.Optional[hashes.HashAlgorithm]:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -356,7 +358,9 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+    def signature_hash_algorithm(
+        self,
+    ) -> typing.Optional[hashes.HashAlgorithm]:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
