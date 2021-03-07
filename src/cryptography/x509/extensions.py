@@ -1486,9 +1486,61 @@ class SubjectAlternativeName(ExtensionType):
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
+    @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[GeneralName]
-    ) -> typing.List[GeneralName]:
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[UniformResourceIdentifier],
+            typing.Type[RFC822Name],
+        ],
+    ) -> typing.List[str]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[DirectoryName],
+    ) -> typing.List[Name]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[RegisteredID],
+    ) -> typing.List[ObjectIdentifier]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[IPAddress]
+    ) -> typing.List[_IPADDRESS_TYPES]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[OtherName]
+    ) -> typing.List[OtherName]:
+        ...
+
+    def get_values_for_type(
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[DirectoryName],
+            typing.Type[IPAddress],
+            typing.Type[OtherName],
+            typing.Type[RFC822Name],
+            typing.Type[RegisteredID],
+            typing.Type[UniformResourceIdentifier],
+        ],
+    ) -> typing.Union[
+        typing.List[_IPADDRESS_TYPES],
+        typing.List[str],
+        typing.List[OtherName],
+        typing.List[Name],
+        typing.List[ObjectIdentifier],
+    ]:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
@@ -1515,9 +1567,61 @@ class IssuerAlternativeName(ExtensionType):
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
+    @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[GeneralName]
-    ) -> typing.List[GeneralName]:
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[UniformResourceIdentifier],
+            typing.Type[RFC822Name],
+        ],
+    ) -> typing.List[str]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[DirectoryName],
+    ) -> typing.List[Name]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[RegisteredID],
+    ) -> typing.List[ObjectIdentifier]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[IPAddress]
+    ) -> typing.List[_IPADDRESS_TYPES]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[OtherName]
+    ) -> typing.List[OtherName]:
+        ...
+
+    def get_values_for_type(
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[DirectoryName],
+            typing.Type[IPAddress],
+            typing.Type[OtherName],
+            typing.Type[RFC822Name],
+            typing.Type[RegisteredID],
+            typing.Type[UniformResourceIdentifier],
+        ],
+    ) -> typing.Union[
+        typing.List[_IPADDRESS_TYPES],
+        typing.List[str],
+        typing.List[OtherName],
+        typing.List[Name],
+        typing.List[ObjectIdentifier],
+    ]:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
@@ -1544,9 +1648,61 @@ class CertificateIssuer(ExtensionType):
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
+    @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[GeneralName]
-    ) -> typing.List[GeneralName]:
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[UniformResourceIdentifier],
+            typing.Type[RFC822Name],
+        ],
+    ) -> typing.List[str]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[DirectoryName],
+    ) -> typing.List[Name]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self,
+        type: typing.Type[RegisteredID],
+    ) -> typing.List[ObjectIdentifier]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[IPAddress]
+    ) -> typing.List[_IPADDRESS_TYPES]:
+        ...
+
+    @typing.overload
+    def get_values_for_type(
+        self, type: typing.Type[OtherName]
+    ) -> typing.List[OtherName]:
+        ...
+
+    def get_values_for_type(
+        self,
+        type: typing.Union[
+            typing.Type[DNSName],
+            typing.Type[DirectoryName],
+            typing.Type[IPAddress],
+            typing.Type[OtherName],
+            typing.Type[RFC822Name],
+            typing.Type[RegisteredID],
+            typing.Type[UniformResourceIdentifier],
+        ],
+    ) -> typing.Union[
+        typing.List[_IPADDRESS_TYPES],
+        typing.List[str],
+        typing.List[OtherName],
+        typing.List[Name],
+        typing.List[ObjectIdentifier],
+    ]:
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
