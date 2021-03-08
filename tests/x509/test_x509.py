@@ -3617,7 +3617,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
         basic_constraints = typing.cast(
-            "x509.Extension[x509.BasicConstraints]",
+            x509.Extension[x509.BasicConstraints],
             request.extensions.get_extension_for_oid(
                 ExtensionOID.BASIC_CONSTRAINTS
             ),
@@ -3658,7 +3658,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
         basic_constraints = typing.cast(
-            "x509.Extension[x509.BasicConstraints]",
+            x509.Extension[x509.BasicConstraints],
             request.extensions.get_extension_for_oid(
                 ExtensionOID.BASIC_CONSTRAINTS
             ),
