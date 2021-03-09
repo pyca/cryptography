@@ -456,25 +456,12 @@ class CertificateSigningRequestBuilder(object):
     def __init__(
         self,
         subject_name: typing.Optional[Name] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
-        attributes: typing.Optional[
-            typing.Iterable[typing.Tuple[ObjectIdentifier, bytes]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
+        attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]] = [],
     ):
         """
         Creates an empty X.509 certificate request (v1).
         """
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-        if attributes is None:
-            attributes = []
-        else:
-            attributes = list(attributes)
-
         self._subject_name = subject_name
         self._extensions = extensions
         self._attributes = attributes
@@ -555,15 +542,8 @@ class CertificateBuilder(object):
         serial_number: typing.Optional[int] = None,
         not_valid_before: typing.Optional[datetime.datetime] = None,
         not_valid_after: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
     ) -> None:
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-
         self._version = Version.v3
         self._issuer_name = issuer_name
         self._subject_name = subject_name
@@ -795,22 +775,9 @@ class CertificateRevocationListBuilder(object):
         issuer_name: typing.Optional[Name] = None,
         last_update: typing.Optional[datetime.datetime] = None,
         next_update: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
-        revoked_certificates: typing.Optional[
-            typing.Iterable[RevokedCertificate]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
+        revoked_certificates: typing.List[RevokedCertificate] = [],
     ):
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-        if revoked_certificates is None:
-            revoked_certificates = []
-        else:
-            revoked_certificates = list(revoked_certificates)
-
         self._issuer_name = issuer_name
         self._last_update = last_update
         self._next_update = next_update
@@ -940,15 +907,8 @@ class RevokedCertificateBuilder(object):
         self,
         serial_number: typing.Optional[int] = None,
         revocation_date: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
     ):
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-
         self._serial_number = serial_number
         self._revocation_date = revocation_date
         self._extensions = extensions
