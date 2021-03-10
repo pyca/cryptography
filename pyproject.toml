@@ -6,7 +6,7 @@ requires = [
     "wheel",
     # Must be kept in sync with the `setup_requirements` in `setup.py`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
-    "setuptools-rust>=0.11.4,<0.12.0",
+    "setuptools-rust>=0.11.4",
 ]
 build-backend = "setuptools.build_meta"
 
