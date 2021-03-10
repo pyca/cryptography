@@ -87,7 +87,7 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
-            tox -r --  --color=yes --wycheproof-root=wycheproof
+            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
       - uses: ./.github/actions/upload-coverage
