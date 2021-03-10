@@ -9,7 +9,6 @@ import os
 import typing
 from enum import Enum
 
-from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
@@ -23,6 +22,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 from cryptography.x509.extensions import Extension, ExtensionType, Extensions
 from cryptography.x509.name import Name
+from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
