@@ -991,7 +991,8 @@ class Backend(BackendInterface):
 
         # Set the subject's public key.
         res = self._lib.X509_set_pubkey(
-            x509_cert, builder._public_key._evp_pkey
+            x509_cert,
+            builder._public_key._evp_pkey,  # type: ignore[union-attr]
         )
         self.openssl_assert(res == 1)
 
@@ -1101,7 +1102,9 @@ class Backend(BackendInterface):
         for revoked_cert in builder._revoked_certificates:
             # Duplicating because the X509_CRL takes ownership and will free
             # this memory when X509_CRL_free is called.
-            revoked = self._lib.X509_REVOKED_dup(revoked_cert._x509_revoked)
+            revoked = self._lib.X509_REVOKED_dup(
+                revoked_cert._x509_revoked  # type: ignore[attr-defined]
+            )
             self.openssl_assert(revoked != self._ffi.NULL)
             res = self._lib.X509_CRL_add0_revoked(x509_crl, revoked)
             self.openssl_assert(res == 1)
