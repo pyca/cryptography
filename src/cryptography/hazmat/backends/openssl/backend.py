@@ -992,7 +992,7 @@ class Backend(BackendInterface):
         # Set the subject's public key.
         res = self._lib.X509_set_pubkey(
             x509_cert,
-            builder._public_key._evp_pkey  # type: ignore[union-attr]
+            builder._public_key._evp_pkey,  # type: ignore[union-attr]
         )
         self.openssl_assert(res == 1)
 
