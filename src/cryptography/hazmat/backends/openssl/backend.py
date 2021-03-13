@@ -928,7 +928,10 @@ class Backend(BackendInterface):
 
         # Set subject public key.
         public_key = private_key.public_key()
-        res = self._lib.X509_REQ_set_pubkey(x509_req, public_key._evp_pkey)
+        res = self._lib.X509_REQ_set_pubkey(
+            x509_req,
+            public_key._evp_pkey  # type: ignore[union-attr]
+        )
         self.openssl_assert(res == 1)
 
         # Add extensions.
@@ -968,7 +971,11 @@ class Backend(BackendInterface):
             self.openssl_assert(res == 1)
 
         # Sign the request using the requester's private key.
-        res = self._lib.X509_REQ_sign(x509_req, private_key._evp_pkey, evp_md)
+        res = self._lib.X509_REQ_sign(
+            x509_req,
+            private_key._evp_pkey,  # type: ignore[union-attr]
+            evp_md
+        )
         if res == 0:
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
@@ -1042,7 +1049,11 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
 
         # Sign the certificate with the issuer's private key.
-        res = self._lib.X509_sign(x509_cert, private_key._evp_pkey, evp_md)
+        res = self._lib.X509_sign(
+            x509_cert,
+            private_key._evp_pkey,  # type: ignore[union-attr]
+            evp_md
+        )
         if res == 0:
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
@@ -1129,7 +1140,11 @@ class Backend(BackendInterface):
             res = self._lib.X509_CRL_add0_revoked(x509_crl, revoked)
             self.openssl_assert(res == 1)
 
-        res = self._lib.X509_CRL_sign(x509_crl, private_key._evp_pkey, evp_md)
+        res = self._lib.X509_CRL_sign(
+            x509_crl,
+            private_key._evp_pkey,  # type: ignore[union-attr]
+            evp_md
+        )
         if res == 0:
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
