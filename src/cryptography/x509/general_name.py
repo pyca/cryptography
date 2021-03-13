@@ -23,6 +23,12 @@ _GENERAL_NAMES = {
     7: "iPAddress",
     8: "registeredID",
 }
+_IPADDRESS_TYPES = typing.Union[
+    ipaddress.IPv4Address,
+    ipaddress.IPv6Address,
+    ipaddress.IPv4Network,
+    ipaddress.IPv6Network,
+]
 
 
 class UnsupportedGeneralNameType(Exception):
@@ -40,7 +46,7 @@ class GeneralName(metaclass=abc.ABCMeta):
 
 
 class RFC822Name(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -88,7 +94,7 @@ class RFC822Name(GeneralName):
 
 
 class DNSName(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -130,7 +136,7 @@ class DNSName(GeneralName):
 
 
 class UniformResourceIdentifier(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -174,7 +180,7 @@ class UniformResourceIdentifier(GeneralName):
 
 
 class DirectoryName(GeneralName):
-    def __init__(self, value: Name):
+    def __init__(self, value: Name) -> None:
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
 
@@ -201,7 +207,7 @@ class DirectoryName(GeneralName):
 
 
 class RegisteredID(GeneralName):
-    def __init__(self, value: ObjectIdentifier):
+    def __init__(self, value: ObjectIdentifier) -> None:
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
 
@@ -228,15 +234,7 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
-    def __init__(
-        self,
-        value: typing.Union[
-            ipaddress.IPv4Address,
-            ipaddress.IPv6Address,
-            ipaddress.IPv4Network,
-            ipaddress.IPv6Network,
-        ],
-    ):
+    def __init__(self, value: _IPADDRESS_TYPES) -> None:
         if not isinstance(
             value,
             (
@@ -255,14 +253,7 @@ class IPAddress(GeneralName):
         self._value = value
 
     @property
-    def value(
-        self,
-    ) -> typing.Union[
-        ipaddress.IPv4Address,
-        ipaddress.IPv6Address,
-        ipaddress.IPv4Network,
-        ipaddress.IPv6Network,
-    ]:
+    def value(self) -> _IPADDRESS_TYPES:
         return self._value
 
     def __repr__(self) -> str:
@@ -282,7 +273,7 @@ class IPAddress(GeneralName):
 
 
 class OtherName(GeneralName):
-    def __init__(self, type_id: ObjectIdentifier, value: bytes):
+    def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")
         if not isinstance(value, bytes):

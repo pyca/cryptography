@@ -10,6 +10,7 @@ import copy
 import datetime
 import ipaddress
 import os
+import typing
 
 import pytest
 
@@ -3615,8 +3616,11 @@ class TestCertificateSigningRequestBuilder(object):
         assert list(subject) == [
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
-        basic_constraints = request.extensions.get_extension_for_oid(
-            ExtensionOID.BASIC_CONSTRAINTS
+        basic_constraints = typing.cast(
+            x509.Extension[x509.BasicConstraints],
+            request.extensions.get_extension_for_oid(
+                ExtensionOID.BASIC_CONSTRAINTS
+            ),
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -3653,8 +3657,11 @@ class TestCertificateSigningRequestBuilder(object):
         assert list(subject) == [
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
-        basic_constraints = request.extensions.get_extension_for_oid(
-            ExtensionOID.BASIC_CONSTRAINTS
+        basic_constraints = typing.cast(
+            x509.Extension[x509.BasicConstraints],
+            request.extensions.get_extension_for_oid(
+                ExtensionOID.BASIC_CONSTRAINTS
+            ),
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -5019,7 +5026,7 @@ class TestName(object):
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
-            x509.Name(["not-a-NameAttribute"])
+            x509.Name(["not-a-NameAttribute"])  # type: ignore[list-item]
 
     def test_bytes(self, backend):
         name = x509.Name(

@@ -456,12 +456,8 @@ class CertificateSigningRequestBuilder(object):
     def __init__(
         self,
         subject_name: typing.Optional[Name] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
-        attributes: typing.Optional[
-            typing.Iterable[typing.Tuple[ObjectIdentifier, bytes]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
+        attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]] = [],
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -555,9 +551,7 @@ class CertificateBuilder(object):
         serial_number: typing.Optional[int] = None,
         not_valid_before: typing.Optional[datetime.datetime] = None,
         not_valid_after: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
     ) -> None:
         if extensions is None:
             extensions = []
@@ -795,12 +789,8 @@ class CertificateRevocationListBuilder(object):
         issuer_name: typing.Optional[Name] = None,
         last_update: typing.Optional[datetime.datetime] = None,
         next_update: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
-        revoked_certificates: typing.Optional[
-            typing.Iterable[RevokedCertificate]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
+        revoked_certificates: typing.List[RevokedCertificate] = [],
     ):
         if extensions is None:
             extensions = []
@@ -940,9 +930,7 @@ class RevokedCertificateBuilder(object):
         self,
         serial_number: typing.Optional[int] = None,
         revocation_date: typing.Optional[datetime.datetime] = None,
-        extensions: typing.Optional[
-            typing.Iterable[Extension[ExtensionType]]
-        ] = None,
+        extensions: typing.List[Extension[ExtensionType]] = [],
     ):
         if extensions is None:
             extensions = []

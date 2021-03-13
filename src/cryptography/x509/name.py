@@ -196,14 +196,32 @@ class RelativeDistinguishedName(object):
 
 
 class Name(object):
-    def __init__(self, attributes):
+    @typing.overload
+    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None:
+        ...
+
+    @typing.overload
+    def __init__(
+        self, attributes: typing.Iterable[RelativeDistinguishedName]
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        attributes: typing.Iterable[
+            typing.Union[NameAttribute, RelativeDistinguishedName]
+        ],
+    ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
             self._attributes = [
-                RelativeDistinguishedName([x]) for x in attributes
+                RelativeDistinguishedName([typing.cast(NameAttribute, x)])
+                for x in attributes
             ]
         elif all(isinstance(x, RelativeDistinguishedName) for x in attributes):
-            self._attributes = attributes
+            self._attributes = typing.cast(
+                typing.List[RelativeDistinguishedName], attributes
+            )
         else:
             raise TypeError(
                 "attributes must be a list of NameAttribute"
