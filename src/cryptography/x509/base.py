@@ -9,7 +9,6 @@ import os
 import typing
 from enum import Enum
 
-from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
@@ -23,6 +22,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 from cryptography.x509.extensions import Extension, ExtensionType, Extensions
 from cryptography.x509.name import Name
+from cryptography.x509.oid import ObjectIdentifier
 
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
@@ -462,15 +462,6 @@ class CertificateSigningRequestBuilder(object):
         """
         Creates an empty X.509 certificate request (v1).
         """
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-        if attributes is None:
-            attributes = []
-        else:
-            attributes = list(attributes)
-
         self._subject_name = subject_name
         self._extensions = extensions
         self._attributes = attributes
@@ -553,11 +544,6 @@ class CertificateBuilder(object):
         not_valid_after: typing.Optional[datetime.datetime] = None,
         extensions: typing.List[Extension[ExtensionType]] = [],
     ) -> None:
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-
         self._version = Version.v3
         self._issuer_name = issuer_name
         self._subject_name = subject_name
@@ -792,15 +778,6 @@ class CertificateRevocationListBuilder(object):
         extensions: typing.List[Extension[ExtensionType]] = [],
         revoked_certificates: typing.List[RevokedCertificate] = [],
     ):
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-        if revoked_certificates is None:
-            revoked_certificates = []
-        else:
-            revoked_certificates = list(revoked_certificates)
-
         self._issuer_name = issuer_name
         self._last_update = last_update
         self._next_update = next_update
@@ -932,11 +909,6 @@ class RevokedCertificateBuilder(object):
         revocation_date: typing.Optional[datetime.datetime] = None,
         extensions: typing.List[Extension[ExtensionType]] = [],
     ):
-        if extensions is None:
-            extensions = []
-        else:
-            extensions = list(extensions)
-
         self._serial_number = serial_number
         self._revocation_date = revocation_date
         self._extensions = extensions
