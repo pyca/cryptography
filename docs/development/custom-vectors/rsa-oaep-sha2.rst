@@ -33,7 +33,7 @@ Download link: :download:`VerifyRSAOAEPSHA2.java
 Using the Verifier
 ------------------
 
-Download and install the `Java 8 SDK`_. Initial verification was performed
+Download and install the `Java SDK`_. Initial verification was performed
 using ``jdk-8u77-macosx-x64.dmg``.
 
 Download the latest `Bouncy Castle`_ JAR.  Initial verification was performed
@@ -53,4 +53,4 @@ Finally, run the program with the path to the SHA-2 vectors:
     $ java -classpath ~/Downloads/bcprov-jdk15on-154.jar:./ VerifyRSAOAEPSHA2
 
 .. _`Bouncy Castle`: https://www.bouncycastle.org/
-.. _`Java 8 SDK`: https://www.oracle.com/technetwork/java/javase/downloads/index.html
+.. _`Java SDK`: https://www.oracle.com/java/technologies/javase-downloads.html
