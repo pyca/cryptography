@@ -30,7 +30,7 @@ jobs:
         recursive: true
         dest: veracode-pipeline-scan-results-to-sarif.zip
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2.2.2
       with:
         name: my-artifact
         path: veracode-pipeline-scan-results-to-sarif.zip
@@ -46,7 +46,7 @@ jobs:
         java-version: 1.8
     - run: java -jar pipeline-scan.jar --veracode_api_id "${{secrets.VERACODE_API_ID}}" --veracode_api_key "${{secrets.VERACODE_API_KEY}}" --fail_on_severity="Very High, High" --file veracode-pipeline-scan-results-to-sarif.zip
       continue-on-error: true
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2.2.2
       with:
         name: ScanResults
         path: results.json
