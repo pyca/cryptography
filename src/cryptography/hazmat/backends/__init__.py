@@ -9,7 +9,7 @@ from cryptography.hazmat.backends.interfaces import Backend
 _default_backend: typing.Optional[Backend] = None
 
 
-def default_backend():
+def default_backend() -> Backend:
     global _default_backend
 
     if _default_backend is None:

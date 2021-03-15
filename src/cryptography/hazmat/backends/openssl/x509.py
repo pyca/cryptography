@@ -204,8 +204,7 @@ class _RevokedCertificate(x509.RevokedCertificate):
         )
 
 
-@utils.register_interface(x509.CertificateRevocationList)
-class _CertificateRevocationList(object):
+class _CertificateRevocationList(x509.CertificateRevocationList):
     def __init__(self, backend, x509_crl):
         self._backend = backend
         self._x509_crl = x509_crl
@@ -385,8 +384,7 @@ class _CertificateRevocationList(object):
         return True
 
 
-@utils.register_interface(x509.CertificateSigningRequest)
-class _CertificateSigningRequest(object):
+class _CertificateSigningRequest(x509.CertificateSigningRequest):
     def __init__(self, backend, x509_req):
         self._backend = backend
         self._x509_req = x509_req
