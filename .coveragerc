@@ -15,3 +15,4 @@ exclude_lines =
     @abc.abstractmethod
     @abc.abstractproperty
     @typing.overload
+    if typing.TYPE_CHECKING

@@ -478,7 +478,20 @@ class TestOpenSSLSignX509Certificate(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_certificate(
-                object(), private_key, DummyHashAlgorithm()
+                object(),  # type: ignore[arg-type]
+                private_key,
+                DummyHashAlgorithm(),
+            )
+
+    def test_builder_requires_public_key(self):
+        builder = x509.CertificateBuilder()
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.create_x509_certificate(
+                builder,
+                private_key,
+                DummyHashAlgorithm(),
             )
 
 
@@ -488,7 +501,9 @@ class TestOpenSSLSignX509CSR(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_csr(
-                object(), private_key, DummyHashAlgorithm()
+                object(),  # type: ignore[arg-type]
+                private_key,
+                DummyHashAlgorithm(),
             )
 
 
@@ -497,13 +512,19 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
         private_key = RSA_KEY_2048.private_key(backend)
 
         with pytest.raises(TypeError):
-            backend.create_x509_crl(object(), private_key, hashes.SHA256())
+            backend.create_x509_crl(
+                object(),  # type: ignore[arg-type]
+                private_key,
+                hashes.SHA256(),
+            )
 
 
 class TestOpenSSLCreateRevokedCertificate(object):
     def test_invalid_builder(self):
         with pytest.raises(TypeError):
-            backend.create_x509_revoked_certificate(object())
+            backend.create_x509_revoked_certificate(
+                object()  # type: ignore[arg-type]
+            )
 
 
 class TestOpenSSLSerializationWithOpenSSL(object):
