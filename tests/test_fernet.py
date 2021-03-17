@@ -11,11 +11,12 @@ import time
 
 import iso8601
 
+import pretend
+
 import pytest
 
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 import cryptography_vectors
@@ -37,8 +38,6 @@ def test_default_backend():
     assert f._backend is default_backend()
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
@@ -110,17 +109,15 @@ class TestFernet(object):
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
-            f.encrypt("")
+            f.encrypt("")  # type: ignore[arg-type]
         with pytest.raises(TypeError):
-            f.decrypt("")
+            f.decrypt("")  # type: ignore[arg-type]
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
-        ts = "1985-10-26T01:20:01-07:00"
-        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
-        monkeypatch.setattr(time, "time", lambda: current_time)
+        monkeypatch.setattr(time, "time", pretend.raiser(ValueError))
         assert f.decrypt(token, ttl=None) == pt
 
     def test_ttl_required_in_decrypt_at_time(self, monkeypatch, backend):
@@ -128,7 +125,11 @@ class TestFernet(object):
         pt = b"encrypt me"
         token = f.encrypt(pt)
         with pytest.raises(ValueError):
-            f.decrypt_at_time(token, ttl=None, current_time=int(time.time()))
+            f.decrypt_at_time(
+                token,
+                ttl=None,  # type: ignore[arg-type]
+                current_time=int(time.time()),
+            )
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
@@ -148,8 +149,6 @@ class TestFernet(object):
             f.extract_timestamp(b"nonsensetoken")
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
@@ -184,7 +183,9 @@ class TestMultiFernet(object):
         with pytest.raises(InvalidToken):
             f.decrypt_at_time(token, ttl=1, current_time=102)
         with pytest.raises(ValueError):
-            f.decrypt_at_time(token, ttl=None, current_time=100)
+            f.decrypt_at_time(
+                token, ttl=None, current_time=100  # type: ignore[arg-type]
+            )
 
     def test_no_fernets(self, backend):
         with pytest.raises(ValueError):
@@ -192,7 +193,7 @@ class TestMultiFernet(object):
 
     def test_non_iterable_argument(self, backend):
         with pytest.raises(TypeError):
-            MultiFernet(None)
+            MultiFernet(None)  # type: ignore[arg-type]
 
     def test_rotate(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)

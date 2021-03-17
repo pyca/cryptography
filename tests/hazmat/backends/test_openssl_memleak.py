@@ -147,6 +147,8 @@ def assert_no_memory_leaks(s, argv=[]):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    assert proc.stdout is not None
+    assert proc.stderr is not None
     try:
         proc.wait()
         if proc.returncode == 255:

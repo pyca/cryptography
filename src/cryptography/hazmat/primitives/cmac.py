@@ -2,7 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
+
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -11,12 +12,17 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import CMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, CMACBackend
 from cryptography.hazmat.primitives import ciphers
 
 
 class CMAC(object):
-    def __init__(self, algorithm, backend=None, ctx=None):
+    def __init__(
+        self,
+        algorithm: ciphers.BlockCipherAlgorithm,
+        backend: typing.Optional[Backend] = None,
+        ctx=None,
+    ):
         backend = _get_backend(backend)
         if not isinstance(backend, CMACBackend):
             raise UnsupportedAlgorithm(
@@ -34,21 +40,21 @@ class CMAC(object):
         else:
             self._ctx = ctx
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
 
         utils._check_bytes("data", data)
         self._ctx.update(data)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
 
-    def verify(self, signature):
+    def verify(self, signature: bytes) -> None:
         utils._check_bytes("signature", signature)
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
@@ -56,7 +62,7 @@ class CMAC(object):
         ctx, self._ctx = self._ctx, None
         ctx.verify(signature)
 
-    def copy(self):
+    def copy(self) -> "CMAC":
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return CMAC(

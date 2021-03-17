@@ -627,15 +627,6 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
-
-.. class:: EllipticCurvePrivateKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    This interface contains additional methods relating to serialization.
-    Any object with this interface also has all the methods from
-    :class:`EllipticCurvePrivateKey`.
-
     .. method:: private_numbers()
 
         Create a :class:`EllipticCurvePrivateNumbers` object.
@@ -668,6 +659,13 @@ Key Interfaces
             interface.
 
         :return bytes: Serialized key.
+
+
+.. class:: EllipticCurvePrivateKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias for :class:`EllipticCurvePrivateKey`.
 
 
 .. class:: EllipticCurvePublicKey

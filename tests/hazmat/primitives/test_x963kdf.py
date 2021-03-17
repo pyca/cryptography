@@ -8,14 +8,12 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
-from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestX963KDF(object):
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
@@ -71,7 +69,7 @@ class TestX963KDF(object):
 
         xkdf = X963KDF(hashes.SHA256(), 128, sharedinfo, backend)
 
-        assert xkdf.verify(key, derivedkey) is None
+        xkdf.verify(key, derivedkey)
 
     def test_invalid_verify(self, backend):
         key = binascii.unhexlify(
@@ -85,32 +83,42 @@ class TestX963KDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            X963KDF(hashes.SHA256(), 16, sharedinfo="foo", backend=backend)
+            X963KDF(
+                hashes.SHA256(),
+                16,
+                sharedinfo="foo",  # type: ignore[arg-type]
+                backend=backend,
+            )
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.derive("foo")
+            xkdf.derive("foo")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify("foo", b"bar")
+            xkdf.verify("foo", b"bar")  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify(b"foo", "bar")
+            xkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
 
 
 def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        X963KDF(hashes.SHA256(), 16, None, pretend_backend)
+        X963KDF(
+            hashes.SHA256(),
+            16,
+            None,
+            pretend_backend,  # type: ignore[arg-type]
+        )

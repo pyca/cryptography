@@ -9,7 +9,6 @@ import struct
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
 
 from .utils import _load_all_params
@@ -22,7 +21,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support ChaCha20",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20(object):
     @pytest.mark.parametrize(
         "vector",
@@ -66,8 +64,8 @@ class TestChaCha20(object):
             algorithms.ChaCha20(b"0" * 32, b"0")
 
         with pytest.raises(TypeError):
-            algorithms.ChaCha20(b"0" * 32, object())
+            algorithms.ChaCha20(b"0" * 32, object())  # type:ignore[arg-type]
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            algorithms.ChaCha20("0" * 32, b"0" * 16)
+            algorithms.ChaCha20("0" * 32, b"0" * 16)  # type:ignore[arg-type]

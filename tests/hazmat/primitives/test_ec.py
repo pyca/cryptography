@@ -6,15 +6,12 @@
 import binascii
 import itertools
 import os
+import typing
 from binascii import hexlify
 
 import pytest
 
 from cryptography import exceptions, utils, x509
-from cryptography.hazmat.backends.interfaces import (
-    EllipticCurveBackend,
-    PEMSerializationBackend,
-)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -35,7 +32,7 @@ from ...utils import (
     raises_unsupported_algorithm,
 )
 
-_HASH_TYPES = {
+_HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
     "SHA-1": hashes.SHA1,
     "SHA-224": hashes.SHA224,
     "SHA-256": hashes.SHA256,
@@ -81,36 +78,30 @@ def test_get_curve_for_oid():
         ec.get_curve_for_oid(x509.ObjectIdentifier("1.1.1.1"))
 
 
-@utils.register_interface(ec.EllipticCurve)
-class DummyCurve(object):
+class DummyCurve(ec.EllipticCurve):
     name = "dummy-curve"
     key_size = 1
 
 
-@utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
-class DummySignatureAlgorithm(object):
-    algorithm = None
+class DummySignatureAlgorithm(ec.EllipticCurveSignatureAlgorithm):
+    algorithm = hashes.SHA256()
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_curve_unsupported(backend, DummyCurve())
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_exchange_algorithm_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), DummyCurve())
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_ecdsa_vector(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_derive_private_key_success(backend):
     curve = ec.SECP256K1()
     _skip_curve_unsupported(backend, curve)
@@ -124,16 +115,15 @@ def test_derive_private_key_success(backend):
     assert private_numbers == derived_key.private_numbers()
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_derive_private_key_errors(backend):
     curve = ec.SECP256K1()
     _skip_curve_unsupported(backend, curve)
 
     with pytest.raises(TypeError):
-        ec.derive_private_key("one", curve, backend)
+        ec.derive_private_key("one", curve, backend)  # type: ignore[arg-type]
 
     with pytest.raises(TypeError):
-        ec.derive_private_key(10, "five", backend)
+        ec.derive_private_key(10, "five", backend)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
         ec.derive_private_key(-7, curve, backend)
@@ -168,7 +158,7 @@ def test_invalid_ec_numbers_args(private_value, x, y, curve):
 
 def test_invalid_private_numbers_public_numbers():
     with pytest.raises(TypeError):
-        ec.EllipticCurvePrivateNumbers(1, None)
+        ec.EllipticCurvePrivateNumbers(1, None)  # type: ignore[arg-type]
 
 
 def test_encode_point():
@@ -234,7 +224,7 @@ def test_from_encoded_point_not_a_curve():
     with pytest.raises(TypeError):
         with pytest.warns(CryptographyDeprecationWarning):
             ec.EllipticCurvePublicNumbers.from_encoded_point(
-                "notacurve", b"\x04data"
+                "notacurve", b"\x04data"  # type: ignore[arg-type]
             )
 
 
@@ -267,7 +257,6 @@ def test_ec_private_numbers_hash():
     assert hash(numbers1) != hash(numbers3)
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_ec_key_key_size(backend):
     curve = ec.SECP256R1()
     _skip_curve_unsupported(backend, curve)
@@ -276,7 +265,6 @@ def test_ec_key_key_size(backend):
     assert key.public_key().key_size == 256
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     def test_with_numbers(self, backend, subtests):
         vectors = itertools.product(
@@ -290,7 +278,9 @@ class TestECWithNumbers(object):
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
+                    vector["curve"]
+                ]
 
                 _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -309,7 +299,6 @@ class TestECWithNumbers(object):
                 assert curve_type().name == priv_num.public_numbers.curve.name
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSAVectors(object):
     def test_signing_with_example_keys(self, backend, subtests):
         vectors = itertools.product(
@@ -502,7 +491,9 @@ class TestECDSAVectors(object):
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
+                    vector["curve"]
+                ]
 
                 _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -663,8 +654,6 @@ class TestECNumbersEquality(object):
         assert priv != object()
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestECSerialization(object):
     @pytest.mark.parametrize(
         ("fmt", "password"),
@@ -689,6 +678,7 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
@@ -697,6 +687,7 @@ class TestECSerialization(object):
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -732,6 +723,7 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
@@ -740,6 +732,7 @@ class TestECSerialization(object):
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -778,10 +771,12 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode(),
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             encoding, fmt, serialization.NoEncryption()
         )
         loaded_key = loader_func(serialized, None, backend)
+        assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -915,8 +910,6 @@ class TestECSerialization(object):
         assert parsed_public
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestEllipticCurvePEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
@@ -1119,7 +1112,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
     def test_from_encoded_point_not_a_curve(self):
         with pytest.raises(TypeError):
             ec.EllipticCurvePublicKey.from_encoded_point(
-                "notacurve", b"\x04data"
+                "notacurve", b"\x04data"  # type: ignore[arg-type]
             )
 
     def test_from_encoded_point_unsupported_encoding(self):
@@ -1169,7 +1162,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSAVerification(object):
     def test_signature_not_bytes(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -1178,10 +1170,11 @@ class TestECDSAVerification(object):
         with pytest.raises(TypeError), pytest.warns(
             CryptographyDeprecationWarning
         ):
-            public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
+            public_key.verifier(
+                1234, ec.ECDSA(hashes.SHA256())  # type: ignore[arg-type]
+            )
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDH(object):
     def test_key_exchange_with_vectors(self, backend, subtests):
         vectors = load_vectors_from_file(
@@ -1232,15 +1225,15 @@ class TestECDH(object):
                     peer_pubkey = public_numbers.public_key(backend)
 
                 z = private_key.exchange(ec.ECDH(), peer_pubkey)
-                z = int(hexlify(z).decode("ascii"), 16)
+                zz = int(hexlify(z).decode("ascii"), 16)
                 # At this point fail indicates that one of the underlying keys
                 # was changed. This results in a non-matching derived key.
                 if vector["fail"]:
                     # Errno 8 indicates Z should be changed.
                     assert vector["errno"] == 8
-                    assert z != vector["Z"]
+                    assert zz != vector["Z"]
                 else:
-                    assert z == vector["Z"]
+                    assert zz == vector["Z"]
 
     @pytest.mark.parametrize(
         "vector",

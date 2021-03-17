@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import typing
 
 import pytest
 
@@ -411,7 +412,9 @@ def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
 
 
 def kbkdf_counter_mode_test(backend, params):
-    supported_algorithms = {
+    supported_algorithms: typing.Dict[
+        str, typing.Type[hashes.HashAlgorithm]
+    ] = {
         "hmac_sha1": hashes.SHA1,
         "hmac_sha224": hashes.SHA224,
         "hmac_sha256": hashes.SHA256,

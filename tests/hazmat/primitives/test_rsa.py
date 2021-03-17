@@ -14,10 +14,6 @@ from cryptography.exceptions import (
     InvalidSignature,
     _Reasons,
 )
-from cryptography.hazmat.backends.interfaces import (
-    PEMSerializationBackend,
-    RSABackend,
-)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     padding,
@@ -74,7 +70,7 @@ class DummyMGF(object):
 
 
 def _check_rsa_private_numbers_if_serializable(key):
-    if isinstance(key, rsa.RSAPrivateKeyWithSerialization):
+    if isinstance(key, rsa.RSAPrivateKey):
         _check_rsa_private_numbers(key.private_numbers())
 
 
@@ -138,7 +134,6 @@ def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 def test_skip_pss_hash_algorithm_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_pss_hash_algorithm_unsupported(backend, DummyHashAlgorithm())
@@ -168,7 +163,6 @@ def test_modular_inverse():
     )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
@@ -276,6 +270,7 @@ class TestRSA(object):
         private_key = serialization.load_der_private_key(
             binascii.unhexlify(vector["key"]), None, backend
         )
+        assert isinstance(private_key, rsa.RSAPrivateKey)
         assert vector["oaepdigest"] == b"SHA512"
         decrypted = private_key.decrypt(
             binascii.unhexlify(vector["input"]),
@@ -386,10 +381,11 @@ def test_rsa_generate_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        rsa.generate_private_key(65537, 2048, pretend_backend)
+        rsa.generate_private_key(
+            65537, 2048, pretend_backend  # type:ignore[arg-type]
+        )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASignature(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -590,7 +586,11 @@ class TestRSASignature(object):
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(TypeError):
-            private_key.sign(b"msg", "notpadding", hashes.SHA1())
+            private_key.sign(
+                b"msg",
+                "notpadding",  # type: ignore[arg-type]
+                hashes.SHA1(),
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -604,7 +604,8 @@ class TestRSASignature(object):
             private_key.sign(
                 b"msg",
                 padding.PSS(
-                    mgf=DummyMGF(), salt_length=padding.PSS.MAX_LENGTH
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    salt_length=padding.PSS.MAX_LENGTH,
                 ),
                 hashes.SHA1(),
             )
@@ -707,7 +708,8 @@ class TestRSASignature(object):
             CryptographyDeprecationWarning
         ):
             private_key.signer(
-                padding.PKCS1v15(), asym_utils.Prehashed(hashes.SHA1())
+                padding.PKCS1v15(),
+                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
             )
 
     @pytest.mark.supported(
@@ -724,7 +726,7 @@ class TestRSASignature(object):
             public_key.verifier(
                 b"0" * 64,
                 padding.PKCS1v15(),
-                asym_utils.Prehashed(hashes.SHA1()),
+                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
             )
 
     def test_prehashed_unsupported_in_signature_recover(self, backend):
@@ -736,7 +738,9 @@ class TestRSASignature(object):
         prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
-                signature, padding.PKCS1v15(), prehashed_alg
+                signature,
+                padding.PKCS1v15(),
+                prehashed_alg,  # type: ignore[arg-type]
             )
 
     def test_corrupted_private_key(self, backend):
@@ -746,7 +750,6 @@ class TestRSASignature(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -844,6 +847,7 @@ class TestRSAVerification(object):
             b"bda3b33946490057b9a3003d3fd9daf7c4778b43fd46144d945d815f12628ff4"
         )
         public_key = serialization.load_der_public_key(key_der, backend)
+        assert isinstance(public_key, rsa.RSAPublicKey)
         with pytest.raises(InvalidSignature):
             public_key.verify(
                 sig,
@@ -1013,10 +1017,10 @@ class TestRSAVerification(object):
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA1())
 
-        # Hash algorithm can not be absent for PSS padding
+        # Hash algorithm cannot be absent for PSS padding
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
-                signature, pss_padding, None
+                signature, pss_padding, None  # type: ignore[arg-type]
             )
 
         # Signature data recovery not supported with PSS
@@ -1076,7 +1080,12 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
-            public_key.verify(b"sig", b"msg", "notpadding", hashes.SHA1())
+            public_key.verify(
+                b"sig",
+                b"msg",
+                "notpadding",  # type: ignore[arg-type]
+                hashes.SHA1(),
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1197,7 +1206,6 @@ class TestRSAVerification(object):
             public_key.verify(b"\x00" * 64, data, pkcs, prehashed_alg)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPSSMGF1Verification(object):
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1335,7 +1343,6 @@ class TestRSAPSSMGF1Verification(object):
     )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPKCS1Verification(object):
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
@@ -1441,7 +1448,9 @@ class TestRSAPKCS1Verification(object):
 class TestPSS(object):
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
-            padding.calculate_max_pss_salt_length(object(), hashes.SHA256())
+            padding.calculate_max_pss_salt_length(
+                object(), hashes.SHA256()  # type:ignore[arg-type]
+            )
 
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
@@ -1472,7 +1481,7 @@ class TestPSS(object):
 class TestMGF1(object):
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
-            padding.MGF1(b"not_a_hash")
+            padding.MGF1(b"not_a_hash")  # type:ignore[arg-type]
 
     def test_valid_mgf1_parameters(self):
         algorithm = hashes.SHA1()
@@ -1484,10 +1493,11 @@ class TestOAEP(object):
     def test_invalid_algorithm(self):
         mgf = padding.MGF1(hashes.SHA1())
         with pytest.raises(TypeError):
-            padding.OAEP(mgf=mgf, algorithm=b"", label=None)
+            padding.OAEP(
+                mgf=mgf, algorithm=b"", label=None  # type:ignore[arg-type]
+            )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSADecryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1724,12 +1734,13 @@ class TestRSADecryption(object):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAEncryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1898,7 +1909,9 @@ class TestRSAEncryption(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.encrypt(b"somedata", DummyAsymmetricPadding())
         with pytest.raises(TypeError):
-            public_key.encrypt(b"somedata", padding=object())
+            public_key.encrypt(
+                b"somedata", padding=object()  # type: ignore[arg-type]
+            )
 
     def test_unsupported_oaep_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -1908,12 +1921,13 @@ class TestRSAEncryption(object):
             public_key.encrypt(
                 b"ciphertext",
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSANumbers(object):
     def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
@@ -1953,10 +1967,10 @@ class TestRSANumbers(object):
 
     def test_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=None, n=15)
+            rsa.RSAPublicNumbers(e=None, n=15)  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=1, n=None)
+            rsa.RSAPublicNumbers(e=1, n=None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         ("p", "q", "d", "dmp1", "dmq1", "iqmp", "public_numbers"),
@@ -2135,8 +2149,6 @@ class TestRSAPrimeFactorRecovery(object):
             rsa.rsa_recover_prime_factors(34, 3, 7)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPrivateKeySerialization(object):
     @pytest.mark.parametrize(
         ("fmt", "password"),
@@ -2164,6 +2176,7 @@ class TestRSAPrivateKeySerialization(object):
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -2201,6 +2214,7 @@ class TestRSAPrivateKeySerialization(object):
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend
         )
+        assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
@@ -2291,7 +2305,7 @@ class TestRSAPrivateKeySerialization(object):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",
+                "notencoding",  # type: ignore[arg-type]
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -2301,7 +2315,7 @@ class TestRSAPrivateKeySerialization(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",
+                "invalidformat",  # type: ignore[arg-type]
                 serialization.NoEncryption(),
             )
 
@@ -2311,7 +2325,7 @@ class TestRSAPrivateKeySerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",
+                "notanencalg",  # type: ignore[arg-type]
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
@@ -2324,8 +2338,6 @@ class TestRSAPrivateKeySerialization(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "format"),
@@ -2410,12 +2422,18 @@ class TestRSAPEMPublicKeySerialization(object):
     def test_public_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
-            key.public_bytes("notencoding", serialization.PublicFormat.PKCS1)
+            key.public_bytes(
+                "notencoding",  # type: ignore[arg-type]
+                serialization.PublicFormat.PKCS1,
+            )
 
     def test_public_bytes_invalid_format(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
-            key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",  # type: ignore[arg-type]
+            )
 
     @pytest.mark.parametrize(
         ("encoding", "fmt"),

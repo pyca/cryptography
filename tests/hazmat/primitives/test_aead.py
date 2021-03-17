@@ -9,7 +9,6 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
@@ -25,7 +24,7 @@ from ...utils import (
 )
 
 
-class FakeData(object):
+class FakeData(bytes):
     def __len__(self):
         return 2 ** 32 + 1
 
@@ -42,7 +41,6 @@ def _aead_supported(cls):
     _aead_supported(ChaCha20Poly1305),
     reason="Requires OpenSSL without ChaCha20Poly1305 support",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_chacha20poly1305_unsupported_on_older_openssl(backend):
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
         ChaCha20Poly1305(ChaCha20Poly1305.generate_key())
@@ -52,7 +50,6 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
     not _aead_supported(ChaCha20Poly1305),
     reason="Does not support ChaCha20Poly1305",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20Poly1305(object):
     def test_data_too_large(self):
         key = ChaCha20Poly1305.generate_key()
@@ -71,7 +68,7 @@ class TestChaCha20Poly1305(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            ChaCha20Poly1305(object())
+            ChaCha20Poly1305(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             ChaCha20Poly1305(b"0" * 31)
@@ -185,7 +182,6 @@ class TestChaCha20Poly1305(object):
         assert computed_pt2 == pt
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESCCM(object):
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
@@ -215,7 +211,7 @@ class TestAESCCM(object):
             AESCCM(key, tag_length=2)
 
         with pytest.raises(TypeError):
-            AESCCM(key, tag_length="notanint")
+            AESCCM(key, tag_length="notanint")  # type:ignore[arg-type]
 
     def test_invalid_nonce_length(self, backend):
         key = AESCCM.generate_key(128)
@@ -298,14 +294,14 @@ class TestAESCCM(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM(object())
+            AESCCM(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESCCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM.generate_key(object())
+            AESCCM.generate_key(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESCCM.generate_key(129)
@@ -359,7 +355,6 @@ def _load_gcm_vectors():
     return [x for x in vectors if len(x["tag"]) == 32 and len(x["iv"]) >= 16]
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESGCM(object):
     def test_data_too_large(self):
         key = AESGCM.generate_key(128)
@@ -430,14 +425,14 @@ class TestAESGCM(object):
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM(object())
+            AESGCM(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESGCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM.generate_key(object())
+            AESGCM.generate_key(object())  # type:ignore[arg-type]
 
         with pytest.raises(ValueError):
             AESGCM.generate_key(129)

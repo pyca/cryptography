@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
-from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test
@@ -16,16 +15,15 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            m.update("\u00FC")
+            m.update("\u00FC")  # type: ignore[arg-type]
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hashes.Hash(hashes.SHA1, backend=backend)
+            hashes.Hash(hashes.SHA1, backend=backend)  # type: ignore[arg-type]
 
     def test_raises_after_finalize(self, backend):
         h = hashes.Hash(hashes.SHA1(), backend=backend)
@@ -49,7 +47,6 @@ class TestHashContext(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
     skip_message="Does not support SHA1",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA1(object):
     test_sha1 = generate_base_hash_test(
         hashes.SHA1(),
@@ -61,7 +58,6 @@ class TestSHA1(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
     skip_message="Does not support SHA224",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA224(object):
     test_sha224 = generate_base_hash_test(
         hashes.SHA224(),
@@ -73,7 +69,6 @@ class TestSHA224(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
     skip_message="Does not support SHA256",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA256(object):
     test_sha256 = generate_base_hash_test(
         hashes.SHA256(),
@@ -85,7 +80,6 @@ class TestSHA256(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
     skip_message="Does not support SHA384",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA384(object):
     test_sha384 = generate_base_hash_test(
         hashes.SHA384(),
@@ -97,7 +91,6 @@ class TestSHA384(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
     skip_message="Does not support SHA512",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512(object):
     test_sha512 = generate_base_hash_test(
         hashes.SHA512(),
@@ -109,7 +102,6 @@ class TestSHA512(object):
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestMD5(object):
     test_md5 = generate_base_hash_test(
         hashes.MD5(),
@@ -123,7 +115,6 @@ class TestMD5(object):
     ),
     skip_message="Does not support BLAKE2b",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2b(object):
     test_blake2b = generate_base_hash_test(
         hashes.BLAKE2b(digest_size=64),
@@ -147,7 +138,6 @@ class TestBLAKE2b(object):
     ),
     skip_message="Does not support BLAKE2s",
 )
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestBLAKE2s(object):
     test_blake2s = generate_base_hash_test(
         hashes.BLAKE2s(digest_size=32),
@@ -169,10 +159,9 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        hashes.Hash(hashes.SHA1(), pretend_backend)
+        hashes.Hash(hashes.SHA1(), pretend_backend)  # type:ignore[arg-type]
 
 
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 def test_buffer_protocol_hash(backend):
     data = binascii.unhexlify(b"b4190e")
     h = hashes.Hash(hashes.SHA256(), backend)
@@ -195,3 +184,14 @@ class TestSHAKE(object):
 
         with pytest.raises(ValueError):
             xof(digest_size=0)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SM3()),
+    skip_message="Does not support SM3",
+)
+class TestSM3(object):
+    test_sm3 = generate_base_hash_test(
+        hashes.SM3(),
+        digest_size=32,
+    )

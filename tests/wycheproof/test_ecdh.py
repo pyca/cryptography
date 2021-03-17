@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -36,7 +35,6 @@ _CURVES = {
 }
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @wycheproof_tests(
     "ecdh_test.json",
     "ecdh_brainpoolP224r1_test.json",
@@ -66,6 +64,7 @@ def test_ecdh(backend, wycheproof):
         public_key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testcase["public"]), backend
         )
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
     except NotImplementedError:
         assert wycheproof.has_flag("UnnamedCurve")
         return
@@ -84,7 +83,6 @@ def test_ecdh(backend, wycheproof):
             private_key.exchange(ec.ECDH(), public_key)
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @wycheproof_tests(
     "ecdh_secp224r1_ecpoint_test.json",
     "ecdh_secp256r1_ecpoint_test.json",
@@ -93,6 +91,7 @@ def test_ecdh(backend, wycheproof):
 )
 def test_ecdh_ecpoint(backend, wycheproof):
     curve = _CURVES[wycheproof.testgroup["curve"]]
+    assert isinstance(curve, ec.EllipticCurve)
     _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
 
     private_key = ec.derive_private_key(

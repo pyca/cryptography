@@ -7,6 +7,9 @@ You can install ``cryptography`` with ``pip``:
 
     $ pip install cryptography
 
+If this does not work please **upgrade your pip** first, as that is the
+single most common cause of installation problems.
+
 Supported platforms
 -------------------
 
@@ -72,18 +75,26 @@ local `wheel cache`_.
 Building cryptography on Linux
 ------------------------------
 
+.. note::
+
+    If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
+    derived from the preceding list, then you should **upgrade pip** and
+    attempt to install ``cryptography`` again before following the instructions
+    to compile it below. These platforms will receive a binary wheel and
+    require no compiler if you have an updated ``pip``!
+
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
-are included. For users on pip 19.0 or above running on a ``manylinux2010`` (or
-greater) compatible distribution (almost everything except Alpine) all you
-should need to do is:
+are included. For users on **pip 19.0** or above running on a ``manylinux2010``
+(or greater) compatible distribution (almost everything **except Alpine**) all
+you should need to do is:
 
 .. code-block:: console
 
     $ pip install cryptography
 
 If you are on Alpine or just want to compile it yourself then
-``cryptography`` requires a compiler, headers for Python (if you're not
-using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
+``cryptography`` requires a C compiler, a Rust compiler, headers for Python (if
+you're not using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
 available on your system.
 
 On all Linux distributions you will need to have :ref:`Rust installed and
@@ -92,21 +103,57 @@ available<installation:Rust>`.
 Alpine
 ~~~~~~
 
+.. warning::
+
+    The Rust available by default in Alpine < 3.12 is older than the minimum
+    supported version. See the :ref:`Rust installation instructions
+    <installation:Rust>` for information about installing a newer Rust.
+
 .. code-block:: console
 
-    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo
 
 If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
+.. warning::
+
+    The Rust available in current Debian stable and some Ubuntu versions is
+    older than the minimum supported version. Ubuntu 18.04 and 20.04 are
+    sufficiently new, but otherwise please see the
+    :ref:`Rust installation instructions <installation:Rust>` for information
+    about installing a newer Rust.
+
 .. code-block:: console
 
-    $ sudo apt-get install build-essential libssl-dev libffi-dev python3-dev
+    $ sudo apt-get install build-essential libssl-dev libffi-dev \
+        python3-dev cargo
 
-RHEL/CentOS
-~~~~~~~~~~~
+Fedora/RHEL 8/CentOS 8
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. warning::
+
+    For RHEL and CentOS you must be on version 8.3 or newer for the command
+    below to install a sufficiently new Rust. If your Rust is less than 1.41.0
+    please see the :ref:`Rust installation instructions <installation:Rust>`
+    for information about installing a newer Rust.
+
+.. code-block:: console
+
+    $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
+        openssl-devel cargo
+
+RHEL 7/CentOS 7
+~~~~~~~~~~~~~~~
+
+.. warning::
+
+    You must install Rust using the :ref:`Rust installation instructions
+    <installation:Rust>`. ``cryptography`` requires a Rust version newer than
+    what is provided in the distribution packages.
 
 .. code-block:: console
 
@@ -143,17 +190,7 @@ this when configuring OpenSSL:
 
 .. code-block:: console
 
-    $ ./config -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared
-
-You'll also need to generate your own ``openssl.ld`` file. For example::
-
-    OPENSSL_1.1.0E_CUSTOM {
-        global:
-            *;
-    };
-
-You should replace the version string on the first line as appropriate for your
-build.
+    $ ./config -Wl,-Bsymbolic-functions -fPIC shared
 
 Static Wheels
 ~~~~~~~~~~~~~
@@ -236,10 +273,12 @@ This will install a compiler (clang) along with (most of) the required
 development headers.
 
 You will also need to have :ref:`Rust installed and
-available<installation:Rust>`.
+available<installation:Rust>`, which can be obtained from `Homebrew`_,
+`MacPorts`_, or directly from the Rust website.
 
-You'll also need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
-Cryptography does **not** support Apple's deprecated OpenSSL distribution.
+Finally you need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
+Cryptography does **not** support the OpenSSL/LibreSSL libraries Apple ships
+in its base operating system.
 
 To build cryptography and dynamically link it:
 
@@ -247,14 +286,14 @@ To build cryptography and dynamically link it:
 
 .. code-block:: console
 
-    $ brew install openssl@1.1
+    $ brew install openssl@1.1 rust
     $ env LDFLAGS="-L$(brew --prefix openssl@1.1)/lib" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
-    $ sudo port install openssl
+    $ sudo port install openssl rust
     $ env LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
 
 You can also build cryptography statically:
@@ -263,14 +302,14 @@ You can also build cryptography statically:
 
 .. code-block:: console
 
-    $ brew install openssl@1.1
+    $ brew install openssl@1.1 rust
     $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
-    $ sudo port install openssl
+    $ sudo port install openssl rust
     $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
@@ -279,10 +318,30 @@ local `wheel cache`_.
 Rust
 ----
 
+.. note::
+
+    If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
+    derived from the preceding list, then you should **upgrade pip** (in
+    a virtual environment!) and attempt to install ``cryptography`` again
+    before trying to install the Rust toolchain. These platforms will receive
+    a binary wheel and require no compiler if you have an updated ``pip``!
+
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.45.0.
+minimum supported Rust version is 1.41.0. **This is newer than the Rust most
+package managers ship**, so users will likely need to install with the
+instructions below.
 
 Instructions for installing Rust can be found on `the Rust Project's website`_.
+We recommend installing Rust with ``rustup`` (as documented by the Rust
+Project) in order to ensure you have a recent version.
+
+Rust is only required when building ``cryptography``, meaning that you may
+install it for the duration of your ``pip install`` command and then remove it
+from a system. A Rust toolchain is not required to **use** ``cryptography``. In
+deployments such as ``docker``, you may use a multi-stage ``Dockerfile`` where
+you install Rust during the build phase but do not install it in the runtime
+image. This is the same as the C compiler toolchain which is also required to
+build ``cryptography``, but not afterwards.
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org

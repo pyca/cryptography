@@ -195,9 +195,6 @@ Key interfaces
 
     .. versionadded:: 1.7
 
-    A DH private key that is not an :term:`opaque key` also implements
-    :class:`DHPrivateKeyWithSerialization` to provide serialization methods.
-
     .. attribute:: key_size
 
         The bit length of the prime modulus.
@@ -222,15 +219,6 @@ Key interfaces
             the peer.
 
         :return bytes: The agreed key. The bytes are ordered in 'big' endian.
-
-
-.. class:: DHPrivateKeyWithSerialization
-
-    .. versionadded:: 1.7
-
-    This interface contains additional methods relating to serialization.
-    Any object with this interface also has all the methods from
-    :class:`DHPrivateKey`.
 
     .. method:: private_numbers()
 
@@ -264,6 +252,13 @@ Key interfaces
             interface.
 
         :return bytes: Serialized key.
+
+
+.. class:: DHPrivateKeyWithSerialization
+
+    .. versionadded:: 1.7
+
+    Alias for :class:`DHPrivateKey`.
 
 
 .. class:: DHPublicKey

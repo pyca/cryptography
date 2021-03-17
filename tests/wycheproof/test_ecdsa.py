@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
-from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -28,7 +27,6 @@ _DIGESTS = {
 }
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @wycheproof_tests(
     "ecdsa_test.json",
     "ecdsa_brainpoolP224r1_sha224_test.json",
@@ -62,6 +60,7 @@ def test_ecdsa_signature(backend, wycheproof):
         key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
         )
+        assert isinstance(key, ec.EllipticCurvePublicKey)
     except (UnsupportedAlgorithm, ValueError):
         # In some OpenSSL 1.0.2s, some keys fail to load with ValueError,
         # instead of  Unsupported Algorithm. We can remove handling for that

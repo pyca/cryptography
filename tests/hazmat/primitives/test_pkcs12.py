@@ -4,13 +4,14 @@
 
 
 import os
+from datetime import datetime
 
 import pytest
 
 from cryptography import x509
-from cryptography.hazmat.backends.interfaces import DERSerializationBackend
 from cryptography.hazmat.backends.openssl.backend import _RC2
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     load_key_and_certificates,
@@ -21,7 +22,6 @@ from .utils import load_vectors_from_file
 from ...doubles import DummyKeySerializationEncryption
 
 
-@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
 class TestPKCS12Loading(object):
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
@@ -114,7 +114,9 @@ class TestPKCS12Loading(object):
 
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):
-            load_key_and_certificates(b"irrelevant", object(), backend)
+            load_key_and_certificates(
+                b"irrelevant", object(), backend  # type: ignore[arg-type]
+            )
 
     def test_not_a_pkcs12(self, backend):
         with pytest.raises(ValueError):
@@ -184,6 +186,7 @@ class TestPKCS12Creation(object):
             p12, password, backend
         )
         assert parsed_cert == cert
+        assert parsed_key is not None
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
@@ -202,6 +205,7 @@ class TestPKCS12Creation(object):
             p12, None, backend
         )
         assert parsed_cert == cert
+        assert parsed_key is not None
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == [cert2, cert3]
 
@@ -245,6 +249,7 @@ class TestPKCS12Creation(object):
             p12, None, backend
         )
         assert parsed_cert is None
+        assert parsed_key is not None
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
@@ -268,3 +273,57 @@ class TestPKCS12Creation(object):
                 DummyKeySerializationEncryption(),
             )
         assert str(exc.value) == "Unsupported key encryption type"
+
+
+def test_pkcs12_ordering():
+    """
+    In OpenSSL < 3.0.0 PKCS12 parsing reverses the order. However, we
+    accidentally thought it was **encoding** that did it, leading to bug
+    https://github.com/pyca/cryptography/issues/5872
+    This test ensures our ordering is correct going forward.
+    """
+
+    def make_cert(name):
+        key = ec.generate_private_key(ec.SECP256R1())
+        subject = x509.Name(
+            [
+                x509.NameAttribute(x509.NameOID.COMMON_NAME, name),
+            ]
+        )
+        now = datetime.utcnow()
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(subject)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now)
+            .sign(key, hashes.SHA256())
+        )
+        return (key, cert)
+
+    # Make some certificates with distinct names.
+    a_name = "A" * 20
+    b_name = "B" * 20
+    c_name = "C" * 20
+    a_key, a_cert = make_cert(a_name)
+    _, b_cert = make_cert(b_name)
+    _, c_cert = make_cert(c_name)
+
+    # Bundle them in a PKCS#12 file in order A, B, C.
+    p12 = serialize_key_and_certificates(
+        b"p12", a_key, a_cert, [b_cert, c_cert], serialization.NoEncryption()
+    )
+
+    # Parse them out. The API should report them in the same order.
+    (key, cert, certs) = load_key_and_certificates(p12, None)
+    assert cert == a_cert
+    assert certs == [b_cert, c_cert]
+
+    # The ordering in the PKCS#12 file itself should also match.
+    a_idx = p12.index(a_name.encode("utf-8"))
+    b_idx = p12.index(b_name.encode("utf-8"))
+    c_idx = p12.index(c_name.encode("utf-8"))
+
+    assert a_idx < b_idx < c_idx

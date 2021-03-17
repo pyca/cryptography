@@ -44,12 +44,18 @@ class TestPBKDF2HMAC(object):
 
     def test_unicode_error_with_salt(self, backend):
         with pytest.raises(TypeError):
-            PBKDF2HMAC(hashes.SHA1(), 20, "salt", 10, backend)
+            PBKDF2HMAC(
+                hashes.SHA1(),
+                20,
+                "salt",  # type: ignore[arg-type]
+                10,
+                backend,
+            )
 
     def test_unicode_error_with_key_material(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, backend)
         with pytest.raises(TypeError):
-            kdf.derive("unicode here")
+            kdf.derive("unicode here")  # type: ignore[arg-type]
 
     def test_buffer_protocol(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 10, b"salt", 10, backend)
@@ -61,4 +67,10 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, pretend_backend)
+        PBKDF2HMAC(
+            hashes.SHA1(),
+            20,
+            b"salt",
+            10,
+            pretend_backend,  # type:ignore[arg-type]
+        )

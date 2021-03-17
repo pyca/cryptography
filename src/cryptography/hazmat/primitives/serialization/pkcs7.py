@@ -2,25 +2,47 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
+import typing
 from enum import Enum
 
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.utils import _check_byteslike
 
 
-def load_pem_pkcs7_certificates(data):
+def load_pem_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
     backend = _get_backend(None)
     return backend.load_pem_pkcs7_certificates(data)
 
 
-def load_der_pkcs7_certificates(data):
+def load_der_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
     backend = _get_backend(None)
     return backend.load_der_pkcs7_certificates(data)
+
+
+_ALLOWED_PKCS7_HASH_TYPES = typing.Union[
+    hashes.SHA1,
+    hashes.SHA224,
+    hashes.SHA256,
+    hashes.SHA384,
+    hashes.SHA512,
+]
+
+_ALLOWED_PRIVATE_KEY_TYPES = typing.Union[
+    rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
+]
+
+
+class PKCS7Options(Enum):
+    Text = "Add text/plain MIME type"
+    Binary = "Don't translate input data into canonical MIME format"
+    DetachedSignature = "Don't embed data in the PKCS7 structure"
+    NoCapabilities = "Don't embed SMIME capabilities"
+    NoAttributes = "Don't embed authenticatedAttributes"
+    NoCerts = "Don't embed signer certificate"
 
 
 class PKCS7SignatureBuilder(object):
@@ -29,14 +51,19 @@ class PKCS7SignatureBuilder(object):
         self._signers = signers
         self._additional_certs = additional_certs
 
-    def set_data(self, data):
+    def set_data(self, data: bytes) -> "PKCS7SignatureBuilder":
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")
 
         return PKCS7SignatureBuilder(data, self._signers)
 
-    def add_signer(self, certificate, private_key, hash_algorithm):
+    def add_signer(
+        self,
+        certificate: x509.Certificate,
+        private_key: _ALLOWED_PRIVATE_KEY_TYPES,
+        hash_algorithm: _ALLOWED_PKCS7_HASH_TYPES,
+    ) -> "PKCS7SignatureBuilder":
         if not isinstance(
             hash_algorithm,
             (
@@ -64,7 +91,9 @@ class PKCS7SignatureBuilder(object):
             self._signers + [(certificate, private_key, hash_algorithm)],
         )
 
-    def add_certificate(self, certificate):
+    def add_certificate(
+        self, certificate: x509.Certificate
+    ) -> "PKCS7SignatureBuilder":
         if not isinstance(certificate, x509.Certificate):
             raise TypeError("certificate must be a x509.Certificate")
 
@@ -72,7 +101,12 @@ class PKCS7SignatureBuilder(object):
             self._data, self._signers, self._additional_certs + [certificate]
         )
 
-    def sign(self, encoding, options, backend=None):
+    def sign(
+        self,
+        encoding: serialization.Encoding,
+        options: typing.Iterable[PKCS7Options],
+        backend: typing.Optional[Backend] = None,
+    ) -> bytes:
         if len(self._signers) == 0:
             raise ValueError("Must have at least one signer")
         if self._data is None:
@@ -121,12 +155,3 @@ class PKCS7SignatureBuilder(object):
 
         backend = _get_backend(backend)
         return backend.pkcs7_sign(self, encoding, options)
-
-
-class PKCS7Options(Enum):
-    Text = "Add text/plain MIME type"
-    Binary = "Don't translate input data into canonical MIME format"
-    DetachedSignature = "Don't embed data in the PKCS7 structure"
-    NoCapabilities = "Don't embed SMIME capabilities"
-    NoAttributes = "Don't embed authenticatedAttributes"
-    NoCerts = "Don't embed signer certificate"

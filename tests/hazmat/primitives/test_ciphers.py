@@ -9,7 +9,6 @@ import os
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -45,11 +44,10 @@ class TestAES(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            AES("0" * 32)
+            AES("0" * 32)  # type: ignore[arg-type]
 
 
 class TestAESXTS(object):
-    @pytest.mark.requires_backend_interface(interface=CipherBackend)
     @pytest.mark.parametrize(
         "mode", (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
     )
@@ -59,13 +57,12 @@ class TestAESXTS(object):
 
     def test_xts_tweak_not_bytes(self):
         with pytest.raises(TypeError):
-            modes.XTS(32)
+            modes.XTS(32)  # type: ignore[arg-type]
 
     def test_xts_tweak_too_small(self):
         with pytest.raises(ValueError):
             modes.XTS(b"0")
 
-    @pytest.mark.requires_backend_interface(interface=CipherBackend)
     def test_xts_wrong_key_size(self, backend):
         with pytest.raises(ValueError):
             ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
@@ -93,7 +90,7 @@ class TestCamellia(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Camellia("0" * 32)
+            Camellia("0" * 32)  # type: ignore[arg-type]
 
 
 class TestTripleDES(object):
@@ -108,7 +105,7 @@ class TestTripleDES(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            TripleDES("0" * 16)
+            TripleDES("0" * 16)  # type: ignore[arg-type]
 
 
 class TestBlowfish(object):
@@ -126,7 +123,7 @@ class TestBlowfish(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Blowfish("0" * 8)
+            Blowfish("0" * 8)  # type: ignore[arg-type]
 
 
 class TestCAST5(object):
@@ -144,7 +141,7 @@ class TestCAST5(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            CAST5("0" * 10)
+            CAST5("0" * 10)  # type: ignore[arg-type]
 
 
 class TestARC4(object):
@@ -170,7 +167,7 @@ class TestARC4(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            ARC4("0" * 10)
+            ARC4("0" * 10)  # type: ignore[arg-type]
 
 
 class TestIDEA(object):
@@ -184,7 +181,7 @@ class TestIDEA(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            IDEA("0" * 16)
+            IDEA("0" * 16)  # type: ignore[arg-type]
 
 
 class TestSEED(object):
@@ -198,14 +195,18 @@ class TestSEED(object):
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            SEED("0" * 16)
+            SEED("0" * 16)  # type: ignore[arg-type]
 
 
 def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), modes.ECB, pretend_backend)
+        ciphers.Cipher(
+            AES(b"AAAAAAAAAAAAAAAA"),
+            modes.ECB(),
+            pretend_backend,  # type: ignore[arg-type]
+        )
 
 
 @pytest.mark.supported(
@@ -214,7 +215,6 @@ def test_invalid_backend():
     ),
     skip_message="Does not support AES ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipherUpdateInto(object):
     @pytest.mark.parametrize(
         "params",

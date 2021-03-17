@@ -8,7 +8,6 @@ import os
 import pytest
 
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -27,7 +26,6 @@ vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support HMAC-SHA1.",
 )
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHOTP(object):
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
@@ -49,7 +47,7 @@ class TestHOTP(object):
         secret = os.urandom(16)
 
         with pytest.raises(TypeError):
-            HOTP(secret, 6, MD5(), backend)
+            HOTP(secret, 6, MD5(), backend)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):
@@ -78,8 +76,7 @@ class TestHOTP(object):
         hotp_value = params["hotp"]
 
         hotp = HOTP(secret, 6, SHA1(), backend)
-
-        assert hotp.verify(hotp_value, counter) is None
+        hotp.verify(hotp_value, counter)
 
     def test_invalid_verify(self, backend):
         secret = b"12345678901234567890"
@@ -94,7 +91,7 @@ class TestHOTP(object):
         secret = b"12345678901234567890"
 
         with pytest.raises(TypeError):
-            HOTP(secret, b"foo", SHA1(), backend)
+            HOTP(secret, b"foo", SHA1(), backend)  # type: ignore[arg-type]
 
     def test_get_provisioning_uri(self, backend):
         secret = b"12345678901234567890"
@@ -123,4 +120,6 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        HOTP(secret, 8, hashes.SHA1(), pretend_backend)
+        HOTP(
+            secret, 8, hashes.SHA1(), pretend_backend  # type: ignore[arg-type]
+        )

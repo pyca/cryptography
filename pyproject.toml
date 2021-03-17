@@ -17,8 +17,6 @@ target-version = ["py36"]
 [tool.pytest.ini_options]
 addopts = "-r s"
 markers = [
-    "requires_backend_interface: this test requires a specific backend interface",
     "skip_fips: this test is not executed in FIPS mode",
     "supported: parametrized test requiring only_if and skip_message",
-    "wycheproof_tests: this test runs a wycheproof fixture",
 ]

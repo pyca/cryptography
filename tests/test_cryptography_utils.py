@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 import pytest
 
@@ -10,13 +11,13 @@ from cryptography import utils
 
 class TestCachedProperty(object):
     def test_simple(self):
-        accesses = []
-
         class T(object):
             @utils.cached_property
             def t(self):
                 accesses.append(None)
                 return 14
+
+        accesses: typing.List[typing.Optional[T]] = []
 
         assert T.t
         t = T()
@@ -32,14 +33,13 @@ class TestCachedProperty(object):
         assert len(accesses) == 2
 
     def test_set(self):
-        accesses = []
-
         class T(object):
             @utils.cached_property
             def t(self):
                 accesses.append(None)
                 return 14
 
+        accesses: typing.List[typing.Optional[T]] = []
         t = T()
         with pytest.raises(AttributeError):
             t.t = None

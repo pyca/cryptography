@@ -10,7 +10,21 @@ import sys
 
 from setuptools import find_packages, setup
 
-from setuptools_rust import RustExtension
+try:
+    from setuptools_rust import RustExtension
+except ImportError:
+    print(
+        """
+        =============================DEBUG ASSISTANCE==========================
+        If you are seeing an error here please try the following to
+        successfully install cryptography:
+
+        Upgrade to the latest pip and try again. This will fix errors for most
+        users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
+        =============================DEBUG ASSISTANCE==========================
+        """
+    )
+    raise
 
 
 base_dir = os.path.dirname(__file__)
@@ -25,25 +39,11 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
-# `setup_requirements` must be kept in sync with `pyproject.toml`
-setup_requirements = ["cffi>=1.12", "setuptools-rust>=0.11.4"]
-
-if os.environ.get("CRYPTOGRAPHY_DONT_BUILD_RUST"):
-    rust_extensions = []
-else:
-    rust_extensions = [
-        RustExtension(
-            "_rust",
-            "src/rust/Cargo.toml",
-            py_limited_api=True,
-            # Enable abi3 mode if we're not using PyPy.
-            features=(
-                []
-                if platform.python_implementation() == "PyPy"
-                else ["pyo3/abi3-py36"]
-            ),
-        )
-    ]
+# `install_requirements` and `setup_requirements` must be kept in sync with
+# `pyproject.toml`
+setuptools_rust = "setuptools-rust>=0.11.4"
+install_requirements = ["cffi>=1.12"]
+setup_requirements = install_requirements + [setuptools_rust]
 
 with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
@@ -88,11 +88,11 @@ try:
         ),
         include_package_data=True,
         python_requires=">=3.6",
-        install_requires=setup_requirements,
+        install_requires=install_requirements,
         setup_requires=setup_requirements,
         extras_require={
             "test": [
-                "pytest>=6.0",
+                "pytest>=6.2.0",
                 "pytest-cov",
                 "pytest-subtests",
                 "pytest-xdist",
@@ -111,6 +111,9 @@ try:
                 "twine >= 1.12.0",
                 "sphinxcontrib-spelling >= 4.0.1",
             ],
+            "sdist": [
+                setuptools_rust,
+            ],
             "pep8test": [
                 "black",
                 "flake8",
@@ -126,9 +129,21 @@ try:
         ext_package="cryptography.hazmat.bindings",
         cffi_modules=[
             "src/_cffi_src/build_openssl.py:ffi",
-            "src/_cffi_src/build_padding.py:ffi",
         ],
-        rust_extensions=rust_extensions,
+        rust_extensions=[
+            RustExtension(
+                "_rust",
+                "src/rust/Cargo.toml",
+                py_limited_api=True,
+                # Enable abi3 mode if we're not using PyPy.
+                features=(
+                    []
+                    if platform.python_implementation() == "PyPy"
+                    else ["pyo3/abi3-py36"]
+                ),
+                rust_version=">=1.41.0",
+            )
+        ],
     )
 except:  # noqa: E722
     # Note: This is a bare exception that re-raises so that we don't interfere
@@ -149,7 +164,8 @@ except:  # noqa: E722
        instructions for your platform.
     3) Check our frequently asked questions for more information:
        https://cryptography.io/en/latest/faq.html
-    4) Ensure you have a recent Rust toolchain installed.
+    4) Ensure you have a recent Rust toolchain installed:
+       https://cryptography.io/en/latest/installation.html#rust
     =============================DEBUG ASSISTANCE=============================
     """
     )

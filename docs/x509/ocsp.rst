@@ -151,11 +151,11 @@ Creating Requests
             :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
             :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
 
-    .. method:: add_extension(extension, critical)
+    .. method:: add_extension(extval, critical)
 
         Adds an extension to the request.
 
-        :param extension: An extension conforming to the
+        :param extval: An extension conforming to the
             :class:`~cryptography.x509.ExtensionType` interface.
 
         :param critical: Set to ``True`` if the extension must be understood and
@@ -168,16 +168,19 @@ Creating Requests
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import serialization
-        >>> from cryptography.hazmat.primitives.hashes import SHA1
+        >>> from cryptography.hazmat.primitives.hashes import SHA256
         >>> from cryptography.x509 import load_pem_x509_certificate, ocsp
         >>> cert = load_pem_x509_certificate(pem_cert)
         >>> issuer = load_pem_x509_certificate(pem_issuer)
         >>> builder = ocsp.OCSPRequestBuilder()
-        >>> # SHA1 is in this example because RFC 5019 mandates its use.
-        >>> builder = builder.add_certificate(cert, issuer, SHA1())
+        >>> # SHA256 is in this example because while RFC 5019 originally
+        >>> # required SHA1 RFC 6960 updates that to SHA256.
+        >>> # However, depending on your requirements you may need to use SHA1
+        >>> # for compatibility reasons.
+        >>> builder = builder.add_certificate(cert, issuer, SHA256())
         >>> req = builder.build()
         >>> base64.b64encode(req.public_bytes(serialization.Encoding.DER))
-        b'MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz/NNGCDS7zkZ/oHxb8+IIy1kCAj8g'
+        b'MF8wXTBbMFkwVzANBglghkgBZQMEAgEFAAQgn3BowBaoh77h17ULfkX6781dUDPD82Taj8wO1jZWhZoEINxPgjoQth3w7q4AouKKerMxIMIuUG4EuWU2pZfwih52AgI/IA=='
 
 Loading Responses
 ~~~~~~~~~~~~~~~~~
@@ -274,11 +277,11 @@ Creating Responses
             :attr:`~cryptography.x509.ocsp.OCSPResponderEncoding.HASH` or
             :attr:`~cryptography.x509.ocsp.OCSPResponderEncoding.NAME`.
 
-    .. method:: add_extension(extension, critical)
+    .. method:: add_extension(extval, critical)
 
         Adds an extension to the response.
 
-        :param extension: An extension conforming to the
+        :param extval: An extension conforming to the
             :class:`~cryptography.x509.ExtensionType` interface.
 
         :param critical: Set to ``True`` if the extension must be understood and
@@ -321,9 +324,12 @@ Creating Responses
         >>> responder_cert = load_pem_x509_certificate(pem_responder_cert)
         >>> responder_key = serialization.load_pem_private_key(pem_responder_key, None)
         >>> builder = ocsp.OCSPResponseBuilder()
-        >>> # SHA1 is in this example because RFC 5019 mandates its use.
+        >>> # SHA256 is in this example because while RFC 5019 originally
+        >>> # required SHA1 RFC 6960 updates that to SHA256.
+        >>> # However, depending on your requirements you may need to use SHA1
+        >>> # for compatibility reasons.
         >>> builder = builder.add_response(
-        ...     cert=cert, issuer=issuer, algorithm=hashes.SHA1(),
+        ...     cert=cert, issuer=issuer, algorithm=hashes.SHA256(),
         ...     cert_status=ocsp.OCSPCertStatus.GOOD,
         ...     this_update=datetime.datetime.now(),
         ...     next_update=datetime.datetime.now(),

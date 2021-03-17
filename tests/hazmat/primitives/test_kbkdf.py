@@ -6,7 +6,6 @@
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation,
@@ -18,7 +17,6 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestKBKDFHMAC(object):
     def test_invalid_key(self, backend):
         kdf = KBKDFHMAC(
@@ -144,7 +142,7 @@ class TestKBKDFHMAC(object):
                 hashes.SHA1(),
                 Mode.CounterMode,
                 32,
-                b"r",
+                b"r",  # type: ignore[arg-type]
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
@@ -160,7 +158,7 @@ class TestKBKDFHMAC(object):
                 Mode.CounterMode,
                 32,
                 4,
-                b"l",
+                b"l",  # type: ignore[arg-type]
                 CounterLocation.BeforeFixed,
                 b"label",
                 b"context",
@@ -187,7 +185,7 @@ class TestKBKDFHMAC(object):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
-                None,
+                None,  # type: ignore[arg-type]
                 32,
                 4,
                 4,
@@ -206,7 +204,7 @@ class TestKBKDFHMAC(object):
                 32,
                 4,
                 4,
-                None,
+                None,  # type: ignore[arg-type]
                 b"label",
                 b"context",
                 None,
@@ -231,7 +229,7 @@ class TestKBKDFHMAC(object):
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(
-                object(),
+                object(),  # type: ignore[arg-type]
                 Mode.CounterMode,
                 32,
                 4,
@@ -270,7 +268,7 @@ class TestKBKDFHMAC(object):
                 b"label",
                 b"context",
                 None,
-                backend=object(),
+                backend=object(),  # type: ignore[arg-type]
             )
 
     def test_unicode_error_label(self, backend):
@@ -282,8 +280,9 @@ class TestKBKDFHMAC(object):
                 4,
                 4,
                 CounterLocation.BeforeFixed,
-                "label",
+                "label",  # type: ignore[arg-type]
                 b"context",
+                None,
                 backend=backend,
             )
 
@@ -297,7 +296,7 @@ class TestKBKDFHMAC(object):
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
-                "context",
+                "context",  # type: ignore[arg-type]
                 None,
                 backend=backend,
             )
@@ -316,7 +315,7 @@ class TestKBKDFHMAC(object):
                 None,
                 backend=backend,
             )
-            kdf.derive("material")
+            kdf.derive("material")  # type: ignore[arg-type]
 
     def test_buffer_protocol(self, backend):
         kdf = KBKDFHMAC(

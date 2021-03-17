@@ -267,13 +267,6 @@ Key interfaces
         :return: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
-
-.. class:: DSAParametersWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`DSAParameters`.
-
     .. method:: parameter_numbers()
 
         Create a
@@ -289,9 +282,7 @@ Key interfaces
 
     .. versionadded:: 0.3
 
-    A `DSA`_ private key. A DSA private key that is not an
-    :term:`opaque key` also implements :class:`DSAPrivateKeyWithSerialization`
-    to provide serialization methods.
+    A `DSA`_ private key.
 
     .. method:: public_key()
 
@@ -330,15 +321,6 @@ Key interfaces
 
         :return bytes: Signature.
 
-
-.. class:: DSAPrivateKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    This interface contains additional methods relating to serialization.
-    Any object with this interface also has all the methods from
-    :class:`DSAPrivateKey`.
-
     .. method:: private_numbers()
 
         Create a
@@ -376,6 +358,13 @@ Key interfaces
             interface.
 
         :return bytes: Serialized key.
+
+
+.. class:: DSAPrivateKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias for :class:`DSAPrivateKey`.
 
 
 .. class:: DSAPublicKey

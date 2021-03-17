@@ -13,7 +13,6 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import DHBackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -407,7 +406,9 @@ class TestOpenSSLRSA(object):
         assert (
             backend.rsa_padding_supported(
                 padding.OAEP(
-                    mgf=DummyMGF(), algorithm=hashes.SHA1(), label=None
+                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    algorithm=hashes.SHA1(),
+                    label=None,
                 ),
             )
             is False
@@ -477,7 +478,20 @@ class TestOpenSSLSignX509Certificate(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_certificate(
-                object(), private_key, DummyHashAlgorithm()
+                object(),  # type: ignore[arg-type]
+                private_key,
+                DummyHashAlgorithm(),
+            )
+
+    def test_builder_requires_public_key(self):
+        builder = x509.CertificateBuilder()
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.create_x509_certificate(
+                builder,
+                private_key,
+                DummyHashAlgorithm(),
             )
 
 
@@ -487,7 +501,9 @@ class TestOpenSSLSignX509CSR(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_csr(
-                object(), private_key, DummyHashAlgorithm()
+                object(),  # type: ignore[arg-type]
+                private_key,
+                DummyHashAlgorithm(),
             )
 
 
@@ -496,13 +512,19 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
         private_key = RSA_KEY_2048.private_key(backend)
 
         with pytest.raises(TypeError):
-            backend.create_x509_crl(object(), private_key, hashes.SHA256())
+            backend.create_x509_crl(
+                object(),  # type: ignore[arg-type]
+                private_key,
+                hashes.SHA256(),
+            )
 
 
 class TestOpenSSLCreateRevokedCertificate(object):
     def test_invalid_builder(self):
         with pytest.raises(TypeError):
-            backend.create_x509_revoked_certificate(object())
+            backend.create_x509_revoked_certificate(
+                object()  # type: ignore[arg-type]
+            )
 
 
 class TestOpenSSLSerializationWithOpenSSL(object):
@@ -564,7 +586,6 @@ class TestOpenSSLEllipticCurve(object):
             _sn_to_elliptic_curve(backend, b"fake")
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPEMSerialization(object):
     def test_password_length_limit(self):
         password = b"x" * 1024
@@ -605,7 +626,6 @@ class TestGOSTCertificate(object):
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
 )
-@pytest.mark.requires_backend_interface(interface=DHBackend)
 class TestOpenSSLDHSerialization(object):
     @pytest.mark.parametrize(
         "vector",

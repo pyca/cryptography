@@ -12,7 +12,6 @@ from cryptography.exceptions import (
     InvalidSignature,
     _Reasons,
 )
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
@@ -24,23 +23,23 @@ from ...utils import raises_unsupported_algorithm
     only_if=lambda backend: backend.hmac_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMACCopy(object):
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
     )
 
 
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update("\u00FC")
+            h.update("\u00FC")  # type: ignore[arg-type]
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hmac.HMAC(b"key", hashes.SHA1, backend=backend)
+            hmac.HMAC(
+                b"key", hashes.SHA1, backend=backend  # type: ignore[arg-type]
+            )
 
     def test_raises_after_finalize(self, backend):
         h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend)
@@ -76,7 +75,7 @@ class TestHMAC(object):
     def test_verify_reject_unicode(self, backend):
         h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify("")
+            h.verify("")  # type: ignore[arg-type]
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
@@ -95,4 +94,6 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        hmac.HMAC(b"key", hashes.SHA1(), pretend_backend)
+        hmac.HMAC(
+            b"key", hashes.SHA1(), pretend_backend  # type:ignore[arg-type]
+        )
