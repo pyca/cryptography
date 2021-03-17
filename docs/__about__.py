@@ -22,7 +22,7 @@ __summary__ = (
 )
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "3.1"
+__version__ = "3.1.1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
