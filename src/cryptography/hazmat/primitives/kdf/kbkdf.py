@@ -2,9 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
-import typing
 from enum import Enum
+
+from six.moves import range
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -14,7 +16,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -28,23 +30,20 @@ class CounterLocation(Enum):
     AfterFixed = "after_fixed"
 
 
-class KBKDFHMAC(KeyDerivationFunction):
+@utils.register_interface(KeyDerivationFunction)
+class KBKDFHMAC(object):
     def __init__(
         self,
-        algorithm: hashes.HashAlgorithm,
-        mode: Mode,
-        length: int,
-        rlen: int,
-        llen: typing.Optional[int],
-        location: CounterLocation,
-        label: typing.Optional[bytes],
-        context: typing.Optional[bytes],
-        fixed: typing.Optional[bytes],
-<<<<<<< HEAD
-        backend: typing.Optional[Backend] = None,
-=======
+        algorithm,
+        mode,
+        length,
+        rlen,
+        llen,
+        location,
+        label,
+        context,
+        fixed,
         backend=None,
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
@@ -105,7 +104,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         self._used = False
         self._fixed_data = fixed
 
-    def _valid_byte_length(self, value: int) -> bool:
+    def _valid_byte_length(self, value):
         if not isinstance(value, int):
             raise TypeError("value must be of type int")
 
@@ -114,7 +113,7 @@ class KBKDFHMAC(KeyDerivationFunction):
             return False
         return True
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material):
         if self._used:
             raise AlreadyFinalized
 
@@ -150,7 +149,7 @@ class KBKDFHMAC(KeyDerivationFunction):
 
         return b"".join(output)[: self._length]
 
-    def _generate_fixed_input(self) -> bytes:
+    def _generate_fixed_input(self):
         if self._fixed_data and isinstance(self._fixed_data, bytes):
             return self._fixed_data
 
@@ -158,6 +157,6 @@ class KBKDFHMAC(KeyDerivationFunction):
 
         return b"".join([self._label, b"\x00", self._context, l_val])
 
-    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+    def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey

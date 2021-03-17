@@ -2,33 +2,38 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import abc
 
+import six
 
-class AsymmetricSignatureContext(metaclass=abc.ABCMeta):
+
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricSignatureContext(object):
     @abc.abstractmethod
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         """
         Processes the provided bytes and returns nothing.
         """
 
     @abc.abstractmethod
-    def finalize(self) -> bytes:
+    def finalize(self):
         """
         Returns the signature as bytes.
         """
 
 
-class AsymmetricVerificationContext(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricVerificationContext(object):
     @abc.abstractmethod
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         """
         Processes the provided bytes and returns nothing.
         """
 
     @abc.abstractmethod
-    def verify(self) -> None:
+    def verify(self):
         """
         Raises an exception if the bytes provided to update do not match the
         signature or the signature does not match the public key.

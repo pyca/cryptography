@@ -2,7 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
+from __future__ import absolute_import, division, print_function
 
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
@@ -10,37 +10,18 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
-_ALLOWED_PKCS12_TYPES = typing.Union[
-    rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
-    ec.EllipticCurvePrivateKey,
-]
-
-
-def load_key_and_certificates(
-    data: bytes, password: typing.Optional[bytes], backend=None
-) -> typing.Tuple[
-    typing.Optional[_ALLOWED_PKCS12_TYPES],
-    typing.Optional[x509.Certificate],
-    typing.List[x509.Certificate],
-]:
+def load_key_and_certificates(data, password, backend=None):
     backend = _get_backend(backend)
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
-def serialize_key_and_certificates(
-    name: typing.Optional[bytes],
-    key: typing.Optional[_ALLOWED_PKCS12_TYPES],
-    cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[typing.Iterable[x509.Certificate]],
-    encryption_algorithm: serialization.KeySerializationEncryption,
-) -> bytes:
+def serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm):
     if key is not None and not isinstance(
         key,
         (
-            rsa.RSAPrivateKey,
-            dsa.DSAPrivateKey,
-            ec.EllipticCurvePrivateKey,
+            rsa.RSAPrivateKeyWithSerialization,
+            dsa.DSAPrivateKeyWithSerialization,
+            ec.EllipticCurvePrivateKeyWithSerialization,
         ),
     ):
         raise TypeError("Key must be RSA, DSA, or EllipticCurve private key.")

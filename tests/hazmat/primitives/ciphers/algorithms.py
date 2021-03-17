@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.hazmat.primitives.ciphers import (
@@ -11,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers import (
 from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
-def _verify_key_size(algorithm: CipherAlgorithm, key: bytes):
+def _verify_key_size(algorithm, key):
     # Verify that the key is instance of bytes
     utils._check_byteslike("key", key)
 
@@ -25,39 +26,45 @@ def _verify_key_size(algorithm: CipherAlgorithm, key: bytes):
     return key
 
 
-class AES(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class AES(object):
     name = "AES"
     block_size = 128
     # 512 added to support AES-256-XTS, which uses 512-bit keys
     key_sizes = frozenset([128, 192, 256, 512])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class Camellia(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class Camellia(object):
     name = "camellia"
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class TripleDES(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class TripleDES(object):
     name = "3DES"
     block_size = 64
     key_sizes = frozenset([64, 128, 192])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         if len(key) == 8:
             key += key + key
         elif len(key) == 16:
@@ -65,79 +72,89 @@ class TripleDES(CipherAlgorithm, BlockCipherAlgorithm):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class Blowfish(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class Blowfish(object):
     name = "Blowfish"
     block_size = 64
     key_sizes = frozenset(range(32, 449, 8))
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class CAST5(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class CAST5(object):
     name = "CAST5"
     block_size = 64
     key_sizes = frozenset(range(40, 129, 8))
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class ARC4(CipherAlgorithm):
+@utils.register_interface(CipherAlgorithm)
+class ARC4(object):
     name = "RC4"
     key_sizes = frozenset([40, 56, 64, 80, 128, 160, 192, 256])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class IDEA(CipherAlgorithm):
+@utils.register_interface(CipherAlgorithm)
+class IDEA(object):
     name = "IDEA"
     block_size = 64
     key_sizes = frozenset([128])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class SEED(CipherAlgorithm, BlockCipherAlgorithm):
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
+class SEED(object):
     name = "SEED"
     block_size = 128
     key_sizes = frozenset([128])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key):
         self.key = _verify_key_size(self, key)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8
 
 
-class ChaCha20(CipherAlgorithm, ModeWithNonce):
+@utils.register_interface(CipherAlgorithm)
+@utils.register_interface(ModeWithNonce)
+class ChaCha20(object):
     name = "ChaCha20"
     key_sizes = frozenset([256])
 
-    def __init__(self, key: bytes, nonce: bytes):
+    def __init__(self, key, nonce):
         self.key = _verify_key_size(self, key)
         utils._check_byteslike("nonce", nonce)
 
@@ -146,10 +163,8 @@ class ChaCha20(CipherAlgorithm, ModeWithNonce):
 
         self._nonce = nonce
 
-    @property
-    def nonce(self) -> bytes:
-        return self._nonce
+    nonce = utils.read_only_property("_nonce")
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return len(self.key) * 8

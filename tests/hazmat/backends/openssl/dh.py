@@ -2,7 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
@@ -31,12 +33,13 @@ def _dh_cdata_to_parameters(dh_cdata, backend):
     return _DHParameters(backend, param_cdata)
 
 
-class _DHParameters(dh.DHParameters):
+@utils.register_interface(dh.DHParametersWithSerialization)
+class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
 
-    def parameter_numbers(self) -> dh.DHParameterNumbers:
+    def parameter_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
         q = self._backend._ffi.new("BIGNUM **")
@@ -53,14 +56,10 @@ class _DHParameters(dh.DHParameters):
             q=q_val,
         )
 
-    def generate_private_key(self) -> dh.DHPrivateKey:
+    def generate_private_key(self):
         return self._backend.generate_dh_private_key(self)
 
-    def parameter_bytes(
-        self,
-        encoding: serialization.Encoding,
-        format: serialization.ParameterFormat,
-    ) -> bytes:
+    def parameter_bytes(self, encoding, format):
         if format is not serialization.ParameterFormat.PKCS3:
             raise ValueError("Only PKCS3 serialization is supported")
         if not self._backend._lib.Cryptography_HAS_EVP_PKEY_DHX:
@@ -80,14 +79,15 @@ class _DHParameters(dh.DHParameters):
         return self._backend._parameter_bytes(encoding, format, self._dh_cdata)
 
 
-def _get_dh_num_bits(backend, dh_cdata) -> int:
+def _get_dh_num_bits(backend, dh_cdata):
     p = backend._ffi.new("BIGNUM **")
     backend._lib.DH_get0_pqg(dh_cdata, p, backend._ffi.NULL, backend._ffi.NULL)
     backend.openssl_assert(p[0] != backend._ffi.NULL)
     return backend._lib.BN_num_bits(p[0])
 
 
-class _DHPrivateKey(dh.DHPrivateKey):
+@utils.register_interface(dh.DHPrivateKeyWithSerialization)
+class _DHPrivateKey(object):
     def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
@@ -95,10 +95,10 @@ class _DHPrivateKey(dh.DHPrivateKey):
         self._key_size_bytes = self._backend._lib.DH_size(dh_cdata)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return _get_dh_num_bits(self._backend, self._dh_cdata)
 
-    def private_numbers(self) -> dh.DHPrivateNumbers:
+    def private_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
         q = self._backend._ffi.new("BIGNUM **")
@@ -126,13 +126,12 @@ class _DHPrivateKey(dh.DHPrivateKey):
             x=self._backend._bn_to_int(priv_key[0]),
         )
 
-    def exchange(self, peer_public_key: dh.DHPublicKey) -> bytes:
+    def exchange(self, peer_public_key):
+
         buf = self._backend._ffi.new("unsigned char[]", self._key_size_bytes)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(
-            peer_public_key._dh_cdata,  # type: ignore[attr-defined]
-            pub_key,
-            self._backend._ffi.NULL,
+            peer_public_key._dh_cdata, pub_key, self._backend._ffi.NULL
         )
         self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
         res = self._backend._lib.DH_compute_key(
@@ -157,7 +156,7 @@ class _DHPrivateKey(dh.DHPrivateKey):
 
             return key
 
-    def public_key(self) -> dh.DHPublicKey:
+    def public_key(self):
         dh_cdata = _dh_params_dup(self._dh_cdata, self._backend)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(
@@ -174,15 +173,10 @@ class _DHPrivateKey(dh.DHPrivateKey):
         evp_pkey = self._backend._dh_cdata_to_evp_pkey(dh_cdata)
         return _DHPublicKey(self._backend, dh_cdata, evp_pkey)
 
-    def parameters(self) -> dh.DHParameters:
+    def parameters(self):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
-    def private_bytes(
-        self,
-        encoding: serialization.Encoding,
-        format: serialization.PrivateFormat,
-        encryption_algorithm: serialization.KeySerializationEncryption,
-    ) -> bytes:
+    def private_bytes(self, encoding, format, encryption_algorithm):
         if format is not serialization.PrivateFormat.PKCS8:
             raise ValueError(
                 "DH private keys support only PKCS8 serialization"
@@ -211,7 +205,8 @@ class _DHPrivateKey(dh.DHPrivateKey):
         )
 
 
-class _DHPublicKey(dh.DHPublicKey):
+@utils.register_interface(dh.DHPublicKeyWithSerialization)
+class _DHPublicKey(object):
     def __init__(self, backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
@@ -219,10 +214,10 @@ class _DHPublicKey(dh.DHPublicKey):
         self._key_size_bits = _get_dh_num_bits(self._backend, self._dh_cdata)
 
     @property
-    def key_size(self) -> int:
+    def key_size(self):
         return self._key_size_bits
 
-    def public_numbers(self) -> dh.DHPublicNumbers:
+    def public_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
         q = self._backend._ffi.new("BIGNUM **")
@@ -247,14 +242,10 @@ class _DHPublicKey(dh.DHPublicKey):
             y=self._backend._bn_to_int(pub_key[0]),
         )
 
-    def parameters(self) -> dh.DHParameters:
+    def parameters(self):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
-    def public_bytes(
-        self,
-        encoding: serialization.Encoding,
-        format: serialization.PublicFormat,
-    ) -> bytes:
+    def public_bytes(self, encoding, format):
         if format is not serialization.PublicFormat.SubjectPublicKeyInfo:
             raise ValueError(
                 "DH public keys support only "

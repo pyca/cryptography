@@ -2,11 +2,12 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import collections
 import threading
 import types
-import typing
+import warnings
 
 import cryptography
 from cryptography import utils
@@ -91,7 +92,7 @@ def _openssl_assert(lib, ok, errors=None):
 
 def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
-    conditional_lib._original_lib = lib  # type: ignore[attr-defined]
+    conditional_lib._original_lib = lib
     excluded_names = set()
     for condition, names_cb in conditional_names.items():
         if not getattr(lib, condition):
@@ -109,10 +110,11 @@ class Binding(object):
     OpenSSL API wrapper.
     """
 
-    lib: typing.ClassVar = None
+    lib = None
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
+    _lock_init_lock = threading.Lock()
 
     def __init__(self):
         self._ensure_ffi_initialized()
@@ -139,11 +141,41 @@ class Binding(object):
                 cls.lib.SSL_library_init()
                 # adds all ciphers/digests for EVP
                 cls.lib.OpenSSL_add_all_algorithms()
+                # loads error strings for libcrypto and libssl functions
+                cls.lib.SSL_load_error_strings()
                 cls._register_osrandom_engine()
 
     @classmethod
     def init_static_locks(cls):
-        cls._ensure_ffi_initialized()
+        with cls._lock_init_lock:
+            cls._ensure_ffi_initialized()
+            # Use Python's implementation if available, importing _ssl triggers
+            # the setup for this.
+            __import__("_ssl")
+
+            if (
+                not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS
+                or cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL
+            ):
+                return
+
+            # If nothing else has setup a locking callback already, we set up
+            # our own
+            res = lib.Cryptography_setup_ssl_threads()
+            _openssl_assert(cls.lib, res == 1)
+
+
+def _verify_openssl_version(lib):
+    if (
+        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+        and not lib.CRYPTOGRAPHY_IS_LIBRESSL
+    ):
+        warnings.warn(
+            "OpenSSL version 1.0.2 is no longer supported by the OpenSSL "
+            "project, please upgrade. The next version of cryptography will "
+            "drop support for it.",
+            utils.CryptographyDeprecationWarning,
+        )
 
 
 def _verify_package_version(version):
@@ -169,4 +201,11 @@ def _verify_package_version(version):
 
 _verify_package_version(cryptography.__version__)
 
+# OpenSSL is not thread safe until the locks are initialized. We call this
+# method in module scope so that it executes with the import lock. On
+# Pythons < 3.4 this import lock is a global lock, which can prevent a race
+# condition registering the OpenSSL locks. On Python 3.4+ the import lock
+# is per module so this approach will not work.
 Binding.init_static_locks()
+
+_verify_openssl_version(Binding.lib)

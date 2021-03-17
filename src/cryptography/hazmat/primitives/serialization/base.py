@@ -2,86 +2,89 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
-import typing
+import abc
+from enum import Enum
 
-from cryptography.hazmat._types import (
-    _PRIVATE_KEY_TYPES,
-    _PUBLIC_KEY_TYPES,
-)
+import six
+
+from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
-<<<<<<< HEAD
-from cryptography.hazmat.backends.interfaces import Backend
-=======
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
-from cryptography.hazmat.primitives.asymmetric import dh
 
 
-def load_pem_private_key(
-<<<<<<< HEAD
-    data: bytes,
-    password: typing.Optional[bytes],
-    backend: typing.Optional[Backend] = None,
-=======
-    data: bytes, password: typing.Optional[bytes], backend=None
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
-) -> _PRIVATE_KEY_TYPES:
+def load_pem_private_key(data, password, backend=None):
     backend = _get_backend(backend)
     return backend.load_pem_private_key(data, password)
 
 
-<<<<<<< HEAD
-def load_pem_public_key(
-    data: bytes, backend: typing.Optional[Backend] = None
-) -> _PUBLIC_KEY_TYPES:
-=======
-def load_pem_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+def load_pem_public_key(data, backend=None):
     backend = _get_backend(backend)
     return backend.load_pem_public_key(data)
 
 
-<<<<<<< HEAD
-def load_pem_parameters(
-    data: bytes, backend: typing.Optional[Backend] = None
-) -> "dh.DHParameters":
-=======
-def load_pem_parameters(data: bytes, backend=None) -> "dh.DHParameters":
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+def load_pem_parameters(data, backend=None):
     backend = _get_backend(backend)
     return backend.load_pem_parameters(data)
 
 
-def load_der_private_key(
-<<<<<<< HEAD
-    data: bytes,
-    password: typing.Optional[bytes],
-    backend: typing.Optional[Backend] = None,
-=======
-    data: bytes, password: typing.Optional[bytes], backend=None
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
-) -> _PRIVATE_KEY_TYPES:
+def load_der_private_key(data, password, backend=None):
     backend = _get_backend(backend)
     return backend.load_der_private_key(data, password)
 
 
-<<<<<<< HEAD
-def load_der_public_key(
-    data: bytes, backend: typing.Optional[Backend] = None
-) -> _PUBLIC_KEY_TYPES:
-=======
-def load_der_public_key(data: bytes, backend=None) -> _PUBLIC_KEY_TYPES:
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+def load_der_public_key(data, backend=None):
     backend = _get_backend(backend)
     return backend.load_der_public_key(data)
 
 
-<<<<<<< HEAD
-def load_der_parameters(
-    data: bytes, backend: typing.Optional[Backend] = None
-) -> "dh.DHParameters":
-=======
-def load_der_parameters(data: bytes, backend=None) -> "dh.DHParameters":
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+def load_der_parameters(data, backend=None):
     backend = _get_backend(backend)
     return backend.load_der_parameters(data)
+
+
+class Encoding(Enum):
+    PEM = "PEM"
+    DER = "DER"
+    OpenSSH = "OpenSSH"
+    Raw = "Raw"
+    X962 = "ANSI X9.62"
+
+
+class PrivateFormat(Enum):
+    PKCS8 = "PKCS8"
+    TraditionalOpenSSL = "TraditionalOpenSSL"
+    Raw = "Raw"
+    OpenSSH = "OpenSSH"
+
+
+class PublicFormat(Enum):
+    SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
+    PKCS1 = "Raw PKCS#1"
+    OpenSSH = "OpenSSH"
+    Raw = "Raw"
+    CompressedPoint = "X9.62 Compressed Point"
+    UncompressedPoint = "X9.62 Uncompressed Point"
+
+
+class ParameterFormat(Enum):
+    PKCS3 = "PKCS3"
+
+
+@six.add_metaclass(abc.ABCMeta)
+class KeySerializationEncryption(object):
+    pass
+
+
+@utils.register_interface(KeySerializationEncryption)
+class BestAvailableEncryption(object):
+    def __init__(self, password):
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        self.password = password
+
+
+@utils.register_interface(KeySerializationEncryption)
+class NoEncryption(object):
+    pass

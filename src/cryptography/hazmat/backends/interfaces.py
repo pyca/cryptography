@@ -2,31 +2,15 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import abc
-import typing
+
+import six
 
 
-<<<<<<< HEAD
-if typing.TYPE_CHECKING:
-    from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.x509.base import (
-        Certificate,
-        CertificateBuilder,
-        CertificateRevocationList,
-        CertificateRevocationListBuilder,
-        CertificateSigningRequest,
-        CertificateSigningRequestBuilder,
-        RevokedCertificate,
-        RevokedCertificateBuilder,
-    )
-    from cryptography.x509.name import Name
-
-
-=======
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
-class CipherBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class CipherBackend(object):
     @abc.abstractmethod
     def cipher_supported(self, cipher, mode):
         """
@@ -46,7 +30,8 @@ class CipherBackend(metaclass=abc.ABCMeta):
         """
 
 
-class HashBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HashBackend(object):
     @abc.abstractmethod
     def hash_supported(self, algorithm):
         """
@@ -60,7 +45,8 @@ class HashBackend(metaclass=abc.ABCMeta):
         """
 
 
-class HMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HMACBackend(object):
     @abc.abstractmethod
     def hmac_supported(self, algorithm):
         """
@@ -75,7 +61,8 @@ class HMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class CMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class CMACBackend(object):
     @abc.abstractmethod
     def cmac_algorithm_supported(self, algorithm):
         """
@@ -89,7 +76,8 @@ class CMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class PBKDF2HMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class PBKDF2HMACBackend(object):
     @abc.abstractmethod
     def pbkdf2_hmac_supported(self, algorithm):
         """
@@ -106,7 +94,8 @@ class PBKDF2HMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class RSABackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class RSABackend(object):
     @abc.abstractmethod
     def generate_rsa_private_key(self, public_exponent, key_size):
         """
@@ -140,7 +129,8 @@ class RSABackend(metaclass=abc.ABCMeta):
         """
 
 
-class DSABackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DSABackend(object):
     @abc.abstractmethod
     def generate_dsa_parameters(self, key_size):
         """
@@ -191,7 +181,8 @@ class DSABackend(metaclass=abc.ABCMeta):
         """
 
 
-class EllipticCurveBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveBackend(object):
     @abc.abstractmethod
     def elliptic_curve_signature_algorithm_supported(
         self, signature_algorithm, curve
@@ -238,7 +229,8 @@ class EllipticCurveBackend(metaclass=abc.ABCMeta):
         """
 
 
-class PEMSerializationBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class PEMSerializationBackend(object):
     @abc.abstractmethod
     def load_pem_private_key(self, data, password):
         """
@@ -259,7 +251,8 @@ class PEMSerializationBackend(metaclass=abc.ABCMeta):
         """
 
 
-class DERSerializationBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DERSerializationBackend(object):
     @abc.abstractmethod
     def load_der_private_key(self, data, password):
         """
@@ -280,94 +273,67 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
         """
 
 
-class X509Backend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class X509Backend(object):
     @abc.abstractmethod
-    def load_pem_x509_certificate(self, data: bytes) -> "Certificate":
+    def load_pem_x509_certificate(self, data):
         """
         Load an X.509 certificate from PEM encoded data.
         """
 
     @abc.abstractmethod
-    def load_der_x509_certificate(self, data: bytes) -> "Certificate":
+    def load_der_x509_certificate(self, data):
         """
         Load an X.509 certificate from DER encoded data.
         """
 
     @abc.abstractmethod
-    def load_der_x509_csr(self, data: bytes) -> "CertificateSigningRequest":
+    def load_der_x509_csr(self, data):
         """
         Load an X.509 CSR from DER encoded data.
         """
 
     @abc.abstractmethod
-    def load_pem_x509_csr(self, data: bytes) -> "CertificateSigningRequest":
+    def load_pem_x509_csr(self, data):
         """
         Load an X.509 CSR from PEM encoded data.
         """
 
     @abc.abstractmethod
-    def create_x509_csr(
-        self,
-        builder: "CertificateSigningRequestBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "CertificateSigningRequest":
+    def create_x509_csr(self, builder, private_key, algorithm):
         """
         Create and sign an X.509 CSR from a CSR builder object.
         """
 
     @abc.abstractmethod
-    def create_x509_certificate(
-        self,
-        builder: "CertificateBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "Certificate":
+    def create_x509_certificate(self, builder, private_key, algorithm):
         """
         Create and sign an X.509 certificate from a CertificateBuilder object.
         """
 
     @abc.abstractmethod
-    def create_x509_crl(
-        self,
-        builder: "CertificateRevocationListBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "CertificateRevocationList":
+    def create_x509_crl(self, builder, private_key, algorithm):
         """
         Create and sign an X.509 CertificateRevocationList from a
         CertificateRevocationListBuilder object.
         """
 
     @abc.abstractmethod
-    def create_x509_revoked_certificate(
-        self, builder: "RevokedCertificateBuilder"
-    ) -> "RevokedCertificate":
+    def create_x509_revoked_certificate(self, builder):
         """
         Create a RevokedCertificate object from a RevokedCertificateBuilder
         object.
         """
 
     @abc.abstractmethod
-    def x509_name_bytes(self, name: "Name") -> bytes:
+    def x509_name_bytes(self, name):
         """
         Compute the DER encoded bytes of an X509 Name object.
         """
 
-    @abc.abstractmethod
-    def load_pem_x509_crl(self, data: bytes) -> "CertificateRevocationList":
-        """
-        Load an X.509 CRL from PEM encoded data.
-        """
 
-    @abc.abstractmethod
-    def load_der_x509_crl(self, data: bytes) -> "CertificateRevocationList":
-        """
-        Load an X.509 CRL from DER encoded data.
-        """
-
-
-class DHBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DHBackend(object):
     @abc.abstractmethod
     def generate_dh_parameters(self, generator, key_size):
         """
@@ -421,66 +387,10 @@ class DHBackend(metaclass=abc.ABCMeta):
         """
 
 
-class ScryptBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
     @abc.abstractmethod
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         """
         Return bytes derived from provided Scrypt parameters.
-        """
-
-    @abc.abstractmethod
-    def scrypt_supported(self):
-        """
-        Return True if Scrypt is supported.
-        """
-
-
-# This is the catch-all for future backend methods and inherits all the
-# other interfaces as well so we can just use Backend for typing.
-class Backend(
-    CipherBackend,
-    CMACBackend,
-    DERSerializationBackend,
-    DHBackend,
-    DSABackend,
-    EllipticCurveBackend,
-    HashBackend,
-    HMACBackend,
-    PBKDF2HMACBackend,
-    RSABackend,
-    PEMSerializationBackend,
-    ScryptBackend,
-    X509Backend,
-    metaclass=abc.ABCMeta,
-):
-    @abc.abstractmethod
-    def load_pem_pkcs7_certificates(self, data):
-        """
-        Returns a list of x509.Certificate
-        """
-
-    @abc.abstractmethod
-    def load_der_pkcs7_certificates(self, data):
-        """
-        Returns a list of x509.Certificate
-        """
-
-    @abc.abstractmethod
-    def pkcs7_sign(self, builder, encoding, options):
-        """
-        Returns bytes
-        """
-
-    @abc.abstractmethod
-    def load_key_and_certificates_from_pkcs12(self, data, password):
-        """
-        Returns a tuple of (key, cert, [certs])
-        """
-
-    @abc.abstractmethod
-    def serialize_key_and_certificates_to_pkcs12(
-        self, name, key, cert, cas, encryption_algorithm
-    ):
-        """
-        Returns bytes
         """

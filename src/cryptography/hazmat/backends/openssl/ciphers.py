@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
@@ -16,7 +17,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
-    _MAX_CHUNK_SIZE = 2 ** 30 - 1
+    _MAX_CHUNK_SIZE = 2 ** 31
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
@@ -118,12 +119,12 @@ class _CipherContext(object):
         self._backend._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         self._ctx = ctx
 
-    def update(self, data: bytes) -> bytes:
+    def update(self, data):
         buf = bytearray(len(data) + self._block_size_bytes - 1)
         n = self.update_into(data, buf)
         return bytes(buf[:n])
 
-    def update_into(self, data: bytes, buf) -> int:
+    def update_into(self, data, buf):
         total_data_len = len(data)
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
@@ -151,7 +152,7 @@ class _CipherContext(object):
 
         return total_out
 
-    def finalize(self) -> bytes:
+    def finalize(self):
         if (
             self._operation == self._DECRYPT
             and isinstance(self._mode, modes.ModeWithAuthenticationTag)
@@ -198,11 +199,11 @@ class _CipherContext(object):
             self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
 
-        res = self._backend._lib.EVP_CIPHER_CTX_reset(self._ctx)
+        res = self._backend._lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
-    def finalize_with_tag(self, tag: bytes) -> bytes:
+    def finalize_with_tag(self, tag):
         if len(tag) < self._mode._min_tag_length:
             raise ValueError(
                 "Authentication tag must be {} bytes or longer.".format(
@@ -216,7 +217,7 @@ class _CipherContext(object):
         self._tag = tag
         return self.finalize()
 
-    def authenticate_additional_data(self, data: bytes) -> None:
+    def authenticate_additional_data(self, data):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx,

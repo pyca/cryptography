@@ -2,11 +2,15 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import abc
 
+import six
 
-class CipherBackend(metaclass=abc.ABCMeta):
+
+@six.add_metaclass(abc.ABCMeta)
+class CipherBackend(object):
     @abc.abstractmethod
     def cipher_supported(self, cipher, mode):
         """
@@ -26,7 +30,8 @@ class CipherBackend(metaclass=abc.ABCMeta):
         """
 
 
-class HashBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HashBackend(object):
     @abc.abstractmethod
     def hash_supported(self, algorithm):
         """
@@ -40,7 +45,8 @@ class HashBackend(metaclass=abc.ABCMeta):
         """
 
 
-class HMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HMACBackend(object):
     @abc.abstractmethod
     def hmac_supported(self, algorithm):
         """
@@ -55,7 +61,8 @@ class HMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class CMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class CMACBackend(object):
     @abc.abstractmethod
     def cmac_algorithm_supported(self, algorithm):
         """
@@ -69,7 +76,8 @@ class CMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class PBKDF2HMACBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class PBKDF2HMACBackend(object):
     @abc.abstractmethod
     def pbkdf2_hmac_supported(self, algorithm):
         """
@@ -86,7 +94,8 @@ class PBKDF2HMACBackend(metaclass=abc.ABCMeta):
         """
 
 
-class RSABackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class RSABackend(object):
     @abc.abstractmethod
     def generate_rsa_private_key(self, public_exponent, key_size):
         """
@@ -120,7 +129,8 @@ class RSABackend(metaclass=abc.ABCMeta):
         """
 
 
-class DSABackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DSABackend(object):
     @abc.abstractmethod
     def generate_dsa_parameters(self, key_size):
         """
@@ -171,7 +181,8 @@ class DSABackend(metaclass=abc.ABCMeta):
         """
 
 
-class EllipticCurveBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveBackend(object):
     @abc.abstractmethod
     def elliptic_curve_signature_algorithm_supported(
         self, signature_algorithm, curve
@@ -218,7 +229,8 @@ class EllipticCurveBackend(metaclass=abc.ABCMeta):
         """
 
 
-class PEMSerializationBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class PEMSerializationBackend(object):
     @abc.abstractmethod
     def load_pem_private_key(self, data, password):
         """
@@ -239,7 +251,8 @@ class PEMSerializationBackend(metaclass=abc.ABCMeta):
         """
 
 
-class DERSerializationBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DERSerializationBackend(object):
     @abc.abstractmethod
     def load_der_private_key(self, data, password):
         """
@@ -260,7 +273,8 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
         """
 
 
-class X509Backend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class X509Backend(object):
     @abc.abstractmethod
     def load_pem_x509_certificate(self, data):
         """
@@ -318,7 +332,8 @@ class X509Backend(metaclass=abc.ABCMeta):
         """
 
 
-class DHBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DHBackend(object):
     @abc.abstractmethod
     def generate_dh_parameters(self, generator, key_size):
         """
@@ -372,7 +387,8 @@ class DHBackend(metaclass=abc.ABCMeta):
         """
 
 
-class ScryptBackend(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
     @abc.abstractmethod
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         """

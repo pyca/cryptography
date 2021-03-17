@@ -2,18 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
-
-<<<<<<< HEAD
-from cryptography.hazmat.backends.interfaces import Backend
-
-_default_backend: typing.Optional[Backend] = None
-=======
-_default_backend: typing.Any = None
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+from __future__ import absolute_import, division, print_function
 
 
-def default_backend() -> Backend:
+_default_backend = None
+
+
+def default_backend():
     global _default_backend
 
     if _default_backend is None:
@@ -24,7 +19,7 @@ def default_backend() -> Backend:
     return _default_backend
 
 
-def _get_backend(backend: typing.Optional[Backend]) -> Backend:
+def _get_backend(backend):
     if backend is None:
         return default_backend()
     else:

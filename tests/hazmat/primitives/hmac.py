@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -14,14 +15,9 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 
 
-class HMAC(hashes.HashContext):
-    def __init__(
-        self,
-        key: bytes,
-        algorithm: hashes.HashAlgorithm,
-        backend=None,
-        ctx=None,
-    ):
+@utils.register_interface(hashes.HashContext)
+class HMAC(object):
+    def __init__(self, key, algorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
@@ -40,17 +36,15 @@ class HMAC(hashes.HashContext):
         else:
             self._ctx = ctx
 
-    @property
-    def algorithm(self) -> hashes.HashAlgorithm:
-        return self._algorithm
+    algorithm = utils.read_only_property("_algorithm")
 
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         utils._check_byteslike("data", data)
         self._ctx.update(data)
 
-    def copy(self) -> "HMAC":
+    def copy(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return HMAC(
@@ -60,14 +54,14 @@ class HMAC(hashes.HashContext):
             ctx=self._ctx.copy(),
         )
 
-    def finalize(self) -> bytes:
+    def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
 
-    def verify(self, signature: bytes) -> None:
+    def verify(self, signature):
         utils._check_bytes("signature", signature)
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")

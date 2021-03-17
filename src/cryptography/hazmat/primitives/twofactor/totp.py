@@ -2,38 +2,26 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
+from __future__ import absolute_import, division, print_function
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
-from cryptography.hazmat.primitives.twofactor.hotp import (
-    HOTP,
-    _ALLOWED_HASH_TYPES,
-<<<<<<< HEAD
-    _generate_uri,
-)
-=======
-)
+from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 
 class TOTP(object):
     def __init__(
         self,
-        key: bytes,
-        length: int,
-        algorithm: _ALLOWED_HASH_TYPES,
-        time_step: int,
-<<<<<<< HEAD
-        backend: typing.Optional[Backend] = None,
-=======
+        key,
+        length,
+        algorithm,
+        time_step,
         backend=None,
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
-        enforce_key_length: bool = True,
+        enforce_key_length=True,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
@@ -45,17 +33,15 @@ class TOTP(object):
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend, enforce_key_length)
 
-    def generate(self, time: typing.Union[int, float]) -> bytes:
+    def generate(self, time):
         counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 
-    def verify(self, totp: bytes, time: int) -> None:
+    def verify(self, totp, time):
         if not constant_time.bytes_eq(self.generate(time), totp):
             raise InvalidToken("Supplied TOTP value does not match.")
 
-    def get_provisioning_uri(
-        self, account_name: str, issuer: typing.Optional[str]
-    ) -> str:
+    def get_provisioning_uri(self, account_name, issuer):
         return _generate_uri(
             self._hotp,
             "totp",

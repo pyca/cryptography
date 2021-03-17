@@ -2,17 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-<<<<<<< HEAD
-import typing
+from __future__ import absolute_import, division, print_function
+
+from cryptography import utils
 
 
 class ObjectIdentifier(object):
-    def __init__(self, dotted_string: str) -> None:
-=======
-
-class ObjectIdentifier(object):
-    def __init__(self, dotted_string: str):
->>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
+    def __init__(self, dotted_string):
         self._dotted_string = dotted_string
 
         nodes = self._dotted_string.split(".")
@@ -54,30 +50,28 @@ class ObjectIdentifier(object):
                 % (self._dotted_string)
             )
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
         return self.dotted_string == other.dotted_string
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other):
         return not self == other
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "<ObjectIdentifier(oid={}, name={})>".format(
             self.dotted_string, self._name
         )
 
-    def __hash__(self) -> int:
+    def __hash__(self):
         return hash(self.dotted_string)
 
     @property
-    def _name(self) -> str:
+    def _name(self):
         # Lazy import to avoid an import cycle
         from cryptography.x509.oid import _OID_NAMES
 
         return _OID_NAMES.get(self, "Unknown OID")
 
-    @property
-    def dotted_string(self) -> str:
-        return self._dotted_string
+    dotted_string = utils.read_only_property("_dotted_string")

@@ -2,11 +2,15 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import abc
 
+import six
 
-class AsymmetricSignatureContext(metaclass=abc.ABCMeta):
+
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricSignatureContext(object):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -20,7 +24,8 @@ class AsymmetricSignatureContext(metaclass=abc.ABCMeta):
         """
 
 
-class AsymmetricVerificationContext(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricVerificationContext(object):
     @abc.abstractmethod
     def update(self, data):
         """

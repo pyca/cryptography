@@ -2,8 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
+
 import abc
-import typing
+
+import six
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -15,61 +18,58 @@ from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HashBackend
 
 
-class HashAlgorithm(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HashAlgorithm(object):
     @abc.abstractproperty
-    def name(self) -> str:
+    def name(self):
         """
         A string naming this algorithm (e.g. "sha256", "md5").
         """
 
     @abc.abstractproperty
-    def digest_size(self) -> int:
+    def digest_size(self):
         """
         The size of the resulting digest in bytes.
         """
 
-    @abc.abstractproperty
-    def block_size(self) -> typing.Optional[int]:
-        """
-        The internal block size of the hash function, or None if the hash
-        function does not use blocks internally (e.g. SHA3).
-        """
 
-
-class HashContext(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class HashContext(object):
     @abc.abstractproperty
-    def algorithm(self) -> HashAlgorithm:
+    def algorithm(self):
         """
         A HashAlgorithm that will be used by this context.
         """
 
     @abc.abstractmethod
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         """
         Processes the provided bytes through the hash.
         """
 
     @abc.abstractmethod
-    def finalize(self) -> bytes:
+    def finalize(self):
         """
         Finalizes the hash context and returns the hash digest as bytes.
         """
 
     @abc.abstractmethod
-    def copy(self) -> "HashContext":
+    def copy(self):
         """
         Return a HashContext that is a copy of the current context.
         """
 
 
-class ExtendableOutputFunction(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class ExtendableOutputFunction(object):
     """
     An interface for extendable output functions.
     """
 
 
-class Hash(HashContext):
-    def __init__(self, algorithm: HashAlgorithm, backend=None, ctx=None):
+@utils.register_interface(HashContext)
+class Hash(object):
+    def __init__(self, algorithm, backend=None, ctx=None):
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
@@ -88,24 +88,22 @@ class Hash(HashContext):
         else:
             self._ctx = ctx
 
-    @property
-    def algorithm(self) -> HashAlgorithm:
-        return self._algorithm
+    algorithm = utils.read_only_property("_algorithm")
 
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         utils._check_byteslike("data", data)
         self._ctx.update(data)
 
-    def copy(self) -> "Hash":
+    def copy(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return Hash(
             self.algorithm, backend=self._backend, ctx=self._ctx.copy()
         )
 
-    def finalize(self) -> bytes:
+    def finalize(self):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
@@ -113,78 +111,86 @@ class Hash(HashContext):
         return digest
 
 
-class SHA1(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class SHA1(object):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-class SHA512_224(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA512_224(object):  # noqa: N801
     name = "sha512-224"
     digest_size = 28
     block_size = 128
 
 
-class SHA512_256(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA512_256(object):  # noqa: N801
     name = "sha512-256"
     digest_size = 32
     block_size = 128
 
 
-class SHA224(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class SHA224(object):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-class SHA256(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class SHA256(object):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-class SHA384(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class SHA384(object):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-class SHA512(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class SHA512(object):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-class SHA3_224(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA3_224(object):  # noqa: N801
     name = "sha3-224"
     digest_size = 28
-    block_size = None
 
 
-class SHA3_256(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA3_256(object):  # noqa: N801
     name = "sha3-256"
     digest_size = 32
-    block_size = None
 
 
-class SHA3_384(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA3_384(object):  # noqa: N801
     name = "sha3-384"
     digest_size = 48
-    block_size = None
 
 
-class SHA3_512(HashAlgorithm):  # noqa: N801
+@utils.register_interface(HashAlgorithm)
+class SHA3_512(object):  # noqa: N801
     name = "sha3-512"
     digest_size = 64
-    block_size = None
 
 
-class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
+@utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
+class SHAKE128(object):
     name = "shake128"
-    block_size = None
 
-    def __init__(self, digest_size: int):
-        if not isinstance(digest_size, int):
+    def __init__(self, digest_size):
+        if not isinstance(digest_size, six.integer_types):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:
@@ -192,17 +198,16 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    @property
-    def digest_size(self) -> int:
-        return self._digest_size
+    digest_size = utils.read_only_property("_digest_size")
 
 
-class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
+@utils.register_interface(HashAlgorithm)
+@utils.register_interface(ExtendableOutputFunction)
+class SHAKE256(object):
     name = "shake256"
-    block_size = None
 
-    def __init__(self, digest_size: int):
-        if not isinstance(digest_size, int):
+    def __init__(self, digest_size):
+        if not isinstance(digest_size, six.integer_types):
             raise TypeError("digest_size must be an integer")
 
         if digest_size < 1:
@@ -210,48 +215,45 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    @property
-    def digest_size(self) -> int:
-        return self._digest_size
+    digest_size = utils.read_only_property("_digest_size")
 
 
-class MD5(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class MD5(object):
     name = "md5"
     digest_size = 16
     block_size = 64
 
 
-class BLAKE2b(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class BLAKE2b(object):
     name = "blake2b"
     _max_digest_size = 64
     _min_digest_size = 1
     block_size = 128
 
-    def __init__(self, digest_size: int):
+    def __init__(self, digest_size):
 
         if digest_size != 64:
             raise ValueError("Digest size must be 64")
 
         self._digest_size = digest_size
 
-    @property
-    def digest_size(self) -> int:
-        return self._digest_size
+    digest_size = utils.read_only_property("_digest_size")
 
 
-class BLAKE2s(HashAlgorithm):
+@utils.register_interface(HashAlgorithm)
+class BLAKE2s(object):
     name = "blake2s"
     block_size = 64
     _max_digest_size = 32
     _min_digest_size = 1
 
-    def __init__(self, digest_size: int):
+    def __init__(self, digest_size):
 
         if digest_size != 32:
             raise ValueError("Digest size must be 32")
 
         self._digest_size = digest_size
 
-    @property
-    def digest_size(self) -> int:
-        return self._digest_size
+    digest_size = utils.read_only_property("_digest_size")

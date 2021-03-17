@@ -2,9 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
 
 import struct
-import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -23,20 +23,15 @@ def _int_to_u32be(n):
     return struct.pack(">I", n)
 
 
-class X963KDF(KeyDerivationFunction):
-    def __init__(
-        self,
-        algorithm: hashes.HashAlgorithm,
-        length: int,
-        sharedinfo: typing.Optional[bytes],
-        backend=None,
-    ):
+@utils.register_interface(KeyDerivationFunction)
+class X963KDF(object):
+    def __init__(self, algorithm, length, sharedinfo, backend=None):
         backend = _get_backend(backend)
 
         max_len = algorithm.digest_size * (2 ** 32 - 1)
         if length > max_len:
             raise ValueError(
-                "Cannot derive keys larger than {} bits.".format(max_len)
+                "Can not derive keys larger than {} bits.".format(max_len)
             )
         if sharedinfo is not None:
             utils._check_bytes("sharedinfo", sharedinfo)
@@ -53,7 +48,7 @@ class X963KDF(KeyDerivationFunction):
         self._backend = backend
         self._used = False
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material):
         if self._used:
             raise AlreadyFinalized
         self._used = True
@@ -74,6 +69,6 @@ class X963KDF(KeyDerivationFunction):
 
         return b"".join(output)[: self._length]
 
-    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+    def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey

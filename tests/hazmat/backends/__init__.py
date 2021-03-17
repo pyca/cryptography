@@ -2,9 +2,10 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
+from __future__ import absolute_import, division, print_function
 
-_default_backend: typing.Any = None
+
+_default_backend = None
 
 
 def default_backend():

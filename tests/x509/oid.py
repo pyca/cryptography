@@ -2,7 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
+from __future__ import absolute_import, division, print_function
 
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import hashes
@@ -106,9 +106,7 @@ class SignatureAlgorithmOID(object):
     GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
 
 
-_SIG_OIDS_TO_HASH: typing.Dict[
-    ObjectIdentifier, typing.Optional[hashes.HashAlgorithm]
-] = {
+_SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
     SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
     SignatureAlgorithmOID._RSA_WITH_SHA1: hashes.SHA1(),

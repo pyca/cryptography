@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import absolute_import, division, print_function
+
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -51,11 +53,11 @@ class _CMACContext(object):
 
     algorithm = utils.read_only_property("_algorithm")
 
-    def update(self, data: bytes) -> None:
+    def update(self, data):
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
         self._backend.openssl_assert(res == 1)
 
-    def finalize(self) -> bytes:
+    def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]", self._output_length)
         length = self._backend._ffi.new("size_t *", self._output_length)
         res = self._backend._lib.CMAC_Final(self._ctx, buf, length)
@@ -65,7 +67,7 @@ class _CMACContext(object):
 
         return self._backend._ffi.buffer(buf)[:]
 
-    def copy(self) -> "_CMACContext":
+    def copy(self):
         copied_ctx = self._backend._lib.CMAC_CTX_new()
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.CMAC_CTX_free
@@ -74,7 +76,7 @@ class _CMACContext(object):
         self._backend.openssl_assert(res == 1)
         return _CMACContext(self._backend, self._algorithm, ctx=copied_ctx)
 
-    def verify(self, signature: bytes) -> None:
+    def verify(self, signature):
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")
