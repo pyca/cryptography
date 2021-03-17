@@ -1,3 +1,0 @@
-﻿cl : command line warning D9002: ignoring unknown option '/std:c11'
-  testzlib.c
-  testzlibdll.vcxproj -> E:\cpython\externals\zlib-1.2.11\contrib\vstudio\vc14\x86\TestZlibDllRelease\testzlibdll.exe
