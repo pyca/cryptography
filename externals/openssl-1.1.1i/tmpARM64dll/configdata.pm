@@ -1,4 +1,4 @@
-#! C:\Perl64\bin\perl.exe
+#! D:\Strawberry_amd64\perl\bin\perl.exe
 
 package configdata;
 
@@ -20,13 +20,13 @@ our %config = (
   CPPFLAGS => [  ],
   CPPINCLUDES => [  ],
   CXXFLAGS => [  ],
-  HASHBANGPERL => "C:\\Perl64\\bin\\perl.exe",
+  HASHBANGPERL => "D:\\Strawberry_amd64\\perl\\bin\\perl.exe",
   LD => "link",
   LDFLAGS => [ "/nologo /debug" ],
   LDLIBS => [  ],
   MT => "mt",
   MTFLAGS => [ "-nologo" ],
-  PERL => "C:\\Perl64\\bin\\perl.exe",
+  PERL => "D:\\Strawberry_amd64\\perl\\bin\\perl.exe",
   RANLIB => "ranlib",
   RC => "rc",
   RCFLAGS => [  ],
@@ -41,7 +41,7 @@ our %config = (
   build_type => "release",
   builddir => ".",
   cflags => [  ],
-  conf_files => [ "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\00-base-templates.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\10-main.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\50-win-onecore.conf" ],
+  conf_files => [ "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\00-base-templates.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\10-main.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\50-win-onecore.conf" ],
   cppflags => [  ],
   cxxflags => [  ],
   defines => [ "NDEBUG" ],
@@ -64,8 +64,8 @@ our %config = (
   openssldir => "",
   options => " no-afalgeng no-asan no-asm no-buildtest-c++ no-crypto-mdebug no-crypto-mdebug-backtrace no-devcryptoeng no-ec_nistp_64_gcc_128 no-egd no-external-tests no-fuzz-afl no-fuzz-libfuzzer no-heartbeats no-md2 no-msan no-rc5 no-sctp no-ssl-trace no-ssl3 no-ssl3-method no-ubsan no-unit-test no-weak-ssl-ciphers no-zlib no-zlib-dynamic",
   perl_archname => "MSWin32-x64-multi-thread",
-  perl_cmd => "C:\\Perl64\\bin\\perl.exe",
-  perl_version => "5.28.1",
+  perl_cmd => "D:\\Strawberry_amd64\\perl\\bin\\perl.exe",
+  perl_version => "5.32.1",
   perlargv => [ "VC-WIN64-ARM", "no-asm" ],
   perlenv => {
       "AR" => undef,
@@ -89,7 +89,7 @@ our %config = (
       "MT" => undef,
       "MTFLAGS" => undef,
       "OPENSSL_LOCAL_CONFIG_DIR" => undef,
-      "PERL" => "C:\\Perl64\\bin\\perl.exe",
+      "PERL" => "D:\\Strawberry_amd64\\perl\\bin\\perl.exe",
       "RANLIB" => undef,
       "RC" => undef,
       "RCFLAGS" => undef,
@@ -114,8 +114,8 @@ our %config = (
   sourcedir => "..",
   target => "VC-WIN64-ARM",
   tdirs => [ "ossl_shim" ],
-  version => "1.1.1h",
-  version_num => "0x1010108fL",
+  version => "1.1.1j",
+  version_num => "0x101010afL",
 );
 
 our %target = (
@@ -129,9 +129,9 @@ our %target = (
   LDFLAGS => "/nologo /debug",
   MT => "mt",
   MTFLAGS => "-nologo",
-  RANLIB => "CODE(0x29e3470)",
+  RANLIB => "CODE(0x2233188)",
   RC => "rc",
-  _conf_fname_int => [ "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\00-base-templates.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\00-base-templates.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\10-main.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\10-main.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\50-win-onecore.conf", "C:\\CPython\\externals\\openssl-1.1.1g\\Configurations\\shared-info.pl" ],
+  _conf_fname_int => [ "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\00-base-templates.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\00-base-templates.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\10-main.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\10-main.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\50-win-onecore.conf", "E:\\cpython\\externals\\openssl-1.1.1i\\Configurations\\shared-info.pl" ],
   aes_asm_src => "aes_core.c aes_cbc.c",
   aes_obj => "aes_core.o aes_cbc.o",
   apps_aux_src => "win32_init.c",
@@ -10681,9 +10681,7 @@ our %unified_info = (
             "test\\cmactest.o" =>
                 [
                     "include",
-                    "apps\\include",
                     "..\\include",
-                    "..\\apps\\include",
                 ],
             "test\\cmsapitest.o" =>
                 [
@@ -17106,19 +17104,22 @@ _____
         }
         print "\nEnabled features:\n\n";
         foreach my $what (@disablables) {
-            print "    $what\n" unless $disabled{$what};
+            print "    $what\n"
+                unless grep { $_ =~ /^${what}$/ } keys %disabled;
         }
         print "\nDisabled features:\n\n";
         foreach my $what (@disablables) {
-            if ($disabled{$what}) {
-                print "    $what", ' ' x ($longest - length($what) + 1),
-                    "[$disabled{$what}]", ' ' x ($longest2 - length($disabled{$what}) + 1);
-                print $disabled_info{$what}->{macro}
-                    if $disabled_info{$what}->{macro};
+            my @what2 = grep { $_ =~ /^${what}$/ } keys %disabled;
+            my $what3 = $what2[0];
+            if ($what3) {
+                print "    $what3", ' ' x ($longest - length($what3) + 1),
+                    "[$disabled{$what3}]", ' ' x ($longest2 - length($disabled{$what3}) + 1);
+                print $disabled_info{$what3}->{macro}
+                    if $disabled_info{$what3}->{macro};
                 print ' (skip ',
-                    join(', ', @{$disabled_info{$what}->{skipped}}),
+                    join(', ', @{$disabled_info{$what3}->{skipped}}),
                     ')'
-                    if $disabled_info{$what}->{skipped};
+                    if $disabled_info{$what3}->{skipped};
                 print "\n";
             }
         }

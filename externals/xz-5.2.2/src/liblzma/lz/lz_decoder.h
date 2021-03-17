@@ -53,20 +53,21 @@ typedef struct {
 
 typedef struct {
 	/// Data specific to the LZ-based decoder
-	void *coder;
+	lzma_coder *coder;
 
 	/// Function to decode from in[] to *dict
-	lzma_ret (*code)(void *coder,
+	lzma_ret (*code)(lzma_coder *restrict coder,
 			lzma_dict *restrict dict, const uint8_t *restrict in,
 			size_t *restrict in_pos, size_t in_size);
 
-	void (*reset)(void *coder, const void *options);
+	void (*reset)(lzma_coder *coder, const void *options);
 
 	/// Set the uncompressed size
-	void (*set_uncompressed)(void *coder, lzma_vli uncompressed_size);
+	void (*set_uncompressed)(lzma_coder *coder,
+			lzma_vli uncompressed_size);
 
 	/// Free allocated resources
-	void (*end)(void *coder, const lzma_allocator *allocator);
+	void (*end)(lzma_coder *coder, const lzma_allocator *allocator);
 
 } lzma_lz_decoder;
 
@@ -91,7 +92,7 @@ extern lzma_ret lzma_lz_decoder_init(lzma_next_coder *next,
 extern uint64_t lzma_lz_decoder_memusage(size_t dictionary_size);
 
 extern void lzma_lz_decoder_uncompressed(
-		void *coder, lzma_vli uncompressed_size);
+		lzma_coder *coder, lzma_vli uncompressed_size);
 
 
 //////////////////////

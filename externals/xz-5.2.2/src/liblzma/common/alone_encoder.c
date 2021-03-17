@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-/// \file       alone_encoder.c
-/// \brief      Encoder for LZMA_Alone files
+/// \file       alone_decoder.c
+/// \brief      Decoder for LZMA_Alone files
 //
 //  Author:     Lasse Collin
 //
@@ -17,7 +17,7 @@
 #define ALONE_HEADER_SIZE (1 + 4 + 8)
 
 
-typedef struct {
+struct lzma_coder_s {
 	lzma_next_coder next;
 
 	enum {
@@ -27,18 +27,17 @@ typedef struct {
 
 	size_t header_pos;
 	uint8_t header[ALONE_HEADER_SIZE];
-} lzma_alone_coder;
+};
 
 
 static lzma_ret
-alone_encode(void *coder_ptr, const lzma_allocator *allocator,
+alone_encode(lzma_coder *coder,
+		const lzma_allocator *allocator lzma_attribute((__unused__)),
 		const uint8_t *restrict in, size_t *restrict in_pos,
 		size_t in_size, uint8_t *restrict out,
 		size_t *restrict out_pos, size_t out_size,
 		lzma_action action)
 {
-	lzma_alone_coder *coder = coder_ptr;
-
 	while (*out_pos < out_size)
 	switch (coder->sequence) {
 	case SEQ_HEADER:
@@ -66,9 +65,8 @@ alone_encode(void *coder_ptr, const lzma_allocator *allocator,
 
 
 static void
-alone_encoder_end(void *coder_ptr, const lzma_allocator *allocator)
+alone_encoder_end(lzma_coder *coder, const lzma_allocator *allocator)
 {
-	lzma_alone_coder *coder = coder_ptr;
 	lzma_next_end(&coder->next, allocator);
 	lzma_free(coder, allocator);
 	return;
@@ -82,26 +80,23 @@ alone_encoder_init(lzma_next_coder *next, const lzma_allocator *allocator,
 {
 	lzma_next_coder_init(&alone_encoder_init, next, allocator);
 
-	lzma_alone_coder *coder = next->coder;
-
-	if (coder == NULL) {
-		coder = lzma_alloc(sizeof(lzma_alone_coder), allocator);
-		if (coder == NULL)
+	if (next->coder == NULL) {
+		next->coder = lzma_alloc(sizeof(lzma_coder), allocator);
+		if (next->coder == NULL)
 			return LZMA_MEM_ERROR;
 
-		next->coder = coder;
 		next->code = &alone_encode;
 		next->end = &alone_encoder_end;
-		coder->next = LZMA_NEXT_CODER_INIT;
+		next->coder->next = LZMA_NEXT_CODER_INIT;
 	}
 
 	// Basic initializations
-	coder->sequence = SEQ_HEADER;
-	coder->header_pos = 0;
+	next->coder->sequence = SEQ_HEADER;
+	next->coder->header_pos = 0;
 
 	// Encode the header:
 	// - Properties (1 byte)
-	if (lzma_lzma_lclppb_encode(options, coder->header))
+	if (lzma_lzma_lclppb_encode(options, next->coder->header))
 		return LZMA_OPTIONS_ERROR;
 
 	// - Dictionary size (4 bytes)
@@ -121,10 +116,10 @@ alone_encoder_init(lzma_next_coder *next, const lzma_allocator *allocator,
 	if (d != UINT32_MAX)
 		++d;
 
-	write32le(coder->header + 1, d);
+	unaligned_write32le(next->coder->header + 1, d);
 
 	// - Uncompressed size (always unknown and using EOPM)
-	memset(coder->header + 1 + 4, 0xFF, 8);
+	memset(next->coder->header + 1 + 4, 0xFF, 8);
 
 	// Initialize the LZMA encoder.
 	const lzma_filter_info filters[2] = {
@@ -136,7 +131,7 @@ alone_encoder_init(lzma_next_coder *next, const lzma_allocator *allocator,
 		}
 	};
 
-	return lzma_next_filter_init(&coder->next, allocator, filters);
+	return lzma_next_filter_init(&next->coder->next, allocator, filters);
 }
 
 

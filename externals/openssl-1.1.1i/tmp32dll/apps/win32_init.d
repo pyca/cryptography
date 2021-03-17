@@ -3,12 +3,12 @@ Note: including file: C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winapifamily.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winpackagefamily.h
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\sdkddkver.h
-Note: including file:  D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\excpt.h
-Note: including file:   D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vcruntime.h
-Note: including file:    D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\sal.h
-Note: including file:     D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\concurrencysal.h
-Note: including file:    D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vadefs.h
-Note: including file:  D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\stdarg.h
+Note: including file:  E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\excpt.h
+Note: including file:   E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vcruntime.h
+Note: including file:    E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\sal.h
+Note: including file:     E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\concurrencysal.h
+Note: including file:    E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vadefs.h
+Note: including file:  E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\stdarg.h
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\windef.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\specstrings.h
@@ -27,7 +27,7 @@ Note: including file:      C:\Program Files (x86)\Windows Kits\10\Include\10.0.1
 Note: including file:       C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_memory.h
 Note: including file:        C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_memcpy_s.h
 Note: including file:         C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\errno.h
-Note: including file:         D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vcruntime_string.h
+Note: including file:         E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vcruntime_string.h
 Note: including file:       C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wstring.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\pshpack4.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\poppack.h
@@ -127,5 +127,5 @@ Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_search.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\stddef.h
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wstdlib.h
-Note: including file:  D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\limits.h
+Note: including file:  E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\limits.h
 Note: including file: C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\malloc.h

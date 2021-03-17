@@ -1,3 +1,0 @@
-The MSU files were downloaded from: http://www.microsoft.com/en-us/download/details.aspx?id=48234
-
-The vcruntimeXYZ.dll files are taken from the redist folder of a Visual C++ 2015 installation.

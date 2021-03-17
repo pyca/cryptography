@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 /// \file       filter_flags_encoder.c
-/// \brief      Encodes a Filter Flags field
+/// \brief      Decodes a Filter Flags field
 //
 //  Author:     Lasse Collin
 //

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-/// \file       block_util.c
+/// \file       block_header.c
 /// \brief      Utility functions to handle lzma_block
 //
 //  Author:     Lasse Collin

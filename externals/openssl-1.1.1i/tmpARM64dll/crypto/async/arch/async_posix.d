@@ -1,15 +1,15 @@
 async_posix.c
-Note: including file: C:\CPython\externals\openssl-1.1.1g\crypto\async\arch\../async_local.h
+Note: including file: E:\cpython\externals\openssl-1.1.1i\crypto\async\arch\../async_local.h
 Note: including file:  C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\windows.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winapifamily.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winpackagefamily.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\sdkddkver.h
-Note: including file:   D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\excpt.h
-Note: including file:    D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vcruntime.h
-Note: including file:     D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\sal.h
-Note: including file:      D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\concurrencysal.h
-Note: including file:     D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vadefs.h
-Note: including file:   D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\stdarg.h
+Note: including file:   E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\excpt.h
+Note: including file:    E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vcruntime.h
+Note: including file:     E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\sal.h
+Note: including file:      E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\concurrencysal.h
+Note: including file:     E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vadefs.h
+Note: including file:   E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\stdarg.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\windef.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\specstrings.h
@@ -28,14 +28,14 @@ Note: including file:       C:\Program Files (x86)\Windows Kits\10\Include\10.0.
 Note: including file:        C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_memory.h
 Note: including file:         C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_memcpy_s.h
 Note: including file:          C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\errno.h
-Note: including file:          D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vcruntime_string.h
+Note: including file:          E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\vcruntime_string.h
 Note: including file:        C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wstring.h
-Note: including file:      D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\intrin.h
-Note: including file:       D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\intrin0.h
-Note: including file:       D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\setjmp.h
-Note: including file:       D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\stdint.h
-Note: including file:       D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\arm64intr.h
-Note: including file:       D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\arm64_neon.h
+Note: including file:      E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\intrin.h
+Note: including file:       E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\intrin0.h
+Note: including file:       E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\setjmp.h
+Note: including file:       E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\stdint.h
+Note: including file:       E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\arm64intr.h
+Note: including file:       E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\arm64_neon.h
 Note: including file:      C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\pshpack4.h
 Note: including file:      C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\poppack.h
 Note: including file:      C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\pshpack4.h
@@ -127,41 +127,41 @@ Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.1904
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\mcx.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\imm.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\ime_cmodes.h
-Note: including file:  C:\CPython\externals\openssl-1.1.1g\include\crypto/async.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/async.h
+Note: including file:  E:\cpython\externals\openssl-1.1.1i\include\crypto/async.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/async.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\stdlib.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_malloc.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_search.h
 Note: including file:      C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\stddef.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wstdlib.h
-Note: including file:     D:\MicrosoftVisualStudio\2019\Community\VC\Tools\MSVC\14.28.29333\include\limits.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\openssl/asyncerr.h
-Note: including file:     C:\CPython\externals\openssl-1.1.1g\include\openssl/symhacks.h
-Note: including file:      C:\CPython\externals\openssl-1.1.1g\include\openssl/e_os2.h
-Note: including file:       C:\CPython\externals\openssl-1.1.1g\tmpARM64dll\include\openssl/opensslconf.h
-Note: including file:        C:\CPython\externals\openssl-1.1.1g\include\openssl/opensslv.h
-Note: including file:  C:\CPython\externals\openssl-1.1.1g\include\openssl/crypto.h
+Note: including file:     E:\VS2019_BuildTools\VC\Tools\MSVC\14.28.29910\include\limits.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\openssl/asyncerr.h
+Note: including file:     E:\cpython\externals\openssl-1.1.1i\include\openssl/symhacks.h
+Note: including file:      E:\cpython\externals\openssl-1.1.1i\include\openssl/e_os2.h
+Note: including file:       E:\cpython\externals\openssl-1.1.1i\tmpARM64dll\include\openssl/opensslconf.h
+Note: including file:        E:\cpython\externals\openssl-1.1.1i\include\openssl/opensslv.h
+Note: including file:  E:\cpython\externals\openssl-1.1.1i\include\openssl/crypto.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\time.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wtime.h
 Note: including file:   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\stdio.h
 Note: including file:    C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_wstdio.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\corecrt_stdio_config.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/safestack.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\openssl/stack.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/ossl_typ.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\tmpARM64dll\include\openssl/opensslconf.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/cryptoerr.h
-Note: including file:  C:\CPython\externals\openssl-1.1.1g\crypto\async\arch/async_win.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/async.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\internal/cryptlib.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\openssl/buffer.h
-Note: including file:     C:\CPython\externals\openssl-1.1.1g\include\openssl/buffererr.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/safestack.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\openssl/stack.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/ossl_typ.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\tmpARM64dll\include\openssl/opensslconf.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/cryptoerr.h
+Note: including file:  E:\cpython\externals\openssl-1.1.1i\crypto\async\arch/async_win.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/async.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\internal/cryptlib.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\openssl/buffer.h
+Note: including file:     E:\cpython\externals\openssl-1.1.1i\include\openssl/buffererr.h
 Note: including file:     C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\sys/types.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\openssl/bio.h
-Note: including file:     C:\CPython\externals\openssl-1.1.1g\include\openssl/bioerr.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\openssl/err.h
-Note: including file:     C:\CPython\externals\openssl-1.1.1g\include\openssl/lhash.h
-Note: including file:    C:\CPython\externals\openssl-1.1.1g\include\internal/nelem.h
-Note: including file:  C:\CPython\externals\openssl-1.1.1g\crypto\async\arch/async_posix.h
-Note: including file:  C:\CPython\externals\openssl-1.1.1g\crypto\async\arch/async_null.h
-Note: including file:   C:\CPython\externals\openssl-1.1.1g\include\openssl/async.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\openssl/bio.h
+Note: including file:     E:\cpython\externals\openssl-1.1.1i\include\openssl/bioerr.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\openssl/err.h
+Note: including file:     E:\cpython\externals\openssl-1.1.1i\include\openssl/lhash.h
+Note: including file:    E:\cpython\externals\openssl-1.1.1i\include\internal/nelem.h
+Note: including file:  E:\cpython\externals\openssl-1.1.1i\crypto\async\arch/async_posix.h
+Note: including file:  E:\cpython\externals\openssl-1.1.1i\crypto\async\arch/async_null.h
+Note: including file:   E:\cpython\externals\openssl-1.1.1i\include\openssl/async.h

@@ -122,8 +122,7 @@ typedef enum {
 ///     byte; and
 ///   - the highest literal_context_bits bits of the previous byte.
 #define literal_subcoder(probs, lc, lp_mask, pos, prev_byte) \
-	((probs)[(((pos) & (lp_mask)) << (lc)) \
-			+ ((uint32_t)(prev_byte) >> (8U - (lc)))])
+	((probs)[(((pos) & lp_mask) << lc) + ((prev_byte) >> (8 - lc))])
 
 
 static inline void

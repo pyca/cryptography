@@ -18,7 +18,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-@enable_path_for_scripts@
 #SET_PATH - This line is a placeholder to ease patching this script.
 
 # Instead of unsetting XZ_OPT, just make sure that xz will use file format
@@ -201,7 +200,7 @@ for i; do
   )
   r=$?
 
-  # fail occurred previously, nothing worse can happen
+  # fail occured previously, nothing worse can happen
   test $res -gt 1 && continue
 
   test "$xz_status" -eq 0 || test "$xz_status" -eq 2 \

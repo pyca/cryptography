@@ -1,0 +1,542 @@
+State 0:
+          input ::= * expr
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= * expr OR expr
+          expr ::= * expr NOT expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= * LP expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                         input accept
+                          expr shift        20     
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 1:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= * expr OR expr
+          expr ::= * expr NOT expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= * LP expr RP
+          expr ::= LP * expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                          expr shift        18     
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 2:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= * expr OR expr
+          expr ::= * expr NOT expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= colset COLON LP * expr RP
+          expr ::= * LP expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                          expr shift        19     
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 3:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= * expr OR expr
+          expr ::= * expr NOT expr
+          expr ::= expr NOT * expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= * LP expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                          expr shift-reduce 9      expr ::= expr NOT expr
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 4:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= * expr OR expr
+          expr ::= expr OR * expr
+          expr ::= * expr NOT expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= * LP expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                          expr shift        21     
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 5:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+          expr ::= * expr AND expr
+          expr ::= expr AND * expr
+          expr ::= * expr OR expr
+          expr ::= * expr NOT expr
+          expr ::= * colset COLON LP expr RP
+          expr ::= * LP expr RP
+          expr ::= * exprlist
+          exprlist ::= * cnearset
+          exprlist ::= * exprlist cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                            LP shift        1      
+                         CARET shift        13     
+                          expr shift        29     
+                      cnearset shift-reduce 13     exprlist ::= cnearset
+                      exprlist shift        6      
+                        colset shift        28     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+
+State 6:
+          colset ::= * MINUS LCP colsetlist RCP
+          colset ::= * LCP colsetlist RCP
+          colset ::= * STRING
+          colset ::= * MINUS STRING
+     (12) expr ::= exprlist *
+          exprlist ::= exprlist * cnearset
+          cnearset ::= * nearset
+          cnearset ::= * colset COLON nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                         MINUS shift        24     
+                           LCP shift        16     
+                        STRING shift        11     
+                         CARET shift        13     
+                      cnearset shift-reduce 14     exprlist ::= exprlist cnearset
+                        colset shift        27     
+                       nearset shift-reduce 15     cnearset ::= nearset
+                        phrase shift        26     
+                     {default} reduce       12     expr ::= exprlist
+
+State 7:
+          expr ::= colset COLON * LP expr RP
+          cnearset ::= colset COLON * nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                        STRING shift        12     
+                            LP shift        2      
+                         CARET shift        13     
+                       nearset shift-reduce 16     cnearset ::= colset COLON nearset
+                        phrase shift        26     
+
+State 8:
+          cnearset ::= colset COLON * nearset
+          nearset ::= * phrase
+          nearset ::= * CARET phrase
+          nearset ::= * STRING LP nearphrases neardist_opt RP
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                        STRING shift        12     
+                         CARET shift        13     
+                       nearset shift-reduce 16     cnearset ::= colset COLON nearset
+                        phrase shift        26     
+
+State 9:
+          nearset ::= STRING LP nearphrases * neardist_opt RP
+          nearphrases ::= nearphrases * phrase
+     (22) neardist_opt ::= *
+          neardist_opt ::= * COMMA STRING
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                        STRING shift        14     
+                         COMMA shift        31     
+                        phrase shift        33     
+                  neardist_opt shift        34     
+                     {default} reduce       22     neardist_opt ::=
+
+State 10:
+          nearset ::= STRING LP * nearphrases neardist_opt RP
+          nearphrases ::= * phrase
+          nearphrases ::= * nearphrases phrase
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                        STRING shift        14     
+                   nearphrases shift        9      
+                        phrase shift        30     
+
+State 11:
+      (3) colset ::= STRING *
+          nearset ::= STRING * LP nearphrases neardist_opt RP
+          phrase ::= STRING * star_opt
+          star_opt ::= * STAR
+     (27) star_opt ::= *
+
+                         COLON reduce       3      colset ::= STRING
+                            LP shift        10     
+                          STAR shift-reduce 26     star_opt ::= STAR
+                      star_opt shift-reduce 25     phrase ::= STRING star_opt
+                     {default} reduce       27     star_opt ::=
+
+State 12:
+          nearset ::= STRING * LP nearphrases neardist_opt RP
+          phrase ::= STRING * star_opt
+          star_opt ::= * STAR
+     (27) star_opt ::= *
+
+                            LP shift        10     
+                          STAR shift-reduce 26     star_opt ::= STAR
+                      star_opt shift-reduce 25     phrase ::= STRING star_opt
+                     {default} reduce       27     star_opt ::=
+
+State 13:
+          nearset ::= CARET * phrase
+          phrase ::= * phrase PLUS STRING star_opt
+          phrase ::= * STRING star_opt
+
+                        STRING shift        14     
+                        phrase shift        25     
+
+State 14:
+          phrase ::= STRING * star_opt
+          star_opt ::= * STAR
+     (27) star_opt ::= *
+
+                          STAR shift-reduce 26     star_opt ::= STAR
+                      star_opt shift-reduce 25     phrase ::= STRING star_opt
+                     {default} reduce       27     star_opt ::=
+
+State 15:
+          phrase ::= phrase PLUS STRING * star_opt
+          star_opt ::= * STAR
+     (27) star_opt ::= *
+
+                          STAR shift-reduce 26     star_opt ::= STAR
+                      star_opt shift-reduce 24     phrase ::= phrase PLUS STRING star_opt
+                     {default} reduce       27     star_opt ::=
+
+State 16:
+          colset ::= LCP * colsetlist RCP
+          colsetlist ::= * colsetlist STRING
+          colsetlist ::= * STRING
+
+                        STRING shift-reduce 6      colsetlist ::= STRING
+                    colsetlist shift        22     
+
+State 17:
+          colset ::= MINUS LCP * colsetlist RCP
+          colsetlist ::= * colsetlist STRING
+          colsetlist ::= * STRING
+
+                        STRING shift-reduce 6      colsetlist ::= STRING
+                    colsetlist shift        23     
+
+State 18:
+          expr ::= expr * AND expr
+          expr ::= expr * OR expr
+          expr ::= expr * NOT expr
+          expr ::= LP expr * RP
+
+                            OR shift        4      
+                           AND shift        5      
+                           NOT shift        3      
+                            RP shift-reduce 11     expr ::= LP expr RP
+
+State 19:
+          expr ::= expr * AND expr
+          expr ::= expr * OR expr
+          expr ::= expr * NOT expr
+          expr ::= colset COLON LP expr * RP
+
+                            OR shift        4      
+                           AND shift        5      
+                           NOT shift        3      
+                            RP shift-reduce 10     expr ::= colset COLON LP expr RP
+
+State 20:
+      (0) input ::= expr *
+          expr ::= expr * AND expr
+          expr ::= expr * OR expr
+          expr ::= expr * NOT expr
+
+                             $ reduce       0      input ::= expr
+                            OR shift        4      
+                           AND shift        5      
+                           NOT shift        3      
+
+State 21:
+          expr ::= expr * AND expr
+          expr ::= expr * OR expr
+      (8) expr ::= expr OR expr *
+          expr ::= expr * NOT expr
+
+                           AND shift        5      
+                           NOT shift        3      
+                     {default} reduce       8      expr ::= expr OR expr
+
+State 22:
+          colset ::= LCP colsetlist * RCP
+          colsetlist ::= colsetlist * STRING
+
+                           RCP shift-reduce 2      colset ::= LCP colsetlist RCP
+                        STRING shift-reduce 5      colsetlist ::= colsetlist STRING
+
+State 23:
+          colset ::= MINUS LCP colsetlist * RCP
+          colsetlist ::= colsetlist * STRING
+
+                           RCP shift-reduce 1      colset ::= MINUS LCP colsetlist RCP
+                        STRING shift-reduce 5      colsetlist ::= colsetlist STRING
+
+State 24:
+          colset ::= MINUS * LCP colsetlist RCP
+          colset ::= MINUS * STRING
+
+                           LCP shift        17     
+                        STRING shift-reduce 4      colset ::= MINUS STRING
+
+State 25:
+     (18) nearset ::= CARET phrase *
+          phrase ::= phrase * PLUS STRING star_opt
+
+                          PLUS shift        32     
+                     {default} reduce       18     nearset ::= CARET phrase
+
+State 26:
+     (17) nearset ::= phrase *
+          phrase ::= phrase * PLUS STRING star_opt
+
+                          PLUS shift        32     
+                     {default} reduce       17     nearset ::= phrase
+
+State 27:
+          cnearset ::= colset * COLON nearset
+
+                         COLON shift        8      
+
+State 28:
+          expr ::= colset * COLON LP expr RP
+          cnearset ::= colset * COLON nearset
+
+                         COLON shift        7      
+
+State 29:
+          expr ::= expr * AND expr
+      (7) expr ::= expr AND expr *
+          expr ::= expr * OR expr
+          expr ::= expr * NOT expr
+
+                           NOT shift        3      
+                     {default} reduce       7      expr ::= expr AND expr
+
+State 30:
+     (20) nearphrases ::= phrase *
+          phrase ::= phrase * PLUS STRING star_opt
+
+                          PLUS shift        32     
+                     {default} reduce       20     nearphrases ::= phrase
+
+State 31:
+          neardist_opt ::= COMMA * STRING
+
+                        STRING shift-reduce 23     neardist_opt ::= COMMA STRING
+
+State 32:
+          phrase ::= phrase PLUS * STRING star_opt
+
+                        STRING shift        15     
+
+State 33:
+     (21) nearphrases ::= nearphrases phrase *
+          phrase ::= phrase * PLUS STRING star_opt
+
+                          PLUS shift        32     
+                     {default} reduce       21     nearphrases ::= nearphrases phrase
+
+State 34:
+          nearset ::= STRING LP nearphrases neardist_opt * RP
+
+                            RP shift-reduce 19     nearset ::= STRING LP nearphrases neardist_opt RP
+
+----------------------------------------------------
+Symbols:
+The first-set of non-terminals is shown after the name.
+
+    0: $:
+    1: OR (precedence=1)
+    2: AND (precedence=2)
+    3: NOT (precedence=3)
+    4: TERM (precedence=4)
+    5: COLON (precedence=5)
+    6: MINUS
+    7: LCP
+    8: RCP
+    9: STRING
+   10: LP
+   11: RP
+   12: CARET
+   13: COMMA
+   14: PLUS
+   15: STAR
+   16: input: MINUS LCP STRING LP CARET
+   17: expr: MINUS LCP STRING LP CARET
+   18: cnearset: MINUS LCP STRING CARET
+   19: exprlist: MINUS LCP STRING CARET
+   20: colset: MINUS LCP STRING
+   21: colsetlist: STRING
+   22: nearset: STRING CARET
+   23: nearphrases: STRING
+   24: phrase: STRING
+   25: neardist_opt: <lambda> COMMA
+   26: star_opt: <lambda> STAR
+----------------------------------------------------
+Syntax-only Symbols:
+The following symbols never carry semantic content.
+
+$ OR AND NOT TERM COLON MINUS LCP RCP LP RP CARET COMMA PLUS STAR input
+----------------------------------------------------
+Rules:
+   0: input ::= expr.
+   1: colset ::= MINUS LCP colsetlist RCP.
+   2: colset ::= LCP colsetlist RCP.
+   3: colset ::= STRING.
+   4: colset ::= MINUS STRING.
+   5: colsetlist ::= colsetlist STRING.
+   6: colsetlist ::= STRING.
+   7: expr ::= expr AND expr. [AND precedence=2]
+   8: expr ::= expr OR expr. [OR precedence=1]
+   9: expr ::= expr NOT expr. [NOT precedence=3]
+  10: expr ::= colset COLON LP expr RP. [COLON precedence=5]
+  11: expr ::= LP expr RP.
+  12: expr ::= exprlist.
+  13: exprlist ::= cnearset.
+  14: exprlist ::= exprlist cnearset.
+  15: cnearset ::= nearset.
+  16: cnearset ::= colset COLON nearset. [COLON precedence=5]
+  17: nearset ::= phrase.
+  18: nearset ::= CARET phrase.
+  19: nearset ::= STRING LP nearphrases neardist_opt RP.
+  20: nearphrases ::= phrase.
+  21: nearphrases ::= nearphrases phrase.
+  22: neardist_opt ::=.
+  23: neardist_opt ::= COMMA STRING.
+  24: phrase ::= phrase PLUS STRING star_opt.
+  25: phrase ::= STRING star_opt.
+  26: star_opt ::= STAR.
+  27: star_opt ::=.

@@ -1,0 +1,23 @@
+﻿cl : command line warning D9002: ignoring unknown option '/std:c11'
+  adler32.c
+  compress.c
+  crc32.c
+  deflate.c
+  Assembler code may have bugs -- use at your own risk
+  gzclose.c
+  gzlib.c
+  gzread.c
+  gzwrite.c
+  infback.c
+  inffast.c
+  Assembler code may have bugs -- use at your own risk
+  inflate.c
+  inftrees.c
+  ioapi.c
+  trees.c
+  uncompr.c
+  unzip.c
+  zip.c
+  zutil.c
+  Generating Code...
+  zlibstat.vcxproj -> E:\cpython\externals\zlib-1.2.11\contrib\vstudio\vc14\x86\ZlibStatRelease\zlibstat.lib

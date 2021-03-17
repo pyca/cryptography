@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler (x64) Version 14.00.24210.0   10/18/20 09:30:40
+Microsoft (R) Macro Assembler (x64) Version 14.20.27525.0   03/16/21 10:08:43
 inffasx64.asm						     Page 1 - 1
 
 
@@ -438,7 +438,7 @@ inffasx64.asm						     Page 1 - 1
  00000317			inffas8664fnc 	ENDP
 				;_TEXT	ENDS
 				END
-Microsoft (R) Macro Assembler (x64) Version 14.00.24210.0   10/18/20 09:30:40
+Microsoft (R) Macro Assembler (x64) Version 14.20.27525.0   03/16/21 10:08:43
 inffasx64.asm						     Symbols 2 - 1
 
 

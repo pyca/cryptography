@@ -54,7 +54,7 @@
  *
  * Valid VLI values are in the range [0, LZMA_VLI_MAX]. Unknown value is
  * indicated with LZMA_VLI_UNKNOWN, which is the maximum value of the
- * underlying integer type.
+ * underlaying integer type.
  *
  * lzma_vli will be uint64_t for the foreseeable future. If a bigger size
  * is needed in the future, it is guaranteed that 2 * LZMA_VLI_MAX will

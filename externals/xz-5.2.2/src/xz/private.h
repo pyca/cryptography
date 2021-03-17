@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 /// \file       private.h
-/// \brief      Common includes, definitions, and prototypes
+/// \brief      Common includes, definions, and prototypes
 //
 //  Author:     Lasse Collin
 //
@@ -45,10 +45,6 @@
 #	define STDERR_FILENO (fileno(stderr))
 #endif
 
-#ifdef HAVE_CAPSICUM
-#	define ENABLE_SANDBOX 1
-#endif
-
 #include "main.h"
 #include "mytime.h"
 #include "coder.h"
@@ -60,7 +56,4 @@
 #include "signals.h"
 #include "suffix.h"
 #include "util.h"
-
-#ifdef HAVE_DECODERS
-#	include "list.h"
-#endif
+#include "list.h"

@@ -7,7 +7,6 @@
 
 EXTRA_DIST = \
 	files \
-	ossfuzz \
 	tests.h \
 	test_files.sh \
 	test_compress.sh \

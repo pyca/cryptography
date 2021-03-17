@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    10/18/20 10:26:12
+Microsoft (R) Macro Assembler Version 14.20.27525.0	    03/16/21 10:11:19
 inffas32.asm						     Page 1 - 1
 
 
@@ -1109,7 +1109,7 @@ inffas32.asm						     Page 1 - 1
 
  00000004			_TEXT	ends
 				end
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    10/18/20 10:26:12
+Microsoft (R) Macro Assembler Version 14.20.27525.0	    03/16/21 10:11:19
 inffas32.asm						     Symbols 2 - 1
 
 

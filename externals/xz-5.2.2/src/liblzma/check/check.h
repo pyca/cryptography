@@ -15,18 +15,7 @@
 
 #include "common.h"
 
-// If the function for external SHA-256 is missing, use the internal SHA-256
-// code. Due to how configure works, these defines can only get defined when
-// both a usable header and a type have already been found.
-#if !(defined(HAVE_CC_SHA256_INIT) \
-		|| defined(HAVE_SHA256_INIT) \
-		|| defined(HAVE_SHA256INIT))
-#	define HAVE_INTERNAL_SHA256 1
-#endif
-
-#if defined(HAVE_INTERNAL_SHA256)
-// Nothing
-#elif defined(HAVE_COMMONCRYPTO_COMMONDIGEST_H)
+#if defined(HAVE_COMMONCRYPTO_COMMONDIGEST_H)
 #	include <CommonCrypto/CommonDigest.h>
 #elif defined(HAVE_SHA256_H)
 #	include <sys/types.h>
@@ -34,9 +23,18 @@
 #elif defined(HAVE_SHA2_H)
 #	include <sys/types.h>
 #	include <sha2.h>
+#elif defined(HAVE_MINIX_SHA2_H)
+#	include <sys/types.h>
+#	include <minix/sha2.h>
 #endif
 
-#if defined(HAVE_INTERNAL_SHA256)
+#if defined(HAVE_CC_SHA256_CTX)
+typedef CC_SHA256_CTX lzma_sha256_state;
+#elif defined(HAVE_SHA256_CTX)
+typedef SHA256_CTX lzma_sha256_state;
+#elif defined(HAVE_SHA2_CTX)
+typedef SHA2_CTX lzma_sha256_state;
+#else
 /// State for the internal SHA-256 implementation
 typedef struct {
 	/// Internal state
@@ -45,17 +43,9 @@ typedef struct {
 	/// Size of the message excluding padding
 	uint64_t size;
 } lzma_sha256_state;
-#elif defined(HAVE_CC_SHA256_CTX)
-typedef CC_SHA256_CTX lzma_sha256_state;
-#elif defined(HAVE_SHA256_CTX)
-typedef SHA256_CTX lzma_sha256_state;
-#elif defined(HAVE_SHA2_CTX)
-typedef SHA2_CTX lzma_sha256_state;
 #endif
 
-#if defined(HAVE_INTERNAL_SHA256)
-// Nothing
-#elif defined(HAVE_CC_SHA256_INIT)
+#if defined(HAVE_CC_SHA256_INIT)
 #	define LZMA_SHA256FUNC(x) CC_SHA256_ ## x
 #elif defined(HAVE_SHA256_INIT)
 #	define LZMA_SHA256FUNC(x) SHA256_ ## x

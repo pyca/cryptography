@@ -18,7 +18,9 @@ CPPFLAGS =
 CFLAGS = -g -Wall -Wextra -Wfatal-errors -march=i386 -mtune=i686 -O2
 LDFLAGS = -lemu
 
-ALL_CFLAGS = -std=gnu99
+# NOTE: -fgnu89-inline is needed on DJGPP 2.04 beta and GCC >= 4.3.0
+# because time.h uses GNU-style "extern inline".
+ALL_CFLAGS = -std=gnu99 -fgnu89-inline
 
 ALL_CPPFLAGS = \
 	-I. \
@@ -62,7 +64,6 @@ SRCS_C = \
 	../src/liblzma/common/block_header_encoder.c \
 	../src/liblzma/common/block_util.c \
 	../src/liblzma/common/common.c \
-	../src/liblzma/common/file_info.c \
 	../src/liblzma/common/filter_common.c \
 	../src/liblzma/common/filter_decoder.c \
 	../src/liblzma/common/filter_encoder.c \

@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    10/18/20 10:26:12
+Microsoft (R) Macro Assembler Version 14.20.27525.0	    03/16/21 10:11:19
 match686.asm						     Page 1 - 1
 
 
@@ -271,51 +271,51 @@ match686.asm						     Page 1 - 1
  00000041  8B 72 38		        mov esi, [edx + dsWindow]
  00000044  89 74 24 04		        mov [window], esi
  00000048  8B 6A 6C		        mov ebp, [edx + dsStrStart]
- 0000004B  8D 7C 35 00		        lea edi, [esi + ebp]
- 0000004F  89 7C 24 20		        mov [scan], edi
+ 0000004B  8D 3C 2E		        lea edi, [esi + ebp]
+ 0000004E  89 7C 24 20		        mov [scan], edi
 
 				;;; Determine how many bytes the scan ptr is off from being
 				;;; dword-aligned.
 
- 00000053  8B C7		        mov eax, edi
- 00000055  F7 D8		        neg eax
- 00000057  83 E0 03		        and eax, 3
- 0000005A  89 44 24 14		        mov [scanalign], eax
+ 00000052  8B C7		        mov eax, edi
+ 00000054  F7 D8		        neg eax
+ 00000056  83 E0 03		        and eax, 3
+ 00000059  89 44 24 14		        mov [scanalign], eax
 
 				;;; IPos limit = s->strstart > (IPos)MAX_DIST(s) ?
 				;;;     s->strstart - (IPos)MAX_DIST(s) : NIL;
 
- 0000005E  8B 42 2C		        mov eax, [edx + dsWSize]
- 00000061  2D 00000106		        sub eax, MIN_LOOKAHEAD
- 00000066  2B E8		        sub ebp, eax
- 00000068  7F 02		        jg  LimitPositive
- 0000006A  33 ED		        xor ebp, ebp
- 0000006C			LimitPositive:
+ 0000005D  8B 42 2C		        mov eax, [edx + dsWSize]
+ 00000060  2D 00000106		        sub eax, MIN_LOOKAHEAD
+ 00000065  2B E8		        sub ebp, eax
+ 00000067  7F 02		        jg  LimitPositive
+ 00000069  33 ED		        xor ebp, ebp
+ 0000006B			LimitPositive:
 
 				;;; int best_len = s->prev_length;
 
- 0000006C  8B 42 78		        mov eax, [edx + dsPrevLen]
- 0000006F  89 44 24 1C		        mov [bestlen], eax
+ 0000006B  8B 42 78		        mov eax, [edx + dsPrevLen]
+ 0000006E  89 44 24 1C		        mov [bestlen], eax
 
 				;;; Store the sum of s->window + best_len in esi locally, and in esi.
 
- 00000073  03 F0		        add esi, eax
- 00000075  89 74 24 08		        mov [windowbestlen], esi
+ 00000072  03 F0		        add esi, eax
+ 00000074  89 74 24 08		        mov [windowbestlen], esi
 
 				;;; register ush scan_start = *(ushf*)scan;
 				;;; register ush scan_end   = *(ushf*)(scan+best_len-1);
 				;;; Posf *prev = s->prev;
 
- 00000079  0F B7 1F		        movzx   ebx, word ptr [edi]
- 0000007C  89 5C 24 10		        mov [scanstart], ebx
- 00000080  0F B7 5C 38 FF	        movzx   ebx, word ptr [edi + eax - 1]
- 00000085  89 5C 24 0C		        mov [scanend], ebx
- 00000089  8B 7A 40		        mov edi, [edx + dsPrev]
+ 00000078  0F B7 1F		        movzx   ebx, word ptr [edi]
+ 0000007B  89 5C 24 10		        mov [scanstart], ebx
+ 0000007F  0F B7 5C 07 FF	        movzx   ebx, word ptr [edi + eax - 1]
+ 00000084  89 5C 24 0C		        mov [scanend], ebx
+ 00000088  8B 7A 40		        mov edi, [edx + dsPrev]
 
 				;;; Jump into the main loop.
 
- 0000008C  8B 14 24		        mov edx, [chainlenwmask]
- 0000008F  EB 1D		        jmp short LoopEntry
+ 0000008B  8B 14 24		        mov edx, [chainlenwmask]
+ 0000008E  EB 1A		        jmp short LoopEntry
 
 				align 4
 
@@ -339,38 +339,38 @@ match686.asm						     Page 1 - 1
 				;;; edi = prev
 				;;; ebp = limit
 
- 00000094			LookupLoop:
- 00000094  23 CA		        and ecx, edx
- 00000096  0F B7 0C 4F		        movzx   ecx, word ptr [edi + ecx*2]
- 0000009A  3B CD		        cmp ecx, ebp
- 0000009C  0F 86 000000E0	        jbe LeaveNow
- 000000A2  81 EA 00010000	        sub edx, 00010000h
- 000000A8  0F 88 000000D4	        js  LeaveNow
- 000000AE  0F B7 44 31 FF	LoopEntry:  movzx   eax, word ptr [esi + ecx - 1]
- 000000B3  3B C3		        cmp eax, ebx
- 000000B5  75 DD		        jnz LookupLoop
- 000000B7  8B 44 24 04		        mov eax, [window]
- 000000BB  0F B7 04 01		        movzx   eax, word ptr [eax + ecx]
- 000000BF  3B 44 24 10		        cmp eax, [scanstart]
- 000000C3  75 CF		        jnz LookupLoop
+ 00000090			LookupLoop:
+ 00000090  23 CA		        and ecx, edx
+ 00000092  0F B7 0C 4F		        movzx   ecx, word ptr [edi + ecx*2]
+ 00000096  3B CD		        cmp ecx, ebp
+ 00000098  0F 86 000000E0	        jbe LeaveNow
+ 0000009E  81 EA 00010000	        sub edx, 00010000h
+ 000000A4  0F 88 000000D4	        js  LeaveNow
+ 000000AA  0F B7 44 0E FF	LoopEntry:  movzx   eax, word ptr [esi + ecx - 1]
+ 000000AF  3B C3		        cmp eax, ebx
+ 000000B1  75 DD		        jnz LookupLoop
+ 000000B3  8B 44 24 04		        mov eax, [window]
+ 000000B7  0F B7 04 08		        movzx   eax, word ptr [eax + ecx]
+ 000000BB  3B 44 24 10		        cmp eax, [scanstart]
+ 000000BF  75 CF		        jnz LookupLoop
 
 				;;; Store the current value of chainlen.
 
- 000000C5  89 14 24		        mov [chainlenwmask], edx
+ 000000C1  89 14 24		        mov [chainlenwmask], edx
 
 				;;; Point edi to the string under scrutiny, and esi to the string we
 				;;; are hoping to match it up with. In actuality, esi and edi are
 				;;; both pointed (MAX_MATCH_8 - scanalign) bytes ahead, and edx is
 				;;; initialized to -(MAX_MATCH_8 - scanalign).
 
- 000000C8  8B 74 24 04		        mov esi, [window]
- 000000CC  8B 7C 24 20		        mov edi, [scan]
- 000000D0  03 F1		        add esi, ecx
- 000000D2  8B 44 24 14		        mov eax, [scanalign]
- 000000D6  BA FFFFFEF8		        mov edx, 0fffffef8h; -(MAX_MATCH_8)
- 000000DB  8D BC 38		        lea edi, [edi + eax + 0108h] ;MAX_MATCH_8]
+ 000000C4  8B 74 24 04		        mov esi, [window]
+ 000000C8  8B 7C 24 20		        mov edi, [scan]
+ 000000CC  03 F1		        add esi, ecx
+ 000000CE  8B 44 24 14		        mov eax, [scanalign]
+ 000000D2  BA FFFFFEF8		        mov edx, 0fffffef8h; -(MAX_MATCH_8)
+ 000000D7  8D BC 07		        lea edi, [edi + eax + 0108h] ;MAX_MATCH_8]
 	   00000108
- 000000E2  8D B4 30		        lea esi, [esi + eax + 0108h] ;MAX_MATCH_8]
+ 000000DE  8D B4 06		        lea esi, [esi + eax + 0108h] ;MAX_MATCH_8]
 	   00000108
 
 				;;; Test the strings for equality, 8 bytes at a time. At the end,
@@ -387,96 +387,96 @@ match686.asm						     Page 1 - 1
 				;;; straightforward "rep cmpsb" would not drastically degrade
 				;;; performance.
 
- 000000E9			LoopCmps:
- 000000E9  8B 04 32		        mov eax, [esi + edx]
- 000000EC  33 04 3A		        xor eax, [edi + edx]
- 000000EF  75 14		        jnz LeaveLoopCmps
- 000000F1  8B 44 32 04		        mov eax, [esi + edx + 4]
- 000000F5  33 44 3A 04		        xor eax, [edi + edx + 4]
- 000000F9  75 07		        jnz LeaveLoopCmps4
- 000000FB  83 C2 08		        add edx, 8
- 000000FE  75 E9		        jnz LoopCmps
- 00000100  EB 71		        jmp short LenMaximum
- 00000102  83 C2 04		LeaveLoopCmps4: add edx, 4
- 00000105  A9 0000FFFF		LeaveLoopCmps:  test    eax, 0000FFFFh
- 0000010A  75 06		        jnz LenLower
- 0000010C  83 C2 02		        add edx,  2
- 0000010F  C1 E8 10		        shr eax, 16
- 00000112  2C 01		LenLower:   sub al, 1
- 00000114  83 D2 00		        adc edx, 0
+ 000000E5			LoopCmps:
+ 000000E5  8B 04 16		        mov eax, [esi + edx]
+ 000000E8  33 04 17		        xor eax, [edi + edx]
+ 000000EB  75 14		        jnz LeaveLoopCmps
+ 000000ED  8B 44 16 04		        mov eax, [esi + edx + 4]
+ 000000F1  33 44 17 04		        xor eax, [edi + edx + 4]
+ 000000F5  75 07		        jnz LeaveLoopCmps4
+ 000000F7  83 C2 08		        add edx, 8
+ 000000FA  75 E9		        jnz LoopCmps
+ 000000FC  EB 71		        jmp short LenMaximum
+ 000000FE  83 C2 04		LeaveLoopCmps4: add edx, 4
+ 00000101  A9 0000FFFF		LeaveLoopCmps:  test    eax, 0000FFFFh
+ 00000106  75 06		        jnz LenLower
+ 00000108  83 C2 02		        add edx,  2
+ 0000010B  C1 E8 10		        shr eax, 16
+ 0000010E  2C 01		LenLower:   sub al, 1
+ 00000110  83 D2 00		        adc edx, 0
 
 				;;; Calculate the length of the match. If it is longer than MAX_MATCH,
 				;;; then automatically accept it as the best possible match and leave.
 
- 00000117  8D 04 3A		        lea eax, [edi + edx]
- 0000011A  8B 7C 24 20		        mov edi, [scan]
- 0000011E  2B C7		        sub eax, edi
- 00000120  3D 00000102		        cmp eax, MAX_MATCH
- 00000125  7D 4C		        jge LenMaximum
+ 00000113  8D 04 17		        lea eax, [edi + edx]
+ 00000116  8B 7C 24 20		        mov edi, [scan]
+ 0000011A  2B C7		        sub eax, edi
+ 0000011C  3D 00000102		        cmp eax, MAX_MATCH
+ 00000121  7D 4C		        jge LenMaximum
 
 				;;; If the length of the match is not longer than the best match we
 				;;; have so far, then forget it and return to the lookup loop.
 
- 00000127  8B 54 24 38		        mov edx, [deflatestate]
- 0000012B  8B 5C 24 1C		        mov ebx, [bestlen]
- 0000012F  3B C3		        cmp eax, ebx
- 00000131  7F 13		        jg  LongerMatch
- 00000133  8B 74 24 08		        mov esi, [windowbestlen]
- 00000137  8B 7A 40		        mov edi, [edx + dsPrev]
- 0000013A  8B 5C 24 0C		        mov ebx, [scanend]
- 0000013E  8B 14 24		        mov edx, [chainlenwmask]
- 00000141  E9 FFFFFF4E		        jmp LookupLoop
+ 00000123  8B 54 24 38		        mov edx, [deflatestate]
+ 00000127  8B 5C 24 1C		        mov ebx, [bestlen]
+ 0000012B  3B C3		        cmp eax, ebx
+ 0000012D  7F 13		        jg  LongerMatch
+ 0000012F  8B 74 24 08		        mov esi, [windowbestlen]
+ 00000133  8B 7A 40		        mov edi, [edx + dsPrev]
+ 00000136  8B 5C 24 0C		        mov ebx, [scanend]
+ 0000013A  8B 14 24		        mov edx, [chainlenwmask]
+ 0000013D  E9 FFFFFF4E		        jmp LookupLoop
 
 				;;;         s->match_start = cur_match;
 				;;;         best_len = len;
 				;;;         if (len >= nice_match) break;
 				;;;         scan_end = *(ushf*)(scan+best_len-1);
 
- 00000146  8B 5C 24 18		LongerMatch:    mov ebx, [nicematch]
- 0000014A  89 44 24 1C		        mov [bestlen], eax
- 0000014E  89 4A 70		        mov [edx + dsMatchStart], ecx
- 00000151  3B C3		        cmp eax, ebx
- 00000153  7D 2D		        jge LeaveNow
- 00000155  8B 74 24 04		        mov esi, [window]
- 00000159  03 F0		        add esi, eax
- 0000015B  89 74 24 08		        mov [windowbestlen], esi
- 0000015F  0F B7 5C 38 FF	        movzx   ebx, word ptr [edi + eax - 1]
- 00000164  8B 7A 40		        mov edi, [edx + dsPrev]
- 00000167  89 5C 24 0C		        mov [scanend], ebx
- 0000016B  8B 14 24		        mov edx, [chainlenwmask]
- 0000016E  E9 FFFFFF21		        jmp LookupLoop
+ 00000142  8B 5C 24 18		LongerMatch:    mov ebx, [nicematch]
+ 00000146  89 44 24 1C		        mov [bestlen], eax
+ 0000014A  89 4A 70		        mov [edx + dsMatchStart], ecx
+ 0000014D  3B C3		        cmp eax, ebx
+ 0000014F  7D 2D		        jge LeaveNow
+ 00000151  8B 74 24 04		        mov esi, [window]
+ 00000155  03 F0		        add esi, eax
+ 00000157  89 74 24 08		        mov [windowbestlen], esi
+ 0000015B  0F B7 5C 07 FF	        movzx   ebx, word ptr [edi + eax - 1]
+ 00000160  8B 7A 40		        mov edi, [edx + dsPrev]
+ 00000163  89 5C 24 0C		        mov [scanend], ebx
+ 00000167  8B 14 24		        mov edx, [chainlenwmask]
+ 0000016A  E9 FFFFFF21		        jmp LookupLoop
 
 				;;; Accept the current string, with the maximum possible length.
 
- 00000173  8B 54 24 38		LenMaximum: mov edx, [deflatestate]
- 00000177  C7 44 24 1C		        mov dword ptr [bestlen], MAX_MATCH
+ 0000016F  8B 54 24 38		LenMaximum: mov edx, [deflatestate]
+ 00000173  C7 44 24 1C		        mov dword ptr [bestlen], MAX_MATCH
 	   00000102
- 0000017F  89 4A 70		        mov [edx + dsMatchStart], ecx
+ 0000017B  89 4A 70		        mov [edx + dsMatchStart], ecx
 
 				;;; if ((uInt)best_len <= s->lookahead) return (uInt)best_len;
 				;;; return s->lookahead;
 
- 00000182			LeaveNow:
- 00000182  8B 54 24 38		        mov edx, [deflatestate]
- 00000186  8B 5C 24 1C		        mov ebx, [bestlen]
- 0000018A  8B 42 74		        mov eax, [edx + dsLookahead]
- 0000018D  3B D8		        cmp ebx, eax
- 0000018F  7F 02		        jg  LookaheadRet
- 00000191  8B C3		        mov eax, ebx
- 00000193			LookaheadRet:
+ 0000017E			LeaveNow:
+ 0000017E  8B 54 24 38		        mov edx, [deflatestate]
+ 00000182  8B 5C 24 1C		        mov ebx, [bestlen]
+ 00000186  8B 42 74		        mov eax, [edx + dsLookahead]
+ 00000189  3B D8		        cmp ebx, eax
+ 0000018B  7F 02		        jg  LookaheadRet
+ 0000018D  8B C3		        mov eax, ebx
+ 0000018F			LookaheadRet:
 
 				;;; Restore the stack and return from whence we came.
 
- 00000193  83 C4 24		        add esp, LocalVarsSize
- 00000196  5B			        pop ebx
- 00000197  5E			        pop esi
- 00000198  5F			        pop edi
- 00000199  5D			        pop ebp
+ 0000018F  83 C4 24		        add esp, LocalVarsSize
+ 00000192  5B			        pop ebx
+ 00000193  5E			        pop esi
+ 00000194  5F			        pop edi
+ 00000195  5D			        pop ebp
 
- 0000019A  C3			        ret
+ 00000196  C3			        ret
 				; please don't remove this string !
 				; Your can freely use match686 in any free or commercial app if you don't remove the string in the binary!
- 0000019B  0D 0A 61 73 6D	    db     0dh,0ah,"asm686 with masm, optimised assembly code from Brian Raiter, written 1998",0dh,0ah
+ 00000197  0D 0A 61 73 6D	    db     0dh,0ah,"asm686 with masm, optimised assembly code from Brian Raiter, written 1998",0dh,0ah
 	   36 38 36 20 77
 	   69 74 68 20 6D
 	   61 73 6D 2C 20
@@ -496,20 +496,20 @@ match686.asm						     Page 1 - 1
 
 				    IFDEF NOUNDERLINE
 				    ELSE
- 000001E8			    _longest_match      endp
+ 000001E4			    _longest_match      endp
 				    ENDIF
 
 				    IFDEF NOUNDERLINE
 				    ELSE
- 000001E8			    _match_init     proc near
- 000001E8  C3			                    ret
- 000001E9			    _match_init     endp
+ 000001E4			    _match_init     proc near
+ 000001E4  C3			                    ret
+ 000001E5			    _match_init     endp
 				    ENDIF
 
 
- 000001E9			_TEXT   ends
+ 000001E5			_TEXT   ends
 				end
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    10/18/20 10:26:12
+Microsoft (R) Macro Assembler Version 14.20.27525.0	    03/16/21 10:11:19
 match686.asm						     Symbols 2 - 1
 
 
@@ -521,28 +521,28 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 _DATA  . . . . . . . . . . . . .	32 Bit	 00000000 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000001E9 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000001E5 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-_longest_match . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000001E8 Public
+_longest_match . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000001E4 Public
   LastMatchGood  . . . . . . . .	L Near	 00000025 _TEXT	
   LookaheadLess  . . . . . . . .	L Near	 0000003D _TEXT	
-  LimitPositive  . . . . . . . .	L Near	 0000006C _TEXT	
-  LookupLoop . . . . . . . . . .	L Near	 00000094 _TEXT	
-  LoopEntry  . . . . . . . . . .	L Near	 000000AE _TEXT	
-  LoopCmps . . . . . . . . . . .	L Near	 000000E9 _TEXT	
-  LeaveLoopCmps4 . . . . . . . .	L Near	 00000102 _TEXT	
-  LeaveLoopCmps  . . . . . . . .	L Near	 00000105 _TEXT	
-  LenLower . . . . . . . . . . .	L Near	 00000112 _TEXT	
-  LongerMatch  . . . . . . . . .	L Near	 00000146 _TEXT	
-  LenMaximum . . . . . . . . . .	L Near	 00000173 _TEXT	
-  LeaveNow . . . . . . . . . . .	L Near	 00000182 _TEXT	
-  LookaheadRet . . . . . . . . .	L Near	 00000193 _TEXT	
-_match_init  . . . . . . . . . .	P Near	 000001E8 _TEXT	Length= 00000001 Public
+  LimitPositive  . . . . . . . .	L Near	 0000006B _TEXT	
+  LookupLoop . . . . . . . . . .	L Near	 00000090 _TEXT	
+  LoopEntry  . . . . . . . . . .	L Near	 000000AA _TEXT	
+  LoopCmps . . . . . . . . . . .	L Near	 000000E5 _TEXT	
+  LeaveLoopCmps4 . . . . . . . .	L Near	 000000FE _TEXT	
+  LeaveLoopCmps  . . . . . . . .	L Near	 00000101 _TEXT	
+  LenLower . . . . . . . . . . .	L Near	 0000010E _TEXT	
+  LongerMatch  . . . . . . . . .	L Near	 00000142 _TEXT	
+  LenMaximum . . . . . . . . . .	L Near	 0000016F _TEXT	
+  LeaveNow . . . . . . . . . . .	L Near	 0000017E _TEXT	
+  LookaheadRet . . . . . . . . .	L Near	 0000018F _TEXT	
+_match_init  . . . . . . . . . .	P Near	 000001E4 _TEXT	Length= 00000001 Public
 
 
 Symbols:

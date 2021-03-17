@@ -14,7 +14,7 @@
 #include "alone_decoder.h"
 
 
-typedef struct {
+struct lzma_coder_s {
 	/// Stream decoder or LZMA_Alone decoder
 	lzma_next_coder next;
 
@@ -26,17 +26,15 @@ typedef struct {
 		SEQ_CODE,
 		SEQ_FINISH,
 	} sequence;
-} lzma_auto_coder;
+};
 
 
 static lzma_ret
-auto_decode(void *coder_ptr, const lzma_allocator *allocator,
+auto_decode(lzma_coder *coder, const lzma_allocator *allocator,
 		const uint8_t *restrict in, size_t *restrict in_pos,
 		size_t in_size, uint8_t *restrict out,
 		size_t *restrict out_pos, size_t out_size, lzma_action action)
 {
-	lzma_auto_coder *coder = coder_ptr;
-
 	switch (coder->sequence) {
 	case SEQ_INIT:
 		if (*in_pos >= in_size)
@@ -102,9 +100,8 @@ auto_decode(void *coder_ptr, const lzma_allocator *allocator,
 
 
 static void
-auto_decoder_end(void *coder_ptr, const lzma_allocator *allocator)
+auto_decoder_end(lzma_coder *coder, const lzma_allocator *allocator)
 {
-	lzma_auto_coder *coder = coder_ptr;
 	lzma_next_end(&coder->next, allocator);
 	lzma_free(coder, allocator);
 	return;
@@ -112,10 +109,8 @@ auto_decoder_end(void *coder_ptr, const lzma_allocator *allocator)
 
 
 static lzma_check
-auto_decoder_get_check(const void *coder_ptr)
+auto_decoder_get_check(const lzma_coder *coder)
 {
-	const lzma_auto_coder *coder = coder_ptr;
-
 	// It is LZMA_Alone if get_check is NULL.
 	return coder->next.get_check == NULL ? LZMA_CHECK_NONE
 			: coder->next.get_check(coder->next.coder);
@@ -123,11 +118,9 @@ auto_decoder_get_check(const void *coder_ptr)
 
 
 static lzma_ret
-auto_decoder_memconfig(void *coder_ptr, uint64_t *memusage,
+auto_decoder_memconfig(lzma_coder *coder, uint64_t *memusage,
 		uint64_t *old_memlimit, uint64_t new_memlimit)
 {
-	lzma_auto_coder *coder = coder_ptr;
-
 	lzma_ret ret;
 
 	if (coder->next.memconfig != NULL) {
@@ -139,10 +132,7 @@ auto_decoder_memconfig(void *coder_ptr, uint64_t *memusage,
 		// the current memory usage.
 		*memusage = LZMA_MEMUSAGE_BASE;
 		*old_memlimit = coder->memlimit;
-
 		ret = LZMA_OK;
-		if (new_memlimit != 0 && new_memlimit < *memusage)
-			ret = LZMA_MEMLIMIT_ERROR;
 	}
 
 	if (ret == LZMA_OK && new_memlimit != 0)
@@ -158,26 +148,27 @@ auto_decoder_init(lzma_next_coder *next, const lzma_allocator *allocator,
 {
 	lzma_next_coder_init(&auto_decoder_init, next, allocator);
 
+	if (memlimit == 0)
+		return LZMA_PROG_ERROR;
+
 	if (flags & ~LZMA_SUPPORTED_FLAGS)
 		return LZMA_OPTIONS_ERROR;
 
-	lzma_auto_coder *coder = next->coder;
-	if (coder == NULL) {
-		coder = lzma_alloc(sizeof(lzma_auto_coder), allocator);
-		if (coder == NULL)
+	if (next->coder == NULL) {
+		next->coder = lzma_alloc(sizeof(lzma_coder), allocator);
+		if (next->coder == NULL)
 			return LZMA_MEM_ERROR;
 
-		next->coder = coder;
 		next->code = &auto_decode;
 		next->end = &auto_decoder_end;
 		next->get_check = &auto_decoder_get_check;
 		next->memconfig = &auto_decoder_memconfig;
-		coder->next = LZMA_NEXT_CODER_INIT;
+		next->coder->next = LZMA_NEXT_CODER_INIT;
 	}
 
-	coder->memlimit = my_max(1, memlimit);
-	coder->flags = flags;
-	coder->sequence = SEQ_INIT;
+	next->coder->memlimit = memlimit;
+	next->coder->flags = flags;
+	next->coder->sequence = SEQ_INIT;
 
 	return LZMA_OK;
 }
