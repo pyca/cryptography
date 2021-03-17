@@ -2,8 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+<<<<<<< HEAD
 
 import typing
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -21,7 +24,11 @@ class HMAC(hashes.HashContext):
         self,
         key: bytes,
         algorithm: hashes.HashAlgorithm,
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         ctx=None,
     ):
         backend = _get_backend(backend)

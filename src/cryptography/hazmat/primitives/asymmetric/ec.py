@@ -10,7 +10,10 @@ import warnings
 from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext,
@@ -105,7 +108,11 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sign(
         self,
+<<<<<<< HEAD
         data: bytes,
+=======
+        data,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         signature_algorithm: EllipticCurveSignatureAlgorithm,
     ) -> bytes:
         """
@@ -341,16 +348,24 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
 
 
 def generate_private_key(
+<<<<<<< HEAD
     curve: EllipticCurve, backend: typing.Optional[Backend] = None
+=======
+    curve: EllipticCurve, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> EllipticCurvePrivateKey:
     backend = _get_backend(backend)
     return backend.generate_elliptic_curve_private_key(curve)
 
 
 def derive_private_key(
+<<<<<<< HEAD
     private_value: int,
     curve: EllipticCurve,
     backend: typing.Optional[Backend] = None,
+=======
+    private_value: int, curve: EllipticCurve, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> EllipticCurvePrivateKey:
     backend = _get_backend(backend)
     if not isinstance(private_value, int):
@@ -377,9 +392,13 @@ class EllipticCurvePublicNumbers(object):
         self._x = x
         self._curve = curve
 
+<<<<<<< HEAD
     def public_key(
         self, backend: typing.Optional[Backend] = None
     ) -> EllipticCurvePublicKey:
+=======
+    def public_key(self, backend=None) -> EllipticCurvePublicKey:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_elliptic_curve_public_numbers(self)
 
@@ -471,9 +490,13 @@ class EllipticCurvePrivateNumbers(object):
         self._private_value = private_value
         self._public_numbers = public_numbers
 
+<<<<<<< HEAD
     def private_key(
         self, backend: typing.Optional[Backend] = None
     ) -> EllipticCurvePrivateKey:
+=======
+    def private_key(self, backend=None) -> EllipticCurvePrivateKey:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_elliptic_curve_private_numbers(self)
 

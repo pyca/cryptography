@@ -7,22 +7,33 @@ import abc
 import typing
 
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import serialization
 
 
 _MIN_MODULUS_SIZE = 512
 
 
+<<<<<<< HEAD
 def generate_parameters(
     generator: int, key_size: int, backend: typing.Optional[Backend] = None
 ) -> "DHParameters":
+=======
+def generate_parameters(generator, key_size, backend=None) -> "DHParameters":
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.generate_dh_parameters(generator, key_size)
 
 
 class DHParameterNumbers(object):
+<<<<<<< HEAD
     def __init__(self, p: int, g: int, q: typing.Optional[int] = None) -> None:
+=======
+    def __init__(self, p: int, g: int, q: typing.Optional[int] = None):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(p, int) or not isinstance(g, int):
             raise TypeError("p and g must be integers")
         if q is not None and not isinstance(q, int):
@@ -51,9 +62,13 @@ class DHParameterNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+<<<<<<< HEAD
     def parameters(
         self, backend: typing.Optional[Backend] = None
     ) -> "DHParameters":
+=======
+    def parameters(self, backend=None):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_dh_parameter_numbers(self)
 
@@ -63,7 +78,11 @@ class DHParameterNumbers(object):
 
 
 class DHPublicNumbers(object):
+<<<<<<< HEAD
     def __init__(self, y: int, parameter_numbers: DHParameterNumbers) -> None:
+=======
+    def __init__(self, y, parameter_numbers: DHParameterNumbers):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(y, int):
             raise TypeError("y must be an integer.")
 
@@ -87,9 +106,13 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+<<<<<<< HEAD
     def public_key(
         self, backend: typing.Optional[Backend] = None
     ) -> "DHPublicKey":
+=======
+    def public_key(self, backend=None) -> "DHPublicKey":
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_dh_public_numbers(self)
 
@@ -98,7 +121,11 @@ class DHPublicNumbers(object):
 
 
 class DHPrivateNumbers(object):
+<<<<<<< HEAD
     def __init__(self, x: int, public_numbers: DHPublicNumbers) -> None:
+=======
+    def __init__(self, x, public_numbers: DHPublicNumbers):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(x, int):
             raise TypeError("x must be an integer.")
 
@@ -122,9 +149,13 @@ class DHPrivateNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+<<<<<<< HEAD
     def private_key(
         self, backend: typing.Optional[Backend] = None
     ) -> "DHPrivateKey":
+=======
+    def private_key(self, backend=None) -> "DHPrivateKey":
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_dh_private_numbers(self)
 

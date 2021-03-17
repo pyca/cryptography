@@ -12,8 +12,13 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
     HOTP,
     _ALLOWED_HASH_TYPES,
+<<<<<<< HEAD
     _generate_uri,
 )
+=======
+)
+from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 
 class TOTP(object):
@@ -23,7 +28,11 @@ class TOTP(object):
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
         time_step: int,
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         enforce_key_length: bool = True,
     ):
         backend = _get_backend(backend)

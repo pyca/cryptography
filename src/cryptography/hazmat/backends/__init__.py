@@ -4,9 +4,13 @@
 
 import typing
 
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend
 
 _default_backend: typing.Optional[Backend] = None
+=======
+_default_backend: typing.Any = None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 
 def default_backend() -> Backend:

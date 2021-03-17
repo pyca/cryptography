@@ -2,14 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
 import re
 import struct
-
-import six
+import typing
+from base64 import encodebytes as _base64_encode
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -30,14 +29,15 @@ try:
 except ImportError:
     _bcrypt_supported = False
 
-    def _bcrypt_kdf(*args, **kwargs):
+    def _bcrypt_kdf(
+        password: bytes,
+        salt: bytes,
+        desired_key_bytes: int,
+        rounds: int,
+        ignore_few_rounds: bool = False,
+    ) -> bytes:
         raise UnsupportedAlgorithm("Need bcrypt module")
 
-
-try:
-    from base64 import encodebytes as _base64_encode
-except ImportError:
-    from base64 import encodestring as _base64_encode
 
 _SSH_ED25519 = b"ssh-ed25519"
 _SSH_RSA = b"ssh-rsa"
@@ -141,9 +141,9 @@ def _get_sshstr(data):
 def _get_mpint(data):
     """Big integer."""
     val, data = _get_sshstr(data)
-    if val and six.indexbytes(val, 0) > 0x7F:
+    if val and val[0] > 0x7F:
         raise ValueError("Invalid data")
-    return utils.int_from_bytes(val, "big"), data
+    return int.from_bytes(val, "big"), data
 
 
 def _to_mpint(val):
@@ -350,7 +350,7 @@ class _SSHFormatECDSA(object):
         point, data = _get_sshstr(data)
         if curve != self.ssh_curve_name:
             raise ValueError("Curve name mismatch")
-        if six.indexbytes(point, 0) != 4:
+        if point[0] != 4:
             raise NotImplementedError("Need uncompressed point")
         return (curve, point), data
 
@@ -465,7 +465,17 @@ def _lookup_kformat(key_type):
     raise UnsupportedAlgorithm("Unsupported key type: %r" % key_type)
 
 
-def load_ssh_private_key(data, password, backend=None):
+_SSH_PRIVATE_KEY_TYPES = typing.Union[
+    ec.EllipticCurvePrivateKey,
+    rsa.RSAPrivateKey,
+    dsa.DSAPrivateKey,
+    ed25519.Ed25519PrivateKey,
+]
+
+
+def load_ssh_private_key(
+    data: bytes, password: typing.Optional[bytes], backend=None
+) -> _SSH_PRIVATE_KEY_TYPES:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
     backend = _get_backend(backend)
@@ -539,7 +549,10 @@ def load_ssh_private_key(data, password, backend=None):
     return private_key
 
 
-def serialize_ssh_private_key(private_key, password=None):
+def serialize_ssh_private_key(
+    private_key: _SSH_PRIVATE_KEY_TYPES,
+    password: typing.Optional[bytes] = None,
+):
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
@@ -614,11 +627,22 @@ def serialize_ssh_private_key(private_key, password=None):
         ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
 
     txt = _ssh_pem_encode(buf[:mlen])
-    buf[ofs:mlen] = bytearray(slen)
+    # Ignore the following type because mypy wants
+    # Sequence[bytes] but what we're passing is fine.
+    # https://github.com/python/mypy/issues/9999
+    buf[ofs:mlen] = bytearray(slen)  # type: ignore
     return txt
 
 
-def load_ssh_public_key(data, backend=None):
+_SSH_PUBLIC_KEY_TYPES = typing.Union[
+    ec.EllipticCurvePublicKey,
+    rsa.RSAPublicKey,
+    dsa.DSAPublicKey,
+    ed25519.Ed25519PublicKey,
+]
+
+
+def load_ssh_public_key(data: bytes, backend=None) -> _SSH_PUBLIC_KEY_TYPES:
     """Load public key from OpenSSH one-line format."""
     backend = _get_backend(backend)
     utils._check_byteslike("data", data)
@@ -661,7 +685,7 @@ def load_ssh_public_key(data, backend=None):
     return public_key
 
 
-def serialize_ssh_public_key(public_key):
+def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     """One-line public key format for OpenSSH"""
     if isinstance(public_key, ec.EllipticCurvePublicKey):
         key_type = _ecdsa_key_type(public_key)

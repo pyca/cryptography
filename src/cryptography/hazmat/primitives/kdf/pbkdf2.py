@@ -2,8 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+<<<<<<< HEAD
 
 import typing
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -13,7 +16,11 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend, PBKDF2HMACBackend
+=======
+from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -25,7 +32,11 @@ class PBKDF2HMAC(KeyDerivationFunction):
         length: int,
         salt: bytes,
         iterations: int,
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, PBKDF2HMACBackend):

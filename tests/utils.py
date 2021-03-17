@@ -3,6 +3,7 @@
 # for complete details.
 
 
+<<<<<<< HEAD
 import binascii
 import collections
 import json
@@ -10,99 +11,96 @@ import os
 import re
 import typing
 from contextlib import contextmanager
-
-import pytest
-
-from cryptography.exceptions import UnsupportedAlgorithm
-
-import cryptography_vectors
-
-
-HashVector = collections.namedtuple("HashVector", ["message", "digest"])
-KeyedHashVector = collections.namedtuple(
-    "KeyedHashVector", ["message", "digest", "key"]
-)
+=======
+import abc
+import inspect
+import sys
+import typing
+import warnings
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 
-def check_backend_support(backend, item):
-    for mark in item.node.iter_markers("supported"):
-        if not mark.kwargs["only_if"](backend):
-            pytest.skip("{} ({})".format(mark.kwargs["skip_message"], backend))
+# We use a UserWarning subclass, instead of DeprecationWarning, because CPython
+# decided deprecation warnings should be invisble by default.
+class CryptographyDeprecationWarning(UserWarning):
+    pass
 
 
-@contextmanager
-def raises_unsupported_algorithm(reason):
-    with pytest.raises(UnsupportedAlgorithm) as exc_info:
-        yield exc_info
-
-    assert exc_info.value._reason is reason
-
-
-def load_vectors_from_file(filename, loader, mode="r"):
-    with cryptography_vectors.open_vector_file(filename, mode) as vector_file:
-        return loader(vector_file)
+# Several APIs were deprecated with no specific end-of-life date because of the
+# ubiquity of their use. They should not be removed until we agree on when that
+# cycle ends.
+PersistentlyDeprecated2017 = CryptographyDeprecationWarning
+PersistentlyDeprecated2019 = CryptographyDeprecationWarning
+DeprecatedIn34 = CryptographyDeprecationWarning
 
 
+def _check_bytes(name: str, value: bytes):
+    if not isinstance(value, bytes):
+        raise TypeError("{} must be bytes".format(name))
+
+
+def _check_byteslike(name: str, value: bytes):
+    try:
+        memoryview(value)
+    except TypeError:
+        raise TypeError("{} must be bytes-like".format(name))
+
+
+def read_only_property(name: str):
+    return property(lambda self: getattr(self, name))
+
+
+<<<<<<< HEAD
 def load_nist_vectors(vector_data):
     test_data = {}
     data = []
+=======
+def register_interface(iface):
+    def register_decorator(klass, *, check_annotations=False):
+        verify_interface(iface, klass, check_annotations=check_annotations)
+        iface.register(klass)
+        return klass
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
-    for line in vector_data:
-        line = line.strip()
-
-        # Blank lines, comments, and section headers are ignored
-        if (
-            not line
-            or line.startswith("#")
-            or (line.startswith("[") and line.endswith("]"))
-        ):
-            continue
-
-        if line.strip() == "FAIL":
-            test_data["fail"] = True
-            continue
-
-        # Build our data using a simple Key = Value format
-        name, value = [c.strip() for c in line.split("=")]
-
-        # Some tests (PBKDF2) contain \0, which should be interpreted as a
-        # null character rather than literal.
-        value = value.replace("\\0", "\0")
-
-        # COUNT is a special token that indicates a new block of data
-        if name.upper() == "COUNT":
-            test_data = {}
-            data.append(test_data)
-            continue
-        # For all other tokens we simply want the name, value stored in
-        # the dictionary
-        else:
-            test_data[name.lower()] = value.encode("ascii")
-
-    return data
+    return register_decorator
 
 
-def load_cryptrec_vectors(vector_data):
-    cryptrec_list = []
+def register_interface_if(predicate, iface):
+    def register_decorator(klass, *, check_annotations=False):
+        if predicate:
+            verify_interface(iface, klass, check_annotations=check_annotations)
+            iface.register(klass)
+        return klass
 
-    for line in vector_data:
-        line = line.strip()
+    return register_decorator
 
-        # Blank lines and comments are ignored
-        if not line or line.startswith("#"):
-            continue
 
-        if line.startswith("K"):
-            key = line.split(" : ")[1].replace(" ", "").encode("ascii")
-        elif line.startswith("P"):
-            pt = line.split(" : ")[1].replace(" ", "").encode("ascii")
-        elif line.startswith("C"):
-            ct = line.split(" : ")[1].replace(" ", "").encode("ascii")
-            # after a C is found the K+P+C tuple is complete
-            # there are many P+C pairs for each K
-            cryptrec_list.append(
-                {"key": key, "plaintext": pt, "ciphertext": ct}
+def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
+    return integer.to_bytes(
+        length or (integer.bit_length() + 7) // 8 or 1, "big"
+    )
+
+
+class InterfaceNotImplemented(Exception):
+    pass
+
+
+def strip_annotation(signature):
+    return inspect.Signature(
+        [
+            param.replace(annotation=inspect.Parameter.empty)
+            for param in signature.parameters.values()
+        ]
+    )
+
+
+def verify_interface(iface, klass, *, check_annotations=False):
+    for method in iface.__abstractmethods__:
+        if not hasattr(klass, method):
+            raise InterfaceNotImplemented(
+                "{} is missing a {!r} method".format(klass, method)
             )
+<<<<<<< HEAD
         else:
             raise ValueError("Invalid line in file '{}'".format(line))
     return cryptrec_list
@@ -294,258 +292,56 @@ def load_rsa_nist_vectors(vector_data):
             salt_length = int(line.split(":")[1].strip())
             continue
         elif line.startswith("#"):
+=======
+        if isinstance(getattr(iface, method), abc.abstractproperty):
+            # Can't properly verify these yet.
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
             continue
-
-        # Build our data using a simple Key = Value format
-        name, value = [c.strip() for c in line.split("=")]
-
-        if name == "n":
-            n = int(value, 16)
-        elif name == "e" and p is None:
-            e = int(value, 16)
-        elif name == "p":
-            p = int(value, 16)
-        elif name == "q":
-            q = int(value, 16)
-        elif name == "SHAAlg":
-            if p is None:
-                test_data = {
-                    "modulus": n,
-                    "public_exponent": e,
-                    "salt_length": salt_length,
-                    "algorithm": value,
-                    "fail": False,
-                }
-            else:
-                test_data = {"modulus": n, "p": p, "q": q, "algorithm": value}
-                if salt_length is not None:
-                    test_data["salt_length"] = salt_length
-            data.append(test_data)
-        elif name == "e" and p is not None:
-            test_data["public_exponent"] = int(value, 16)
-        elif name == "d":
-            test_data["private_exponent"] = int(value, 16)
-        elif name == "Result":
-            test_data["fail"] = value.startswith("F")
-        # For all other tokens we simply want the name, value stored in
-        # the dictionary
+        sig = inspect.signature(getattr(iface, method))
+        actual = inspect.signature(getattr(klass, method))
+        if check_annotations:
+            ok = sig == actual
         else:
-            test_data[name.lower()] = value.encode("ascii")
-
-    return data
-
-
-def load_fips_dsa_key_pair_vectors(vector_data):
-    """
-    Loads data out of the FIPS DSA KeyPair vector files.
-    """
-    vectors = []
-    for line in vector_data:
-        line = line.strip()
-
-        if not line or line.startswith("#") or line.startswith("[mod"):
-            continue
-
-        if line.startswith("P"):
-            vectors.append({"p": int(line.split("=")[1], 16)})
-        elif line.startswith("Q"):
-            vectors[-1]["q"] = int(line.split("=")[1], 16)
-        elif line.startswith("G"):
-            vectors[-1]["g"] = int(line.split("=")[1], 16)
-        elif line.startswith("X") and "x" not in vectors[-1]:
-            vectors[-1]["x"] = int(line.split("=")[1], 16)
-        elif line.startswith("X") and "x" in vectors[-1]:
-            vectors.append(
-                {
-                    "p": vectors[-1]["p"],
-                    "q": vectors[-1]["q"],
-                    "g": vectors[-1]["g"],
-                    "x": int(line.split("=")[1], 16),
-                }
+            ok = strip_annotation(sig) == strip_annotation(actual)
+        if not ok:
+            raise InterfaceNotImplemented(
+                "{}.{}'s signature differs from the expected. Expected: "
+                "{!r}. Received: {!r}".format(klass, method, sig, actual)
             )
-        elif line.startswith("Y"):
-            vectors[-1]["y"] = int(line.split("=")[1], 16)
-
-    return vectors
 
 
-def load_fips_dsa_sig_vectors(vector_data):
-    """
-    Loads data out of the FIPS DSA SigVer vector files.
-    """
-    vectors = []
-    sha_regex = re.compile(
-        r"\[mod = L=...., N=..., SHA-(?P<sha>1|224|256|384|512)\]"
-    )
-
-    for line in vector_data:
-        line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
-
-        sha_match = sha_regex.match(line)
-        if sha_match:
-            digest_algorithm = "SHA-{}".format(sha_match.group("sha"))
-
-        if line.startswith("[mod"):
-            continue
-
-        name, value = [c.strip() for c in line.split("=")]
-
-        if name == "P":
-            vectors.append(
-                {"p": int(value, 16), "digest_algorithm": digest_algorithm}
-            )
-        elif name == "Q":
-            vectors[-1]["q"] = int(value, 16)
-        elif name == "G":
-            vectors[-1]["g"] = int(value, 16)
-        elif name == "Msg" and "msg" not in vectors[-1]:
-            hexmsg = value.strip().encode("ascii")
-            vectors[-1]["msg"] = binascii.unhexlify(hexmsg)
-        elif name == "Msg" and "msg" in vectors[-1]:
-            hexmsg = value.strip().encode("ascii")
-            vectors.append(
-                {
-                    "p": vectors[-1]["p"],
-                    "q": vectors[-1]["q"],
-                    "g": vectors[-1]["g"],
-                    "digest_algorithm": vectors[-1]["digest_algorithm"],
-                    "msg": binascii.unhexlify(hexmsg),
-                }
-            )
-        elif name == "X":
-            vectors[-1]["x"] = int(value, 16)
-        elif name == "Y":
-            vectors[-1]["y"] = int(value, 16)
-        elif name == "R":
-            vectors[-1]["r"] = int(value, 16)
-        elif name == "S":
-            vectors[-1]["s"] = int(value, 16)
-        elif name == "Result":
-            vectors[-1]["result"] = value.split("(")[0].strip()
-
-    return vectors
+class _DeprecatedValue(object):
+    def __init__(self, value, message, warning_class):
+        self.value = value
+        self.message = message
+        self.warning_class = warning_class
 
 
-# https://tools.ietf.org/html/rfc4492#appendix-A
-_ECDSA_CURVE_NAMES = {
-    "P-192": "secp192r1",
-    "P-224": "secp224r1",
-    "P-256": "secp256r1",
-    "P-384": "secp384r1",
-    "P-521": "secp521r1",
-    "K-163": "sect163k1",
-    "K-233": "sect233k1",
-    "K-256": "secp256k1",
-    "K-283": "sect283k1",
-    "K-409": "sect409k1",
-    "K-571": "sect571k1",
-    "B-163": "sect163r2",
-    "B-233": "sect233r1",
-    "B-283": "sect283r1",
-    "B-409": "sect409r1",
-    "B-571": "sect571r1",
-}
+class _ModuleWithDeprecations(object):
+    def __init__(self, module):
+        self.__dict__["_module"] = module
 
+    def __getattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
+            obj = obj.value
+        return obj
 
-def load_fips_ecdsa_key_pair_vectors(vector_data):
-    """
-    Loads data out of the FIPS ECDSA KeyPair vector files.
-    """
-    vectors = []
-    key_data = None
-    for line in vector_data:
-        line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
-
-        if line[1:-1] in _ECDSA_CURVE_NAMES:
-            curve_name = _ECDSA_CURVE_NAMES[line[1:-1]]
-
-        elif line.startswith("d = "):
-            if key_data is not None:
-                vectors.append(key_data)
-
-            key_data = {"curve": curve_name, "d": int(line.split("=")[1], 16)}
-
-        elif key_data is not None:
-            if line.startswith("Qx = "):
-                key_data["x"] = int(line.split("=")[1], 16)
-            elif line.startswith("Qy = "):
-                key_data["y"] = int(line.split("=")[1], 16)
-
-    assert key_data is not None
-    vectors.append(key_data)
-
-    return vectors
-
-
-def load_fips_ecdsa_signing_vectors(vector_data):
-    """
-    Loads data out of the FIPS ECDSA SigGen vector files.
-    """
-    vectors = []
-
-    curve_rx = re.compile(
-        r"\[(?P<curve>[PKB]-[0-9]{3}),SHA-(?P<sha>1|224|256|384|512)\]"
-    )
-
-    data = None
-    for line in vector_data:
-        line = line.strip()
-
-        curve_match = curve_rx.match(line)
-        if curve_match:
-            curve_name = _ECDSA_CURVE_NAMES[curve_match.group("curve")]
-            digest_name = "SHA-{}".format(curve_match.group("sha"))
-
-        elif line.startswith("Msg = "):
-            if data is not None:
-                vectors.append(data)
-
-            hexmsg = line.split("=")[1].strip().encode("ascii")
-
-            data = {
-                "curve": curve_name,
-                "digest_algorithm": digest_name,
-                "message": binascii.unhexlify(hexmsg),
-            }
-
-        elif data is not None:
-            if line.startswith("Qx = "):
-                data["x"] = int(line.split("=")[1], 16)
-            elif line.startswith("Qy = "):
-                data["y"] = int(line.split("=")[1], 16)
-            elif line.startswith("R = "):
-                data["r"] = int(line.split("=")[1], 16)
-            elif line.startswith("S = "):
-                data["s"] = int(line.split("=")[1], 16)
-            elif line.startswith("d = "):
-                data["d"] = int(line.split("=")[1], 16)
-            elif line.startswith("Result = "):
-                data["fail"] = line.split("=")[1].strip()[0] == "F"
-
-    assert data is not None
-    vectors.append(data)
-    return vectors
-
-
-def load_kasvs_dh_vectors(vector_data):
-    """
-    Loads data out of the KASVS key exchange vector data
-    """
-
-    result_rx = re.compile(r"([FP]) \(([0-9]+) -")
-
+<<<<<<< HEAD
     vectors = []
     data: typing.Dict[str, typing.Any] = {"fail_z": False, "fail_agree": False}
+=======
+    def __setattr__(self, attr, value):
+        setattr(self._module, attr, value)
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
-    for line in vector_data:
-        line = line.strip()
+    def __delattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
 
+<<<<<<< HEAD
         if not line or line.startswith("#"):
             continue
 
@@ -826,94 +622,41 @@ def load_nist_ccm_vectors(vector_data):
             name, value = [c.strip() for c in line.split("=")]
             global_data[name.lower()] = int(value)
             continue
+=======
+        delattr(self._module, attr)
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
-        # section headers contain length data we might care about
-        if line.startswith("["):
-            new_section = True
-            section_data = {}
-            section = line[1:-1]
-            items = [c.strip() for c in section.split(",")]
-            for item in items:
-                name, value = [c.strip() for c in item.split("=")]
-                section_data[name.lower()] = int(value)
-            continue
-
-        name, value = [c.strip() for c in line.split("=")]
-
-        if name.lower() in ("key", "nonce") and new_section:
-            section_data[name.lower()] = value.encode("ascii")
-            continue
-
-        new_section = False
-
-        # Payload is sometimes special because these vectors are absurd. Each
-        # example may or may not have a payload. If it does not then the
-        # previous example's payload should be used. We accomplish this by
-        # writing it into the section_data. Because we update each example
-        # with the section data it will be overwritten if a new payload value
-        # is present. NIST should be ashamed of their vector creation.
-        if name.lower() == "payload":
-            section_data[name.lower()] = value.encode("ascii")
-
-        # Result is a special token telling us if the test should pass/fail.
-        # This is only present in the DVPT CCM tests
-        if name.lower() == "result":
-            if value.lower() == "pass":
-                test_data["fail"] = False
-            else:
-                test_data["fail"] = True
-            continue
-
-        # COUNT is a special token that indicates a new block of data
-        if name.lower() == "count":
-            test_data = {}
-            test_data.update(global_data)
-            test_data.update(section_data)
-            data.append(test_data)
-            continue
-        # For all other tokens we simply want the name, value stored in
-        # the dictionary
-        else:
-            test_data[name.lower()] = value.encode("ascii")
-
-    return data
+    def __dir__(self):
+        return ["_module"] + dir(self._module)
 
 
-class WycheproofTest(object):
-    def __init__(self, testfiledata, testgroup, testcase):
-        self.testfiledata = testfiledata
-        self.testgroup = testgroup
-        self.testcase = testcase
-
-    def __repr__(self):
-        return "<WycheproofTest({!r}, {!r}, {!r}, tcId={})>".format(
-            self.testfiledata,
-            self.testgroup,
-            self.testcase,
-            self.testcase["tcId"],
-        )
-
-    @property
-    def valid(self):
-        return self.testcase["result"] == "valid"
-
-    @property
-    def acceptable(self):
-        return self.testcase["result"] == "acceptable"
-
-    @property
-    def invalid(self):
-        return self.testcase["result"] == "invalid"
-
-    def has_flag(self, flag):
-        return flag in self.testcase["flags"]
+def deprecated(value, module_name, message, warning_class):
+    module = sys.modules[module_name]
+    if not isinstance(module, _ModuleWithDeprecations):
+        sys.modules[module_name] = _ModuleWithDeprecations(
+            module
+        )  # type: ignore[assignment]
+    return _DeprecatedValue(value, message, warning_class)
 
 
-def load_wycheproof_tests(wycheproof, test_file):
-    path = os.path.join(wycheproof, "testvectors", test_file)
-    with open(path) as f:
-        data = json.load(f)
-        for group in data.pop("testGroups"):
-            cases = group.pop("tests")
-            for c in cases:
-                yield WycheproofTest(data, group, c)
+def cached_property(func):
+    cached_name = "_cached_{}".format(func)
+    sentinel = object()
+
+    def inner(instance):
+        cache = getattr(instance, cached_name, sentinel)
+        if cache is not sentinel:
+            return cache
+        result = func(instance)
+        setattr(instance, cached_name, result)
+        return result
+
+    return property(inner)
+
+
+int_from_bytes = deprecated(
+    int.from_bytes,
+    __name__,
+    "int_from_bytes is deprecated, use int.from_bytes instead",
+    DeprecatedIn34,
+)

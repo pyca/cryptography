@@ -6,7 +6,10 @@
 import base64
 import struct
 import typing
+<<<<<<< HEAD
 from urllib.parse import quote, urlencode
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
@@ -49,15 +52,24 @@ def _generate_uri(
     return "otpauth://{type}/{label}?{parameters}".format(**uriparts)
 
 
+_ALLOWED_HASH_TYPES = typing.Union[SHA1, SHA256, SHA512]
+
+
 class HOTP(object):
     def __init__(
         self,
         key: bytes,
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
         enforce_key_length: bool = True,
     ) -> None:
+=======
+        backend=None,
+        enforce_key_length: bool = True,
+    ):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(

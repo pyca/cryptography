@@ -55,7 +55,11 @@ class DERReader(object):
         self.data = self.data[1:]
         return ret
 
+<<<<<<< HEAD
     def read_bytes(self, n: int) -> memoryview:
+=======
+    def read_bytes(self, n) -> memoryview:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if len(self.data) < n:
             raise ValueError("Invalid DER input: insufficient data")
         ret = self.data[:n]

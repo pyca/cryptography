@@ -24,12 +24,20 @@ PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn34 = CryptographyDeprecationWarning
 
 
+<<<<<<< HEAD
 def _check_bytes(name: str, value: bytes) -> None:
+=======
+def _check_bytes(name: str, value: bytes):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     if not isinstance(value, bytes):
         raise TypeError("{} must be bytes".format(name))
 
 
+<<<<<<< HEAD
 def _check_byteslike(name: str, value: bytes) -> None:
+=======
+def _check_byteslike(name: str, value: bytes):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     try:
         memoryview(value)
     except TypeError:
@@ -49,6 +57,19 @@ def register_interface(iface):
     return register_decorator
 
 
+<<<<<<< HEAD
+=======
+def register_interface_if(predicate, iface):
+    def register_decorator(klass, *, check_annotations=False):
+        if predicate:
+            verify_interface(iface, klass, check_annotations=check_annotations)
+            iface.register(klass)
+        return klass
+
+    return register_decorator
+
+
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"

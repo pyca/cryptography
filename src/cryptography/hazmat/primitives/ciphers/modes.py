@@ -73,7 +73,11 @@ def _check_iv_length(self, algorithm):
         )
 
 
+<<<<<<< HEAD
 def _check_nonce_length(nonce: bytes, name: str, algorithm) -> None:
+=======
+def _check_nonce_length(nonce: bytes, name: str, algorithm):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     if len(nonce) * 8 != algorithm.block_size:
         raise ValueError(
             "Invalid nonce size ({}) for {}.".format(len(nonce), name)
@@ -114,7 +118,11 @@ class XTS(Mode, ModeWithTweak):
     def tweak(self) -> bytes:
         return self._tweak
 
+<<<<<<< HEAD
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
+=======
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if algorithm.key_size not in (256, 512):
             raise ValueError(
                 "The XTS specification requires a 256-bit key for AES-128-XTS"
@@ -181,7 +189,11 @@ class CTR(Mode, ModeWithNonce):
     def nonce(self) -> bytes:
         return self._nonce
 
+<<<<<<< HEAD
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
+=======
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         _check_aes_key_length(self, algorithm)
         _check_nonce_length(self.nonce, self.name, algorithm)
 
@@ -227,5 +239,9 @@ class GCM(Mode, ModeWithInitializationVector, ModeWithAuthenticationTag):
     def initialization_vector(self) -> bytes:
         return self._initialization_vector
 
+<<<<<<< HEAD
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
+=======
+    def validate_for_algorithm(self, algorithm: CipherAlgorithm):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         _check_aes_key_length(self, algorithm)

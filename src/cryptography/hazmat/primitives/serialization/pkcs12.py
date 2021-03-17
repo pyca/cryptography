@@ -19,9 +19,13 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
 
 
 def load_key_and_certificates(
+<<<<<<< HEAD
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Optional[Backend] = None,
+=======
+    data: bytes, password: typing.Optional[bytes], backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> typing.Tuple[
     typing.Optional[_ALLOWED_PKCS12_TYPES],
     typing.Optional[x509.Certificate],

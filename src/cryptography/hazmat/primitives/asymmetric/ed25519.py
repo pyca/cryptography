@@ -80,7 +80,11 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
         encryption_algorithm: _serialization.KeySerializationEncryption,
+<<<<<<< HEAD
     ) -> bytes:
+=======
+    ):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         The serialized bytes of the private key.
         """

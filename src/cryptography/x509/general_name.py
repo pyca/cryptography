@@ -46,7 +46,11 @@ class GeneralName(metaclass=abc.ABCMeta):
 
 
 class RFC822Name(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: str) -> None:
+=======
+    def __init__(self, value: str):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -94,7 +98,11 @@ class RFC822Name(GeneralName):
 
 
 class DNSName(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: str) -> None:
+=======
+    def __init__(self, value: str):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -136,7 +144,11 @@ class DNSName(GeneralName):
 
 
 class UniformResourceIdentifier(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: str) -> None:
+=======
+    def __init__(self, value: str):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -180,7 +192,11 @@ class UniformResourceIdentifier(GeneralName):
 
 
 class DirectoryName(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: Name) -> None:
+=======
+    def __init__(self, value: Name):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
 
@@ -207,7 +223,11 @@ class DirectoryName(GeneralName):
 
 
 class RegisteredID(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: ObjectIdentifier) -> None:
+=======
+    def __init__(self, value: ObjectIdentifier):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
 
@@ -234,7 +254,19 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
+<<<<<<< HEAD
     def __init__(self, value: _IPADDRESS_TYPES) -> None:
+=======
+    def __init__(
+        self,
+        value: typing.Union[
+            ipaddress.IPv4Address,
+            ipaddress.IPv6Address,
+            ipaddress.IPv4Network,
+            ipaddress.IPv6Network,
+        ],
+    ):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(
             value,
             (
@@ -253,7 +285,18 @@ class IPAddress(GeneralName):
         self._value = value
 
     @property
+<<<<<<< HEAD
     def value(self) -> _IPADDRESS_TYPES:
+=======
+    def value(
+        self,
+    ) -> typing.Union[
+        ipaddress.IPv4Address,
+        ipaddress.IPv6Address,
+        ipaddress.IPv4Network,
+        ipaddress.IPv6Network,
+    ]:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         return self._value
 
     def __repr__(self) -> str:
@@ -273,7 +316,11 @@ class IPAddress(GeneralName):
 
 
 class OtherName(GeneralName):
+<<<<<<< HEAD
     def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
+=======
+    def __init__(self, type_id: ObjectIdentifier, value: bytes):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")
         if not isinstance(value, bytes):
@@ -285,11 +332,19 @@ class OtherName(GeneralName):
     @property
     def type_id(self) -> ObjectIdentifier:
         return self._type_id
+<<<<<<< HEAD
 
     @property
     def value(self) -> bytes:
         return self._value
 
+=======
+
+    @property
+    def value(self) -> bytes:
+        return self._value
+
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     def __repr__(self) -> str:
         return "<OtherName(type_id={}, value={!r})>".format(
             self.type_id, self.value

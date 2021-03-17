@@ -2,11 +2,17 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+<<<<<<< HEAD
 import typing
 
 
 class ObjectIdentifier(object):
     def __init__(self, dotted_string: str) -> None:
+=======
+
+class ObjectIdentifier(object):
+    def __init__(self, dotted_string: str):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         self._dotted_string = dotted_string
 
         nodes = self._dotted_string.split(".")

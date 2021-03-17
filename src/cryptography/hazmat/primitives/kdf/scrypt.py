@@ -26,6 +26,7 @@ _MEM_LIMIT = sys.maxsize // 2
 
 class Scrypt(KeyDerivationFunction):
     def __init__(
+<<<<<<< HEAD
         self,
         salt: bytes,
         length: int,
@@ -33,6 +34,9 @@ class Scrypt(KeyDerivationFunction):
         r: int,
         p: int,
         backend: typing.Optional[Backend] = None,
+=======
+        self, salt: bytes, length: int, n: int, r: int, p: int, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, ScryptBackend):

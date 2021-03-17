@@ -11,7 +11,10 @@ from enum import Enum
 
 from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -35,9 +38,14 @@ class AttributeNotFound(Exception):
 
 
 def _reject_duplicate_extension(
+<<<<<<< HEAD
     extension: Extension[ExtensionType],
     extensions: typing.List[Extension[ExtensionType]],
 ) -> None:
+=======
+    extension: Extension, extensions: typing.List[Extension]
+):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     # This is quadratic in the number of extensions
     for e in extensions:
         if e.oid == extension.oid:
@@ -47,7 +55,11 @@ def _reject_duplicate_extension(
 def _reject_duplicate_attribute(
     oid: ObjectIdentifier,
     attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]],
+<<<<<<< HEAD
 ) -> None:
+=======
+):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     # This is quadratic in the number of attributes
     for attr_oid, _ in attributes:
         if attr_oid == oid:
@@ -229,9 +241,13 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
+<<<<<<< HEAD
     def signature_hash_algorithm(
         self,
     ) -> typing.Optional[hashes.HashAlgorithm]:
+=======
+    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -358,9 +374,13 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
+<<<<<<< HEAD
     def signature_hash_algorithm(
         self,
     ) -> typing.Optional[hashes.HashAlgorithm]:
+=======
+    def signature_hash_algorithm(self) -> hashes.HashAlgorithm:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -410,44 +430,68 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
 
+<<<<<<< HEAD
 def load_pem_x509_certificate(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> Certificate:
+=======
+def load_pem_x509_certificate(data: bytes, backend=None) -> Certificate:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_pem_x509_certificate(data)
 
 
+<<<<<<< HEAD
 def load_der_x509_certificate(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> Certificate:
+=======
+def load_der_x509_certificate(data: bytes, backend=None) -> Certificate:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_der_x509_certificate(data)
 
 
+<<<<<<< HEAD
 def load_pem_x509_csr(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateSigningRequest:
+=======
+def load_pem_x509_csr(data: bytes, backend=None) -> CertificateSigningRequest:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_pem_x509_csr(data)
 
 
+<<<<<<< HEAD
 def load_der_x509_csr(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateSigningRequest:
+=======
+def load_der_x509_csr(data: bytes, backend=None) -> CertificateSigningRequest:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_der_x509_csr(data)
 
 
+<<<<<<< HEAD
 def load_pem_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
+=======
+def load_pem_x509_crl(data: bytes, backend=None) -> CertificateRevocationList:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_pem_x509_crl(data)
 
 
+<<<<<<< HEAD
 def load_der_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
+=======
+def load_der_x509_crl(data: bytes, backend=None) -> CertificateRevocationList:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     backend = _get_backend(backend)
     return backend.load_der_x509_crl(data)
 
@@ -466,7 +510,11 @@ class CertificateSigningRequestBuilder(object):
         self._extensions = extensions
         self._attributes = attributes
 
+<<<<<<< HEAD
     def subject_name(self, name: Name) -> "CertificateSigningRequestBuilder":
+=======
+    def subject_name(self, name: Name):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the certificate requestor's distinguished name.
         """
@@ -478,9 +526,13 @@ class CertificateSigningRequestBuilder(object):
             name, self._extensions, self._attributes
         )
 
+<<<<<<< HEAD
     def add_extension(
         self, extval: ExtensionType, critical: bool
     ) -> "CertificateSigningRequestBuilder":
+=======
+    def add_extension(self, extval: ExtensionType, critical: bool):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Adds an X.509 extension to the certificate request.
         """
@@ -496,9 +548,13 @@ class CertificateSigningRequestBuilder(object):
             self._attributes,
         )
 
+<<<<<<< HEAD
     def add_attribute(
         self, oid: ObjectIdentifier, value: bytes
     ) -> "CertificateSigningRequestBuilder":
+=======
+    def add_attribute(self, oid: ObjectIdentifier, value: bytes):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Adds an X.509 attribute with an OID and associated value.
         """
@@ -519,8 +575,13 @@ class CertificateSigningRequestBuilder(object):
     def sign(
         self,
         private_key: _PRIVATE_KEY_TYPES,
+<<<<<<< HEAD
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
+=======
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
@@ -553,7 +614,11 @@ class CertificateBuilder(object):
         self._not_valid_after = not_valid_after
         self._extensions = extensions
 
+<<<<<<< HEAD
     def issuer_name(self, name: Name) -> "CertificateBuilder":
+=======
+    def issuer_name(self, name: Name):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the CA's distinguished name.
         """
@@ -571,7 +636,11 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
+<<<<<<< HEAD
     def subject_name(self, name: Name) -> "CertificateBuilder":
+=======
+    def subject_name(self, name: Name):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the requestor's distinguished name.
         """
@@ -592,7 +661,11 @@ class CertificateBuilder(object):
     def public_key(
         self,
         key: _PUBLIC_KEY_TYPES,
+<<<<<<< HEAD
     ) -> "CertificateBuilder":
+=======
+    ):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the requestor's public key (as found in the signing request).
         """
@@ -623,7 +696,11 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
+<<<<<<< HEAD
     def serial_number(self, number: int) -> "CertificateBuilder":
+=======
+    def serial_number(self, number: int):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the certificate serial number.
         """
@@ -650,9 +727,13 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
+<<<<<<< HEAD
     def not_valid_before(
         self, time: datetime.datetime
     ) -> "CertificateBuilder":
+=======
+    def not_valid_before(self, time: datetime.datetime):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the certificate activation time.
         """
@@ -681,7 +762,11 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
+<<<<<<< HEAD
     def not_valid_after(self, time: datetime.datetime) -> "CertificateBuilder":
+=======
+    def not_valid_after(self, time: datetime.datetime):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Sets the certificate expiration time.
         """
@@ -713,9 +798,13 @@ class CertificateBuilder(object):
             self._extensions,
         )
 
+<<<<<<< HEAD
     def add_extension(
         self, extval: ExtensionType, critical: bool
     ) -> "CertificateBuilder":
+=======
+    def add_extension(self, extval: ExtensionType, critical: bool):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Adds an X.509 extension to the certificate.
         """
@@ -738,8 +827,13 @@ class CertificateBuilder(object):
     def sign(
         self,
         private_key: _PRIVATE_KEY_TYPES,
+<<<<<<< HEAD
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
+=======
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
@@ -784,9 +878,13 @@ class CertificateRevocationListBuilder(object):
         self._extensions = extensions
         self._revoked_certificates = revoked_certificates
 
+<<<<<<< HEAD
     def issuer_name(
         self, issuer_name: Name
     ) -> "CertificateRevocationListBuilder":
+=======
+    def issuer_name(self, issuer_name: Name):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(issuer_name, Name):
             raise TypeError("Expecting x509.Name object.")
         if self._issuer_name is not None:
@@ -799,9 +897,13 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
+<<<<<<< HEAD
     def last_update(
         self, last_update: datetime.datetime
     ) -> "CertificateRevocationListBuilder":
+=======
+    def last_update(self, last_update: datetime.datetime):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(last_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._last_update is not None:
@@ -823,9 +925,13 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
+<<<<<<< HEAD
     def next_update(
         self, next_update: datetime.datetime
     ) -> "CertificateRevocationListBuilder":
+=======
+    def next_update(self, next_update: datetime.datetime):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(next_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._next_update is not None:
@@ -847,9 +953,13 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
+<<<<<<< HEAD
     def add_extension(
         self, extval: ExtensionType, critical: bool
     ) -> "CertificateRevocationListBuilder":
+=======
+    def add_extension(self, extval: ExtensionType, critical: bool):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Adds an X.509 extension to the certificate revocation list.
         """
@@ -866,9 +976,13 @@ class CertificateRevocationListBuilder(object):
             self._revoked_certificates,
         )
 
+<<<<<<< HEAD
     def add_revoked_certificate(
         self, revoked_certificate: RevokedCertificate
     ) -> "CertificateRevocationListBuilder":
+=======
+    def add_revoked_certificate(self, revoked_certificate: RevokedCertificate):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         """
         Adds a revoked certificate to the CRL.
         """
@@ -886,8 +1000,13 @@ class CertificateRevocationListBuilder(object):
     def sign(
         self,
         private_key: _PRIVATE_KEY_TYPES,
+<<<<<<< HEAD
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
+=======
+        algorithm: hashes.HashAlgorithm,
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ) -> CertificateRevocationList:
         backend = _get_backend(backend)
         if self._issuer_name is None:
@@ -913,7 +1032,11 @@ class RevokedCertificateBuilder(object):
         self._revocation_date = revocation_date
         self._extensions = extensions
 
+<<<<<<< HEAD
     def serial_number(self, number: int) -> "RevokedCertificateBuilder":
+=======
+    def serial_number(self, number: int):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(number, int):
             raise TypeError("Serial number must be of integral type.")
         if self._serial_number is not None:
@@ -931,9 +1054,13 @@ class RevokedCertificateBuilder(object):
             number, self._revocation_date, self._extensions
         )
 
+<<<<<<< HEAD
     def revocation_date(
         self, time: datetime.datetime
     ) -> "RevokedCertificateBuilder":
+=======
+    def revocation_date(self, time: datetime.datetime):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(time, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._revocation_date is not None:
@@ -947,9 +1074,13 @@ class RevokedCertificateBuilder(object):
             self._serial_number, time, self._extensions
         )
 
+<<<<<<< HEAD
     def add_extension(
         self, extval: ExtensionType, critical: bool
     ) -> "RevokedCertificateBuilder":
+=======
+    def add_extension(self, extval: ExtensionType, critical: bool):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
@@ -961,9 +1092,13 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension],
         )
 
+<<<<<<< HEAD
     def build(
         self, backend: typing.Optional[Backend] = None
     ) -> RevokedCertificate:
+=======
+    def build(self, backend=None) -> RevokedCertificate:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")

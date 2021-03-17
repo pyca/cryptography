@@ -40,7 +40,11 @@ class KBKDFHMAC(KeyDerivationFunction):
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):

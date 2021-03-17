@@ -13,7 +13,11 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
+=======
+from cryptography.hazmat.backends.interfaces import HMACBackend
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -25,7 +29,11 @@ class HKDF(KeyDerivationFunction):
         length: int,
         salt: typing.Optional[bytes],
         info: typing.Optional[bytes],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
@@ -67,7 +75,11 @@ class HKDFExpand(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         info: typing.Optional[bytes],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):

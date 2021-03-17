@@ -31,7 +31,11 @@ def _common_args_checks(
     algorithm: hashes.HashAlgorithm,
     length: int,
     otherinfo: typing.Optional[bytes],
+<<<<<<< HEAD
 ) -> None:
+=======
+):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     max_length = algorithm.digest_size * (2 ** 32 - 1)
     if length > max_length:
         raise ValueError(
@@ -70,7 +74,11 @@ class ConcatKDFHash(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         otherinfo: typing.Optional[bytes],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
 
@@ -110,7 +118,11 @@ class ConcatKDFHMAC(KeyDerivationFunction):
         length: int,
         salt: typing.Optional[bytes],
         otherinfo: typing.Optional[bytes],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ):
         backend = _get_backend(backend)
 

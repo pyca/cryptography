@@ -202,11 +202,15 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+<<<<<<< HEAD
         ciphers.Cipher(
             AES(b"AAAAAAAAAAAAAAAA"),
             modes.ECB(),
             pretend_backend,  # type: ignore[arg-type]
         )
+=======
+        ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), modes.ECB(), pretend_backend)
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 
 
 @pytest.mark.supported(

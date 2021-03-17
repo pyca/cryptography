@@ -15,10 +15,14 @@ from cryptography.hazmat.primitives.constant_time import bytes_eq
 
 
 def _wrap_core(
+<<<<<<< HEAD
     wrapping_key: bytes,
     a: bytes,
     r: typing.List[bytes],
     backend: Backend,
+=======
+    wrapping_key: bytes, a: bytes, r: typing.List[bytes], backend
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> bytes:
     # RFC 3394 Key Wrap - 2.2.1 (index method)
     encryptor = Cipher(AES(wrapping_key), ECB(), backend).encryptor()
@@ -41,9 +45,13 @@ def _wrap_core(
 
 
 def aes_key_wrap(
+<<<<<<< HEAD
     wrapping_key: bytes,
     key_to_wrap: bytes,
     backend: typing.Optional[Backend] = None,
+=======
+    wrapping_key: bytes, key_to_wrap: bytes, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> bytes:
     backend = _get_backend(backend)
     if len(wrapping_key) not in [16, 24, 32]:
@@ -61,10 +69,14 @@ def aes_key_wrap(
 
 
 def _unwrap_core(
+<<<<<<< HEAD
     wrapping_key: bytes,
     a: bytes,
     r: typing.List[bytes],
     backend: Backend,
+=======
+    wrapping_key: bytes, a: bytes, r: typing.List[bytes], backend
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> typing.Tuple[bytes, typing.List[bytes]]:
     # Implement RFC 3394 Key Unwrap - 2.2.2 (index method)
     decryptor = Cipher(AES(wrapping_key), ECB(), backend).decryptor()
@@ -89,9 +101,13 @@ def _unwrap_core(
 
 
 def aes_key_wrap_with_padding(
+<<<<<<< HEAD
     wrapping_key: bytes,
     key_to_wrap: bytes,
     backend: typing.Optional[Backend] = None,
+=======
+    wrapping_key: bytes, key_to_wrap: bytes, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> bytes:
     backend = _get_backend(backend)
     if len(wrapping_key) not in [16, 24, 32]:
@@ -113,9 +129,13 @@ def aes_key_wrap_with_padding(
 
 
 def aes_key_unwrap_with_padding(
+<<<<<<< HEAD
     wrapping_key: bytes,
     wrapped_key: bytes,
     backend: typing.Optional[Backend] = None,
+=======
+    wrapping_key: bytes, wrapped_key: bytes, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> bytes:
     backend = _get_backend(backend)
     if len(wrapped_key) < 16:
@@ -160,9 +180,13 @@ def aes_key_unwrap_with_padding(
 
 
 def aes_key_unwrap(
+<<<<<<< HEAD
     wrapping_key: bytes,
     wrapped_key: bytes,
     backend: typing.Optional[Backend] = None,
+=======
+    wrapping_key: bytes, wrapped_key: bytes, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> bytes:
     backend = _get_backend(backend)
     if len(wrapped_key) < 24:

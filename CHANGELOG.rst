@@ -8,12 +8,15 @@ Changelog
 
  .. note:: This version is not yet released and is under active development.
 
+<<<<<<< HEAD
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
 
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 .. _v3-4-6:
 
 3.4.6 - 2021-02-16
@@ -43,6 +46,7 @@ Changelog
 * Added a ``py.typed`` file so that ``mypy`` will know to use our type
   annotations.
 * Fixed an import cycle that could be triggered by certain import sequences.
+<<<<<<< HEAD
 
 .. _v3-4-3:
 
@@ -67,6 +71,32 @@ Changelog
 3.4.1 - 2021-02-07
 ~~~~~~~~~~~~~~~~~~
 
+=======
+
+.. _v3-4-3:
+
+3.4.3 - 2021-02-08
+~~~~~~~~~~~~~~~~~~
+
+* Specify our supported Rust version (>=1.45.0) in our ``setup.py`` so users
+  on older versions will get a clear error message.
+
+.. _v3-4-2:
+
+3.4.2 - 2021-02-08
+~~~~~~~~~~~~~~~~~~
+
+* Improvements to make the rust transition a bit easier. This includes some
+  better error messages and small dependency fixes. If you experience
+  installation problems **Be sure to update pip** first, then check the
+  :doc:`FAQ </faq>`.
+
+.. _v3-4-1:
+
+3.4.1 - 2021-02-07
+~~~~~~~~~~~~~~~~~~
+
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 * Fixed a circular import issue.
 * Added additional debug output to assist users seeing installation errors
   due to outdated ``pip`` or missing ``rustc``.

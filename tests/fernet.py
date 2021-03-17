@@ -2,15 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import base64
 import binascii
 import os
 import struct
 import time
-
-import six
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
@@ -28,7 +26,7 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
-    def __init__(self, key, backend=None):
+    def __init__(self, key: bytes, backend=None):
         backend = _get_backend(backend)
 
         key = base64.urlsafe_b64decode(key)
@@ -42,17 +40,19 @@ class Fernet(object):
         self._backend = backend
 
     @classmethod
-    def generate_key(cls):
+    def generate_key(cls) -> bytes:
         return base64.urlsafe_b64encode(os.urandom(32))
 
-    def encrypt(self, data):
+    def encrypt(self, data: bytes) -> bytes:
         return self.encrypt_at_time(data, int(time.time()))
 
-    def encrypt_at_time(self, data, current_time):
+    def encrypt_at_time(self, data: bytes, current_time: int) -> bytes:
         iv = os.urandom(16)
         return self._encrypt_from_parts(data, current_time, iv)
 
-    def _encrypt_from_parts(self, data, current_time, iv):
+    def _encrypt_from_parts(
+        self, data: bytes, current_time: int, iv: bytes
+    ) -> bytes:
         utils._check_bytes("data", data)
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -71,33 +71,39 @@ class Fernet(object):
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(self, token, ttl=None):
+    def decrypt(self, token: bytes, ttl: typing.Optional[int] = None) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(token)
-        return self._decrypt_data(data, timestamp, ttl, int(time.time()))
+        if ttl is None:
+            time_info = None
+        else:
+            time_info = (ttl, int(time.time()))
+        return self._decrypt_data(data, timestamp, time_info)
 
-    def decrypt_at_time(self, token, ttl, current_time):
+    def decrypt_at_time(
+        self, token: bytes, ttl: int, current_time: int
+    ) -> bytes:
         if ttl is None:
             raise ValueError(
                 "decrypt_at_time() can only be used with a non-None ttl"
             )
         timestamp, data = Fernet._get_unverified_token_data(token)
-        return self._decrypt_data(data, timestamp, ttl, current_time)
+        return self._decrypt_data(data, timestamp, (ttl, current_time))
 
-    def extract_timestamp(self, token):
+    def extract_timestamp(self, token: bytes) -> int:
         timestamp, data = Fernet._get_unverified_token_data(token)
         # Verify the token was not tampered with.
         self._verify_signature(data)
         return timestamp
 
     @staticmethod
-    def _get_unverified_token_data(token):
+    def _get_unverified_token_data(token: bytes) -> typing.Tuple[int, bytes]:
         utils._check_bytes("token", token)
         try:
             data = base64.urlsafe_b64decode(token)
         except (TypeError, binascii.Error):
             raise InvalidToken
 
-        if not data or six.indexbytes(data, 0) != 0x80:
+        if not data or data[0] != 0x80:
             raise InvalidToken
 
         try:
@@ -106,7 +112,7 @@ class Fernet(object):
             raise InvalidToken
         return timestamp, data
 
-    def _verify_signature(self, data):
+    def _verify_signature(self, data: bytes) -> None:
         h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(data[:-32])
         try:
@@ -114,8 +120,14 @@ class Fernet(object):
         except InvalidSignature:
             raise InvalidToken
 
-    def _decrypt_data(self, data, timestamp, ttl, current_time):
-        if ttl is not None:
+    def _decrypt_data(
+        self,
+        data: bytes,
+        timestamp: int,
+        time_info: typing.Optional[typing.Tuple[int, int]],
+    ) -> bytes:
+        if time_info is not None:
+            ttl, current_time = time_info
             if timestamp + ttl < current_time:
                 raise InvalidToken
 
@@ -145,7 +157,7 @@ class Fernet(object):
 
 
 class MultiFernet(object):
-    def __init__(self, fernets):
+    def __init__(self, fernets: typing.Iterable[Fernet]):
         fernets = list(fernets)
         if not fernets:
             raise ValueError(
@@ -153,17 +165,17 @@ class MultiFernet(object):
             )
         self._fernets = fernets
 
-    def encrypt(self, msg):
+    def encrypt(self, msg: bytes) -> bytes:
         return self.encrypt_at_time(msg, int(time.time()))
 
-    def encrypt_at_time(self, msg, current_time):
+    def encrypt_at_time(self, msg: bytes, current_time: int) -> bytes:
         return self._fernets[0].encrypt_at_time(msg, current_time)
 
-    def rotate(self, msg):
+    def rotate(self, msg: bytes) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
-                p = f._decrypt_data(data, timestamp, None, None)
+                p = f._decrypt_data(data, timestamp, None)
                 break
             except InvalidToken:
                 pass
@@ -173,7 +185,7 @@ class MultiFernet(object):
         iv = os.urandom(16)
         return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
-    def decrypt(self, msg, ttl=None):
+    def decrypt(self, msg: bytes, ttl: typing.Optional[int] = None) -> bytes:
         for f in self._fernets:
             try:
                 return f.decrypt(msg, ttl)
@@ -181,7 +193,9 @@ class MultiFernet(object):
                 pass
         raise InvalidToken
 
-    def decrypt_at_time(self, msg, ttl, current_time):
+    def decrypt_at_time(
+        self, msg: bytes, ttl: int, current_time: int
+    ) -> bytes:
         for f in self._fernets:
             try:
                 return f.decrypt_at_time(msg, ttl, current_time)

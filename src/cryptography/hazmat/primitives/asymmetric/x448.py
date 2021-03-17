@@ -11,7 +11,11 @@ from cryptography.hazmat.primitives import _serialization
 
 class X448PublicKey(metaclass=abc.ABCMeta):
     @classmethod
+<<<<<<< HEAD
     def from_public_bytes(cls, data: bytes) -> "X448PublicKey":
+=======
+    def from_public_bytes(cls, data) -> "X448PublicKey":
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():

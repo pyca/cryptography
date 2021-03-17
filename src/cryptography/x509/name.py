@@ -74,9 +74,13 @@ def _escape_dn_value(val: str) -> str:
 
 
 class NameAttribute(object):
+<<<<<<< HEAD
     def __init__(
         self, oid: ObjectIdentifier, value: str, _type=_SENTINEL
     ) -> None:
+=======
+    def __init__(self, oid: ObjectIdentifier, value: str, _type=_SENTINEL):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
@@ -159,9 +163,13 @@ class RelativeDistinguishedName(object):
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
+<<<<<<< HEAD
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
     ) -> typing.List[NameAttribute]:
+=======
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(self) -> str:
@@ -243,16 +251,24 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
+<<<<<<< HEAD
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
     ) -> typing.List[NameAttribute]:
+=======
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         return [i for i in self if i.oid == oid]
 
     @property
     def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
+<<<<<<< HEAD
     def public_bytes(self, backend: typing.Optional[Backend] = None) -> bytes:
+=======
+    def public_bytes(self, backend=None) -> bytes:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.x509_name_bytes(self)
 

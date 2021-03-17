@@ -105,7 +105,11 @@ class PKCS7SignatureBuilder(object):
         self,
         encoding: serialization.Encoding,
         options: typing.Iterable[PKCS7Options],
+<<<<<<< HEAD
         backend: typing.Optional[Backend] = None,
+=======
+        backend=None,
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     ) -> bytes:
         if len(self._signers) == 0:
             raise ValueError("Must have at least one signer")

@@ -475,9 +475,13 @@ _SSH_PRIVATE_KEY_TYPES = typing.Union[
 
 
 def load_ssh_private_key(
+<<<<<<< HEAD
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Optional[Backend] = None,
+=======
+    data: bytes, password: typing.Optional[bytes], backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> _SSH_PRIVATE_KEY_TYPES:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
@@ -555,7 +559,11 @@ def load_ssh_private_key(
 def serialize_ssh_private_key(
     private_key: _SSH_PRIVATE_KEY_TYPES,
     password: typing.Optional[bytes] = None,
+<<<<<<< HEAD
 ) -> bytes:
+=======
+):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
@@ -645,9 +653,13 @@ _SSH_PUBLIC_KEY_TYPES = typing.Union[
 ]
 
 
+<<<<<<< HEAD
 def load_ssh_public_key(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> _SSH_PUBLIC_KEY_TYPES:
+=======
+def load_ssh_public_key(data: bytes, backend=None) -> _SSH_PUBLIC_KEY_TYPES:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
     """Load public key from OpenSSH one-line format."""
     backend = _get_backend(backend)
     utils._check_byteslike("data", data)

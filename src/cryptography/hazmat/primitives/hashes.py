@@ -69,12 +69,16 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
 
 
 class Hash(HashContext):
+<<<<<<< HEAD
     def __init__(
         self,
         algorithm: HashAlgorithm,
         backend: typing.Optional[Backend] = None,
         ctx: typing.Optional["HashContext"] = None,
     ):
+=======
+    def __init__(self, algorithm: HashAlgorithm, backend=None, ctx=None):
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
@@ -260,9 +264,12 @@ class BLAKE2s(HashAlgorithm):
     @property
     def digest_size(self) -> int:
         return self._digest_size
+<<<<<<< HEAD
 
 
 class SM3(HashAlgorithm):
     name = "sm3"
     digest_size = 32
     block_size = 64
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0

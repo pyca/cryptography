@@ -9,7 +9,11 @@ from math import gcd
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
+<<<<<<< HEAD
 from cryptography.hazmat.backends.interfaces import Backend, RSABackend
+=======
+from cryptography.hazmat.backends.interfaces import RSABackend
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
@@ -146,9 +150,13 @@ RSAPublicKeyWithSerialization = RSAPublicKey
 
 
 def generate_private_key(
+<<<<<<< HEAD
     public_exponent: int,
     key_size: int,
     backend: typing.Optional[Backend] = None,
+=======
+    public_exponent: int, key_size: int, backend=None
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 ) -> RSAPrivateKey:
     backend = _get_backend(backend)
     if not isinstance(backend, RSABackend):
@@ -363,9 +371,13 @@ class RSAPrivateNumbers(object):
     iqmp = property(lambda self: self._iqmp)
     public_numbers = property(lambda self: self._public_numbers)
 
+<<<<<<< HEAD
     def private_key(
         self, backend: typing.Optional[Backend] = None
     ) -> RSAPrivateKey:
+=======
+    def private_key(self, backend=None) -> RSAPrivateKey:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_rsa_private_numbers(self)
 
@@ -411,9 +423,13 @@ class RSAPublicNumbers(object):
     e = property(lambda self: self._e)
     n = property(lambda self: self._n)
 
+<<<<<<< HEAD
     def public_key(
         self, backend: typing.Optional[Backend] = None
     ) -> RSAPublicKey:
+=======
+    def public_key(self, backend=None) -> RSAPublicKey:
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
         backend = _get_backend(backend)
         return backend.load_rsa_public_numbers(self)
 

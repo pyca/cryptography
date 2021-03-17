@@ -7,6 +7,7 @@ import abc
 import typing
 
 
+<<<<<<< HEAD
 if typing.TYPE_CHECKING:
     from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
     from cryptography.hazmat.primitives import hashes
@@ -23,6 +24,8 @@ if typing.TYPE_CHECKING:
     from cryptography.x509.name import Name
 
 
+=======
+>>>>>>> b813e816e2871e5f9ab2f101ee94713f8b3e95b0
 class CipherBackend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def cipher_supported(self, cipher, mode):
