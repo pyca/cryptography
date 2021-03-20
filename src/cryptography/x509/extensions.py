@@ -130,8 +130,8 @@ class Extensions(object):
         raise ExtensionNotFound("No {} extension was found".format(oid), oid)
 
     def get_extension_for_class(
-        self, extclass: typing.Type[ExtensionType]
-    ) -> "Extension[ExtensionType]":
+        self, extclass: typing.Type[ExtensionTypeVar]
+    ) -> "Extension[ExtensionTypeVar]":
         if extclass is UnrecognizedExtension:
             raise TypeError(
                 "UnrecognizedExtension can't be used with "
