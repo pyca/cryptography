@@ -145,7 +145,13 @@ class _CipherContext(object):
             res = self._backend._lib.EVP_CipherUpdate(
                 self._ctx, outbuf, outlen, inbuf, inlen
             )
-            self._backend.openssl_assert(res != 0)
+            if res == 0 and isinstance(self._mode, modes.XTS):
+                raise ValueError(
+                    "In XTS mode you must supply at least a full block in the "
+                    "first update call. For AES this is 16 bytes."
+                )
+            else:
+                self._backend.openssl_assert(res != 0)
             data_processed += inlen
             total_out += outlen[0]
 

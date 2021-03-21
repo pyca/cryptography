@@ -52,6 +52,14 @@ class TestAESModeXTS(object):
                 computed_pt = dec.update(ct) + dec.finalize()
                 assert computed_pt == pt
 
+    def test_xts_too_short(self):
+        key = os.urandom(32)
+        tweak = os.urandom(16)
+        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
+        enc = cipher.encryptor()
+        with pytest.raises(ValueError):
+            enc.update(b"0" * 15)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
