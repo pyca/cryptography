@@ -53,8 +53,8 @@ class TestAESModeXTS(object):
                 assert computed_pt == pt
 
     def test_xts_too_short(self):
-        key = os.urandom(32)
-        tweak = os.urandom(16)
+        key = b"thirty_two_byte_keys_are_great!!"
+        tweak = b"\x00" * 16
         cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
         enc = cipher.encryptor()
         with pytest.raises(ValueError):
