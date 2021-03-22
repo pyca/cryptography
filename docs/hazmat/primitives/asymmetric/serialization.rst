@@ -448,11 +448,11 @@ An example ECDSA key in OpenSSH format::
         depending on the key's type.
 
     :returns: One of
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
         depending on the contents of ``data``.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded,
