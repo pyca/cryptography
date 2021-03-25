@@ -14,6 +14,14 @@ Changelog
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
 
+.. _v3-4-7:
+
+3.4.7 - 2021-03-25
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1k.
+
 .. _v3-4-6:
 
 3.4.6 - 2021-02-16
