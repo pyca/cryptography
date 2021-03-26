@@ -138,7 +138,7 @@ Why are there no wheels for my Python3.x version?
 Our Python3 wheels are ``abi3`` wheels. This means they support multiple
 versions of Python. The ``abi3`` wheel can be used with any version of Python
 greater than or equal to the version it specifies. Recent versions of ``pip``
-will automatically install ``abi3`` wheels.
+(versions ``20.0`` and greater) will automatically install ``abi3`` wheels.
 
 Why can't I import my PEM file?
 -------------------------------
