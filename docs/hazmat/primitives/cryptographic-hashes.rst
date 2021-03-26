@@ -254,7 +254,9 @@ SM3
 
     SM3 is a cryptographic hash function standardized by the Chinese National
     Cryptography Administration in `GM/T 0004-2012`_. It produces 256-bit
-    message digests. (An English description is available at
+    message digests. It is most commonly used in conjunction with the
+    :class:`~cryptography.hazmat.primitives.asymmetric.sm2`
+    signature scheme. (An English description is available at
     `draft-oscca-cfrg-sm3-02`_.) This hash should be used for compatibility
     purposes where required and is not otherwise recommended for use.
 

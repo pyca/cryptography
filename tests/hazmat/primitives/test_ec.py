@@ -38,12 +38,24 @@ _HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
     "SHA-256": hashes.SHA256,
     "SHA-384": hashes.SHA384,
     "SHA-512": hashes.SHA512,
+    "SM3": hashes.SM3,
 }
 
 
 def _skip_ecdsa_vector(backend, curve_type, hash_type):
     if not backend.elliptic_curve_signature_algorithm_supported(
         ec.ECDSA(hash_type()), curve_type()
+    ):
+        pytest.skip(
+            "ECDSA not supported with this hash {} and curve {}.".format(
+                hash_type().name, curve_type().name
+            )
+        )
+
+
+def _skip_sm2_vector(backend, curve_type, hash_type):
+    if not backend.elliptic_curve_signature_algorithm_supported(
+        ec.SM2sign(hash_type()), curve_type()
     ):
         pytest.skip(
             "ECDSA not supported with this hash {} and curve {}.".format(
@@ -84,6 +96,7 @@ class DummyCurve(ec.EllipticCurve):
 
 
 class DummySignatureAlgorithm(ec.EllipticCurveSignatureAlgorithm):
+    name = "Dummy"
     algorithm = hashes.SHA256()
 
 
@@ -100,6 +113,11 @@ def test_skip_exchange_algorithm_unsupported(backend):
 def test_skip_ecdsa_vector(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
+
+
+def test_skip_sm2_vector(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_sm2_vector(backend, DummyCurve, hashes.SM3)
 
 
 def test_derive_private_key_success(backend):
@@ -531,6 +549,36 @@ class TestECDSAVectors(object):
                 else:
                     key.verify(
                         signature, vector["message"], ec.ECDSA(hash_type())
+                    )
+
+    def test_sm2_signature_failures(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "ECDSA", "FIPS_186-3", "SigVer.rsp"),
+            load_fips_ec_signing_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                hash_type = _HASH_TYPES[vector["digest_algorithm"]]
+                curve_type = ec._CURVE_TYPES[vector["curve"]]
+
+                _skip_sm2_vector(backend, curve_type, hash_type)
+
+                key = ec.EllipticCurvePublicNumbers(
+                    vector["x"], vector["y"], curve_type()
+                ).public_key(backend)
+
+                signature = encode_dss_signature(vector["r"], vector["s"])
+
+                if vector["fail"] is True:
+                    with pytest.raises(exceptions.InvalidSignature):
+                        key.verify(
+                            signature, vector["message"],
+                            ec.SM2Sign(hash_type(), vector["id"])
+                        )
+                else:
+                    key.verify(
+                        signature, vector["message"],
+                        ec.SM2Sign(hash_type(), vector["id"])
                     )
 
     def test_sign(self, backend):

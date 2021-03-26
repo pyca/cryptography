@@ -19,6 +19,7 @@ static const int NID_X448;
 static const int NID_ED25519;
 static const int NID_ED448;
 static const int NID_poly1305;
+static const int NID_sm2;
 
 static const int NID_subject_alt_name;
 static const int NID_crl_reason;
@@ -47,5 +48,11 @@ static const long Cryptography_HAS_POLY1305 = 0;
 static const int NID_poly1305 = 0;
 #else
 static const long Cryptography_HAS_POLY1305 = 1;
+#endif
+#ifndef NID_sm2
+static const long Cryptography_HAS_SM2 = 0;
+static const int NID_sm2 = 0;
+#else
+static const long Cryptography_HAS_SM2 = 1;
 #endif
 """

@@ -39,6 +39,7 @@ class EllipticCurveOID(object):
     SECT409R1 = ObjectIdentifier("1.3.132.0.37")
     SECT571K1 = ObjectIdentifier("1.3.132.0.38")
     SECT571R1 = ObjectIdentifier("1.3.132.0.39")
+    SM2P256V1 = ObjectIdentifier("1.2.156.10197.1.301")
 
 
 class EllipticCurve(metaclass=abc.ABCMeta):
@@ -301,6 +302,11 @@ class BrainpoolP512R1(EllipticCurve):
     key_size = 512
 
 
+class SM2P256V1(EllipticCurve):
+    name = "sm2p256v1"
+    key_size = 256
+
+
 _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
@@ -323,6 +329,8 @@ _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
     "brainpoolP256r1": BrainpoolP256R1,
     "brainpoolP384r1": BrainpoolP384R1,
     "brainpoolP512r1": BrainpoolP512R1,
+    "sm2p256v1": SM2P256V1,
+    "SM2": SM2P256V1,
 }
 
 
@@ -520,6 +528,7 @@ _OID_TO_CURVE = {
     EllipticCurveOID.SECT409R1: SECT409R1,
     EllipticCurveOID.SECT571K1: SECT571K1,
     EllipticCurveOID.SECT571R1: SECT571R1,
+    EllipticCurveOID.SM2P256V1: SM2P256V1,
 }
 
 

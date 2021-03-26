@@ -430,7 +430,7 @@ def load_fips_dsa_sig_vectors(vector_data):
 
 
 # https://tools.ietf.org/html/rfc4492#appendix-A
-_ECDSA_CURVE_NAMES = {
+_EC_CURVE_NAMES = {
     "P-192": "secp192r1",
     "P-224": "secp224r1",
     "P-256": "secp256r1",
@@ -447,6 +447,7 @@ _ECDSA_CURVE_NAMES = {
     "B-283": "sect283r1",
     "B-409": "sect409r1",
     "B-571": "sect571r1",
+    "SM2P256V1": "sm2p256v1",
 }
 
 
@@ -462,8 +463,8 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
         if not line or line.startswith("#"):
             continue
 
-        if line[1:-1] in _ECDSA_CURVE_NAMES:
-            curve_name = _ECDSA_CURVE_NAMES[line[1:-1]]
+        if line[1:-1] in _EC_CURVE_NAMES:
+            curve_name = _EC_CURVE_NAMES[line[1:-1]]
 
         elif line.startswith("d = "):
             if key_data is not None:
@@ -483,14 +484,14 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
     return vectors
 
 
-def load_fips_ecdsa_signing_vectors(vector_data):
+def load_fips_ec_signing_vectors(vector_data):
     """
-    Loads data out of the FIPS ECDSA SigGen vector files.
+    Loads data out of the FIPS-style ECDSA/SM2 SigGen vector files.
     """
     vectors = []
 
     curve_rx = re.compile(
-        r"\[(?P<curve>[PKB]-[0-9]{3}),SHA-(?P<sha>1|224|256|384|512)\]"
+        r"\[(?P<curve>[PKB]-[0-9]{3}|SM2P256V1),(?P<hash>SHA-(1|224|256|384|512)|SM3)\]"
     )
 
     data = None
@@ -499,8 +500,8 @@ def load_fips_ecdsa_signing_vectors(vector_data):
 
         curve_match = curve_rx.match(line)
         if curve_match:
-            curve_name = _ECDSA_CURVE_NAMES[curve_match.group("curve")]
-            digest_name = "SHA-{}".format(curve_match.group("sha"))
+            curve_name = _EC_CURVE_NAMES[curve_match.group("curve")]
+            digest_name = curve_match.group("hash")
 
         elif line.startswith("Msg = "):
             if data is not None:
@@ -525,6 +526,10 @@ def load_fips_ecdsa_signing_vectors(vector_data):
                 data["s"] = int(line.split("=")[1], 16)
             elif line.startswith("d = "):
                 data["d"] = int(line.split("=")[1], 16)
+            elif line.startswith("Id = "):
+                data["id"] = binascii.unhexlify(
+                    line.split("=")[1].strip().encode('ascii')
+                )
             elif line.startswith("Result = "):
                 data["fail"] = line.split("=")[1].strip()[0] == "F"
 

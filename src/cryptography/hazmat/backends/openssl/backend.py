@@ -84,6 +84,10 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
     _RSAPublicKey,
 )
+from cryptography.hazmat.backends.openssl.sm2 import (
+    _SM2PrivateKey,
+    _SM2PublicKey,
+)
 from cryptography.hazmat.backends.openssl.x25519 import (
     _X25519PrivateKey,
     _X25519PublicKey,
@@ -1801,7 +1805,10 @@ class Backend(BackendInterface):
         Get the NID for a curve name.
         """
 
-        curve_aliases = {"secp192r1": "prime192v1", "secp256r1": "prime256v1"}
+        curve_aliases = {
+            "secp192r1": "prime192v1", "secp256r1": "prime256v1",
+            "sm2p256v1": "SM2"
+        }
 
         curve_name = curve_aliases.get(curve.name, curve.name)
 
@@ -2418,6 +2425,77 @@ class Backend(BackendInterface):
     def ed448_generate_key(self):
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED448)
         return _Ed448PrivateKey(self, evp_pkey)
+
+    def sm2_supported(self):
+        if self._fips_enabled:
+            return False
+        if self._lib.CRYPTOGRAPHY_IS_LIBRESSL:
+            return False
+        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+
+    def sm2_curve_supported(self, curve):
+        try:
+            curve_nid = self._elliptic_curve_to_nid(curve)
+            print(curve_nid, self._lib.NID_sm2)
+        except UnsupportedAlgorithm:
+            return False
+
+        return curve_nid == self._lib.NID_sm2
+
+    def sm2_load_public_bytes(self, curve, point_bytes):
+        ec_cdata = self._ec_key_new_by_curve(curve)
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_oct2point(
+                group, point, point_bytes, len(point_bytes), bn_ctx
+            )
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("Invalid public bytes for the given curve")
+
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+        res = self._lib.EVP_PKEY_set_alias_type(
+            evp_pkey, self._lib.EVP_PKEY_SM2
+        )
+        self.openssl_assert(res == 1)
+        return _SM2PublicKey(self, ec_cdata, evp_pkey)
+
+    def sm2_load_private_bytes(self, data):
+        # This is just ripped from load_der_private_key for now.
+        bio_data = self._bytes_to_bio(data)
+        evp_pkey = self._evp_pkey_from_der_traditional_key(bio_data, None)
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+
+        if self._lib.EVP_PKEY_id(evp_pkey) != self._lib.EVP_PKEY_EC:
+            raise ValueError("Not a traditionally OpenSSL encoded EC key")
+        ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
+        self.openssl_assert(ec_cdata != self._ffi.NULL)
+        res = self._lib.EVP_PKEY_set_alias_type(
+            evp_pkey, self._lib.EVP_PKEY_SM2
+        )
+        self.openssl_assert(res == 1)
+        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+        return _SM2PrivateKey(self, ec_cdata, evp_pkey)
+
+    def sm2_generate_key(self, curve):
+        ec_cdata = self._ec_key_new_by_curve(curve)
+
+        res = self._lib.EC_KEY_generate_key(ec_cdata)
+        self.openssl_assert(res == 1)
+
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+        res = self._lib.EVP_PKEY_set_alias_type(
+            evp_pkey, self._lib.EVP_PKEY_SM2
+        )
+        self.openssl_assert(res == 1)
+
+        return _SM2PrivateKey(self, ec_cdata, evp_pkey)
 
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         buf = self._ffi.new("unsigned char[]", length)
