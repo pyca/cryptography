@@ -9,10 +9,11 @@ import os
 import typing
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes, serialization, asymmetric
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -188,6 +189,72 @@ class Certificate(metaclass=abc.ABCMeta):
         """
         Serializes the certificate to PEM or DER format.
         """
+
+    def _has_signature_of(self, signer_candidate: "Certificate") -> bool:
+        """
+        Returns True if the certificate holds a valid signature by
+        `signer_candidate`.
+        Raises appropriate exception otherwise.
+        No other checks, e.g. comparison of issuer and leaf names, is done.
+        """
+        try:
+            pubkey = signer_candidate.public_key()
+        except ValueError as e:
+            # Backend is unable to get the public key
+            raise UnsupportedAlgorithm(
+                str(e), _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
+
+        signature = self.signature
+        data = self.tbs_certificate_bytes
+        if isinstance(pubkey, asymmetric.rsa.RSAPublicKeyWithSerialization):
+            assert isinstance(
+                self.signature_hash_algorithm, hashes.HashAlgorithm
+            )
+            pubkey.verify(
+                signature,
+                data,
+                padding=asymmetric.padding.PKCS1v15(),
+                algorithm=self.signature_hash_algorithm,
+            )
+        elif isinstance(pubkey, asymmetric.dsa.DSAPublicKeyWithSerialization):
+            assert isinstance(
+                self.signature_hash_algorithm, hashes.HashAlgorithm
+            )
+            pubkey.verify(
+                signature,
+                data,
+                algorithm=self.signature_hash_algorithm,
+            )
+        elif isinstance(
+            pubkey, asymmetric.ec.EllipticCurvePublicKeyWithSerialization
+        ):
+            assert isinstance(
+                self.signature_hash_algorithm, hashes.HashAlgorithm
+            )
+            pubkey.verify(
+                signature,
+                data,
+                signature_algorithm=asymmetric.ec.ECDSA(
+                    self.signature_hash_algorithm
+                ),
+            )
+        elif isinstance(
+            pubkey,
+            (
+                asymmetric.ed25519.Ed25519PublicKey,
+                asymmetric.ed448.Ed448PublicKey,
+            ),
+        ):
+            pubkey.verify(signature, data)
+        else:
+            # Should not happen, all PUBLIC_KEY_TYPES are tried
+            raise UnsupportedAlgorithm(  # pragma: no cover
+                "Signature algorithm is not supported",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
+            )
+
+        return True
 
 
 # Runtime isinstance checks need this since the rust class is not a subclass.

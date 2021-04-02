@@ -436,6 +436,14 @@ Custom X.509 Vectors
   version.
 * ``invalid-sct-length.der`` - A certificate with an SCT with an internal
   length greater than the amount of data.
+* Directory ``has_signature_of``, files
+  ``{rsa,dsa,ecdsa,ed25519,ed448}{issuer,good_leaf,bad_leaf}.pem``
+  - triplets of (CA certificate, leaf certificate issued by the CA, same leaf
+  certificate with invalid signature) for the five supported signature
+  algorithms
+* ``has_signature_of/bp-cert.pem`` - self-signed certificate using
+  ``brainpoolP224t1`` curve for signature - one of curves not supported by
+  Cryptography.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

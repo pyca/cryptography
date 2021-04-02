@@ -16,8 +16,8 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import asn1
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
@@ -4963,3 +4963,42 @@ def test_random_serial_number(monkeypatch):
 
     assert serial_number == int.from_bytes(sample_data, "big") >> 1
     assert serial_number.bit_length() < 160
+
+
+class TestHasSignatureOf(object):
+    @staticmethod
+    def load(backend, filename):
+        return _load_cert(
+            os.path.join("x509", "has_signature_of", filename),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+    @pytest.mark.parametrize("key_type", ["rsa", "dsa", "ecdsa"])
+    def test_signature_with_key_type(self, backend, key_type):
+        issuer = self.load(backend, key_type + "_issuer.pem")
+        good_leaf = self.load(backend, key_type + "_good_leaf.pem")
+        assert good_leaf._has_signature_of(issuer)
+        bad_leaf = self.load(backend, key_type + "_bad_leaf.pem")
+        with pytest.raises(InvalidSignature):
+            bad_leaf._has_signature_of(issuer)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires backend with Ed25519 support",
+    )
+    def test_ed25519_signature(self, backend):
+        self.test_signature_with_key_type(backend, "ed25519")
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed448_supported(),
+        skip_message="Requires backend with Ed448 support",
+    )
+    def test_ed448_signature(self, backend):
+        self.test_signature_with_key_type(backend, "ed448")
+
+    def test_unsupported_curve(self, backend):
+        # bp-cert.pem uses brainpoolP224t1, which is not in ec._CURVE_TYPES
+        unsupported_cert = self.load(backend, "bp-cert.pem")
+        with pytest.raises(UnsupportedAlgorithm):
+            unsupported_cert._has_signature_of(unsupported_cert)
