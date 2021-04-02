@@ -13,6 +13,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
+* We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
+  and ``manylinux2014`` wheels.
 
 .. _v3-4-7:
 

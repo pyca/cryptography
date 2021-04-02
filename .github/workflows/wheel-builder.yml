@@ -18,6 +18,7 @@ jobs:
         MANYLINUX:
           - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
+          - { name: "manylinux_2_24_x86_64", CONTAINER: "cryptography-manylinux_2_24:x86_64"}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
       - run: ${{ matrix.PYTHON.PATH }} -m venv .venv
