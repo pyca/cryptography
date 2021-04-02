@@ -30,7 +30,7 @@ class Fernet(object):
     def __init__(
         self,
         key: typing.Union[bytes, str],
-        backend: typing.Optional[Backend] = None
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
 
