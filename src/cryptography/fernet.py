@@ -27,7 +27,11 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
-    def __init__(self, key: bytes, backend: typing.Optional[Backend] = None):
+    def __init__(
+        self,
+        key: typing.Union[bytes, str],
+        backend: typing.Optional[Backend] = None,
+    ):
         backend = _get_backend(backend)
 
         key = base64.urlsafe_b64decode(key)
