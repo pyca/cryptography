@@ -1,5 +1,10 @@
 version: 2
 
+sphinx:
+  # The config file overrides the UI settings:
+  # https://github.com/pyca/cryptography/issues/5863#issuecomment-817828152
+  builder: dirhtml
+
 build:
   # First RTD build env which includes a rust toolchain
   image: "7.0"
