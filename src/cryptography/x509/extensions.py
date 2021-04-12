@@ -10,13 +10,8 @@ import ipaddress
 import typing
 from enum import Enum
 
-from cryptography.hazmat._der import (
-    BIT_STRING,
-    DERReader,
-    OBJECT_IDENTIFIER,
-    SEQUENCE,
-)
 from cryptography.hazmat._types import _PUBLIC_KEY_TYPES
+from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
@@ -62,25 +57,7 @@ def _key_identifier_from_public_key(public_key: _PUBLIC_KEY_TYPES) -> bytes:
             serialization.Encoding.DER,
             serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-
-        reader = DERReader(serialized)
-        with reader.read_single_element(SEQUENCE) as public_key_info:
-            algorithm = public_key_info.read_element(SEQUENCE)
-            public_key_data = public_key_info.read_element(BIT_STRING)
-
-        # Double-check the algorithm structure.
-        with algorithm:
-            algorithm.read_element(OBJECT_IDENTIFIER)
-            if not algorithm.is_empty():
-                # Skip the optional parameters field.
-                algorithm.read_any_element()
-
-        # BIT STRING contents begin with the number of padding bytes added. It
-        # must be zero for SubjectPublicKeyInfo structures.
-        if public_key_data.read_byte() != 0:
-            raise ValueError("Invalid public key encoding")
-
-        data = public_key_data.data
+        data = asn1.parse_spki_for_data(serialized)
 
     return hashlib.sha1(data).digest()
 
