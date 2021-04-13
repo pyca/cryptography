@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::class::basic::CompareOp;
 use pyo3::conversion::ToPyObject;
 
 enum PyAsn1Error {
@@ -94,11 +95,71 @@ fn parse_spki_for_data(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3
     Ok(pyo3::types::PyBytes::new(py, result).to_object(py))
 }
 
+fn big_asn1_uint_to_py<'p>(
+    py: pyo3::Python<'p>,
+    v: asn1::BigUint,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let int_type = py.get_type::<pyo3::types::PyLong>();
+    int_type.call_method1("from_bytes", (v.as_bytes(), "big"))
+}
+
+#[pyo3::prelude::pyfunction]
+fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
+    let (r, s) = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
+        p.read_element::<asn1::Sequence>()?.parse(|p| {
+            let r = p.read_element::<asn1::BigUint>()?;
+            let s = p.read_element::<asn1::BigUint>()?;
+            Ok((r, s))
+        })
+    })?;
+
+    Ok((big_asn1_uint_to_py(py, r)?, big_asn1_uint_to_py(py, s)?).to_object(py))
+}
+
+fn py_int_to_big_endian_bytes(v: &pyo3::types::PyLong) -> pyo3::PyResult<&[u8]> {
+    // Round the length up so that we prefix an extra \x00. This ensures that
+    // integers that'd have the high bit set in their first octet are not
+    // encoded as negative in DER.
+    let n = v.call_method0("bit_length")?.extract::<usize>()? / 8 + 1;
+    v.call_method1("to_bytes", (n, "big"))?.extract()
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_dss_signature(
+    py: pyo3::Python<'_>,
+    r: &pyo3::types::PyLong,
+    s: &pyo3::types::PyLong,
+) -> pyo3::PyResult<pyo3::PyObject> {
+    if r.rich_compare((0).to_object(py), CompareOp::Lt)?
+        .is_true()?
+        || s.rich_compare((0).to_object(py), CompareOp::Lt)?
+            .is_true()?
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "Negative integers are not supported",
+        ));
+    }
+
+    let r = asn1::BigUint::new(py_int_to_big_endian_bytes(r)?).unwrap();
+    let s = asn1::BigUint::new(py_int_to_big_endian_bytes(s)?).unwrap();
+    let result = asn1::write(|w| {
+        w.write_element_with_type::<asn1::Sequence>(&|w| {
+            w.write_element(r);
+            w.write_element(s);
+        });
+    });
+
+    Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_tls_feature))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
+
+    submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_dss_signature))?;
 
     Ok(submod)
 }
