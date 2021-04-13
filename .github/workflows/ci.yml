@@ -42,7 +42,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1
@@ -164,7 +164,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1
@@ -207,7 +207,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1
@@ -267,7 +267,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
@@ -329,7 +329,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON }}
       - uses: actions-rs/toolchain@v1
@@ -354,7 +354,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: 3.9
       - uses: actions-rs/toolchain@v1
