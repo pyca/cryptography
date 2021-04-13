@@ -225,13 +225,12 @@ jobs:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
-      - name: Merge coverage data
-        run: "cargo profdata -- merge -sparse rust-cov/*.profraw -o rust-cov.profdata"
-      - name: Covert coverage data to lcov
+      - name: Process coverage data
         run: |
             cd src/rust/
+            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o rust-cov.profdata
             cargo cov -- export target/debug/libcryptography_rust.so \
-              -instr-profile=../../rust-cov.profdata \
+              -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/.rustup/toolchains/' > ../../rust-cov.lcov
       - uses: ./.github/actions/upload-coverage
