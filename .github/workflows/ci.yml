@@ -215,7 +215,7 @@ jobs:
         run: |
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          TOXENV: py39
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
