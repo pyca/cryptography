@@ -185,6 +185,54 @@ jobs:
         with:
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
 
+  linux-rus-coverage:
+    runs-on: ubuntu-latest
+    name: "Rust Coverage"
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-rust-nightly-coverage
+
+      - name: Setup python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          default: true
+      - run: git clone --depth=1 https://github.com/google/wycheproof
+      - run: python -m pip install tox coverage
+      - name: Tests
+        run: |
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          RUSTFLAGS: "-Zinstrument-coverage"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
+      - name: Merge coverage data
+        run: "llvm-profdata merge -sparse rust-cov/*.profraw -o rust-cov.profdata"
+      - name: Covert coverage data to lcov
+        run: |
+            cd src/rust/
+            llvm-cov export target/debug/libcryptography_rust.so \
+              -instr-profile=../../rust-cov.profdata \
+              --ignore-filename-regex='/.cargo/registry' \
+              --ignore-filename-regex='/.rustup/toolchains/' > ../../rust-cov.lcov
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Rust Coverage"
+
+
   macos:
     runs-on: macos-latest
     strategy:
