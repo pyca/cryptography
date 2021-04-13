@@ -122,7 +122,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
