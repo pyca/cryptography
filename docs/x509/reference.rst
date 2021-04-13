@@ -1333,6 +1333,15 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         The value of the attribute.
 
+    .. attribute:: rfc4514_attribute_name
+
+        .. versionadded:: 35.0
+
+        :type: :term:`text`
+
+        The :rfc:`4514` short attribute name (for example "CN"),
+        or the OID dotted string if a short name is unavailable.
+
     .. method:: rfc4514_string()
 
         .. versionadded:: 2.5

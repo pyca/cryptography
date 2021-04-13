@@ -4991,6 +4991,12 @@ class TestName(object):
 
         assert repr(name) == expected_repr
 
+    def test_rfc4514_attribute_name(self):
+        a = x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io")
+        assert a.rfc4514_attribute_name == "CN"
+        b = x509.NameAttribute(NameOID.PSEUDONYM, "cryptography.io")
+        assert b.rfc4514_attribute_name == "2.5.4.65"
+
     def test_rfc4514_string(self):
         n = x509.Name(
             [
