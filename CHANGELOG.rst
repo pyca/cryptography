@@ -16,7 +16,7 @@ Changelog
 * We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
   and ``manylinux2014`` wheels.
 * Added ``rfc4514_attribute_name`` attribute to
-  :attr:`x509.Name <cryptography.x509.Name.rfc4514_attribute_name>`,
+  :attr:`x509.NameAttribute <cryptography.x509.NameAttribute.rfc4514_attribute_name>`,
 
 .. _v3-4-7:
 
