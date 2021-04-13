@@ -118,6 +118,13 @@ class NameAttribute(object):
     def value(self) -> str:
         return self._value
 
+    @property
+    def rfc4514_attribute_name(self) -> str:
+        """
+        The short attribute name (for example "CN") if available, otherwise the OID dotted string.
+        """
+        return _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
+
     def rfc4514_string(self) -> str:
         """
         Format as RFC4514 Distinguished Name string.
@@ -125,8 +132,7 @@ class NameAttribute(object):
         Use short attribute name if available, otherwise fall back to OID
         dotted string.
         """
-        key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
-        return "%s=%s" % (key, _escape_dn_value(self.value))
+        return "%s=%s" % (self.rfc4514_attribute_name, _escape_dn_value(self.value))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
