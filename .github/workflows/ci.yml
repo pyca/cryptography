@@ -209,6 +209,7 @@ jobs:
           toolchain: nightly
           override: true
           default: true
+          components: llvm-tools-preview
       - run: git clone --depth=1 https://github.com/google/wycheproof
       - run: python -m pip install tox coverage
       - name: Tests
