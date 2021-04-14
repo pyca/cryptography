@@ -185,7 +185,7 @@ jobs:
         with:
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
 
-  linux-rus-coverage:
+  linux-rust-coverage:
     runs-on: ubuntu-latest
     name: "Rust Coverage"
     timeout-minutes: 30
