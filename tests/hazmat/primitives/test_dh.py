@@ -364,16 +364,11 @@ class TestDH(object):
         key2 = private2.private_key(backend)
         pub_key2 = key2.public_key()
 
-        if pub_key2.public_numbers().y >= parameters1.p:
-            with pytest.raises(ValueError):
-                key1.exchange(pub_key2)
-        else:
-            symkey1 = key1.exchange(pub_key2)
-            assert symkey1
+        with pytest.raises(ValueError):
+            key1.exchange(pub_key2)
 
-            symkey2 = key2.exchange(pub_key1)
-
-            assert symkey1 != symkey2
+        with pytest.raises(ValueError):
+            key2.exchange(pub_key1)
 
     @pytest.mark.skip_fips(reason="key_size too small for FIPS")
     def test_load_256bit_key_from_pkcs8(self, backend):
