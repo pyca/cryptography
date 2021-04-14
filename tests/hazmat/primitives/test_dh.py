@@ -274,6 +274,12 @@ class TestDH(object):
         assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
         assert isinstance(key.parameters(), dh.DHParameters)
 
+    def test_exchange_wrong_type(self, backend):
+        parameters = FFDH3072_P.parameters(backend)
+        key1 = parameters.generate_private_key()
+        with pytest.raises(TypeError):
+            key1.exchange(b"invalidtype")
+
     def test_exchange(self, backend):
         parameters = FFDH3072_P.parameters(backend)
         assert isinstance(parameters, dh.DHParameters)

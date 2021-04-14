@@ -127,6 +127,9 @@ class _DHPrivateKey(dh.DHPrivateKey):
         )
 
     def exchange(self, peer_public_key: dh.DHPublicKey) -> bytes:
+        if not isinstance(peer_public_key, _DHPublicKey):
+            raise TypeError("peer_public_key must be a DHPublicKey")
+
         ctx = self._backend._lib.EVP_PKEY_CTX_new(
             self._evp_pkey, self._backend._ffi.NULL
         )
@@ -135,7 +138,7 @@ class _DHPrivateKey(dh.DHPrivateKey):
         res = self._backend._lib.EVP_PKEY_derive_init(ctx)
         self._backend.openssl_assert(res == 1)
         res = self._backend._lib.EVP_PKEY_derive_set_peer(
-            ctx, peer_public_key._evp_pkey  # type:ignore[attr-defined]
+            ctx, peer_public_key._evp_pkey
         )
         # Invalid kex errors here in OpenSSL 3.0 because checks were moved
         # to EVP_PKEY_derive_set_peer
