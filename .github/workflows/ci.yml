@@ -232,7 +232,7 @@ jobs:
             cargo cov -- export ../../.tox/py39/lib/python3.9/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
-              --ignore-filename-regex='/.rustup/toolchains/' > ../../rust-cov.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
 
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
 
