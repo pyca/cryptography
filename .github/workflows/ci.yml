@@ -236,6 +236,11 @@ jobs:
 
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
 
+      - uses: actions/upload-artifact@v1
+        with:
+          name: "rust-cov.lcov"
+          path: rust-cov.lcov
+
       - uses: ./.github/actions/upload-coverage
         with:
           name: "Rust Coverage"
