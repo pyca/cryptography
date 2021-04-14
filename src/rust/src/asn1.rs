@@ -35,9 +35,8 @@ impl From<PyAsn1Error> for pyo3::PyErr {
 
 #[pyo3::prelude::pyfunction]
 fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
-    let tls_feature_type_to_enum = py
-        .import("cryptography.x509.extensions")?
-        .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
+    let x509_mod = py.import("cryptography.x509.extensions")?;
+    let tls_feature_type_to_enum = x509_mod.getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
     let features = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
         let features = pyo3::types::PyList::empty(py);
