@@ -233,6 +233,9 @@ jobs:
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/.rustup/toolchains/' > ../../rust-cov.lcov
+
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
+
       - uses: ./.github/actions/upload-coverage
         with:
           name: "Rust Coverage"
