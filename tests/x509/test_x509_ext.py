@@ -1559,7 +1559,7 @@ class TestSubjectKeyIdentifierExtension(object):
         # The previous value is invalid for 2 reasons: a) it's got non-zero
         # padding bits (i.e. the first byte of the value is not zero), b) the
         # padding bits aren't all set to zero (i.e. the last bits of the value)
-        # Here we swap the last byte out with zeros so we can bit both error
+        # Here we swap the last byte out with zeros so we can hit both error
         # checks.
         pretend_key = pretend.stub(
             public_bytes=lambda x, y: data[:-1] + b"\x00"
