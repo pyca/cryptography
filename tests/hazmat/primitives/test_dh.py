@@ -278,7 +278,7 @@ class TestDH(object):
         parameters = FFDH3072_P.parameters(backend)
         key1 = parameters.generate_private_key()
         with pytest.raises(TypeError):
-            key1.exchange(b"invalidtype")
+            key1.exchange(b"invalidtype")  # type: ignore[arg-type]
 
     def test_exchange(self, backend):
         parameters = FFDH3072_P.parameters(backend)
