@@ -210,17 +210,19 @@ class _X509ExtensionParser(object):
                 # The extension contents are a SEQUENCE OF INTEGERs.
                 data = self._backend._lib.X509_EXTENSION_get_data(ext)
                 data_bytes = _asn1_string_to_bytes(self._backend, data)
-                value = asn1.parse_tls_feature(data_bytes)
+                tls_feature = asn1.parse_tls_feature(data_bytes)
 
-                extensions.append(x509.Extension(oid, critical, value))
+                extensions.append(x509.Extension(oid, critical, tls_feature))
                 seen_oids.add(oid)
                 continue
             elif oid == ExtensionOID.PRECERT_POISON:
                 data = self._backend._lib.X509_EXTENSION_get_data(ext)
                 data_bytes = _asn1_string_to_bytes(self._backend, data)
-                value = asn1.parse_precert_poison(data_bytes)
+                precert_poison = asn1.parse_precert_poison(data_bytes)
 
-                extensions.append(x509.Extension(oid, critical, value))
+                extensions.append(
+                    x509.Extension(oid, critical, precert_poison)
+                )
                 seen_oids.add(oid)
                 continue
 
