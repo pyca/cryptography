@@ -33,8 +33,6 @@ void EC_GROUP_free(EC_GROUP *);
 
 EC_GROUP *EC_GROUP_new_by_curve_name(int);
 
-int EC_GROUP_get_degree(const EC_GROUP *);
-
 const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
 const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *);
 int EC_GROUP_get_curve_name(const EC_GROUP *);
