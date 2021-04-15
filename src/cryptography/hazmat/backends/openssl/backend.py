@@ -12,13 +12,6 @@ from contextlib import contextmanager
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat._der import (
-    INTEGER,
-    NULL,
-    SEQUENCE,
-    encode_der,
-    encode_der_integer,
-)
 from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
 from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
@@ -98,6 +91,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _CertificateSigningRequest,
     _RevokedCertificate,
 )
+from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -1171,17 +1165,14 @@ class Backend(BackendInterface):
             value = _encode_asn1_str_gc(self, extension.value.value)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.TLSFeature):
-            asn1 = encode_der(
-                SEQUENCE,
-                *[
-                    encode_der(INTEGER, encode_der_integer(x.value))
-                    for x in extension.value
-                ],
+            value = _encode_asn1_str_gc(
+                self, asn1.encode_tls_feature(extension.value)
             )
-            value = _encode_asn1_str_gc(self, asn1)
             return self._create_raw_x509_extension(extension, value)
         elif isinstance(extension.value, x509.PrecertPoison):
-            value = _encode_asn1_str_gc(self, encode_der(NULL))
+            value = _encode_asn1_str_gc(
+                self, asn1.encode_precert_poison(extension.value)
+            )
             return self._create_raw_x509_extension(extension, value)
         else:
             try:
