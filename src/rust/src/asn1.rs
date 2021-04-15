@@ -116,7 +116,18 @@ fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo
     Ok((big_asn1_uint_to_py(py, r)?, big_asn1_uint_to_py(py, s)?).to_object(py))
 }
 
-fn py_int_to_big_endian_bytes(v: &pyo3::types::PyLong) -> pyo3::PyResult<&[u8]> {
+fn py_uint_to_big_endian_bytes<'p>(
+    py: pyo3::Python<'p>,
+    v: &'p pyo3::types::PyLong,
+) -> pyo3::PyResult<&'p [u8]> {
+    if v.rich_compare((0).to_object(py), CompareOp::Lt)?
+        .is_true()?
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "Negative integers are not supported",
+        ));
+    }
+
     // Round the length up so that we prefix an extra \x00. This ensures that
     // integers that'd have the high bit set in their first octet are not
     // encoded as negative in DER.
@@ -130,18 +141,8 @@ fn encode_dss_signature(
     r: &pyo3::types::PyLong,
     s: &pyo3::types::PyLong,
 ) -> pyo3::PyResult<pyo3::PyObject> {
-    if r.rich_compare((0).to_object(py), CompareOp::Lt)?
-        .is_true()?
-        || s.rich_compare((0).to_object(py), CompareOp::Lt)?
-            .is_true()?
-    {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "Negative integers are not supported",
-        ));
-    }
-
-    let r = asn1::BigUint::new(py_int_to_big_endian_bytes(r)?).unwrap();
-    let s = asn1::BigUint::new(py_int_to_big_endian_bytes(s)?).unwrap();
+    let r = asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap();
+    let s = asn1::BigUint::new(py_uint_to_big_endian_bytes(py, s)?).unwrap();
     let result = asn1::write(|w| {
         w.write_element_with_type::<asn1::Sequence>(&|w| {
             w.write_element(r);
