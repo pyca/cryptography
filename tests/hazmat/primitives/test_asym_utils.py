@@ -54,6 +54,8 @@ def test_encode_dss_non_integer():
 def test_encode_dss_negative():
     with pytest.raises(ValueError):
         encode_dss_signature(-1, 0)
+    with pytest.raises(ValueError):
+        encode_dss_signature(0, -1)
 
 
 def test_decode_dss_trailing_bytes():
