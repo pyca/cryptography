@@ -120,9 +120,8 @@ fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: &'p pyo3::types::PyLong,
 ) -> pyo3::PyResult<&'p [u8]> {
-    if v.rich_compare((0).to_object(py), CompareOp::Lt)?
-        .is_true()?
-    {
+    let zero = (0).to_object(py);
+    if v.rich_compare(zero, CompareOp::Lt)?.is_true()? {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "Negative integers are not supported",
         ));
