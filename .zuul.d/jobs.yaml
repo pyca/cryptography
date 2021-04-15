@@ -13,20 +13,6 @@
       tox_envlist: py38
 
 - job:
-    name: pyca-cryptography-ubuntu-bionic-py36-arm64
-    parent: pyca-cryptography-base
-    nodeset: ubuntu-bionic-arm64
-    vars:
-      tox_envlist: py36
-
-- job:
-    name: pyca-cryptography-centos-8-py36-arm64
-    parent: pyca-cryptography-base
-    nodeset: centos-8-arm64
-    vars:
-      tox_envlist: py36
-
-- job:
     name: pyca-cryptography-build-wheel
     abstract: true
     pre-run: .zuul.playbooks/playbooks/wheel/pre.yaml
