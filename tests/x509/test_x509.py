@@ -110,9 +110,9 @@ def _parse_cert(der):
         # Skip subjectPublicKeyInfo
         _ = tbs_cert.read_element(SEQUENCE)
         # Skip issuerUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 1)
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | 1)
         # Skip subjectUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 2)
+        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | 2)
         # Skip extensions
         _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
 
