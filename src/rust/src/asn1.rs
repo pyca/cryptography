@@ -35,6 +35,24 @@ impl From<PyAsn1Error> for pyo3::PyErr {
 }
 
 #[pyo3::prelude::pyfunction]
+fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
+    // Ideally we'd skip building up a vec and just write directly into the
+    // writer. This isn't possible at the moment because the callback to write
+    // an asn1::Sequence can't return an error, and we need to handle errors
+    // from Python.
+    let mut els = vec![];
+    for el in ext.iter()? {
+        els.push(el?.getattr("value")?.extract::<u64>()?);
+    }
+
+    let result = asn1::write(|w| {
+        w.write_element_with_type::<asn1::SequenceOf<u64>>(&els);
+    });
+
+    Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
+}
+
+#[pyo3::prelude::pyfunction]
 fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
     let x509_mod = py.import("cryptography.x509.extensions")?;
     let tls_feature_type_to_enum = x509_mod.getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
@@ -53,6 +71,15 @@ fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::
     x509_module
         .call1("TLSFeature", (features,))
         .map(|o| o.to_object(py))
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_precert_poison(py: pyo3::Python<'_>, _ext: &pyo3::PyAny) -> pyo3::PyObject {
+    let result = asn1::write(|w| {
+        w.write_element(());
+    });
+
+    pyo3::types::PyBytes::new(py, &result).to_object(py)
 }
 
 #[pyo3::prelude::pyfunction]
@@ -154,7 +181,9 @@ fn encode_dss_signature(
 
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_tls_feature))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
 
