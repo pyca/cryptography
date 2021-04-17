@@ -1,19 +1,20 @@
 name: Upload Coverage
-description: Upload coverage to codecov
+description: Upload coverage
 
 inputs:
   name:
-    description: "Job name"
+    description: "Job name (must be unique within workflow)"
     required: true
 
 runs:
   using: "composite"
 
   steps:
-    - run: |
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-
-        bash codecov.sh -n "${{ inputs.name }}"
+    - run: coverage xml
       shell: bash
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage-${{ inputs.name }}
+        path: |
+            coverage.xml
+            rust-cov.lcov

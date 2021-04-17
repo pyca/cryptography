@@ -1,0 +1,31 @@
+name: Merge Coverage
+description: merge coverage
+
+runs:
+  using: "composite"
+
+  steps:
+    - uses: actions/download-artifact@v2
+      with:
+        path: coverage/
+    - run: pip install lcov_cobertura
+      shell: bash
+    - run: |
+        for p in $(find coverage/ -iname "*.lcov"); do
+          lcov_cobertura "$p" -o "${p%.lcov}.xml"
+        done
+      shell: bash
+    - run: sudo apt install cobertura
+      shell: bash
+    - run: |
+        cobertura-merge --datafile final-coverage.xml \
+          $(for p in $(find coverage/ -iname "*.xml"); do printf "%s " "$p"; done)
+      shell: bash
+    - run: cobertura-report --datafile final-coverage.xml --destination html-coverage/
+      shell: bash
+    - uses: actions/upload-artifact@v2
+      with:
+        name: final-coverage
+        path: html-coverage/
+    - run: cobertura-check --datafile final-coverage.xml --line=100 --branch=100
+      shell: bash

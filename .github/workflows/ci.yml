@@ -512,3 +512,12 @@ jobs:
     - run: echo "😢"; exit 1
       if: ${{ needs.linux.result != 'success' || needs.linux-distros.result != 'success' || needs.linux-rust.result != 'success' || needs.linux-rust-coverage.result != 'success' || needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux-downstream.result != 'success' }}
     - run: echo "🎉"
+
+  merge-coverage:
+    runs-on: ubuntu-latest
+    needs: [linux, linux-distros, linux-rust, linux-rust-coverage, macos, windows]
+    name: "Merge Coverage"
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/merge-coverage
