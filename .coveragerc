@@ -1,6 +1,9 @@
 [run]
 parallel = True
 branch = True
+source =
+    cryptography
+    tests/
 
 [paths]
 source =
