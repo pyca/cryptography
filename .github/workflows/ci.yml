@@ -116,8 +116,9 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
         if: matrix.PYTHON.COVERAGE != 'false'
 
@@ -170,8 +171,9 @@ jobs:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
 
   linux-rust:
@@ -224,8 +226,9 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
 
   linux-rust-coverage:
@@ -313,8 +316,9 @@ jobs:
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../pytest-rust-cov.lcov
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../cargo-test-rust-cov.lcov
 
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "Rust Coverage"
 
   macos:
@@ -378,8 +382,9 @@ jobs:
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "${{ matrix.PYTHON.TOXENV }} on macOS"
 
   windows:
@@ -447,8 +452,9 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
-      - uses: ./.github/actions/upload-coverage
+      - uses: alex/github-actions-coverage-merge@main
         with:
+          mode: upload
           name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
 
   linux-downstream:
@@ -520,4 +526,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      - uses: ./.github/actions/merge-coverage
+      - uses: alex/github-actions-coverage-merge@main
+        with:
+          mode: merge
