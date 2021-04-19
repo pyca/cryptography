@@ -166,7 +166,8 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: 'tox -- --wycheproof-root="wycheproof"'
+      - run: pip install git+https://github.com/alex/coveragepy@patch-1
+      - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
