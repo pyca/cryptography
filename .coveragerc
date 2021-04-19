@@ -1,9 +1,9 @@
 [run]
 parallel = True
 branch = True
+relative_files = True
 source =
-    cryptography
-    tests/
+    .
 
 [paths]
 source =
