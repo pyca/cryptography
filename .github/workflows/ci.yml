@@ -171,6 +171,10 @@ jobs:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: "raw-coverage-${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+          path: .coverage
       - uses: alex/github-actions-coverage-merge@main
         with:
           mode: upload
