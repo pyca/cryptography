@@ -327,7 +327,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ outputs.setup-python.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1
         with:
