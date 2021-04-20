@@ -307,7 +307,7 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
-          - {VERSION: "3.9.2", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
         JOB_NUMBER: [0, 1, 2, 3]
@@ -315,19 +315,20 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
+      - name: Setup python
+        id: setup-python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          architecture: ${{ matrix.WINDOWS.ARCH }}
       - uses: actions/cache@v2.1.5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Setup python
-        uses: actions/setup-python@v2.2.2
-        with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: ${{ matrix.WINDOWS.ARCH }}
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
