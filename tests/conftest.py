@@ -38,7 +38,9 @@ def pytest_runtest_setup(item):
 @pytest.fixture()
 def backend(request):
     check_backend_support(openssl_backend, request)
-    return openssl_backend
+    yield openssl_backend
+    errors = openssl_backend._consume_errors()
+    assert not errors
 
 
 @pytest.fixture
