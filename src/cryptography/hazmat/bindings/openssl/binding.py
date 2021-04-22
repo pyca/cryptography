@@ -143,9 +143,10 @@ class Binding(object):
                 cls.lib.OpenSSL_add_all_algorithms()
                 cls._register_osrandom_engine()
                 # As of OpenSSL 3.0.0 we must register a legacy cipher provider
-                # to get RC2 (needed for junk asymmetric private key crypto),
-                # RC4, Blowfish, IDEA, SEED, etc. These things are ugly legacy,
-                # but we aren't going to get rid of them any time soon.
+                # to get RC2 (needed for junk asymmetric private key
+                # serialization), RC4, Blowfish, IDEA, SEED, etc. These things
+                # are ugly legacy, but we aren't going to get rid of them
+                # any time soon.
                 if cls.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
                     cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
                         cls.ffi.NULL, b"legacy"

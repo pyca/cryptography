@@ -2550,7 +2550,7 @@ class Backend(BackendInterface):
             # certificates.
             indices: typing.Iterable[int] = range(num)
             if not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                indices = reversed(range(num))
+                indices = reversed(indices)
 
             for i in indices:
                 x509 = self._lib.sk_X509_value(sk_x509, i)
