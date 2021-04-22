@@ -312,7 +312,15 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
 
 class OCSPRequestBuilder(object):
-    def __init__(self, request=None, extensions=[]):
+    def __init__(
+        self,
+        request: typing.Optional[
+            typing.Tuple[
+                x509.Certificate, x509.Certificate, hashes.HashAlgorithm
+            ]
+        ] = None,
+        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+    ) -> None:
         self._request = request
         self._extensions = extensions
 
