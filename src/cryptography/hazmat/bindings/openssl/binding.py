@@ -32,12 +32,6 @@ class _OpenSSLError(object):
     lib = utils.read_only_property("_lib")
     reason = utils.read_only_property("_reason")
 
-    def __repr__(self) -> str:
-        return (
-            "<_OpenSSLError(code={0.code!r}, lib={0.lib!r}, func={0.func!r}, "
-            "reason={0.reason!r})>".format(self)
-        )
-
 
 def _consume_errors(lib):
     errors = []
