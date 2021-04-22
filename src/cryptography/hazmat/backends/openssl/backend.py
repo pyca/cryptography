@@ -2548,9 +2548,11 @@ class Backend(BackendInterface):
 
             # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
             # certificates.
-            indices: typing.Iterable[int] = range(num)
-            if not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                indices = reversed(indices)
+            indices: typing.Iterable[int]
+            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                indices = range(num)
+            else:
+                indices = reversed(range(num))
 
             for i in indices:
                 x509 = self._lib.sk_X509_value(sk_x509, i)
