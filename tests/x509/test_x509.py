@@ -5,7 +5,6 @@
 
 
 import binascii
-import collections
 import copy
 import datetime
 import ipaddress
@@ -18,19 +17,7 @@ import pytz
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat._der import (
-    BIT_STRING,
-    CONSTRUCTED,
-    CONTEXT_SPECIFIC,
-    DERReader,
-    GENERALIZED_TIME,
-    INTEGER,
-    OBJECT_IDENTIFIER,
-    PRINTABLE_STRING,
-    SEQUENCE,
-    SET,
-    UTC_TIME,
-)
+from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
@@ -80,52 +67,6 @@ def _load_cert(filename, loader, backend):
         mode="rb",
     )
     return cert
-
-
-ParsedCertificate = collections.namedtuple(
-    "ParsedCertificate",
-    ["not_before_tag", "not_after_tag", "issuer", "subject"],
-)
-
-
-def _parse_cert(der):
-    # See the Certificate structured, defined in RFC 5280.
-    with DERReader(der).read_single_element(SEQUENCE) as cert:
-        tbs_cert = cert.read_element(SEQUENCE)
-        # Skip outer signature algorithm
-        _ = cert.read_element(SEQUENCE)
-        # Skip signature
-        _ = cert.read_element(BIT_STRING)
-
-    with tbs_cert:
-        # Skip version
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 0)
-        # Skip serialNumber
-        _ = tbs_cert.read_element(INTEGER)
-        # Skip inner signature algorithm
-        _ = tbs_cert.read_element(SEQUENCE)
-        issuer = tbs_cert.read_element(SEQUENCE)
-        validity = tbs_cert.read_element(SEQUENCE)
-        subject = tbs_cert.read_element(SEQUENCE)
-        # Skip subjectPublicKeyInfo
-        _ = tbs_cert.read_element(SEQUENCE)
-        # Skip issuerUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | 1)
-        # Skip subjectUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | 2)
-        # Skip extensions
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
-
-    with validity:
-        not_before_tag, _ = validity.read_any_element()
-        not_after_tag, _ = validity.read_any_element()
-
-    return ParsedCertificate(
-        not_before_tag=not_before_tag,
-        not_after_tag=not_after_tag,
-        issuer=issuer,
-        subject=subject,
-    )
 
 
 class TestCertificateRevocationList(object):
@@ -1788,29 +1729,19 @@ class TestRSACertificateRequest(object):
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        subject = parsed.subject
-        issuer = parsed.issuer
-
-        def read_next_rdn_value_tag(reader):
-            # Assume each RDN has a single attribute.
-            with reader.read_element(SET) as rdn:
-                attribute = rdn.read_element(SEQUENCE)
-
-            with attribute:
-                _ = attribute.read_element(OBJECT_IDENTIFIER)
-                tag, value = attribute.read_any_element()
-                return tag
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
 
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
-        assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
-        assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
+        assert parsed.issuer_value_tags[0] == 0x13
+        assert parsed.subject_value_tags[0] == 0x13
         if (
             # This only works correctly in OpenSSL 1.1.0f+
             backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
         ):
-            assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
-            assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
+            assert parsed.issuer_value_tags[1] == 0x13
+            assert parsed.subject_value_tags[1] == 0x13
 
 
 class TestCertificateBuilder(object):
@@ -1971,9 +1902,13 @@ class TestCertificateBuilder(object):
         cert = builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed.not_before_tag == UTC_TIME
-        assert parsed.not_after_tag == GENERALIZED_TIME
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        # UTC TIME
+        assert parsed.not_before_tag == 0x17
+        # GENERALIZED TIME
+        assert parsed.not_after_tag == 0x18
 
     def test_no_subject_name(self, backend):
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -2237,9 +2172,12 @@ class TestCertificateBuilder(object):
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_before == time
         assert cert.not_valid_after == time
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed.not_before_tag == UTC_TIME
-        assert parsed.not_after_tag == UTC_TIME
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        # UTC TIME
+        assert parsed.not_before_tag == 0x17
+        assert parsed.not_after_tag == 0x17
 
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):

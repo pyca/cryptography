@@ -179,6 +179,93 @@ fn encode_dss_signature(
     Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
 }
 
+#[pyo3::prelude::pyclass]
+struct TestCertificate {
+    #[pyo3(get)]
+    not_before_tag: u8,
+    #[pyo3(get)]
+    not_after_tag: u8,
+    #[pyo3(get)]
+    issuer_value_tags: Vec<u8>,
+    #[pyo3(get)]
+    subject_value_tags: Vec<u8>,
+}
+
+fn parse_name_value_tags(p: &mut asn1::Parser) -> asn1::ParseResult<Vec<u8>> {
+    let mut tags = vec![];
+    for rdn in p.read_element::<asn1::SequenceOf<asn1::SetOf<asn1::Sequence>>>()? {
+        let mut attributes = rdn?.collect::<asn1::ParseResult<Vec<_>>>()?;
+        assert_eq!(attributes.len(), 1);
+
+        let tag = attributes
+            .pop()
+            .unwrap()
+            .parse::<_, asn1::ParseError, _>(|p| {
+                p.read_element::<asn1::ObjectIdentifier>()?;
+                let tlv = p.read_element::<asn1::Tlv>()?;
+                Ok(tlv.tag())
+            })?;
+        tags.push(tag);
+    }
+    Ok(tags)
+}
+
+#[pyo3::prelude::pyfunction]
+fn test_parse_certificate(data: &[u8]) -> pyo3::PyResult<TestCertificate> {
+    let result = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
+        // Outer SEQUENCE
+        p.read_element::<asn1::Sequence>()?.parse(|p| {
+            // TBS certificate
+            let result = p
+                .read_element::<asn1::Sequence>()?
+                .parse::<_, PyAsn1Error, _>(|p| {
+                    // Version
+                    p.read_optional_explicit_element::<u8>(0)?;
+                    // Serial number
+                    p.read_element::<asn1::BigUint>()?;
+                    // Inner signature algorithm
+                    p.read_element::<asn1::Sequence>()?;
+
+                    // Issuer
+                    let issuer_value_tags = parse_name_value_tags(p)?;
+                    // Validity
+                    let (not_before_tag, not_after_tag) = p
+                        .read_element::<asn1::Sequence>()?
+                        .parse::<_, asn1::ParseError, _>(|p| {
+                        let not_before_tag = p.read_element::<asn1::Tlv>()?.tag();
+                        let not_after_tag = p.read_element::<asn1::Tlv>()?.tag();
+                        Ok((not_before_tag, not_after_tag))
+                    })?;
+                    // Subject
+                    let subject_value_tags = parse_name_value_tags(p)?;
+
+                    // Subject public key info
+                    p.read_element::<asn1::Sequence>()?;
+                    // Issuer unique ID - never used in the real world
+                    p.read_optional_implicit_element::<asn1::BitString>(1)?;
+                    // Subject unique ID - never used in the real world
+                    p.read_optional_implicit_element::<asn1::BitString>(2)?;
+                    // Extensions
+                    p.read_optional_explicit_element::<asn1::Sequence>(3)?;
+
+                    Ok(TestCertificate {
+                        not_before_tag,
+                        not_after_tag,
+                        issuer_value_tags,
+                        subject_value_tags,
+                    })
+                })?;
+            // Outer signature algorithm
+            p.read_element::<asn1::Sequence>()?;
+            // Signature
+            p.read_element::<asn1::BitString>()?;
+            Ok(result)
+        })
+    })?;
+
+    Ok(result)
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
@@ -189,6 +276,8 @@ pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelud
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_dss_signature))?;
+
+    submod.add_wrapped(pyo3::wrap_pyfunction!(test_parse_certificate))?;
 
     Ok(submod)
 }
