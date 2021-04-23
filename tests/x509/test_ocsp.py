@@ -106,6 +106,19 @@ class TestOCSPRequest(object):
             b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd"
         )
 
+    def test_load_request_with_unknown_extension(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "req-ext-unknown-oid.der"),
+            ocsp.load_der_ocsp_request,
+        )
+        assert len(req.extensions) == 1
+        ext = req.extensions[0]
+        assert ext.critical is False
+        assert ext.value == x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.48.1.2213"),
+            b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd",
+        )
+
     def test_load_request_two_requests(self):
         with pytest.raises(NotImplementedError):
             _load_data(

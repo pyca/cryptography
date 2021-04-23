@@ -551,6 +551,8 @@ Custom X.509 OCSP Test Vectors
   invalid hash algorithm OID.
 * ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
   extension.
+* ``x509/ocsp/req-ext-unknown-oid.der`` - An OCSP request containing an
+  extension with an unknown OID.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
