@@ -370,7 +370,7 @@ class OCSPResponseBuilder(object):
         responder_id: typing.Optional[
             typing.Tuple[x509.Certificate, OCSPResponderEncoding]
         ] = None,
-        certs: typing.Optional[typing.Iterable[x509.Certificate]] = None,
+        certs: typing.Optional[typing.List[x509.Certificate]] = None,
         extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
     ):
         self._response = response
