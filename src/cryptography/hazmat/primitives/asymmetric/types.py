@@ -13,14 +13,14 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 
 
-_PUBLIC_KEY_TYPES = typing.Union[
+PUBLIC_KEY_TYPES = typing.Union[
     dsa.DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
 ]
-_PRIVATE_KEY_TYPES = typing.Union[
+PRIVATE_KEY_TYPES = typing.Union[
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
     rsa.RSAPrivateKey,

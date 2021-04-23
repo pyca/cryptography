@@ -11,8 +11,8 @@ from enum import Enum
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.base import (
+    PRIVATE_KEY_TYPES,
     _EARLIEST_UTC_TIME,
-    _PRIVATE_KEY_TYPES,
     _convert_to_naive_utc_time,
     _reject_duplicate_extension,
 )
@@ -457,7 +457,7 @@ class OCSPResponseBuilder(object):
 
     def sign(
         self,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
         from cryptography.hazmat.backends.openssl.backend import backend

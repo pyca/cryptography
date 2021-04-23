@@ -12,7 +12,6 @@ from contextlib import contextmanager
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
 from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
@@ -108,6 +107,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
     PSS,
 )
+from cryptography.hazmat.primitives.asymmetric.types import PRIVATE_KEY_TYPES
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -895,7 +895,7 @@ class Backend(BackendInterface):
     def create_x509_csr(
         self,
         builder: x509.CertificateSigningRequestBuilder,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> _CertificateSigningRequest:
         if not isinstance(builder, x509.CertificateSigningRequestBuilder):
@@ -976,7 +976,7 @@ class Backend(BackendInterface):
     def create_x509_certificate(
         self,
         builder: x509.CertificateBuilder,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> _Certificate:
         if not isinstance(builder, x509.CertificateBuilder):
@@ -1078,7 +1078,7 @@ class Backend(BackendInterface):
     def create_x509_crl(
         self,
         builder: x509.CertificateRevocationListBuilder,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> _CertificateRevocationList:
         if not isinstance(builder, x509.CertificateRevocationListBuilder):

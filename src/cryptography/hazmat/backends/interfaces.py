@@ -8,7 +8,9 @@ import typing
 
 
 if typing.TYPE_CHECKING:
-    from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
+    from cryptography.hazmat.primitives.asymmetric.types import (
+        PRIVATE_KEY_TYPES,
+    )
     from cryptography.hazmat.primitives import hashes
     from cryptography.x509.base import (
         Certificate,
@@ -306,7 +308,7 @@ class X509Backend(metaclass=abc.ABCMeta):
     def create_x509_csr(
         self,
         builder: "CertificateSigningRequestBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
+        private_key: "PRIVATE_KEY_TYPES",
         algorithm: typing.Optional["hashes.HashAlgorithm"],
     ) -> "CertificateSigningRequest":
         """
@@ -317,7 +319,7 @@ class X509Backend(metaclass=abc.ABCMeta):
     def create_x509_certificate(
         self,
         builder: "CertificateBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
+        private_key: "PRIVATE_KEY_TYPES",
         algorithm: typing.Optional["hashes.HashAlgorithm"],
     ) -> "Certificate":
         """
@@ -328,7 +330,7 @@ class X509Backend(metaclass=abc.ABCMeta):
     def create_x509_crl(
         self,
         builder: "CertificateRevocationListBuilder",
-        private_key: "_PRIVATE_KEY_TYPES",
+        private_key: "PRIVATE_KEY_TYPES",
         algorithm: typing.Optional["hashes.HashAlgorithm"],
     ) -> "CertificateRevocationList":
         """

@@ -22,7 +22,7 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _txt2obj_gc,
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.x509.base import _PUBLIC_KEY_TYPES
+from cryptography.x509.base import PUBLIC_KEY_TYPES
 from cryptography.x509.name import _ASN1Type
 
 
@@ -76,7 +76,7 @@ class _Certificate(x509.Certificate):
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
         return _asn1_integer_to_int(self._backend, asn1_int)
 
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
+    def public_key(self) -> PUBLIC_KEY_TYPES:
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
         if pkey == self._backend._ffi.NULL:
             # Remove errors from the stack.
@@ -360,7 +360,7 @@ class _CertificateRevocationList(x509.CertificateRevocationList):
     def extensions(self) -> x509.Extensions:
         return self._backend._crl_extension_parser.parse(self._x509_crl)
 
-    def is_signature_valid(self, public_key: _PUBLIC_KEY_TYPES) -> bool:
+    def is_signature_valid(self, public_key: PUBLIC_KEY_TYPES) -> bool:
         if not isinstance(
             public_key,
             (
@@ -403,7 +403,7 @@ class _CertificateSigningRequest(x509.CertificateSigningRequest):
     def __hash__(self) -> int:
         return hash(self.public_bytes(serialization.Encoding.DER))
 
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
+    def public_key(self) -> PUBLIC_KEY_TYPES:
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
         self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
