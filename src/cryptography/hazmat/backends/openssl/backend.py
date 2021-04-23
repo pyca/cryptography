@@ -1285,6 +1285,11 @@ class Backend(BackendInterface):
     def _evp_pkey_from_der_traditional_key(self, bio_data, password):
         key = self._lib.d2i_PrivateKey_bio(bio_data.bio, self._ffi.NULL)
         if key != self._ffi.NULL:
+            # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
+            # successfully load but errors are still put on the stack. Tracked
+            # as https://github.com/openssl/openssl/issues/14996
+            self._consume_errors()
+
             key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
                 raise TypeError(
@@ -1452,6 +1457,11 @@ class Backend(BackendInterface):
             else:
                 self._handle_key_loading_error()
 
+        # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
+        # successfully load but errors are still put on the stack. Tracked
+        # as https://github.com/openssl/openssl/issues/14996
+        self._consume_errors()
+
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
         if password is not None and userdata.called == 0:
@@ -1474,11 +1484,22 @@ class Backend(BackendInterface):
                 "incorrect format or it may be encrypted with an unsupported "
                 "algorithm."
             )
-        elif errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
-        ) or errors[0]._lib_reason_match(
-            self._lib.ERR_LIB_PKCS12,
-            self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
+
+        elif (
+            errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
+            )
+            or errors[0]._lib_reason_match(
+                self._lib.ERR_LIB_PKCS12,
+                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
+            )
+            or (
+                self._lib.Cryptography_HAS_PROVIDERS
+                and errors[0]._lib_reason_match(
+                    self._lib.ERR_LIB_PROV,
+                    self._lib.PROV_R_BAD_DECRYPT,
+                )
+            )
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 
@@ -2524,9 +2545,16 @@ class Backend(BackendInterface):
         if sk_x509_ptr[0] != self._ffi.NULL:
             sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
             num = self._lib.sk_X509_num(sk_x509_ptr[0])
+
             # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
             # certificates.
-            for i in reversed(range(num)):
+            indices: typing.Iterable[int]
+            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                indices = range(num)
+            else:
+                indices = reversed(range(num))
+
+            for i in indices:
                 x509 = self._lib.sk_X509_value(sk_x509, i)
                 self.openssl_assert(x509 != self._ffi.NULL)
                 x509 = self._ffi.gc(x509, self._lib.X509_free)

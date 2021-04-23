@@ -256,6 +256,16 @@ def cryptography_has_get_proto_version():
     ]
 
 
+def cryptography_has_providers():
+    return [
+        "OSSL_PROVIDER_load",
+        "OSSL_PROVIDER_unload",
+        "ERR_LIB_PROV",
+        "PROV_R_WRONG_FINAL_BLOCK_LENGTH",
+        "PROV_R_BAD_DECRYPT",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -303,4 +313,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
     "Cryptography_HAS_GET_PROTO_VERSION": cryptography_has_get_proto_version,
+    "Cryptography_HAS_PROVIDERS": cryptography_has_providers,
 }
