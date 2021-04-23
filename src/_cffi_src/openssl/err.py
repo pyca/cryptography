@@ -18,6 +18,7 @@ static const int EVP_R_UNKNOWN_PBE_ALGORITHM;
 
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PEM;
+static const int ERR_LIB_PROV;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_PKCS12;
 
@@ -45,4 +46,9 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
+/* This define is tied to provider support and is conditionally
+   removed if Cryptography_HAS_PROVIDERS is false */
+#ifndef ERR_LIB_PROV
+#define ERR_LIB_PROV 0
+#endif
 """

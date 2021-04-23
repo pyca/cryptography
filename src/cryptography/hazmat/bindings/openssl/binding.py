@@ -113,6 +113,8 @@ class Binding(object):
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
+    _legacy_provider: typing.Any = None
+    _default_provider: typing.Any = None
 
     def __init__(self):
         self._ensure_ffi_initialized()
@@ -140,6 +142,24 @@ class Binding(object):
                 # adds all ciphers/digests for EVP
                 cls.lib.OpenSSL_add_all_algorithms()
                 cls._register_osrandom_engine()
+                # As of OpenSSL 3.0.0 we must register a legacy cipher provider
+                # to get RC2 (needed for junk asymmetric private key
+                # serialization), RC4, Blowfish, IDEA, SEED, etc. These things
+                # are ugly legacy, but we aren't going to get rid of them
+                # any time soon.
+                if cls.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                    cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
+                        cls.ffi.NULL, b"legacy"
+                    )
+                    _openssl_assert(
+                        cls.lib, cls._legacy_provider != cls.ffi.NULL
+                    )
+                    cls._default_provider = cls.lib.OSSL_PROVIDER_load(
+                        cls.ffi.NULL, b"default"
+                    )
+                    _openssl_assert(
+                        cls.lib, cls._default_provider != cls.ffi.NULL
+                    )
 
     @classmethod
     def init_static_locks(cls):

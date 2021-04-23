@@ -104,6 +104,7 @@ ffi = build_ffi_for_binding(
         "osrandom_engine",
         "pem",
         "pkcs12",
+        "provider",
         "rand",
         "rsa",
         "ssl",
