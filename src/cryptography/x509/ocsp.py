@@ -365,7 +365,13 @@ class OCSPRequestBuilder(object):
 
 class OCSPResponseBuilder(object):
     def __init__(
-        self, response=None, responder_id=None, certs=None, extensions=[]
+        self,
+        response: typing.Optional[_SingleResponse] = None,
+        responder_id: typing.Optional[
+            typing.Tuple[x509.Certificate, OCSPResponderEncoding]
+        ] = None,
+        certs: typing.Optional[typing.List[x509.Certificate]] = None,
+        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
     ):
         self._response = response
         self._responder_id = responder_id
