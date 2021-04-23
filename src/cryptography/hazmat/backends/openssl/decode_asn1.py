@@ -178,10 +178,14 @@ def _decode_delta_crl_indicator(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, backend, ext_count, get_ext, handlers):
+    def __init__(
+        self, backend, ext_count, get_ext, handlers=None, rust_callback=None
+    ):
+        assert handlers or rust_callback
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
+        self.rust_callback = rust_callback
         self._backend = backend
 
     def parse(self, x509_obj):
@@ -202,6 +206,19 @@ class _X509ExtensionParser(object):
                 raise x509.DuplicateExtension(
                     "Duplicate {} extension found".format(oid), oid
                 )
+
+            if self.rust_callback is not None:
+                oid_ptr = self._backend._lib.X509_EXTENSION_get_object(ext)
+                oid_der_bytes = self._backend._ffi.buffer(
+                    self._backend._lib.Cryptography_OBJ_get0_data(oid_ptr),
+                    self._backend._lib.Cryptography_OBJ_length(oid_ptr),
+                )[:]
+                data = self._backend._lib.X509_EXTENSION_get_data(ext)
+                data_bytes = _asn1_string_to_bytes(self._backend, data)
+                ext = self.rust_callback(oid_der_bytes, data_bytes)
+                extensions.append(x509.Extension(oid, critical, ext))
+                seen_oids.add(oid)
+                continue
 
             # These OIDs are only supported in OpenSSL 1.1.0+ but we want
             # to support them in all versions of OpenSSL so we decode them
@@ -852,10 +869,6 @@ _CRL_EXTENSION_HANDLERS = {
     ),
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-}
-
-_OCSP_REQ_EXTENSION_HANDLERS = {
-    OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
 _OCSP_BASICRESP_EXTENSION_HANDLERS = {
