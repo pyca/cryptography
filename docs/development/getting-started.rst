@@ -26,12 +26,6 @@ install them manually by using ``pip`` on each directory.
 You will also need to install ``enchant`` using your system's package manager
 to check spelling in the documentation.
 
-.. note::
-    There is an upstream bug in ``enchant`` that prevents its installation on
-    Windows with 64-bit Python. See `this Github issue`_ for more information.
-    The easiest workaround is to use 32-bit Python for ``cryptography``
-    development, even on 64-bit Windows.
-
 You are now ready to run the tests and build the documentation.
 
 OpenSSL on macOS
@@ -115,4 +109,3 @@ The HTML documentation index can now be found at
 .. _`pip`: https://pypi.org/project/pip/
 .. _`sphinx`: https://pypi.org/project/Sphinx/
 .. _`reStructured Text`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-.. _`this Github issue`: https://github.com/rfk/pyenchant/issues/42
