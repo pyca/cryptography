@@ -348,5 +348,5 @@ build ``cryptography``, but not afterwards.
 .. _`a binary distribution`: https://wiki.openssl.org/index.php/Binaries
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://www.openssl.org/source/
-.. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
+.. _`wheel cache`: https://pip.pypa.io/en/stable/cli/pip_install/#caching
 .. _`the Rust Project's website`: https://www.rust-lang.org/tools/install
