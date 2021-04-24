@@ -23,7 +23,6 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _EXTENSION_HANDLERS_BASE,
     _EXTENSION_HANDLERS_SCT,
     _OCSP_BASICRESP_EXTENSION_HANDLERS,
-    _OCSP_REQ_EXTENSION_HANDLERS,
     _OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT,
     _REVOKED_EXTENSION_HANDLERS,
     _X509ExtensionParser,
@@ -426,7 +425,7 @@ class Backend(BackendInterface):
             self,
             ext_count=self._lib.OCSP_REQUEST_get_ext_count,
             get_ext=self._lib.OCSP_REQUEST_get_ext,
-            handlers=_OCSP_REQ_EXTENSION_HANDLERS,
+            rust_callback=asn1.parse_ocsp_req_extension,
         )
         self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
             self,

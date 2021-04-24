@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "asn1"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e73776acd44522682c2f4f7a2a316c038e318796bf5a720679a21b892e3c7a8"
+checksum = "842b2cc51640a5737c94248d328936d11f53ea8080e3fdba6ba523b41fa6ea15"
 dependencies = [
  "chrono",
 ]
@@ -44,6 +44,7 @@ name = "cryptography-rust"
 version = "0.1.0"
 dependencies = [
  "asn1",
+ "lazy_static",
  "pyo3",
 ]
 
@@ -121,6 +122,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"

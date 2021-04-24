@@ -26,7 +26,27 @@ int OBJ_sn2nid(const char *);
 int OBJ_txt2nid(const char *);
 ASN1_OBJECT *OBJ_txt2obj(const char *, int);
 int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
+
+const unsigned char *Cryptography_OBJ_get0_data(const ASN1_OBJECT *);
+size_t Cryptography_OBJ_length(const ASN1_OBJECT *);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_IS_LIBRESSL
+const unsigned char *Cryptography_OBJ_get0_data(const ASN1_OBJECT *a) {
+    return a->data;
+}
+
+size_t Cryptography_OBJ_length(const ASN1_OBJECT *a) {
+    return a->length;
+}
+#else
+const unsigned char *Cryptography_OBJ_get0_data(const ASN1_OBJECT *a) {
+    return OBJ_get0_data(a);
+}
+
+size_t Cryptography_OBJ_length(const ASN1_OBJECT *a) {
+    return OBJ_length(a);
+}
+#endif
 """
