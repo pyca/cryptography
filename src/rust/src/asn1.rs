@@ -141,7 +141,7 @@ fn parse_ocsp_req_extension(
         // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
         // nonce is an OCTET STRING, and so you should unwrap the TLV to get
         // the nonce. For now we just implement the old behavior, even though
-        // its deranged.
+        // it's deranged.
         Ok(x509_module
             .call_method1("OCSPNonce", (ext_data,))?
             .to_object(py))
