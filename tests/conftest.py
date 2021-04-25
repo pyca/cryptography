@@ -11,6 +11,11 @@ from .utils import check_backend_support
 
 
 def pytest_report_header(config):
+    # Performed in this function to enable it before any test collection
+    # and before the information about FIPS is printed
+    if config.getoption("--enable-fips"):
+        enable_fips()
+
     return "\n".join(
         [
             "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
@@ -21,6 +26,7 @@ def pytest_report_header(config):
 
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
+    parser.addoption("--enable-fips", default=False)
 
 
 def pytest_runtest_setup(item):
@@ -42,3 +48,29 @@ def disable_rsa_checks(backend):
     backend._rsa_skip_check_key = True
     yield
     backend._rsa_skip_check_key = False
+
+
+def enable_fips():
+    openssl_backend._lib._base_provider = (
+        openssl_backend._lib.OSSL_PROVIDER_load(
+            openssl_backend._ffi.NULL, b"base"
+        )
+    )
+    openssl_backend.openssl_assert(
+        openssl_backend._lib._base_provider != openssl_backend._ffi.NULL
+    )
+    openssl_backend._lib._fips_provider = (
+        openssl_backend._lib.OSSL_PROVIDER_load(
+            openssl_backend._ffi.NULL, b"fips"
+        )
+    )
+    openssl_backend.openssl_assert(
+        openssl_backend._lib._fips_provider != openssl_backend._ffi.NULL
+    )
+
+    res = openssl_backend._lib.EVP_default_properties_enable_fips(
+        openssl_backend._ffi.NULL, 1
+    )
+    openssl_backend.openssl_assert(res == 1)
+    assert openssl_backend._is_fips_enabled()
+    openssl_backend._fips_enabled = openssl_backend._is_fips_enabled()

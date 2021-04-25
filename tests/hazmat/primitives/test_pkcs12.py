@@ -22,6 +22,9 @@ from .utils import load_vectors_from_file
 from ...doubles import DummyKeySerializationEncryption
 
 
+@pytest.mark.skip_fips(
+    reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
+)
 class TestPKCS12Loading(object):
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
@@ -70,7 +73,6 @@ class TestPKCS12Loading(object):
         only_if=lambda backend: backend.cipher_supported(_RC2(), None),
         skip_message="Does not support RC2",
     )
-    @pytest.mark.skip_fips(reason="Unsupported algorithm in FIPS mode")
     def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
@@ -167,6 +169,9 @@ def _load_ca(backend):
     return cert, key
 
 
+@pytest.mark.skip_fips(
+    reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
+)
 class TestPKCS12Creation(object):
     @pytest.mark.parametrize("name", [None, b"name"])
     @pytest.mark.parametrize(
@@ -275,6 +280,9 @@ class TestPKCS12Creation(object):
         assert str(exc.value) == "Unsupported key encryption type"
 
 
+@pytest.mark.skip_fips(
+    reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
+)
 def test_pkcs12_ordering():
     """
     In OpenSSL < 3.0.0 PKCS12 parsing reverses the order. However, we

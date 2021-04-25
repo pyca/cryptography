@@ -52,8 +52,19 @@ def _skip_fips_format(key_path, password, backend):
     if backend._fips_enabled:
         if key_path[0] == "Traditional_OpenSSL_Serialization":
             pytest.skip("Traditional OpenSSL format blocked in FIPS mode")
-        if key_path[0] == "PEM_Serialization" and password is not None:
-            pytest.skip("Encrypted PEM_Serialization blocked in FIPS mode")
+        if (
+            key_path[0] in ("PEM_Serialization", "PKCS8")
+            and password is not None
+        ):
+            pytest.skip(
+                "The encrypted PEM vectors currently have encryption "
+                "that is not FIPS approved in the 3.0 provider"
+            )
+        if key_path[0] == "DER_Serialization" and password is not None:
+            pytest.skip(
+                "The encrypted PKCS8 DER vectors currently have encryption "
+                "that is not FIPS approved in the 3.0 provider"
+            )
 
 
 class TestBufferProtocolSerialization(object):
@@ -67,6 +78,7 @@ class TestBufferProtocolSerialization(object):
         ],
     )
     def test_load_der_rsa_private_key(self, key_path, password, backend):
+        _skip_fips_format(key_path, password, backend)
         data = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda derfile: derfile.read(),
@@ -117,6 +129,7 @@ class TestDERSerialization(object):
         ],
     )
     def test_load_der_rsa_private_key(self, key_path, password, backend):
+        _skip_fips_format(key_path, password, backend)
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda derfile: load_der_private_key(
@@ -814,6 +827,7 @@ class TestPEMSerialization(object):
         with pytest.raises(ValueError):
             load_pem_private_key(key_data, password, backend)
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_rsa_pkcs8_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),

@@ -254,6 +254,13 @@ def cryptography_has_dtls_get_data_mtu():
     ]
 
 
+def cryptography_has_300_fips():
+    return [
+        "EVP_default_properties_is_fips_enabled",
+        "EVP_default_properties_enable_fips",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -305,4 +312,5 @@ CONDITIONAL_NAMES = {
         cryptography_has_op_no_renegotiation
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
+    "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
 }

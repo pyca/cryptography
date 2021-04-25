@@ -22,6 +22,21 @@ if [[ "${TYPE}" == "openssl" ]]; then
   # avoid installing the docs (for performance)
   # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
   make install_sw install_ssldirs
+  # For OpenSSL 3.0.0 set up the FIPS config. This does not activate it by
+  # default, but allows programmatic activation at runtime
+  if [[ "${VERSION}" =~ 3.0.0 && "${CONFIG_FLAGS}" =~ enable-fips ]]; then
+      # As of alpha16 we have to install it separately and enable it in the config flags
+      make -j"$(nproc)" install_fips
+      pushd "${OSSL_PATH}"
+      # TODO: remove if the build passes without it. install_fips probably does this now
+      # # generate FIPS config
+      # LD_LIBRARY_PATH="${OSSL_PATH}/lib" ./bin/openssl fipsinstall -out ssl/fipsmodule.cnf -module lib/ossl-modules/fips.so
+      # include the conf file we just generated
+      sed -i "s:# .include fipsmodule.cnf:.include $(pwd)/ssl/fipsmodule.cnf:" ssl/openssl.cnf
+      # uncomment the FIPS section
+      sed -i 's:# fips = fips_sect:fips = fips_sect:' ssl/openssl.cnf
+      popd
+  fi
   popd
 elif [[ "${TYPE}" == "libressl" ]]; then
   curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"

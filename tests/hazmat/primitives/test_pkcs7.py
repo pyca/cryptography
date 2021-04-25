@@ -126,6 +126,10 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
             p7, backend._ffi.NULL, store, msg_bio.bio, backend._ffi.NULL, flags
         )
     backend.openssl_assert(res == 1)
+    # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
+    # successfully load but errors are still put on the stack. Tracked
+    # as https://github.com/openssl/openssl/issues/14996
+    backend._consume_errors()
 
 
 def _load_cert_key():
@@ -335,6 +339,9 @@ class TestPKCS7Builder(object):
     def test_sign_alternate_digests_der(
         self, hash_alg, expected_value, backend
     ):
+        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -358,7 +365,12 @@ class TestPKCS7Builder(object):
             (hashes.SHA512(), b"sha-512"),
         ],
     )
-    def test_sign_alternate_digests_detached(self, hash_alg, expected_value):
+    def test_sign_alternate_digests_detached(
+        self, hash_alg, expected_value, backend
+    ):
+        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
