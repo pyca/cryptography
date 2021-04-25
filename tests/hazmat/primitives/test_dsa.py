@@ -10,6 +10,7 @@ import typing
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -36,12 +37,20 @@ _ALGORITHMS_DICT: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
 }
 
 
-def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
+def _skip_if_dsa_not_supported(
+    backend: Backend,
+    algorithm: hashes.HashAlgorithm,
+    p: int,
+    q: int,
+    g: int,
+) -> None:
     if not backend.dsa_parameters_supported(
         p, q, g
     ) or not backend.dsa_hash_supported(algorithm):
         pytest.skip(
-            "{} does not support the provided parameters".format(backend)
+            "{} does not support the provided args. p: {}, hash: {}".format(
+                backend, p.bit_length(), algorithm.name
+            )
         )
 
 
@@ -388,7 +397,7 @@ class TestDSAVerification(object):
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = _ALGORITHMS_DICT[digest_algorithm]
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]()
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
@@ -404,9 +413,9 @@ class TestDSAVerification(object):
 
                 if vector["result"] == "F":
                     with pytest.raises(InvalidSignature):
-                        public_key.verify(sig, vector["msg"], algorithm())
+                        public_key.verify(sig, vector["msg"], algorithm)
                 else:
-                    public_key.verify(sig, vector["msg"], algorithm())
+                    public_key.verify(sig, vector["msg"], algorithm)
 
     def test_dsa_verify_invalid_asn1(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
@@ -490,7 +499,7 @@ class TestDSASignature(object):
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = _ALGORITHMS_DICT[digest_algorithm]
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]()
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
@@ -505,11 +514,11 @@ class TestDSASignature(object):
                     ),
                     x=vector["x"],
                 ).private_key(backend)
-                signature = private_key.sign(vector["msg"], algorithm())
+                signature = private_key.sign(vector["msg"], algorithm)
                 assert signature
 
                 private_key.public_key().verify(
-                    signature, vector["msg"], algorithm()
+                    signature, vector["msg"], algorithm
                 )
 
     def test_use_after_finalize(self, backend):
