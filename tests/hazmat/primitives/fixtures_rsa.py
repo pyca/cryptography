@@ -40,37 +40,6 @@ RSA_KEY_512 = RSAPrivateNumbers(
     ),
 )
 
-RSA_KEY_512_ALT = RSAPrivateNumbers(
-    p=int(
-        "febe19c29a0b50fefa4f7b1832f84df1caf9be8242da25c9d689e18226e67ce5", 16
-    ),
-    q=int(
-        "eb616c639dd999feda26517e1c77b6878f363fe828c4e6670ec1787f28b1e731", 16
-    ),
-    d=int(
-        "80edecfde704a806445a4cc782b85d3f36f17558f385654ea767f006470fdfcbda5e2"
-        "206839289d3f419b4e4fb8e1acee1b4fb9c591f69b64ec83937f5829241",
-        16,
-    ),
-    dmp1=int(
-        "7f4fa06e2a3077a54691cc5216bf13ad40a4b9fa3dd0ea4bca259487484baea5", 16
-    ),
-    dmq1=int(
-        "35eaa70d5a8711c352ed1c15ab27b0e3f46614d575214535ae279b166597fac1", 16
-    ),
-    iqmp=int(
-        "cc1f272de6846851ec80cb89a02dbac78f44b47bc08f53b67b4651a3acde8b19", 16
-    ),
-    public_numbers=RSAPublicNumbers(
-        e=65537,
-        n=int(
-            "ea397388b999ef0f7e7416fa000367efd9a0ba0deddd3f8160d1c36d62267f210"
-            "fbd9c97abeb6654450ff03e7601b8caa6c6f4cba18f0b52c179d17e8f258ad5",
-            16,
-        ),
-    ),
-)
-
 RSA_KEY_522 = RSAPrivateNumbers(
     p=int(
         "1a8aab9a069f92b52fdf05824f2846223dc27adfc806716a247a77d4c36885e4bf",
@@ -187,49 +156,6 @@ RSA_KEY_745 = RSAPrivateNumbers(
             "1bd085f92237774d34013b477ceebbb2f2feca71118db9b7429341477947e7b1d"
             "04e8c43ede3c52bb25781af58d4ff81289f301eac62dc3bcd7dafd7a4d5304e9f"
             "308e766952fbf2b62373e66611fa53189987dbef9f7243dcbbeb25831",
-            16,
-        ),
-    ),
-)
-
-RSA_KEY_768 = RSAPrivateNumbers(
-    p=int(
-        "f80c0061b607f93206b68e208906498d68c6e396faf457150cf975c8f849848465869"
-        "7ecd402313397088044c4c2071b",
-        16,
-    ),
-    q=int(
-        "e5b5dbecc93c6d306fc14e6aa9737f9be2728bc1a326a8713d2849b34c1cb54c63468"
-        "3a68abb1d345dbf15a3c492cf55",
-        16,
-    ),
-    d=int(
-        "d44601442255ffa331212c60385b5e898555c75c0272632ff42d57c4b16ca97dbca9f"
-        "d6d99cd2c9fd298df155ed5141b4be06c651934076133331d4564d73faed7ce98e283"
-        "2f7ce3949bc183be7e7ca34f6dd04a9098b6c73649394b0a76c541",
-        16,
-    ),
-    dmp1=int(
-        "a5763406fa0b65929661ce7b2b8c73220e43a5ebbfe99ff15ddf464fd238105ad4f2a"
-        "c83818518d70627d8908703bb03",
-        16,
-    ),
-    dmq1=int(
-        "cb467a9ef899a39a685aecd4d0ad27b0bfdc53b68075363c373d8eb2bed8eccaf3533"
-        "42f4db735a9e087b7539c21ba9d",
-        16,
-    ),
-    iqmp=int(
-        "5fe86bd3aee0c4d09ef11e0530a78a4534c9b833422813b5c934a450c8e564d8097a0"
-        "6fd74f1ebe2d5573782093f587a",
-        16,
-    ),
-    public_numbers=RSAPublicNumbers(
-        e=65537,
-        n=int(
-            "de92f1eb5f4abf426b6cac9dd1e9bf57132a4988b4ed3f8aecc15e251028bd6df"
-            "46eb97c711624af7db15e6430894d1b640c13929329241ee094f5a4fe1a20bc9b"
-            "75232320a72bc567207ec54d6b48dccb19737cf63acc1021abb337f19130f7",
             16,
         ),
     ),
