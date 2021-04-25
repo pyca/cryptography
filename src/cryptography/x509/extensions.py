@@ -10,11 +10,11 @@ import ipaddress
 import typing
 from enum import Enum
 
-from cryptography.hazmat._types import _PUBLIC_KEY_TYPES
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from cryptography.hazmat.primitives.asymmetric.types import PUBLIC_KEY_TYPES
 from cryptography.x509.certificate_transparency import (
     SignedCertificateTimestamp,
 )
@@ -40,7 +40,7 @@ from cryptography.x509.oid import (
 ExtensionTypeVar = typing.TypeVar("ExtensionTypeVar", bound="ExtensionType")
 
 
-def _key_identifier_from_public_key(public_key: _PUBLIC_KEY_TYPES) -> bytes:
+def _key_identifier_from_public_key(public_key: PUBLIC_KEY_TYPES) -> bytes:
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
             serialization.Encoding.DER,
@@ -197,7 +197,7 @@ class AuthorityKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_issuer_public_key(
-        cls, public_key: _PUBLIC_KEY_TYPES
+        cls, public_key: PUBLIC_KEY_TYPES
     ) -> "AuthorityKeyIdentifier":
         digest = _key_identifier_from_public_key(public_key)
         return cls(
@@ -270,7 +270,7 @@ class SubjectKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_public_key(
-        cls, public_key: _PUBLIC_KEY_TYPES
+        cls, public_key: PUBLIC_KEY_TYPES
     ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 

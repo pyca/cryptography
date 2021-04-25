@@ -9,7 +9,6 @@ import os
 import typing
 from enum import Enum
 
-from cryptography.hazmat._types import _PRIVATE_KEY_TYPES, _PUBLIC_KEY_TYPES
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -19,6 +18,10 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed25519,
     ed448,
     rsa,
+)
+from cryptography.hazmat.primitives.asymmetric.types import (
+    PRIVATE_KEY_TYPES,
+    PUBLIC_KEY_TYPES,
 )
 from cryptography.x509.extensions import Extension, ExtensionType, Extensions
 from cryptography.x509.name import Name
@@ -99,7 +102,7 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
+    def public_key(self) -> PUBLIC_KEY_TYPES:
         """
         Returns the public key
         """
@@ -320,7 +323,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def is_signature_valid(self, public_key: _PUBLIC_KEY_TYPES) -> bool:
+    def is_signature_valid(self, public_key: PUBLIC_KEY_TYPES) -> bool:
         """
         Verifies signature of revocation list against given public key.
         """
@@ -346,7 +349,7 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
+    def public_key(self) -> PUBLIC_KEY_TYPES:
         """
         Returns the public key
         """
@@ -518,7 +521,7 @@ class CertificateSigningRequestBuilder(object):
 
     def sign(
         self,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
     ) -> CertificateSigningRequest:
@@ -538,7 +541,7 @@ class CertificateBuilder(object):
         self,
         issuer_name: typing.Optional[Name] = None,
         subject_name: typing.Optional[Name] = None,
-        public_key: typing.Optional[_PUBLIC_KEY_TYPES] = None,
+        public_key: typing.Optional[PUBLIC_KEY_TYPES] = None,
         serial_number: typing.Optional[int] = None,
         not_valid_before: typing.Optional[datetime.datetime] = None,
         not_valid_after: typing.Optional[datetime.datetime] = None,
@@ -591,7 +594,7 @@ class CertificateBuilder(object):
 
     def public_key(
         self,
-        key: _PUBLIC_KEY_TYPES,
+        key: PUBLIC_KEY_TYPES,
     ) -> "CertificateBuilder":
         """
         Sets the requestor's public key (as found in the signing request).
@@ -737,7 +740,7 @@ class CertificateBuilder(object):
 
     def sign(
         self,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
     ) -> Certificate:
@@ -885,7 +888,7 @@ class CertificateRevocationListBuilder(object):
 
     def sign(
         self,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
     ) -> CertificateRevocationList:
