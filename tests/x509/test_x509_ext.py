@@ -2517,7 +2517,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             SubjectAlternativeName(list(map(DNSName, sans))), True
         )
 
-        cert = builder.sign(private_key, hashes.SHA1(), backend)
+        cert = builder.sign(private_key, hashes.SHA256(), backend)
         result = [
             x.value
             for x in cert.extensions.get_extension_for_class(
@@ -3597,7 +3597,7 @@ class TestNameConstraintsExtension(object):
             True,
         )
 
-        cert = builder.sign(private_key, hashes.SHA1(), backend)
+        cert = builder.sign(private_key, hashes.SHA256(), backend)
         result = [
             x.value
             for x in cert.extensions.get_extension_for_class(

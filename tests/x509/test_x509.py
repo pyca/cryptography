@@ -1616,7 +1616,7 @@ class TestRSACertificateRequest(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -2432,7 +2432,7 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -2483,7 +2483,7 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -3179,7 +3179,7 @@ class TestCertificateBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=None), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3322,10 +3322,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
@@ -3357,7 +3357,7 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3447,7 +3447,7 @@ class TestCertificateSigningRequestBuilder(object):
         request = (
             x509.CertificateSigningRequestBuilder()
             .subject_name(subject)
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3468,10 +3468,10 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.BasicConstraints(ca=False, path_length=None),
                 critical=True,
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
@@ -3504,10 +3504,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
         subject = request.subject
@@ -3615,10 +3615,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
@@ -3764,10 +3764,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         basic_constraints = request.extensions.get_extension_for_oid(
@@ -4028,7 +4028,7 @@ class TestCertificateSigningRequestBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -4099,7 +4099,7 @@ class TestCertificateSigningRequestBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
