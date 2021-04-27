@@ -31,7 +31,7 @@ jobs:
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -115,7 +115,7 @@ jobs:
           - {IMAGE: "fedora", TOXENV: "py39"}
           - {IMAGE: "alpine", TOXENV: "py38"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -153,7 +153,7 @@ jobs:
           - beta
           - nightly
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -189,7 +189,7 @@ jobs:
   linux-rust-coverage:
     runs-on: ubuntu-latest
     name: "Rust Coverage"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -253,7 +253,7 @@ jobs:
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -313,7 +313,7 @@ jobs:
           - stable
         JOB_NUMBER: [0, 1, 2, 3]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -376,7 +376,7 @@ jobs:
         PYTHON:
           - 3.7
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.5
@@ -409,7 +409,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: "linkcheck"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
