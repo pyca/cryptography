@@ -110,8 +110,8 @@ jobs:
           - {IMAGE: "sid", TOXENV: "py39"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38-randomorder"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39-randomorder"}
           - {IMAGE: "fedora", TOXENV: "py39"}
           - {IMAGE: "alpine", TOXENV: "py38"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
