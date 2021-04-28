@@ -9,6 +9,8 @@ on:
       - '*.*'
       - '*.*.*'
 
+permissions: read-all
+
 jobs:
   linux:
     runs-on: ubuntu-latest
@@ -34,6 +36,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -118,6 +122,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -156,6 +162,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -192,6 +200,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -256,6 +266,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -316,6 +328,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v2.2.2
@@ -379,6 +393,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/cache@v2.1.5
         with:
           path: |
@@ -412,6 +428,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - name: Setup python
         uses: actions/setup-python@v2.2.2
         with:
