@@ -8,7 +8,9 @@ Changelog
 
  .. note:: This version is not yet released and is under active development.
 
-* Changed the `version scheme <https://cryptography.io/en/latest/api-stability/#versioning>`_.
+* Changed the :ref:`version scheme <api-stability:versioning>`. This will
+  result in us incrementing the major version more frequently, but does not
+  change our commitment to backwards compatibility.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
