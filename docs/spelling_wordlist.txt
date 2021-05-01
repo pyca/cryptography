@@ -57,6 +57,7 @@ Google
 hazmat
 Homebrew
 hostname
+incrementing
 indistinguishability
 initialisms
 interoperability
