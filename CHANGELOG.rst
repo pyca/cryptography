@@ -10,7 +10,7 @@ Changelog
 
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
-  change our commitment to backwards compatibility.
+  change our existing backwards compatibility policy.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
