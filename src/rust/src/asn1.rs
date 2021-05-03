@@ -45,81 +45,60 @@ fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult
         els.push(el?.getattr("value")?.extract::<u64>()?);
     }
 
-    let result = asn1::write(|w| {
-        w.write_element_with_type::<asn1::SequenceOf<u64>>(&els);
-    });
-
+    let result = asn1::write_single(&asn1::SequenceOfWriter::new(&els));
     Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
+fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_mod = py.import("cryptography.x509.extensions")?;
     let tls_feature_type_to_enum = x509_mod.getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
-    let features = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
-        let features = pyo3::types::PyList::empty(py);
-        for el in p.read_element::<asn1::SequenceOf<u64>>()? {
-            let feature = el?;
-            let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
-            features.append(py_feature)?;
-        }
-        Ok(features)
-    })?;
+    let features = pyo3::types::PyList::empty(py);
+    for el in asn1::parse_single::<asn1::SequenceOf<u64>>(data)? {
+        let feature = el?;
+        let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
+        features.append(py_feature)?;
+    }
 
     let x509_module = py.import("cryptography.x509")?;
-    x509_module
-        .call1("TLSFeature", (features,))
-        .map(|o| o.to_object(py))
+    Ok(x509_module.call1("TLSFeature", (features,))?.to_object(py))
 }
 
 #[pyo3::prelude::pyfunction]
 fn encode_precert_poison(py: pyo3::Python<'_>, _ext: &pyo3::PyAny) -> pyo3::PyObject {
-    let result = asn1::write(|w| {
-        w.write_element(());
-    });
-
+    let result = asn1::write_single(&());
     pyo3::types::PyBytes::new(py, &result).to_object(py)
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_precert_poison(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
-    asn1::parse::<_, PyAsn1Error, _>(data, |p| {
-        p.read_element::<()>()?;
-        Ok(())
-    })?;
+fn parse_precert_poison(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    asn1::parse_single::<()>(data)?;
 
     let x509_module = py.import("cryptography.x509")?;
-    x509_module.call0("PrecertPoison").map(|o| o.to_object(py))
+    Ok(x509_module.call0("PrecertPoison")?.to_object(py))
+}
+
+#[derive(asn1::Asn1Read)]
+struct AlgorithmIdentifier<'a> {
+    _oid: asn1::ObjectIdentifier<'a>,
+    _params: Option<asn1::Tlv<'a>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct Spki<'a> {
+    _algorithm: AlgorithmIdentifier<'a>,
+    data: asn1::BitString<'a>,
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_spki_for_data(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
-    let result = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
-        p.read_element::<asn1::Sequence>()?
-            .parse::<_, PyAsn1Error, _>(|p| {
-                // AlgorithmIdentifier
-                p.read_element::<asn1::Sequence>()?
-                    .parse::<_, PyAsn1Error, _>(|p| {
-                        p.read_element::<asn1::ObjectIdentifier>()?;
-                        if !p.is_empty() {
-                            p.read_element::<asn1::Tlv>()?;
-                        }
-                        Ok(())
-                    })?;
+fn parse_spki_for_data(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let spki = asn1::parse_single::<Spki>(data)?;
+    if spki.data.padding_bits() != 0 {
+        return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
+    }
 
-                let pubkey_data = p.read_element::<asn1::BitString>()?;
-                if pubkey_data.padding_bits() != 0 {
-                    return Err(pyo3::exceptions::PyValueError::new_err(
-                        "Invalid public key encoding",
-                    )
-                    .into());
-                }
-                Ok(pubkey_data.as_bytes())
-            })
-    })?;
-
-    Ok(pyo3::types::PyBytes::new(py, result).to_object(py))
+    Ok(pyo3::types::PyBytes::new(py, spki.data.as_bytes()).to_object(py))
 }
 
 lazy_static::lazy_static! {
@@ -153,6 +132,12 @@ fn parse_ocsp_req_extension(
     }
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct DssSignature<'a> {
+    r: asn1::BigUint<'a>,
+    s: asn1::BigUint<'a>,
+}
+
 fn big_asn1_uint_to_py<'p>(
     py: pyo3::Python<'p>,
     v: asn1::BigUint,
@@ -162,16 +147,14 @@ fn big_asn1_uint_to_py<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> pyo3::PyResult<pyo3::PyObject> {
-    let (r, s) = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
-        p.read_element::<asn1::Sequence>()?.parse(|p| {
-            let r = p.read_element::<asn1::BigUint>()?;
-            let s = p.read_element::<asn1::BigUint>()?;
-            Ok((r, s))
-        })
-    })?;
+fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let sig = asn1::parse_single::<DssSignature>(data)?;
 
-    Ok((big_asn1_uint_to_py(py, r)?, big_asn1_uint_to_py(py, s)?).to_object(py))
+    Ok((
+        big_asn1_uint_to_py(py, sig.r)?,
+        big_asn1_uint_to_py(py, sig.s)?,
+    )
+        .to_object(py))
 }
 
 fn py_uint_to_big_endian_bytes<'p>(
@@ -198,15 +181,11 @@ fn encode_dss_signature(
     r: &pyo3::types::PyLong,
     s: &pyo3::types::PyLong,
 ) -> pyo3::PyResult<pyo3::PyObject> {
-    let r = asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap();
-    let s = asn1::BigUint::new(py_uint_to_big_endian_bytes(py, s)?).unwrap();
-    let result = asn1::write(|w| {
-        w.write_element_with_type::<asn1::Sequence>(&|w| {
-            w.write_element(r);
-            w.write_element(s);
-        });
-    });
-
+    let sig = DssSignature {
+        r: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap(),
+        s: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, s)?).unwrap(),
+    };
+    let result = asn1::write_single(&sig);
     Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
 }
 
@@ -222,79 +201,68 @@ struct TestCertificate {
     subject_value_tags: Vec<u8>,
 }
 
-fn parse_name_value_tags(p: &mut asn1::Parser) -> asn1::ParseResult<Vec<u8>> {
+#[derive(asn1::Asn1Read)]
+struct Asn1Certificate<'a> {
+    tbs_cert: TbsCertificate<'a>,
+    _signature_alg: asn1::Sequence<'a>,
+    _signature: asn1::BitString<'a>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct TbsCertificate<'a> {
+    #[explicit(0)]
+    _version: Option<u8>,
+    _serial: asn1::BigUint<'a>,
+    _signature_alg: asn1::Sequence<'a>,
+
+    issuer: Name<'a>,
+    validity: Validity<'a>,
+    subject: Name<'a>,
+
+    _spki: asn1::Sequence<'a>,
+    #[implicit(1)]
+    _issuer_unique_id: Option<asn1::BitString<'a>>,
+    #[implicit(2)]
+    _subject_unique_id: Option<asn1::BitString<'a>>,
+    #[explicit(3)]
+    _extensions: Option<asn1::Sequence<'a>>,
+}
+
+type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
+
+#[derive(asn1::Asn1Read)]
+struct AttributeTypeValue<'a> {
+    _type: asn1::ObjectIdentifier<'a>,
+    value: asn1::Tlv<'a>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct Validity<'a> {
+    not_before: asn1::Tlv<'a>,
+    not_after: asn1::Tlv<'a>,
+}
+
+fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
     let mut tags = vec![];
-    for rdn in p.read_element::<asn1::SequenceOf<asn1::SetOf<asn1::Sequence>>>()? {
+    for rdn in rdns {
         let mut attributes = rdn?.collect::<asn1::ParseResult<Vec<_>>>()?;
         assert_eq!(attributes.len(), 1);
 
-        let tag = attributes
-            .pop()
-            .unwrap()
-            .parse::<_, asn1::ParseError, _>(|p| {
-                p.read_element::<asn1::ObjectIdentifier>()?;
-                let tlv = p.read_element::<asn1::Tlv>()?;
-                Ok(tlv.tag())
-            })?;
-        tags.push(tag);
+        tags.push(attributes.pop().unwrap().value.tag());
     }
     Ok(tags)
 }
 
 #[pyo3::prelude::pyfunction]
-fn test_parse_certificate(data: &[u8]) -> pyo3::PyResult<TestCertificate> {
-    let result = asn1::parse::<_, PyAsn1Error, _>(data, |p| {
-        // Outer SEQUENCE
-        p.read_element::<asn1::Sequence>()?.parse(|p| {
-            // TBS certificate
-            let result = p
-                .read_element::<asn1::Sequence>()?
-                .parse::<_, PyAsn1Error, _>(|p| {
-                    // Version
-                    p.read_optional_explicit_element::<u8>(0)?;
-                    // Serial number
-                    p.read_element::<asn1::BigUint>()?;
-                    // Inner signature algorithm
-                    p.read_element::<asn1::Sequence>()?;
+fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
+    let mut asn1_cert = asn1::parse_single::<Asn1Certificate>(data)?;
 
-                    // Issuer
-                    let issuer_value_tags = parse_name_value_tags(p)?;
-                    // Validity
-                    let (not_before_tag, not_after_tag) = p
-                        .read_element::<asn1::Sequence>()?
-                        .parse::<_, asn1::ParseError, _>(|p| {
-                        let not_before_tag = p.read_element::<asn1::Tlv>()?.tag();
-                        let not_after_tag = p.read_element::<asn1::Tlv>()?.tag();
-                        Ok((not_before_tag, not_after_tag))
-                    })?;
-                    // Subject
-                    let subject_value_tags = parse_name_value_tags(p)?;
-
-                    // Subject public key info
-                    p.read_element::<asn1::Sequence>()?;
-                    // Issuer unique ID - never used in the real world
-                    p.read_optional_implicit_element::<asn1::BitString>(1)?;
-                    // Subject unique ID - never used in the real world
-                    p.read_optional_implicit_element::<asn1::BitString>(2)?;
-                    // Extensions
-                    p.read_optional_explicit_element::<asn1::Sequence>(3)?;
-
-                    Ok(TestCertificate {
-                        not_before_tag,
-                        not_after_tag,
-                        issuer_value_tags,
-                        subject_value_tags,
-                    })
-                })?;
-            // Outer signature algorithm
-            p.read_element::<asn1::Sequence>()?;
-            // Signature
-            p.read_element::<asn1::BitString>()?;
-            Ok(result)
-        })
-    })?;
-
-    Ok(result)
+    Ok(TestCertificate {
+        not_before_tag: asn1_cert.tbs_cert.validity.not_before.tag(),
+        not_after_tag: asn1_cert.tbs_cert.validity.not_after.tag(),
+        issuer_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.issuer)?,
+        subject_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.subject)?,
+    })
 }
 
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
