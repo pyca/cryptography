@@ -2,9 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import struct
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -20,11 +20,15 @@ from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-def _int_to_u32be(n):
+def _int_to_u32be(n: int) -> bytes:
     return struct.pack(">I", n)
 
 
-def _common_args_checks(algorithm, length, otherinfo):
+def _common_args_checks(
+    algorithm: hashes.HashAlgorithm,
+    length: int,
+    otherinfo: typing.Optional[bytes],
+):
     max_length = algorithm.digest_size * (2 ** 32 - 1)
     if length > max_length:
         raise ValueError(
@@ -34,7 +38,12 @@ def _common_args_checks(algorithm, length, otherinfo):
         utils._check_bytes("otherinfo", otherinfo)
 
 
-def _concatkdf_derive(key_material, length, auxfn, otherinfo):
+def _concatkdf_derive(
+    key_material: bytes,
+    length: int,
+    auxfn: typing.Callable[[], hashes.HashContext],
+    otherinfo: bytes,
+) -> bytes:
     utils._check_byteslike("key_material", key_material)
     output = [b""]
     outlen = 0
@@ -52,17 +61,20 @@ def _concatkdf_derive(key_material, length, auxfn, otherinfo):
     return b"".join(output)[:length]
 
 
-@utils.register_interface(KeyDerivationFunction)
-class ConcatKDFHash(object):
-    def __init__(self, algorithm, length, otherinfo, backend=None):
+class ConcatKDFHash(KeyDerivationFunction):
+    def __init__(
+        self,
+        algorithm: hashes.HashAlgorithm,
+        length: int,
+        otherinfo: typing.Optional[bytes],
+        backend=None,
+    ):
         backend = _get_backend(backend)
 
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm
         self._length = length
-        self._otherinfo = otherinfo
-        if self._otherinfo is None:
-            self._otherinfo = b""
+        self._otherinfo: bytes = otherinfo if otherinfo is not None else b""
 
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
@@ -72,10 +84,10 @@ class ConcatKDFHash(object):
         self._backend = backend
         self._used = False
 
-    def _hash(self):
+    def _hash(self) -> hashes.Hash:
         return hashes.Hash(self._algorithm, self._backend)
 
-    def derive(self, key_material):
+    def derive(self, key_material: bytes) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True
@@ -83,22 +95,31 @@ class ConcatKDFHash(object):
             key_material, self._length, self._hash, self._otherinfo
         )
 
-    def verify(self, key_material, expected_key):
+    def verify(self, key_material: bytes, expected_key: bytes) -> None:
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey
 
 
-@utils.register_interface(KeyDerivationFunction)
-class ConcatKDFHMAC(object):
-    def __init__(self, algorithm, length, salt, otherinfo, backend=None):
+class ConcatKDFHMAC(KeyDerivationFunction):
+    def __init__(
+        self,
+        algorithm: hashes.HashAlgorithm,
+        length: int,
+        salt: typing.Optional[bytes],
+        otherinfo: typing.Optional[bytes],
+        backend=None,
+    ):
         backend = _get_backend(backend)
 
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm
         self._length = length
-        self._otherinfo = otherinfo
-        if self._otherinfo is None:
-            self._otherinfo = b""
+        self._otherinfo: bytes = otherinfo if otherinfo is not None else b""
+
+        if algorithm.block_size is None:
+            raise TypeError(
+                "{} is unsupported for ConcatKDF".format(algorithm.name)
+            )
 
         if salt is None:
             salt = b"\x00" * algorithm.block_size
@@ -115,10 +136,10 @@ class ConcatKDFHMAC(object):
         self._backend = backend
         self._used = False
 
-    def _hmac(self):
+    def _hmac(self) -> hmac.HMAC:
         return hmac.HMAC(self._salt, self._algorithm, self._backend)
 
-    def derive(self, key_material):
+    def derive(self, key_material: bytes) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True
@@ -126,6 +147,6 @@ class ConcatKDFHMAC(object):
             key_material, self._length, self._hmac, self._otherinfo
         )
 
-    def verify(self, key_material, expected_key):
+    def verify(self, key_material: bytes, expected_key: bytes) -> None:
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey

@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import warnings
 
@@ -52,7 +51,8 @@ def _check_not_prehashed(signature_algorithm):
     if isinstance(signature_algorithm, Prehashed):
         raise TypeError(
             "Prehashed is only supported in the sign and verify methods. "
-            "It cannot be used with signer or verifier."
+            "It cannot be used with signer, verifier or "
+            "recover_data_from_signature."
         )
 
 

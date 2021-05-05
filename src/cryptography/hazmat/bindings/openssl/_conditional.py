@@ -2,8 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
 
 def cryptography_has_ec2m():
     return [
@@ -74,12 +72,6 @@ def cryptography_has_tls_st():
     ]
 
 
-def cryptography_has_locking_callbacks():
-    return [
-        "Cryptography_setup_ssl_threads",
-    ]
-
-
 def cryptography_has_scrypt():
     return [
         "EVP_PBE_scrypt",
@@ -106,11 +98,12 @@ def cryptography_has_sct():
         "SCT_get0_signature",
         "SCT_get_timestamp",
         "SCT_set_source",
+        "sk_SCT_new_null",
+        "sk_SCT_free",
         "sk_SCT_num",
         "sk_SCT_value",
-        "SCT_LIST_free",
         "sk_SCT_push",
-        "sk_SCT_new_null",
+        "SCT_LIST_free",
         "SCT_new",
         "SCT_set1_log_id",
         "SCT_set_timestamp",
@@ -123,20 +116,6 @@ def cryptography_has_x509_store_ctx_get_issuer():
     return [
         "X509_STORE_get_get_issuer",
         "X509_STORE_set_get_issuer",
-    ]
-
-
-def cryptography_has_x25519():
-    return [
-        "EVP_PKEY_X25519",
-        "NID_X25519",
-    ]
-
-
-def cryptography_has_x448():
-    return [
-        "EVP_PKEY_X448",
-        "NID_X448",
     ]
 
 
@@ -217,18 +196,9 @@ def cryptography_has_openssl_cleanup():
     ]
 
 
-def cryptography_has_cipher_details():
-    return [
-        "SSL_CIPHER_is_aead",
-        "SSL_CIPHER_get_cipher_nid",
-        "SSL_CIPHER_get_digest_nid",
-        "SSL_CIPHER_get_kx_nid",
-        "SSL_CIPHER_get_auth_nid",
-    ]
-
-
 def cryptography_has_tlsv13():
     return [
+        "TLS1_3_VERSION",
         "SSL_OP_NO_TLSv1_3",
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
@@ -270,6 +240,10 @@ def cryptography_has_engine():
         "ENGINE_free",
         "ENGINE_get_name",
         "Cryptography_add_osrandom_engine",
+        "ENGINE_ctrl_cmd_string",
+        "ENGINE_load_builtin_engines",
+        "ENGINE_load_private_key",
+        "ENGINE_load_public_key",
     ]
 
 
@@ -284,6 +258,15 @@ def cryptography_has_srtp():
         "SSL_CTX_set_tlsext_use_srtp",
         "SSL_set_tlsext_use_srtp",
         "SSL_get_selected_srtp_profile",
+    ]
+
+
+def cryptography_has_get_proto_version():
+    return [
+        "SSL_CTX_get_min_proto_version",
+        "SSL_CTX_get_max_proto_version",
+        "SSL_get_min_proto_version",
+        "SSL_get_max_proto_version",
     ]
 
 
@@ -304,7 +287,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_LOCKING_CALLBACKS": cryptography_has_locking_callbacks,
     "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
@@ -312,8 +294,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
         cryptography_has_x509_store_ctx_get_issuer
     ),
-    "Cryptography_HAS_X25519": cryptography_has_x25519,
-    "Cryptography_HAS_X448": cryptography_has_x448,
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_POLY1305": cryptography_has_poly1305,
@@ -328,7 +308,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
-    "Cryptography_HAS_CIPHER_DETAILS": cryptography_has_cipher_details,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
     "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
@@ -338,4 +317,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
+    "Cryptography_HAS_GET_PROTO_VERSION": cryptography_has_get_proto_version,
 }

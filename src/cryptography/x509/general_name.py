@@ -2,13 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import abc
 import ipaddress
+import typing
 from email.utils import parseaddr
-
-import six
 
 from cryptography import utils
 from cryptography.x509.name import Name
@@ -34,8 +32,7 @@ class UnsupportedGeneralNameType(Exception):
         self.type = type
 
 
-@six.add_metaclass(abc.ABCMeta)
-class GeneralName(object):
+class GeneralName(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def value(self):
         """
@@ -43,10 +40,9 @@ class GeneralName(object):
         """
 
 
-@utils.register_interface(GeneralName)
-class RFC822Name(object):
-    def __init__(self, value):
-        if isinstance(value, six.text_type):
+class RFC822Name(GeneralName):
+    def __init__(self, value: str):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:
@@ -74,26 +70,25 @@ class RFC822Name(object):
         instance._value = value
         return instance
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<RFC822Name(value={0!r})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RFC822Name):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class DNSName(object):
-    def __init__(self, value):
-        if isinstance(value, six.text_type):
+class DNSName(GeneralName):
+    def __init__(self, value: str):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:
@@ -118,23 +113,22 @@ class DNSName(object):
     def __repr__(self):
         return "<DNSName(value={0!r})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DNSName):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class UniformResourceIdentifier(object):
-    def __init__(self, value):
-        if isinstance(value, six.text_type):
+class UniformResourceIdentifier(GeneralName):
+    def __init__(self, value: str):
+        if isinstance(value, str):
             try:
                 value.encode("ascii")
             except UnicodeEncodeError:
@@ -156,25 +150,24 @@ class UniformResourceIdentifier(object):
         instance._value = value
         return instance
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<UniformResourceIdentifier(value={0!r})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, UniformResourceIdentifier):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class DirectoryName(object):
-    def __init__(self, value):
+class DirectoryName(GeneralName):
+    def __init__(self, value: Name):
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
 
@@ -182,25 +175,24 @@ class DirectoryName(object):
 
     value = utils.read_only_property("_value")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<DirectoryName(value={})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DirectoryName):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class RegisteredID(object):
-    def __init__(self, value):
+class RegisteredID(GeneralName):
+    def __init__(self, value: ObjectIdentifier):
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
 
@@ -208,25 +200,32 @@ class RegisteredID(object):
 
     value = utils.read_only_property("_value")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<RegisteredID(value={})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RegisteredID):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class IPAddress(object):
-    def __init__(self, value):
+class IPAddress(GeneralName):
+    def __init__(
+        self,
+        value: typing.Union[
+            ipaddress.IPv4Address,
+            ipaddress.IPv6Address,
+            ipaddress.IPv4Network,
+            ipaddress.IPv6Network,
+        ],
+    ):
         if not isinstance(
             value,
             (
@@ -246,25 +245,24 @@ class IPAddress(object):
 
     value = utils.read_only_property("_value")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, IPAddress):
             return NotImplemented
 
         return self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
 
-@utils.register_interface(GeneralName)
-class OtherName(object):
-    def __init__(self, type_id, value):
+class OtherName(GeneralName):
+    def __init__(self, type_id: ObjectIdentifier, value: bytes):
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")
         if not isinstance(value, bytes):
@@ -276,19 +274,19 @@ class OtherName(object):
     type_id = utils.read_only_property("_type_id")
     value = utils.read_only_property("_value")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<OtherName(type_id={}, value={!r})>".format(
             self.type_id, self.value
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, OtherName):
             return NotImplemented
 
         return self.type_id == other.type_id and self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.type_id, self.value))

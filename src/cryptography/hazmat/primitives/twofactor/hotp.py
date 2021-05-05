@@ -2,11 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import struct
-
-import six
+import typing
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
@@ -17,9 +15,17 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
+_ALLOWED_HASH_TYPES = typing.Union[SHA1, SHA256, SHA512]
+
+
 class HOTP(object):
     def __init__(
-        self, key, length, algorithm, backend=None, enforce_key_length=True
+        self,
+        key: bytes,
+        length: int,
+        algorithm: _ALLOWED_HASH_TYPES,
+        backend=None,
+        enforce_key_length: bool = True,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
@@ -31,7 +37,7 @@ class HOTP(object):
         if len(key) < 16 and enforce_key_length is True:
             raise ValueError("Key length has to be at least 128 bits.")
 
-        if not isinstance(length, six.integer_types):
+        if not isinstance(length, int):
             raise TypeError("Length parameter must be an integer type.")
 
         if length < 6 or length > 8:
@@ -45,25 +51,27 @@ class HOTP(object):
         self._algorithm = algorithm
         self._backend = backend
 
-    def generate(self, counter):
+    def generate(self, counter: int) -> bytes:
         truncated_value = self._dynamic_truncate(counter)
         hotp = truncated_value % (10 ** self._length)
         return "{0:0{1}}".format(hotp, self._length).encode()
 
-    def verify(self, hotp, counter):
+    def verify(self, hotp: bytes, counter: int) -> None:
         if not constant_time.bytes_eq(self.generate(counter), hotp):
             raise InvalidToken("Supplied HOTP value does not match.")
 
-    def _dynamic_truncate(self, counter):
+    def _dynamic_truncate(self, counter: int) -> int:
         ctx = hmac.HMAC(self._key, self._algorithm, self._backend)
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 
-        offset = six.indexbytes(hmac_value, len(hmac_value) - 1) & 0b1111
+        offset = hmac_value[len(hmac_value) - 1] & 0b1111
         p = hmac_value[offset : offset + 4]
         return struct.unpack(">I", p)[0] & 0x7FFFFFFF
 
-    def get_provisioning_uri(self, account_name, counter, issuer):
+    def get_provisioning_uri(
+        self, account_name: str, counter: int, issuer: typing.Optional[str]
+    ) -> str:
         return _generate_uri(
             self, "hotp", account_name, issuer, [("counter", int(counter))]
         )

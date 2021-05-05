@@ -2,9 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
-from cryptography import utils
 from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
@@ -16,13 +14,16 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
 _X25519_KEY_SIZE = 32
 
 
-@utils.register_interface(X25519PublicKey)
-class _X25519PublicKey(object):
+class _X25519PublicKey(X25519PublicKey):
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PublicFormat,
+    ) -> bytes:
         if (
             encoding is serialization.Encoding.Raw
             or format is serialization.PublicFormat.Raw
@@ -41,7 +42,7 @@ class _X25519PublicKey(object):
             encoding, format, self, self._evp_pkey, None
         )
 
-    def _raw_public_bytes(self):
+    def _raw_public_bytes(self) -> bytes:
         ucharpp = self._backend._ffi.new("unsigned char **")
         res = self._backend._lib.EVP_PKEY_get1_tls_encodedpoint(
             self._evp_pkey, ucharpp
@@ -54,13 +55,12 @@ class _X25519PublicKey(object):
         return self._backend._ffi.buffer(data, res)[:]
 
 
-@utils.register_interface(X25519PrivateKey)
-class _X25519PrivateKey(object):
+class _X25519PrivateKey(X25519PrivateKey):
     def __init__(self, backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
-    def public_key(self):
+    def public_key(self) -> X25519PublicKey:
         bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_PUBKEY_bio(bio, self._evp_pkey)
         self._backend.openssl_assert(res == 1)
@@ -73,13 +73,18 @@ class _X25519PrivateKey(object):
         )
         return _X25519PublicKey(self._backend, evp_pkey)
 
-    def exchange(self, peer_public_key):
+    def exchange(self, peer_public_key: X25519PublicKey) -> bytes:
         if not isinstance(peer_public_key, X25519PublicKey):
             raise TypeError("peer_public_key must be X25519PublicKey.")
 
         return _evp_pkey_derive(self._backend, self._evp_pkey, peer_public_key)
 
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PrivateFormat,
+        encryption_algorithm: serialization.KeySerializationEncryption,
+    ) -> bytes:
         if (
             encoding is serialization.Encoding.Raw
             or format is serialization.PublicFormat.Raw
@@ -102,7 +107,7 @@ class _X25519PrivateKey(object):
             encoding, format, encryption_algorithm, self, self._evp_pkey, None
         )
 
-    def _raw_private_bytes(self):
+    def _raw_private_bytes(self) -> bytes:
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
         # switch this to EVP_PKEY_new_raw_private_key
         # The trick we use here is serializing to a PKCS8 key and just

@@ -2,115 +2,153 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import abc
-
-try:
-    # Only available in math in 3.5+
-    from math import gcd
-except ImportError:
-    from fractions import gcd
-
-import six
+import typing
+from math import gcd
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import RSABackend
+from cryptography.hazmat.primitives import _serialization, hashes
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricSignatureContext,
+    AsymmetricVerificationContext,
+    utils as asym_utils,
+)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKey(object):
+class RSAPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def signer(self, padding, algorithm):
+    def signer(
+        self, padding: AsymmetricPadding, algorithm: hashes.HashAlgorithm
+    ) -> AsymmetricSignatureContext:
         """
         Returns an AsymmetricSignatureContext used for signing data.
         """
 
     @abc.abstractmethod
-    def decrypt(self, ciphertext, padding):
+    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
         """
         Decrypts the provided ciphertext.
         """
 
     @abc.abstractproperty
-    def key_size(self):
+    def key_size(self) -> int:
         """
         The bit length of the public modulus.
         """
 
     @abc.abstractmethod
-    def public_key(self):
+    def public_key(self) -> "RSAPublicKey":
         """
         The RSAPublicKey associated with this private key.
         """
 
     @abc.abstractmethod
-    def sign(self, data, padding, algorithm):
+    def sign(
+        self,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ) -> bytes:
         """
         Signs the data.
         """
 
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithSerialization(RSAPrivateKey):
     @abc.abstractmethod
-    def private_numbers(self):
+    def private_numbers(self) -> "RSAPrivateNumbers":
         """
         Returns an RSAPrivateNumbers.
         """
 
     @abc.abstractmethod
-    def private_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
         """
         Returns the key serialized as bytes.
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKey(object):
+RSAPrivateKeyWithSerialization = RSAPrivateKey
+
+
+class RSAPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def verifier(self, signature, padding, algorithm):
+    def verifier(
+        self,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: hashes.HashAlgorithm,
+    ) -> AsymmetricVerificationContext:
         """
         Returns an AsymmetricVerificationContext used for verifying signatures.
         """
 
     @abc.abstractmethod
-    def encrypt(self, plaintext, padding):
+    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
         """
         Encrypts the given plaintext.
         """
 
     @abc.abstractproperty
-    def key_size(self):
+    def key_size(self) -> int:
         """
         The bit length of the public modulus.
         """
 
     @abc.abstractmethod
-    def public_numbers(self):
+    def public_numbers(self) -> "RSAPublicNumbers":
         """
         Returns an RSAPublicNumbers
         """
 
     @abc.abstractmethod
-    def public_bytes(self, encoding, format):
+    def public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
         """
         Returns the key serialized as bytes.
         """
 
     @abc.abstractmethod
-    def verify(self, signature, data, padding, algorithm):
+    def verify(
+        self,
+        signature: bytes,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ) -> None:
         """
         Verifies the signature of the data.
+        """
+
+    @abc.abstractmethod
+    def recover_data_from_signature(
+        self,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> bytes:
+        """
+        Recovers the original data from the signature.
         """
 
 
 RSAPublicKeyWithSerialization = RSAPublicKey
 
 
-def generate_private_key(public_exponent, key_size, backend=None):
+def generate_private_key(
+    public_exponent: int, key_size: int, backend=None
+) -> RSAPrivateKey:
     backend = _get_backend(backend)
     if not isinstance(backend, RSABackend):
         raise UnsupportedAlgorithm(
@@ -122,7 +160,7 @@ def generate_private_key(public_exponent, key_size, backend=None):
     return backend.generate_rsa_private_key(public_exponent, key_size)
 
 
-def _verify_rsa_parameters(public_exponent, key_size):
+def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
     if public_exponent not in (3, 65537):
         raise ValueError(
             "public_exponent must be either 3 (for legacy compatibility) or "
@@ -134,8 +172,15 @@ def _verify_rsa_parameters(public_exponent, key_size):
 
 
 def _check_private_key_components(
-    p, q, private_exponent, dmp1, dmq1, iqmp, public_exponent, modulus
-):
+    p: int,
+    q: int,
+    private_exponent: int,
+    dmp1: int,
+    dmq1: int,
+    iqmp: int,
+    public_exponent: int,
+    modulus: int,
+) -> None:
     if modulus < 3:
         raise ValueError("modulus must be >= 3.")
 
@@ -173,7 +218,7 @@ def _check_private_key_components(
         raise ValueError("p*q must equal modulus.")
 
 
-def _check_public_key_components(e, n):
+def _check_public_key_components(e: int, n: int) -> None:
     if n < 3:
         raise ValueError("n must be >= 3.")
 
@@ -184,7 +229,7 @@ def _check_public_key_components(e, n):
         raise ValueError("e must be odd.")
 
 
-def _modinv(e, m):
+def _modinv(e: int, m: int) -> int:
     """
     Modular Multiplicative Inverse. Returns x such that: (x*e) mod m == 1
     """
@@ -197,14 +242,14 @@ def _modinv(e, m):
     return x1 % m
 
 
-def rsa_crt_iqmp(p, q):
+def rsa_crt_iqmp(p: int, q: int) -> int:
     """
     Compute the CRT (q ** -1) % p value from RSA primes p and q.
     """
     return _modinv(q, p)
 
 
-def rsa_crt_dmp1(private_exponent, p):
+def rsa_crt_dmp1(private_exponent: int, p: int) -> int:
     """
     Compute the CRT private_exponent % (p - 1) value from the RSA
     private_exponent (d) and p.
@@ -212,7 +257,7 @@ def rsa_crt_dmp1(private_exponent, p):
     return private_exponent % (p - 1)
 
 
-def rsa_crt_dmq1(private_exponent, q):
+def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
     """
     Compute the CRT private_exponent % (q - 1) value from the RSA
     private_exponent (d) and q.
@@ -226,7 +271,9 @@ def rsa_crt_dmq1(private_exponent, q):
 _MAX_RECOVERY_ATTEMPTS = 1000
 
 
-def rsa_recover_prime_factors(n, e, d):
+def rsa_recover_prime_factors(
+    n: int, e: int, d: int
+) -> typing.Tuple[int, int]:
     """
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.
@@ -270,14 +317,23 @@ def rsa_recover_prime_factors(n, e, d):
 
 
 class RSAPrivateNumbers(object):
-    def __init__(self, p, q, d, dmp1, dmq1, iqmp, public_numbers):
+    def __init__(
+        self,
+        p: int,
+        q: int,
+        d: int,
+        dmp1: int,
+        dmq1: int,
+        iqmp: int,
+        public_numbers: "RSAPublicNumbers",
+    ):
         if (
-            not isinstance(p, six.integer_types)
-            or not isinstance(q, six.integer_types)
-            or not isinstance(d, six.integer_types)
-            or not isinstance(dmp1, six.integer_types)
-            or not isinstance(dmq1, six.integer_types)
-            or not isinstance(iqmp, six.integer_types)
+            not isinstance(p, int)
+            or not isinstance(q, int)
+            or not isinstance(d, int)
+            or not isinstance(dmp1, int)
+            or not isinstance(dmq1, int)
+            or not isinstance(iqmp, int)
         ):
             raise TypeError(
                 "RSAPrivateNumbers p, q, d, dmp1, dmq1, iqmp arguments must"
@@ -306,7 +362,7 @@ class RSAPrivateNumbers(object):
     iqmp = utils.read_only_property("_iqmp")
     public_numbers = utils.read_only_property("_public_numbers")
 
-    def private_key(self, backend=None):
+    def private_key(self, backend=None) -> RSAPrivateKey:
         backend = _get_backend(backend)
         return backend.load_rsa_private_numbers(self)
 
@@ -342,10 +398,8 @@ class RSAPrivateNumbers(object):
 
 
 class RSAPublicNumbers(object):
-    def __init__(self, e, n):
-        if not isinstance(e, six.integer_types) or not isinstance(
-            n, six.integer_types
-        ):
+    def __init__(self, e: int, n: int):
+        if not isinstance(e, int) or not isinstance(n, int):
             raise TypeError("RSAPublicNumbers arguments must be integers.")
 
         self._e = e
@@ -354,7 +408,7 @@ class RSAPublicNumbers(object):
     e = utils.read_only_property("_e")
     n = utils.read_only_property("_n")
 
-    def public_key(self, backend=None):
+    def public_key(self, backend=None) -> RSAPublicKey:
         backend = _get_backend(backend)
         return backend.load_rsa_public_numbers(self)
 

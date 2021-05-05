@@ -2,11 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
-
+import typing
 from enum import Enum
-
-import six
 
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
@@ -77,13 +74,13 @@ def _escape_dn_value(val):
 
 
 class NameAttribute(object):
-    def __init__(self, oid, value, _type=_SENTINEL):
+    def __init__(self, oid: ObjectIdentifier, value: str, _type=_SENTINEL):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
             )
 
-        if not isinstance(value, six.text_type):
+        if not isinstance(value, str):
             raise TypeError("value argument must be a text type.")
 
         if (
@@ -114,7 +111,7 @@ class NameAttribute(object):
     oid = utils.read_only_property("_oid")
     value = utils.read_only_property("_value")
 
-    def rfc4514_string(self):
+    def rfc4514_string(self) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
@@ -124,24 +121,24 @@ class NameAttribute(object):
         key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
         return "%s=%s" % (key, _escape_dn_value(self.value))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
             return NotImplemented
 
         return self.oid == other.oid and self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.oid, self.value))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
 
 class RelativeDistinguishedName(object):
-    def __init__(self, attributes):
+    def __init__(self, attributes: typing.Iterable[NameAttribute]):
         attributes = list(attributes)
         if not attributes:
             raise ValueError("a relative distinguished name cannot be empty")
@@ -155,10 +152,10 @@ class RelativeDistinguishedName(object):
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
-    def get_attributes_for_oid(self, oid):
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
-    def rfc4514_string(self):
+    def rfc4514_string(self) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
@@ -167,25 +164,25 @@ class RelativeDistinguishedName(object):
         """
         return "+".join(attr.rfc4514_string() for attr in self._attributes)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RelativeDistinguishedName):
             return NotImplemented
 
         return self._attribute_set == other._attribute_set
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self._attribute_set)
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[NameAttribute]:
         return iter(self._attributes)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._attributes)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<RelativeDistinguishedName({})>".format(self.rfc4514_string())
 
 
@@ -204,7 +201,7 @@ class Name(object):
                 " or a list RelativeDistinguishedName"
             )
 
-    def rfc4514_string(self):
+    def rfc4514_string(self) -> str:
         """
         Format as RFC4514 Distinguished Name string.
         For example 'CN=foobar.com,O=Foo Corp,C=US'
@@ -219,43 +216,39 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
-    def get_attributes_for_oid(self, oid):
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self):
+    def rdns(self) -> typing.Iterable[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend=None):
+    def public_bytes(self, backend=None) -> bytes:
         backend = _get_backend(backend)
         return backend.x509_name_bytes(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Name):
             return NotImplemented
 
         return self._attributes == other._attributes
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # TODO: this is relatively expensive, if this looks like a bottleneck
         # for you, consider optimizing!
         return hash(tuple(self._attributes))
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[NameAttribute]:
         for rdn in self._attributes:
             for ava in rdn:
                 yield ava
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(len(rdn) for rdn in self._attributes)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
-
-        if six.PY2:
-            return "<Name({})>".format(rdns.encode("utf8"))
-        else:
-            return "<Name({})>".format(rdns)
+        return "<Name({})>".format(rdns)

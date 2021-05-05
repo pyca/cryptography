@@ -2,9 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
 
 import struct
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -23,9 +23,14 @@ def _int_to_u32be(n):
     return struct.pack(">I", n)
 
 
-@utils.register_interface(KeyDerivationFunction)
-class X963KDF(object):
-    def __init__(self, algorithm, length, sharedinfo, backend=None):
+class X963KDF(KeyDerivationFunction):
+    def __init__(
+        self,
+        algorithm: hashes.HashAlgorithm,
+        length: int,
+        sharedinfo: typing.Optional[bytes],
+        backend=None,
+    ):
         backend = _get_backend(backend)
 
         max_len = algorithm.digest_size * (2 ** 32 - 1)
@@ -48,7 +53,7 @@ class X963KDF(object):
         self._backend = backend
         self._used = False
 
-    def derive(self, key_material):
+    def derive(self, key_material: bytes) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True
@@ -69,6 +74,6 @@ class X963KDF(object):
 
         return b"".join(output)[: self._length]
 
-    def verify(self, key_material, expected_key):
+    def verify(self, key_material: bytes, expected_key: bytes) -> None:
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey
