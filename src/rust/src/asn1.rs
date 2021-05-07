@@ -51,8 +51,9 @@ fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult
 
 #[pyo3::prelude::pyfunction]
 fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
-    let x509_mod = py.import("cryptography.x509.extensions")?;
-    let tls_feature_type_to_enum = x509_mod.getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
+    let tls_feature_type_to_enum = py
+        .import("cryptography.x509.extensions")?
+        .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
     let features = pyo3::types::PyList::empty(py);
     for el in asn1::parse_single::<asn1::SequenceOf<u64>>(data)? {
