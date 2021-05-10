@@ -3,14 +3,14 @@
 # for complete details.
 
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
-class _ASN1Type(Enum):
+class _ASN1Type(utils.Enum):
     UTF8String = 12
     NumericString = 18
     PrintableString = 19

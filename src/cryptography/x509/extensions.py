@@ -8,8 +8,8 @@ import datetime
 import hashlib
 import ipaddress
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
@@ -671,7 +671,7 @@ class DistributionPoint(object):
         return self._crl_issuer
 
 
-class ReasonFlags(Enum):
+class ReasonFlags(utils.Enum):
     unspecified = "unspecified"
     key_compromise = "keyCompromise"
     ca_compromise = "cACompromise"
@@ -1035,7 +1035,7 @@ class TLSFeature(ExtensionType):
         return hash(tuple(self._features))
 
 
-class TLSFeatureType(Enum):
+class TLSFeatureType(utils.Enum):
     # status_request is defined in RFC 6066 and is used for what is commonly
     # called OCSP Must-Staple when present in the TLS Feature extension in an
     # X.509 certificate.

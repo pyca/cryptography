@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import enum
 import typing
 
 import pytest
@@ -51,3 +52,13 @@ class TestCachedProperty(object):
         assert len(accesses) == 1
         assert t.t == 14
         assert len(accesses) == 1
+
+
+def test_enum():
+    class TestEnum(utils.Enum):
+        value = "something"
+
+    assert issubclass(TestEnum, enum.Enum)
+    assert isinstance(TestEnum.value, enum.Enum)
+    assert repr(TestEnum.value) == "<TestEnum.value: 'something'>"
+    assert str(TestEnum.value) == "TestEnum.value"
