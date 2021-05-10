@@ -5,15 +5,16 @@
 
 import abc
 import datetime
-from enum import Enum
+
+from cryptography import utils
 
 
-class LogEntryType(Enum):
+class LogEntryType(utils.Enum):
     X509_CERTIFICATE = 0
     PRE_CERTIFICATE = 1
 
 
-class Version(Enum):
+class Version(utils.Enum):
     v1 = 0
 
 

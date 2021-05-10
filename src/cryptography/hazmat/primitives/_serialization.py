@@ -3,13 +3,14 @@
 # for complete details.
 
 import abc
-from enum import Enum
+
+from cryptography import utils
 
 # This exists to break an import cycle. These classes are normally accessible
 # from the serialization module.
 
 
-class Encoding(Enum):
+class Encoding(utils.Enum):
     PEM = "PEM"
     DER = "DER"
     OpenSSH = "OpenSSH"
@@ -18,14 +19,14 @@ class Encoding(Enum):
     SMIME = "S/MIME"
 
 
-class PrivateFormat(Enum):
+class PrivateFormat(utils.Enum):
     PKCS8 = "PKCS8"
     TraditionalOpenSSL = "TraditionalOpenSSL"
     Raw = "Raw"
     OpenSSH = "OpenSSH"
 
 
-class PublicFormat(Enum):
+class PublicFormat(utils.Enum):
     SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
     PKCS1 = "Raw PKCS#1"
     OpenSSH = "OpenSSH"
@@ -34,7 +35,7 @@ class PublicFormat(Enum):
     UncompressedPoint = "X9.62 Uncompressed Point"
 
 
-class ParameterFormat(Enum):
+class ParameterFormat(utils.Enum):
     PKCS3 = "PKCS3"
 
 

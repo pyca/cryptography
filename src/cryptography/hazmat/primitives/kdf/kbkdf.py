@@ -4,7 +4,6 @@
 
 
 import typing
-from enum import Enum
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -19,11 +18,11 @@ from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-class Mode(Enum):
+class Mode(utils.Enum):
     CounterMode = "ctr"
 
 
-class CounterLocation(Enum):
+class CounterLocation(utils.Enum):
     BeforeFixed = "before_fixed"
     AfterFixed = "after_fixed"
 

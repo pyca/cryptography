@@ -6,8 +6,8 @@
 import abc
 import datetime
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.base import (
@@ -27,12 +27,12 @@ _OIDS_TO_HASH = {
 }
 
 
-class OCSPResponderEncoding(Enum):
+class OCSPResponderEncoding(utils.Enum):
     HASH = "By Hash"
     NAME = "By Name"
 
 
-class OCSPResponseStatus(Enum):
+class OCSPResponseStatus(utils.Enum):
     SUCCESSFUL = 0
     MALFORMED_REQUEST = 1
     INTERNAL_ERROR = 2
@@ -58,7 +58,7 @@ def _verify_algorithm(algorithm):
         )
 
 
-class OCSPCertStatus(Enum):
+class OCSPCertStatus(utils.Enum):
     GOOD = 0
     REVOKED = 1
     UNKNOWN = 2
