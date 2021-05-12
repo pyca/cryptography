@@ -67,7 +67,7 @@ jobs:
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - run: |
           curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
           sudo installer -pkg python.pkg -target /
@@ -120,7 +120,7 @@ jobs:
           - {VERSION: "3.8", MSVC_VERSION: "2019", "ABI_VERSION": "cp36"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - name: Setup python
         uses: actions/setup-python@v2.2.2
         with:
