@@ -79,7 +79,7 @@ jobs:
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-x86-64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: stable
@@ -126,7 +126,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: stable
