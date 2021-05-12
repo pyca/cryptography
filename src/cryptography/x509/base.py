@@ -7,8 +7,8 @@ import abc
 import datetime
 import os
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -71,7 +71,7 @@ def _convert_to_naive_utc_time(time: datetime.datetime) -> datetime.datetime:
         return time
 
 
-class Version(Enum):
+class Version(utils.Enum):
     v1 = 0
     v3 = 2
 
