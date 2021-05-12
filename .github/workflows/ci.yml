@@ -221,7 +221,7 @@ jobs:
           override: true
           default: true
           components: llvm-tools-preview
-      - uses: actions-rs/install@v0.1
+      - uses: actions-rs/install@v0.1.2
         with:
           crate: cargo-binutils
           version: latest
