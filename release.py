@@ -10,6 +10,7 @@ import os
 import subprocess
 import time
 import zipfile
+from pathlib import Path
 
 import click
 
@@ -112,9 +113,27 @@ def build_github_actions_wheels(token, version):
     return download_artifacts_github_actions(session, token, run_url)
 
 
+def build_wheel_in_docker(
+    src_directory: Path, base_image: str = "python:3.9-slim-buster",
+):
+    cmd = [
+        "docker",
+        "run",
+        "--rm",
+        "--mount",
+        "type=bind,source=%s,target=/source" % src_directory.absolute(),
+        base_image,
+        "python3",
+        "/source/docker_build.py",
+        "/source",
+    ]
+    subprocess.check_call(cmd, cwd=src_directory)
+
+
 @click.command()
 @click.argument("version")
-def release(version):
+@click.argument('docker-image', nargs=-1)
+def release(version, docker_image):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
@@ -125,6 +144,8 @@ def release(version):
 
     run("python", "setup.py", "sdist")
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
+    for image in docker_image:
+        build_wheel_in_docker(Path("."), base_image=image)
 
     packages = glob.glob("dist/cryptography-{0}*".format(version)) + glob.glob(
         "vectors/dist/cryptography_vectors-{0}*".format(version)
