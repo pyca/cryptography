@@ -3,6 +3,7 @@
 // for complete details.
 
 mod asn1;
+mod ocsp;
 
 use std::convert::TryInto;
 
@@ -73,6 +74,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_function(pyo3::wrap_pyfunction!(check_ansix923_padding, m)?)?;
 
     m.add_submodule(asn1::create_submodule(py)?)?;
+    m.add_submodule(ocsp::create_submodule(py)?)?;
 
     Ok(())
 }
