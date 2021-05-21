@@ -62,10 +62,7 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
-from cryptography.hazmat.backends.openssl.ocsp import (
-    _OCSPRequest,
-    _OCSPResponse,
-)
+from cryptography.hazmat.backends.openssl.ocsp import _OCSPResponse
 from cryptography.hazmat.backends.openssl.poly1305 import (
     _POLY1305_KEY_SIZE,
     _Poly1305Context,
@@ -1649,16 +1646,6 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def load_der_ocsp_request(self, data):
-        mem_bio = self._bytes_to_bio(data)
-        request = self._lib.d2i_OCSP_REQUEST_bio(mem_bio.bio, self._ffi.NULL)
-        if request == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load OCSP request")
-
-        request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
-        return _OCSPRequest(self, request)
-
     def load_der_ocsp_response(self, data):
         mem_bio = self._bytes_to_bio(data)
         response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
@@ -1686,7 +1673,11 @@ class Backend(BackendInterface):
             add_func=self._lib.OCSP_REQUEST_add_ext,
             gc=True,
         )
-        return _OCSPRequest(self, ocsp_req)
+
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_OCSP_REQUEST_bio(bio, ocsp_req)
+        self.openssl_assert(res > 0)
+        return ocsp.load_der_ocsp_request(self._read_mem_bio(bio))
 
     def _create_ocsp_basic_response(self, builder, private_key, algorithm):
         self._x509_check_signature_params(private_key, algorithm)

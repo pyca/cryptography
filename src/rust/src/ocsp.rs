@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::conversion::ToPyObject;
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use pyo3::conversion::ToPyObject;
+use pyo3::exceptions;
 
 lazy_static::lazy_static! {
     static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
@@ -24,10 +25,21 @@ struct OwnedRawOCSPRequest {
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_ocsp_request(py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPRequest, PyAsn1Error> {
+fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPRequest, PyAsn1Error> {
     let raw = OwnedRawOCSPRequest::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
 
-    Ok(OCSPRequest { raw, cached_extensions: None })
+    if raw.borrow_value().tbs_request.request_list.clone().count() != 1 {
+        return Err(PyAsn1Error::from(
+            exceptions::PyNotImplementedError::new_err(
+                "OCSP request contains more than one request",
+            ),
+        ));
+    }
+
+    Ok(OCSPRequest {
+        raw,
+        cached_extensions: None,
+    })
 }
 
 #[pyo3::prelude::pyclass]
@@ -49,6 +61,47 @@ impl OCSPRequest {
             .unwrap()?
             .req_cert)
     }
+}
+
+fn parse_and_cache_extensions<
+    'p,
+    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
+>(
+    py: pyo3::Python<'p>,
+    cached_extensions: &mut Option<pyo3::PyObject>,
+    raw_exts: &Option<Extensions>,
+    parse_ext: F,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    if let Some(cached) = cached_extensions {
+        return Ok(cached.clone_ref(py));
+    }
+
+    let x509_module = py.import("cryptography.x509")?;
+    let exts = pyo3::types::PyList::empty(py);
+    if let Some(raw_exts) = raw_exts {
+        for raw_ext in raw_exts.clone() {
+            let raw_ext = raw_ext?;
+            let critical = match raw_ext.critical {
+                // Explicitly encoded default
+                Some(false) => unimplemented!(),
+                Some(true) => true,
+                None => false,
+            };
+            let oid_obj =
+                x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
+            let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
+                Some(e) => e,
+                None => x509_module
+                    .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
+            };
+            exts.append(x509_module.call_method1("Extension", (oid_obj, critical, extn_value))?)?;
+        }
+    }
+    let extensions = x509_module
+        .call_method1("Extensions", (exts,))?
+        .to_object(py);
+    *cached_extensions = Some(extensions.clone_ref(py));
+    Ok(extensions)
 }
 
 #[pyo3::prelude::pymethods]
@@ -99,42 +152,25 @@ impl OCSPRequest {
 
     #[getter]
     fn extensions<'p>(&mut self, py: pyo3::Python<'p>) -> Result<pyo3::PyObject, PyAsn1Error> {
-        if let Some(cached) = &self.cached_extensions {
-            return Ok(cached.clone_ref(py));
-        }
-
         let x509_module = py.import("cryptography.x509")?;
-        let exts = pyo3::types::PyList::empty(py);
-        if let Some(raw_exts) = &self.raw.borrow_value().tbs_request.request_extensions {
-            for raw_ext in raw_exts.clone() {
-                let raw_ext = raw_ext?;
-                let critical = match raw_ext.critical {
-                    // Explicitly encoded default
-                    Some(false) => unimplemented!(),
-                    Some(true) => true,
-                    None => false,
-                };
-                let oid_obj = x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
-                let extn_value = if raw_ext.extn_id == *NONCE_OID {
+        parse_and_cache_extensions(
+            py,
+            &mut self.cached_extensions,
+            &self.raw.borrow_value().tbs_request.request_extensions,
+            |oid, value| {
+                if oid == &*NONCE_OID {
                     // This is a disaster. RFC 2560 says that the contents of the nonce is
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
                     // nonce is an OCTET STRING, and so you should unwrap the TLV to get
                     // the nonce. For now we just implement the old behavior, even though
                     // it's deranged.
-                    x509_module
-                        .call_method1("OCSPNonce", (raw_ext.extn_value,))?
+                    Ok(Some(x509_module.call_method1("OCSPNonce", (value,))?))
                 } else {
-                    x509_module
-                        .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?
-                };
-
-                exts.append(x509_module.call_method1("Extension", (oid_obj, critical, extn_value))?)?;
-            }
-        }
-        let extensions = x509_module.call_method1("Extensions", (exts,))?.to_object(py);
-        self.cached_extensions = Some(extensions.clone_ref(py));
-        Ok(extensions)
+                    Ok(None)
+                }
+            },
+        )
     }
 }
 
@@ -142,15 +178,15 @@ impl OCSPRequest {
 struct RawOCSPRequest<'a> {
     tbs_request: TBSRequest<'a>,
     #[explicit(0)]
-    optional_signature: Option<Signature<'a>>,
+    _optional_signature: Option<Signature<'a>>,
 }
 
 #[derive(asn1::Asn1Read)]
 struct TBSRequest<'a> {
     #[explicit(0)]
-    version: Option<u8>,
+    _version: Option<u8>,
     #[explicit(1)]
-    requestor_name: Option<GeneralName<'a>>,
+    _requestor_name: Option<GeneralName<'a>>,
     request_list: asn1::SequenceOf<'a, Request<'a>>,
     #[explicit(2)]
     request_extensions: Option<Extensions<'a>>,
@@ -160,7 +196,7 @@ struct TBSRequest<'a> {
 struct Request<'a> {
     req_cert: CertID<'a>,
     #[explicit(0)]
-    single_request_extensions: Option<Extensions<'a>>,
+    _single_request_extensions: Option<Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read)]
@@ -173,12 +209,12 @@ struct CertID<'a> {
 
 #[derive(asn1::Asn1Read)]
 struct Signature<'a> {
-    signature_algorithm: AlgorithmIdentifier<'a>,
-    signature: asn1::BitString<'a>,
+    _signature_algorithm: AlgorithmIdentifier<'a>,
+    _signature: asn1::BitString<'a>,
     // This is just an opaque SEQUENCE, because we don't want to parse out all
     // of certificates.
     #[explicit(0)]
-    certs: Option<asn1::Sequence<'a>>,
+    _certs: Option<asn1::Sequence<'a>>,
 }
 
 type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
@@ -186,7 +222,7 @@ type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
     oid: asn1::ObjectIdentifier<'a>,
-    params: Option<asn1::Tlv<'a>>,
+    _params: Option<asn1::Tlv<'a>>,
 }
 
 #[derive(asn1::Asn1Read)]
@@ -235,14 +271,14 @@ impl<'a> asn1::Asn1Readable<'a> for GeneralName<'a> {
         let tlv = p.read_element::<asn1::Tlv>()?;
         Ok(match tlv.tag() {
             0 => unimplemented!(),
-            1 => GeneralName::RFC822Name(parse_implicit(tlv.data(), 1)?),
-            2 => GeneralName::DNSName(parse_implicit(tlv.data(), 2)?),
+            1 => GeneralName::RFC822Name(parse_implicit(tlv.full_data(), 1)?),
+            2 => GeneralName::DNSName(parse_implicit(tlv.full_data(), 2)?),
             3 => unimplemented!(),
             4 => unimplemented!(),
             5 => unimplemented!(),
-            6 => GeneralName::UniformResourceIdentifier(parse_implicit(tlv.data(), 6)?),
-            7 => GeneralName::IPAddress(parse_implicit(tlv.data(), 7)?),
-            8 => GeneralName::RegisteredID(parse_implicit(tlv.data(), 8)?),
+            6 => GeneralName::UniformResourceIdentifier(parse_implicit(tlv.full_data(), 6)?),
+            7 => GeneralName::IPAddress(parse_implicit(tlv.full_data(), 7)?),
+            8 => GeneralName::RegisteredID(parse_implicit(tlv.full_data(), 8)?),
             _ => return Err(asn1::ParseError::UnexpectedTag { actual: tlv.tag() }),
         })
     }
