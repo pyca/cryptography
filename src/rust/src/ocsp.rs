@@ -150,7 +150,7 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn extensions<'p>(&mut self, py: pyo3::Python<'p>) -> Result<pyo3::PyObject, PyAsn1Error> {
+    fn extensions(&mut self, py: pyo3::Python) -> Result<pyo3::PyObject, PyAsn1Error> {
         let x509_module = py.import("cryptography.x509")?;
         parse_and_cache_extensions(
             py,
@@ -302,7 +302,16 @@ impl<'a> asn1::Asn1Readable<'a> for GeneralName<'a> {
     }
 
     fn can_parse(tag: u8) -> bool {
-        matches!(tag, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+        // Use `matches!` once MSRV>=1.42
+        tag == 0
+            || tag == 1
+            || tag == 2
+            || tag == 3
+            || tag == 4
+            || tag == 5
+            || tag == 6
+            || tag == 7
+            || tag == 8
     }
 }
 impl<'a> asn1::Asn1Writable<'a> for GeneralName<'a> {
