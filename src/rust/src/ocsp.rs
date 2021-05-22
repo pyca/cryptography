@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use std::collections::HashMap;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
 
@@ -12,6 +13,16 @@ lazy_static::lazy_static! {
     static ref SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.1").unwrap();
     static ref SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.2").unwrap();
     static ref SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.3").unwrap();
+
+    static ref OIDS_TO_HASH: HashMap<&'static asn1::ObjectIdentifier<'static>, &'static str> = {
+        let mut h = HashMap::new();
+        h.insert(&*SHA1_OID, "SHA1");
+        h.insert(&*SHA224_OID, "SHA224");
+        h.insert(&*SHA256_OID, "SHA256");
+        h.insert(&*SHA384_OID, "SHA384");
+        h.insert(&*SHA512_OID, "SHA512");
+        h
+    };
 
     static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
 }
@@ -120,27 +131,20 @@ impl OCSPRequest {
         let cert_id = self.cert_id()?;
 
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
-        if cert_id.hash_algorithm.oid == *SHA1_OID {
-            Ok(hashes.call0("SHA1")?)
-        } else if cert_id.hash_algorithm.oid == *SHA224_OID {
-            Ok(hashes.call0("SHA224")?)
-        } else if cert_id.hash_algorithm.oid == *SHA256_OID {
-            Ok(hashes.call0("SHA256")?)
-        } else if cert_id.hash_algorithm.oid == *SHA384_OID {
-            Ok(hashes.call0("SHA384")?)
-        } else if cert_id.hash_algorithm.oid == *SHA512_OID {
-            Ok(hashes.call0("SHA512")?)
-        } else {
-            let exceptions = py.import("cryptography.exceptions")?;
-            Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                exceptions.call1(
-                    "UnsupportedAlgorithm",
-                    (format!(
-                        "Signature algorithm OID: {} not recognized",
-                        cert_id.hash_algorithm.oid
-                    ),),
-                )?,
-            )))
+        match OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
+            Some(alg_name) => Ok(hashes.call0(alg_name)?),
+            None => {
+                let exceptions = py.import("cryptography.exceptions")?;
+                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                    exceptions.call1(
+                        "UnsupportedAlgorithm",
+                        (format!(
+                            "Signature algorithm OID: {} not recognized",
+                            cert_id.hash_algorithm.oid
+                        ),),
+                    )?,
+                )))
+            }
         }
     }
 
