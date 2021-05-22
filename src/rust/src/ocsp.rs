@@ -3,9 +3,9 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
-use std::collections::HashMap;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
+use std::collections::HashMap;
 
 lazy_static::lazy_static! {
     static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
