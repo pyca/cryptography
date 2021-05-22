@@ -200,7 +200,8 @@ impl OCSPRequest {
 struct RawOCSPRequest<'a> {
     tbs_request: TBSRequest<'a>,
     // Parsing out the full structure, which includes the entirety of a
-    // certificate is more trouble than it's worth,since it's not in API.
+    // certificate is more trouble than it's worth, since it's not in the
+    // Python API.
     #[explicit(0)]
     _optional_signature: Option<asn1::Sequence<'a>>,
 }
