@@ -19,7 +19,6 @@ from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.ocsp import (
     OCSPCertStatus,
-    OCSPRequest,
     OCSPResponse,
     OCSPResponseStatus,
     _CERT_STATUS_TO_ENUM,
