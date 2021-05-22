@@ -198,7 +198,7 @@ struct RawOCSPRequest<'a> {
     // Parsing out the full structure, which includes the entirety of a
     // certificate is more trouble than it's worth,since it's not in API.
     #[explicit(0)]
-    _optional_signature: Option<Sequence<'a>>,
+    _optional_signature: Option<asn1::Sequence<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
