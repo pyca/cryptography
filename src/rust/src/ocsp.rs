@@ -58,7 +58,7 @@ impl OCSPRequest {
             .request_list
             .clone()
             .next()
-            .unwrap()?
+            .unwrap()
             .req_cert)
     }
 }
@@ -80,7 +80,6 @@ fn parse_and_cache_extensions<
     let exts = pyo3::types::PyList::empty(py);
     if let Some(raw_exts) = raw_exts {
         for raw_ext in raw_exts.clone() {
-            let raw_ext = raw_ext?;
             let critical = match raw_ext.critical {
                 // Explicitly encoded default
                 Some(false) => unimplemented!(),
@@ -172,16 +171,35 @@ impl OCSPRequest {
             },
         )
     }
+
+    fn public_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        encoding: &pyo3::PyAny,
+    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+        let der = py
+            .import("cryptography.hazmat.primitives.serialization")?
+            .getattr("Encoding")?
+            .getattr("DER")?;
+        if encoding != der {
+            return Err(PyAsn1Error::from(exceptions::PyValueError::new_err(
+                "The only allowed encoding value is Encoding.DER",
+            )));
+        }
+        // TODO: verify encoding is DER.
+        let result = asn1::write_single(self.raw.borrow_value());
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    }
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RawOCSPRequest<'a> {
     tbs_request: TBSRequest<'a>,
     #[explicit(0)]
     _optional_signature: Option<Signature<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct TBSRequest<'a> {
     #[explicit(0)]
     _version: Option<u8>,
@@ -192,14 +210,14 @@ struct TBSRequest<'a> {
     request_extensions: Option<Extensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Request<'a> {
     req_cert: CertID<'a>,
     #[explicit(0)]
     _single_request_extensions: Option<Extensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct CertID<'a> {
     hash_algorithm: AlgorithmIdentifier<'a>,
     issuer_name_hash: &'a [u8],
@@ -207,7 +225,7 @@ struct CertID<'a> {
     serial_number: asn1::BigUint<'a>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Signature<'a> {
     _signature_algorithm: AlgorithmIdentifier<'a>,
     _signature: asn1::BitString<'a>,
@@ -219,13 +237,13 @@ struct Signature<'a> {
 
 type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct AlgorithmIdentifier<'a> {
     oid: asn1::ObjectIdentifier<'a>,
     _params: Option<asn1::Tlv<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Extension<'a> {
     extn_id: asn1::ObjectIdentifier<'a>,
     // default false
@@ -285,6 +303,11 @@ impl<'a> asn1::Asn1Readable<'a> for GeneralName<'a> {
 
     fn can_parse(tag: u8) -> bool {
         matches!(tag, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+    }
+}
+impl<'a> asn1::Asn1Writable<'a> for GeneralName<'a> {
+    fn write(&self, _dest: &mut asn1::Writer) {
+        unimplemented!()
     }
 }
 
