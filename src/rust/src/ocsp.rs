@@ -195,8 +195,10 @@ impl OCSPRequest {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RawOCSPRequest<'a> {
     tbs_request: TBSRequest<'a>,
+    // Parsing out the full structure, which includes the entirety of a
+    // certificate is more trouble than it's worth,since it's not in API.
     #[explicit(0)]
-    _optional_signature: Option<Signature<'a>>,
+    _optional_signature: Option<Sequence<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -223,16 +225,6 @@ struct CertID<'a> {
     issuer_name_hash: &'a [u8],
     issuer_key_hash: &'a [u8],
     serial_number: asn1::BigUint<'a>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct Signature<'a> {
-    _signature_algorithm: AlgorithmIdentifier<'a>,
-    _signature: asn1::BitString<'a>,
-    // This is just an opaque SEQUENCE, because we don't want to parse out all
-    // of certificates.
-    #[explicit(0)]
-    _certs: Option<asn1::Sequence<'a>>,
 }
 
 type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
