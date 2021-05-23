@@ -317,10 +317,38 @@ impl<'a> asn1::Asn1Writable<'a> for GeneralName<'a> {
     }
 }
 
+#[pyo3::prelude::pyfunction]
+fn parse_ocsp_resp_extension(
+    py: pyo3::Python<'_>,
+    der_oid: &[u8],
+    ext_data: &[u8],
+) -> pyo3::PyResult<pyo3::PyObject> {
+    let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
+
+    let x509_module = py.import("cryptography.x509")?;
+    if oid == *NONCE_OID {
+        // This is a disaster. RFC 2560 says that the contents of the nonce is
+        // just the raw extension value. This is nonsense, since they're always
+        // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
+        // nonce is an OCTET STRING, and so you should unwrap the TLV to get
+        // the nonce. For now we just implement the old behavior, even though
+        // it's deranged.
+        Ok(x509_module
+            .call_method1("OCSPNonce", (ext_data,))?
+            .to_object(py))
+    } else {
+        let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
+        Ok(x509_module
+            .call_method1("UnrecognizedExtension", (oid_obj, ext_data))?
+            .to_object(py))
+    }
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "ocsp")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_resp_extension))?;
 
     Ok(submod)
 }

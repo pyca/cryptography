@@ -86,6 +86,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _RevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import asn1
+from cryptography.hazmat.bindings._rust.ocsp import parse_ocsp_resp_extension
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -421,8 +422,7 @@ class Backend(BackendInterface):
             self,
             ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
             get_ext=self._lib.OCSP_BASICRESP_get_ext,
-            # OCSP basic resp has the same extensions as req.
-            rust_callback=asn1.parse_ocsp_req_extension,
+            rust_callback=parse_ocsp_resp_extension,
         )
         self._ocsp_singleresp_ext_parser = _X509ExtensionParser(
             self,
