@@ -14,7 +14,6 @@ from cryptography.x509.oid import (
     CRLEntryExtensionOID,
     CertificatePoliciesOID,
     ExtensionOID,
-    OCSPExtensionOID,
 )
 
 
@@ -819,12 +818,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
-def _decode_nonce(backend, nonce):
-    nonce = backend._ffi.cast("ASN1_OCTET_STRING *", nonce)
-    nonce = backend._ffi.gc(nonce, backend._lib.ASN1_OCTET_STRING_free)
-    return x509.OCSPNonce(_asn1_string_to_bytes(backend, nonce))
-
-
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
@@ -869,10 +862,6 @@ _CRL_EXTENSION_HANDLERS = {
     ),
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-}
-
-_OCSP_BASICRESP_EXTENSION_HANDLERS = {
-    OCSPExtensionOID.NONCE: _decode_nonce,
 }
 
 _OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT = {
