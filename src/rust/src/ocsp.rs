@@ -249,15 +249,6 @@ struct Extension<'a> {
     extn_value: &'a [u8],
 }
 
-fn parse_implicit<'a, T: asn1::SimpleAsn1Readable<'a>>(
-    data: &'a [u8],
-    tag: u8,
-) -> asn1::ParseResult<T> {
-    asn1::parse(data, |p| {
-        Ok(p.read_optional_implicit_element::<T>(tag)?.unwrap())
-    })
-}
-
 #[pyo3::prelude::pyfunction]
 fn parse_ocsp_resp_extension(
     py: pyo3::Python<'_>,
