@@ -190,7 +190,6 @@ impl OCSPRequest {
                 "The only allowed encoding value is Encoding.DER",
             )));
         }
-        // TODO: verify encoding is DER.
         let result = asn1::write_single(self.raw.borrow_value());
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
@@ -210,8 +209,10 @@ struct RawOCSPRequest<'a> {
 struct TBSRequest<'a> {
     #[explicit(0)]
     _version: Option<u8>,
-    #[explicit(1)]
-    _requestor_name: Option<GeneralName<'a>>,
+    // This is virtually unused, not supported until GeneralName is implemented
+    // and used elsewhere.
+    // #[explicit(1)]
+    // _requestor_name: Option<GeneralName<'a>>,
     request_list: asn1::SequenceOf<'a, Request<'a>>,
     #[explicit(2)]
     request_extensions: Option<Extensions<'a>>,
@@ -255,66 +256,6 @@ fn parse_implicit<'a, T: asn1::SimpleAsn1Readable<'a>>(
     asn1::parse(data, |p| {
         Ok(p.read_optional_implicit_element::<T>(tag)?.unwrap())
     })
-}
-
-// This is a manual implementation of the follow, until we can use const
-// generics
-// asn1::Choice9<
-//     asn1::Implicit<OtherName, 0>>,
-//     asn1::Implicit<asn1::IA5String, 1>>,
-//     asn1::Implicit<asn1::IA5String, 2>>,
-//     asn1::Implicit<ORAddress, 3>>,
-//     asn1::Implicit<Name, 4>>,
-//     asn1::Implicit<EDIPartyName, 5>>,
-//     asn1::Implicit<IA5String, 6>>,
-//     asn1::Implicit<IPAddress, 7>>,
-//     asn1::Implicit<RegisteredID, 8>>,
-// >
-enum GeneralName<'a> {
-    // OtherName(OtherName<'a>),
-    RFC822Name(asn1::IA5String<'a>),
-    DNSName(asn1::IA5String<'a>),
-    // X400Name(ORAddress),
-    // DirectoryName(Name<'a>),
-    // EDIPartyName(EDIPartyName<'a>),
-    UniformResourceIdentifier(asn1::IA5String<'a>),
-    IPAddress(&'a [u8]),
-    RegisteredID(asn1::ObjectIdentifier<'a>),
-}
-impl<'a> asn1::Asn1Readable<'a> for GeneralName<'a> {
-    fn parse(p: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
-        let tlv = p.read_element::<asn1::Tlv>()?;
-        Ok(match tlv.tag() {
-            0 => unimplemented!(),
-            1 => GeneralName::RFC822Name(parse_implicit(tlv.full_data(), 1)?),
-            2 => GeneralName::DNSName(parse_implicit(tlv.full_data(), 2)?),
-            3 => unimplemented!(),
-            4 => unimplemented!(),
-            5 => unimplemented!(),
-            6 => GeneralName::UniformResourceIdentifier(parse_implicit(tlv.full_data(), 6)?),
-            7 => GeneralName::IPAddress(parse_implicit(tlv.full_data(), 7)?),
-            8 => GeneralName::RegisteredID(parse_implicit(tlv.full_data(), 8)?),
-            _ => return Err(asn1::ParseError::UnexpectedTag { actual: tlv.tag() }),
-        })
-    }
-
-    fn can_parse(tag: u8) -> bool {
-        // Use `matches!` once MSRV>=1.42
-        tag == 0
-            || tag == 1
-            || tag == 2
-            || tag == 3
-            || tag == 4
-            || tag == 5
-            || tag == 6
-            || tag == 7
-            || tag == 8
-    }
-}
-impl<'a> asn1::Asn1Writable<'a> for GeneralName<'a> {
-    fn write(&self, _dest: &mut asn1::Writer) {
-        unimplemented!()
-    }
 }
 
 #[pyo3::prelude::pyfunction]
