@@ -91,11 +91,11 @@ codes (HMAC).
 
         :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :type account_name: :term:`text`
+        :type account_name: str
         :param issuer: The optional display name of issuer. This is typically
             the provider or service the user wants to access using the OTP
             token.
-        :type issuer: :term:`text` or `None`
+        :type issuer: ``str`` or ``None``
         :param int counter: The current value of counter.
         :return: A URI string.
 
@@ -212,11 +212,11 @@ similar to the following code.
 
         :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :type account_name: :term:`text`
+        :type account_name: str
         :param issuer: The optional display name of issuer. This is typically
             the provider or service the user wants to access using the OTP
             token.
-        :type issuer: :term:`text` or `None`
+        :type issuer: ``str`` or ``None``
         :return: A URI string.
 
 Provisioning URI

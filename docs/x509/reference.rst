@@ -1329,7 +1329,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. attribute:: value
 
-        :type: :term:`text`
+        :type: str
 
         The value of the attribute.
 
@@ -1337,7 +1337,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         .. versionadded:: 35.0
 
-        :type: :term:`text`
+        :type: str
 
         The :rfc:`4514` short attribute name (for example "CN"),
         or the OID dotted string if a short name is unavailable.
@@ -1418,7 +1418,7 @@ General Name Classes
 
     .. attribute:: value
 
-        :type: :term:`text`
+        :type: str
 
 .. class:: DNSName(value)
 
@@ -1437,11 +1437,11 @@ General Name Classes
 
     :raises ValueError: If the provided string is not an :term:`A-label`.
 
-        :type: :term:`text`
+        :type: str
 
     .. attribute:: value
 
-        :type: :term:`text`
+        :type: str
 
 .. class:: DirectoryName(value)
 
@@ -1473,7 +1473,7 @@ General Name Classes
 
     .. attribute:: value
 
-        :type: :term:`text`
+        :type: str
 
 .. class:: IPAddress(value)
 
@@ -2592,11 +2592,10 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
         :type: list
 
-        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
-        If the value is text it is a pointer to the practice statement
-        published by the certificate authority. If it is a user notice it is
-        meant for display to the relying party when the certificate is
-        used.
+        A list consisting of ``str`` and/or :class:`UserNotice` objects.  If the
+        value is ``str`` it is a pointer to the practice statement published by
+        the certificate authority. If it is a user notice it is meant for
+        display to the relying party when the certificate is used.
 
 .. class:: UserNotice(notice_reference, explicit_text)
 
@@ -2618,7 +2617,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         This field includes an arbitrary textual statement directly in the
         certificate.
 
-        :type: :term:`text`
+        :type: str
 
 .. class:: NoticeReference(organization, notice_numbers)
 
@@ -2633,7 +2632,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
     .. attribute:: organization
 
-        :type: :term:`text`
+        :type: str
 
     .. attribute:: notice_numbers
 

@@ -83,7 +83,7 @@ class NameAttribute(object):
             )
 
         if not isinstance(value, str):
-            raise TypeError("value argument must be a text type.")
+            raise TypeError("value argument must be a str.")
 
         if (
             oid == NameOID.COUNTRY_NAME
