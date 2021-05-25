@@ -976,6 +976,14 @@ class TestOCSPResponse(object):
         with pytest.raises(UnsupportedAlgorithm):
             resp.signature_hash_algorithm
 
+    def test_unknown_hash_algorithm(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-unknown-hash-alg.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            resp.hash_algorithm
+
     def test_load_responder_key_hash(self):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-responder-key-hash.der"),
