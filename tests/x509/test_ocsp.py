@@ -119,6 +119,14 @@ class TestOCSPRequest(object):
             b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd",
         )
 
+    def test_load_request_with_duplicate_extension(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "req-duplicate-ext.der"),
+            ocsp.load_der_ocsp_request,
+        )
+        with pytest.raises(x509.DuplicateExtension):
+            req.extensions
+
     def test_load_request_two_requests(self):
         with pytest.raises(NotImplementedError):
             _load_data(

@@ -540,8 +540,6 @@ X.509 OCSP Test Vectors
   ``CT Certificate SCTs`` single extension, from the SwissSign OCSP responder.
 * ``x509/ocsp/ocsp-army.deps.mil-resp.der`` - An OCSP response containing
   multiple ``SINGLERESP`` values.
-* ``x509/ocsp/resp-unknown-extension.der`` - An OCSP response containing an
-  extension with an unknown OID.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -554,6 +552,10 @@ Custom X.509 OCSP Test Vectors
 * ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
   extension.
 * ``x509/ocsp/req-ext-unknown-oid.der`` - An OCSP request containing an
+  extension with an unknown OID.
+* ``x509/ocsp/req-duplicate-ext.der`` - An OCSP request with duplicate
+  extensions.
+* ``x509/ocsp/resp-unknown-extension.der`` - An OCSP response containing an
   extension with an unknown OID.
 
 Custom PKCS12 Test Vectors
