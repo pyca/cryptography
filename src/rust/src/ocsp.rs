@@ -5,7 +5,7 @@
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 lazy_static::lazy_static! {
     static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
@@ -89,6 +89,7 @@ fn parse_and_cache_extensions<
 
     let x509_module = py.import("cryptography.x509")?;
     let exts = pyo3::types::PyList::empty(py);
+    let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
         for raw_ext in raw_exts.clone() {
             let critical = match raw_ext.critical {
@@ -99,12 +100,26 @@ fn parse_and_cache_extensions<
             };
             let oid_obj =
                 x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
+
+            if seen_oids.contains(&raw_ext.extn_id) {
+                return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                    x509_module.call_method1(
+                        "DuplicateExtension",
+                        (
+                            format!("Duplicate {} extension found", raw_ext.extn_id),
+                            oid_obj,
+                        ),
+                    )?,
+                )));
+            }
+
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
                 Some(e) => e,
                 None => x509_module
                     .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
             };
             exts.append(x509_module.call_method1("Extension", (oid_obj, critical, extn_value))?)?;
+            seen_oids.insert(raw_ext.extn_id);
         }
     }
     let extensions = x509_module
