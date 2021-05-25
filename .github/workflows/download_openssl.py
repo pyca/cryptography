@@ -12,9 +12,14 @@ from urllib3.util.retry import Retry
 def get_response(session, url, token):
     # Retry on non-502s
     for i in range(5):
-        response = session.get(
-            url, headers={"Authorization": "token " + token}
-        )
+        try:
+            response = session.get(
+                url, headers={"Authorization": "token " + token}
+            )
+        except requests.exceptions.ChunkedEncodingError as e:
+            print("Exception ({}) fetching {}, retrying".format(e, url))
+            time.sleep(2)
+            continue
         if response.status_code != 200:
             print(
                 "HTTP error ({}) fetching {}, retrying".format(
