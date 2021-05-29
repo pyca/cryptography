@@ -92,12 +92,6 @@ fn parse_and_cache_extensions<
     let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
         for raw_ext in raw_exts.clone() {
-            let critical = match raw_ext.critical {
-                // Explicitly encoded default
-                Some(false) => unimplemented!(),
-                Some(true) => true,
-                None => false,
-            };
             let oid_obj =
                 x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
 
@@ -118,7 +112,9 @@ fn parse_and_cache_extensions<
                 None => x509_module
                     .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
             };
-            exts.append(x509_module.call_method1("Extension", (oid_obj, critical, extn_value))?)?;
+            exts.append(
+                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?,
+            )?;
             seen_oids.insert(raw_ext.extn_id);
         }
     }
@@ -223,7 +219,8 @@ struct RawOCSPRequest<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct TBSRequest<'a> {
     #[explicit(0)]
-    _version: Option<u8>,
+    #[default(0)]
+    version: u8,
     // This is virtually unused, not supported until GeneralName is implemented
     // and used elsewhere.
     // #[explicit(1)]
@@ -259,8 +256,8 @@ struct AlgorithmIdentifier<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Extension<'a> {
     extn_id: asn1::ObjectIdentifier<'a>,
-    // default false
-    critical: Option<bool>,
+    #[default(false)]
+    critical: bool,
     extn_value: &'a [u8],
 }
 
