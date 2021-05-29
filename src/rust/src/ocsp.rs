@@ -112,9 +112,9 @@ fn parse_and_cache_extensions<
                 None => x509_module
                     .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
             };
-            exts.append(
-                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?,
-            )?;
+            let ext_obj =
+                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?;
+            exts.append(ext_obj)?;
             seen_oids.insert(raw_ext.extn_id);
         }
     }
