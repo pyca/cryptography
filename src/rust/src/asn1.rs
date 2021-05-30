@@ -56,8 +56,7 @@ fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
         .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
     let features = pyo3::types::PyList::empty(py);
-    for el in asn1::parse_single::<asn1::SequenceOf<u64>>(data)? {
-        let feature = el?;
+    for feature in asn1::parse_single::<asn1::SequenceOf<u64>>(data)? {
         let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
         features.append(py_feature)?;
     }
@@ -246,7 +245,7 @@ struct Validity<'a> {
 fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
     let mut tags = vec![];
     for rdn in rdns {
-        let mut attributes = rdn?.collect::<asn1::ParseResult<Vec<_>>>()?;
+        let mut attributes = rdn.collect::<Vec<_>>();
         assert_eq!(attributes.len(), 1);
 
         tags.push(attributes.pop().unwrap().value.tag());

@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 lazy_static = "1"
 pyo3 = { version = "0.13.1" }
-asn1 = { version = "0.4.2", default-features = false, features = ["derive"] }
+asn1 = { version = "0.5.0", default-features = false, features = ["derive"] }
 
 [features]
 extension-module = ["pyo3/extension-module"]
