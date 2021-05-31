@@ -422,6 +422,7 @@ class Backend(BackendInterface):
             ext_count=self._lib.X509_CRL_get_ext_count,
             get_ext=self._lib.X509_CRL_get_ext,
             handlers=_CRL_EXTENSION_HANDLERS,
+            rust_callback=rust_x509.parse_crl_extension,
         )
         self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
             self,
