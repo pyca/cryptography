@@ -15,6 +15,7 @@ lazy_static::lazy_static! {
     static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
+    static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
 }
 
 #[derive(asn1::Asn1Read)]
@@ -153,6 +154,10 @@ fn parse_crl_extension(
         let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module.call1("CRLNumber", (pynum,))?.to_object(py))
+    } else if oid == *DELTA_CRL_INDICATOR_OID {
+        let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
+        let pynum = big_asn1_uint_to_py(py, bignum)?;
+        Ok(x509_module.call1("DeltaCRLIndicator", (pynum,))?.to_object(py))
     } else {
         Ok(py.None())
     }
