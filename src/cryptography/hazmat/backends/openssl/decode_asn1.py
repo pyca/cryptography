@@ -296,22 +296,6 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_basic_constraints(backend, bc_st):
-    basic_constraints = backend._ffi.cast("BASIC_CONSTRAINTS *", bc_st)
-    basic_constraints = backend._ffi.gc(
-        basic_constraints, backend._lib.BASIC_CONSTRAINTS_free
-    )
-    # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
-    # chooses to just map this to its ordinal value, so true is 255 and
-    # false is 0.
-    ca = basic_constraints.ca == 255
-    path_length = _asn1_integer_to_int_or_none(
-        backend, basic_constraints.pathlen
-    )
-
-    return x509.BasicConstraints(ca, path_length)
-
-
 def _decode_subject_key_identifier(backend, asn1_string):
     asn1_string = backend._ffi.cast("ASN1_OCTET_STRING *", asn1_string)
     asn1_string = backend._ffi.gc(
@@ -779,7 +763,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 
 _EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
     ExtensionOID.KEY_USAGE: _decode_key_usage,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
