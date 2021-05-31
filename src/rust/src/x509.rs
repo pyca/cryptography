@@ -8,6 +8,7 @@ use pyo3::conversion::ToPyObject;
 lazy_static::lazy_static! {
     static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
     static ref PRECERT_POISON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.3").unwrap();
+    static ref OCSP_NO_CHECK_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.5").unwrap();
 
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
     static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
@@ -92,6 +93,9 @@ fn parse_x509_extension(
     } else if oid == *PRECERT_POISON_OID {
         asn1::parse_single::<()>(ext_data)?;
         Ok(x509_module.call0("PrecertPoison")?.to_object(py))
+    } else if oid == *OCSP_NO_CHECK_OID {
+        asn1::parse_single::<()>(ext_data)?;
+        Ok(x509_module.call0("OCSPNoCheck")?.to_object(py))
     } else if oid == *BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(x509_module

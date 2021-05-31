@@ -159,10 +159,6 @@ def _decode_general_name(backend, gn):
         )
 
 
-def _decode_ocsp_no_check(backend, ext):
-    return x509.OCSPNoCheck()
-
-
 def _decode_delta_crl_indicator(backend, ext):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
@@ -735,7 +731,6 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-    ExtensionOID.OCSP_NO_CHECK: _decode_ocsp_no_check,
     ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
