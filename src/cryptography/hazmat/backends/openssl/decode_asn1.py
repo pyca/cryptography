@@ -363,32 +363,6 @@ def _decode_subject_information_access(backend, aia):
     return x509.SubjectInformationAccess(access_descriptions)
 
 
-def _decode_key_usage(backend, bit_string):
-    bit_string = backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
-    bit_string = backend._ffi.gc(bit_string, backend._lib.ASN1_BIT_STRING_free)
-    get_bit = backend._lib.ASN1_BIT_STRING_get_bit
-    digital_signature = get_bit(bit_string, 0) == 1
-    content_commitment = get_bit(bit_string, 1) == 1
-    key_encipherment = get_bit(bit_string, 2) == 1
-    data_encipherment = get_bit(bit_string, 3) == 1
-    key_agreement = get_bit(bit_string, 4) == 1
-    key_cert_sign = get_bit(bit_string, 5) == 1
-    crl_sign = get_bit(bit_string, 6) == 1
-    encipher_only = get_bit(bit_string, 7) == 1
-    decipher_only = get_bit(bit_string, 8) == 1
-    return x509.KeyUsage(
-        digital_signature,
-        content_commitment,
-        key_encipherment,
-        data_encipherment,
-        key_agreement,
-        key_cert_sign,
-        crl_sign,
-        encipher_only,
-        decipher_only,
-    )
-
-
 def _decode_general_names_extension(backend, gns):
     gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
@@ -477,21 +451,6 @@ def _decode_policy_constraints(backend, pc):
     return x509.PolicyConstraints(
         require_explicit_policy, inhibit_policy_mapping
     )
-
-
-def _decode_extended_key_usage(backend, sk):
-    sk = backend._ffi.cast("Cryptography_STACK_OF_ASN1_OBJECT *", sk)
-    sk = backend._ffi.gc(sk, backend._lib.sk_ASN1_OBJECT_free)
-    num = backend._lib.sk_ASN1_OBJECT_num(sk)
-    ekus = []
-
-    for i in range(num):
-        obj = backend._lib.sk_ASN1_OBJECT_value(sk, i)
-        backend.openssl_assert(obj != backend._ffi.NULL)
-        oid = x509.ObjectIdentifier(_obj2txt(backend, obj))
-        ekus.append(oid)
-
-    return x509.ExtendedKeyUsage(ekus)
 
 
 _DISTPOINT_TYPE_FULLNAME = 0
@@ -764,9 +723,7 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
-    ExtensionOID.KEY_USAGE: _decode_key_usage,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
-    ExtensionOID.EXTENDED_KEY_USAGE: _decode_extended_key_usage,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _decode_authority_information_access
