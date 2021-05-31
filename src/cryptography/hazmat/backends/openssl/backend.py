@@ -85,7 +85,11 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _CertificateSigningRequest,
     _RevokedCertificate,
 )
-from cryptography.hazmat.bindings._rust import asn1, ocsp as rust_ocsp
+from cryptography.hazmat.bindings._rust import (
+    asn1,
+    ocsp as rust_ocsp,
+    x509 as rust_x509,
+)
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -398,6 +402,7 @@ class Backend(BackendInterface):
             ext_count=self._lib.X509_get_ext_count,
             get_ext=self._lib.X509_get_ext,
             handlers=ext_handlers,
+            rust_callback=rust_x509.parse_x509_extension,
         )
         self._csr_extension_parser = _X509ExtensionParser(
             self,

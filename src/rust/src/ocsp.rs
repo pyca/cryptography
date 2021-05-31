@@ -281,10 +281,7 @@ fn parse_ocsp_resp_extension(
             .call_method1("OCSPNonce", (ext_data,))?
             .to_object(py))
     } else {
-        let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
-        Ok(x509_module
-            .call_method1("UnrecognizedExtension", (oid_obj, ext_data))?
-            .to_object(py))
+        Ok(py.None())
     }
 }
 
