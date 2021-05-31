@@ -694,17 +694,6 @@ _CRL_ENTRY_REASON_ENUM_TO_CODE = {
 }
 
 
-def _decode_crl_reason(backend, enum):
-    enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
-    enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
-    code = backend._lib.ASN1_ENUMERATED_get(enum)
-
-    try:
-        return x509.CRLReason(_CRL_ENTRY_REASON_CODE_TO_ENUM[code])
-    except KeyError:
-        raise ValueError("Unsupported reason code: {}".format(code))
-
-
 def _decode_invalidity_date(backend, inv_date):
     generalized_time = backend._ffi.cast("ASN1_GENERALIZEDTIME *", inv_date)
     generalized_time = backend._ffi.gc(
@@ -824,7 +813,6 @@ _EXTENSION_HANDLERS_SCT = {
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
-    CRLEntryExtensionOID.CRL_REASON: _decode_crl_reason,
     CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
