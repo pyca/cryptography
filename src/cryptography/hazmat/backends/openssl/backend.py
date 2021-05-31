@@ -62,10 +62,7 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
-from cryptography.hazmat.backends.openssl.ocsp import (
-    _OCSPRequest,
-    _OCSPResponse,
-)
+from cryptography.hazmat.backends.openssl.ocsp import _OCSPResponse
 from cryptography.hazmat.backends.openssl.poly1305 import (
     _POLY1305_KEY_SIZE,
     _Poly1305Context,
@@ -88,7 +85,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _CertificateSigningRequest,
     _RevokedCertificate,
 )
-from cryptography.hazmat.bindings._rust import asn1
+from cryptography.hazmat.bindings._rust import asn1, ocsp as rust_ocsp
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -420,18 +417,11 @@ class Backend(BackendInterface):
             get_ext=self._lib.X509_CRL_get_ext,
             handlers=_CRL_EXTENSION_HANDLERS,
         )
-        self._ocsp_req_ext_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.OCSP_REQUEST_get_ext_count,
-            get_ext=self._lib.OCSP_REQUEST_get_ext,
-            rust_callback=asn1.parse_ocsp_req_extension,
-        )
         self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
             get_ext=self._lib.OCSP_BASICRESP_get_ext,
-            # OCSP basic resp has the same extensions as req.
-            rust_callback=asn1.parse_ocsp_req_extension,
+            rust_callback=rust_ocsp.parse_ocsp_resp_extension,
         )
         self._ocsp_singleresp_ext_parser = _X509ExtensionParser(
             self,
@@ -1655,16 +1645,6 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def load_der_ocsp_request(self, data):
-        mem_bio = self._bytes_to_bio(data)
-        request = self._lib.d2i_OCSP_REQUEST_bio(mem_bio.bio, self._ffi.NULL)
-        if request == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load OCSP request")
-
-        request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
-        return _OCSPRequest(self, request)
-
     def load_der_ocsp_response(self, data):
         mem_bio = self._bytes_to_bio(data)
         response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
@@ -1692,7 +1672,11 @@ class Backend(BackendInterface):
             add_func=self._lib.OCSP_REQUEST_add_ext,
             gc=True,
         )
-        return _OCSPRequest(self, ocsp_req)
+
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_OCSP_REQUEST_bio(bio, ocsp_req)
+        self.openssl_assert(res > 0)
+        return ocsp.load_der_ocsp_request(self._read_mem_bio(bio))
 
     def _create_ocsp_basic_response(self, builder, private_key, algorithm):
         self._x509_check_signature_params(private_key, algorithm)

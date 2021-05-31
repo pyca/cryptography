@@ -19,7 +19,6 @@ from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.ocsp import (
     OCSPCertStatus,
-    OCSPRequest,
     OCSPResponse,
     OCSPResponseStatus,
     _CERT_STATUS_TO_ENUM,
@@ -344,50 +343,5 @@ class _OCSPResponse(OCSPResponse):
         res = self._backend._lib.i2d_OCSP_RESPONSE_bio(
             bio, self._ocsp_response
         )
-        self._backend.openssl_assert(res > 0)
-        return self._backend._read_mem_bio(bio)
-
-
-class _OCSPRequest(OCSPRequest):
-    def __init__(self, backend, ocsp_request):
-        if backend._lib.OCSP_request_onereq_count(ocsp_request) > 1:
-            raise NotImplementedError(
-                "OCSP request contains more than one request"
-            )
-        self._backend = backend
-        self._ocsp_request = ocsp_request
-        self._request = self._backend._lib.OCSP_request_onereq_get0(
-            self._ocsp_request, 0
-        )
-        self._backend.openssl_assert(self._request != self._backend._ffi.NULL)
-        self._cert_id = self._backend._lib.OCSP_onereq_get0_id(self._request)
-        self._backend.openssl_assert(self._cert_id != self._backend._ffi.NULL)
-
-    @property
-    def issuer_key_hash(self) -> bytes:
-        return _issuer_key_hash(self._backend, self._cert_id)
-
-    @property
-    def issuer_name_hash(self) -> bytes:
-        return _issuer_name_hash(self._backend, self._cert_id)
-
-    @property
-    def serial_number(self) -> int:
-        return _serial_number(self._backend, self._cert_id)
-
-    @property
-    def hash_algorithm(self) -> hashes.HashAlgorithm:
-        return _hash_algorithm(self._backend, self._cert_id)
-
-    @utils.cached_property
-    def extensions(self) -> x509.Extensions:
-        return self._backend._ocsp_req_ext_parser.parse(self._ocsp_request)
-
-    def public_bytes(self, encoding: serialization.Encoding) -> bytes:
-        if encoding is not serialization.Encoding.DER:
-            raise ValueError("The only allowed encoding value is Encoding.DER")
-
-        bio = self._backend._create_mem_bio_gc()
-        res = self._backend._lib.i2d_OCSP_REQUEST_bio(bio, self._ocsp_request)
         self._backend.openssl_assert(res > 0)
         return self._backend._read_mem_bio(bio)

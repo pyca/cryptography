@@ -9,6 +9,7 @@ import typing
 
 from cryptography import utils
 from cryptography import x509
+from cryptography.hazmat.bindings._rust import ocsp
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.base import (
     PRIVATE_KEY_TYPES,
@@ -494,9 +495,7 @@ class OCSPResponseBuilder(object):
 
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_der_ocsp_request(data)
+    return ocsp.load_der_ocsp_request(data)
 
 
 def load_der_ocsp_response(data: bytes) -> OCSPResponse:
