@@ -93,7 +93,6 @@ fn parse_crl_extension(
     }
 }
 
-
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "x509")?;
 
