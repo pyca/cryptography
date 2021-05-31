@@ -159,16 +159,6 @@ def _decode_general_name(backend, gn):
         )
 
 
-def _decode_ocsp_no_check(backend, ext):
-    return x509.OCSPNoCheck()
-
-
-def _decode_delta_crl_indicator(backend, ext):
-    asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
-    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    return x509.DeltaCRLIndicator(_asn1_integer_to_int(backend, asn1_int))
-
-
 class _X509ExtensionParser(object):
     def __init__(
         self, backend, ext_count, get_ext, rust_callback, handlers={}
@@ -295,16 +285,6 @@ def _decode_user_notice(backend, un):
         notice_reference = x509.NoticeReference(organization, notice_numbers)
 
     return x509.UserNotice(notice_reference, explicit_text)
-
-
-def _decode_subject_key_identifier(backend, asn1_string):
-    asn1_string = backend._ffi.cast("ASN1_OCTET_STRING *", asn1_string)
-    asn1_string = backend._ffi.gc(
-        asn1_string, backend._lib.ASN1_OCTET_STRING_free
-    )
-    return x509.SubjectKeyIdentifier(
-        backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
-    )
 
 
 def _decode_authority_key_identifier(backend, akid):
@@ -559,13 +539,6 @@ def _decode_freshest_crl(backend, cdps):
     return x509.FreshestCRL(dist_points)
 
 
-def _decode_inhibit_any_policy(backend, asn1_int):
-    asn1_int = backend._ffi.cast("ASN1_INTEGER *", asn1_int)
-    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    skip_certs = _asn1_integer_to_int(backend, asn1_int)
-    return x509.InhibitAnyPolicy(skip_certs)
-
-
 def _decode_scts(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp,
@@ -723,7 +696,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 
 _EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
@@ -735,8 +707,6 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-    ExtensionOID.OCSP_NO_CHECK: _decode_ocsp_no_check,
-    ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
@@ -753,7 +723,6 @@ _REVOKED_EXTENSION_HANDLERS = {
 }
 
 _CRL_EXTENSION_HANDLERS = {
-    ExtensionOID.DELTA_CRL_INDICATOR: _decode_delta_crl_indicator,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
