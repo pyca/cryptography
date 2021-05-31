@@ -13,6 +13,7 @@ lazy_static::lazy_static! {
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
     static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
     static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
+    static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
@@ -97,6 +98,10 @@ fn parse_x509_extension(
     } else if oid == *OCSP_NO_CHECK_OID {
         asn1::parse_single::<()>(ext_data)?;
         Ok(x509_module.call0("OCSPNoCheck")?.to_object(py))
+    } else if oid == *INHIBIT_ANY_POLICY_OID {
+        let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
+        let pynum = big_asn1_uint_to_py(py, bignum)?;
+        Ok(x509_module.call1("InhibitAnyPolicy", (pynum,))?.to_object(py))
     } else if oid == *BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(x509_module

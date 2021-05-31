@@ -549,13 +549,6 @@ def _decode_freshest_crl(backend, cdps):
     return x509.FreshestCRL(dist_points)
 
 
-def _decode_inhibit_any_policy(backend, asn1_int):
-    asn1_int = backend._ffi.cast("ASN1_INTEGER *", asn1_int)
-    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    skip_certs = _asn1_integer_to_int(backend, asn1_int)
-    return x509.InhibitAnyPolicy(skip_certs)
-
-
 def _decode_scts(backend, asn1_scts):
     from cryptography.hazmat.backends.openssl.x509 import (
         _SignedCertificateTimestamp,
@@ -725,7 +718,6 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-    ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
