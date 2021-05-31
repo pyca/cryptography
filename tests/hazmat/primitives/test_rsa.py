@@ -171,6 +171,27 @@ def test_modular_inverse():
     )
 
 
+def test_rsa_check_key_paths(backend):
+    # We turn off RSA key checks in testing for performance reasons,
+    # but we need to test the normal path with both a corrupt key and
+    # a valid one.
+    backend._rsa_check_key = True
+    try:
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(
+                RSA_KEY_CORRUPTED, password=None, backend=backend
+            )
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key = serialization.load_pem_private_key(data, password=None, backend=backend)
+        assert key
+    finally:
+        backend._rsa_check_key = False
+
+
 class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
@@ -755,12 +776,6 @@ class TestRSASignature(object):
                 signature,
                 padding.PKCS1v15(),
                 prehashed_alg,  # type: ignore[arg-type]
-            )
-
-    def test_corrupted_private_key(self, backend):
-        with pytest.raises(ValueError):
-            serialization.load_pem_private_key(
-                RSA_KEY_CORRUPTED, password=None, backend=backend
             )
 
 

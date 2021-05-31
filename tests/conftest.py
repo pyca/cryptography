@@ -33,3 +33,11 @@ def pytest_runtest_setup(item):
 def backend(request):
     check_backend_support(openssl_backend, request)
     return openssl_backend
+
+
+# This fixture is used to disable key checking before tests start. It is
+# briefly re-enabled in test_rsa_check_key_paths to ensure we get full
+# coverage. This entirely a performance optimization for OpenSSL 3.0.0.
+@pytest.fixture(autouse=True, scope="session")
+def _disable_rsa_key_checks():
+    openssl_backend._rsa_check_key = False
