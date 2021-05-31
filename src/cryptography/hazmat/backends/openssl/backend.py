@@ -409,6 +409,7 @@ class Backend(BackendInterface):
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
             handlers=ext_handlers,
+            rust_callback=rust_x509.parse_x509_extension,
         )
         self._revoked_cert_extension_parser = _X509ExtensionParser(
             self,

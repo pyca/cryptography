@@ -9,7 +9,15 @@ lazy_static::lazy_static! {
     static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
     static ref PRECERT_POISON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.3").unwrap();
 
+    static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
+}
+
+#[derive(asn1::Asn1Read)]
+struct BasicConstraints {
+    #[default(false)]
+    ca: bool,
+    path_length: Option<u64>,
 }
 
 #[pyo3::prelude::pyfunction]
@@ -35,6 +43,11 @@ fn parse_x509_extension(
     } else if oid == *PRECERT_POISON_OID {
         asn1::parse_single::<()>(ext_data)?;
         Ok(x509_module.call0("PrecertPoison")?.to_object(py))
+    } else if oid == *BASIC_CONSTRAINTS_OID {
+        let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
+        Ok(x509_module
+            .call1("BasicConstraints", (bc.ca, bc.path_length))?
+            .to_object(py))
     } else {
         Ok(py.None())
     }
