@@ -401,29 +401,29 @@ class Backend(BackendInterface):
             self,
             ext_count=self._lib.X509_get_ext_count,
             get_ext=self._lib.X509_get_ext,
-            handlers=ext_handlers,
             rust_callback=rust_x509.parse_x509_extension,
+            handlers=ext_handlers,
         )
         self._csr_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
-            handlers=ext_handlers,
             rust_callback=rust_x509.parse_x509_extension,
+            handlers=ext_handlers,
         )
         self._revoked_cert_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.X509_REVOKED_get_ext_count,
             get_ext=self._lib.X509_REVOKED_get_ext,
-            handlers=_REVOKED_EXTENSION_HANDLERS,
             rust_callback=rust_x509.parse_crl_entry_extension,
+            handlers=_REVOKED_EXTENSION_HANDLERS,
         )
         self._crl_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.X509_CRL_get_ext_count,
             get_ext=self._lib.X509_CRL_get_ext,
-            handlers=_CRL_EXTENSION_HANDLERS,
             rust_callback=rust_x509.parse_crl_extension,
+            handlers=_CRL_EXTENSION_HANDLERS,
         )
         self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
             self,
@@ -435,8 +435,8 @@ class Backend(BackendInterface):
             self,
             ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
             get_ext=self._lib.OCSP_SINGLERESP_get_ext,
-            handlers=singleresp_handlers,
             rust_callback=rust_x509.parse_crl_entry_extension,
+            handlers=singleresp_handlers,
         )
 
     def _register_x509_encoders(self):

@@ -171,9 +171,8 @@ def _decode_delta_crl_indicator(backend, ext):
 
 class _X509ExtensionParser(object):
     def __init__(
-        self, backend, ext_count, get_ext, handlers={}, rust_callback=None
+        self, backend, ext_count, get_ext, rust_callback, handlers={}
     ):
-        assert handlers or rust_callback
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
@@ -199,20 +198,22 @@ class _X509ExtensionParser(object):
                     "Duplicate {} extension found".format(oid), oid
                 )
 
-            if self.rust_callback is not None:
-                oid_ptr = self._backend._lib.X509_EXTENSION_get_object(ext)
-                oid_der_bytes = self._backend._ffi.buffer(
-                    self._backend._lib.Cryptography_OBJ_get0_data(oid_ptr),
-                    self._backend._lib.Cryptography_OBJ_length(oid_ptr),
-                )[:]
-                data = self._backend._lib.X509_EXTENSION_get_data(ext)
-                data_bytes = _asn1_string_to_bytes(self._backend, data)
-                ext_obj = self.rust_callback(oid_der_bytes, data_bytes)
-                if ext_obj is not None:
-                    extensions.append(x509.Extension(oid, critical, ext_obj))
-                    seen_oids.add(oid)
-                    continue
+            # Try to parse this with the rust callback first
+            oid_ptr = self._backend._lib.X509_EXTENSION_get_object(ext)
+            oid_der_bytes = self._backend._ffi.buffer(
+                self._backend._lib.Cryptography_OBJ_get0_data(oid_ptr),
+                self._backend._lib.Cryptography_OBJ_length(oid_ptr),
+            )[:]
+            data = self._backend._lib.X509_EXTENSION_get_data(ext)
+            data_bytes = _asn1_string_to_bytes(self._backend, data)
+            ext_obj = self.rust_callback(oid_der_bytes, data_bytes)
+            if ext_obj is not None:
+                extensions.append(x509.Extension(oid, critical, ext_obj))
+                seen_oids.add(oid)
+                continue
 
+            # Fallback to our older parsing because the rust code doesn't
+            # know how to parse this.
             try:
                 handler = self.handlers[oid]
             except KeyError:
