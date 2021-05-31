@@ -415,6 +415,7 @@ class Backend(BackendInterface):
             ext_count=self._lib.X509_REVOKED_get_ext_count,
             get_ext=self._lib.X509_REVOKED_get_ext,
             handlers=_REVOKED_EXTENSION_HANDLERS,
+            rust_callback=rust_x509.parse_crl_entry_extension,
         )
         self._crl_extension_parser = _X509ExtensionParser(
             self,
@@ -433,6 +434,7 @@ class Backend(BackendInterface):
             ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
             get_ext=self._lib.OCSP_SINGLERESP_get_ext,
             handlers=singleresp_handlers,
+            rust_callback=rust_x509.parse_crl_entry_extension,
         )
 
     def _register_x509_encoders(self):

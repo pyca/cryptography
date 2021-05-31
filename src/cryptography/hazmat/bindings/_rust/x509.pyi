@@ -1,3 +1,6 @@
 from cryptography.x509 import ExtensionType
 
 def parse_x509_extension(der_oid: bytes, ext_data: bytes) -> ExtensionType: ...
+def parse_crl_entry_extension(
+    der_oid: bytes, ext_data: bytes
+) -> ExtensionType: ...
