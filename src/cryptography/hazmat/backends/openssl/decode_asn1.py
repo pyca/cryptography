@@ -287,16 +287,6 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_subject_key_identifier(backend, asn1_string):
-    asn1_string = backend._ffi.cast("ASN1_OCTET_STRING *", asn1_string)
-    asn1_string = backend._ffi.gc(
-        asn1_string, backend._lib.ASN1_OCTET_STRING_free
-    )
-    return x509.SubjectKeyIdentifier(
-        backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
-    )
-
-
 def _decode_authority_key_identifier(backend, akid):
     akid = backend._ffi.cast("AUTHORITY_KEYID *", akid)
     akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
@@ -706,7 +696,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 
 _EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (

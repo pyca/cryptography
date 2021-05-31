@@ -13,6 +13,7 @@ lazy_static::lazy_static! {
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
     static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
     static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
+    static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
     static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
@@ -56,6 +57,11 @@ fn parse_x509_extension(
             features.append(py_feature)?;
         }
         Ok(x509_module.call1("TLSFeature", (features,))?.to_object(py))
+    } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
+        let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
+        Ok(x509_module
+            .call1("SubjectKeyIdentifier", (identifier,))?
+            .to_object(py))
     } else if oid == *EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
         for oid in asn1::parse_single::<asn1::SequenceOf<asn1::ObjectIdentifier>>(ext_data)? {
@@ -101,7 +107,9 @@ fn parse_x509_extension(
     } else if oid == *INHIBIT_ANY_POLICY_OID {
         let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
-        Ok(x509_module.call1("InhibitAnyPolicy", (pynum,))?.to_object(py))
+        Ok(x509_module
+            .call1("InhibitAnyPolicy", (pynum,))?
+            .to_object(py))
     } else if oid == *BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(x509_module
@@ -162,7 +170,9 @@ fn parse_crl_extension(
     } else if oid == *DELTA_CRL_INDICATOR_OID {
         let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
-        Ok(x509_module.call1("DeltaCRLIndicator", (pynum,))?.to_object(py))
+        Ok(x509_module
+            .call1("DeltaCRLIndicator", (pynum,))?
+            .to_object(py))
     } else {
         Ok(py.None())
     }
