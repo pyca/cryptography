@@ -50,33 +50,9 @@ fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_tls_feature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
-    let tls_feature_type_to_enum = py
-        .import("cryptography.x509.extensions")?
-        .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
-
-    let features = pyo3::types::PyList::empty(py);
-    for feature in asn1::parse_single::<asn1::SequenceOf<u64>>(data)? {
-        let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
-        features.append(py_feature)?;
-    }
-
-    let x509_module = py.import("cryptography.x509")?;
-    Ok(x509_module.call1("TLSFeature", (features,))?.to_object(py))
-}
-
-#[pyo3::prelude::pyfunction]
 fn encode_precert_poison(py: pyo3::Python<'_>, _ext: &pyo3::PyAny) -> pyo3::PyObject {
     let result = asn1::write_single(&());
     pyo3::types::PyBytes::new(py, &result).to_object(py)
-}
-
-#[pyo3::prelude::pyfunction]
-fn parse_precert_poison(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
-    asn1::parse_single::<()>(data)?;
-
-    let x509_module = py.import("cryptography.x509")?;
-    Ok(x509_module.call0("PrecertPoison")?.to_object(py))
 }
 
 #[derive(asn1::Asn1Read)]
@@ -237,9 +213,7 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
 pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_tls_feature))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_precert_poison))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;
