@@ -49,6 +49,19 @@ def register_interface(iface):
     return register_decorator
 
 
+  <<<<<<< circleci-project-setup
+  =======
+def register_interface_if(predicate, iface):
+    def register_decorator(klass, *, check_annotations=False):
+        if predicate:
+            verify_interface(iface, klass, check_annotations=check_annotations)
+            iface.register(klass)
+        return klass
+
+    return register_decorator
+
+
+  >>>>>>> 3.4.x
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"

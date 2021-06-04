@@ -46,7 +46,11 @@ class GeneralName(metaclass=abc.ABCMeta):
 
 
 class RFC822Name(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
+  =======
+    def __init__(self, value: str):
+  >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -94,7 +98,11 @@ class RFC822Name(GeneralName):
 
 
 class DNSName(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
+  =======
+    def __init__(self, value: str):
+  >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -136,7 +144,11 @@ class DNSName(GeneralName):
 
 
 class UniformResourceIdentifier(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
+  =======
+    def __init__(self, value: str):
+  >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -180,7 +192,11 @@ class UniformResourceIdentifier(GeneralName):
 
 
 class DirectoryName(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: Name) -> None:
+  =======
+    def __init__(self, value: Name):
+  >>>>>>> 3.4.x
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
 
@@ -207,7 +223,11 @@ class DirectoryName(GeneralName):
 
 
 class RegisteredID(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: ObjectIdentifier) -> None:
+  =======
+    def __init__(self, value: ObjectIdentifier):
+  >>>>>>> 3.4.x
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
 
@@ -234,7 +254,19 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, value: _IPADDRESS_TYPES) -> None:
+  =======
+    def __init__(
+        self,
+        value: typing.Union[
+            ipaddress.IPv4Address,
+            ipaddress.IPv6Address,
+            ipaddress.IPv4Network,
+            ipaddress.IPv6Network,
+        ],
+    ):
+  >>>>>>> 3.4.x
         if not isinstance(
             value,
             (
@@ -273,7 +305,11 @@ class IPAddress(GeneralName):
 
 
 class OtherName(GeneralName):
+  <<<<<<< circleci-project-setup
     def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
+  =======
+    def __init__(self, type_id: ObjectIdentifier, value: bytes):
+  >>>>>>> 3.4.x
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")
         if not isinstance(value, bytes):

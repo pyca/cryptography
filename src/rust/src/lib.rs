@@ -66,10 +66,16 @@ fn check_ansix923_padding(data: &[u8]) -> bool {
 }
 
 #[pyo3::prelude::pymodule]
+  <<<<<<< circleci-project-setup
 fn _rust(_py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(check_ansix923_padding, m)?)?;
 
+  =======
+// False positive: https://github.com/rust-lang/rust-clippy/issues/6721
+#[allow(clippy::unnecessary_wraps)]
+fn _rust(_py: pyo3::Python<'_>, _m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
+  >>>>>>> 3.4.x
     Ok(())
 }
 

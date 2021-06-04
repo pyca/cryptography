@@ -243,9 +243,13 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
+  <<<<<<< circleci-project-setup
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
     ) -> typing.List[NameAttribute]:
+  =======
+    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+  >>>>>>> 3.4.x
         return [i for i in self if i.oid == oid]
 
     @property

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+  <<<<<<< circleci-project-setup
 .. _v35-0-0:
 
 35.0.0 - `main`_
@@ -14,6 +15,8 @@ Changelog
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
 
+  =======
+  >>>>>>> 3.4.x
 .. _v3-4-6:
 
 3.4.6 - 2021-02-16
