@@ -8,13 +8,13 @@ import abc
 
 class AsymmetricSignatureContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         """
         Processes the provided bytes and returns nothing.
         """
 
     @abc.abstractmethod
-    def finalize(self):
+    def finalize(self) -> bytes:
         """
         Returns the signature as bytes.
         """
@@ -22,13 +22,13 @@ class AsymmetricSignatureContext(metaclass=abc.ABCMeta):
 
 class AsymmetricVerificationContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         """
         Processes the provided bytes and returns nothing.
         """
 
     @abc.abstractmethod
-    def verify(self):
+    def verify(self) -> None:
         """
         Raises an exception if the bytes provided to update do not match the
         signature or the signature does not match the public key.

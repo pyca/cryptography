@@ -7,7 +7,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hkdf_test
@@ -18,7 +17,6 @@ from ...utils import load_nist_vectors
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1.",
 )
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFSHA1(object):
     test_hkdfsha1 = generate_hkdf_test(
         load_nist_vectors,
@@ -32,7 +30,6 @@ class TestHKDFSHA1(object):
     only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
     skip_message="Does not support SHA256.",
 )
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFSHA256(object):
     test_hkdfsha256 = generate_hkdf_test(
         load_nist_vectors,

@@ -3,7 +3,6 @@
 # for complete details.
 
 
-from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature,
     UnsupportedAlgorithm,
@@ -40,7 +39,9 @@ class _HMACContext(hashes.HashContext):
         self._ctx = ctx
         self._key = key
 
-    algorithm = utils.read_only_property("_algorithm")
+    @property
+    def algorithm(self) -> hashes.HashAlgorithm:
+        return self._algorithm
 
     def copy(self) -> "_HMACContext":
         copied_ctx = self._backend._lib.HMAC_CTX_new()

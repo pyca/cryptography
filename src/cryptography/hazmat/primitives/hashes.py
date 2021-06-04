@@ -12,7 +12,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HashBackend
+from cryptography.hazmat.backends.interfaces import Backend, HashBackend
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
@@ -69,7 +69,12 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
 
 
 class Hash(HashContext):
-    def __init__(self, algorithm: HashAlgorithm, backend=None, ctx=None):
+    def __init__(
+        self,
+        algorithm: HashAlgorithm,
+        backend: typing.Optional[Backend] = None,
+        ctx: typing.Optional["HashContext"] = None,
+    ):
         backend = _get_backend(backend)
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
@@ -88,7 +93,9 @@ class Hash(HashContext):
         else:
             self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    @property
+    def algorithm(self) -> HashAlgorithm:
+        return self._algorithm
 
     def update(self, data: bytes) -> None:
         if self._ctx is None:
@@ -190,7 +197,9 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
 
 
 class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
@@ -206,7 +215,9 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
 
 
 class MD5(HashAlgorithm):
@@ -228,7 +239,9 @@ class BLAKE2b(HashAlgorithm):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
 
 
 class BLAKE2s(HashAlgorithm):
@@ -244,4 +257,12 @@ class BLAKE2s(HashAlgorithm):
 
         self._digest_size = digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
+
+
+class SM3(HashAlgorithm):
+    name = "sm3"
+    digest_size = 32
+    block_size = 64

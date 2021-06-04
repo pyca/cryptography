@@ -11,27 +11,30 @@ jobs:
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       matrix:
-        PYTHON: ["cp36-cp36m"]
+        PYTHON:
+          - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
+          - { VERSION: "pypy3.6", PATH: "/opt/pypy3.6/bin/pypy" }
+          - { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
         MANYLINUX:
-          - NAME: manylinux2010_x86_64
-            CONTAINER: "cryptography-manylinux2010:x86_64"
-          - NAME: manylinux2014_x86_64
-            CONTAINER: "cryptography-manylinux2014:x86_64"
-    name: "${{ matrix.PYTHON }} for ${{ matrix.MANYLINUX.NAME }}"
+          - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
+          - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
+    name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - run: /opt/python/${{ matrix.PYTHON }}/bin/python -m virtualenv .venv
+      - run: ${{ matrix.PYTHON.PATH }} -m venv .venv
       - name: Install Python dependencies
-        run: .venv/bin/pip install -U pip wheel cffi six ipaddress setuptools-rust
+        run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
       - run: .venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir tmpwheelhouse
-      - run: |
-          REGEX="cp3([0-9])*"
-          if [[ "${{ matrix.PYTHON }}" =~ $REGEX ]]; then
-              PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
+      - name: Build the wheel
+        run: |
+          if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
+              PY_LIMITED_API="--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }}"
           fi
           cd cryptography*
           LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
               CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
               ../.venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../tmpwheelhouse
+        env:
+          RUSTUP_HOME: /root/.rustup
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptograph*.whl -w wheelhouse/
       - run: unzip wheelhouse/*.whl -d execstack.check
       - run: |
@@ -47,9 +50,9 @@ jobs:
           .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2.2.2
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON }}"
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}"
           path: cryptography-wheelhouse/
 
   macos:
@@ -69,7 +72,7 @@ jobs:
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U virtualenv requests
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
       - name: Download OpenSSL
         run: |
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-x86-64
@@ -82,8 +85,8 @@ jobs:
           override: true
           default: true
 
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m virtualenv venv
-      - run: venv/bin/pip install -U pip wheel cffi six ipaddress setuptools-rust
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
+      - run: venv/bin/pip install -U pip wheel cffi setuptools-rust
       - run: venv/bin/pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -92,13 +95,15 @@ jobs:
               LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
               CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
               ../venv/bin/python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
+        env:
+          MACOSX_DEPLOYMENT_TARGET:  "10.10"
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
       - run: |
           venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
-      - uses: actions/upload-artifact@v2.2.0
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-macOS-${{ matrix.PYTHON.ABI_VERSION }}"
           path: cryptography-wheelhouse/
@@ -138,7 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      - run: python -m pip install -U pip wheel cffi six ipaddress setuptools-rust
+      - run: python -m pip install -U pip wheel cffi setuptools-rust
       - run: pip download cryptography==${{ github.event.inputs.version }} --no-deps --no-binary cryptography && tar zxvf cryptography*.tar.gz && mkdir wheelhouse
         shell: bash
       - run: cd cryptography* && python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
@@ -149,7 +154,7 @@ jobs:
 
       - run: mkdir cryptography-wheelhouse
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
-      - uses: actions/upload-artifact@v2.2.0
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION}}"
           path: cryptography-wheelhouse\

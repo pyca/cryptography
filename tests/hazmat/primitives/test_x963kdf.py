@@ -8,14 +8,12 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
-from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestX963KDF(object):
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
@@ -118,4 +116,9 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        X963KDF(hashes.SHA256(), 16, None, pretend_backend)
+        X963KDF(
+            hashes.SHA256(),
+            16,
+            None,
+            pretend_backend,  # type: ignore[arg-type]
+        )

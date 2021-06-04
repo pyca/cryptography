@@ -9,7 +9,6 @@ import typing
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
@@ -26,7 +25,6 @@ def _skip_hashfn_unsupported(backend, hashfn):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestX963(object):
     _algorithms_dict: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
         "SHA-1": hashes.SHA1,

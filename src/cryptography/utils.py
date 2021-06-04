@@ -24,12 +24,12 @@ PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn34 = CryptographyDeprecationWarning
 
 
-def _check_bytes(name: str, value: bytes):
+def _check_bytes(name: str, value: bytes) -> None:
     if not isinstance(value, bytes):
         raise TypeError("{} must be bytes".format(name))
 
 
-def _check_byteslike(name: str, value: bytes):
+def _check_byteslike(name: str, value: bytes) -> None:
     try:
         memoryview(value)
     except TypeError:
@@ -49,6 +49,8 @@ def register_interface(iface):
     return register_decorator
 
 
+  <<<<<<< circleci-project-setup
+  =======
 def register_interface_if(predicate, iface):
     def register_decorator(klass, *, check_annotations=False):
         if predicate:
@@ -59,6 +61,7 @@ def register_interface_if(predicate, iface):
     return register_decorator
 
 
+  >>>>>>> 3.4.x
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"

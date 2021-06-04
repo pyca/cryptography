@@ -4,6 +4,23 @@
 
 
 import abc
+import typing
+
+
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat._types import _PRIVATE_KEY_TYPES
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.x509.base import (
+        Certificate,
+        CertificateBuilder,
+        CertificateRevocationList,
+        CertificateRevocationListBuilder,
+        CertificateSigningRequest,
+        CertificateSigningRequestBuilder,
+        RevokedCertificate,
+        RevokedCertificateBuilder,
+    )
+    from cryptography.x509.name import Name
 
 
 class CipherBackend(metaclass=abc.ABCMeta):
@@ -262,59 +279,88 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
 
 class X509Backend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def load_pem_x509_certificate(self, data):
+    def load_pem_x509_certificate(self, data: bytes) -> "Certificate":
         """
         Load an X.509 certificate from PEM encoded data.
         """
 
     @abc.abstractmethod
-    def load_der_x509_certificate(self, data):
+    def load_der_x509_certificate(self, data: bytes) -> "Certificate":
         """
         Load an X.509 certificate from DER encoded data.
         """
 
     @abc.abstractmethod
-    def load_der_x509_csr(self, data):
+    def load_der_x509_csr(self, data: bytes) -> "CertificateSigningRequest":
         """
         Load an X.509 CSR from DER encoded data.
         """
 
     @abc.abstractmethod
-    def load_pem_x509_csr(self, data):
+    def load_pem_x509_csr(self, data: bytes) -> "CertificateSigningRequest":
         """
         Load an X.509 CSR from PEM encoded data.
         """
 
     @abc.abstractmethod
-    def create_x509_csr(self, builder, private_key, algorithm):
+    def create_x509_csr(
+        self,
+        builder: "CertificateSigningRequestBuilder",
+        private_key: "_PRIVATE_KEY_TYPES",
+        algorithm: typing.Optional["hashes.HashAlgorithm"],
+    ) -> "CertificateSigningRequest":
         """
         Create and sign an X.509 CSR from a CSR builder object.
         """
 
     @abc.abstractmethod
-    def create_x509_certificate(self, builder, private_key, algorithm):
+    def create_x509_certificate(
+        self,
+        builder: "CertificateBuilder",
+        private_key: "_PRIVATE_KEY_TYPES",
+        algorithm: typing.Optional["hashes.HashAlgorithm"],
+    ) -> "Certificate":
         """
         Create and sign an X.509 certificate from a CertificateBuilder object.
         """
 
     @abc.abstractmethod
-    def create_x509_crl(self, builder, private_key, algorithm):
+    def create_x509_crl(
+        self,
+        builder: "CertificateRevocationListBuilder",
+        private_key: "_PRIVATE_KEY_TYPES",
+        algorithm: typing.Optional["hashes.HashAlgorithm"],
+    ) -> "CertificateRevocationList":
         """
         Create and sign an X.509 CertificateRevocationList from a
         CertificateRevocationListBuilder object.
         """
 
     @abc.abstractmethod
-    def create_x509_revoked_certificate(self, builder):
+    def create_x509_revoked_certificate(
+        self, builder: "RevokedCertificateBuilder"
+    ) -> "RevokedCertificate":
         """
         Create a RevokedCertificate object from a RevokedCertificateBuilder
         object.
         """
 
     @abc.abstractmethod
-    def x509_name_bytes(self, name):
+    def x509_name_bytes(self, name: "Name") -> bytes:
         """
         Compute the DER encoded bytes of an X509 Name object.
+        """
+
+    @abc.abstractmethod
+    def load_pem_x509_crl(self, data: bytes) -> "CertificateRevocationList":
+        """
+        Load an X.509 CRL from PEM encoded data.
+        """
+
+    @abc.abstractmethod
+    def load_der_x509_crl(self, data: bytes) -> "CertificateRevocationList":
+        """
+        Load an X.509 CRL from DER encoded data.
         """
 
 
@@ -377,4 +423,61 @@ class ScryptBackend(metaclass=abc.ABCMeta):
     def derive_scrypt(self, key_material, salt, length, n, r, p):
         """
         Return bytes derived from provided Scrypt parameters.
+        """
+
+    @abc.abstractmethod
+    def scrypt_supported(self):
+        """
+        Return True if Scrypt is supported.
+        """
+
+
+# This is the catch-all for future backend methods and inherits all the
+# other interfaces as well so we can just use Backend for typing.
+class Backend(
+    CipherBackend,
+    CMACBackend,
+    DERSerializationBackend,
+    DHBackend,
+    DSABackend,
+    EllipticCurveBackend,
+    HashBackend,
+    HMACBackend,
+    PBKDF2HMACBackend,
+    RSABackend,
+    PEMSerializationBackend,
+    ScryptBackend,
+    X509Backend,
+    metaclass=abc.ABCMeta,
+):
+    @abc.abstractmethod
+    def load_pem_pkcs7_certificates(self, data):
+        """
+        Returns a list of x509.Certificate
+        """
+
+    @abc.abstractmethod
+    def load_der_pkcs7_certificates(self, data):
+        """
+        Returns a list of x509.Certificate
+        """
+
+    @abc.abstractmethod
+    def pkcs7_sign(self, builder, encoding, options):
+        """
+        Returns bytes
+        """
+
+    @abc.abstractmethod
+    def load_key_and_certificates_from_pkcs12(self, data, password):
+        """
+        Returns a tuple of (key, cert, [certs])
+        """
+
+    @abc.abstractmethod
+    def serialize_key_and_certificates_to_pkcs12(
+        self, name, key, cert, cas, encryption_algorithm
+    ):
+        """
+        Returns bytes
         """
