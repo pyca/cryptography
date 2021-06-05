@@ -11,6 +11,7 @@ lazy_static::lazy_static! {
     static ref OCSP_NO_CHECK_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.5").unwrap();
 
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
+    static ref POLICY_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.36").unwrap();
     static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
     static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
     static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
@@ -25,6 +26,14 @@ struct BasicConstraints {
     #[default(false)]
     ca: bool,
     path_length: Option<u64>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct PolicyConstraints {
+    #[implicit(0)]
+    require_explicit_policy: Option<u64>,
+    #[implicit(1)]
+    inhibit_policy_mapping: Option<u64>,
 }
 
 fn get_bit(input: &[u8], n: usize) -> bool {
@@ -96,6 +105,14 @@ fn parse_x509_extension(
                     encipher_only,
                     decipher_only,
                 ),
+            )?
+            .to_object(py))
+    } else if oid == *POLICY_CONSTRAINTS_OID {
+        let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
+        Ok(x509_module
+            .call1(
+                "PolicyConstraints",
+                (pc.require_explicit_policy, pc.inhibit_policy_mapping),
             )?
             .to_object(py))
     } else if oid == *PRECERT_POISON_OID {
