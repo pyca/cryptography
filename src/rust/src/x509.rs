@@ -110,7 +110,10 @@ fn parse_x509_extension(
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
         Ok(x509_module
-            .call1("PolicyConstraints", (pc.require_explicit_policy, pc.inhibit_policy_mapping))?
+            .call1(
+                "PolicyConstraints",
+                (pc.require_explicit_policy, pc.inhibit_policy_mapping),
+            )?
             .to_object(py))
     } else if oid == *PRECERT_POISON_OID {
         asn1::parse_single::<()>(ext_data)?;
