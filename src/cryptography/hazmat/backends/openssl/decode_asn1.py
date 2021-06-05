@@ -418,22 +418,6 @@ def _decode_issuing_dist_point(backend, idp):
     )
 
 
-def _decode_policy_constraints(backend, pc):
-    pc = backend._ffi.cast("POLICY_CONSTRAINTS *", pc)
-    pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
-
-    require_explicit_policy = _asn1_integer_to_int_or_none(
-        backend, pc.requireExplicitPolicy
-    )
-    inhibit_policy_mapping = _asn1_integer_to_int_or_none(
-        backend, pc.inhibitPolicyMapping
-    )
-
-    return x509.PolicyConstraints(
-        require_explicit_policy, inhibit_policy_mapping
-    )
-
-
 _DISTPOINT_TYPE_FULLNAME = 0
 _DISTPOINT_TYPE_RELATIVENAME = 1
 
@@ -709,7 +693,6 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
-    ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
 }
 _EXTENSION_HANDLERS_SCT = {
     ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
