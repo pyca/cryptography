@@ -32,9 +32,7 @@ _IPADDRESS_TYPES = typing.Union[
 
 
 class UnsupportedGeneralNameType(Exception):
-    def __init__(self, msg: str, type: int) -> None:
-        super(UnsupportedGeneralNameType, self).__init__(msg)
-        self.type = type
+    pass
 
 
 class GeneralName(metaclass=abc.ABCMeta):
