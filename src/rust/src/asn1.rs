@@ -69,7 +69,7 @@ struct Spki<'a> {
 
 #[pyo3::prelude::pyfunction]
 fn parse_spki_for_data(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
-    let spki = asn1::parse_single::<Spki>(data)?;
+    let spki = asn1::parse_single::<Spki<'_>>(data)?;
     if spki.data.padding_bits() != 0 {
         return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
     }
@@ -85,7 +85,7 @@ struct DssSignature<'a> {
 
 pub(crate) fn big_asn1_uint_to_py<'p>(
     py: pyo3::Python<'p>,
-    v: asn1::BigUint,
+    v: asn1::BigUint<'_>,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let int_type = py.get_type::<pyo3::types::PyLong>();
     int_type.call_method1("from_bytes", (v.as_bytes(), "big"))
@@ -93,7 +93,7 @@ pub(crate) fn big_asn1_uint_to_py<'p>(
 
 #[pyo3::prelude::pyfunction]
 fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
-    let sig = asn1::parse_single::<DssSignature>(data)?;
+    let sig = asn1::parse_single::<DssSignature<'_>>(data)?;
 
     Ok((
         big_asn1_uint_to_py(py, sig.r)?,
@@ -200,7 +200,7 @@ fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
 
 #[pyo3::prelude::pyfunction]
 fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
-    let mut asn1_cert = asn1::parse_single::<Asn1Certificate>(data)?;
+    let mut asn1_cert = asn1::parse_single::<Asn1Certificate<'_>>(data)?;
 
     Ok(TestCertificate {
         not_before_tag: asn1_cert.tbs_cert.validity.not_before.tag(),
@@ -210,7 +210,7 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
     })
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
+pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(encode_precert_poison))?;
