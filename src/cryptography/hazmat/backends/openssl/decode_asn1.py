@@ -339,12 +339,6 @@ def _decode_general_names_extension(backend, gns):
     return general_names
 
 
-def _decode_issuer_alt_name(backend, ext):
-    return x509.IssuerAlternativeName(
-        _decode_general_names_extension(backend, ext)
-    )
-
-
 def _decode_name_constraints(backend, nc):
     nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
     nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
@@ -654,7 +648,6 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
 _EXTENSION_HANDLERS_SCT = {
@@ -669,7 +662,6 @@ _REVOKED_EXTENSION_HANDLERS = {
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _decode_authority_information_access
     ),

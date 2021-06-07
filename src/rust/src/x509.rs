@@ -21,6 +21,7 @@ lazy_static::lazy_static! {
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
     static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
+    static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
 }
 
 struct UnvalidatedIA5String<'a>(&'a str);
@@ -204,6 +205,11 @@ fn parse_x509_extension(
         Ok(x509_module
             .call1("SubjectAlternativeName", (sans,))?
             .to_object(py))
+    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
+        let ians = parse_general_names(py, ext_data)?;
+        Ok(x509_module
+            .call1("IssuerAlternativeName", (ians,))?
+            .to_object(py))
     } else if oid == *TLS_FEATURE_OID {
         let tls_feature_type_to_enum = py
             .import("cryptography.x509.extensions")?
@@ -343,6 +349,11 @@ fn parse_crl_extension(
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module
             .call1("DeltaCRLIndicator", (pynum,))?
+            .to_object(py))
+    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
+        let ians = parse_general_names(py, ext_data)?;
+        Ok(x509_module
+            .call1("IssuerAlternativeName", (ians,))?
             .to_object(py))
     } else {
         Ok(py.None())
