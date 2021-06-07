@@ -81,6 +81,10 @@ def _decode_general_names(backend, gns):
     return names
 
 
+# This is now a hacked up decoder where we progressively remove chunks as
+# we port more and more to rust. SAN exercised every branch in this, but
+# other extensions (which are still in Python/OpenSSL) don't so we'll remove
+# anything that isn't covered progressively until we remove the entire function
 def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         # Convert to bytes and then decode to utf8. We don't use
@@ -102,41 +106,37 @@ def _decode_general_name(backend, gn):
         # This allows us to create URI objects that have unicode chars
         # when a certificate (against the RFC) contains them.
         return x509.UniformResourceIdentifier._init_without_validation(data)
-    elif gn.type == backend._lib.GEN_RID:
-        oid = _obj2txt(backend, gn.d.registeredID)
-        return x509.RegisteredID(x509.ObjectIdentifier(oid))
     elif gn.type == backend._lib.GEN_IPADD:
         data = _asn1_string_to_bytes(backend, gn.d.iPAddress)
         data_len = len(data)
-        if data_len == 8 or data_len == 32:
-            # This is an IPv4 or IPv6 Network and not a single IP. This
-            # type of data appears in Name Constraints. Unfortunately,
-            # ipaddress doesn't support packed bytes + netmask. Additionally,
-            # IPv6Network can only handle CIDR rather than the full 16 byte
-            # netmask. To handle this we convert the netmask to integer, then
-            # find the first 0 bit, which will be the prefix. If another 1
-            # bit is present after that the netmask is invalid.
-            base = ipaddress.ip_address(data[: data_len // 2])
-            netmask = ipaddress.ip_address(data[data_len // 2 :])
-            bits = bin(int(netmask))[2:]
-            prefix = bits.find("0")
-            # If no 0 bits are found it is a /32 or /128
-            if prefix == -1:
-                prefix = len(bits)
+        assert data_len == 8 or data_len == 32
+        # This is an IPv4 or IPv6 Network and not a single IP. This
+        # type of data appears in Name Constraints. Unfortunately,
+        # ipaddress doesn't support packed bytes + netmask. Additionally,
+        # IPv6Network can only handle CIDR rather than the full 16 byte
+        # netmask. To handle this we convert the netmask to integer, then
+        # find the first 0 bit, which will be the prefix. If another 1
+        # bit is present after that the netmask is invalid.
+        base = ipaddress.ip_address(data[: data_len // 2])
+        netmask = ipaddress.ip_address(data[data_len // 2 :])
+        bits = bin(int(netmask))[2:]
+        prefix = bits.find("0")
+        # If no 0 bits are found it is a /32 or /128
+        if prefix == -1:
+            prefix = len(bits)
 
-            if "1" in bits[prefix:]:
-                raise ValueError("Invalid netmask")
+        if "1" in bits[prefix:]:
+            raise ValueError("Invalid netmask")
 
-            ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
-        else:
-            ip = ipaddress.ip_address(data)
+        ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
 
         return x509.IPAddress(ip)
     elif gn.type == backend._lib.GEN_DIRNAME:
         return x509.DirectoryName(
             _decode_x509_name(backend, gn.d.directoryName)
         )
-    elif gn.type == backend._lib.GEN_EMAIL:
+    else:
+        assert gn.type == backend._lib.GEN_EMAIL
         # Convert to bytes and then decode to utf8. We don't use
         # asn1_string_to_utf8 here because it doesn't properly convert
         # utf8 from ia5strings.
@@ -145,18 +145,6 @@ def _decode_general_name(backend, gn):
         # validation. This allows us to create RFC822Name objects that have
         # unicode chars when a certificate (against the RFC) contains them.
         return x509.RFC822Name._init_without_validation(data)
-    elif gn.type == backend._lib.GEN_OTHERNAME:
-        type_id = _obj2txt(backend, gn.d.otherName.type_id)
-        value = _asn1_to_der(backend, gn.d.otherName.value)
-        return x509.OtherName(x509.ObjectIdentifier(type_id), value)
-    else:
-        # x400Address or ediPartyName
-        raise x509.UnsupportedGeneralNameType(
-            "{} is not a supported type".format(
-                x509._GENERAL_NAMES.get(gn.type, gn.type)
-            ),
-            gn.type,
-        )
 
 
 class _X509ExtensionParser(object):
@@ -349,12 +337,6 @@ def _decode_general_names_extension(backend, gns):
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     general_names = _decode_general_names(backend, gns)
     return general_names
-
-
-def _decode_subject_alt_name(backend, ext):
-    return x509.SubjectAlternativeName(
-        _decode_general_names_extension(backend, ext)
-    )
 
 
 def _decode_issuer_alt_name(backend, ext):
@@ -606,17 +588,6 @@ def _decode_cert_issuer(backend, gns):
     return x509.CertificateIssuer(general_names)
 
 
-def _asn1_to_der(backend, asn1_type):
-    buf = backend._ffi.new("unsigned char **")
-    res = backend._lib.i2d_ASN1_TYPE(asn1_type, buf)
-    backend.openssl_assert(res >= 0)
-    backend.openssl_assert(buf[0] != backend._ffi.NULL)
-    buf = backend._ffi.gc(
-        buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
-    )
-    return backend._ffi.buffer(buf[0], res)[:]
-
-
 def _asn1_integer_to_int(backend, asn1_int):
     bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
     backend.openssl_assert(bn != backend._ffi.NULL)
@@ -680,7 +651,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 
 _EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _decode_authority_information_access

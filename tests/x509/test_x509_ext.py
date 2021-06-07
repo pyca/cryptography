@@ -2296,10 +2296,8 @@ class TestRSASubjectAlternativeNameExtension(object):
             x509.load_der_x509_certificate,
             backend,
         )
-        with pytest.raises(x509.UnsupportedGeneralNameType) as exc:
+        with pytest.raises(x509.UnsupportedGeneralNameType):
             cert.extensions
-
-        assert exc.value.type == 3
 
     def test_registered_id(self, backend):
         cert = _load_cert(

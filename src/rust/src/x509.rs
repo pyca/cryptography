@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error};
 use pyo3::conversion::ToPyObject;
 
 lazy_static::lazy_static! {
@@ -19,6 +19,51 @@ lazy_static::lazy_static! {
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
+    static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
+}
+
+struct UnvalidatedIA5String<'a>(&'a str);
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
+    const TAG: u8 = 0x16;
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        Ok(UnvalidatedIA5String(
+            std::str::from_utf8(data).map_err(|_| asn1::ParseError::InvalidValue)?,
+        ))
+    }
+}
+
+#[derive(asn1::Asn1Read)]
+enum GeneralName<'a> {
+    #[implicit(0)]
+    OtherName(AttributeTypeValue<'a>),
+
+    #[implicit(1)]
+    RFC822Name(UnvalidatedIA5String<'a>),
+
+    #[implicit(2)]
+    DNSName(UnvalidatedIA5String<'a>),
+
+    #[implicit(3)]
+    // unsupported
+    X400Address(asn1::Sequence<'a>),
+
+    // Name is explicit per RFC 5280 Appendix A.1.
+    #[explicit(4)]
+    DirectoryName(Name<'a>),
+
+    #[implicit(5)]
+    // unsupported
+    EDIPartyName(asn1::Sequence<'a>),
+
+    #[implicit(6)]
+    UniformResourceIdentifier(UnvalidatedIA5String<'a>),
+
+    #[implicit(7)]
+    IPAddress(&'a [u8]),
+
+    #[implicit(8)]
+    RegisteredID(asn1::ObjectIdentifier<'a>),
 }
 
 #[derive(asn1::Asn1Read)]
@@ -36,6 +81,114 @@ struct PolicyConstraints {
     inhibit_policy_mapping: Option<u64>,
 }
 
+fn parse_name_attribute(
+    py: pyo3::Python<'_>,
+    attribute: AttributeTypeValue,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let oid = x509_module
+        .call_method1("ObjectIdentifier", (attribute.type_id.to_string(),))?
+        .to_object(py);
+    let tag_enum = py
+        .import("cryptography.x509.name")?
+        .getattr("_ASN1_TYPE_TO_ENUM")?;
+    let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
+    let py_data =
+        std::str::from_utf8(attribute.value.data()).map_err(|_| asn1::ParseError::InvalidValue)?;
+    Ok(x509_module
+        .call_method1("NameAttribute", (oid, py_data, py_tag))?
+        .to_object(py))
+}
+
+fn parse_name(py: pyo3::Python<'_>, name: Name) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let py_rdns = pyo3::types::PyList::empty(py);
+    for rdn in name {
+        let py_attrs = pyo3::types::PySet::empty(py)?;
+        for attribute in rdn {
+            let na = parse_name_attribute(py, attribute)?;
+            py_attrs.add(na)?;
+        }
+        let py_rdn = x509_module
+            .call_method1("RelativeDistinguishedName", (py_attrs,))?
+            .to_object(py);
+        py_rdns.append(py_rdn)?;
+    }
+    let py_name = x509_module.call_method1("Name", (py_rdns,))?.to_object(py);
+    Ok(py_name)
+}
+
+fn parse_general_name(
+    py: pyo3::Python<'_>,
+    gn: GeneralName,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let py_gn = match gn {
+        GeneralName::OtherName(data) => {
+            let oid = x509_module
+                .call_method1("ObjectIdentifier", (data.type_id.to_string(),))?
+                .to_object(py);
+            x509_module
+                .call_method1("OtherName", (oid, data.value.data()))?
+                .to_object(py)
+        }
+        GeneralName::RFC822Name(data) => x509_module
+            .getattr("RFC822Name")?
+            .call_method1("_init_without_validation", (data.0,))?
+            .to_object(py),
+        GeneralName::DNSName(data) => x509_module
+            .getattr("DNSName")?
+            .call_method1("_init_without_validation", (data.0,))?
+            .to_object(py),
+        GeneralName::DirectoryName(data) => {
+            let py_name = parse_name(py, data)?;
+            x509_module
+                .call_method1("DirectoryName", (py_name,))?
+                .to_object(py)
+        }
+        GeneralName::UniformResourceIdentifier(data) => x509_module
+            .getattr("UniformResourceIdentifier")?
+            .call_method1("_init_without_validation", (data.0,))?
+            .to_object(py),
+        GeneralName::IPAddress(data) => {
+            let ip_module = py.import("ipaddress")?;
+            let ip_addr = ip_module.call_method1("ip_address", (data,))?.to_object(py);
+            x509_module
+                .call_method1("IPAddress", (ip_addr,))?
+                .to_object(py)
+        }
+        GeneralName::RegisteredID(data) => {
+            let oid = x509_module
+                .call_method1("ObjectIdentifier", (data.to_string(),))?
+                .to_object(py);
+            x509_module
+                .call_method1("RegisteredID", (oid,))?
+                .to_object(py)
+        }
+        _ => {
+            return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                x509_module.call_method1(
+                    "UnsupportedGeneralNameType",
+                    ("x400Address/EDIPartyName are not supported types",),
+                )?,
+            )))
+        }
+    };
+    Ok(py_gn)
+}
+
+fn parse_general_names(
+    py: pyo3::Python<'_>,
+    ext_data: &[u8],
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let gns = pyo3::types::PyList::empty(py);
+    for gn in asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)? {
+        let py_gn = parse_general_name(py, gn)?;
+        gns.append(py_gn)?;
+    }
+    Ok(gns.to_object(py))
+}
+
 #[pyo3::prelude::pyfunction]
 fn parse_x509_extension(
     py: pyo3::Python<'_>,
@@ -45,7 +198,12 @@ fn parse_x509_extension(
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
-    if oid == *TLS_FEATURE_OID {
+    if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
+        let sans = parse_general_names(py, ext_data)?;
+        Ok(x509_module
+            .call1("SubjectAlternativeName", (sans,))?
+            .to_object(py))
+    } else if oid == *TLS_FEATURE_OID {
         let tls_feature_type_to_enum = py
             .import("cryptography.x509.extensions")?
             .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;

@@ -173,12 +173,12 @@ struct TbsCertificate<'a> {
     _extensions: Option<asn1::Sequence<'a>>,
 }
 
-type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
+pub(crate) type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
 
 #[derive(asn1::Asn1Read)]
-struct AttributeTypeValue<'a> {
-    _type: asn1::ObjectIdentifier<'a>,
-    value: asn1::Tlv<'a>,
+pub(crate) struct AttributeTypeValue<'a> {
+    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) value: asn1::Tlv<'a>,
 }
 
 #[derive(asn1::Asn1Read)]
