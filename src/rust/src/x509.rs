@@ -36,16 +36,6 @@ struct PolicyConstraints {
     inhibit_policy_mapping: Option<u64>,
 }
 
-fn get_bit(input: &[u8], n: usize) -> bool {
-    let idx = n / 8;
-    let v = 1 << (7 - (n & 0x07));
-    if input.len() < (idx + 1) {
-        false
-    } else {
-        input[idx] & v != 0
-    }
-}
-
 #[pyo3::prelude::pyfunction]
 fn parse_x509_extension(
     py: pyo3::Python<'_>,
@@ -81,16 +71,16 @@ fn parse_x509_extension(
             .call1("ExtendedKeyUsage", (ekus,))?
             .to_object(py))
     } else if oid == *KEY_USAGE_OID {
-        let kus = asn1::parse_single::<asn1::BitString>(ext_data)?.as_bytes();
-        let digital_signature = get_bit(kus, 0);
-        let content_comitment = get_bit(kus, 1);
-        let key_encipherment = get_bit(kus, 2);
-        let data_encipherment = get_bit(kus, 3);
-        let key_agreement = get_bit(kus, 4);
-        let key_cert_sign = get_bit(kus, 5);
-        let crl_sign = get_bit(kus, 6);
-        let encipher_only = get_bit(kus, 7);
-        let decipher_only = get_bit(kus, 8);
+        let kus = asn1::parse_single::<asn1::BitString>(ext_data)?;
+        let digital_signature = kus.has_bit_set(0);
+        let content_comitment = kus.has_bit_set(1);
+        let key_encipherment = kus.has_bit_set(2);
+        let data_encipherment = kus.has_bit_set(3);
+        let key_agreement = kus.has_bit_set(4);
+        let key_cert_sign = kus.has_bit_set(5);
+        let crl_sign = kus.has_bit_set(6);
+        let encipher_only = kus.has_bit_set(7);
+        let decipher_only = kus.has_bit_set(8);
         Ok(x509_module
             .call1(
                 "KeyUsage",
