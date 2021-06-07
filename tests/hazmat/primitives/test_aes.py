@@ -70,7 +70,7 @@ class TestAESModeXTS(object):
         key = bytes(range(16)) * 2
         tweak = b"\x00" * 16
         cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
-        with pytest.raises(ValueError, match="duplicate keys"):
+        with pytest.raises(ValueError, match="duplicated keys"):
             cipher.encryptor()
 
 

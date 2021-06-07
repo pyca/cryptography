@@ -17,6 +17,7 @@ typedef ... OSSL_PROVIDER;
 typedef ... OSSL_LIB_CTX;
 
 static const long PROV_R_BAD_DECRYPT;
+static const long PROV_R_XTS_DUPLICATED_KEYS;
 static const long PROV_R_WRONG_FINAL_BLOCK_LENGTH;
 """
 
@@ -33,6 +34,7 @@ static const long Cryptography_HAS_PROVIDERS = 0;
 typedef void OSSL_PROVIDER;
 typedef void OSSL_LIB_CTX;
 static const long PROV_R_BAD_DECRYPT = 0;
+static const long PROV_R_XTS_DUPLICATED_KEYS = 0;
 static const long PROV_R_WRONG_FINAL_BLOCK_LENGTH = 0;
 OSSL_PROVIDER *(*OSSL_PROVIDER_load)(OSSL_LIB_CTX *, const char *) = NULL;
 int (*OSSL_PROVIDER_unload)(OSSL_PROVIDER *) = NULL;
