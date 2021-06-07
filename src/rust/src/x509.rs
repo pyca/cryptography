@@ -199,7 +199,10 @@ fn parse_general_names(
     Ok(gns.to_object(py))
 }
 
-fn parse_access_descriptions(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_access_descriptions(
+    py: pyo3::Python<'_>,
+    ext_data: &[u8],
+) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let ads = pyo3::types::PyList::empty(py);
     for access in asn1::parse_single::<asn1::SequenceOf<AccessDescription>>(ext_data)? {
@@ -207,7 +210,9 @@ fn parse_access_descriptions(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<py
             .call_method1("ObjectIdentifier", (access.access_method.to_string(),))?
             .to_object(py);
         let gn = parse_general_name(py, access.access_location)?;
-        let ad = x509_module.call1("AccessDescription", (py_oid, gn))?.to_object(py);
+        let ad = x509_module
+            .call1("AccessDescription", (py_oid, gn))?
+            .to_object(py);
         ads.append(ad)?;
     }
     Ok(ads.to_object(py))
