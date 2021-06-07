@@ -17,6 +17,7 @@ lazy_static::lazy_static! {
     static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
     static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
+    static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
     static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
@@ -314,6 +315,11 @@ fn parse_crl_entry_extension(
         };
         let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
         Ok(x509_module.call1("CRLReason", (flag,))?.to_object(py))
+    } else if oid == *CERTIFICATE_ISSUER_OID {
+        let gns = parse_general_names(py, ext_data)?;
+        Ok(x509_module
+            .call1("CertificateIssuer", (gns,))?
+            .to_object(py))
     } else {
         Ok(py.None())
     }

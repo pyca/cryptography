@@ -581,13 +581,6 @@ def _decode_invalidity_date(backend, inv_date):
     )
 
 
-def _decode_cert_issuer(backend, gns):
-    gns = backend._ffi.cast("GENERAL_NAMES *", gns)
-    gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    general_names = _decode_general_names(backend, gns)
-    return x509.CertificateIssuer(general_names)
-
-
 def _asn1_integer_to_int(backend, asn1_int):
     bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
     backend.openssl_assert(bn != backend._ffi.NULL)
@@ -672,7 +665,6 @@ _EXTENSION_HANDLERS_SCT = {
 
 _REVOKED_EXTENSION_HANDLERS = {
     CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
 _CRL_EXTENSION_HANDLERS = {
