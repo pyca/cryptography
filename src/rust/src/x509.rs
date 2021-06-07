@@ -117,10 +117,12 @@ fn parse_authority_key_identifier(
         None => py.None(),
     };
     Ok(x509_module
-        .call1("AuthorityKeyIdentifier", (aki.key_identifier, issuer, serial))?
+        .call1(
+            "AuthorityKeyIdentifier",
+            (aki.key_identifier, issuer, serial),
+        )?
         .to_object(py))
 }
-
 
 fn parse_name_attribute(
     py: pyo3::Python<'_>,
