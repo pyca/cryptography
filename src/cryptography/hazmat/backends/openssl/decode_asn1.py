@@ -289,13 +289,6 @@ def _decode_authority_key_identifier(backend, akid):
     )
 
 
-def _decode_general_names_extension(backend, gns):
-    gns = backend._ffi.cast("GENERAL_NAMES *", gns)
-    gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    general_names = _decode_general_names(backend, gns)
-    return general_names
-
-
 def _decode_name_constraints(backend, nc):
     nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
     nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
