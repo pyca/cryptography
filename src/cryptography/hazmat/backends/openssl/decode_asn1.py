@@ -131,20 +131,11 @@ def _decode_general_name(backend, gn):
         ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
 
         return x509.IPAddress(ip)
-    elif gn.type == backend._lib.GEN_DIRNAME:
+    else:
+        assert gn.type == backend._lib.GEN_DIRNAME
         return x509.DirectoryName(
             _decode_x509_name(backend, gn.d.directoryName)
         )
-    else:
-        assert gn.type == backend._lib.GEN_EMAIL
-        # Convert to bytes and then decode to utf8. We don't use
-        # asn1_string_to_utf8 here because it doesn't properly convert
-        # utf8 from ia5strings.
-        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name).decode("utf8")
-        # We don't use the constructor for RFC822Name so we can bypass
-        # validation. This allows us to create RFC822Name objects that have
-        # unicode chars when a certificate (against the RFC) contains them.
-        return x509.RFC822Name._init_without_validation(data)
 
 
 class _X509ExtensionParser(object):
