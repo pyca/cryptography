@@ -9,6 +9,8 @@ lazy_static::lazy_static! {
     static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
     static ref PRECERT_POISON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.3").unwrap();
     static ref OCSP_NO_CHECK_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.5").unwrap();
+    static ref AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.1").unwrap();
+    static ref SUBJECT_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.11").unwrap();
 
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
     static ref POLICY_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.36").unwrap();
@@ -81,6 +83,12 @@ struct PolicyConstraints {
     require_explicit_policy: Option<u64>,
     #[implicit(1)]
     inhibit_policy_mapping: Option<u64>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct AccessDescription<'a> {
+    access_method: asn1::ObjectIdentifier<'a>,
+    access_location: GeneralName<'a>,
 }
 
 fn parse_name_attribute(
@@ -191,6 +199,20 @@ fn parse_general_names(
     Ok(gns.to_object(py))
 }
 
+fn parse_access_descriptions(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let ads = pyo3::types::PyList::empty(py);
+    for access in asn1::parse_single::<asn1::SequenceOf<AccessDescription>>(ext_data)? {
+        let py_oid = x509_module
+            .call_method1("ObjectIdentifier", (access.access_method.to_string(),))?
+            .to_object(py);
+        let gn = parse_general_name(py, access.access_location)?;
+        let ad = x509_module.call1("AccessDescription", (py_oid, gn))?.to_object(py);
+        ads.append(ad)?;
+    }
+    Ok(ads.to_object(py))
+}
+
 #[pyo3::prelude::pyfunction]
 fn parse_x509_extension(
     py: pyo3::Python<'_>,
@@ -261,6 +283,16 @@ fn parse_x509_extension(
                     decipher_only,
                 ),
             )?
+            .to_object(py))
+    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
+        let ads = parse_access_descriptions(py, ext_data)?;
+        Ok(x509_module
+            .call1("AuthorityInformationAccess", (ads,))?
+            .to_object(py))
+    } else if oid == *SUBJECT_INFORMATION_ACCESS_OID {
+        let ads = parse_access_descriptions(py, ext_data)?;
+        Ok(x509_module
+            .call1("SubjectInformationAccess", (ads,))?
             .to_object(py))
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
@@ -354,6 +386,11 @@ fn parse_crl_extension(
         let ians = parse_general_names(py, ext_data)?;
         Ok(x509_module
             .call1("IssuerAlternativeName", (ians,))?
+            .to_object(py))
+    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
+        let ads = parse_access_descriptions(py, ext_data)?;
+        Ok(x509_module
+            .call1("AuthorityInformationAccess", (ads,))?
             .to_object(py))
     } else {
         Ok(py.None())

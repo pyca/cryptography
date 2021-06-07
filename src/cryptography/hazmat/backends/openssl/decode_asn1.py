@@ -298,40 +298,6 @@ def _decode_authority_key_identifier(backend, akid):
     )
 
 
-def _decode_information_access(backend, ia):
-    ia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", ia)
-    ia = backend._ffi.gc(
-        ia,
-        lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
-            x,
-            backend._ffi.addressof(
-                backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
-            ),
-        ),
-    )
-    num = backend._lib.sk_ACCESS_DESCRIPTION_num(ia)
-    access_descriptions = []
-    for i in range(num):
-        ad = backend._lib.sk_ACCESS_DESCRIPTION_value(ia, i)
-        backend.openssl_assert(ad.method != backend._ffi.NULL)
-        oid = x509.ObjectIdentifier(_obj2txt(backend, ad.method))
-        backend.openssl_assert(ad.location != backend._ffi.NULL)
-        gn = _decode_general_name(backend, ad.location)
-        access_descriptions.append(x509.AccessDescription(oid, gn))
-
-    return access_descriptions
-
-
-def _decode_authority_information_access(backend, aia):
-    access_descriptions = _decode_information_access(backend, aia)
-    return x509.AuthorityInformationAccess(access_descriptions)
-
-
-def _decode_subject_information_access(backend, aia):
-    access_descriptions = _decode_information_access(backend, aia)
-    return x509.SubjectInformationAccess(access_descriptions)
-
-
 def _decode_general_names_extension(backend, gns):
     gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
@@ -639,12 +605,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _decode_authority_information_access
-    ),
-    ExtensionOID.SUBJECT_INFORMATION_ACCESS: (
-        _decode_subject_information_access
-    ),
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
@@ -662,9 +622,6 @@ _REVOKED_EXTENSION_HANDLERS = {
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _decode_authority_information_access
-    ),
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
 }
