@@ -131,20 +131,11 @@ def _decode_general_name(backend, gn):
         ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
 
         return x509.IPAddress(ip)
-    elif gn.type == backend._lib.GEN_DIRNAME:
+    else:
+        assert gn.type == backend._lib.GEN_DIRNAME
         return x509.DirectoryName(
             _decode_x509_name(backend, gn.d.directoryName)
         )
-    else:
-        assert gn.type == backend._lib.GEN_EMAIL
-        # Convert to bytes and then decode to utf8. We don't use
-        # asn1_string_to_utf8 here because it doesn't properly convert
-        # utf8 from ia5strings.
-        data = _asn1_string_to_bytes(backend, gn.d.rfc822Name).decode("utf8")
-        # We don't use the constructor for RFC822Name so we can bypass
-        # validation. This allows us to create RFC822Name objects that have
-        # unicode chars when a certificate (against the RFC) contains them.
-        return x509.RFC822Name._init_without_validation(data)
 
 
 class _X509ExtensionParser(object):
@@ -298,51 +289,11 @@ def _decode_authority_key_identifier(backend, akid):
     )
 
 
-def _decode_information_access(backend, ia):
-    ia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", ia)
-    ia = backend._ffi.gc(
-        ia,
-        lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
-            x,
-            backend._ffi.addressof(
-                backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
-            ),
-        ),
-    )
-    num = backend._lib.sk_ACCESS_DESCRIPTION_num(ia)
-    access_descriptions = []
-    for i in range(num):
-        ad = backend._lib.sk_ACCESS_DESCRIPTION_value(ia, i)
-        backend.openssl_assert(ad.method != backend._ffi.NULL)
-        oid = x509.ObjectIdentifier(_obj2txt(backend, ad.method))
-        backend.openssl_assert(ad.location != backend._ffi.NULL)
-        gn = _decode_general_name(backend, ad.location)
-        access_descriptions.append(x509.AccessDescription(oid, gn))
-
-    return access_descriptions
-
-
-def _decode_authority_information_access(backend, aia):
-    access_descriptions = _decode_information_access(backend, aia)
-    return x509.AuthorityInformationAccess(access_descriptions)
-
-
-def _decode_subject_information_access(backend, aia):
-    access_descriptions = _decode_information_access(backend, aia)
-    return x509.SubjectInformationAccess(access_descriptions)
-
-
 def _decode_general_names_extension(backend, gns):
     gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     general_names = _decode_general_names(backend, gns)
     return general_names
-
-
-def _decode_issuer_alt_name(backend, ext):
-    return x509.IssuerAlternativeName(
-        _decode_general_names_extension(backend, ext)
-    )
 
 
 def _decode_name_constraints(backend, nc):
@@ -581,13 +532,6 @@ def _decode_invalidity_date(backend, inv_date):
     )
 
 
-def _decode_cert_issuer(backend, gns):
-    gns = backend._ffi.cast("GENERAL_NAMES *", gns)
-    gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    general_names = _decode_general_names(backend, gns)
-    return x509.CertificateIssuer(general_names)
-
-
 def _asn1_integer_to_int(backend, asn1_int):
     bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
     backend.openssl_assert(bn != backend._ffi.NULL)
@@ -652,16 +596,9 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _decode_authority_information_access
-    ),
-    ExtensionOID.SUBJECT_INFORMATION_ACCESS: (
-        _decode_subject_information_access
-    ),
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
 _EXTENSION_HANDLERS_SCT = {
@@ -672,15 +609,10 @@ _EXTENSION_HANDLERS_SCT = {
 
 _REVOKED_EXTENSION_HANDLERS = {
     CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
-        _decode_authority_information_access
-    ),
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
 }
