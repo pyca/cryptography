@@ -509,13 +509,6 @@ def _asn1_integer_to_int(backend, asn1_int):
     return backend._bn_to_int(bn)
 
 
-def _asn1_integer_to_int_or_none(backend, asn1_int):
-    if asn1_int == backend._ffi.NULL:
-        return None
-    else:
-        return _asn1_integer_to_int(backend, asn1_int)
-
-
 def _asn1_string_to_bytes(backend, asn1_string):
     return backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
 
