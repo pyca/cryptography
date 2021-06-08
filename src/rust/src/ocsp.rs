@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use crate::x509;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
 use std::collections::{HashMap, HashSet};
@@ -25,6 +26,7 @@ lazy_static::lazy_static! {
     };
 
     static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
+    static ref SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.5").unwrap();
 }
 
 #[ouroboros::self_referencing]
@@ -285,11 +287,32 @@ fn parse_ocsp_resp_extension(
     }
 }
 
+#[pyo3::prelude::pyfunction]
+fn parse_ocsp_singleresp_extension(
+    py: pyo3::Python<'_>,
+    der_oid: &[u8],
+    ext_data: &[u8],
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
+
+    let x509_module = py.import("cryptography.x509")?;
+    if oid == *SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+        let contents = asn1::parse_single::<&[u8]>(ext_data)?;
+        let scts = x509::parse_scts(py, contents, x509::LogEntryType::Certificate)?;
+        Ok(x509_module
+            .call1("SignedCertificateTimestamps", (scts,))?
+            .to_object(py))
+    } else {
+        x509::parse_crl_entry_extension(py, der_oid, ext_data)
+    }
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "ocsp")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_resp_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_singleresp_extension))?;
 
     Ok(submod)
 }

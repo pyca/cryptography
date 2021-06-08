@@ -1,7 +1,15 @@
-from cryptography.x509 import ExtensionType
+from cryptography.x509 import (
+    ExtensionType,
+    PrecertificateSignedCertificateTimestamps,
+)
 
 def parse_x509_extension(der_oid: bytes, ext_data: bytes) -> ExtensionType: ...
 def parse_crl_entry_extension(
     der_oid: bytes, ext_data: bytes
 ) -> ExtensionType: ...
 def parse_crl_extension(der_oid: bytes, ext_data: bytes) -> ExtensionType: ...
+def encode_precertificate_signed_certificate_timestamps(
+    extension: PrecertificateSignedCertificateTimestamps,
+) -> bytes: ...
+
+class Sct: ...

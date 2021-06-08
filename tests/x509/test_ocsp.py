@@ -756,10 +756,6 @@ class TestSignedCertificateTimestampsExtension(object):
             "<SignedCertificateTimestamps([])>"
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_eq(self, backend):
         sct1 = (
             _load_data(
@@ -783,10 +779,6 @@ class TestSignedCertificateTimestampsExtension(object):
         )
         assert sct1 == sct2
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_ne(self, backend):
         sct1 = (
             _load_data(
@@ -802,10 +794,6 @@ class TestSignedCertificateTimestampsExtension(object):
         assert sct1 != sct2
         assert sct1 != object()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_hash(self, backend):
         sct1 = (
             _load_data(
@@ -1053,10 +1041,6 @@ class TestOCSPResponse(object):
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_single_extensions_sct(self, backend):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-sct-extension.der"),
@@ -1073,27 +1057,6 @@ class TestOCSPResponse(object):
             b"u9nfvB+KcbWTlCOXqpJ7RzhXlQqrUugakJZkNo4e0YU=",
             b"7ku9t3XOYLrhQmkfq+GeZqMPfl+wctiDAMR7iXqo/cs=",
         ]
-
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL < 1.1.0f",
-    )
-    def test_skips_single_extensions_scts_if_unsupported(self, backend):
-        resp = _load_data(
-            os.path.join("x509", "ocsp", "resp-sct-extension.der"),
-            ocsp.load_der_ocsp_response,
-        )
-        with pytest.raises(x509.ExtensionNotFound):
-            resp.single_extensions.get_extension_for_class(
-                x509.SignedCertificateTimestamps
-            )
-
-        ext = resp.single_extensions.get_extension_for_oid(
-            x509.ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
-        )
-        assert isinstance(ext.value, x509.UnrecognizedExtension)
 
     def test_single_extensions(self, backend):
         resp = _load_data(

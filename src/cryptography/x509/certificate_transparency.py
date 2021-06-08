@@ -7,6 +7,7 @@ import abc
 import datetime
 
 from cryptography import utils
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 
 
 class LogEntryType(utils.Enum):
@@ -42,3 +43,6 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         """
         Returns whether this is an SCT for a certificate or pre-certificate.
         """
+
+
+SignedCertificateTimestamp.register(rust_x509.Sct)
