@@ -266,29 +266,6 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_authority_key_identifier(backend, akid):
-    akid = backend._ffi.cast("AUTHORITY_KEYID *", akid)
-    akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
-    key_identifier = None
-    authority_cert_issuer = None
-
-    if akid.keyid != backend._ffi.NULL:
-        key_identifier = backend._ffi.buffer(
-            akid.keyid.data, akid.keyid.length
-        )[:]
-
-    if akid.issuer != backend._ffi.NULL:
-        authority_cert_issuer = _decode_general_names(backend, akid.issuer)
-
-    authority_cert_serial_number = _asn1_integer_to_int_or_none(
-        backend, akid.serial
-    )
-
-    return x509.AuthorityKeyIdentifier(
-        key_identifier, authority_cert_issuer, authority_cert_serial_number
-    )
-
-
 def _decode_name_constraints(backend, nc):
     nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
     nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
@@ -532,13 +509,6 @@ def _asn1_integer_to_int(backend, asn1_int):
     return backend._bn_to_int(bn)
 
 
-def _asn1_integer_to_int_or_none(backend, asn1_int):
-    if asn1_int == backend._ffi.NULL:
-        return None
-    else:
-        return _asn1_integer_to_int(backend, asn1_int)
-
-
 def _asn1_string_to_bytes(backend, asn1_string):
     return backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
 
@@ -588,7 +558,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 
 _EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
@@ -605,7 +574,6 @@ _REVOKED_EXTENSION_HANDLERS = {
 }
 
 _CRL_EXTENSION_HANDLERS = {
-    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
 }

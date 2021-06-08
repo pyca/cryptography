@@ -14,6 +14,7 @@ lazy_static::lazy_static! {
 
     static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
     static ref POLICY_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.36").unwrap();
+    static ref AUTHORITY_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap();
     static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
     static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
     static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
@@ -35,6 +36,16 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
             std::str::from_utf8(data).map_err(|_| asn1::ParseError::InvalidValue)?,
         ))
     }
+}
+
+#[derive(asn1::Asn1Read)]
+struct AuthorityKeyIdentifier<'a> {
+    #[implicit(0)]
+    key_identifier: Option<&'a [u8]>,
+    #[implicit(1)]
+    authority_cert_issuer: Option<asn1::SequenceOf<'a, GeneralName<'a>>>,
+    #[implicit(2)]
+    authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
 
 #[derive(asn1::Asn1Read)]
@@ -89,6 +100,28 @@ struct PolicyConstraints {
 struct AccessDescription<'a> {
     access_method: asn1::ObjectIdentifier<'a>,
     access_location: GeneralName<'a>,
+}
+
+fn parse_authority_key_identifier(
+    py: pyo3::Python<'_>,
+    ext_data: &[u8],
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let aki = asn1::parse_single::<AuthorityKeyIdentifier>(ext_data)?;
+    let serial = match aki.authority_cert_serial_number {
+        Some(biguint) => big_asn1_uint_to_py(py, biguint)?.to_object(py),
+        None => py.None(),
+    };
+    let issuer = match aki.authority_cert_issuer {
+        Some(aci) => parse_general_names(py, aci)?,
+        None => py.None(),
+    };
+    Ok(x509_module
+        .call1(
+            "AuthorityKeyIdentifier",
+            (aki.key_identifier, issuer, serial),
+        )?
+        .to_object(py))
 }
 
 fn parse_name_attribute(
@@ -187,12 +220,12 @@ fn parse_general_name(
     Ok(py_gn)
 }
 
-fn parse_general_names(
+fn parse_general_names<'a>(
     py: pyo3::Python<'_>,
-    ext_data: &[u8],
+    gn_seq: asn1::SequenceOf<'a, GeneralName<'a>>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let gns = pyo3::types::PyList::empty(py);
-    for gn in asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)? {
+    for gn in gn_seq {
         let py_gn = parse_general_name(py, gn)?;
         gns.append(py_gn)?;
     }
@@ -228,12 +261,14 @@ fn parse_x509_extension(
 
     let x509_module = py.import("cryptography.x509")?;
     if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
-        let sans = parse_general_names(py, ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let sans = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("SubjectAlternativeName", (sans,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
-        let ians = parse_general_names(py, ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("IssuerAlternativeName", (ians,))?
             .to_object(py))
@@ -324,6 +359,8 @@ fn parse_x509_extension(
         Ok(x509_module
             .call1("BasicConstraints", (bc.ca, bc.path_length))?
             .to_object(py))
+    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+        Ok(parse_authority_key_identifier(py, ext_data)?)
     } else {
         Ok(py.None())
     }
@@ -359,7 +396,8 @@ fn parse_crl_entry_extension(
         let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
         Ok(x509_module.call1("CRLReason", (flag,))?.to_object(py))
     } else if oid == *CERTIFICATE_ISSUER_OID {
-        let gns = parse_general_names(py, ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let gns = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("CertificateIssuer", (gns,))?
             .to_object(py))
@@ -388,7 +426,8 @@ fn parse_crl_extension(
             .call1("DeltaCRLIndicator", (pynum,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
-        let ians = parse_general_names(py, ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("IssuerAlternativeName", (ians,))?
             .to_object(py))
@@ -397,6 +436,8 @@ fn parse_crl_extension(
         Ok(x509_module
             .call1("AuthorityInformationAccess", (ads,))?
             .to_object(py))
+    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+        Ok(parse_authority_key_identifier(py, ext_data)?)
     } else {
         Ok(py.None())
     }
