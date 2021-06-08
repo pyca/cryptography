@@ -360,8 +360,7 @@ fn parse_x509_extension(
             .call1("BasicConstraints", (bc.ca, bc.path_length))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = parse_authority_key_identifier(py, ext_data)?;
-        Ok(aki)
+        Ok(parse_authority_key_identifier(py, ext_data)?)
     } else {
         Ok(py.None())
     }
@@ -438,8 +437,7 @@ fn parse_crl_extension(
             .call1("AuthorityInformationAccess", (ads,))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = parse_authority_key_identifier(py, ext_data)?;
-        Ok(aki)
+        Ok(parse_authority_key_identifier(py, ext_data)?)
     } else {
         Ok(py.None())
     }
