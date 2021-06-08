@@ -107,7 +107,7 @@ fn parse_authority_key_identifier(
     ext_data: &[u8],
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
-    let aki = asn1::parse_single::<AuthorityKeyIdentifier>(ext_data)?;
+    let aki = asn1::parse_single::<AuthorityKeyIdentifier<'_>>(ext_data)?;
     let serial = match aki.authority_cert_serial_number {
         Some(biguint) => big_asn1_uint_to_py(py, biguint)?.to_object(py),
         None => py.None(),
@@ -126,7 +126,7 @@ fn parse_authority_key_identifier(
 
 fn parse_name_attribute(
     py: pyo3::Python<'_>,
-    attribute: AttributeTypeValue,
+    attribute: AttributeTypeValue<'_>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let oid = x509_module
@@ -143,7 +143,7 @@ fn parse_name_attribute(
         .to_object(py))
 }
 
-fn parse_name(py: pyo3::Python<'_>, name: Name) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_name(py: pyo3::Python<'_>, name: Name<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name {
@@ -163,7 +163,7 @@ fn parse_name(py: pyo3::Python<'_>, name: Name) -> Result<pyo3::PyObject, PyAsn1
 
 fn parse_general_name(
     py: pyo3::Python<'_>,
-    gn: GeneralName,
+    gn: GeneralName<'_>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_gn = match gn {
@@ -238,7 +238,7 @@ fn parse_access_descriptions(
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let ads = pyo3::types::PyList::empty(py);
-    for access in asn1::parse_single::<asn1::SequenceOf<AccessDescription>>(ext_data)? {
+    for access in asn1::parse_single::<asn1::SequenceOf<'_, AccessDescription<'_>>>(ext_data)? {
         let py_oid = x509_module
             .call_method1("ObjectIdentifier", (access.access_method.to_string(),))?
             .to_object(py);
@@ -261,13 +261,13 @@ fn parse_x509_extension(
 
     let x509_module = py.import("cryptography.x509")?;
     if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let sans = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("SubjectAlternativeName", (sans,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("IssuerAlternativeName", (ians,))?
@@ -278,7 +278,7 @@ fn parse_x509_extension(
             .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
         let features = pyo3::types::PyList::empty(py);
-        for feature in asn1::parse_single::<asn1::SequenceOf<u64>>(ext_data)? {
+        for feature in asn1::parse_single::<asn1::SequenceOf<'_, u64>>(ext_data)? {
             let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
             features.append(py_feature)?;
         }
@@ -290,7 +290,8 @@ fn parse_x509_extension(
             .to_object(py))
     } else if oid == *EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
-        for oid in asn1::parse_single::<asn1::SequenceOf<asn1::ObjectIdentifier>>(ext_data)? {
+        for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier<'_>>>(ext_data)?
+        {
             let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
             ekus.append(oid_obj)?;
         }
@@ -298,7 +299,7 @@ fn parse_x509_extension(
             .call1("ExtendedKeyUsage", (ekus,))?
             .to_object(py))
     } else if oid == *KEY_USAGE_OID {
-        let kus = asn1::parse_single::<asn1::BitString>(ext_data)?;
+        let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
         let digital_signature = kus.has_bit_set(0);
         let content_comitment = kus.has_bit_set(1);
         let key_encipherment = kus.has_bit_set(2);
@@ -349,7 +350,7 @@ fn parse_x509_extension(
         asn1::parse_single::<()>(ext_data)?;
         Ok(x509_module.call0("OCSPNoCheck")?.to_object(py))
     } else if oid == *INHIBIT_ANY_POLICY_OID {
-        let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
+        let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module
             .call1("InhibitAnyPolicy", (pynum,))?
@@ -396,7 +397,7 @@ fn parse_crl_entry_extension(
         let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
         Ok(x509_module.call1("CRLReason", (flag,))?.to_object(py))
     } else if oid == *CERTIFICATE_ISSUER_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let gns = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("CertificateIssuer", (gns,))?
@@ -416,17 +417,17 @@ fn parse_crl_extension(
 
     let x509_module = py.import("cryptography.x509")?;
     if oid == *CRL_NUMBER_OID {
-        let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
+        let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module.call1("CRLNumber", (pynum,))?.to_object(py))
     } else if oid == *DELTA_CRL_INDICATOR_OID {
-        let bignum = asn1::parse_single::<asn1::BigUint>(ext_data)?;
+        let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module
             .call1("DeltaCRLIndicator", (pynum,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<GeneralName>>(ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .call1("IssuerAlternativeName", (ians,))?
@@ -443,7 +444,7 @@ fn parse_crl_extension(
     }
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
+pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "x509")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_x509_extension))?;

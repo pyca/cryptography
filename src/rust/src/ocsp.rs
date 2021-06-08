@@ -61,7 +61,7 @@ struct OCSPRequest {
 }
 
 impl OCSPRequest {
-    fn cert_id(&self) -> Result<CertID, PyAsn1Error> {
+    fn cert_id(&self) -> Result<CertID<'_>, PyAsn1Error> {
         Ok(self
             .raw
             .borrow_value()
@@ -76,11 +76,11 @@ impl OCSPRequest {
 
 fn parse_and_cache_extensions<
     'p,
-    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
+    F: Fn(&asn1::ObjectIdentifier<'_>, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
-    raw_exts: &Option<Extensions>,
+    raw_exts: &Option<Extensions<'_>>,
     parse_ext: F,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     if let Some(cached) = cached_extensions {
@@ -165,7 +165,7 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python) -> Result<pyo3::PyObject, PyAsn1Error> {
+    fn extensions(&mut self, py: pyo3::Python<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
         let x509_module = py.import("cryptography.x509")?;
         parse_and_cache_extensions(
             py,
@@ -285,7 +285,7 @@ fn parse_ocsp_resp_extension(
     }
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
+pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "ocsp")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
