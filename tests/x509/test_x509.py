@@ -4509,9 +4509,9 @@ class TestNameAttribute(object):
         assert na.rfc4514_string() == r"UID=\# escape\+\,\;\00this\ "
 
         # Nonstandard attribute OID
-        na = x509.NameAttribute(NameOID.EMAIL_ADDRESS, "somebody@example.com")
+        na = x509.NameAttribute(NameOID.BUSINESS_CATEGORY, "banking")
         assert (
-            na.rfc4514_string() == "1.2.840.113549.1.9.1=somebody@example.com"
+            na.rfc4514_string() == "2.5.4.15=banking"
         )
 
     def test_empty_value(self):
