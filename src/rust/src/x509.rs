@@ -3,8 +3,7 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error};
-use chrono::Datelike;
-use chrono::Timelike;
+use chrono::{Datelike, Timelike};
 use pyo3::conversion::ToPyObject;
 
 lazy_static::lazy_static! {
