@@ -10,7 +10,6 @@ import typing
 from cryptography import x509
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID,
     CertificatePoliciesOID,
     ExtensionOID,
 )
