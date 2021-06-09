@@ -3,6 +3,8 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error};
+use chrono::Datelike;
+use chrono::Timelike;
 use pyo3::conversion::ToPyObject;
 
 lazy_static::lazy_static! {
@@ -22,6 +24,7 @@ lazy_static::lazy_static! {
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
+    static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
     static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
     static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
@@ -402,6 +405,22 @@ fn parse_crl_entry_extension(
         Ok(x509_module
             .call1("CertificateIssuer", (gns,))?
             .to_object(py))
+    } else if oid == *INVALIDITY_DATE_OID {
+        let time = asn1::parse_single::<asn1::GeneralizedTime>(ext_data)?;
+        let time_chrono = time.as_chrono();
+        let datetime_module = py.import("datetime")?;
+        let py_dt = datetime_module.call1(
+            "datetime",
+            (
+                time_chrono.year(),
+                time_chrono.month(),
+                time_chrono.day(),
+                time_chrono.hour(),
+                time_chrono.minute(),
+                time_chrono.second(),
+            ),
+        )?;
+        Ok(x509_module.call1("InvalidityDate", (py_dt,))?.to_object(py))
     } else {
         Ok(py.None())
     }

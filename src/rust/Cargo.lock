@@ -62,6 +62,7 @@ name = "cryptography-rust"
 version = "0.1.0"
 dependencies = [
  "asn1",
+ "chrono",
  "lazy_static",
  "ouroboros",
  "pyo3",

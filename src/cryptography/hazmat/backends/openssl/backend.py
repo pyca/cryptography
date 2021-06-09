@@ -22,7 +22,6 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _EXTENSION_HANDLERS_BASE,
     _EXTENSION_HANDLERS_SCT,
     _OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT,
-    _REVOKED_EXTENSION_HANDLERS,
     _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
@@ -391,7 +390,7 @@ class Backend(BackendInterface):
         ext_handlers = _EXTENSION_HANDLERS_BASE.copy()
         # All revoked extensions are valid single response extensions, see:
         # https://tools.ietf.org/html/rfc6960#section-4.4.5
-        singleresp_handlers = _REVOKED_EXTENSION_HANDLERS.copy()
+        singleresp_handlers = {}
 
         if self._lib.Cryptography_HAS_SCT:
             ext_handlers.update(_EXTENSION_HANDLERS_SCT)
@@ -416,7 +415,6 @@ class Backend(BackendInterface):
             ext_count=self._lib.X509_REVOKED_get_ext_count,
             get_ext=self._lib.X509_REVOKED_get_ext,
             rust_callback=rust_x509.parse_crl_entry_extension,
-            handlers=_REVOKED_EXTENSION_HANDLERS,
         )
         self._crl_extension_parser = _X509ExtensionParser(
             self,
