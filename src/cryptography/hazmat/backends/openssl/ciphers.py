@@ -112,7 +112,28 @@ class _CipherContext(object):
             iv_nonce,
             operation,
         )
-        self._backend.openssl_assert(res != 0)
+
+        # Check for XTS mode duplicate keys error
+        errors = self._backend._consume_errors()
+        lib = self._backend._lib
+        if res == 0 and (
+            (
+                lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
+                and errors[0]._lib_reason_match(
+                    lib.ERR_LIB_EVP, lib.EVP_R_XTS_DUPLICATED_KEYS
+                )
+            )
+            or (
+                lib.Cryptography_HAS_PROVIDERS
+                and errors[0]._lib_reason_match(
+                    lib.ERR_LIB_PROV, lib.PROV_R_XTS_DUPLICATED_KEYS
+                )
+            )
+        ):
+            raise ValueError("In XTS mode duplicated keys are not allowed")
+
+        self._backend.openssl_assert(res != 0, errors=errors)
+
         # We purposely disable padding here as it's handled higher up in the
         # API.
         self._backend._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
