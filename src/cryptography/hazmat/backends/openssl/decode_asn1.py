@@ -10,7 +10,6 @@ import typing
 from cryptography import x509
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 from cryptography.x509.oid import (
-    CRLEntryExtensionOID,
     CertificatePoliciesOID,
     ExtensionOID,
 )
@@ -492,16 +491,6 @@ _CRL_ENTRY_REASON_ENUM_TO_CODE = {
 }
 
 
-def _decode_invalidity_date(backend, inv_date):
-    generalized_time = backend._ffi.cast("ASN1_GENERALIZEDTIME *", inv_date)
-    generalized_time = backend._ffi.gc(
-        generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
-    )
-    return x509.InvalidityDate(
-        _parse_asn1_generalized_time(backend, generalized_time)
-    )
-
-
 def _asn1_integer_to_int(backend, asn1_int):
     bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
     backend.openssl_assert(bn != backend._ffi.NULL)
@@ -567,10 +556,6 @@ _EXTENSION_HANDLERS_SCT = {
     ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
         _decode_precert_signed_certificate_timestamps
     )
-}
-
-_REVOKED_EXTENSION_HANDLERS = {
-    CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
 }
 
 _CRL_EXTENSION_HANDLERS = {
