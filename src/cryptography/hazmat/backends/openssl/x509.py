@@ -549,10 +549,11 @@ class _SignedCertificateTimestamp(object):
         self._sct_list = sct_list
         self._sct = sct
 
+        if backend._lib.SCT_get_version(sct) != backend._lib.SCT_VERSION_V1:
+            raise ValueError("Invalid SCT version")
+
     @property
     def version(self) -> x509.certificate_transparency.Version:
-        version = self._backend._lib.SCT_get_version(self._sct)
-        assert version == self._backend._lib.SCT_VERSION_V1
         return x509.certificate_transparency.Version.v1
 
     @property
