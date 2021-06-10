@@ -5464,6 +5464,36 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
         skip_message="Requires CT support",
     )
+    def test_ordering(self, backend):
+        psct1 = (
+            _load_cert(
+                os.path.join("x509", "cryptography-scts.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
+            .extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+            .value
+        )
+        psct2 = (
+            _load_cert(
+                os.path.join("x509", "badssl-sct.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
+            .extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+            .value
+        )
+        with pytest.raises(TypeError):
+            psct1[0] < psct2[0]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
+    )
     def test_hash(self, backend):
         psct1 = (
             _load_cert(
@@ -5577,6 +5607,32 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             x509.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
         )
         assert isinstance(ext.value, x509.UnrecognizedExtension)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
+    )
+    def test_invalid_version(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "invalid-sct-version.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError):
+            cert.extensions
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
+        skip_message="Requires CT support",
+    )
+    def test_invalid_length(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "invalid-sct-length.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError):
+            cert.extensions
 
 
 class TestInvalidExtension(object):
