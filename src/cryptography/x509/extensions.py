@@ -684,6 +684,30 @@ class ReasonFlags(utils.Enum):
     remove_from_crl = "removeFromCRL"
 
 
+# These are distribution point bit string mappings. Not to be confused with
+# CRLReason reason flags bit string mappings.
+# ReasonFlags ::= BIT STRING {
+#      unused                  (0),
+#      keyCompromise           (1),
+#      cACompromise            (2),
+#      affiliationChanged      (3),
+#      superseded              (4),
+#      cessationOfOperation    (5),
+#      certificateHold         (6),
+#      privilegeWithdrawn      (7),
+#      aACompromise            (8) }
+_REASON_BIT_MAPPING = {
+    1: ReasonFlags.key_compromise,
+    2: ReasonFlags.ca_compromise,
+    3: ReasonFlags.affiliation_changed,
+    4: ReasonFlags.superseded,
+    5: ReasonFlags.cessation_of_operation,
+    6: ReasonFlags.certificate_hold,
+    7: ReasonFlags.privilege_withdrawn,
+    8: ReasonFlags.aa_compromise,
+}
+
+
 class PolicyConstraints(ExtensionType):
     oid = ExtensionOID.POLICY_CONSTRAINTS
 
