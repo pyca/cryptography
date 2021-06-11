@@ -291,35 +291,6 @@ def _decode_general_subtrees(backend, stack_subtrees):
     return subtrees
 
 
-def _decode_issuing_dist_point(backend, idp):
-    idp = backend._ffi.cast("ISSUING_DIST_POINT *", idp)
-    idp = backend._ffi.gc(idp, backend._lib.ISSUING_DIST_POINT_free)
-    if idp.distpoint != backend._ffi.NULL:
-        full_name, relative_name = _decode_distpoint(backend, idp.distpoint)
-    else:
-        full_name = None
-        relative_name = None
-
-    only_user = idp.onlyuser == 255
-    only_ca = idp.onlyCA == 255
-    indirect_crl = idp.indirectCRL == 255
-    only_attr = idp.onlyattr == 255
-    if idp.onlysomereasons != backend._ffi.NULL:
-        only_some_reasons = _decode_reasons(backend, idp.onlysomereasons)
-    else:
-        only_some_reasons = None
-
-    return x509.IssuingDistributionPoint(
-        full_name,
-        relative_name,
-        only_user,
-        only_ca,
-        only_some_reasons,
-        indirect_crl,
-        only_attr,
-    )
-
-
 _DISTPOINT_TYPE_FULLNAME = 0
 _DISTPOINT_TYPE_RELATIVENAME = 1
 
@@ -528,6 +499,5 @@ _EXTENSION_HANDLERS_BASE = {
 }
 
 _CRL_EXTENSION_HANDLERS = {
-    ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
 }

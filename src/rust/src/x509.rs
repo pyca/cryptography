@@ -25,6 +25,7 @@ lazy_static::lazy_static! {
     static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
     static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
+    static ref ISSUING_DISTRIBUTION_POINT_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.28").unwrap();
     static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
@@ -46,6 +47,41 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
 }
 
 #[derive(asn1::Asn1Read)]
+struct IssuingDistributionPoint<'a> {
+    #[explicit(0)]
+    distribution_point: Option<DistributionPointName<'a>>,
+
+    #[implicit(1)]
+    #[default(false)]
+    only_contains_user_certs: bool,
+
+    #[implicit(2)]
+    #[default(false)]
+    only_contains_ca_certs: bool,
+
+    #[implicit(3)]
+    only_some_reasons: Option<asn1::BitString<'a>>,
+
+    #[implicit(4)]
+    #[default(false)]
+    indirect_crl: bool,
+
+    #[implicit(5)]
+    #[default(false)]
+    only_contains_attribute_certs: bool,
+}
+
+
+#[derive(asn1::Asn1Read)]
+enum DistributionPointName<'a> {
+    #[implicit(0)]
+    FullName(asn1::SequenceOf<'a, GeneralName<'a>>),
+
+    #[implicit(1)]
+    NameRelativeToCRLIssuer(asn1::SetOf<'a, AttributeTypeValue<'a>>),
+}
+
+#[derive(asn1::Asn1Read)]
 struct AuthorityKeyIdentifier<'a> {
     #[implicit(0)]
     key_identifier: Option<&'a [u8]>,
@@ -53,6 +89,18 @@ struct AuthorityKeyIdentifier<'a> {
     authority_cert_issuer: Option<asn1::SequenceOf<'a, GeneralName<'a>>>,
     #[implicit(2)]
     authority_cert_serial_number: Option<asn1::BigUint<'a>>,
+}
+
+fn parse_distribution_point<'a>(
+    py: pyo3::Python<'_>,
+    dp: DistributionPointName<'a>,
+) -> Result<(pyo3::PyObject, pyo3::PyObject), PyAsn1Error> {
+    Ok(match dp {
+        DistributionPointName::FullName(data) => (parse_general_names(py, data)?, py.None()),
+        DistributionPointName::NameRelativeToCRLIssuer(data) => {
+            (py.None(), parse_rdn(py, data)?)
+        }
+    })
 }
 
 #[derive(asn1::Asn1Read)]
@@ -150,18 +198,23 @@ fn parse_name_attribute(
         .to_object(py))
 }
 
+fn parse_rdn<'a>(py: pyo3::Python<'_>, rdn: asn1::SetOf<'a, AttributeTypeValue<'a>>) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let py_attrs = pyo3::types::PySet::empty(py)?;
+    for attribute in rdn {
+        let na = parse_name_attribute(py, attribute)?;
+        py_attrs.add(na)?;
+    }
+    Ok(x509_module
+        .call_method1("RelativeDistinguishedName", (py_attrs,))?
+        .to_object(py))
+}
+
 fn parse_name(py: pyo3::Python<'_>, name: Name<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name {
-        let py_attrs = pyo3::types::PySet::empty(py)?;
-        for attribute in rdn {
-            let na = parse_name_attribute(py, attribute)?;
-            py_attrs.add(na)?;
-        }
-        let py_rdn = x509_module
-            .call_method1("RelativeDistinguishedName", (py_attrs,))?
-            .to_object(py);
+        let py_rdn = parse_rdn(py, rdn)?;
         py_rdns.append(py_rdn)?;
     }
     let py_name = x509_module.call_method1("Name", (py_rdns,))?.to_object(py);
@@ -633,6 +686,29 @@ fn parse_crl_extension(
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?)
+    } else if oid == *ISSUING_DISTRIBUTION_POINT_OID {
+        let reason_bit_mapping = py
+            .import("cryptography.x509.extensions")?
+            .getattr("_REASON_BIT_MAPPING")?;
+        let idp = asn1::parse_single::<IssuingDistributionPoint<'_>>(ext_data)?;
+        let dp = match idp.distribution_point {
+            Some(data) => parse_distribution_point(py, data)?,
+            None => (py.None(), py.None()),
+        };
+        let reasons = match idp.only_some_reasons {
+            Some(bs) => {
+                let mut vec = Vec::new();
+                for i in 1..=8 {
+                    if bs.has_bit_set(i) {
+                        vec.push(reason_bit_mapping.get_item(i)?);
+                    }
+                }
+                pyo3::types::PyFrozenSet::new(py, &vec)?.to_object(py)
+            }
+            None => py.None()
+        };
+        Ok(x509_module
+           .call1("IssuingDistributionPoint", (dp.0, dp.1, idp.only_contains_user_certs, idp.only_contains_ca_certs, reasons, idp.indirect_crl, idp.only_contains_attribute_certs))?.to_object(py))
     } else {
         Ok(py.None())
     }
