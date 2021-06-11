@@ -28,6 +28,7 @@ lazy_static::lazy_static! {
     static ref ISSUING_DISTRIBUTION_POINT_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.28").unwrap();
     static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
     static ref CRL_DISTRIBUTION_POINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.31").unwrap();
+    static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
@@ -133,6 +134,19 @@ fn parse_distribution_point(
             (full_name, relative_name, reasons, crl_issuer),
         )?
         .to_object(py))
+}
+
+fn parse_distribution_points(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let dps = asn1::parse_single::<asn1::SequenceOf<'_, DistributionPoint<'_>>>(data)?;
+    let py_dps = pyo3::types::PyList::empty(py);
+    for dp in dps {
+        let py_dp = parse_distribution_point(py, dp)?;
+        py_dps.append(py_dp)?;
+    }
+    Ok(py_dps.to_object(py))
 }
 
 fn parse_distribution_point_reasons(
@@ -644,14 +658,15 @@ fn parse_x509_extension(
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?)
     } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
-        let cdp = asn1::parse_single::<asn1::SequenceOf<'_, DistributionPoint<'_>>>(ext_data)?;
-        let py_dps = pyo3::types::PyList::empty(py);
-        for dp in cdp {
-            let py_dp = parse_distribution_point(py, dp)?;
-            py_dps.append(py_dp)?;
-        }
         Ok(x509_module
-            .call1("CRLDistributionPoints", (py_dps,))?
+            .call1(
+                "CRLDistributionPoints",
+                (parse_distribution_points(py, ext_data)?,),
+            )?
+            .to_object(py))
+    } else if oid == *FRESHEST_CRL_OID {
+        Ok(x509_module
+            .call1("FreshestCRL", (parse_distribution_points(py, ext_data)?,))?
             .to_object(py))
     } else if oid == *PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
         let contents = asn1::parse_single::<&[u8]>(ext_data)?;
@@ -772,6 +787,10 @@ fn parse_crl_extension(
                     idp.only_contains_attribute_certs,
                 ),
             )?
+            .to_object(py))
+    } else if oid == *FRESHEST_CRL_OID {
+        Ok(x509_module
+            .call1("FreshestCRL", (parse_distribution_points(py, ext_data)?,))?
             .to_object(py))
     } else {
         Ok(py.None())
