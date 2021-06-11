@@ -71,7 +71,6 @@ struct IssuingDistributionPoint<'a> {
     only_contains_attribute_certs: bool,
 }
 
-
 #[derive(asn1::Asn1Read)]
 enum DistributionPointName<'a> {
     #[implicit(0)]
@@ -97,9 +96,7 @@ fn parse_distribution_point<'a>(
 ) -> Result<(pyo3::PyObject, pyo3::PyObject), PyAsn1Error> {
     Ok(match dp {
         DistributionPointName::FullName(data) => (parse_general_names(py, data)?, py.None()),
-        DistributionPointName::NameRelativeToCRLIssuer(data) => {
-            (py.None(), parse_rdn(py, data)?)
-        }
+        DistributionPointName::NameRelativeToCRLIssuer(data) => (py.None(), parse_rdn(py, data)?),
     })
 }
 
@@ -198,7 +195,10 @@ fn parse_name_attribute(
         .to_object(py))
 }
 
-fn parse_rdn<'a>(py: pyo3::Python<'_>, rdn: asn1::SetOf<'a, AttributeTypeValue<'a>>) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_rdn<'a>(
+    py: pyo3::Python<'_>,
+    rdn: asn1::SetOf<'a, AttributeTypeValue<'a>>,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_attrs = pyo3::types::PySet::empty(py)?;
     for attribute in rdn {
@@ -691,7 +691,7 @@ fn parse_crl_extension(
             .import("cryptography.x509.extensions")?
             .getattr("_REASON_BIT_MAPPING")?;
         let idp = asn1::parse_single::<IssuingDistributionPoint<'_>>(ext_data)?;
-        let dp = match idp.distribution_point {
+        let (full_name, relative_name) = match idp.distribution_point {
             Some(data) => parse_distribution_point(py, data)?,
             None => (py.None(), py.None()),
         };
@@ -705,10 +705,22 @@ fn parse_crl_extension(
                 }
                 pyo3::types::PyFrozenSet::new(py, &vec)?.to_object(py)
             }
-            None => py.None()
+            None => py.None(),
         };
         Ok(x509_module
-           .call1("IssuingDistributionPoint", (dp.0, dp.1, idp.only_contains_user_certs, idp.only_contains_ca_certs, reasons, idp.indirect_crl, idp.only_contains_attribute_certs))?.to_object(py))
+            .call1(
+                "IssuingDistributionPoint",
+                (
+                    full_name,
+                    relative_name,
+                    idp.only_contains_user_certs,
+                    idp.only_contains_ca_certs,
+                    reasons,
+                    idp.indirect_crl,
+                    idp.only_contains_attribute_certs,
+                ),
+            )?
+            .to_object(py))
     } else {
         Ok(py.None())
     }
