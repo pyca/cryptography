@@ -5,6 +5,10 @@
 use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error};
 use chrono::{Datelike, Timelike};
 use pyo3::conversion::ToPyObject;
+use pyo3::types::IntoPyDict;
+use std::collections::hash_map::DefaultHasher;
+use std::convert::TryInto;
+use std::hash::{Hash, Hasher};
 
 lazy_static::lazy_static! {
     static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
@@ -27,6 +31,7 @@ lazy_static::lazy_static! {
     static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
     static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
     static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
+    static ref PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.2").unwrap();
 }
 
 struct UnvalidatedIA5String<'a>(&'a str);
@@ -253,6 +258,171 @@ fn parse_access_descriptions(
     Ok(ads.to_object(py))
 }
 
+struct TLSReader<'a> {
+    data: &'a [u8],
+}
+
+impl<'a> TLSReader<'a> {
+    fn new(data: &'a [u8]) -> TLSReader<'a> {
+        TLSReader { data }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    fn read_byte(&mut self) -> Result<u8, PyAsn1Error> {
+        Ok(self.read_exact(1)?[0])
+    }
+
+    fn read_exact(&mut self, length: usize) -> Result<&'a [u8], PyAsn1Error> {
+        if length > self.data.len() {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Invalid SCT length",
+            )));
+        }
+        let (result, data) = self.data.split_at(length);
+        self.data = data;
+        Ok(result)
+    }
+
+    fn read_length_prefixed(&mut self) -> Result<TLSReader<'a>, PyAsn1Error> {
+        let length = u16::from_be_bytes(self.read_exact(2)?.try_into().unwrap());
+        Ok(TLSReader::new(self.read_exact(length.into())?))
+    }
+}
+
+#[derive(Clone)]
+pub(crate) enum LogEntryType {
+    Certificate,
+    PreCertificate,
+}
+
+#[pyo3::prelude::pyclass]
+struct Sct {
+    log_id: [u8; 32],
+    timestamp: u64,
+    entry_type: LogEntryType,
+    sct_data: Vec<u8>,
+}
+
+#[pyo3::prelude::pymethods]
+impl Sct {
+    #[getter]
+    fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        py.import("cryptography.x509.certificate_transparency")?
+            .getattr("Version")?
+            .getattr("v1")
+    }
+
+    #[getter]
+    fn log_id(&self) -> &[u8] {
+        &self.log_id
+    }
+
+    #[getter]
+    fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let datetime_class = py.import("datetime")?.getattr("datetime")?;
+        datetime_class
+            .call_method1("utcfromtimestamp", (self.timestamp / 1000,))?
+            .call_method(
+                "replace",
+                (),
+                Some(vec![("microsecond", self.timestamp % 1000 * 1000)].into_py_dict(py)),
+            )
+    }
+
+    #[getter]
+    fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let et_class = py
+            .import("cryptography.x509.certificate_transparency")?
+            .getattr("LogEntryType")?;
+        let attr_name = match self.entry_type {
+            LogEntryType::Certificate => "X509_CERTIFICATE",
+            LogEntryType::PreCertificate => "PRE_CERTIFICATE",
+        };
+        et_class.getattr(attr_name)
+    }
+}
+
+#[pyo3::prelude::pyproto]
+impl pyo3::class::basic::PyObjectProtocol for Sct {
+    fn __richcmp__(
+        &self,
+        other: pyo3::pycell::PyRef<Sct>,
+        op: pyo3::class::basic::CompareOp,
+    ) -> pyo3::PyResult<bool> {
+        match op {
+            pyo3::class::basic::CompareOp::Eq => Ok(self.sct_data == other.sct_data),
+            pyo3::class::basic::CompareOp::Ne => Ok(self.sct_data != other.sct_data),
+            _ => Err(pyo3::exceptions::PyTypeError::new_err(
+                "SCTs cannot be ordered",
+            )),
+        }
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.sct_data.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_precertificate_signed_certificate_timestamps(
+    py: pyo3::Python<'_>,
+    extension: &pyo3::PyAny,
+) -> pyo3::PyResult<pyo3::PyObject> {
+    let mut length = 0;
+    for sct in extension.iter()? {
+        let sct = sct?.downcast::<pyo3::pycell::PyCell<Sct>>()?;
+        length += sct.borrow().sct_data.len() + 2;
+    }
+
+    let mut result = vec![];
+    result.extend_from_slice(&(length as u16).to_be_bytes());
+    for sct in extension.iter()? {
+        let sct = sct?.downcast::<pyo3::pycell::PyCell<Sct>>()?;
+        result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
+        result.extend_from_slice(&sct.borrow().sct_data);
+    }
+    Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&result.as_slice())).to_object(py))
+}
+
+pub(crate) fn parse_scts(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+    entry_type: LogEntryType,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let mut reader = TLSReader::new(data).read_length_prefixed()?;
+
+    let py_scts = pyo3::types::PyList::empty(py);
+    while !reader.is_empty() {
+        let mut sct_data = reader.read_length_prefixed()?;
+        let raw_sct_data = sct_data.data.to_vec();
+        let version = sct_data.read_byte()?;
+        if version != 0 {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Invalid SCT version",
+            )));
+        }
+        let log_id = sct_data.read_exact(32)?.try_into().unwrap();
+        let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
+        let _extensions = sct_data.read_length_prefixed()?;
+        let _sig_alg = sct_data.read_exact(2)?;
+        let _signature = sct_data.read_length_prefixed()?;
+
+        let sct = Sct {
+            log_id,
+            timestamp,
+            entry_type: entry_type.clone(),
+            sct_data: raw_sct_data,
+        };
+        py_scts.append(pyo3::PyCell::new(py, sct)?)?;
+    }
+    Ok(py_scts.to_object(py))
+}
+
 #[pyo3::prelude::pyfunction]
 fn parse_x509_extension(
     py: pyo3::Python<'_>,
@@ -364,13 +534,19 @@ fn parse_x509_extension(
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?)
+    } else if oid == *PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+        let contents = asn1::parse_single::<&[u8]>(ext_data)?;
+        let scts = parse_scts(py, contents, LogEntryType::PreCertificate)?;
+        Ok(x509_module
+            .call1("PrecertificateSignedCertificateTimestamps", (scts,))?
+            .to_object(py))
     } else {
         Ok(py.None())
     }
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_crl_entry_extension(
+pub(crate) fn parse_crl_entry_extension(
     py: pyo3::Python<'_>,
     der_oid: &[u8],
     ext_data: &[u8],
@@ -468,6 +644,10 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_x509_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(
+        encode_precertificate_signed_certificate_timestamps
+    ))?;
+    submod.add_class::<Sct>()?;
 
     Ok(submod)
 }

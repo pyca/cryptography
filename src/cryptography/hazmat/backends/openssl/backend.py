@@ -20,8 +20,6 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
     _CRL_EXTENSION_HANDLERS,
     _EXTENSION_HANDLERS_BASE,
-    _EXTENSION_HANDLERS_SCT,
-    _OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT,
     _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
@@ -387,28 +385,19 @@ class Backend(BackendInterface):
             )
 
     def _register_x509_ext_parsers(self):
-        ext_handlers = _EXTENSION_HANDLERS_BASE.copy()
-        # All revoked extensions are valid single response extensions, see:
-        # https://tools.ietf.org/html/rfc6960#section-4.4.5
-        singleresp_handlers = {}
-
-        if self._lib.Cryptography_HAS_SCT:
-            ext_handlers.update(_EXTENSION_HANDLERS_SCT)
-            singleresp_handlers.update(_OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT)
-
         self._certificate_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.X509_get_ext_count,
             get_ext=self._lib.X509_get_ext,
             rust_callback=rust_x509.parse_x509_extension,
-            handlers=ext_handlers,
+            handlers=_EXTENSION_HANDLERS_BASE,
         )
         self._csr_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
             rust_callback=rust_x509.parse_x509_extension,
-            handlers=ext_handlers,
+            handlers=_EXTENSION_HANDLERS_BASE,
         )
         self._revoked_cert_extension_parser = _X509ExtensionParser(
             self,
@@ -433,8 +422,7 @@ class Backend(BackendInterface):
             self,
             ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
             get_ext=self._lib.OCSP_SINGLERESP_get_ext,
-            rust_callback=rust_x509.parse_crl_entry_extension,
-            handlers=singleresp_handlers,
+            rust_callback=rust_ocsp.parse_ocsp_singleresp_extension,
         )
 
     def _register_x509_encoders(self):
@@ -1168,6 +1156,16 @@ class Backend(BackendInterface):
         elif isinstance(extension.value, x509.PrecertPoison):
             value = _encode_asn1_str_gc(
                 self, asn1.encode_precert_poison(extension.value)
+            )
+            return self._create_raw_x509_extension(extension, value)
+        elif isinstance(
+            extension.value, x509.PrecertificateSignedCertificateTimestamps
+        ):
+            value = _encode_asn1_str_gc(
+                self,
+                rust_x509.encode_precertificate_signed_certificate_timestamps(
+                    extension.value
+                ),
             )
             return self._create_raw_x509_extension(extension, value)
         else:

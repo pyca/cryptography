@@ -5288,10 +5288,6 @@ class TestPrecertPoisonExtension(object):
 
 
 class TestSignedCertificateTimestamps(object):
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_eq(self, backend):
         sct = (
             _load_cert(
@@ -5317,10 +5313,6 @@ class TestSignedCertificateTimestamps(object):
         )
         assert sct == sct2
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_ne(self, backend):
         sct = (
             _load_cert(
@@ -5347,10 +5339,6 @@ class TestSignedCertificateTimestamps(object):
         assert sct != sct2
         assert sct != object()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_hash(self, backend):
         sct = (
             _load_cert(
@@ -5401,10 +5389,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             "<PrecertificateSignedCertificateTimestamps([])>"
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_eq(self, backend):
         psct1 = (
             _load_cert(
@@ -5430,10 +5414,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         )
         assert psct1 == psct2
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_ne(self, backend):
         psct1 = (
             _load_cert(
@@ -5460,10 +5440,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert psct1 != psct2
         assert psct1 != object()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_ordering(self, backend):
         psct1 = (
             _load_cert(
@@ -5490,10 +5466,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         with pytest.raises(TypeError):
             psct1[0] < psct2[0]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_hash(self, backend):
         psct1 = (
             _load_cert(
@@ -5531,10 +5503,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         assert hash(psct1) == hash(psct2)
         assert hash(psct1) != hash(psct3)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_simple(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
@@ -5560,10 +5528,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
             == x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_generate(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
@@ -5587,31 +5551,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         ).value
         assert list(ext) == [sct]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend._lib.CRYPTOGRAPHY_IS_LIBRESSL,
-        skip_message="Requires LibreSSL",
-    )
-    def test_skips_scts_if_unsupported(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "badssl-sct.pem"),
-            x509.load_pem_x509_certificate,
-            backend,
-        )
-        assert len(cert.extensions) == 10
-        with pytest.raises(x509.ExtensionNotFound):
-            cert.extensions.get_extension_for_class(
-                x509.PrecertificateSignedCertificateTimestamps
-            )
-
-        ext = cert.extensions.get_extension_for_oid(
-            x509.ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS
-        )
-        assert isinstance(ext.value, x509.UnrecognizedExtension)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_invalid_version(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid-sct-version.der"),
@@ -5621,10 +5560,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         with pytest.raises(ValueError):
             cert.extensions
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (backend._lib.Cryptography_HAS_SCT),
-        skip_message="Requires CT support",
-    )
     def test_invalid_length(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid-sct-length.der"),

@@ -425,32 +425,6 @@ def _decode_freshest_crl(backend, cdps):
     return x509.FreshestCRL(dist_points)
 
 
-def _decode_scts(backend, asn1_scts):
-    from cryptography.hazmat.backends.openssl.x509 import (
-        _SignedCertificateTimestamp,
-    )
-
-    asn1_scts = backend._ffi.cast("Cryptography_STACK_OF_SCT *", asn1_scts)
-    asn1_scts = backend._ffi.gc(asn1_scts, backend._lib.SCT_LIST_free)
-
-    scts = []
-    for i in range(backend._lib.sk_SCT_num(asn1_scts)):
-        sct = backend._lib.sk_SCT_value(asn1_scts, i)
-
-        scts.append(_SignedCertificateTimestamp(backend, asn1_scts, sct))
-    return scts
-
-
-def _decode_precert_signed_certificate_timestamps(backend, asn1_scts):
-    return x509.PrecertificateSignedCertificateTimestamps(
-        _decode_scts(backend, asn1_scts)
-    )
-
-
-def _decode_signed_certificate_timestamps(backend, asn1_scts):
-    return x509.SignedCertificateTimestamps(_decode_scts(backend, asn1_scts))
-
-
 #    CRLReason ::= ENUMERATED {
 #        unspecified             (0),
 #        keyCompromise           (1),
@@ -552,19 +526,8 @@ _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
-_EXTENSION_HANDLERS_SCT = {
-    ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS: (
-        _decode_precert_signed_certificate_timestamps
-    )
-}
 
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _decode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
-}
-
-_OCSP_SINGLERESP_EXTENSION_HANDLERS_SCT = {
-    ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS: (
-        _decode_signed_certificate_timestamps
-    )
 }
