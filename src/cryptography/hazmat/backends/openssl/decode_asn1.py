@@ -386,11 +386,6 @@ def _decode_distpoint(backend, distpoint):
     return None, relative_name
 
 
-def _decode_crl_distribution_points(backend, cdps):
-    dist_points = _decode_dist_points(backend, cdps)
-    return x509.CRLDistributionPoints(dist_points)
-
-
 def _decode_freshest_crl(backend, cdps):
     dist_points = _decode_dist_points(backend, cdps)
     return x509.FreshestCRL(dist_points)
@@ -493,7 +488,6 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
-    ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
     ExtensionOID.FRESHEST_CRL: _decode_freshest_crl,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
