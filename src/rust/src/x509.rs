@@ -90,9 +90,9 @@ struct AuthorityKeyIdentifier<'a> {
     authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
 
-fn parse_distribution_point<'a>(
+fn parse_distribution_point(
     py: pyo3::Python<'_>,
-    dp: DistributionPointName<'a>,
+    dp: DistributionPointName<'_>,
 ) -> Result<(pyo3::PyObject, pyo3::PyObject), PyAsn1Error> {
     Ok(match dp {
         DistributionPointName::FullName(data) => (parse_general_names(py, data)?, py.None()),
