@@ -658,11 +658,9 @@ fn parse_x509_extension(
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?)
     } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
+        let dp = parse_distribution_points(py, ext_data)?;
         Ok(x509_module
-            .call1(
-                "CRLDistributionPoints",
-                (parse_distribution_points(py, ext_data)?,),
-            )?
+            .call1("CRLDistributionPoints", (dp,))?
             .to_object(py))
     } else if oid == *FRESHEST_CRL_OID {
         Ok(x509_module
