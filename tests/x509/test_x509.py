@@ -180,7 +180,8 @@ class TestCertificateRevocationList(object):
             backend,
         )
         unrecognized = x509.UnrecognizedExtension(
-            x509.ObjectIdentifier("1.2.3.4.5"), b"abcdef",
+            x509.ObjectIdentifier("1.2.3.4.5"),
+            b"abcdef",
         )
         ext = crl.extensions.get_extension_for_oid(unrecognized.oid)
         assert ext.value == unrecognized
