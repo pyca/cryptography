@@ -329,20 +329,20 @@ fn ipv4_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
     let num = u32::from_be_bytes(data[4..].try_into().unwrap());
     if num.leading_ones() + num.trailing_zeros() != 32 {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid netmask"
+            "Invalid netmask",
         )));
     }
-    return Ok(num.leading_ones())
+    return Ok(num.leading_ones());
 }
 
 fn ipv6_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
     let num = u128::from_be_bytes(data[16..].try_into().unwrap());
     if num.leading_ones() + num.trailing_zeros() != 128 {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid netmask"
+            "Invalid netmask",
         )));
     }
-    return Ok(num.leading_ones())
+    return Ok(num.leading_ones());
 }
 
 fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
@@ -352,11 +352,18 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
         8 => ipv4_netmask(data)?,
         32 => ipv6_netmask(data)?,
         _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6"
-        )))?
+            "Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6",
+        )))?,
     };
-    let base = ip_module.call_method1("ip_address", (pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),))?;
-    let net = format!("{}/{}", base.getattr("exploded")?.extract::<&str>()?, prefix);
+    let base = ip_module.call_method1(
+        "ip_address",
+        (pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),),
+    )?;
+    let net = format!(
+        "{}/{}",
+        base.getattr("exploded")?.extract::<&str>()?,
+        prefix
+    );
     Ok(x509_module
         .call_method1(
             "IPAddress",
