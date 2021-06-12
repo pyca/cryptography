@@ -173,6 +173,18 @@ class TestCertificateRevocationList(object):
         assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
         assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
 
+    def test_unrecognized_extension(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_unrecognized_extension.der"),
+            x509.load_der_x509_crl,
+            backend,
+        )
+        unrecognized = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4.5"), b"abcdef",
+        )
+        ext = crl.extensions.get_extension_for_oid(unrecognized.oid)
+        assert ext.value == unrecognized
+
     def test_revoked_cert_retrieval(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
