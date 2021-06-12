@@ -517,6 +517,9 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_idp_relativename_only.pem`` - Contains a CRL with an
   ``IssuingDistributionPoints`` extension with only a ``relativename`` for
   the distribution point.
+* ``crl_unrecognized_extension.der`` - Contains a CRL containing an
+  unsupported extension type. The OID was encoded as "1.2.3.4.5" with an
+  ``extnValue`` of "abcdef".
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
