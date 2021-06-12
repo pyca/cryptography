@@ -69,17 +69,6 @@ def _decode_x509_name(backend, x509_name):
     return x509.Name(x509.RelativeDistinguishedName(rdn) for rdn in attributes)
 
 
-def _decode_general_names(backend, gns):
-    num = backend._lib.sk_GENERAL_NAME_num(gns)
-    names = []
-    for i in range(num):
-        gn = backend._lib.sk_GENERAL_NAME_value(gns, i)
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        names.append(_decode_general_name(backend, gn))
-
-    return names
-
-
 # This is now a hacked up decoder where we progressively remove chunks as
 # we port more and more to rust. SAN exercised every branch in this, but
 # other extensions (which are still in Python/OpenSSL) don't so we'll remove
