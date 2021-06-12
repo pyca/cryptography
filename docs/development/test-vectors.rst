@@ -377,6 +377,10 @@ Custom X.509 Vectors
 * ``nc_single_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
   containing a name constraints extension with a permitted element that has two
   IPs with ``/32`` and ``/128`` network masks.
+* ``nc_ip_invalid_length.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has an
+  invalid length (33 bytes instead of 32) for an ``IPv6`` address with
+  network mask. The signature on this certificate is invalid.
 * ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a
   notice reference in the user notice.
