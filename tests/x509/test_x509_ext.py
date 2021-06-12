@@ -3580,10 +3580,21 @@ class TestNameConstraintsExtension(object):
                 ExtensionOID.NAME_CONSTRAINTS
             )
 
-    def test_invalid_netmask(self, backend):
+    def test_invalid_ipv6_netmask(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_invalid_ip_netmask.pem"),
             x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError):
+            cert.extensions.get_extension_for_oid(
+                ExtensionOID.NAME_CONSTRAINTS
+            )
+
+    def test_invalid_ipv4_netmask(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "nc_invalid_ip4_netmask.der"),
+            x509.load_der_x509_certificate,
             backend,
         )
         with pytest.raises(ValueError):
