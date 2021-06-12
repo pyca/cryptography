@@ -337,12 +337,14 @@ fn ipv4_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
 
 fn ipv6_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
     let num = u128::from_be_bytes(data[16..].try_into().unwrap());
-    if num.leading_ones() + num.trailing_zeros() != 128 {
+    // we invert and check leading zeros because leading_ones wasn't stabilized
+    // until 1.46.0. When we raise our MSRV we should change this
+    if (!num).leading_zeros() + num.trailing_zeros() != 128 {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             "Invalid netmask",
         )));
     }
-    Ok(num.leading_ones())
+    Ok((!num).leading_zeros())
 }
 
 fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
