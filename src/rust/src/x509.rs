@@ -352,7 +352,7 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
         8 => ipv4_netmask(data)?,
         32 => ipv6_netmask(data)?,
         _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6",
+            format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
         )))?,
     };
     let base = ip_module.call_method1(
@@ -406,7 +406,7 @@ fn parse_general_name(
             .to_object(py),
         GeneralName::IPAddress(data) => {
             let ip_module = py.import("ipaddress")?;
-            if data.len() == 4 && data.len() == 16 {
+            if data.len() == 4 || data.len() == 16 {
                 x509_module
                     .call_method1(
                         "IPAddress",
