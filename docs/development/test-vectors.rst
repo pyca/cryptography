@@ -519,7 +519,7 @@ Custom X.509 Certificate Revocation List Vectors
   the distribution point.
 * ``crl_unrecognized_extension.der`` - Contains a CRL containing an
   unsupported extension type. The OID was encoded as "1.2.3.4.5" with an
-  ``extnValue`` of "abcdef".
+  ``extnValue`` of ``abcdef``.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
