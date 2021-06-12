@@ -332,7 +332,7 @@ fn ipv4_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
             "Invalid netmask",
         )));
     }
-    return Ok(num.leading_ones());
+    Ok(num.leading_ones())
 }
 
 fn ipv6_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
@@ -342,18 +342,18 @@ fn ipv6_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
             "Invalid netmask",
         )));
     }
-    return Ok(num.leading_ones());
+    Ok(num.leading_ones())
 }
 
 fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
     let ip_module = py.import("ipaddress")?;
     let x509_module = py.import("cryptography.x509")?;
     let prefix = match data.len() {
-        8 => ipv4_netmask(data)?,
-        32 => ipv6_netmask(data)?,
+        8 => ipv4_netmask(data),
+        32 => ipv6_netmask(data),
         _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
-        )))?,
+        ))),
     };
     let base = ip_module.call_method1(
         "ip_address",
@@ -362,7 +362,7 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
     let net = format!(
         "{}/{}",
         base.getattr("exploded")?.extract::<&str>()?,
-        prefix
+        prefix?
     );
     Ok(x509_module
         .call_method1(
