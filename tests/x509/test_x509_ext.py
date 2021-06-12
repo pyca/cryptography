@@ -3574,8 +3574,7 @@ class TestNameConstraintsExtension(object):
             x509.load_pem_x509_certificate,
             backend,
         )
-        # NOTE: This will change to ValueError upon oxidization.
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             cert.extensions.get_extension_for_oid(
                 ExtensionOID.NAME_CONSTRAINTS
             )
