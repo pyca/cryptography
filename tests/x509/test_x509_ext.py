@@ -3568,6 +3568,18 @@ class TestNameConstraintsExtension(object):
             excluded_subtrees=None,
         )
 
+    def test_ip_invalid_length(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "nc_ip_invalid_length.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        # NOTE: This will change to ValueError upon oxidization.
+        with pytest.raises(AssertionError):
+            cert.extensions.get_extension_for_oid(
+                ExtensionOID.NAME_CONSTRAINTS
+            )
+
     def test_invalid_netmask(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_invalid_ip_netmask.pem"),
