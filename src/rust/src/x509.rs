@@ -368,11 +368,9 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
         base.getattr("exploded")?.extract::<&str>()?,
         prefix?
     );
+    let addr = ip_module.call_method1("ip_network", (net,))?.to_object(py);
     Ok(x509_module
-        .call_method1(
-            "IPAddress",
-            (ip_module.call_method1("ip_network", (net,))?.to_object(py),),
-        )?
+        .call_method1("IPAddress", (addr,))?
         .to_object(py))
 }
 
@@ -411,11 +409,9 @@ fn parse_general_name(
         GeneralName::IPAddress(data) => {
             let ip_module = py.import("ipaddress")?;
             if data.len() == 4 || data.len() == 16 {
+                let addr = ip_module.call_method1("ip_address", (data,))?.to_object(py);
                 x509_module
-                    .call_method1(
-                        "IPAddress",
-                        (ip_module.call_method1("ip_address", (data,))?.to_object(py),),
-                    )?
+                    .call_method1("IPAddress", (addr,))?
                     .to_object(py)
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
