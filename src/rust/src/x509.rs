@@ -27,6 +27,7 @@ lazy_static::lazy_static! {
     static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
     static ref ISSUING_DISTRIBUTION_POINT_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.28").unwrap();
     static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
+    static ref NAME_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.30").unwrap();
     static ref CRL_DISTRIBUTION_POINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.31").unwrap();
     static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
@@ -46,6 +47,38 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
             std::str::from_utf8(data).map_err(|_| asn1::ParseError::InvalidValue)?,
         ))
     }
+}
+
+#[derive(asn1::Asn1Read)]
+struct NameConstraints<'a> {
+    #[implicit(0)]
+    permitted_subtrees: Option<asn1::SequenceOf<'a, GeneralSubtree<'a>>>,
+
+    #[implicit(1)]
+    excluded_subtrees: Option<asn1::SequenceOf<'a, GeneralSubtree<'a>>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct GeneralSubtree<'a> {
+    base: GeneralName<'a>,
+
+    #[implicit(0)]
+    #[default(0u64)]
+    _minimum: u64,
+
+    #[implicit(1)]
+    _maximum: Option<u64>,
+}
+
+fn parse_general_subtrees<'a>(
+    py: pyo3::Python<'_>,
+    subtrees: asn1::SequenceOf<'a, GeneralSubtree<'a>>,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let gns = pyo3::types::PyList::empty(py);
+    for gs in subtrees {
+        gns.append(parse_general_name(py, gs.base)?)?;
+    }
+    Ok(gns.to_object(py))
 }
 
 #[derive(asn1::Asn1Read)]
@@ -291,6 +324,59 @@ fn parse_name(py: pyo3::Python<'_>, name: Name<'_>) -> Result<pyo3::PyObject, Py
     Ok(py_name)
 }
 
+fn ipv4_netmask(num: u32) -> Result<u32, PyAsn1Error> {
+    // we invert and check leading zeros because leading_ones wasn't stabilized
+    // until 1.46.0. When we raise our MSRV we should change this
+    if (!num).leading_zeros() + num.trailing_zeros() != 32 {
+        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Invalid netmask",
+        )));
+    }
+    Ok((!num).leading_zeros())
+}
+
+fn ipv6_netmask(num: u128) -> Result<u32, PyAsn1Error> {
+    // we invert and check leading zeros because leading_ones wasn't stabilized
+    // until 1.46.0. When we raise our MSRV we should change this
+    if (!num).leading_zeros() + num.trailing_zeros() != 128 {
+        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Invalid netmask",
+        )));
+    }
+    Ok((!num).leading_zeros())
+}
+
+fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let ip_module = py.import("ipaddress")?;
+    let x509_module = py.import("cryptography.x509")?;
+    let prefix = match data.len() {
+        8 => {
+            let num = u32::from_be_bytes(data[4..].try_into().unwrap());
+            ipv4_netmask(num)
+        }
+        32 => {
+            let num = u128::from_be_bytes(data[16..].try_into().unwrap());
+            ipv6_netmask(num)
+        }
+        _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
+        ))),
+    };
+    let base = ip_module.call_method1(
+        "ip_address",
+        (pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),),
+    )?;
+    let net = format!(
+        "{}/{}",
+        base.getattr("exploded")?.extract::<&str>()?,
+        prefix?
+    );
+    let addr = ip_module.call_method1("ip_network", (net,))?.to_object(py);
+    Ok(x509_module
+        .call_method1("IPAddress", (addr,))?
+        .to_object(py))
+}
+
 fn parse_general_name(
     py: pyo3::Python<'_>,
     gn: GeneralName<'_>,
@@ -325,10 +411,16 @@ fn parse_general_name(
             .to_object(py),
         GeneralName::IPAddress(data) => {
             let ip_module = py.import("ipaddress")?;
-            let ip_addr = ip_module.call_method1("ip_address", (data,))?.to_object(py);
-            x509_module
-                .call_method1("IPAddress", (ip_addr,))?
-                .to_object(py)
+            if data.len() == 4 || data.len() == 16 {
+                let addr = ip_module.call_method1("ip_address", (data,))?.to_object(py);
+                x509_module
+                    .call_method1("IPAddress", (addr,))?
+                    .to_object(py)
+            } else {
+                // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
+                // verify length in this function.
+                create_ip_network(py, data)?
+            }
         }
         GeneralName::RegisteredID(data) => {
             let oid = x509_module
@@ -671,6 +763,19 @@ fn parse_x509_extension(
         let scts = parse_scts(py, contents, LogEntryType::PreCertificate)?;
         Ok(x509_module
             .call1("PrecertificateSignedCertificateTimestamps", (scts,))?
+            .to_object(py))
+    } else if oid == *NAME_CONSTRAINTS_OID {
+        let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
+        let permitted_subtrees = match nc.permitted_subtrees {
+            Some(data) => parse_general_subtrees(py, data)?,
+            None => py.None(),
+        };
+        let excluded_subtrees = match nc.excluded_subtrees {
+            Some(data) => parse_general_subtrees(py, data)?,
+            None => py.None(),
+        };
+        Ok(x509_module
+            .call1("NameConstraints", (permitted_subtrees, excluded_subtrees))?
             .to_object(py))
     } else {
         Ok(py.None())

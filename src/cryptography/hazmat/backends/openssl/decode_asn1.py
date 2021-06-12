@@ -4,7 +4,6 @@
 
 
 import datetime
-import ipaddress
 import typing
 
 from cryptography import x509
@@ -67,63 +66,6 @@ def _decode_x509_name(backend, x509_name):
         prev_set_id = set_id
 
     return x509.Name(x509.RelativeDistinguishedName(rdn) for rdn in attributes)
-
-
-# This is now a hacked up decoder where we progressively remove chunks as
-# we port more and more to rust. SAN exercised every branch in this, but
-# other extensions (which are still in Python/OpenSSL) don't so we'll remove
-# anything that isn't covered progressively until we remove the entire function
-def _decode_general_name(backend, gn):
-    if gn.type == backend._lib.GEN_DNS:
-        # Convert to bytes and then decode to utf8. We don't use
-        # asn1_string_to_utf8 here because it doesn't properly convert
-        # utf8 from ia5strings.
-        data = _asn1_string_to_bytes(backend, gn.d.dNSName).decode("utf8")
-        # We don't use the constructor for DNSName so we can bypass validation
-        # This allows us to create DNSName objects that have unicode chars
-        # when a certificate (against the RFC) contains them.
-        return x509.DNSName._init_without_validation(data)
-    elif gn.type == backend._lib.GEN_URI:
-        # Convert to bytes and then decode to utf8. We don't use
-        # asn1_string_to_utf8 here because it doesn't properly convert
-        # utf8 from ia5strings.
-        data = _asn1_string_to_bytes(
-            backend, gn.d.uniformResourceIdentifier
-        ).decode("utf8")
-        # We don't use the constructor for URI so we can bypass validation
-        # This allows us to create URI objects that have unicode chars
-        # when a certificate (against the RFC) contains them.
-        return x509.UniformResourceIdentifier._init_without_validation(data)
-    elif gn.type == backend._lib.GEN_IPADD:
-        data = _asn1_string_to_bytes(backend, gn.d.iPAddress)
-        data_len = len(data)
-        assert data_len == 8 or data_len == 32
-        # This is an IPv4 or IPv6 Network and not a single IP. This
-        # type of data appears in Name Constraints. Unfortunately,
-        # ipaddress doesn't support packed bytes + netmask. Additionally,
-        # IPv6Network can only handle CIDR rather than the full 16 byte
-        # netmask. To handle this we convert the netmask to integer, then
-        # find the first 0 bit, which will be the prefix. If another 1
-        # bit is present after that the netmask is invalid.
-        base = ipaddress.ip_address(data[: data_len // 2])
-        netmask = ipaddress.ip_address(data[data_len // 2 :])
-        bits = bin(int(netmask))[2:]
-        prefix = bits.find("0")
-        # If no 0 bits are found it is a /32 or /128
-        if prefix == -1:
-            prefix = len(bits)
-
-        if "1" in bits[prefix:]:
-            raise ValueError("Invalid netmask")
-
-        ip = ipaddress.ip_network(base.exploded + "/{}".format(prefix))
-
-        return x509.IPAddress(ip)
-    else:
-        assert gn.type == backend._lib.GEN_DIRNAME
-        return x509.DirectoryName(
-            _decode_x509_name(backend, gn.d.directoryName)
-        )
 
 
 class _X509ExtensionParser(object):
@@ -254,35 +196,8 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_name_constraints(backend, nc):
-    nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
-    nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
-    permitted = _decode_general_subtrees(backend, nc.permittedSubtrees)
-    excluded = _decode_general_subtrees(backend, nc.excludedSubtrees)
-    return x509.NameConstraints(
-        permitted_subtrees=permitted, excluded_subtrees=excluded
-    )
-
-
-def _decode_general_subtrees(backend, stack_subtrees):
-    if stack_subtrees == backend._ffi.NULL:
-        return None
-
-    num = backend._lib.sk_GENERAL_SUBTREE_num(stack_subtrees)
-    subtrees = []
-
-    for i in range(num):
-        obj = backend._lib.sk_GENERAL_SUBTREE_value(stack_subtrees, i)
-        backend.openssl_assert(obj != backend._ffi.NULL)
-        name = _decode_general_name(backend, obj.base)
-        subtrees.append(name)
-
-    return subtrees
-
-
 _DISTPOINT_TYPE_FULLNAME = 0
 _DISTPOINT_TYPE_RELATIVENAME = 1
-
 
 #    CRLReason ::= ENUMERATED {
 #        unspecified             (0),
@@ -381,5 +296,4 @@ def _parse_asn1_generalized_time(backend, generalized_time):
 
 _EXTENSION_HANDLERS_BASE = {
     ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
-    ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
