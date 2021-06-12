@@ -63,9 +63,8 @@ struct GeneralSubtree<'a> {
     base: GeneralName<'a>,
 
     #[implicit(0)]
-    #[default(0)]
-    // TODO: doesn't like u64
-    _minimum: i64,
+    #[default(0u64)]
+    _minimum: u64,
 
     #[implicit(1)]
     _maximum: Option<u64>,
@@ -325,8 +324,7 @@ fn parse_name(py: pyo3::Python<'_>, name: Name<'_>) -> Result<pyo3::PyObject, Py
     Ok(py_name)
 }
 
-fn ipv4_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
-    let num = u32::from_be_bytes(data[4..].try_into().unwrap());
+fn ipv4_netmask(num: u32) -> Result<u32, PyAsn1Error> {
     // we invert and check leading zeros because leading_ones wasn't stabilized
     // until 1.46.0. When we raise our MSRV we should change this
     if (!num).leading_zeros() + num.trailing_zeros() != 32 {
@@ -337,8 +335,7 @@ fn ipv4_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
     Ok((!num).leading_zeros())
 }
 
-fn ipv6_netmask(data: &[u8]) -> Result<u32, PyAsn1Error> {
-    let num = u128::from_be_bytes(data[16..].try_into().unwrap());
+fn ipv6_netmask(num: u128) -> Result<u32, PyAsn1Error> {
     // we invert and check leading zeros because leading_ones wasn't stabilized
     // until 1.46.0. When we raise our MSRV we should change this
     if (!num).leading_zeros() + num.trailing_zeros() != 128 {
@@ -353,8 +350,14 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
     let ip_module = py.import("ipaddress")?;
     let x509_module = py.import("cryptography.x509")?;
     let prefix = match data.len() {
-        8 => ipv4_netmask(data),
-        32 => ipv6_netmask(data),
+        8 => {
+            let num = u32::from_be_bytes(data[4..].try_into().unwrap());
+            ipv4_netmask(num)
+        }
+        32 => {
+            let num = u128::from_be_bytes(data[16..].try_into().unwrap());
+            ipv6_netmask(num)
+        }
         _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
         ))),
