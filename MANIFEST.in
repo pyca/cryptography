@@ -7,7 +7,7 @@ include LICENSE.PSF
 include README.rst
 
 include pyproject.toml
-recursive-include src py.typed
+recursive-include src py.typed *.pyi
 
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h

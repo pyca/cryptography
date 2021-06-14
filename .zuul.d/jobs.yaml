@@ -13,20 +13,6 @@
       tox_envlist: py38
 
 - job:
-    name: pyca-cryptography-ubuntu-bionic-py36-arm64
-    parent: pyca-cryptography-base
-    nodeset: ubuntu-bionic-arm64
-    vars:
-      tox_envlist: py36
-
-- job:
-    name: pyca-cryptography-centos-8-py36-arm64
-    parent: pyca-cryptography-base
-    nodeset: centos-8-arm64
-    vars:
-      tox_envlist: py36
-
-- job:
     name: pyca-cryptography-build-wheel
     abstract: true
     pre-run: .zuul.playbooks/playbooks/wheel/pre.yaml
@@ -42,6 +28,10 @@
           image: ghcr.io/pyca/cryptography-manylinux2014_aarch64
           pythons:
             - cp36-cp36m
+        - platform: manylinux_2_24_aarch64
+          image: ghcr.io/pyca/cryptography-manylinux_2_24:aarch64
+          pythons:
+            - cp36-cp36m
 
 - job:
     name: pyca-cryptography-build-wheel-x86_64
@@ -55,5 +45,9 @@
             - cp36-cp36m
         - platform: manylinux2014_x86_64
           image: ghcr.io/pyca/cryptography-manylinux2014:x86_64
+          pythons:
+            - cp36-cp36m
+        - platform: manylinux_2_24_x86_64
+          image: ghcr.io/pyca/cryptography-manylinux_2_24:x86_64
           pythons:
             - cp36-cp36m

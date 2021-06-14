@@ -7,7 +7,8 @@ source =
 [paths]
 source =
    src/cryptography
-   .tox/*/lib/python*/site-packages/cryptography
+   .tox/*/lib*/python*/site-packages/cryptography
+   .tox\*\Lib\site-packages\cryptography
    .tox/pypy/site-packages/cryptography
 
 [report]

@@ -41,11 +41,6 @@ X509_EXTENSION *OCSP_SINGLERESP_get_ext(OCSP_SINGLERESP *, int);
 int OCSP_single_get0_status(OCSP_SINGLERESP *, int *, ASN1_GENERALIZEDTIME **,
                             ASN1_GENERALIZEDTIME **, ASN1_GENERALIZEDTIME **);
 
-int OCSP_REQUEST_get_ext_count(OCSP_REQUEST *);
-X509_EXTENSION *OCSP_REQUEST_get_ext(OCSP_REQUEST *, int);
-int OCSP_request_onereq_count(OCSP_REQUEST *);
-OCSP_ONEREQ *OCSP_request_onereq_get0(OCSP_REQUEST *, int);
-OCSP_CERTID *OCSP_onereq_get0_id(OCSP_ONEREQ *);
 OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
 OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
 void OCSP_CERTID_free(OCSP_CERTID *);
@@ -68,7 +63,6 @@ void OCSP_REQUEST_free(OCSP_REQUEST *);
 int OCSP_REQUEST_add_ext(OCSP_REQUEST *, X509_EXTENSION *, int);
 int OCSP_id_get0_info(ASN1_OCTET_STRING **, ASN1_OBJECT **,
                       ASN1_OCTET_STRING **, ASN1_INTEGER **, OCSP_CERTID *);
-OCSP_REQUEST *d2i_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST **);
 OCSP_RESPONSE *d2i_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE **);
 int i2d_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST *);
 int i2d_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE *);

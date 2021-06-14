@@ -1,13 +1,17 @@
 name: Lock Issues
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
+
+permissions:
+  issues: "write"
 
 jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/lock-threads@v2
+      - uses: dessant/lock-threads@v2.0.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-inactive-days: 90

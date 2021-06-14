@@ -15,9 +15,11 @@ static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 static const int EVP_R_UNKNOWN_PBE_ALGORITHM;
+static const int EVP_R_XTS_DUPLICATED_KEYS;
 
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PEM;
+static const int ERR_LIB_PROV;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_PKCS12;
 
@@ -45,4 +47,13 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
+/* This define is tied to provider support and is conditionally
+   removed if Cryptography_HAS_PROVIDERS is false */
+#ifndef ERR_LIB_PROV
+#define ERR_LIB_PROV 0
+#endif
+
+#if !CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
+static const int EVP_R_XTS_DUPLICATED_KEYS = 0;
+#endif
 """

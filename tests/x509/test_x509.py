@@ -5,7 +5,6 @@
 
 
 import binascii
-import collections
 import copy
 import datetime
 import ipaddress
@@ -18,19 +17,7 @@ import pytz
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat._der import (
-    BIT_STRING,
-    CONSTRUCTED,
-    CONTEXT_SPECIFIC,
-    DERReader,
-    GENERALIZED_TIME,
-    INTEGER,
-    OBJECT_IDENTIFIER,
-    PRINTABLE_STRING,
-    SEQUENCE,
-    SET,
-    UTC_TIME,
-)
+from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
@@ -80,52 +67,6 @@ def _load_cert(filename, loader, backend):
         mode="rb",
     )
     return cert
-
-
-ParsedCertificate = collections.namedtuple(
-    "ParsedCertificate",
-    ["not_before_tag", "not_after_tag", "issuer", "subject"],
-)
-
-
-def _parse_cert(der):
-    # See the Certificate structured, defined in RFC 5280.
-    with DERReader(der).read_single_element(SEQUENCE) as cert:
-        tbs_cert = cert.read_element(SEQUENCE)
-        # Skip outer signature algorithm
-        _ = cert.read_element(SEQUENCE)
-        # Skip signature
-        _ = cert.read_element(BIT_STRING)
-
-    with tbs_cert:
-        # Skip version
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 0)
-        # Skip serialNumber
-        _ = tbs_cert.read_element(INTEGER)
-        # Skip inner signature algorithm
-        _ = tbs_cert.read_element(SEQUENCE)
-        issuer = tbs_cert.read_element(SEQUENCE)
-        validity = tbs_cert.read_element(SEQUENCE)
-        subject = tbs_cert.read_element(SEQUENCE)
-        # Skip subjectPublicKeyInfo
-        _ = tbs_cert.read_element(SEQUENCE)
-        # Skip issuerUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 1)
-        # Skip subjectUniqueID
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 2)
-        # Skip extensions
-        _ = tbs_cert.read_optional_element(CONTEXT_SPECIFIC | CONSTRUCTED | 3)
-
-    with validity:
-        not_before_tag, _ = validity.read_any_element()
-        not_after_tag, _ = validity.read_any_element()
-
-    return ParsedCertificate(
-        not_before_tag=not_before_tag,
-        not_after_tag=not_after_tag,
-        issuer=issuer,
-        subject=subject,
-    )
 
 
 class TestCertificateRevocationList(object):
@@ -231,6 +172,19 @@ class TestCertificateRevocationList(object):
 
         assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
         assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
+
+    def test_unrecognized_extension(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_unrecognized_extension.der"),
+            x509.load_der_x509_crl,
+            backend,
+        )
+        unrecognized = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4.5"),
+            b"abcdef",
+        )
+        ext = crl.extensions.get_extension_for_oid(unrecognized.oid)
+        assert ext.value == unrecognized
 
     def test_revoked_cert_retrieval(self, backend):
         crl = _load_cert(
@@ -1675,7 +1629,7 @@ class TestRSACertificateRequest(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -1788,29 +1742,19 @@ class TestRSACertificateRequest(object):
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        subject = parsed.subject
-        issuer = parsed.issuer
-
-        def read_next_rdn_value_tag(reader):
-            # Assume each RDN has a single attribute.
-            with reader.read_element(SET) as rdn:
-                attribute = rdn.read_element(SEQUENCE)
-
-            with attribute:
-                _ = attribute.read_element(OBJECT_IDENTIFIER)
-                tag, value = attribute.read_any_element()
-                return tag
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
 
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
-        assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
-        assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
+        assert parsed.issuer_value_tags[0] == 0x13
+        assert parsed.subject_value_tags[0] == 0x13
         if (
             # This only works correctly in OpenSSL 1.1.0f+
             backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
         ):
-            assert read_next_rdn_value_tag(subject) == PRINTABLE_STRING
-            assert read_next_rdn_value_tag(issuer) == PRINTABLE_STRING
+            assert parsed.issuer_value_tags[1] == 0x13
+            assert parsed.subject_value_tags[1] == 0x13
 
 
 class TestCertificateBuilder(object):
@@ -1971,9 +1915,13 @@ class TestCertificateBuilder(object):
         cert = builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed.not_before_tag == UTC_TIME
-        assert parsed.not_after_tag == GENERALIZED_TIME
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        # UTC TIME
+        assert parsed.not_before_tag == 0x17
+        # GENERALIZED TIME
+        assert parsed.not_after_tag == 0x18
 
     def test_no_subject_name(self, backend):
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -2237,9 +2185,12 @@ class TestCertificateBuilder(object):
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_before == time
         assert cert.not_valid_after == time
-        parsed = _parse_cert(cert.public_bytes(serialization.Encoding.DER))
-        assert parsed.not_before_tag == UTC_TIME
-        assert parsed.not_after_tag == UTC_TIME
+        parsed = asn1.test_parse_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        # UTC TIME
+        assert parsed.not_before_tag == 0x17
+        assert parsed.not_after_tag == 0x17
 
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
@@ -2494,7 +2445,7 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -2545,7 +2496,7 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -3241,7 +3192,7 @@ class TestCertificateBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=None), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3384,10 +3335,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
@@ -3419,7 +3370,7 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3509,7 +3460,7 @@ class TestCertificateSigningRequestBuilder(object):
         request = (
             x509.CertificateSigningRequestBuilder()
             .subject_name(subject)
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
         loaded_request = x509.load_pem_x509_csr(
@@ -3530,10 +3481,10 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.BasicConstraints(ca=False, path_length=None),
                 critical=True,
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         subject = request.subject
@@ -3566,10 +3517,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
         subject = request.subject
@@ -3677,10 +3628,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
@@ -3826,10 +3777,10 @@ class TestCertificateSigningRequestBuilder(object):
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=2), critical=True
             )
-            .sign(private_key, hashes.SHA1(), backend)
+            .sign(private_key, hashes.SHA256(), backend)
         )
 
-        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         basic_constraints = request.extensions.get_extension_for_oid(
@@ -4090,7 +4041,7 @@ class TestCertificateSigningRequestBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -4161,7 +4112,7 @@ class TestCertificateSigningRequestBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
@@ -4990,6 +4941,12 @@ class TestName(object):
         )
 
         assert repr(name) == expected_repr
+
+    def test_rfc4514_attribute_name(self):
+        a = x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io")
+        assert a.rfc4514_attribute_name == "CN"
+        b = x509.NameAttribute(NameOID.PSEUDONYM, "cryptography.io")
+        assert b.rfc4514_attribute_name == "2.5.4.65"
 
     def test_rfc4514_string(self):
         n = x509.Name(

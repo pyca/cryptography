@@ -586,8 +586,10 @@ static const long TLS_ST_OK = 0;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
+#endif
 long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif

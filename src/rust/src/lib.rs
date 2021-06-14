@@ -2,6 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#![deny(rust_2018_idioms)]
+
+mod asn1;
+mod ocsp;
+mod x509;
+
 use std::convert::TryInto;
 
 /// Returns the value of the input with the most-significant-bit copied to all
@@ -66,9 +72,13 @@ fn check_ansix923_padding(data: &[u8]) -> bool {
 }
 
 #[pyo3::prelude::pymodule]
-fn _rust(_py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
+fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(check_ansix923_padding, m)?)?;
+
+    m.add_submodule(asn1::create_submodule(py)?)?;
+    m.add_submodule(ocsp::create_submodule(py)?)?;
+    m.add_submodule(x509::create_submodule(py)?)?;
 
     Ok(())
 }

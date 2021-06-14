@@ -374,9 +374,17 @@ Custom X.509 Vectors
 * ``nc_invalid_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
   containing a name constraints extension with a permitted element that has an
   ``IPv6`` IP and an invalid network mask.
+* ``nc_invalid_ip4_netmask.der`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has an
+  ``IPv4`` IP and an invalid network mask. The signature on this certificate
+  is invalid.
 * ``nc_single_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
   containing a name constraints extension with a permitted element that has two
   IPs with ``/32`` and ``/128`` network masks.
+* ``nc_ip_invalid_length.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has an
+  invalid length (33 bytes instead of 32) for an ``IPv6`` address with
+  network mask. The signature on this certificate is invalid.
 * ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a
   notice reference in the user notice.
@@ -420,6 +428,10 @@ Custom X.509 Vectors
   using ``ed448-pkcs8.pem`` as key.
 * ``ca/rsa_ca.pem`` - A self-signed RSA certificate with ``basicConstraints``
   set to true. Its private key is ``ca/rsa_key.pem``.
+* ``invalid-sct-version.der`` - A certificate with an SCT with an unknown
+  version.
+* ``invalid-sct-length.der`` - A certificate with an SCT with an internal
+  length greater than the amount of data.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -513,6 +525,9 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_idp_relativename_only.pem`` - Contains a CRL with an
   ``IssuingDistributionPoints`` extension with only a ``relativename`` for
   the distribution point.
+* ``crl_unrecognized_extension.der`` - Contains a CRL containing an
+  unsupported extension type. The OID was encoded as "1.2.3.4.5" with an
+  ``extnValue`` of ``abcdef``.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -551,6 +566,14 @@ Custom X.509 OCSP Test Vectors
   invalid hash algorithm OID.
 * ``x509/ocsp/req-ext-nonce.der`` - An OCSP request containing a nonce
   extension.
+* ``x509/ocsp/req-ext-unknown-oid.der`` - An OCSP request containing an
+  extension with an unknown OID.
+* ``x509/ocsp/req-duplicate-ext.der`` - An OCSP request with duplicate
+  extensions.
+* ``x509/ocsp/resp-unknown-extension.der`` - An OCSP response containing an
+  extension with an unknown OID.
+* ``x509/ocsp/resp-unknown-hash-alg.der`` - AN OCSP response containing an
+  invalid hash algorithm OID.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

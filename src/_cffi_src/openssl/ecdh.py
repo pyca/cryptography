@@ -11,8 +11,6 @@ TYPES = """
 """
 
 FUNCTIONS = """
-int ECDH_compute_key(void *, size_t, const EC_POINT *, EC_KEY *,
-                     void *(*)(const void *, size_t, void *, size_t *));
 long SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
 """
 

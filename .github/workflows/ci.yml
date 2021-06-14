@@ -9,6 +9,8 @@ on:
       - '*.*'
       - '*.*.*'
 
+permissions: read-all
+
 jobs:
   linux:
     runs-on: ubuntu-latest
@@ -16,36 +18,42 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
-          - {VERSION: "pypy-3.6", TOXENV: "pypy3"}
-          - {VERSION: "pypy-3.7", TOXENV: "pypy3"}
+          - {VERSION: "pypy-3.6", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
-          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "3.0.0-alpha17"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.4"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.1"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.5"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.3"}}
+          - {VERSION: "3.10-dev", TOXENV: "py310"}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -66,7 +74,7 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load cache
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.6
         id: ossl-cache
         with:
           path: ${{ github.workspace }}/osslcache
@@ -90,6 +98,7 @@ jobs:
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
@@ -108,21 +117,25 @@ jobs:
           - {IMAGE: "sid", TOXENV: "py39"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38-randomorder"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39-randomorder"}
           - {IMAGE: "fedora", TOXENV: "py39"}
           - {IMAGE: "alpine", TOXENV: "py38"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
       - run: |
@@ -133,6 +146,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
@@ -150,22 +164,26 @@ jobs:
           - beta
           - nightly
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -178,9 +196,73 @@ jobs:
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
+
+  linux-rust-coverage:
+    runs-on: ubuntu-latest
+    name: "Rust Coverage"
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
+        id: cargo-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-rust-nightly-coverage
+
+      - name: Setup python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - uses: actions-rs/toolchain@v1.0.7
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          default: true
+          components: llvm-tools-preview
+      - uses: actions-rs/install@v0.1.2
+        with:
+          crate: cargo-binutils
+          version: latest
+        if: steps.cargo-cache.outputs.cache-hit != 'true'
+
+      - run: git clone --depth=1 https://github.com/google/wycheproof
+      - run: python -m pip install tox coverage
+      - name: Tests
+        run: |
+            tox -r --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: py39
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          RUSTFLAGS: "-Zinstrument-coverage"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
+      - name: Process coverage data
+        run: |
+            cd src/rust/
+            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o rust-cov.profdata
+            cargo cov -- export ../../.tox/py39/lib/python3.9/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+              -instr-profile=rust-cov.profdata \
+              --ignore-filename-regex='/.cargo/registry' \
+              --ignore-filename-regex='/rustc/' \
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
+
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
+
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Rust Coverage"
+
 
   macos:
     runs-on: macos-latest
@@ -192,22 +274,26 @@ jobs:
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -232,6 +318,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -251,23 +338,28 @@ jobs:
           - stable
         JOB_NUMBER: [0, 1, 2, 3]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
+          persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        id: setup-python
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/cache@v2.1.6
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src/rust/target/
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -290,6 +382,7 @@ jobs:
       - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -312,22 +405,26 @@ jobs:
         PYTHON:
           - 3.7
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.PYTHON }}
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -337,20 +434,24 @@ jobs:
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip uninstall -y enum34
       - run: pip install .
+        env:
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: "linkcheck"
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v2.2.1
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: 3.9
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
           toolchain: stable
