@@ -29,6 +29,7 @@ lazy_static::lazy_static! {
     static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
     static ref NAME_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.30").unwrap();
     static ref CRL_DISTRIBUTION_POINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.31").unwrap();
+    static ref CERTIFICATE_POLICIES_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.32").unwrap();
     static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
     static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
     static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
@@ -36,6 +37,136 @@ lazy_static::lazy_static! {
     static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
     static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
     static ref PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.2").unwrap();
+
+    static ref CP_CPS_URI_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.1").unwrap();
+    static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
+}
+
+#[derive(asn1::Asn1Read)]
+struct PolicyInformation<'a> {
+    policy_identifier: asn1::ObjectIdentifier<'a>,
+    policy_qualifiers: Option<asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct PolicyQualifierInfo<'a> {
+    policy_qualifier_id: asn1::ObjectIdentifier<'a>,
+    qualifier: Qualifier<'a>,
+}
+
+#[derive(asn1::Asn1Read)]
+enum Qualifier<'a> {
+    CpsUri(asn1::IA5String<'a>),
+    UserNotice(UserNotice<'a>),
+}
+
+#[derive(asn1::Asn1Read)]
+struct UserNotice<'a> {
+    notice_ref: Option<NoticeReference<'a>>,
+    explicit_text: Option<DisplayText<'a>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct NoticeReference<'a> {
+    organization: DisplayText<'a>,
+    notice_numbers: asn1::SequenceOf<'a, asn1::BigUint<'a>>,
+}
+
+// DisplayText also allows BMPString, which we currently do not support.
+#[allow(clippy::enum_variant_names)]
+#[derive(asn1::Asn1Read)]
+enum DisplayText<'a> {
+    IA5String(asn1::IA5String<'a>),
+    Utf8String(asn1::Utf8String<'a>),
+    VisibleString(asn1::VisibleString<'a>),
+}
+
+fn parse_display_text(py: pyo3::Python<'_>, text: DisplayText<'_>) -> pyo3::PyObject {
+    match text {
+        DisplayText::IA5String(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
+        DisplayText::Utf8String(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
+        DisplayText::VisibleString(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
+    }
+}
+
+fn parse_user_notice(
+    py: pyo3::Python<'_>,
+    un: UserNotice<'_>,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    let et = match un.explicit_text {
+        Some(data) => parse_display_text(py, data),
+        None => py.None(),
+    };
+    let nr = match un.notice_ref {
+        Some(data) => {
+            let org = parse_display_text(py, data.organization);
+            let numbers = pyo3::types::PyList::empty(py);
+            for num in data.notice_numbers {
+                numbers.append(big_asn1_uint_to_py(py, num)?.to_object(py))?;
+            }
+            x509_module
+                .call_method1("NoticeReference", (org, numbers))?
+                .to_object(py)
+        }
+        None => py.None(),
+    };
+    Ok(x509_module
+        .call_method1("UserNotice", (nr, et))?
+        .to_object(py))
+}
+
+fn parse_policy_qualifiers<'a>(
+    py: pyo3::Python<'_>,
+    policy_qualifiers: asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let py_pq = pyo3::types::PyList::empty(py);
+    for pqi in policy_qualifiers {
+        let qualifier = match pqi.qualifier {
+            Qualifier::CpsUri(data) => {
+                if pqi.policy_qualifier_id == *CP_CPS_URI_OID {
+                    pyo3::types::PyString::new(py, data.as_str()).to_object(py)
+                } else {
+                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                        "CpsUri ASN.1 structure found but OID did not match",
+                    )));
+                }
+            }
+            Qualifier::UserNotice(un) => {
+                if pqi.policy_qualifier_id != *CP_USER_NOTICE_OID {
+                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                        "UserNotice ASN.1 structure found but OID did not match",
+                    )));
+                }
+                parse_user_notice(py, un)?
+            }
+        };
+        py_pq.append(qualifier)?;
+    }
+    Ok(py_pq.to_object(py))
+}
+
+fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+    let cp = asn1::parse_single::<asn1::SequenceOf<'_, PolicyInformation<'_>>>(ext_data)?;
+    let x509_module = py.import("cryptography.x509")?;
+    let certificate_policies = pyo3::types::PyList::empty(py);
+    for policyinfo in cp {
+        let pi_oid = x509_module
+            .call_method1(
+                "ObjectIdentifier",
+                (policyinfo.policy_identifier.to_string(),),
+            )?
+            .to_object(py);
+        let py_pqis = match policyinfo.policy_qualifiers {
+            Some(policy_qualifiers) => parse_policy_qualifiers(py, policy_qualifiers)?,
+            None => py.None(),
+        };
+        let pi = x509_module
+            .call_method1("PolicyInformation", (pi_oid, py_pqis))?
+            .to_object(py);
+        certificate_policies.append(pi)?;
+    }
+    Ok(certificate_policies.to_object(py))
 }
 
 struct UnvalidatedIA5String<'a>(&'a str);
@@ -721,6 +852,11 @@ fn parse_x509_extension(
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(x509_module
             .call1("SubjectInformationAccess", (ads,))?
+            .to_object(py))
+    } else if oid == *CERTIFICATE_POLICIES_OID {
+        let cp = parse_cp(py, ext_data)?;
+        Ok(x509_module
+            .call_method1("CertificatePolicies", (cp,))?
             .to_object(py))
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
