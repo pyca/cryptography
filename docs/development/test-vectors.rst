@@ -397,7 +397,12 @@ Custom X.509 Vectors
   certificate containing a certificate policies extension with a user notice
   with no explicit text.
 * ``cp_invalid.pem`` - An RSA 2048 bit self-signed certificate containing a
-  certificate policies extension with invalid data.
+  certificate policies extension with invalid data. The ``policyQualifierId``
+  is for ``id-qt-unotice`` but the value is an ``id-qt-cps`` ASN.1 structure.
+* ``cp_invalid2.der`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with invalid data. The ``policyQualifierId``
+  is for ``id-qt-cps`` but the value is an ``id-qt-unotice`` ASN.1 structure.
+  The signature on this certificate is invalid.
 * ``ian_uri.pem`` - An RSA 2048 bit certificate containing an issuer
   alternative name extension with a ``URI`` general name.
 * ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing
