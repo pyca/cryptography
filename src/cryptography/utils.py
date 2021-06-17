@@ -41,8 +41,22 @@ def read_only_property(name: str):
     return property(lambda self: getattr(self, name))
 
 
-def register_interface(iface):
-    def register_decorator(klass, *, check_annotations=False):
+if typing.TYPE_CHECKING:
+    from typing_extensions import Protocol
+
+    _T_class = typing.TypeVar("_T_class", bound=type)
+
+    class _RegisterDecoratorType(Protocol):
+        def __call__(
+            self, klass: _T_class, *, check_annotations: bool = False
+        ) -> _T_class:
+            ...
+
+
+def register_interface(iface: abc.ABCMeta) -> "_RegisterDecoratorType":
+    def register_decorator(
+        klass: "_T_class", *, check_annotations: bool = False
+    ) -> "_T_class":
         verify_interface(iface, klass, check_annotations=check_annotations)
         iface.register(klass)
         return klass
