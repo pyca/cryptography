@@ -537,6 +537,75 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
         raw,
         cached_extensions: None,
     })
+
+#[pyo3::prelude::pyfunction]
+fn load_der_x509_crl(
+    _py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<CertificateRevocationList, PyAsn1Error> {
+    let raw =
+        OwnedRawCertificateRevocationList::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+
+    Ok(CertificateRevocationList {
+        raw,
+        cached_extensions: None,
+        sorted_crls: None,
+    })
+}
+
+#[pyo3::prelude::pyfunction]
+fn load_pem_x509_crl(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<CertificateRevocationList, PyAsn1Error> {
+    let block = pem::parse(data)?;
+    if block.tag != "XXX" {
+        unimplemented!()
+    }
+    // Produces an extra copy
+    load_der_x509_crl(py, &block.contents)
+}
+
+#[ouroboros::self_referencing]
+struct OwnedRawCertificateRevocationList {
+    data: Vec<u8>,
+    #[borrows(data)]
+    #[covariant]
+    value: RawCertificateRevocationList<'this>,
+}
+
+#[pyo3::prelude::pyclass]
+struct CertificateRevocationList {
+    raw: OwnedRawCertificateRevocationList,
+
+    cached_extensions: Option<pyo3::PyObject>,
+    sorted_crls: Option<Vec<()>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct RawCertificateRevocationList<'a> {
+    tbs_cert_list: TBSCertList<'a>,
+    signature_algorithm: AlgorithmIdentifier<'a>,
+    signature_value: asn1::BitString<'a>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct TBSCertList<'a> {
+    version: Option<u8>,
+    signature: AlgorithmIdentifier<'a>,
+    issuer: Name<'a>,
+    this_update: Time,
+    next_update: Option<Time>,
+    revoked_certificates: asn1::SequenceOf<'a, RevokedCertificate<'a>>,
+    #[explicit(0)]
+    crl_extensions: Option<Extensions<'a>>,
+}
+
+#[derive(asn1::Asn1Read)]
+struct RevokedCertificate<'a> {
+    user_certificate: asn1::BigUint<'a>,
+    revocation_date: Time,
+    crl_etry_extensions: Option<Extensions<'a>>,
 }
 
 pub(crate) fn parse_and_cache_extensions<
@@ -1605,6 +1674,9 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_csr_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_crl))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_crl))?;
+
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_ext))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(
