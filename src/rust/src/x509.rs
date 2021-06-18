@@ -7,6 +7,7 @@ use chrono::{Datelike, Timelike};
 use pyo3::conversion::ToPyObject;
 use pyo3::types::IntoPyDict;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::hash::{Hash, Hasher};
 
@@ -40,6 +41,73 @@ lazy_static::lazy_static! {
 
     static ref CP_CPS_URI_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.1").unwrap();
     static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
+}
+
+pub(crate) fn parse_and_cache_extensions<
+    'p,
+    F: Fn(&asn1::ObjectIdentifier<'_>, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
+>(
+    py: pyo3::Python<'p>,
+    cached_extensions: &mut Option<pyo3::PyObject>,
+    raw_exts: &Option<Extensions<'_>>,
+    parse_ext: F,
+) -> Result<pyo3::PyObject, PyAsn1Error> {
+    if let Some(cached) = cached_extensions {
+        return Ok(cached.clone_ref(py));
+    }
+
+    let x509_module = py.import("cryptography.x509")?;
+    let exts = pyo3::types::PyList::empty(py);
+    let mut seen_oids = HashSet::new();
+    if let Some(raw_exts) = raw_exts {
+        for raw_ext in raw_exts.clone() {
+            let oid_obj =
+                x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
+
+            if seen_oids.contains(&raw_ext.extn_id) {
+                return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                    x509_module.call_method1(
+                        "DuplicateExtension",
+                        (
+                            format!("Duplicate {} extension found", raw_ext.extn_id),
+                            oid_obj,
+                        ),
+                    )?,
+                )));
+            }
+
+            let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
+                Some(e) => e,
+                None => x509_module
+                    .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
+            };
+            let ext_obj =
+                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?;
+            exts.append(ext_obj)?;
+            seen_oids.insert(raw_ext.extn_id);
+        }
+    }
+    let extensions = x509_module
+        .call_method1("Extensions", (exts,))?
+        .to_object(py);
+    *cached_extensions = Some(extensions.clone_ref(py));
+    Ok(extensions)
+}
+
+pub(crate) type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct AlgorithmIdentifier<'a> {
+    pub(crate) oid: asn1::ObjectIdentifier<'a>,
+    pub(crate) _params: Option<asn1::Tlv<'a>>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct Extension<'a> {
+    pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
+    #[default(false)]
+    pub(crate) critical: bool,
+    pub(crate) extn_value: &'a [u8],
 }
 
 #[derive(asn1::Asn1Read)]
