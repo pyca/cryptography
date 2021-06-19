@@ -6,7 +6,7 @@ use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
 use crate::x509;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 lazy_static::lazy_static! {
     static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
@@ -76,57 +76,6 @@ impl OCSPRequest {
     }
 }
 
-fn parse_and_cache_extensions<
-    'p,
-    F: Fn(&asn1::ObjectIdentifier<'_>, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
->(
-    py: pyo3::Python<'p>,
-    cached_extensions: &mut Option<pyo3::PyObject>,
-    raw_exts: &Option<Extensions<'_>>,
-    parse_ext: F,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
-    if let Some(cached) = cached_extensions {
-        return Ok(cached.clone_ref(py));
-    }
-
-    let x509_module = py.import("cryptography.x509")?;
-    let exts = pyo3::types::PyList::empty(py);
-    let mut seen_oids = HashSet::new();
-    if let Some(raw_exts) = raw_exts {
-        for raw_ext in raw_exts.clone() {
-            let oid_obj =
-                x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
-
-            if seen_oids.contains(&raw_ext.extn_id) {
-                return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                    x509_module.call_method1(
-                        "DuplicateExtension",
-                        (
-                            format!("Duplicate {} extension found", raw_ext.extn_id),
-                            oid_obj,
-                        ),
-                    )?,
-                )));
-            }
-
-            let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
-                Some(e) => e,
-                None => x509_module
-                    .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
-            };
-            let ext_obj =
-                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?;
-            exts.append(ext_obj)?;
-            seen_oids.insert(raw_ext.extn_id);
-        }
-    }
-    let extensions = x509_module
-        .call_method1("Extensions", (exts,))?
-        .to_object(py);
-    *cached_extensions = Some(extensions.clone_ref(py));
-    Ok(extensions)
-}
-
 #[pyo3::prelude::pymethods]
 impl OCSPRequest {
     #[getter]
@@ -169,7 +118,7 @@ impl OCSPRequest {
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
         let x509_module = py.import("cryptography.x509")?;
-        parse_and_cache_extensions(
+        x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_request.request_extensions,
@@ -229,38 +178,22 @@ struct TBSRequest<'a> {
     // _requestor_name: Option<GeneralName<'a>>,
     request_list: asn1::SequenceOf<'a, Request<'a>>,
     #[explicit(2)]
-    request_extensions: Option<Extensions<'a>>,
+    request_extensions: Option<x509::Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Request<'a> {
     req_cert: CertID<'a>,
     #[explicit(0)]
-    _single_request_extensions: Option<Extensions<'a>>,
+    _single_request_extensions: Option<x509::Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct CertID<'a> {
-    hash_algorithm: AlgorithmIdentifier<'a>,
+    hash_algorithm: x509::AlgorithmIdentifier<'a>,
     issuer_name_hash: &'a [u8],
     issuer_key_hash: &'a [u8],
     serial_number: asn1::BigUint<'a>,
-}
-
-type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct AlgorithmIdentifier<'a> {
-    oid: asn1::ObjectIdentifier<'a>,
-    _params: Option<asn1::Tlv<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct Extension<'a> {
-    extn_id: asn1::ObjectIdentifier<'a>,
-    #[default(false)]
-    critical: bool,
-    extn_value: &'a [u8],
 }
 
 #[pyo3::prelude::pyfunction]

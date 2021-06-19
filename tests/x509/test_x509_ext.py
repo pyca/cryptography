@@ -5594,9 +5594,19 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
 
 class TestInvalidExtension(object):
     def test_invalid_certificate_policies_data(self, backend):
+        # UserNotice OID but CPSURI structure
         cert = _load_cert(
             os.path.join("x509", "custom", "cp_invalid.pem"),
             x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError):
+            cert.extensions
+
+        # CPSURI OID but UserNotice structure
+        cert = _load_cert(
+            os.path.join("x509", "custom", "cp_invalid2.der"),
+            x509.load_der_x509_certificate,
             backend,
         )
         with pytest.raises(ValueError):

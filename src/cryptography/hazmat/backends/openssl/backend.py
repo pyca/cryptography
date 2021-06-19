@@ -18,7 +18,6 @@ from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
-    _EXTENSION_HANDLERS_BASE,
     _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
@@ -389,14 +388,12 @@ class Backend(BackendInterface):
             ext_count=self._lib.X509_get_ext_count,
             get_ext=self._lib.X509_get_ext,
             rust_callback=rust_x509.parse_x509_extension,
-            handlers=_EXTENSION_HANDLERS_BASE,
         )
         self._csr_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
             rust_callback=rust_x509.parse_x509_extension,
-            handlers=_EXTENSION_HANDLERS_BASE,
         )
         self._revoked_cert_extension_parser = _X509ExtensionParser(
             self,

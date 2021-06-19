@@ -8,10 +8,6 @@ import typing
 
 from cryptography import x509
 from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
-from cryptography.x509.oid import (
-    CertificatePoliciesOID,
-    ExtensionOID,
-)
 
 
 def _obj2txt(backend, obj):
@@ -69,12 +65,9 @@ def _decode_x509_name(backend, x509_name):
 
 
 class _X509ExtensionParser(object):
-    def __init__(
-        self, backend, ext_count, get_ext, rust_callback, handlers={}
-    ):
+    def __init__(self, backend, ext_count, get_ext, rust_callback):
         self.ext_count = ext_count
         self.get_ext = get_ext
-        self.handlers = handlers
         self.rust_callback = rust_callback
         self._backend = backend
 
@@ -106,94 +99,13 @@ class _X509ExtensionParser(object):
             data = self._backend._lib.X509_EXTENSION_get_data(ext)
             data_bytes = _asn1_string_to_bytes(self._backend, data)
             ext_obj = self.rust_callback(oid_der_bytes, data_bytes)
-            if ext_obj is not None:
-                extensions.append(x509.Extension(oid, critical, ext_obj))
-                seen_oids.add(oid)
-                continue
+            if ext_obj is None:
+                ext_obj = x509.UnrecognizedExtension(oid, data_bytes)
 
-            # Fallback to our older parsing because the rust code doesn't
-            # know how to parse this.
-            try:
-                handler = self.handlers[oid]
-            except KeyError:
-                # Dump the DER payload into an UnrecognizedExtension object
-                data = self._backend._lib.X509_EXTENSION_get_data(ext)
-                self._backend.openssl_assert(data != self._backend._ffi.NULL)
-                der = self._backend._ffi.buffer(data.data, data.length)[:]
-                unrecognized = x509.UnrecognizedExtension(oid, der)
-                extensions.append(x509.Extension(oid, critical, unrecognized))
-            else:
-                ext_data = self._backend._lib.X509V3_EXT_d2i(ext)
-                if ext_data == self._backend._ffi.NULL:
-                    self._backend._consume_errors()
-                    raise ValueError(
-                        "The {} extension is invalid and can't be "
-                        "parsed".format(oid)
-                    )
-
-                value = handler(self._backend, ext_data)
-                extensions.append(x509.Extension(oid, critical, value))
-
+            extensions.append(x509.Extension(oid, critical, ext_obj))
             seen_oids.add(oid)
 
         return x509.Extensions(extensions)
-
-
-def _decode_certificate_policies(backend, cp):
-    cp = backend._ffi.cast("Cryptography_STACK_OF_POLICYINFO *", cp)
-    cp = backend._ffi.gc(cp, backend._lib.CERTIFICATEPOLICIES_free)
-
-    num = backend._lib.sk_POLICYINFO_num(cp)
-    certificate_policies = []
-    for i in range(num):
-        qualifiers = None
-        pi = backend._lib.sk_POLICYINFO_value(cp, i)
-        oid = x509.ObjectIdentifier(_obj2txt(backend, pi.policyid))
-        if pi.qualifiers != backend._ffi.NULL:
-            qnum = backend._lib.sk_POLICYQUALINFO_num(pi.qualifiers)
-            qualifiers = []
-            for j in range(qnum):
-                pqi = backend._lib.sk_POLICYQUALINFO_value(pi.qualifiers, j)
-                pqualid = x509.ObjectIdentifier(_obj2txt(backend, pqi.pqualid))
-                if pqualid == CertificatePoliciesOID.CPS_QUALIFIER:
-                    cpsuri = backend._ffi.buffer(
-                        pqi.d.cpsuri.data, pqi.d.cpsuri.length
-                    )[:].decode("ascii")
-                    qualifiers.append(cpsuri)
-                else:
-                    assert pqualid == CertificatePoliciesOID.CPS_USER_NOTICE
-                    user_notice = _decode_user_notice(
-                        backend, pqi.d.usernotice
-                    )
-                    qualifiers.append(user_notice)
-
-        certificate_policies.append(x509.PolicyInformation(oid, qualifiers))
-
-    return x509.CertificatePolicies(certificate_policies)
-
-
-def _decode_user_notice(backend, un):
-    explicit_text = None
-    notice_reference = None
-
-    if un.exptext != backend._ffi.NULL:
-        explicit_text = _asn1_string_to_utf8(backend, un.exptext)
-
-    if un.noticeref != backend._ffi.NULL:
-        organization = _asn1_string_to_utf8(backend, un.noticeref.organization)
-
-        num = backend._lib.sk_ASN1_INTEGER_num(un.noticeref.noticenos)
-        notice_numbers = []
-        for i in range(num):
-            asn1_int = backend._lib.sk_ASN1_INTEGER_value(
-                un.noticeref.noticenos, i
-            )
-            notice_num = _asn1_integer_to_int(backend, asn1_int)
-            notice_numbers.append(notice_num)
-
-        notice_reference = x509.NoticeReference(organization, notice_numbers)
-
-    return x509.UserNotice(notice_reference, explicit_text)
 
 
 _DISTPOINT_TYPE_FULLNAME = 0
@@ -292,8 +204,3 @@ def _parse_asn1_generalized_time(backend, generalized_time):
         backend, backend._ffi.cast("ASN1_STRING *", generalized_time)
     )
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
-
-
-_EXTENSION_HANDLERS_BASE = {
-    ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
-}
