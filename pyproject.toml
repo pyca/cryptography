@@ -27,9 +27,8 @@ check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
-	"cryptography.hazmat.bindings._openssl",
-	"iso8601",
-	"pretend"
+    "cryptography.hazmat.bindings._openssl",
+    "iso8601",
+    "pretend"
 ]
 ignore_missing_imports = true
-
