@@ -9,6 +9,7 @@ import os
 import typing
 
 from cryptography import utils
+from cryptography.hazmat.bindings._rust import x509
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
@@ -449,15 +450,13 @@ def load_der_x509_csr(
 def load_pem_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    backend = _get_backend(backend)
-    return backend.load_pem_x509_crl(data)
+    return x509.load_pem_x509_crl(data)
 
 
 def load_der_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    backend = _get_backend(backend)
-    return backend.load_der_x509_crl(data)
+    return x509.load_der_x509_crl(data)
 
 
 class CertificateSigningRequestBuilder(object):

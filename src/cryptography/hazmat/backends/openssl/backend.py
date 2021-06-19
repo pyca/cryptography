@@ -75,9 +75,7 @@ from cryptography.hazmat.backends.openssl.x448 import (
     _X448PublicKey,
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _CertificateRevocationList,
     _CertificateSigningRequest,
-    _RevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
     asn1,
@@ -1102,7 +1100,7 @@ class Backend(BackendInterface):
         builder: x509.CertificateRevocationListBuilder,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> _CertificateRevocationList:
+    ) -> x509.CertificateRevocationList:
         if not isinstance(builder, x509.CertificateRevocationListBuilder):
             raise TypeError("Builder type mismatch.")
         self._x509_check_signature_params(private_key, algorithm)
@@ -1225,7 +1223,7 @@ class Backend(BackendInterface):
 
     def create_x509_revoked_certificate(
         self, builder: x509.RevokedCertificateBuilder
-    ) -> _RevokedCertificate:
+    ) -> x509.RevokedCertificate:
         if not isinstance(builder, x509.RevokedCertificateBuilder):
             raise TypeError("Builder type mismatch.")
 
@@ -1389,32 +1387,6 @@ class Backend(BackendInterface):
         res = self._lib.i2d_X509_bio(bio, x509)
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
-
-    def load_pem_x509_crl(self, data: bytes) -> _CertificateRevocationList:
-        mem_bio = self._bytes_to_bio(data)
-        x509_crl = self._lib.PEM_read_bio_X509_CRL(
-            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
-        )
-        if x509_crl == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError(
-                "Unable to load CRL. See https://cryptography.io/en/la"
-                "test/faq.html#why-can-t-i-import-my-pem-file for more"
-                " details."
-            )
-
-        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
-        return _CertificateRevocationList(self, x509_crl)
-
-    def load_der_x509_crl(self, data: bytes) -> _CertificateRevocationList:
-        mem_bio = self._bytes_to_bio(data)
-        x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
-        if x509_crl == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load CRL")
-
-        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
-        return _CertificateRevocationList(self, x509_crl)
 
     def load_pem_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
         mem_bio = self._bytes_to_bio(data)

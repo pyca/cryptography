@@ -559,10 +559,10 @@ fn load_pem_x509_crl(
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
     let block = pem::parse(data)?;
-    if block.tag != "XXX" {
+    if block.tag != "X509 CRL" {
         unimplemented!()
     }
-    // Produces an extra copy
+    // TODO: Produces an extra copy
     load_der_x509_crl(py, &block.contents)
 }
 
