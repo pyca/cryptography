@@ -25,11 +25,11 @@ markers = [
 show_error_codes = true
 check_untyped_defs = true
 
-[tool.mypy-cryptography.hazmat.bindings._openssl]
+[[tool.mypy.overrides]]
+module = [
+	"cryptography.hazmat.bindings._openssl",
+	"iso8601",
+	"pretend"
+]
 ignore_missing_imports = true
 
-[tool.mypy-iso8601]
-ignore_missing_imports = true
-
-[tool.mypy-pretend]
-ignore_missing_imports = true
