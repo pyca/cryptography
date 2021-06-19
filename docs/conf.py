@@ -198,6 +198,8 @@ linkcheck_ignore = [
     r"https://info.isl.ntt.co.jp/crypt/eng/camellia/",
     # Inconsistent small DH params they seem incapable of fixing
     r"https://www.secg.org/sec1-v2.pdf",
+    # Incomplete cert chain
+    r"https://e-trust.gosuslugi.ru",
 ]
 
 autosectionlabel_prefix_document = True
