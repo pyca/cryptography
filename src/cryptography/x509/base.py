@@ -335,6 +335,9 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
 
+CertificateRevocationList.register(x509.CertificateRevocationList)
+
+
 class CertificateSigningRequest(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __eq__(self, other: object) -> bool:

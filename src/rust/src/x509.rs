@@ -582,14 +582,30 @@ struct CertificateRevocationList {
     sorted_crls: Option<Vec<()>>,
 }
 
-#[derive(asn1::Asn1Read)]
+impl CertificateRevocationList {
+    fn public_bytes_der(&self) -> Vec<u8> {
+        asn1::write_single(self.raw.borrow_value())
+    }
+}
+
+#[pyo3::prelude::pymethods]
+impl CertificateRevocationList {
+    fn fingerprint(&self, py: pyo3::Python<'_>, algorithm: pyo3::PyObject) -> pyo3::PyResult<pyo3::PyObject> {
+        let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
+        let h = hashes_mod.call1("Hash", (algorithm,))?;
+        h.call_method1("update", (self.public_bytes_der(),))?;
+        h.call_method0("finalize").map(|v| v.to_object(py))
+    }
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RawCertificateRevocationList<'a> {
     tbs_cert_list: TBSCertList<'a>,
     signature_algorithm: AlgorithmIdentifier<'a>,
     signature_value: asn1::BitString<'a>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct TBSCertList<'a> {
     version: Option<u8>,
     signature: AlgorithmIdentifier<'a>,
@@ -601,7 +617,7 @@ struct TBSCertList<'a> {
     crl_extensions: Option<Extensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RevokedCertificate<'a> {
     user_certificate: asn1::BigUint<'a>,
     revocation_date: Time,
@@ -1682,7 +1698,9 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(
         encode_precertificate_signed_certificate_timestamps
     ))?;
+
     submod.add_class::<Certificate>()?;
+    submod.add_class::<CertificateRevocationList>()?;
     submod.add_class::<Sct>()?;
 
     Ok(submod)
