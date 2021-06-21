@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::x509::Name;
 use pyo3::class::basic::CompareOp;
 use pyo3::conversion::ToPyObject;
 
@@ -19,6 +20,15 @@ impl From<asn1::ParseError> for PyAsn1Error {
 impl From<pyo3::PyErr> for PyAsn1Error {
     fn from(e: pyo3::PyErr) -> PyAsn1Error {
         PyAsn1Error::Py(e)
+    }
+}
+
+impl From<pem::PemError> for PyAsn1Error {
+    fn from(e: pem::PemError) -> PyAsn1Error {
+        PyAsn1Error::Py(pyo3::exceptions::PyValueError::new_err(format!(
+            "Unable to load PEM file. See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details. {:?}",
+            e
+        )))
     }
 }
 
@@ -176,14 +186,6 @@ struct TbsCertificate<'a> {
     _subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
     _extensions: Option<asn1::Sequence<'a>>,
-}
-
-pub(crate) type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
-
-#[derive(asn1::Asn1Read)]
-pub(crate) struct AttributeTypeValue<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
-    pub(crate) value: asn1::Tlv<'a>,
 }
 
 #[derive(asn1::Asn1Read)]

@@ -60,7 +60,7 @@ class FakeGeneralName(object):
     value = utils.read_only_property("_value")
 
 
-def _load_cert(filename, loader, backend):
+def _load_cert(filename, loader, backend=None):
     cert = load_vectors_from_file(
         filename=filename,
         loader=lambda pemfile: loader(pemfile.read(), backend),
@@ -645,12 +645,12 @@ class TestRSACertificate(object):
         )
 
     def test_negative_serial_number(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "custom", "negative_serial.pem"),
-            x509.load_pem_x509_certificate,
-            backend,
-        )
-        assert cert.serial_number == -18008675309
+        with pytest.raises(ValueError, match="TbsCertificate::serial"):
+            _load_cert(
+                os.path.join("x509", "custom", "negative_serial.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
 
     def test_alternate_rsa_with_sha1_oid(self, backend):
         cert = _load_cert(
@@ -1039,6 +1039,20 @@ class TestRSACertificate(object):
         assert cert != cert2
         assert cert != object()
 
+    def test_ordering_unsupported(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        cert2 = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(TypeError, match="cannot be ordered"):
+            cert > cert2
+
     def test_hash(self, backend):
         cert1 = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
@@ -1073,8 +1087,16 @@ class TestRSACertificate(object):
         assert cert.version is x509.Version.v1
 
     def test_invalid_pem(self, backend):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unable to load"):
             x509.load_pem_x509_certificate(b"notacert", backend)
+
+        crl = load_vectors_from_file(
+            filename=os.path.join("x509", "custom", "crl_empty.pem"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError, match="Valid PEM but no"):
+            x509.load_pem_x509_certificate(crl, backend)
 
     def test_invalid_der(self, backend):
         with pytest.raises(ValueError):
@@ -1183,9 +1205,9 @@ class TestRSACertificate(object):
             backend,
         )
         assert repr(cert) == (
-            "<Certificate(subject=<Name(OU=GT48742965,OU=See www.rapidssl.com"
-            "/resources/cps (c)14,OU=Domain Control Validated - RapidSSL(R),"
-            "CN=www.cryptography.io)>, ...)>"
+            "<Certificate(subject=<Name(2.5.4.11=GT48742965, 2.5.4.11=See www."
+            "rapidssl.com/resources/cps (c)14, 2.5.4.11=Domain Control Validat"
+            "ed - RapidSSL(R), 2.5.4.3=www.cryptography.io)>, ...)>"
         )
 
     def test_parse_tls_feature_extension(self, backend):
@@ -3204,6 +3226,7 @@ class TestCertificateBuilder(object):
                 subject_private_key.public_key()
             )
 
+        # Cert
         cert = (
             x509.CertificateBuilder()
             .subject_name(
@@ -3221,6 +3244,19 @@ class TestCertificateBuilder(object):
         )
 
         ext = cert.extensions.get_extension_for_class(type(add_ext))
+        assert ext.critical is False
+        assert ext.value == add_ext
+
+        # CSR
+        csr = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .add_extension(add_ext, False)
+            .sign(subject_private_key, hashes.SHA256())
+        )
+        ext = csr.extensions.get_extension_for_class(type(add_ext))
         assert ext.critical is False
         assert ext.value == add_ext
 
@@ -4178,6 +4214,20 @@ class TestDSACertificateRequest(object):
         )
 
 
+class TestGOSTCertificate(object):
+    def test_numeric_string_x509_name_entry(self):
+        cert = _load_cert(
+            os.path.join("x509", "e-trust.ru.der"),
+            x509.load_der_x509_certificate,
+        )
+        assert (
+            cert.subject.get_attributes_for_oid(
+                x509.ObjectIdentifier("1.2.643.3.131.1.1")
+            )[0].value
+            == "007710474375"
+        )
+
+
 class TestECDSACertificate(object):
     def test_load_ecdsa_cert(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
@@ -4348,14 +4398,12 @@ class TestOtherCertificate(object):
             cert.public_key()
 
     def test_bad_time_in_validity(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "badasn1time.pem"),
-            x509.load_pem_x509_certificate,
-            backend,
-        )
-
-        with pytest.raises(ValueError, match="19020701025736Z"):
-            cert.not_valid_after
+        with pytest.raises(ValueError, match="Validity::not_after"):
+            _load_cert(
+                os.path.join("x509", "badasn1time.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
 
 
 class TestNameAttribute(object):
