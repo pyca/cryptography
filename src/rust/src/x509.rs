@@ -543,13 +543,15 @@ fn load_der_x509_crl(
     _py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
-    let raw =
-        OwnedRawCertificateRevocationList::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawCertificateRevocationList::try_new(
+        data.to_vec(),
+        |data| asn1::parse_single(data),
+        |_| Ok(None),
+    )?;
 
     Ok(CertificateRevocationList {
         raw,
         cached_extensions: None,
-        sorted_crls: None,
     })
 }
 
@@ -572,6 +574,10 @@ struct OwnedRawCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
+
+    #[borrows(data)]
+    #[covariant]
+    sorted_crls: Option<Vec<RevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass]
@@ -579,7 +585,6 @@ struct CertificateRevocationList {
     raw: OwnedRawCertificateRevocationList,
 
     cached_extensions: Option<pyo3::PyObject>,
-    sorted_crls: Option<Vec<()>>,
 }
 
 impl CertificateRevocationList {
@@ -654,6 +659,48 @@ impl CertificateRevocationList {
                     self.raw.borrow_value().signature_algorithm.oid
                 ),),
             )?)),
+        }
+    }
+
+    #[getter]
+    fn signature(&self) -> &[u8] {
+        self.raw.borrow_value().signature_value.as_bytes()
+    }
+
+    #[getter]
+    fn tbs_certlist_bytes<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
+        let b = asn1::write_single(&self.raw.borrow_value().tbs_cert_list);
+        pyo3::types::PyBytes::new(py, &b)
+    }
+
+    fn public_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        encoding: &pyo3::PyAny,
+    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+        let encoding_class = py
+            .import("cryptography.hazmat.primitives.serialization")?
+            .getattr("Encoding")?;
+
+        let result = asn1::write_single(self.raw.borrow_value());
+        if encoding == encoding_class.getattr("DER")? {
+            Ok(pyo3::types::PyBytes::new(py, &result))
+        } else if encoding == encoding_class.getattr("PEM")? {
+            let pem = pem::encode_config(
+                &pem::Pem {
+                    tag: "X509 CRL".to_string(),
+                    contents: result,
+                },
+                pem::EncodeConfig {
+                    line_ending: pem::LineEnding::LF,
+                },
+            )
+            .into_bytes();
+            Ok(pyo3::types::PyBytes::new(py, &pem))
+        } else {
+            Err(pyo3::exceptions::PyTypeError::new_err(
+                "encoding must be an item from the Encoding enum",
+            ))
         }
     }
 
