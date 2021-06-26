@@ -90,6 +90,7 @@ static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
 static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 static const long SSL_OP_LEGACY_SERVER_CONNECT;
+static const long SSL_OP_NO_RENEGOTIATION;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
@@ -225,6 +226,13 @@ void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
                                         unsigned char *,
                                         unsigned int *
                                     ));
+void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
+                                    int (*)(
+                                        SSL *,
+                                        unsigned char *,
+                                        unsigned int
+                                    ));
+
 long SSL_CTX_get_read_ahead(SSL_CTX *);
 long SSL_CTX_set_read_ahead(SSL_CTX *, long);
 
@@ -468,6 +476,13 @@ long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
 long DTLS_set_link_mtu(SSL *, long);
 long DTLS_get_link_min_mtu(SSL *);
+size_t DTLS_get_data_mtu(SSL *);
+long SSL_set_mtu(SSL *, long);
+typedef ... BIO_ADDR;
+BIO_ADDR *BIO_ADDR_new(void);
+void BIO_ADDR_free(BIO_ADDR *);
+int DTLSv1_listen(SSL *, BIO_ADDR *);
+
 
 /* Custom extensions. */
 typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
