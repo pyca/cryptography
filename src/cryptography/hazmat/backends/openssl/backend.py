@@ -431,12 +431,6 @@ class Backend(BackendInterface):
             get_ext=self._lib.X509_REVOKED_get_ext,
             rust_callback=rust_x509.parse_crl_entry_ext,
         )
-        self._crl_extension_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.X509_CRL_get_ext_count,
-            get_ext=self._lib.X509_CRL_get_ext,
-            rust_callback=rust_x509.parse_crl_extension,
-        )
         self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
