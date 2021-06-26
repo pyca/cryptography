@@ -142,15 +142,15 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr("Encoding")?
             .getattr("DER")?;
         if encoding != der {
-            return Err(PyAsn1Error::from(exceptions::PyValueError::new_err(
+            return Err(exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
-            )));
+            ));
         }
         let result = asn1::write_single(self.raw.borrow_value());
         Ok(pyo3::types::PyBytes::new(py, &result))
