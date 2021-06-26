@@ -65,9 +65,6 @@ int EC_POINT_set_affine_coordinates_GFp(const EC_GROUP *, EC_POINT *,
 int EC_POINT_get_affine_coordinates_GFp(const EC_GROUP *,
     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
 
-int EC_POINT_set_compressed_coordinates_GFp(const EC_GROUP *, EC_POINT *,
-    const BIGNUM *, int, BN_CTX *);
-
 int EC_POINT_get_affine_coordinates_GF2m(const EC_GROUP *,
     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
 
