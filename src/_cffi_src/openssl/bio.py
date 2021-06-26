@@ -10,6 +10,7 @@ INCLUDES = """
 TYPES = """
 typedef ... BIO;
 typedef ... BIO_METHOD;
+typedef ... BIO_ADDR;
 """
 
 FUNCTIONS = """
@@ -37,6 +38,9 @@ int BIO_should_retry(BIO *);
 int BIO_reset(BIO *);
 void BIO_set_retry_read(BIO *);
 void BIO_clear_retry_flags(BIO *);
+
+BIO_ADDR *BIO_ADDR_new(void);
+void BIO_ADDR_free(BIO_ADDR *);
 """
 
 CUSTOMIZATIONS = """
