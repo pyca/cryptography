@@ -51,7 +51,7 @@ pub(crate) fn parse_and_cache_extensions<
     cached_extensions: &mut Option<pyo3::PyObject>,
     raw_exts: &Option<Extensions<'_>>,
     parse_ext: F,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> pyo3::PyResult<pyo3::PyObject> {
     if let Some(cached) = cached_extensions {
         return Ok(cached.clone_ref(py));
     }
@@ -65,15 +65,13 @@ pub(crate) fn parse_and_cache_extensions<
                 x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
 
             if seen_oids.contains(&raw_ext.extn_id) {
-                return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                    x509_module.call_method1(
-                        "DuplicateExtension",
-                        (
-                            format!("Duplicate {} extension found", raw_ext.extn_id),
-                            oid_obj,
-                        ),
-                    )?,
-                )));
+                return Err(pyo3::PyErr::from_instance(x509_module.call_method1(
+                    "DuplicateExtension",
+                    (
+                        format!("Duplicate {} extension found", raw_ext.extn_id),
+                        oid_obj,
+                    ),
+                )?));
             }
 
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
@@ -235,6 +233,24 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
         certificate_policies.append(pi)?;
     }
     Ok(certificate_policies.to_object(py))
+}
+
+fn chrono_to_py<'p>(
+    py: pyo3::Python<'p>,
+    dt: &chrono::DateTime<chrono::Utc>,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let datetime_module = py.import("datetime")?;
+    datetime_module.call1(
+        "datetime",
+        (
+            dt.year(),
+            dt.month(),
+            dt.day(),
+            dt.hour(),
+            dt.minute(),
+            dt.second(),
+        ),
+    )
 }
 
 struct UnvalidatedIA5String<'a>(&'a str);
@@ -456,10 +472,10 @@ struct AccessDescription<'a> {
     access_location: GeneralName<'a>,
 }
 
-fn parse_authority_key_identifier(
-    py: pyo3::Python<'_>,
+fn parse_authority_key_identifier<'p>(
+    py: pyo3::Python<'p>,
     ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let aki = asn1::parse_single::<AuthorityKeyIdentifier<'_>>(ext_data)?;
     let serial = match aki.authority_cert_serial_number {
@@ -470,12 +486,10 @@ fn parse_authority_key_identifier(
         Some(aci) => parse_general_names(py, aci)?,
         None => py.None(),
     };
-    Ok(x509_module
-        .call1(
-            "AuthorityKeyIdentifier",
-            (aki.key_identifier, issuer, serial),
-        )?
-        .to_object(py))
+    Ok(x509_module.call1(
+        "AuthorityKeyIdentifier",
+        (aki.key_identifier, issuer, serial),
+    )?)
 }
 
 fn parse_name_attribute(
@@ -512,15 +526,14 @@ fn parse_rdn<'a>(
         .to_object(py))
 }
 
-fn parse_name(py: pyo3::Python<'_>, name: Name<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_name<'p>(py: pyo3::Python<'p>, name: &Name<'_>) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
-    for rdn in name {
+    for rdn in name.clone() {
         let py_rdn = parse_rdn(py, rdn)?;
         py_rdns.append(py_rdn)?;
     }
-    let py_name = x509_module.call_method1("Name", (py_rdns,))?.to_object(py);
-    Ok(py_name)
+    x509_module.call_method1("Name", (py_rdns,))
 }
 
 fn ipv4_netmask(num: u32) -> Result<u32, PyAsn1Error> {
@@ -599,7 +612,7 @@ fn parse_general_name(
             .call_method1("_init_without_validation", (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
-            let py_name = parse_name(py, data)?;
+            let py_name = parse_name(py, &data)?;
             x509_module
                 .call_method1("DirectoryName", (py_name,))?
                 .to_object(py)
@@ -952,7 +965,7 @@ fn parse_x509_extension(
             .call1("BasicConstraints", (bc.ca, bc.path_length))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
-        Ok(parse_authority_key_identifier(py, ext_data)?)
+        Ok(parse_authority_key_identifier(py, ext_data)?.to_object(py))
     } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(x509_module
@@ -1023,19 +1036,7 @@ pub(crate) fn parse_crl_entry_extension(
             .to_object(py))
     } else if oid == *INVALIDITY_DATE_OID {
         let time = asn1::parse_single::<asn1::GeneralizedTime>(ext_data)?;
-        let time_chrono = time.as_chrono();
-        let datetime_module = py.import("datetime")?;
-        let py_dt = datetime_module.call1(
-            "datetime",
-            (
-                time_chrono.year(),
-                time_chrono.month(),
-                time_chrono.day(),
-                time_chrono.hour(),
-                time_chrono.minute(),
-                time_chrono.second(),
-            ),
-        )?;
+        let py_dt = chrono_to_py(py, time.as_chrono())?;
         Ok(x509_module.call1("InvalidityDate", (py_dt,))?.to_object(py))
     } else {
         Ok(py.None())
@@ -1073,7 +1074,7 @@ fn parse_crl_extension(
             .call1("AuthorityInformationAccess", (ads,))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
-        Ok(parse_authority_key_identifier(py, ext_data)?)
+        Ok(parse_authority_key_identifier(py, ext_data)?.to_object(py))
     } else if oid == *ISSUING_DISTRIBUTION_POINT_OID {
         let idp = asn1::parse_single::<IssuingDistributionPoint<'_>>(ext_data)?;
         let (full_name, relative_name) = match idp.distribution_point {

@@ -116,7 +116,7 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> Result<pyo3::PyObject, PyAsn1Error> {
+    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let x509_module = py.import("cryptography.x509")?;
         x509::parse_and_cache_extensions(
             py,
