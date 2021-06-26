@@ -116,7 +116,7 @@ class TestCertificateRevocationList(object):
         )
 
         with pytest.raises(UnsupportedAlgorithm):
-            crl.signature_hash_algorithm()
+            crl.signature_hash_algorithm
 
     def test_issuer(self, backend):
         crl = _load_cert(
