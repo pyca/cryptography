@@ -644,8 +644,8 @@ class TestRSACertificate(object):
 
     def test_alternate_rsa_with_sha1_oid(self, backend):
         cert = _load_cert(
-            os.path.join("x509", "alternate-rsa-sha1-oid.pem"),
-            x509.load_pem_x509_certificate,
+            os.path.join("x509", "custom", "alternate-rsa-sha1-oid.der"),
+            x509.load_der_x509_certificate,
             backend,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
