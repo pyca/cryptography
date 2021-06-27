@@ -220,9 +220,8 @@ X.509
 * ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
   cipher and containing numerous unusual encodings such as NUMERICSTRING in
   the subject DN.
-* ``alternate-rsa-sha1-oid.pem`` - A certificate from an
-  `unknown signature OID`_ Mozilla bug that uses an alternate signature OID for
-  RSA with SHA1.
+* ``alternate-rsa-sha1-oid.der`` - A certificate that uses an alternate
+  signature OID for RSA with SHA1. This certificate has an invalid signature.
 * ``badssl-sct.pem`` - A certificate with the certificate transparency signed
   certificate timestamp extension.
 * ``bigoid.pem`` - A certificate with a rather long OID in the
