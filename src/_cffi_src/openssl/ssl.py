@@ -90,7 +90,6 @@ static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
 static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 static const long SSL_OP_LEGACY_SERVER_CONNECT;
-static const long SSL_OP_NO_RENEGOTIATION;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
@@ -223,7 +222,7 @@ void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
 void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
                                     int (*)(
                                         SSL *,
-                                        const unsigned char *,
+                                        unsigned char *,
                                         unsigned int *
                                     ));
 void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
@@ -476,7 +475,6 @@ long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
 long DTLS_set_link_mtu(SSL *, long);
 long DTLS_get_link_min_mtu(SSL *);
-size_t DTLS_get_data_mtu(SSL *);
 long SSL_set_mtu(SSL *, long);
 int DTLSv1_listen(SSL *, BIO_ADDR *);
 
@@ -721,5 +719,14 @@ long (*SSL_get_min_proto_version)(SSL *) = NULL;
 long (*SSL_get_max_proto_version)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
+#endif
+
+#if !CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+size_t DTLS_get_data_mtu(SSL *);
+static const long SSL_OP_NO_RENEGOTIATION;
+#endif
+
+#if !CRYPTOGRAPHY_IS_LIBRESSL
+int DTLSv1_listen(SSL *, BIO_ADDR *);
 #endif
 """
