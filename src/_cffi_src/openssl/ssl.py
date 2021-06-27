@@ -223,13 +223,13 @@ void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
 void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
                                     int (*)(
                                         SSL *,
-                                        unsigned char *,
+                                        const unsigned char *,
                                         unsigned int *
                                     ));
 void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
                                     int (*)(
                                         SSL *,
-                                        unsigned char *,
+                                        const unsigned char *,
                                         unsigned int
                                     ));
 
