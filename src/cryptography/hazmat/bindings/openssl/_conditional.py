@@ -5,9 +5,7 @@
 
 def cryptography_has_ec2m():
     return [
-        "EC_POINT_set_affine_coordinates_GF2m",
         "EC_POINT_get_affine_coordinates_GF2m",
-        "EC_POINT_set_compressed_coordinates_GF2m",
     ]
 
 
