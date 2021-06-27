@@ -500,11 +500,13 @@ Custom X.509 Certificate Revocation List Vectors
   ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
   extensions.
 * ``valid_signature_crl.pem`` - Contains a CRL with a valid signature.
-* ``valid_signature_cert.pem`` - Contains the cert whose public key signed
+* ``valid_signature_cert.pem`` - Contains a cert whose public key corresponds
+  to the private key that produced the signature for
   ``valid_signature_crl.pem``.
 * ``invalid_signature_crl.pem`` - Contains a CRL with the last signature byte
   incremented by 1 to produce an invalid signature.
-* ``invalid_signature_cert.pem`` - Contains the cert whose public key signed
+* ``invalid_signature_cert.pem`` - Contains a cert whose public key corresponds
+  to the private key that  produced the signature for
   ``invalid_signature_crl.pem``.
 * ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
   ``DeltaCRLIndicator`` extension.
