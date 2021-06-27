@@ -391,12 +391,12 @@ class TestCertificateRevocationList(object):
 
     def test_verify_bad(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "invalid_signature.pem"),
+            os.path.join("x509", "custom", "invalid_signature_crl.pem"),
             x509.load_pem_x509_crl,
             backend,
         )
         crt = _load_cert(
-            os.path.join("x509", "custom", "invalid_signature.pem"),
+            os.path.join("x509", "custom", "invalid_signature_cert.pem"),
             x509.load_pem_x509_certificate,
             backend,
         )
@@ -405,12 +405,12 @@ class TestCertificateRevocationList(object):
 
     def test_verify_good(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "valid_signature.pem"),
+            os.path.join("x509", "custom", "valid_signature_crl.pem"),
             x509.load_pem_x509_crl,
             backend,
         )
         crt = _load_cert(
-            os.path.join("x509", "custom", "valid_signature.pem"),
+            os.path.join("x509", "custom", "valid_signature_cert.pem"),
             x509.load_pem_x509_certificate,
             backend,
         )
@@ -419,7 +419,7 @@ class TestCertificateRevocationList(object):
 
     def test_verify_argument_must_be_a_public_key(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "valid_signature.pem"),
+            os.path.join("x509", "custom", "valid_signature_crl.pem"),
             x509.load_pem_x509_crl,
             backend,
         )
