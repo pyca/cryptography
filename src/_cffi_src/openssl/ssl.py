@@ -573,6 +573,7 @@ static const long Cryptography_HAS_ALPN = 1;
 static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 1;
 #else
 static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 0;
+static const long SSL_OP_NO_RENEGOTIATION = 0;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
