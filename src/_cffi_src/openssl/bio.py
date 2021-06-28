@@ -39,11 +39,22 @@ int BIO_reset(BIO *);
 void BIO_set_retry_read(BIO *);
 void BIO_clear_retry_flags(BIO *);
 
+BIO_ADDR *BIO_ADDR_new(void);
+void BIO_ADDR_free(BIO_ADDR *);
 """
 
 CUSTOMIZATIONS = """
-#if !CRYPTOGRAPHY_IS_LIBRESSL
-BIO_ADDR *BIO_ADDR_new(void);
-void BIO_ADDR_free(BIO_ADDR *);
+#if CRYPTOGRAPHY_IS_LIBRESSL
+#include <sys/socket.h>
+#include <stdlib.h>
+typedef struct sockaddr BIO_ADDR;
+
+BIO_ADDR *BIO_ADDR_new(void) {
+    return malloc(sizeof(sockaddr_storage));
+}
+
+void BIO_ADDR_free(BIO_ADDR *ptr) {
+    free(ptr);
+}
 #endif
 """
