@@ -250,7 +250,7 @@ def cryptography_has_op_no_renegotiation():
     ]
 
 
-def DTLS_get_data_mtu():
+def dtls_get_data_mtu():
     return [
         "DTLS_get_data_mtu",
     ]
@@ -303,6 +303,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
     "Cryptography_HAS_GET_PROTO_VERSION": cryptography_has_get_proto_version,
     "Cryptography_HAS_PROVIDERS": cryptography_has_providers,
-    "Cryptography_HAS_OP_NO_RENEGOTIATION": cryptography_has_op_no_renegotiation,
-    "DTLS_get_data_mtu": DTLS_get_data_mtu,
+    "Cryptography_HAS_OP_NO_RENEGOTIATION": (
+        cryptography_has_op_no_renegotiation
+    ),
+    "DTLS_get_data_mtu": dtls_get_data_mtu,
 }
