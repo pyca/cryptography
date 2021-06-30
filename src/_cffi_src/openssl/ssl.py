@@ -44,6 +44,7 @@ static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
 static const long Cryptography_HAS_CUSTOM_EXT;
 static const long Cryptography_HAS_SRTP;
+static const long Cryptography_HAS_DTLS_GET_DATA_MTU;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -615,7 +616,10 @@ long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
+#else
+static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 1;
 #endif
 
 static const long Cryptography_HAS_DTLS = 1;

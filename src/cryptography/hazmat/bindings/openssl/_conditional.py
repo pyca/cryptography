@@ -250,7 +250,7 @@ def cryptography_has_op_no_renegotiation():
     ]
 
 
-def dtls_get_data_mtu():
+def cryptography_has_dtls_get_data_mtu():
     return [
         "DTLS_get_data_mtu",
     ]
@@ -306,5 +306,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_OP_NO_RENEGOTIATION": (
         cryptography_has_op_no_renegotiation
     ),
-    "DTLS_get_data_mtu": dtls_get_data_mtu,
+    "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
 }
