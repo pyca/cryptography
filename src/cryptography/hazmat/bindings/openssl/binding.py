@@ -15,15 +15,14 @@ from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 _OpenSSLErrorWithText = collections.namedtuple(
-    "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
+    "_OpenSSLErrorWithText", ["code", "lib", "reason", "reason_text"]
 )
 
 
 class _OpenSSLError(object):
-    def __init__(self, code, lib, func, reason):
+    def __init__(self, code, lib, reason):
         self._code = code
         self._lib = lib
-        self._func = func
         self._reason = reason
 
     def _lib_reason_match(self, lib, reason):
@@ -31,7 +30,6 @@ class _OpenSSLError(object):
 
     code = utils.read_only_property("_code")
     lib = utils.read_only_property("_lib")
-    func = utils.read_only_property("_func")
     reason = utils.read_only_property("_reason")
 
 
@@ -43,10 +41,9 @@ def _consume_errors(lib):
             break
 
         err_lib = lib.ERR_GET_LIB(code)
-        err_func = lib.ERR_GET_FUNC(code)
         err_reason = lib.ERR_GET_REASON(code)
 
-        errors.append(_OpenSSLError(code, err_lib, err_func, err_reason))
+        errors.append(_OpenSSLError(code, err_lib, err_reason))
 
     return errors
 
@@ -60,7 +57,7 @@ def _errors_with_text(errors):
 
         errors_with_text.append(
             _OpenSSLErrorWithText(
-                err.code, err.lib, err.func, err.reason, err_text_reason
+                err.code, err.lib, err.reason, err_text_reason
             )
         )
 
