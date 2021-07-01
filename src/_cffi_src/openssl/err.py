@@ -41,7 +41,6 @@ void ERR_clear_error(void);
 void ERR_put_error(int, int, int, const char *, int);
 
 int ERR_GET_LIB(unsigned long);
-int ERR_GET_FUNC(unsigned long);
 int ERR_GET_REASON(unsigned long);
 
 """
