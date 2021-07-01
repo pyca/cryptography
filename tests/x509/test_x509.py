@@ -106,6 +106,16 @@ class TestCertificateRevocationList(object):
         with pytest.raises(ValueError):
             x509.load_der_x509_crl(b"notacrl", backend)
 
+    def test_invalid_time(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_invalid_time.der"),
+            x509.load_der_x509_crl,
+            backend,
+        )
+
+        with pytest.raises(ValueError, match="18102813516Z"):
+            crl.last_update
+
     def test_unknown_signature_algorithm(self, backend):
         crl = _load_cert(
             os.path.join(

@@ -536,6 +536,8 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_unrecognized_extension.der`` - Contains a CRL containing an
   unsupported extension type. The OID was encoded as "1.2.3.4.5" with an
   ``extnValue`` of ``abcdef``.
+* ``crl_invalid_time.der`` - Contains a CRL with an invalid ``GeneralizedTime``
+  value in ``thisUpdate``. The signature on this CRL is invalid.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
