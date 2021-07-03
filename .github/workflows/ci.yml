@@ -15,6 +15,7 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
@@ -108,6 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
+      fail-fast: false
       matrix:
         IMAGE:
           - {IMAGE: "centos8", TOXENV: "py36"}
@@ -154,6 +156,7 @@ jobs:
   linux-rust:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "py39"}
@@ -267,6 +270,7 @@ jobs:
   macos:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
@@ -327,6 +331,7 @@ jobs:
   windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         WINDOWS:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
@@ -391,6 +396,7 @@ jobs:
   linux-downstream:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         DOWNSTREAM:
           - paramiko

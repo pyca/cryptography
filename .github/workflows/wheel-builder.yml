@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
@@ -59,6 +60,7 @@ jobs:
   macos:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - VERSION: '3.8'
@@ -112,6 +114,7 @@ jobs:
   windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         WINDOWS:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
