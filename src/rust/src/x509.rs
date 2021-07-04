@@ -786,6 +786,23 @@ impl CertificateRevocationList {
     }
 }
 
+#[pyo3::prelude::pyproto]
+impl pyo3::PyIterProtocol<'_> for CertificateRevocationList {
+    fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> CRLIterator {
+        CRLIterator {}
+    }
+}
+
+#[pyo3::prelude::pyclass]
+struct CRLIterator {}
+
+#[pyo3::prelude::pyproto]
+impl pyo3::PyIterProtocol<'_> for CRLIterator {
+    fn __next__(slf: pyo3::pycell::PyRef<'p, Self>) -> Option<()> {
+        unimplemented!()
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 struct RawCertificateRevocationList<'a> {
     tbs_cert_list: TBSCertList<'a>,
