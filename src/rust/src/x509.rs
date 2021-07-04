@@ -240,17 +240,14 @@ fn chrono_to_py<'p>(
     dt: &chrono::DateTime<chrono::Utc>,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let datetime_module = py.import("datetime")?;
-    datetime_module.call1(
-        "datetime",
-        (
-            dt.year(),
-            dt.month(),
-            dt.day(),
-            dt.hour(),
-            dt.minute(),
-            dt.second(),
-        ),
-    )
+    datetime_module.getattr("datetime")?.call1((
+        dt.year(),
+        dt.month(),
+        dt.day(),
+        dt.hour(),
+        dt.minute(),
+        dt.second(),
+    ))
 }
 
 struct UnvalidatedIA5String<'a>(&'a str);
@@ -377,10 +374,8 @@ fn parse_distribution_point(
     };
     let x509_module = py.import("cryptography.x509")?;
     Ok(x509_module
-        .call1(
-            "DistributionPoint",
-            (full_name, relative_name, reasons, crl_issuer),
-        )?
+        .getattr("DistributionPoint")?
+        .call1((full_name, relative_name, reasons, crl_issuer))?
         .to_object(py))
 }
 
@@ -486,10 +481,11 @@ fn parse_authority_key_identifier<'p>(
         Some(aci) => parse_general_names(py, aci)?,
         None => py.None(),
     };
-    Ok(x509_module.call1(
-        "AuthorityKeyIdentifier",
-        (aki.key_identifier, issuer, serial),
-    )?)
+    Ok(x509_module.getattr("AuthorityKeyIdentifier")?.call1((
+        aki.key_identifier,
+        issuer,
+        serial,
+    ))?)
 }
 
 fn parse_name_attribute(
@@ -678,7 +674,8 @@ fn parse_access_descriptions(
             .to_object(py);
         let gn = parse_general_name(py, access.access_location)?;
         let ad = x509_module
-            .call1("AccessDescription", (py_oid, gn))?
+            .getattr("AccessDescription")?
+            .call1((py_oid, gn))?
             .to_object(py);
         ads.append(ad)?;
     }
@@ -863,13 +860,15 @@ fn parse_x509_extension(
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let sans = parse_general_names(py, gn_seq)?;
         Ok(x509_module
-            .call1("SubjectAlternativeName", (sans,))?
+            .getattr("SubjectAlternativeName")?
+            .call1((sans,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
-            .call1("IssuerAlternativeName", (ians,))?
+            .getattr("IssuerAlternativeName")?
+            .call1((ians,))?
             .to_object(py))
     } else if oid == *TLS_FEATURE_OID {
         let tls_feature_type_to_enum = py
@@ -881,11 +880,15 @@ fn parse_x509_extension(
             let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
             features.append(py_feature)?;
         }
-        Ok(x509_module.call1("TLSFeature", (features,))?.to_object(py))
+        Ok(x509_module
+            .getattr("TLSFeature")?
+            .call1((features,))?
+            .to_object(py))
     } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
         let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
         Ok(x509_module
-            .call1("SubjectKeyIdentifier", (identifier,))?
+            .getattr("SubjectKeyIdentifier")?
+            .call1((identifier,))?
             .to_object(py))
     } else if oid == *EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
@@ -895,7 +898,8 @@ fn parse_x509_extension(
             ekus.append(oid_obj)?;
         }
         Ok(x509_module
-            .call1("ExtendedKeyUsage", (ekus,))?
+            .getattr("ExtendedKeyUsage")?
+            .call1((ekus,))?
             .to_object(py))
     } else if oid == *KEY_USAGE_OID {
         let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
@@ -909,30 +913,30 @@ fn parse_x509_extension(
         let encipher_only = kus.has_bit_set(7);
         let decipher_only = kus.has_bit_set(8);
         Ok(x509_module
-            .call1(
-                "KeyUsage",
-                (
-                    digital_signature,
-                    content_comitment,
-                    key_encipherment,
-                    data_encipherment,
-                    key_agreement,
-                    key_cert_sign,
-                    crl_sign,
-                    encipher_only,
-                    decipher_only,
-                ),
-            )?
+            .getattr("KeyUsage")?
+            .call1((
+                digital_signature,
+                content_comitment,
+                key_encipherment,
+                data_encipherment,
+                key_agreement,
+                key_cert_sign,
+                crl_sign,
+                encipher_only,
+                decipher_only,
+            ))?
             .to_object(py))
     } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(x509_module
-            .call1("AuthorityInformationAccess", (ads,))?
+            .getattr("AuthorityInformationAccess")?
+            .call1((ads,))?
             .to_object(py))
     } else if oid == *SUBJECT_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(x509_module
-            .call1("SubjectInformationAccess", (ads,))?
+            .getattr("SubjectInformationAccess")?
+            .call1((ads,))?
             .to_object(py))
     } else if oid == *CERTIFICATE_POLICIES_OID {
         let cp = parse_cp(py, ext_data)?;
@@ -942,44 +946,47 @@ fn parse_x509_extension(
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
         Ok(x509_module
-            .call1(
-                "PolicyConstraints",
-                (pc.require_explicit_policy, pc.inhibit_policy_mapping),
-            )?
+            .getattr("PolicyConstraints")?
+            .call1((pc.require_explicit_policy, pc.inhibit_policy_mapping))?
             .to_object(py))
     } else if oid == *PRECERT_POISON_OID {
         asn1::parse_single::<()>(ext_data)?;
-        Ok(x509_module.call0("PrecertPoison")?.to_object(py))
+        Ok(x509_module.getattr("PrecertPoison")?.call0()?.to_object(py))
     } else if oid == *OCSP_NO_CHECK_OID {
         asn1::parse_single::<()>(ext_data)?;
-        Ok(x509_module.call0("OCSPNoCheck")?.to_object(py))
+        Ok(x509_module.getattr("OCSPNoCheck")?.call0()?.to_object(py))
     } else if oid == *INHIBIT_ANY_POLICY_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module
-            .call1("InhibitAnyPolicy", (pynum,))?
+            .getattr("InhibitAnyPolicy")?
+            .call1((pynum,))?
             .to_object(py))
     } else if oid == *BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(x509_module
-            .call1("BasicConstraints", (bc.ca, bc.path_length))?
+            .getattr("BasicConstraints")?
+            .call1((bc.ca, bc.path_length))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?.to_object(py))
     } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(x509_module
-            .call1("CRLDistributionPoints", (dp,))?
+            .getattr("CRLDistributionPoints")?
+            .call1((dp,))?
             .to_object(py))
     } else if oid == *FRESHEST_CRL_OID {
         Ok(x509_module
-            .call1("FreshestCRL", (parse_distribution_points(py, ext_data)?,))?
+            .getattr("FreshestCRL")?
+            .call1((parse_distribution_points(py, ext_data)?,))?
             .to_object(py))
     } else if oid == *PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
         let contents = asn1::parse_single::<&[u8]>(ext_data)?;
         let scts = parse_scts(py, contents, LogEntryType::PreCertificate)?;
         Ok(x509_module
-            .call1("PrecertificateSignedCertificateTimestamps", (scts,))?
+            .getattr("PrecertificateSignedCertificateTimestamps")?
+            .call1((scts,))?
             .to_object(py))
     } else if oid == *NAME_CONSTRAINTS_OID {
         let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
@@ -992,7 +999,8 @@ fn parse_x509_extension(
             None => py.None(),
         };
         Ok(x509_module
-            .call1("NameConstraints", (permitted_subtrees, excluded_subtrees))?
+            .getattr("NameConstraints")?
+            .call1((permitted_subtrees, excluded_subtrees))?
             .to_object(py))
     } else {
         Ok(py.None())
@@ -1027,17 +1035,24 @@ pub(crate) fn parse_crl_entry_extension(
             }
         };
         let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
-        Ok(x509_module.call1("CRLReason", (flag,))?.to_object(py))
+        Ok(x509_module
+            .getattr("CRLReason")?
+            .call1((flag,))?
+            .to_object(py))
     } else if oid == *CERTIFICATE_ISSUER_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let gns = parse_general_names(py, gn_seq)?;
         Ok(x509_module
-            .call1("CertificateIssuer", (gns,))?
+            .getattr("CertificateIssuer")?
+            .call1((gns,))?
             .to_object(py))
     } else if oid == *INVALIDITY_DATE_OID {
         let time = asn1::parse_single::<asn1::GeneralizedTime>(ext_data)?;
         let py_dt = chrono_to_py(py, time.as_chrono())?;
-        Ok(x509_module.call1("InvalidityDate", (py_dt,))?.to_object(py))
+        Ok(x509_module
+            .getattr("InvalidityDate")?
+            .call1((py_dt,))?
+            .to_object(py))
     } else {
         Ok(py.None())
     }
@@ -1055,23 +1070,29 @@ fn parse_crl_extension(
     if oid == *CRL_NUMBER_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
-        Ok(x509_module.call1("CRLNumber", (pynum,))?.to_object(py))
+        Ok(x509_module
+            .getattr("CRLNumber")?
+            .call1((pynum,))?
+            .to_object(py))
     } else if oid == *DELTA_CRL_INDICATOR_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(x509_module
-            .call1("DeltaCRLIndicator", (pynum,))?
+            .getattr("DeltaCRLIndicator")?
+            .call1((pynum,))?
             .to_object(py))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
         let ians = parse_general_names(py, gn_seq)?;
         Ok(x509_module
-            .call1("IssuerAlternativeName", (ians,))?
+            .getattr("IssuerAlternativeName")?
+            .call1((ians,))?
             .to_object(py))
     } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(x509_module
-            .call1("AuthorityInformationAccess", (ads,))?
+            .getattr("AuthorityInformationAccess")?
+            .call1((ads,))?
             .to_object(py))
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(parse_authority_key_identifier(py, ext_data)?.to_object(py))
@@ -1083,22 +1104,21 @@ fn parse_crl_extension(
         };
         let reasons = parse_distribution_point_reasons(py, idp.only_some_reasons)?;
         Ok(x509_module
-            .call1(
-                "IssuingDistributionPoint",
-                (
-                    full_name,
-                    relative_name,
-                    idp.only_contains_user_certs,
-                    idp.only_contains_ca_certs,
-                    reasons,
-                    idp.indirect_crl,
-                    idp.only_contains_attribute_certs,
-                ),
-            )?
+            .getattr("IssuingDistributionPoint")?
+            .call1((
+                full_name,
+                relative_name,
+                idp.only_contains_user_certs,
+                idp.only_contains_ca_certs,
+                reasons,
+                idp.indirect_crl,
+                idp.only_contains_attribute_certs,
+            ))?
             .to_object(py))
     } else if oid == *FRESHEST_CRL_OID {
         Ok(x509_module
-            .call1("FreshestCRL", (parse_distribution_points(py, ext_data)?,))?
+            .getattr("FreshestCRL")?
+            .call1((parse_distribution_points(py, ext_data)?,))?
             .to_object(py))
     } else {
         Ok(py.None())

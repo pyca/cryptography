@@ -94,17 +94,14 @@ impl OCSPRequest {
 
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
         match OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
-            Some(alg_name) => Ok(hashes.call0(alg_name)?),
+            Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
                 Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                    exceptions.call1(
-                        "UnsupportedAlgorithm",
-                        (format!(
-                            "Signature algorithm OID: {} not recognized",
-                            cert_id.hash_algorithm.oid
-                        ),),
-                    )?,
+                    exceptions.getattr("UnsupportedAlgorithm")?.call1((format!(
+                        "Signature algorithm OID: {} not recognized",
+                        cert_id.hash_algorithm.oid
+                    ),))?,
                 )))
             }
         }
@@ -233,7 +230,8 @@ fn parse_ocsp_singleresp_extension(
         let contents = asn1::parse_single::<&[u8]>(ext_data)?;
         let scts = x509::parse_scts(py, contents, x509::LogEntryType::Certificate)?;
         Ok(x509_module
-            .call1("SignedCertificateTimestamps", (scts,))?
+            .getattr("SignedCertificateTimestamps")?
+            .call1((scts,))?
             .to_object(py))
     } else {
         x509::parse_crl_entry_extension(py, der_oid, ext_data)
