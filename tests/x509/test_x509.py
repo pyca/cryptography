@@ -4466,9 +4466,33 @@ class TestNameAttribute(object):
             na.rfc4514_string() == "1.2.840.113549.1.9.1=somebody@example.com"
         )
 
+    def test_from_rfc4514_string(self):
+        # Escaping
+        na = x509.NameAttribute.from_rfc4514_string(
+            r"CN=James \"Jim\" Smith\, III"
+        )
+        assert na == x509.NameAttribute(
+            NameOID.COMMON_NAME, 'James "Jim" Smith, III'
+        )
+        na = x509.NameAttribute.from_rfc4514_string(
+            r"UID=\# escape\+\,\;\00this\ "
+        )
+        assert na == x509.NameAttribute(NameOID.USER_ID, "# escape+,;\0this ")
+
+        # OIDs as attribute key
+        na = x509.NameAttribute.from_rfc4514_string(
+            r"2.5.4.3=James \"Jim\" Smith\, III"
+        )
+        assert na == x509.NameAttribute(
+            NameOID.COMMON_NAME, 'James "Jim" Smith, III'
+        )
+
     def test_empty_value(self):
         na = x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "")
         assert na.rfc4514_string() == r"ST="
+
+        parsed_na = x509.NameAttribute.from_rfc4514_string("ST=")
+        assert na == parsed_na
 
 
 class TestRelativeDistinguishedName(object):
@@ -4728,6 +4752,7 @@ class TestName(object):
             ]
         )
         assert n.rfc4514_string() == "OU=Sales+CN=J.  Smith,DC=example,DC=net"
+        assert n == x509.Name.from_rfc4514_string(n.rfc4514_string())
 
     def test_rfc4514_string_empty_values(self):
         n = x509.Name(
@@ -4740,6 +4765,7 @@ class TestName(object):
             ]
         )
         assert n.rfc4514_string() == "CN=cryptography.io,O=PyCA,L=,ST=,C=US"
+        assert n == x509.Name.from_rfc4514_string(n.rfc4514_string())
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):

@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import re
+import shlex
 import typing
 
 from cryptography import utils
@@ -47,6 +49,8 @@ _NAMEOID_TO_NAME = {
     NameOID.DOMAIN_COMPONENT: "DC",
     NameOID.USER_ID: "UID",
 }
+#: Mapping of short names to from RFC 4514 to NameOIDs
+_NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
 
 def _escape_dn_value(val: str) -> str:
@@ -69,6 +73,28 @@ def _escape_dn_value(val: str) -> str:
         val = "\\" + val
     if val[-1] == " ":
         val = val[:-1] + "\\ "
+
+    return val
+
+
+def _parse_dn_value(val: str) -> str:
+    if not val:
+        return ""
+
+    # See https://tools.ietf.org/html/rfc4514#section-2.4
+    val = val.replace("\\\\", "\\")
+    val = val.replace('\\"', '"')
+    val = val.replace("\\+", "+")
+    val = val.replace("\\,", ",")
+    val = val.replace("\\;", ";")
+    val = val.replace("\\<", "<")
+    val = val.replace("\\>", ">")
+    val = val.replace("\\00", "\0")
+
+    if val.startswith("\\#") or val.startswith("\\ "):
+        val = val[1:]
+    if val.endswith("\\ "):
+        val = val[:-2] + " "
 
     return val
 
@@ -138,6 +164,20 @@ class NameAttribute(object):
             _escape_dn_value(self.value),
         )
 
+    @classmethod
+    def from_rfc4514_string(cls, value: str) -> "NameAttribute":
+        attr_type, attr_value = value.split("=", 1)
+
+        # if a descr, it's case insensitive (RFC 4512, section 1.4)
+        attr_type = attr_type.upper()
+        attr_value = _parse_dn_value(attr_value)
+
+        if attr_type in _NAME_TO_NAMEOID:
+            return NameAttribute(_NAME_TO_NAMEOID[attr_type], attr_value)
+        elif re.match(r"[0-9]+(\.[0-9]+)*$", attr_type):
+            return NameAttribute(ObjectIdentifier(attr_type), attr_value)
+        raise ValueError("%s: Could not parse attribute" % value)
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
             return NotImplemented
@@ -182,6 +222,14 @@ class RelativeDistinguishedName(object):
         used in certificates.
         """
         return "+".join(attr.rfc4514_string() for attr in self._attributes)
+
+    @classmethod
+    def _from_rfc4514_strings(
+        cls, values: typing.Iterable[str]
+    ) -> "RelativeDistinguishedName":
+        return RelativeDistinguishedName(
+            [NameAttribute.from_rfc4514_string(v) for v in values]
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RelativeDistinguishedName):
@@ -252,6 +300,37 @@ class Name(object):
         return ",".join(
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
+
+    @classmethod
+    def from_rfc4514_string(cls, value: str) -> "Name":
+        # value must start with a attributeType, which is either a descr or a
+        # numericoid. A descr is defined in RFC4512 as starting with a
+        # alphabetic char (case insensitive), numeric OIDs start with a digit.
+        if not re.match("[A-Za-z0-9]", value):
+            raise ValueError("Value does not conform to RFC 4514")
+
+        # Split the value by commas into a list of names
+        lex = shlex.shlex(value)
+        lex.whitespace = ","
+        lex.whitespace_split = True
+
+        # Determine if there are any multi-valued RDNs
+        rdns = []
+        for rdn in reversed(list(lex)):
+            rdn_lex = shlex.shlex(rdn)
+            rdn_lex.whitespace = "+"
+            rdn_lex.whitespace_split = True
+            rdns.append(list(rdn_lex))
+
+        if any([len(rdn) > 1 for rdn in rdns]):
+            return Name(
+                RelativeDistinguishedName._from_rfc4514_strings(rdn)
+                for rdn in rdns
+            )
+        else:
+            return Name(
+                [NameAttribute.from_rfc4514_string(rdn[0]) for rdn in rdns]
+            )
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
