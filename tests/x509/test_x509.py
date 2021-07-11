@@ -4779,10 +4779,6 @@ class TestName(object):
         )
         assert n.rfc4514_string() == name
 
-        # Not escaping comma raises an erroor
-        with pytest.raises(ValueError):
-            x509.Name.from_rfc4514_string("C=US,CN=Joe , Smith,DC=example")
-
         # Quote characters also work
         name = r"C=US,CN=Jane \"J\,S\" Smith,DC=example"
         n = x509.Name.from_rfc4514_string(name)
@@ -4818,6 +4814,21 @@ class TestName(object):
             ]
         )
         assert n.rfc4514_string() == r"C=US,CN=Jane \"J\,S\" Smith,DC=example"
+
+    def test_rfc4514_parse_invalid_strings(self):
+        # Not escaping comma raises an error
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string("C=US,CN=Joe , Smith,DC=example")
+
+        # So does an invalid start character
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string(",C=US,CN=Joe , Smith,DC=example")
+
+        # Use an unknown string as attribute type
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string(
+                "C=US,UNKNOWN=Joe , Smith,DC=example"
+            )
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
