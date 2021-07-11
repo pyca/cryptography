@@ -4767,6 +4767,58 @@ class TestName(object):
         assert n.rfc4514_string() == "CN=cryptography.io,O=PyCA,L=,ST=,C=US"
         assert n == x509.Name.from_rfc4514_string(n.rfc4514_string())
 
+    def test_rfc4514_parse_escapes(self):
+        name = r"C=US,CN=Joe \, Smith,DC=example"
+        n = x509.Name.from_rfc4514_string(name)
+        assert n == x509.Name(
+            [
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                x509.NameAttribute(NameOID.COMMON_NAME, "Joe , Smith"),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            ]
+        )
+        assert n.rfc4514_string() == name
+
+        # Not escaping comma raises an erroor
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string("C=US,CN=Joe , Smith,DC=example")
+
+        # Quote characters also work
+        name = r"C=US,CN=Jane \"J\,S\" Smith,DC=example"
+        n = x509.Name.from_rfc4514_string(name)
+        assert n == x509.Name(
+            [
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                x509.NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            ]
+        )
+        assert n.rfc4514_string() == name
+
+        # Not strictly part of the spec, but simple quotes work too:
+        name = 'C=US,CN="Jane J,S Smith",DC=example'
+        n = x509.Name.from_rfc4514_string(name)
+        assert n == x509.Name(
+            [
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                x509.NameAttribute(NameOID.COMMON_NAME, "Jane J,S Smith"),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            ]
+        )
+        assert n.rfc4514_string() == r"C=US,CN=Jane J\,S Smith,DC=example"
+
+        # ... and quotes in quoted strings
+        name = 'C=US,CN="Jane \\"J,S\\" Smith",DC=example'
+        n = x509.Name.from_rfc4514_string(name)
+        assert n == x509.Name(
+            [
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                x509.NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            ]
+        )
+        assert n.rfc4514_string() == r"C=US,CN=Jane \"J\,S\" Smith,DC=example"
+
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
             x509.Name(["not-a-NameAttribute"])  # type: ignore[list-item]

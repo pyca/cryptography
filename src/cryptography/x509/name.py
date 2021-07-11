@@ -166,6 +166,9 @@ class NameAttribute(object):
 
     @classmethod
     def from_rfc4514_string(cls, value: str) -> "NameAttribute":
+        """
+        Parse a RFC4514 formatted Distinguished Name string.
+        """
         attr_type, attr_value = value.split("=", 1)
 
         # if a descr, it's case insensitive (RFC 4512, section 1.4)
@@ -303,6 +306,9 @@ class Name(object):
 
     @classmethod
     def from_rfc4514_string(cls, value: str) -> "Name":
+        """
+        Parse a RFC4514 formatted Distinguished Name string.
+        """
         # value must start with a attributeType, which is either a descr or a
         # numericoid. A descr is defined in RFC4512 as starting with a
         # alphabetic char (case insensitive), numeric OIDs start with a digit.
@@ -310,16 +316,21 @@ class Name(object):
             raise ValueError("Value does not conform to RFC 4514")
 
         # Split the value by commas into a list of names
-        lex = shlex.shlex(value)
+        lex = shlex.shlex(value, posix=True)
         lex.whitespace = ","
         lex.whitespace_split = True
 
         # Determine if there are any multi-valued RDNs
         rdns = []
         for rdn in reversed(list(lex)):
-            rdn_lex = shlex.shlex(rdn)
+            rdn_lex = shlex.shlex(rdn, posix=True)
             rdn_lex.whitespace = "+"
             rdn_lex.whitespace_split = True
+
+            # the top-level shlex above already un-escapes quotes, so do not
+            # handle quotes here, otherwise they'd be completely removed.
+            rdn_lex.quotes = ""
+
             rdns.append(list(rdn_lex))
 
         if any([len(rdn) > 1 for rdn in rdns]):
