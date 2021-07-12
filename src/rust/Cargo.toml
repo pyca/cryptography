@@ -10,7 +10,7 @@ lazy_static = "1"
 pyo3 = { version = "0.14.1" }
 asn1 = { version = "0.5.3", default-features = false, features = ["derive"] }
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
-ouroboros = "0.9"
+ouroboros = "0.10"
 
 [features]
 extension-module = ["pyo3/extension-module"]
