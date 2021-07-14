@@ -34,6 +34,9 @@ impl From<PyAsn1Error> for pyo3::PyErr {
     }
 }
 
+// The primary purpose of this alias is for brevity to keep function signatures
+// to a single-line as a work around for coverage issues. See
+// https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
 #[pyo3::prelude::pyfunction]
