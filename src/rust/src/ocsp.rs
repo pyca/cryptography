@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
@@ -194,11 +194,7 @@ struct CertID<'a> {
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_ocsp_resp_extension(
-    py: pyo3::Python<'_>,
-    der_oid: &[u8],
-    ext_data: &[u8],
-) -> pyo3::PyResult<pyo3::PyObject> {
+fn parse_ocsp_resp_extension(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
@@ -210,7 +206,7 @@ fn parse_ocsp_resp_extension(
         // the nonce. For now we just implement the old behavior, even though
         // it's deranged.
         Ok(x509_module
-            .call_method1("OCSPNonce", (ext_data,))?
+            .call_method1("OCSPNonce", (data,))?
             .to_object(py))
     } else {
         Ok(py.None())
@@ -218,23 +214,19 @@ fn parse_ocsp_resp_extension(
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_ocsp_singleresp_extension(
-    py: pyo3::Python<'_>,
-    der_oid: &[u8],
-    ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_ocsp_singleresp_ext(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
     if oid == *SIGNED_CERTIFICATE_TIMESTAMPS_OID {
-        let contents = asn1::parse_single::<&[u8]>(ext_data)?;
+        let contents = asn1::parse_single::<&[u8]>(data)?;
         let scts = x509::parse_scts(py, contents, x509::LogEntryType::Certificate)?;
         Ok(x509_module
             .getattr("SignedCertificateTimestamps")?
             .call1((scts,))?
             .to_object(py))
     } else {
-        x509::parse_crl_entry_extension(py, der_oid, ext_data)
+        x509::parse_crl_entry_ext(py, der_oid, data)
     }
 }
 
@@ -243,7 +235,7 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_resp_extension))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_singleresp_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_singleresp_ext))?;
 
     Ok(submod)
 }
