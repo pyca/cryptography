@@ -179,7 +179,7 @@ class NameAttribute(object):
             return NameAttribute(_NAME_TO_NAMEOID[attr_type], attr_value)
         elif re.match(r"[0-9]+(\.[0-9]+)*$", attr_type):
             return NameAttribute(ObjectIdentifier(attr_type), attr_value)
-        raise ValueError("%s: Could not parse attribute" % value)
+        raise ValueError("{0}: Could not parse attribute".format(value))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
