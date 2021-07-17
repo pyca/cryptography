@@ -51,6 +51,7 @@ _NAMEOID_TO_NAME = {
 }
 #: Mapping of short names to from RFC 4514 to NameOIDs
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
+_OID_RC = re.compile(r"^[0-9]+(\.[0-9]+)*$")
 
 
 def _escape_dn_value(val: str) -> str:
@@ -177,7 +178,7 @@ class NameAttribute(object):
 
         if attr_type in _NAME_TO_NAMEOID:
             return NameAttribute(_NAME_TO_NAMEOID[attr_type], attr_value)
-        elif re.match(r"[0-9]+(\.[0-9]+)*$", attr_type):
+        elif _OID_RC.match(attr_type):
             return NameAttribute(ObjectIdentifier(attr_type), attr_value)
         raise ValueError("{0}: Could not parse attribute".format(value))
 
@@ -309,10 +310,8 @@ class Name(object):
         """
         Parse a RFC4514 formatted Distinguished Name string.
         """
-        # value must start with a attributeType, which is either a descr or a
-        # numericoid. A descr is defined in RFC4512 as starting with a
-        # alphabetic char (case insensitive), numeric OIDs start with a digit.
-        if not re.match("[A-Za-z0-9]", value):
+        # value must start with a attributeType
+        if not _OID_RC.match(value):
             raise ValueError("Value does not conform to RFC 4514")
 
         # Split the value by commas into a list of names
