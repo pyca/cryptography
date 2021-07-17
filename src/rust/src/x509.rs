@@ -255,9 +255,9 @@ struct UnvalidatedIA5String<'a>(&'a str);
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     const TAG: u8 = 0x16;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
-        Ok(UnvalidatedIA5String(
-            std::str::from_utf8(data).map_err(|_| asn1::ParseError::InvalidValue)?,
-        ))
+        Ok(UnvalidatedIA5String(std::str::from_utf8(data).map_err(
+            |_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue),
+        )?))
     }
 }
 
@@ -500,8 +500,8 @@ fn parse_name_attribute(
         .import("cryptography.x509.name")?
         .getattr("_ASN1_TYPE_TO_ENUM")?;
     let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
-    let py_data =
-        std::str::from_utf8(attribute.value.data()).map_err(|_| asn1::ParseError::InvalidValue)?;
+    let py_data = std::str::from_utf8(attribute.value.data())
+        .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
     Ok(x509_module
         .call_method1("NameAttribute", (oid, py_data, py_tag))?
         .to_object(py))
