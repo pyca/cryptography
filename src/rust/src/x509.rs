@@ -234,13 +234,8 @@ impl Certificate {
 
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let x509_module = py.import("cryptography.x509")?;
         let version = &self.raw.borrow_value().tbs_cert.version;
-        Ok(match version {
-            0 => x509_module.getattr("Version")?.get_item("v1")?,
-            2 => x509_module.getattr("Version")?.get_item("v3")?,
-            _ => unreachable!(),
-        })
+        cert_version(py, *version)
     }
 
     #[getter]
@@ -512,11 +507,21 @@ impl Certificate {
     }
 }
 
+fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&'_ pyo3::PyAny, PyAsn1Error> {
+    let x509_module = py.import("cryptography.x509")?;
+    match version {
+        0 => Ok(x509_module.getattr("Version")?.get_item("v1")?),
+        2 => Ok(x509_module.getattr("Version")?.get_item("v3")?),
+        _ => Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            x509_module
+                .getattr("InvalidVersion")?
+                .call1((format!("{} is not a valid X509 version", version), version))?,
+        ))),
+    }
+}
+
 #[pyo3::prelude::pyfunction]
-fn load_pem_x509_certificate(
-    py: pyo3::Python<'_>,
-    data: &[u8],
-) -> Result<Certificate, PyAsn1Error> {
+fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
     let parsed = pem::parse(data)?;
     if parsed.tag != "CERTIFICATE" {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -527,22 +532,10 @@ fn load_pem_x509_certificate(
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_certificate(
-    py: pyo3::Python<'_>,
-    data: &[u8],
-) -> Result<Certificate, PyAsn1Error> {
-    let x509_module = py.import("cryptography.x509")?;
+fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
     let raw = OwnedRawCertificate::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
-    let cert_version = raw.borrow_value().tbs_cert.version;
-    if cert_version != 0 && cert_version != 2 {
-        return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-            x509_module.getattr("InvalidVersion")?.call1((
-                format!("{} is not a valid X509 version", cert_version),
-                cert_version,
-            ))?,
-        )));
-    }
-
+    // Parse cert version immediately so we can raise error on parse if it is invalid.
+    cert_version(py, raw.borrow_value().tbs_cert.version)?;
     Ok(Certificate {
         raw,
         cached_extensions: None,
