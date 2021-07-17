@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error};
+use crate::asn1::{big_asn1_uint_to_py, AttributeTypeValue, Name, PyAsn1Error, PyAsn1Result};
 use chrono::{Datelike, Timelike};
 use pyo3::conversion::ToPyObject;
 use pyo3::types::IntoPyDict;
@@ -255,9 +255,9 @@ struct UnvalidatedIA5String<'a>(&'a str);
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     const TAG: u8 = 0x16;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
-        Ok(UnvalidatedIA5String(
-            std::str::from_utf8(data).map_err(|_| asn1::ParseError::InvalidValue)?,
-        ))
+        Ok(UnvalidatedIA5String(std::str::from_utf8(data).map_err(
+            |_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue),
+        )?))
     }
 }
 
@@ -500,8 +500,8 @@ fn parse_name_attribute(
         .import("cryptography.x509.name")?
         .getattr("_ASN1_TYPE_TO_ENUM")?;
     let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
-    let py_data =
-        std::str::from_utf8(attribute.value.data()).map_err(|_| asn1::ParseError::InvalidValue)?;
+    let py_data = std::str::from_utf8(attribute.value.data())
+        .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
     Ok(x509_module
         .call_method1("NameAttribute", (oid, py_data, py_tag))?
         .to_object(py))
@@ -848,11 +848,7 @@ pub(crate) fn parse_scts(
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_x509_extension(
-    py: pyo3::Python<'_>,
-    der_oid: &[u8],
-    ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_x509_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
@@ -1008,16 +1004,12 @@ fn parse_x509_extension(
 }
 
 #[pyo3::prelude::pyfunction]
-pub(crate) fn parse_crl_entry_extension(
-    py: pyo3::Python<'_>,
-    der_oid: &[u8],
-    ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+pub fn parse_crl_entry_ext(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
     if oid == *CRL_REASON_OID {
-        let flag_name = match asn1::parse_single::<asn1::Enumerated>(ext_data)?.value() {
+        let flag_name = match asn1::parse_single::<asn1::Enumerated>(data)?.value() {
             0 => "unspecified",
             1 => "key_compromise",
             2 => "ca_compromise",
@@ -1040,14 +1032,14 @@ pub(crate) fn parse_crl_entry_extension(
             .call1((flag,))?
             .to_object(py))
     } else if oid == *CERTIFICATE_ISSUER_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
+        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(data)?;
         let gns = parse_general_names(py, gn_seq)?;
         Ok(x509_module
             .getattr("CertificateIssuer")?
             .call1((gns,))?
             .to_object(py))
     } else if oid == *INVALIDITY_DATE_OID {
-        let time = asn1::parse_single::<asn1::GeneralizedTime>(ext_data)?;
+        let time = asn1::parse_single::<asn1::GeneralizedTime>(data)?;
         let py_dt = chrono_to_py(py, time.as_chrono())?;
         Ok(x509_module
             .getattr("InvalidityDate")?
@@ -1059,11 +1051,7 @@ pub(crate) fn parse_crl_entry_extension(
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_crl_extension(
-    py: pyo3::Python<'_>,
-    der_oid: &[u8],
-    ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_crl_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
@@ -1129,7 +1117,7 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     let submod = pyo3::prelude::PyModule::new(py, "x509")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_x509_extension))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_ext))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(
         encode_precertificate_signed_certificate_timestamps

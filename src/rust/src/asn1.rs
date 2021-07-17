@@ -5,7 +5,7 @@
 use pyo3::class::basic::CompareOp;
 use pyo3::conversion::ToPyObject;
 
-pub(crate) enum PyAsn1Error {
+pub enum PyAsn1Error {
     Asn1(asn1::ParseError),
     Py(pyo3::PyErr),
 }
@@ -33,6 +33,11 @@ impl From<PyAsn1Error> for pyo3::PyErr {
         }
     }
 }
+
+// The primary purpose of this alias is for brevity to keep function signatures
+// to a single-line as a work around for coverage issues. See
+// https://github.com/pyca/cryptography/pull/6173
+pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
 #[pyo3::prelude::pyfunction]
 fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
