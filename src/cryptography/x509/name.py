@@ -51,6 +51,9 @@ _NAMEOID_TO_NAME = {
 }
 #: Mapping of short names to from RFC 4514 to NameOIDs
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
+#: Match a named attribute type or OID.
+_ATTR_TYPE_RC = re.compile(r"^([a-zA-Z]+|[0-9]+(\.[0-9]+))")
+#: Match a full OID
 _OID_RC = re.compile(r"^[0-9]+(\.[0-9]+)*$")
 
 
@@ -311,7 +314,7 @@ class Name(object):
         Parse a RFC4514 formatted Distinguished Name string.
         """
         # value must start with a attributeType
-        if not _OID_RC.match(value):
+        if not _ATTR_TYPE_RC.match(value):
             raise ValueError("Value does not conform to RFC 4514")
 
         # Split the value by commas into a list of names
