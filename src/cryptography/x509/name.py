@@ -173,7 +173,10 @@ class NameAttribute(object):
         """
         Parse an RFC4514 formatted Distinguished Name string.
         """
-        attr_type, attr_value = value.split("=", 1)
+        try:
+            attr_type, attr_value = value.split("=", 1)
+        except ValueError:
+            raise ValueError("{0}: Could not parse attribute".format(value))
 
         # if a descr, it's case insensitive (RFC 4512, section 1.4)
         attr_type = attr_type.upper()
