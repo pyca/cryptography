@@ -368,6 +368,10 @@ X.509 Certificate Object
             >>> cert.not_valid_after
             datetime.datetime(2030, 12, 31, 8, 30)
 
+    .. method:: valid_at_time(time)
+
+    .. method:: ca_bit_set(allow_missing)
+
     .. attribute:: issuer
 
         .. versionadded:: 0.8
@@ -484,6 +488,14 @@ X.509 Certificate Object
            An
            :class:`~cryptography.exceptions.InvalidSignature`
            exception will be raised if the signature fails to verify.
+
+
+    .. method:: alt_subject_name_matches_issuer(issuer_candidate, allow_missing)
+
+    .. method:: is_issued_by(issuer_candidate, is_issued_by_cb, extra_checks_cb)
+
+    .. method:: is_issuer_of(leaf_candidate, is_issued_by_cb, extra_checks_cb)
+
 
     .. method:: public_bytes(encoding)
 
@@ -3316,6 +3328,23 @@ Exceptions
         The integer value of the unsupported type. The complete list of
         types can be found in `RFC 5280 section 4.2.1.6`_.
 
+
+.. class:: CertificateNotSuitable
+
+
+.. class:: InvalidIssuer
+
+
+.. class:: NotValidYet
+
+
+.. class:: NotValidAnymore
+
+
+.. class:: CABitNotSet
+
+
+.. class:: IssuerAltSubjectNameMismatch
 
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
