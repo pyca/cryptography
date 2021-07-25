@@ -11,6 +11,7 @@ import typing
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -187,6 +188,10 @@ class Certificate(metaclass=abc.ABCMeta):
         """
         Serializes the certificate to PEM or DER format.
         """
+
+
+# Runtime isinstance checks need this since the rust class is not a subclass.
+Certificate.register(rust_x509.Certificate)
 
 
 class RevokedCertificate(metaclass=abc.ABCMeta):
@@ -413,18 +418,18 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_certificate(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> Certificate:
-    backend = _get_backend(backend)
-    return backend.load_pem_x509_certificate(data)
+    return rust_x509.load_pem_x509_certificate(data)
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_certificate(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> Certificate:
-    backend = _get_backend(backend)
-    return backend.load_der_x509_certificate(data)
+    return rust_x509.load_der_x509_certificate(data)
 
 
 def load_pem_x509_csr(

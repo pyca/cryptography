@@ -281,18 +281,6 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
 
 class X509Backend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def load_pem_x509_certificate(self, data: bytes) -> "Certificate":
-        """
-        Load an X.509 certificate from PEM encoded data.
-        """
-
-    @abc.abstractmethod
-    def load_der_x509_certificate(self, data: bytes) -> "Certificate":
-        """
-        Load an X.509 certificate from DER encoded data.
-        """
-
-    @abc.abstractmethod
     def load_der_x509_csr(self, data: bytes) -> "CertificateSigningRequest":
         """
         Load an X.509 CSR from DER encoded data.

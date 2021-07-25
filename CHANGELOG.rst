@@ -11,6 +11,13 @@ Changelog
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
   change our existing backwards compatibility policy.
+* **BACKWARDS INCOMPATIBLE:** The X.509 certificate parser no longer allows
+  negative serial numbers. :rfc:`5280` has always prohibited these.
+* **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during certificate parsing
+  will raise an error on initial parse rather than when the invalid field is
+  accessed.
+* **BACKWARDS INCOMPATIBLE:** Values passed to the X.509 PEM parser must be
+  a single PEM payload and will error on extraneous data.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,

@@ -500,18 +500,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for working with X.509 objects.
 
-    .. method:: load_pem_x509_certificate(data)
-
-        :param bytes data: PEM formatted certificate data.
-
-        :returns: An instance of :class:`~cryptography.x509.Certificate`.
-
-    .. method:: load_der_x509_certificate(data)
-
-        :param bytes data: DER formatted certificate data.
-
-        :returns: An instance of :class:`~cryptography.x509.Certificate`.
-
     .. method:: load_pem_x509_csr(data)
 
         .. versionadded:: 0.9

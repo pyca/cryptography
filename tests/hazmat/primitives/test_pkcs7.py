@@ -104,8 +104,12 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
     store = backend._lib.X509_STORE_new()
     backend.openssl_assert(store != backend._ffi.NULL)
     store = backend._ffi.gc(store, backend._lib.X509_STORE_free)
+    # This list is to keep the x509 values alive until end of function
+    ossl_certs = []
     for cert in certs:
-        res = backend._lib.X509_STORE_add_cert(store, cert._x509)
+        ossl_cert = backend._cert2ossl(cert)
+        ossl_certs.append(ossl_cert)
+        res = backend._lib.X509_STORE_add_cert(store, ossl_cert)
         backend.openssl_assert(res == 1)
     if msg is None:
         res = backend._lib.PKCS7_verify(

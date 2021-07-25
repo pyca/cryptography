@@ -15,7 +15,6 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _obj2txt,
     _parse_asn1_generalized_time,
 )
-from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.ocsp import (
     OCSPCertStatus,
@@ -178,11 +177,7 @@ class _OCSPResponse(OCSPResponse):
         for i in range(num):
             x509_ptr = self._backend._lib.sk_X509_value(sk_x509, i)
             self._backend.openssl_assert(x509_ptr != self._backend._ffi.NULL)
-            cert = _Certificate(self._backend, x509_ptr)
-            # We need to keep the OCSP response that the certificate came from
-            # alive until the Certificate object itself goes out of scope, so
-            # we give it a private reference.
-            cert._ocsp_resp_ref = self
+            cert = self._backend._ossl2cert(x509_ptr)
             certs.append(cert)
 
         return certs
