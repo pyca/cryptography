@@ -22,13 +22,9 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _encode_asn1_int_gc,
     _txt2obj_gc,
 )
-from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.base import PUBLIC_KEY_TYPES
 from cryptography.x509.name import _ASN1Type
-
-# Runtime isinstance checks need this since the rust class is not a subclass.
-x509.Certificate.register(rust_x509.Certificate)
 
 
 # This exists for pyOpenSSL compatibility and SHOULD NOT BE USED

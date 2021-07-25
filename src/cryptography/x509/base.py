@@ -190,6 +190,10 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
 
+# Runtime isinstance checks need this since the rust class is not a subclass.
+Certificate.register(rust_x509.Certificate)
+
+
 class RevokedCertificate(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def serial_number(self) -> int:

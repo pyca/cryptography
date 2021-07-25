@@ -1344,7 +1344,7 @@ pub(crate) fn parse_scts(
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_x509_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) -> PyAsn1Result {
+fn parse_csr_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
     let x509_module = py.import("cryptography.x509")?;
@@ -1604,7 +1604,7 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_x509_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_csr_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_ext))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(

@@ -3,7 +3,7 @@ import typing
 
 from cryptography import x509
 
-def parse_x509_extension(
+def parse_csr_extension(
     der_oid: bytes, ext_data: bytes
 ) -> x509.ExtensionType: ...
 def parse_crl_entry_ext(der_oid: bytes, data: bytes) -> x509.ExtensionType: ...

@@ -382,17 +382,11 @@ class Backend(BackendInterface):
             )
 
     def _register_x509_ext_parsers(self):
-        self._certificate_extension_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.X509_get_ext_count,
-            get_ext=self._lib.X509_get_ext,
-            rust_callback=rust_x509.parse_x509_extension,
-        )
         self._csr_extension_parser = _X509ExtensionParser(
             self,
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
-            rust_callback=rust_x509.parse_x509_extension,
+            rust_callback=rust_x509.parse_csr_extension,
         )
         self._revoked_cert_extension_parser = _X509ExtensionParser(
             self,
