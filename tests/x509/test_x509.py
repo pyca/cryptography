@@ -4815,6 +4815,18 @@ class TestName(object):
         )
         assert n.rfc4514_string() == r"C=US,CN=Jane \"J\,S\" Smith,DC=example"
 
+        # test quoted equal signs
+        name = r"C=US,CN=Jane=Smith,DC=example"
+        n = x509.Name.from_rfc4514_string(name)
+        assert n == x509.Name(
+            [
+                x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                x509.NameAttribute(NameOID.COMMON_NAME, "Jane=Smith"),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            ]
+        )
+        assert n.rfc4514_string() == r"C=US,CN=Jane=Smith,DC=example"
+
     def test_rfc4514_parse_invalid_strings(self):
         # Not escaping comma raises an error
         with pytest.raises(ValueError):
@@ -4829,6 +4841,10 @@ class TestName(object):
             x509.Name.from_rfc4514_string(
                 "C=US,UNKNOWN=Joe , Smith,DC=example"
             )
+
+        # Use an invalid fragment (no value and no "=")
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string("C=US,CN,DC=example")
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
