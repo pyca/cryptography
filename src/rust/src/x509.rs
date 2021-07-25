@@ -80,24 +80,24 @@ pub(crate) struct AttributeTypeValue<'a> {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-enum Asn1Time {
+enum Time {
     UtcTime(asn1::UtcTime),
     GeneralizedTime(asn1::GeneralizedTime),
 }
 
-impl Asn1Time {
+impl Time {
     fn as_chrono(&self) -> &chrono::DateTime<chrono::Utc> {
         match self {
-            Asn1Time::UtcTime(data) => data.as_chrono(),
-            Asn1Time::GeneralizedTime(data) => data.as_chrono(),
+            Time::UtcTime(data) => data.as_chrono(),
+            Time::GeneralizedTime(data) => data.as_chrono(),
         }
     }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct Validity {
-    not_before: Asn1Time,
-    not_after: Asn1Time,
+    not_before: Time,
+    not_after: Time,
 }
 
 #[ouroboros::self_referencing]
@@ -142,16 +142,15 @@ impl pyo3::class::basic::PyObjectProtocol for Certificate {
 
     fn __repr__(&self) -> pyo3::PyResult<String> {
         let mut repr = String::from("<Certificate(subject=<Name(");
-        let mut vec = Vec::new();
         for rdn in self.raw.borrow_value().tbs_cert.subject.clone() {
             for attribute in rdn {
                 let mut attr = attribute.type_id.to_string();
                 attr.push('=');
                 attr.push_str(std::str::from_utf8(attribute.value.data()).unwrap());
-                vec.push(attr);
+                repr.push_str(&attr);
+                repr.push_str(", ");
             }
         }
-        repr.push_str(&vec.join(", "));
         repr.push_str(")>, ...)>");
         Ok(repr)
     }
@@ -489,9 +488,7 @@ impl Certificate {
         slf: pyo3::pycell::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let cryptography_warning = py
-            .import("cryptography.utils")?
-            .getattr("CryptographyDeprecationWarning")?;
+        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn35")?;
         let warnings = py.import("warnings")?;
         warnings.call_method1(
             "warn",
@@ -507,7 +504,7 @@ impl Certificate {
     }
 }
 
-fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&'_ pyo3::PyAny, PyAsn1Error> {
+fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     match version {
         0 => Ok(x509_module.getattr("Version")?.get_item("v1")?),

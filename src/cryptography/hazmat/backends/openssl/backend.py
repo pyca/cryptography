@@ -1331,13 +1331,7 @@ class Backend(BackendInterface):
 
         self._handle_key_loading_error()
 
-    def load_pem_x509_certificate(self, data: bytes) -> x509.Certificate:
-        return rust_x509.load_pem_x509_certificate(data)
-
-    def load_der_x509_certificate(self, data: bytes) -> x509.Certificate:
-        return rust_x509.load_der_x509_certificate(data)
-
-    def _cert2ossl(self, cert):
+    def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)
         mem_bio = self._bytes_to_bio(data)
         x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
@@ -1345,11 +1339,11 @@ class Backend(BackendInterface):
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return x509
 
-    def _ossl2cert(self, x509):
+    def _ossl2cert(self, x509: typing.Any) -> x509.Certificate:
         bio = self._create_mem_bio_gc()
         res = self._lib.i2d_X509_bio(bio, x509)
         self.openssl_assert(res == 1)
-        return self.load_der_x509_certificate(self._read_mem_bio(bio))
+        return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
     def load_pem_x509_crl(self, data: bytes) -> _CertificateRevocationList:
         mem_bio = self._bytes_to_bio(data)

@@ -37,7 +37,7 @@ def _Certificate(backend, x509) -> x509.Certificate:  # noqa: N802
     warnings.warn(
         "This version of cryptography contains a temporary pyOpenSSL "
         "fallback path. Upgrade pyOpenSSL now.",
-        utils.CryptographyDeprecationWarning,
+        utils.DeprecatedIn35,
     )
     return backend._ossl2cert(x509)
 
