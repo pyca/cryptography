@@ -4846,6 +4846,9 @@ class TestName(object):
         with pytest.raises(ValueError):
             x509.Name.from_rfc4514_string("C=US,CN,DC=example")
 
+        with pytest.raises(ValueError):
+            x509.Name.from_rfc4514_string("C=US,FOOBAR=example")
+
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
             x509.Name(["not-a-NameAttribute"])  # type: ignore[list-item]
