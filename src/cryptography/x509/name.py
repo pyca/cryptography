@@ -49,7 +49,7 @@ _NAMEOID_TO_NAME = {
     NameOID.DOMAIN_COMPONENT: "DC",
     NameOID.USER_ID: "UID",
 }
-#: Mapping of short names to from RFC 4514 to NameOIDs
+#: Mapping of RFC 4514 attribute names to NameOIDs
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 #: Match a named attribute type or OID.
 _ATTR_TYPE_RC = re.compile(r"^([a-zA-Z]+|[0-9]+(\.[0-9]+))")
@@ -85,7 +85,7 @@ def _parse_dn_value(val: str) -> str:
     if not val:
         return ""
 
-    # See https://tools.ietf.org/html/rfc4514#section-2.4
+    # See https://tools.ietf.org/html/rfc4514#section-3
     val = val.replace("\\\\", "\\")
     val = val.replace('\\"', '"')
     val = val.replace("\\+", "+")
@@ -171,7 +171,7 @@ class NameAttribute(object):
     @classmethod
     def from_rfc4514_string(cls, value: str) -> "NameAttribute":
         """
-        Parse a RFC4514 formatted Distinguished Name string.
+        Parse an RFC4514 formatted Distinguished Name string.
         """
         attr_type, attr_value = value.split("=", 1)
 
@@ -183,6 +183,7 @@ class NameAttribute(object):
             return NameAttribute(_NAME_TO_NAMEOID[attr_type], attr_value)
         elif _OID_RC.match(attr_type):
             return NameAttribute(ObjectIdentifier(attr_type), attr_value)
+
         raise ValueError("{0}: Could not parse attribute".format(value))
 
     def __eq__(self, other: object) -> bool:
@@ -311,7 +312,7 @@ class Name(object):
     @classmethod
     def from_rfc4514_string(cls, value: str) -> "Name":
         """
-        Parse a RFC4514 formatted Distinguished Name string.
+        Parse an RFC4514 formatted Distinguished Name string.
         """
         # value must start with a attributeType
         if not _ATTR_TYPE_RC.match(value):
