@@ -5,7 +5,10 @@
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.ciphers import CipherAlgorithm
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm,
+    CipherAlgorithm,
+)
 from cryptography.hazmat.primitives.ciphers.modes import Mode
 
 
@@ -14,6 +17,13 @@ class DummyCipherAlgorithm(CipherAlgorithm):
     block_size = 128
     key_size = 256
     key_sizes = frozenset([256])
+
+
+class DummyBlockCipherAlgorithm(DummyCipherAlgorithm, BlockCipherAlgorithm):
+    def __init__(self, _):
+        pass
+
+    name = "dummy-block-cipher"
 
 
 class DummyMode(Mode):
