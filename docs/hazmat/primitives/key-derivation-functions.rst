@@ -755,6 +755,143 @@ KBKDF
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
 
+.. class:: KBKDFCMAC(algorithm, mode, length, rlen, llen, location,\
+           label, context, fixed, backend=None)
+
+    .. versionadded:: 35.0
+
+    KBKDF (Key Based Key Derivation Function) is defined by the
+    `NIST SP 800-108`_ document, to be used to derive additional
+    keys from a key that has been established through an automated
+    key-establishment scheme.
+
+    .. warning::
+
+        KBKDFCMAC should not be used for password storage.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import algorithms
+        >>> from cryptography.hazmat.primitives.kdf.kbkdf import (
+        ...    CounterLocation, KBKDFCMAC, Mode
+        ... )
+        >>> label = b"KBKDF CMAC Label"
+        >>> context = b"KBKDF CMAC Context"
+        >>> kdf = KBKDFCMAC(
+        ...     algorithm=algorithms.AES,
+        ...     mode=Mode.CounterMode,
+        ...     length=32,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ... )
+        >>> key = kdf.derive(b"32 bytes long input key material")
+        >>> kdf = KBKDFCMAC(
+        ...     algorithm=algorithms.AES,
+        ...     mode=Mode.CounterMode,
+        ...     length=32,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ... )
+        >>> kdf.verify(b"32 bytes long input key material", key)
+
+    :param algorithm: A class implementing a block cipher algorithm being a
+        subclass of
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm` and
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
+
+    :param mode: The desired mode of the PRF. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` enum.
+
+    :param int length: The desired length of the derived key in bytes.
+
+    :param int rlen: An integer that indicates the length of the binary
+        representation of the counter in bytes.
+
+    :param int llen: An integer that indicates the binary
+        representation of the ``length`` in bytes.
+
+    :param location: The desired location of the counter. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation` enum.
+
+    :param bytes label: Application specific label information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes context: Application specific context information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes fixed: Instead of specifying ``label`` and ``context`` you
+        may supply your own fixed data. If ``fixed`` is specified, ``label``
+        and ``context`` is ignored.
+
+    :param backend: An optional instance of
+        :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.CMACBackend` or
+        ``algorithm`` is not a subclass of
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm` and
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
+
+    :raises TypeError: This exception is raised if ``label`` or ``context``
+        is not ``bytes``, ``rlen`` or ``llen`` is not ``int``, ``mode`` is not
+        :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` or ``location``
+        is not
+        :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation`.
+
+    :raises ValueError: This exception is raised if ``rlen`` or ``llen``
+        is greater than 4 or less than 1. This exception is also raised if
+        you specify a ``label`` or ``context`` and ``fixed``.
+
+    .. method:: derive(key_material)
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+        :raises ValueError: This exception is raised if ``key_material`` is
+                            not a valid key for ``algorithm`` passed to
+                            :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
+                            constructor.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+                if ``backend`` passed to
+                :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
+                constructor does not support an ``algorithm`` passed to
+                :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
+                constructor with given ``key_material``.
+
+        Derives a new key from the input key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises: Exceptions raised by :meth:`derive`.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
 .. class:: Mode
 
     An enumeration for the key based key derivative modes.

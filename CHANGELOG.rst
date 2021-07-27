@@ -28,6 +28,7 @@ Changelog
   and ``manylinux2014`` wheels.
 * Added ``rfc4514_attribute_name`` attribute to :attr:`x509.NameAttribute
   <cryptography.x509.NameAttribute.rfc4514_attribute_name>`.
+* Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`.
 
 .. _v3-4-8:
 
