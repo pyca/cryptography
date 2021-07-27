@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
+        description: The version to build
         required: true
 
 jobs:
@@ -65,16 +66,25 @@ jobs:
         PYTHON:
           - VERSION: '3.8'
             ABI_VERSION: 'cp36'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-macosx10.9.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.10/python-3.8.10-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
+          - VERSION: 'pypy-3.7'
+            BIN_PATH: 'pypy3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
     steps:
       - uses: actions/checkout@v2.3.4
-      - run: |
+      - name: Setup python
+        run: |
           curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
+        if: contains(matrix.PYTHON.VERSION, 'pypy') == false
+      - name: Setup pypy
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+        if: contains(matrix.PYTHON.VERSION, 'pypy')
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
       - name: Download OpenSSL
         run: |
@@ -121,6 +131,11 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.8", MSVC_VERSION: "2019", "ABI_VERSION": "cp36"}
+          - {VERSION: "pypy-3.7", MSVC_VERSION: "2019"}
+        exclude:
+          # We need to exclude the below configuration because there is no 32-bit pypy3
+          - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
+            PYTHON: {VERSION: "pypy-3.7", MSVC_VERSION: "2019"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - uses: actions/checkout@v2.3.4
