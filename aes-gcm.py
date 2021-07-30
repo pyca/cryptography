@@ -1,12 +1,20 @@
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import os
-backend=default_backend()
-nonce=os.urandom(12)
-message_to_encrypt=b"Hello World, Happy New Year!!"
-additional_message=b"Not Secret"
-key=AESGCM.generate_key(bit_length=256)
-aes_gcm=AESGCM(key)
-encrypt_message=aes_gcm.encrypt(nonce, message_to_encrypt, additional_message)
-assert message_to_encrypt,aes_gcm.decrypt(nonce, encrypt_message, additional_message)
-print(aes_gcm.decrypt(nonce, encrypt_message, additional_message).decode())
+backend = default_backend()
+pwd=b"i7uJ7ZDx3O5BAHZWiCV4c4XrES0Jotgm"
+msg=b"Hello World, My name is Fernando!!!! The password is 256 bit long."
+aed=b"saltallovermypassword"
+iv=os.urandom(27)
+cipher=Cipher(algorithms.AES(pwd), modes.GCM(iv), backend=backend)
+e=cipher.encryptor()
+e.authenticate_additional_data(aed)
+ct=e.update(msg) + e.finalize()
+tag=e.tag
+cipher=Cipher(algorithms.AES(pwd), modes.GCM(iv,tag), backend=backend)
+d=cipher.decryptor()
+d.authenticate_additional_data(aed)
+clear=d.update(ct)+d.finalize()
+assert clear,msg
+x = clear.decode()
+print(x)
