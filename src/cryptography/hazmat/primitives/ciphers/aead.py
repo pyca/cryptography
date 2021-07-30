@@ -26,6 +26,8 @@ class ChaCha20Poly1305(object):
             raise ValueError("ChaCha20Poly1305 key must be 32 bytes.")
 
         self._key = key
+        self.encrypt_ctx = None
+        self.decrypt_ctx = None
 
     @classmethod
     def generate_key(cls) -> bytes:
@@ -90,6 +92,8 @@ class AESCCM(object):
             raise ValueError("Invalid tag_length")
 
         self._tag_length = tag_length
+        self.encrypt_ctx = None
+        self.decrypt_ctx = None
 
     @classmethod
     def generate_key(cls, bit_length: int) -> bytes:
@@ -162,6 +166,8 @@ class AESGCM(object):
             raise ValueError("AESGCM key must be 128, 192, or 256 bits.")
 
         self._key = key
+        self.encrypt_ctx = None
+        self.decrypt_ctx = None
 
     @classmethod
     def generate_key(cls, bit_length: int) -> bytes:
