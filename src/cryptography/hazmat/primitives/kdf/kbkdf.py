@@ -4,7 +4,6 @@
 
 
 import typing
-from enum import Enum
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -14,16 +13,16 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-class Mode(Enum):
+class Mode(utils.Enum):
     CounterMode = "ctr"
 
 
-class CounterLocation(Enum):
+class CounterLocation(utils.Enum):
     BeforeFixed = "before_fixed"
     AfterFixed = "after_fixed"
 
@@ -40,7 +39,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):

@@ -11,8 +11,9 @@ import textwrap
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends.openssl import decode_asn1, encode_asn1
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -163,6 +164,16 @@ class TestOpenSSL(object):
     def test_bn_to_int(self):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
+
+    def test_obj2txt_buffer_sizing(self):
+        # This test exercises a branch for larger than default buffer sizing
+        # in _obj2txt
+        oid_str = (
+            "1.2.3.182382138123818.1293813123.12381238123.3434834834888"
+            ".383488234284.2348234.234819299576434.23482434203"
+        )
+        obj = encode_asn1._txt2obj_gc(backend, oid_str)
+        assert decode_asn1._obj2txt(backend, obj) == oid_str
 
 
 @pytest.mark.skipif(
@@ -598,30 +609,6 @@ class TestRSAPEMSerialization(object):
             )
 
 
-class TestGOSTCertificate(object):
-    def test_numeric_string_x509_name_entry(self):
-        cert = _load_cert(
-            os.path.join("x509", "e-trust.ru.der"),
-            x509.load_der_x509_certificate,
-            backend,
-        )
-        if backend._lib.CRYPTOGRAPHY_IS_LIBRESSL:
-            with pytest.raises(ValueError) as exc:
-                cert.subject
-
-            # We assert on the message in this case because if the certificate
-            # fails to load it will also raise a ValueError and this test could
-            # erroneously pass.
-            assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
-        else:
-            assert (
-                cert.subject.get_attributes_for_oid(
-                    x509.ObjectIdentifier("1.2.643.3.131.1.1")
-                )[0].value
-                == "007710474375"
-            )
-
-
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
@@ -698,3 +685,19 @@ class TestOpenSSLDHSerialization(object):
         )
         with pytest.raises(ValueError):
             loader_func(key_bytes, backend)
+
+
+def test_pyopenssl_cert_fallback():
+    cert = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+    )
+    x509_ossl = None
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        x509_ossl = cert._x509
+    assert x509_ossl is not None
+
+    from cryptography.hazmat.backends.openssl.x509 import _Certificate
+
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        _Certificate(backend, x509_ossl)

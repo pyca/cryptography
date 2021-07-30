@@ -20,3 +20,15 @@ markers = [
     "skip_fips: this test is not executed in FIPS mode",
     "supported: parametrized test requiring only_if and skip_message",
 ]
+
+[tool.mypy]
+show_error_codes = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cryptography.hazmat.bindings._openssl",
+    "iso8601",
+    "pretend"
+]
+ignore_missing_imports = true

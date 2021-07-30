@@ -220,9 +220,8 @@ X.509
 * ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
   cipher and containing numerous unusual encodings such as NUMERICSTRING in
   the subject DN.
-* ``alternate-rsa-sha1-oid.pem`` - A certificate from an
-  `unknown signature OID`_ Mozilla bug that uses an alternate signature OID for
-  RSA with SHA1.
+* ``alternate-rsa-sha1-oid.der`` - A certificate that uses an alternate
+  signature OID for RSA with SHA1. This certificate has an invalid signature.
 * ``badssl-sct.pem`` - A certificate with the certificate transparency signed
   certificate timestamp extension.
 * ``bigoid.pem`` - A certificate with a rather long OID in the
@@ -397,7 +396,12 @@ Custom X.509 Vectors
   certificate containing a certificate policies extension with a user notice
   with no explicit text.
 * ``cp_invalid.pem`` - An RSA 2048 bit self-signed certificate containing a
-  certificate policies extension with invalid data.
+  certificate policies extension with invalid data. The ``policyQualifierId``
+  is for ``id-qt-unotice`` but the value is an ``id-qt-cps`` ASN.1 structure.
+* ``cp_invalid2.der`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with invalid data. The ``policyQualifierId``
+  is for ``id-qt-cps`` but the value is an ``id-qt-unotice`` ASN.1 structure.
+  The signature on this certificate is invalid.
 * ``ian_uri.pem`` - An RSA 2048 bit certificate containing an issuer
   alternative name extension with a ``URI`` general name.
 * ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing
@@ -494,11 +498,15 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_ian_aia_aki.pem`` - Contains a CRL with ``IssuerAlternativeName``,
   ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
   extensions.
-* ``valid_signature.pem`` - Contains a CRL with the public key which was used
-  to generate it.
-* ``invalid_signature.pem`` - Contains a CRL with the last signature byte
-  incremented by 1 to produce an invalid signature, and the public key which
-  was used to generate it.
+* ``valid_signature_crl.pem`` - Contains a CRL with a valid signature.
+* ``valid_signature_cert.pem`` - Contains a cert whose public key corresponds
+  to the private key that produced the signature for
+  ``valid_signature_crl.pem``.
+* ``invalid_signature_crl.pem`` - Contains a CRL with the last signature byte
+  incremented by 1 to produce an invalid signature.
+* ``invalid_signature_cert.pem`` - Contains a cert whose public key corresponds
+  to the private key that  produced the signature for
+  ``invalid_signature_crl.pem``.
 * ``crl_delta_crl_indicator.pem`` - Contains a CRL with the
   ``DeltaCRLIndicator`` extension.
 * ``crl_idp_fullname_only.pem`` - Contains a CRL with an
@@ -528,6 +536,8 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_unrecognized_extension.der`` - Contains a CRL containing an
   unsupported extension type. The OID was encoded as "1.2.3.4.5" with an
   ``extnValue`` of ``abcdef``.
+* ``crl_invalid_time.der`` - Contains a CRL with an invalid ``GeneralizedTime``
+  value in ``thisUpdate``. The signature on this CRL is invalid.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~

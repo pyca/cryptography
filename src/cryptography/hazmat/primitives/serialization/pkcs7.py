@@ -3,10 +3,11 @@
 # for complete details.
 
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.utils import _check_byteslike
@@ -35,7 +36,7 @@ _ALLOWED_PRIVATE_KEY_TYPES = typing.Union[
 ]
 
 
-class PKCS7Options(Enum):
+class PKCS7Options(utils.Enum):
     Text = "Add text/plain MIME type"
     Binary = "Don't translate input data into canonical MIME format"
     DetachedSignature = "Don't embed data in the PKCS7 structure"
@@ -104,7 +105,7 @@ class PKCS7SignatureBuilder(object):
         self,
         encoding: serialization.Encoding,
         options: typing.Iterable[PKCS7Options],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ) -> bytes:
         if len(self._signers) == 0:
             raise ValueError("Must have at least one signer")

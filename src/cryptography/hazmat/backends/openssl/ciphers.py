@@ -112,7 +112,28 @@ class _CipherContext(object):
             iv_nonce,
             operation,
         )
-        self._backend.openssl_assert(res != 0)
+
+        # Check for XTS mode duplicate keys error
+        errors = self._backend._consume_errors()
+        lib = self._backend._lib
+        if res == 0 and (
+            (
+                lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
+                and errors[0]._lib_reason_match(
+                    lib.ERR_LIB_EVP, lib.EVP_R_XTS_DUPLICATED_KEYS
+                )
+            )
+            or (
+                lib.Cryptography_HAS_PROVIDERS
+                and errors[0]._lib_reason_match(
+                    lib.ERR_LIB_PROV, lib.PROV_R_XTS_DUPLICATED_KEYS
+                )
+            )
+        ):
+            raise ValueError("In XTS mode duplicated keys are not allowed")
+
+        self._backend.openssl_assert(res != 0, errors=errors)
+
         # We purposely disable padding here as it's handled higher up in the
         # API.
         self._backend._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
@@ -145,7 +166,14 @@ class _CipherContext(object):
             res = self._backend._lib.EVP_CipherUpdate(
                 self._ctx, outbuf, outlen, inbuf, inlen
             )
-            self._backend.openssl_assert(res != 0)
+            if res == 0 and isinstance(self._mode, modes.XTS):
+                self._backend._consume_errors()
+                raise ValueError(
+                    "In XTS mode you must supply at least a full block in the "
+                    "first update call. For AES this is 16 bytes."
+                )
+            else:
+                self._backend.openssl_assert(res != 0)
             data_processed += inlen
             total_out += outlen[0]
 
@@ -174,6 +202,13 @@ class _CipherContext(object):
                 errors[0]._lib_reason_match(
                     self._backend._lib.ERR_LIB_EVP,
                     self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+                )
+                or (
+                    self._backend._lib.Cryptography_HAS_PROVIDERS
+                    and errors[0]._lib_reason_match(
+                        self._backend._lib.ERR_LIB_PROV,
+                        self._backend._lib.PROV_R_WRONG_FINAL_BLOCK_LENGTH,
+                    )
                 ),
                 errors=errors,
             )

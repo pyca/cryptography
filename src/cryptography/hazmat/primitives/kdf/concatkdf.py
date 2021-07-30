@@ -14,8 +14,11 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.backends.interfaces import HashBackend
+from cryptography.hazmat.backends.interfaces import (
+    Backend,
+    HMACBackend,
+    HashBackend,
+)
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -28,11 +31,11 @@ def _common_args_checks(
     algorithm: hashes.HashAlgorithm,
     length: int,
     otherinfo: typing.Optional[bytes],
-):
+) -> None:
     max_length = algorithm.digest_size * (2 ** 32 - 1)
     if length > max_length:
         raise ValueError(
-            "Can not derive keys larger than {} bits.".format(max_length)
+            "Cannot derive keys larger than {} bits.".format(max_length)
         )
     if otherinfo is not None:
         utils._check_bytes("otherinfo", otherinfo)
@@ -67,7 +70,7 @@ class ConcatKDFHash(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         otherinfo: typing.Optional[bytes],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
 
@@ -107,7 +110,7 @@ class ConcatKDFHMAC(KeyDerivationFunction):
         length: int,
         salt: typing.Optional[bytes],
         otherinfo: typing.Optional[bytes],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
 

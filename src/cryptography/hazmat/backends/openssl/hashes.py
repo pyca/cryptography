@@ -3,7 +3,6 @@
 # for complete details.
 
 
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes
 
@@ -34,7 +33,9 @@ class _HashContext(hashes.HashContext):
 
         self._ctx = ctx
 
-    algorithm = utils.read_only_property("_algorithm")
+    @property
+    def algorithm(self) -> hashes.HashAlgorithm:
+        return self._algorithm
 
     def copy(self) -> "_HashContext":
         copied_ctx = self._backend._lib.EVP_MD_CTX_new()

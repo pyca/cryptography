@@ -4,6 +4,7 @@
 
 
 import sys
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -13,7 +14,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import ScryptBackend
+from cryptography.hazmat.backends.interfaces import Backend, ScryptBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -25,7 +26,13 @@ _MEM_LIMIT = sys.maxsize // 2
 
 class Scrypt(KeyDerivationFunction):
     def __init__(
-        self, salt: bytes, length: int, n: int, r: int, p: int, backend=None
+        self,
+        salt: bytes,
+        length: int,
+        n: int,
+        r: int,
+        p: int,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, ScryptBackend):

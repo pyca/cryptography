@@ -2,10 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::x509::Name;
 use pyo3::class::basic::CompareOp;
 use pyo3::conversion::ToPyObject;
 
-pub(crate) enum PyAsn1Error {
+pub enum PyAsn1Error {
     Asn1(asn1::ParseError),
     Py(pyo3::PyErr),
 }
@@ -22,6 +23,15 @@ impl From<pyo3::PyErr> for PyAsn1Error {
     }
 }
 
+impl From<pem::PemError> for PyAsn1Error {
+    fn from(e: pem::PemError) -> PyAsn1Error {
+        PyAsn1Error::Py(pyo3::exceptions::PyValueError::new_err(format!(
+            "Unable to load PEM file. See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details. {:?}",
+            e
+        )))
+    }
+}
+
 impl From<PyAsn1Error> for pyo3::PyErr {
     fn from(e: PyAsn1Error) -> pyo3::PyErr {
         match e {
@@ -33,6 +43,11 @@ impl From<PyAsn1Error> for pyo3::PyErr {
         }
     }
 }
+
+// The primary purpose of this alias is for brevity to keep function signatures
+// to a single-line as a work around for coverage issues. See
+// https://github.com/pyca/cryptography/pull/6173
+pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
 #[pyo3::prelude::pyfunction]
 fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
@@ -171,14 +186,6 @@ struct TbsCertificate<'a> {
     _subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
     _extensions: Option<asn1::Sequence<'a>>,
-}
-
-pub(crate) type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
-
-#[derive(asn1::Asn1Read)]
-pub(crate) struct AttributeTypeValue<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
-    pub(crate) value: asn1::Tlv<'a>,
 }
 
 #[derive(asn1::Asn1Read)]

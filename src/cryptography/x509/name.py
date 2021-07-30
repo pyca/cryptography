@@ -3,14 +3,14 @@
 # for complete details.
 
 import typing
-from enum import Enum
 
 from cryptography import utils
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
-class _ASN1Type(Enum):
+class _ASN1Type(utils.Enum):
     UTF8String = 12
     NumericString = 18
     PrintableString = 19
@@ -49,7 +49,7 @@ _NAMEOID_TO_NAME = {
 }
 
 
-def _escape_dn_value(val):
+def _escape_dn_value(val: str) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
@@ -74,14 +74,16 @@ def _escape_dn_value(val):
 
 
 class NameAttribute(object):
-    def __init__(self, oid: ObjectIdentifier, value: str, _type=_SENTINEL):
+    def __init__(
+        self, oid: ObjectIdentifier, value: str, _type=_SENTINEL
+    ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
             )
 
         if not isinstance(value, str):
-            raise TypeError("value argument must be a text type.")
+            raise TypeError("value argument must be a str.")
 
         if (
             oid == NameOID.COUNTRY_NAME
@@ -108,8 +110,21 @@ class NameAttribute(object):
         self._value = value
         self._type = _type
 
-    oid = utils.read_only_property("_oid")
-    value = utils.read_only_property("_value")
+    @property
+    def oid(self) -> ObjectIdentifier:
+        return self._oid
+
+    @property
+    def value(self) -> str:
+        return self._value
+
+    @property
+    def rfc4514_attribute_name(self) -> str:
+        """
+        The short attribute name (for example "CN") if available,
+        otherwise the OID dotted string.
+        """
+        return _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
 
     def rfc4514_string(self) -> str:
         """
@@ -118,8 +133,10 @@ class NameAttribute(object):
         Use short attribute name if available, otherwise fall back to OID
         dotted string.
         """
-        key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
-        return "%s=%s" % (key, _escape_dn_value(self.value))
+        return "%s=%s" % (
+            self.rfc4514_attribute_name,
+            _escape_dn_value(self.value),
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
@@ -152,7 +169,9 @@ class RelativeDistinguishedName(object):
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(self) -> str:
@@ -187,14 +206,32 @@ class RelativeDistinguishedName(object):
 
 
 class Name(object):
-    def __init__(self, attributes):
+    @typing.overload
+    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None:
+        ...
+
+    @typing.overload
+    def __init__(
+        self, attributes: typing.Iterable[RelativeDistinguishedName]
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        attributes: typing.Iterable[
+            typing.Union[NameAttribute, RelativeDistinguishedName]
+        ],
+    ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
             self._attributes = [
-                RelativeDistinguishedName([x]) for x in attributes
+                RelativeDistinguishedName([typing.cast(NameAttribute, x)])
+                for x in attributes
             ]
         elif all(isinstance(x, RelativeDistinguishedName) for x in attributes):
-            self._attributes = attributes
+            self._attributes = typing.cast(
+                typing.List[RelativeDistinguishedName], attributes
+            )
         else:
             raise TypeError(
                 "attributes must be a list of NameAttribute"
@@ -216,14 +253,16 @@ class Name(object):
             attr.rfc4514_string() for attr in reversed(self._attributes)
         )
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self) -> typing.Iterable[RelativeDistinguishedName]:
+    def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend=None) -> bytes:
+    def public_bytes(self, backend: typing.Optional[Backend] = None) -> bytes:
         backend = _get_backend(backend)
         return backend.x509_name_bytes(self)
 

@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.ciphers import (
 from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
-def _verify_key_size(algorithm: CipherAlgorithm, key: bytes):
+def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
     # Verify that the key is instance of bytes
     utils._check_byteslike("key", key)
 
@@ -146,7 +146,22 @@ class ChaCha20(CipherAlgorithm, ModeWithNonce):
 
         self._nonce = nonce
 
-    nonce = utils.read_only_property("_nonce")
+    @property
+    def nonce(self) -> bytes:
+        return self._nonce
+
+    @property
+    def key_size(self) -> int:
+        return len(self.key) * 8
+
+
+class SM4(CipherAlgorithm, BlockCipherAlgorithm):
+    name = "SM4"
+    block_size = 128
+    key_sizes = frozenset([128])
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self) -> int:

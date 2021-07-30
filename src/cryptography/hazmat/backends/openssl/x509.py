@@ -6,6 +6,7 @@
 import datetime
 import operator
 import typing
+import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -22,149 +23,19 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _txt2obj_gc,
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.x509.base import _PUBLIC_KEY_TYPES
+from cryptography.x509.base import PUBLIC_KEY_TYPES
 from cryptography.x509.name import _ASN1Type
 
 
-class _Certificate(x509.Certificate):
-    # Keep-alive reference used by OCSP
-    _ocsp_resp_ref: typing.Any
-
-    def __init__(self, backend, x509_cert):
-        self._backend = backend
-        self._x509 = x509_cert
-
-        version = self._backend._lib.X509_get_version(self._x509)
-        if version == 0:
-            self._version = x509.Version.v1
-        elif version == 2:
-            self._version = x509.Version.v3
-        else:
-            raise x509.InvalidVersion(
-                "{} is not a valid X509 version".format(version), version
-            )
-
-    def __repr__(self):
-        return "<Certificate(subject={}, ...)>".format(self.subject)
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, _Certificate):
-            return NotImplemented
-
-        res = self._backend._lib.X509_cmp(self._x509, other._x509)
-        return res == 0
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
-    def __hash__(self) -> int:
-        return hash(self.public_bytes(serialization.Encoding.DER))
-
-    def __deepcopy__(self, memo):
-        return self
-
-    def fingerprint(self, algorithm: hashes.HashAlgorithm) -> bytes:
-        h = hashes.Hash(algorithm, self._backend)
-        h.update(self.public_bytes(serialization.Encoding.DER))
-        return h.finalize()
-
-    version = utils.read_only_property("_version")
-
-    @property
-    def serial_number(self) -> int:
-        asn1_int = self._backend._lib.X509_get_serialNumber(self._x509)
-        self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
-        return _asn1_integer_to_int(self._backend, asn1_int)
-
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
-        pkey = self._backend._lib.X509_get_pubkey(self._x509)
-        if pkey == self._backend._ffi.NULL:
-            # Remove errors from the stack.
-            self._backend._consume_errors()
-            raise ValueError("Certificate public key is of an unknown type")
-
-        pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
-
-        return self._backend._evp_pkey_to_public_key(pkey)
-
-    @property
-    def not_valid_before(self) -> datetime.datetime:
-        asn1_time = self._backend._lib.X509_get0_notBefore(self._x509)
-        return _parse_asn1_time(self._backend, asn1_time)
-
-    @property
-    def not_valid_after(self) -> datetime.datetime:
-        asn1_time = self._backend._lib.X509_get0_notAfter(self._x509)
-        return _parse_asn1_time(self._backend, asn1_time)
-
-    @property
-    def issuer(self) -> x509.Name:
-        issuer = self._backend._lib.X509_get_issuer_name(self._x509)
-        self._backend.openssl_assert(issuer != self._backend._ffi.NULL)
-        return _decode_x509_name(self._backend, issuer)
-
-    @property
-    def subject(self) -> x509.Name:
-        subject = self._backend._lib.X509_get_subject_name(self._x509)
-        self._backend.openssl_assert(subject != self._backend._ffi.NULL)
-        return _decode_x509_name(self._backend, subject)
-
-    @property
-    def signature_hash_algorithm(
-        self,
-    ) -> typing.Optional[hashes.HashAlgorithm]:
-        oid = self.signature_algorithm_oid
-        try:
-            return x509._SIG_OIDS_TO_HASH[oid]
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "Signature algorithm OID:{} not recognized".format(oid)
-            )
-
-    @property
-    def signature_algorithm_oid(self) -> x509.ObjectIdentifier:
-        alg = self._backend._ffi.new("X509_ALGOR **")
-        self._backend._lib.X509_get0_signature(
-            self._backend._ffi.NULL, alg, self._x509
-        )
-        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
-        oid = _obj2txt(self._backend, alg[0].algorithm)
-        return x509.ObjectIdentifier(oid)
-
-    @utils.cached_property
-    def extensions(self) -> x509.Extensions:
-        return self._backend._certificate_extension_parser.parse(self._x509)
-
-    @property
-    def signature(self) -> bytes:
-        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
-        self._backend._lib.X509_get0_signature(
-            sig, self._backend._ffi.NULL, self._x509
-        )
-        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
-        return _asn1_string_to_bytes(self._backend, sig[0])
-
-    @property
-    def tbs_certificate_bytes(self) -> bytes:
-        pp = self._backend._ffi.new("unsigned char **")
-        res = self._backend._lib.i2d_re_X509_tbs(self._x509, pp)
-        self._backend.openssl_assert(res > 0)
-        pp = self._backend._ffi.gc(
-            pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
-        )
-        return self._backend._ffi.buffer(pp[0], res)[:]
-
-    def public_bytes(self, encoding: serialization.Encoding) -> bytes:
-        bio = self._backend._create_mem_bio_gc()
-        if encoding is serialization.Encoding.PEM:
-            res = self._backend._lib.PEM_write_bio_X509(bio, self._x509)
-        elif encoding is serialization.Encoding.DER:
-            res = self._backend._lib.i2d_X509_bio(bio, self._x509)
-        else:
-            raise TypeError("encoding must be an item from the Encoding enum")
-
-        self._backend.openssl_assert(res == 1)
-        return self._backend._read_mem_bio(bio)
+# This exists for pyOpenSSL compatibility and SHOULD NOT BE USED
+# WE WILL REMOVE THIS VERY SOON.
+def _Certificate(backend, x509) -> x509.Certificate:  # noqa: N802
+    warnings.warn(
+        "This version of cryptography contains a temporary pyOpenSSL "
+        "fallback path. Upgrade pyOpenSSL now.",
+        utils.DeprecatedIn35,
+    )
+    return backend._ossl2cert(x509)
 
 
 class _RevokedCertificate(x509.RevokedCertificate):
@@ -204,8 +75,7 @@ class _RevokedCertificate(x509.RevokedCertificate):
         )
 
 
-@utils.register_interface(x509.CertificateRevocationList)
-class _CertificateRevocationList(object):
+class _CertificateRevocationList(x509.CertificateRevocationList):
     def __init__(self, backend, x509_crl):
         self._backend = backend
         self._x509_crl = x509_crl
@@ -361,7 +231,7 @@ class _CertificateRevocationList(object):
     def extensions(self) -> x509.Extensions:
         return self._backend._crl_extension_parser.parse(self._x509_crl)
 
-    def is_signature_valid(self, public_key: _PUBLIC_KEY_TYPES) -> bool:
+    def is_signature_valid(self, public_key: PUBLIC_KEY_TYPES) -> bool:
         if not isinstance(
             public_key,
             (
@@ -385,8 +255,7 @@ class _CertificateRevocationList(object):
         return True
 
 
-@utils.register_interface(x509.CertificateSigningRequest)
-class _CertificateSigningRequest(object):
+class _CertificateSigningRequest(x509.CertificateSigningRequest):
     def __init__(self, backend, x509_req):
         self._backend = backend
         self._x509_req = x509_req
@@ -405,7 +274,7 @@ class _CertificateSigningRequest(object):
     def __hash__(self) -> int:
         return hash(self.public_bytes(serialization.Encoding.DER))
 
-    def public_key(self) -> _PUBLIC_KEY_TYPES:
+    def public_key(self) -> PUBLIC_KEY_TYPES:
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
         self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
@@ -539,63 +408,3 @@ class _CertificateSigningRequest(object):
         # that it is always a type of ASN1_STRING
         data = self._backend._ffi.cast("ASN1_STRING *", data)
         return _asn1_string_to_bytes(self._backend, data)
-
-
-@utils.register_interface(
-    x509.certificate_transparency.SignedCertificateTimestamp
-)
-class _SignedCertificateTimestamp(object):
-    def __init__(self, backend, sct_list, sct):
-        self._backend = backend
-        # Keep the SCT_LIST that this SCT came from alive.
-        self._sct_list = sct_list
-        self._sct = sct
-
-    @property
-    def version(self) -> x509.certificate_transparency.Version:
-        version = self._backend._lib.SCT_get_version(self._sct)
-        assert version == self._backend._lib.SCT_VERSION_V1
-        return x509.certificate_transparency.Version.v1
-
-    @property
-    def log_id(self) -> bytes:
-        out = self._backend._ffi.new("unsigned char **")
-        log_id_length = self._backend._lib.SCT_get0_log_id(self._sct, out)
-        assert log_id_length >= 0
-        return self._backend._ffi.buffer(out[0], log_id_length)[:]
-
-    @property
-    def timestamp(self) -> datetime.datetime:
-        timestamp = self._backend._lib.SCT_get_timestamp(self._sct)
-        milliseconds = timestamp % 1000
-        return datetime.datetime.utcfromtimestamp(timestamp // 1000).replace(
-            microsecond=milliseconds * 1000
-        )
-
-    @property
-    def entry_type(self) -> x509.certificate_transparency.LogEntryType:
-        entry_type = self._backend._lib.SCT_get_log_entry_type(self._sct)
-        # We currently only support loading SCTs from the X.509 extension, so
-        # we only have precerts.
-        assert entry_type == self._backend._lib.CT_LOG_ENTRY_TYPE_PRECERT
-        return x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
-
-    @property
-    def _signature(self):
-        ptrptr = self._backend._ffi.new("unsigned char **")
-        res = self._backend._lib.SCT_get0_signature(self._sct, ptrptr)
-        self._backend.openssl_assert(res > 0)
-        self._backend.openssl_assert(ptrptr[0] != self._backend._ffi.NULL)
-        return self._backend._ffi.buffer(ptrptr[0], res)[:]
-
-    def __hash__(self) -> int:
-        return hash(self._signature)
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, _SignedCertificateTimestamp):
-            return NotImplemented
-
-        return self._signature == other._signature
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other

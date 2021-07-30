@@ -15,15 +15,14 @@ from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 _OpenSSLErrorWithText = collections.namedtuple(
-    "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
+    "_OpenSSLErrorWithText", ["code", "lib", "reason", "reason_text"]
 )
 
 
 class _OpenSSLError(object):
-    def __init__(self, code, lib, func, reason):
+    def __init__(self, code, lib, reason):
         self._code = code
         self._lib = lib
-        self._func = func
         self._reason = reason
 
     def _lib_reason_match(self, lib, reason):
@@ -31,7 +30,6 @@ class _OpenSSLError(object):
 
     code = utils.read_only_property("_code")
     lib = utils.read_only_property("_lib")
-    func = utils.read_only_property("_func")
     reason = utils.read_only_property("_reason")
 
 
@@ -43,10 +41,9 @@ def _consume_errors(lib):
             break
 
         err_lib = lib.ERR_GET_LIB(code)
-        err_func = lib.ERR_GET_FUNC(code)
         err_reason = lib.ERR_GET_REASON(code)
 
-        errors.append(_OpenSSLError(code, err_lib, err_func, err_reason))
+        errors.append(_OpenSSLError(code, err_lib, err_reason))
 
     return errors
 
@@ -60,7 +57,7 @@ def _errors_with_text(errors):
 
         errors_with_text.append(
             _OpenSSLErrorWithText(
-                err.code, err.lib, err.func, err.reason, err_text_reason
+                err.code, err.lib, err.reason, err_text_reason
             )
         )
 
@@ -113,6 +110,8 @@ class Binding(object):
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
+    _legacy_provider: typing.Any = None
+    _default_provider: typing.Any = None
 
     def __init__(self):
         self._ensure_ffi_initialized()
@@ -140,6 +139,24 @@ class Binding(object):
                 # adds all ciphers/digests for EVP
                 cls.lib.OpenSSL_add_all_algorithms()
                 cls._register_osrandom_engine()
+                # As of OpenSSL 3.0.0 we must register a legacy cipher provider
+                # to get RC2 (needed for junk asymmetric private key
+                # serialization), RC4, Blowfish, IDEA, SEED, etc. These things
+                # are ugly legacy, but we aren't going to get rid of them
+                # any time soon.
+                if cls.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                    cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
+                        cls.ffi.NULL, b"legacy"
+                    )
+                    _openssl_assert(
+                        cls.lib, cls._legacy_provider != cls.ffi.NULL
+                    )
+                    cls._default_provider = cls.lib.OSSL_PROVIDER_load(
+                        cls.ffi.NULL, b"default"
+                    )
+                    _openssl_assert(
+                        cls.lib, cls._default_provider != cls.ffi.NULL
+                    )
 
     @classmethod
     def init_static_locks(cls):

@@ -6,13 +6,14 @@
 import abc
 import datetime
 import typing
-from enum import Enum
 
+from cryptography import utils
 from cryptography import x509
+from cryptography.hazmat.bindings._rust import ocsp
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.base import (
+    PRIVATE_KEY_TYPES,
     _EARLIEST_UTC_TIME,
-    _PRIVATE_KEY_TYPES,
     _convert_to_naive_utc_time,
     _reject_duplicate_extension,
 )
@@ -27,12 +28,12 @@ _OIDS_TO_HASH = {
 }
 
 
-class OCSPResponderEncoding(Enum):
+class OCSPResponderEncoding(utils.Enum):
     HASH = "By Hash"
     NAME = "By Name"
 
 
-class OCSPResponseStatus(Enum):
+class OCSPResponseStatus(utils.Enum):
     SUCCESSFUL = 0
     MALFORMED_REQUEST = 1
     INTERNAL_ERROR = 2
@@ -58,7 +59,7 @@ def _verify_algorithm(algorithm):
         )
 
 
-class OCSPCertStatus(Enum):
+class OCSPCertStatus(utils.Enum):
     GOOD = 0
     REVOKED = 1
     UNKNOWN = 2
@@ -312,7 +313,15 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
 
 class OCSPRequestBuilder(object):
-    def __init__(self, request=None, extensions=[]):
+    def __init__(
+        self,
+        request: typing.Optional[
+            typing.Tuple[
+                x509.Certificate, x509.Certificate, hashes.HashAlgorithm
+            ]
+        ] = None,
+        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+    ) -> None:
         self._request = request
         self._extensions = extensions
 
@@ -357,7 +366,13 @@ class OCSPRequestBuilder(object):
 
 class OCSPResponseBuilder(object):
     def __init__(
-        self, response=None, responder_id=None, certs=None, extensions=[]
+        self,
+        response: typing.Optional[_SingleResponse] = None,
+        responder_id: typing.Optional[
+            typing.Tuple[x509.Certificate, OCSPResponderEncoding]
+        ] = None,
+        certs: typing.Optional[typing.List[x509.Certificate]] = None,
+        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
     ):
         self._response = response
         self._responder_id = responder_id
@@ -449,7 +464,7 @@ class OCSPResponseBuilder(object):
 
     def sign(
         self,
-        private_key: _PRIVATE_KEY_TYPES,
+        private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
         from cryptography.hazmat.backends.openssl.backend import backend
@@ -480,9 +495,7 @@ class OCSPResponseBuilder(object):
 
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_der_ocsp_request(data)
+    return ocsp.load_der_ocsp_request(data)
 
 
 def load_der_ocsp_response(data: bytes) -> OCSPResponse:
