@@ -73,13 +73,13 @@ struct TbsCertificate<'a> {
 
 pub(crate) type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct AttributeTypeValue<'a> {
     pub(crate) type_id: asn1::ObjectIdentifier<'a>,
     pub(crate) value: asn1::Tlv<'a>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 enum Time {
     UtcTime(asn1::UtcTime),
     GeneralizedTime(asn1::GeneralizedTime),
@@ -537,6 +537,7 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
         raw,
         cached_extensions: None,
     })
+}
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_crl(
@@ -628,7 +629,7 @@ impl CertificateRevocationList {
         algorithm: pyo3::PyObject,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
-        let h = hashes_mod.call1("Hash", (algorithm,))?;
+        let h = hashes_mod.getattr("Hash")?.call1((algorithm,))?;
         h.call_method1("update", (self.public_bytes_der().as_slice(),))?;
         h.call_method0("finalize")
     }
@@ -712,18 +713,21 @@ impl CertificateRevocationList {
     #[getter]
     fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         match &self.raw.borrow_value().tbs_cert_list.next_update {
-            Some(Time::UtcTime(dt)) => chrono_to_py(py, dt.as_chrono()),
-            Some(Time::GeneralTime(dt)) => chrono_to_py(py, dt.as_chrono()),
+            Some(t) => chrono_to_py(py, t.as_chrono()),
             None => Ok(py.None().into_ref(py)),
         }
     }
 
     #[getter]
     fn last_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        match &self.raw.borrow_value().tbs_cert_list.this_update {
-            Time::UtcTime(dt) => chrono_to_py(py, dt.as_chrono()),
-            Time::GeneralTime(dt) => chrono_to_py(py, dt.as_chrono()),
-        }
+        chrono_to_py(
+            py,
+            self.raw
+                .borrow_value()
+                .tbs_cert_list
+                .this_update
+                .as_chrono(),
+        )
     }
 
     #[getter]
@@ -737,20 +741,28 @@ impl CertificateRevocationList {
                 if oid == &*CRL_NUMBER_OID {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
                     let pynum = big_asn1_uint_to_py(py, bignum)?;
-                    Ok(Some(x509_module.call1("CRLNumber", (pynum,))?))
+                    Ok(Some(x509_module.getattr("CRLNumber")?.call1((pynum,))?))
                 } else if oid == &*DELTA_CRL_INDICATOR_OID {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
                     let pynum = big_asn1_uint_to_py(py, bignum)?;
-                    Ok(Some(x509_module.call1("DeltaCRLIndicator", (pynum,))?))
+                    Ok(Some(
+                        x509_module.getattr("DeltaCRLIndicator")?.call1((pynum,))?,
+                    ))
                 } else if oid == &*ISSUER_ALTERNATIVE_NAME_OID {
                     let gn_seq =
                         asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(ext_data)?;
                     let ians = parse_general_names(py, gn_seq)?;
-                    Ok(Some(x509_module.call1("IssuerAlternativeName", (ians,))?))
+                    Ok(Some(
+                        x509_module
+                            .getattr("IssuerAlternativeName")?
+                            .call1((ians,))?,
+                    ))
                 } else if oid == &*AUTHORITY_INFORMATION_ACCESS_OID {
                     let ads = parse_access_descriptions(py, ext_data)?;
                     Ok(Some(
-                        x509_module.call1("AuthorityInformationAccess", (ads,))?,
+                        x509_module
+                            .getattr("AuthorityInformationAccess")?
+                            .call1((ads,))?,
                     ))
                 } else if oid == &*AUTHORITY_KEY_IDENTIFIER_OID {
                     Ok(Some(parse_authority_key_identifier(py, ext_data)?))
@@ -761,9 +773,8 @@ impl CertificateRevocationList {
                         None => (py.None(), py.None()),
                     };
                     let reasons = parse_distribution_point_reasons(py, idp.only_some_reasons)?;
-                    Ok(Some(x509_module.call1(
-                        "IssuingDistributionPoint",
-                        (
+                    Ok(Some(
+                        x509_module.getattr("IssuingDistributionPoint")?.call1((
                             full_name,
                             relative_name,
                             idp.only_contains_user_certs,
@@ -771,13 +782,14 @@ impl CertificateRevocationList {
                             reasons,
                             idp.indirect_crl,
                             idp.only_contains_attribute_certs,
-                        ),
-                    )?))
+                        ))?,
+                    ))
                 } else if oid == &*FRESHEST_CRL_OID {
-                    Ok(Some(x509_module.call1(
-                        "FreshestCRL",
-                        (parse_distribution_points(py, ext_data)?,),
-                    )?))
+                    Ok(Some(
+                        x509_module
+                            .getattr("FreshestCRL")?
+                            .call1((parse_distribution_points(py, ext_data)?,))?,
+                    ))
                 } else {
                     Ok(None)
                 }

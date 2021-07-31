@@ -12,7 +12,6 @@ asn1 = { version = "0.6", default-features = false, features = ["derive"] }
 pem = "0.8"
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
 ouroboros = "0.10"
-pem = "0.8"
 
 [features]
 extension-module = ["pyo3/extension-module"]
