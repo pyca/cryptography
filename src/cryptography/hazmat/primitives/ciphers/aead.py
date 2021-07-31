@@ -13,6 +13,9 @@ from cryptography.hazmat.backends.openssl.backend import backend
 
 class ChaCha20Poly1305(object):
     _MAX_SIZE = 2 ** 32
+    _KEY_LEN = 32
+    _NONCE_LEN = 12
+    _TAG_LENGTH = 16
 
     def __init__(self, key: bytes):
         if not backend.aead_cipher_supported(self):
@@ -22,14 +25,17 @@ class ChaCha20Poly1305(object):
             )
         utils._check_byteslike("key", key)
 
-        if len(key) != 32:
+        if len(key) != self._KEY_LEN:
             raise ValueError("ChaCha20Poly1305 key must be 32 bytes.")
 
+        self._cipher_name = aead._aead_cipher_name(self)
         self._key = key
+        self._decrypt_ctx = None
+        self._encrypt_ctx = None
 
     @classmethod
     def generate_key(cls) -> bytes:
-        return os.urandom(32)
+        return os.urandom(ChaCha20Poly1305._KEY_LEN)
 
     def encrypt(
         self,
@@ -37,6 +43,15 @@ class ChaCha20Poly1305(object):
         data: bytes,
         associated_data: typing.Optional[bytes],
     ) -> bytes:
+        if not self._encrypt_ctx:
+            self._encrypt_ctx = aead._aead_setup_with_fixed_nonce_len(
+                backend,
+                self._cipher_name,
+                self._key,
+                self._NONCE_LEN,
+                aead._ENCRYPT,
+            )
+
         if associated_data is None:
             associated_data = b""
 
@@ -47,7 +62,15 @@ class ChaCha20Poly1305(object):
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._encrypt_with_fixed_nonce_len(
+            backend,
+            self._encrypt_ctx,
+            self,
+            nonce,
+            data,
+            associated_data,
+            self._TAG_LENGTH,
+        )
 
     def decrypt(
         self,
@@ -55,11 +78,27 @@ class ChaCha20Poly1305(object):
         data: bytes,
         associated_data: typing.Optional[bytes],
     ) -> bytes:
+        if not self._decrypt_ctx:
+            self._decrypt_ctx = aead._aead_setup_with_fixed_nonce_len(
+                backend,
+                self._cipher_name,
+                self._key,
+                self._NONCE_LEN,
+                aead._DECRYPT,
+            )
+
         if associated_data is None:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._decrypt_with_fixed_nonce_len(
+            backend,
+            self._decrypt_ctx,
+            nonce,
+            data,
+            associated_data,
+            self._TAG_LENGTH,
+        )
 
     def _check_params(
         self,
@@ -70,7 +109,7 @@ class ChaCha20Poly1305(object):
         utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
-        if len(nonce) != 12:
+        if len(nonce) != self._NONCE_LEN:
             raise ValueError("Nonce must be 12 bytes")
 
 
