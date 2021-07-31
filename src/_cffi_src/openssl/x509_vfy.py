@@ -124,6 +124,18 @@ static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
 static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
 static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
 static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
+
+static const long X509_PURPOSE_SSL_CLIENT;
+static const long X509_PURPOSE_SSL_SERVER;
+static const long X509_PURPOSE_NS_SSL_SERVER;
+static const long X509_PURPOSE_SMIME_SIGN;
+static const long X509_PURPOSE_SMIME_ENCRYPT;
+static const long X509_PURPOSE_CRL_SIGN;
+static const long X509_PURPOSE_ANY;
+static const long X509_PURPOSE_OCSP_HELPER;
+static const long X509_PURPOSE_TIMESTAMP_SIGN;
+static const long X509_PURPOSE_MIN;
+static const long X509_PURPOSE_MAX;
 """
 
 FUNCTIONS = """
@@ -137,6 +149,7 @@ int X509_STORE_load_locations(X509_STORE *, const char *, const char *);
 int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
+int X509_STORE_set_purpose(X509_STORE *ctx, int purpose);
 void X509_STORE_free(X509_STORE *);
 
 /* X509_STORE_CTX */
