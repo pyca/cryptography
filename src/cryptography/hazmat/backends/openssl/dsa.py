@@ -58,10 +58,10 @@ class _DSAVerificationContext(AsymmetricVerificationContext):
 
         self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
-    def update(self, data):
+    def update(self, data: bytes):
         self._hash_ctx.update(data)
 
-    def verify(self):
+    def verify(self) -> None:
         data_to_verify = self._hash_ctx.finalize()
 
         _dsa_sig_verify(
@@ -282,7 +282,7 @@ class _DSAPublicKey(dsa.DSAPublicKey):
         signature: bytes,
         data: bytes,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
-    ):
+    ) -> None:
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend, data, algorithm
         )
