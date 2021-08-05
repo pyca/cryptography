@@ -16,6 +16,7 @@ jobs:
           - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
           - { VERSION: "pypy3.6", PATH: "/opt/pypy3.6/bin/pypy" }
           - { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
+          - { VERSION: "pyston3.8", PATH: "/opt/pyston2.3/pyston" }
         MANYLINUX:
           - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
