@@ -92,7 +92,7 @@ jobs:
       - name: Set CFLAGS/LDFLAGS
         run: |
           echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
-          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib" >> $GITHUB_ENV
+          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -L${OSSL_PATH}/lib64 -Wl,-rpath=${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
