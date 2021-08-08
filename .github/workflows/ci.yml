@@ -25,7 +25,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k"}}
           - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1k", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "3.0.0-beta1"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "3.0.0-beta2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
@@ -91,8 +91,8 @@ jobs:
         if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
-          echo "CFLAGS=${CFLAGS} -I${OSSL_PATH}/include" >> $GITHUB_ENV
-          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib" >> $GITHUB_ENV
+          echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration -I${OSSL_PATH}/include" >> $GITHUB_ENV
+          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -L${OSSL_PATH}/lib64 -Wl,-rpath=${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
