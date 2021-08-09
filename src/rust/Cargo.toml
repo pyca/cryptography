@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 lazy_static = "1"
-pyo3 = { version = "0.14.1" }
+pyo3 = { version = "0.14.2" }
 asn1 = { version = "0.6", default-features = false, features = ["derive"] }
 pem = "0.8"
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
