@@ -186,7 +186,9 @@ def test_rsa_check_key_paths(backend):
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        key = serialization.load_pem_private_key(data, password=None, backend=backend)
+        key = serialization.load_pem_private_key(
+            data, password=None, backend=backend
+        )
         assert key
     finally:
         backend._rsa_check_key = False
