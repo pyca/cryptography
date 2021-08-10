@@ -149,7 +149,7 @@ int X509_STORE_load_locations(X509_STORE *, const char *, const char *);
 int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
-int X509_STORE_set_purpose(X509_STORE *ctx, int purpose);
+int X509_STORE_set_purpose(X509_STORE *, int);
 void X509_STORE_free(X509_STORE *);
 
 /* X509_STORE_CTX */
