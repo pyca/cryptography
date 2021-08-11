@@ -158,42 +158,6 @@ jobs:
         with:
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
 
-  linux-arm64:
-    runs-on: [self-hosted, linux, ARM64]
-    container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
-    strategy:
-      fail-fast: false
-      matrix:
-        IMAGE:
-          - {IMAGE: "ubuntu-focal:aarch64", TOXENV: "py38"}
-    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-    timeout-minutes: 20
-    steps:
-      - name: "Delete workspace" # self-hosted runners need this, sigh
-        run: find ! -name '.' ! -name '..' -delete
-      - uses: actions/checkout@v2.3.4
-        with:
-          persist-credentials: false
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
-
-      - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
-      - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
-        env:
-          TOXENV: ${{ matrix.IMAGE.TOXENV }}
-          RUSTUP_HOME: /root/.rustup
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-      - uses: ./.github/actions/upload-coverage
-        with:
-          name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-
   linux-rust:
     runs-on: ubuntu-latest
     strategy:
