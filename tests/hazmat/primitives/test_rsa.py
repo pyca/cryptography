@@ -67,15 +67,6 @@ class DummyMGF(object):
     _salt_length = 0
 
 
-@pytest.fixture
-def disable_rsa_checks(backend):
-    # Use this fixture to skip RSA key checks in tests that need the
-    # performance.
-    backend._rsa_skip_check_key = True
-    yield
-    backend._rsa_skip_check_key = False
-
-
 def _check_fips_key_length(backend, private_key):
     if (
         backend._fips_enabled
