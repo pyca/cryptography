@@ -182,6 +182,7 @@ class Backend(BackendInterface):
         self._binding = binding.Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
+        self._rsa_skip_check_key = False
         self._fips_enabled = self._is_fips_enabled()
 
         self._cipher_registry = {}
@@ -507,7 +508,9 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
-        return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
+        return _RSAPrivateKey(
+            self, rsa_cdata, evp_pkey, self._rsa_skip_check_key
+        )
 
     def generate_rsa_parameters_supported(self, public_exponent, key_size):
         return (
@@ -546,7 +549,9 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
-        return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
+        return _RSAPrivateKey(
+            self, rsa_cdata, evp_pkey, self._rsa_skip_check_key
+        )
 
     def load_rsa_public_numbers(self, numbers):
         rsa._check_public_key_components(numbers.e, numbers.n)
@@ -620,7 +625,9 @@ class Backend(BackendInterface):
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             self.openssl_assert(rsa_cdata != self._ffi.NULL)
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
+            return _RSAPrivateKey(
+                self, rsa_cdata, evp_pkey, self._rsa_skip_check_key
+            )
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             self.openssl_assert(dsa_cdata != self._ffi.NULL)

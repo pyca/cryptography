@@ -402,7 +402,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5.",
     )
     @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
-    def test_pkcs1v15_signing(self, backend, subtests):
+    def test_pkcs1v15_signing(self, backend, disable_rsa_checks, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
@@ -1527,7 +1527,9 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_pkcs1v15_vectors(self, backend, subtests):
+    def test_decrypt_pkcs1v15_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
@@ -1650,7 +1652,9 @@ class TestRSADecryption(object):
             "Does not support OAEP using SHA224 MGF1 and SHA224 hash."
         ),
     )
-    def test_decrypt_oaep_sha2_vectors(self, backend, subtests):
+    def test_decrypt_oaep_sha2_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _build_oaep_sha2_vectors()
         for private, public, example, mgf1_alg, hash_alg in vectors:
             with subtests.test():

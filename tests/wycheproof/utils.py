@@ -3,7 +3,9 @@ from ..utils import load_wycheproof_tests
 
 def wycheproof_tests(*paths):
     def wrapper(func):
-        def run_wycheproof(backend, subtests, pytestconfig):
+        def run_wycheproof(
+            backend, disable_rsa_checks, subtests, pytestconfig
+        ):
             wycheproof_root = pytestconfig.getoption(
                 "--wycheproof-root", skip=True
             )

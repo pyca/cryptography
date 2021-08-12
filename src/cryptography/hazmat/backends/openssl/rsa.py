@@ -382,11 +382,17 @@ class _RSAVerificationContext(AsymmetricVerificationContext):
 
 
 class _RSAPrivateKey(RSAPrivateKey):
-    def __init__(self, backend, rsa_cdata, evp_pkey):
-        res = backend._lib.RSA_check_key(rsa_cdata)
-        if res != 1:
-            errors = backend._consume_errors_with_text()
-            raise ValueError("Invalid private key", errors)
+    def __init__(self, backend, rsa_cdata, evp_pkey, _skip_check_key):
+        # RSA_check_key is slower in OpenSSL 3.0.0 due to improved
+        # primality checking. In normal use this is unlikely to be a problem
+        # since users don't load new keys constantly, but for TESTING we've
+        # added an init arg that allows skipping the checks. You should not
+        # use this in production code unless you understand the consequences.
+        if not _skip_check_key:
+            res = backend._lib.RSA_check_key(rsa_cdata)
+            if res != 1:
+                errors = backend._consume_errors_with_text()
+                raise ValueError("Invalid private key", errors)
 
         # Blinding is on by default in many versions of OpenSSL, but let's
         # just be conservative here.
