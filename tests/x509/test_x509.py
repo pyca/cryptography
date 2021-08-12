@@ -4510,9 +4510,7 @@ class TestNameAttribute(object):
 
         # Nonstandard attribute OID
         na = x509.NameAttribute(NameOID.BUSINESS_CATEGORY, "banking")
-        assert (
-            na.rfc4514_string() == "2.5.4.15=banking"
-        )
+        assert na.rfc4514_string() == "2.5.4.15=banking"
 
     def test_empty_value(self):
         na = x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "")
