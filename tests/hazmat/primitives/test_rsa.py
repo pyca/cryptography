@@ -67,6 +67,15 @@ class DummyMGF(object):
     _salt_length = 0
 
 
+@pytest.fixture
+def disable_rsa_checks(backend):
+    # Use this fixture to skip RSA key checks in tests that need the
+    # performance.
+    backend._rsa_skip_check_key = True
+    yield
+    backend._rsa_skip_check_key = False
+
+
 def _check_fips_key_length(backend, private_key):
     if (
         backend._fips_enabled
@@ -169,29 +178,6 @@ def test_modular_inverse():
         "c20e67e48c31a611e98d32c6213ae4c4d7b53023b2f80c538",
         16,
     )
-
-
-def test_rsa_check_key_paths(backend):
-    # We turn off RSA key checks in testing for performance reasons,
-    # but we need to test the normal path with both a corrupt key and
-    # a valid one.
-    backend._rsa_check_key = True
-    try:
-        with pytest.raises(ValueError):
-            serialization.load_pem_private_key(
-                RSA_KEY_CORRUPTED, password=None, backend=backend
-            )
-        data = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        key = serialization.load_pem_private_key(
-            data, password=None, backend=backend
-        )
-        assert key
-    finally:
-        backend._rsa_check_key = False
 
 
 class TestRSA(object):
@@ -425,7 +411,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5.",
     )
     @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
-    def test_pkcs1v15_signing(self, backend, subtests):
+    def test_pkcs1v15_signing(self, backend, disable_rsa_checks, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
@@ -778,6 +764,12 @@ class TestRSASignature(object):
                 signature,
                 padding.PKCS1v15(),
                 prehashed_alg,  # type: ignore[arg-type]
+            )
+
+    def test_corrupted_private_key(self, backend):
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(
+                RSA_KEY_CORRUPTED, password=None, backend=backend
             )
 
 
@@ -1544,7 +1536,9 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_pkcs1v15_vectors(self, backend, subtests):
+    def test_decrypt_pkcs1v15_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
@@ -1667,7 +1661,9 @@ class TestRSADecryption(object):
             "Does not support OAEP using SHA224 MGF1 and SHA224 hash."
         ),
     )
-    def test_decrypt_oaep_sha2_vectors(self, backend, subtests):
+    def test_decrypt_oaep_sha2_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _build_oaep_sha2_vectors()
         for private, public, example, mgf1_alg, hash_alg in vectors:
             with subtests.test():
