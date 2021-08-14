@@ -126,10 +126,6 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
             p7, backend._ffi.NULL, store, msg_bio.bio, backend._ffi.NULL, flags
         )
     backend.openssl_assert(res == 1)
-    # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
-    # successfully load but errors are still put on the stack. Tracked
-    # as https://github.com/openssl/openssl/issues/14996
-    backend._consume_errors()
 
 
 def _load_cert_key():
