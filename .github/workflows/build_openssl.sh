@@ -28,10 +28,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
       # As of alpha16 we have to install it separately and enable it in the config flags
       make -j"$(nproc)" install_fips
       pushd "${OSSL_PATH}"
-      # TODO: remove if the build passes without it. install_fips probably does this now
-      # # generate FIPS config
-      # LD_LIBRARY_PATH="${OSSL_PATH}/lib" ./bin/openssl fipsinstall -out ssl/fipsmodule.cnf -module lib/ossl-modules/fips.so
-      # include the conf file we just generated
+      # include the conf file generated as part of install_fips
       sed -i "s:# .include fipsmodule.cnf:.include $(pwd)/ssl/fipsmodule.cnf:" ssl/openssl.cnf
       # uncomment the FIPS section
       sed -i 's:# fips = fips_sect:fips = fips_sect:' ssl/openssl.cnf

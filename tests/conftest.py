@@ -51,6 +51,8 @@ def disable_rsa_checks(backend):
 
 
 def enable_fips():
+    # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
+    # have the FIPS provider installed properly.
     openssl_backend._lib._base_provider = (
         openssl_backend._lib.OSSL_PROVIDER_load(
             openssl_backend._ffi.NULL, b"base"
