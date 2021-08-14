@@ -208,7 +208,7 @@ class Backend(BackendInterface):
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def __repr__(self):
-        return "backend: {}, FIPS: {}".format(
+        return "<OpenSSLBackend(version: {}, FIPS: {})>".format(
             self.openssl_version_text(), self._fips_enabled
         )
 
