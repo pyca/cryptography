@@ -153,6 +153,9 @@ except:  # noqa: E722
     # during PEP517 building and prints this text. setuptools raises SystemExit
     # when compilation fails right now, but it's possible this isn't stable
     # or a public API commitment so we'll remain ultra conservative.
+
+    import pkg_resources
+
     print(
         """
     =============================DEBUG ASSISTANCE=============================
@@ -166,6 +169,18 @@ except:  # noqa: E722
        https://cryptography.io/en/latest/faq.html
     4) Ensure you have a recent Rust toolchain installed:
        https://cryptography.io/en/latest/installation.html#rust
+    """
+    )
+    print(f"    Python: {'.'.join(str(v) for v in sys.version_info[:3])}")
+    print(f"    platform: {platform.platform()}")
+    for dist in ["pip", "setuptools", "setuptools_rust"]:
+        try:
+            version = pkg_resources.get_distribution(dist).version
+        except pkg_resources.DistributionNotFound:
+            version = "n/a"
+        print(f"    {dist}: {version}")
+    print(
+        """\
     =============================DEBUG ASSISTANCE=============================
     """
     )
