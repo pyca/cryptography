@@ -414,8 +414,11 @@ class BasicConstraints(ExtensionType):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
-        if path_length is not None and not ca:
-            raise ValueError("path_length must be None when ca is False")
+        try:
+            if path_length is not None and not ca:
+                raise ValueError("path_length must be None when ca is False")
+        except Exception as E:
+            print(E)
 
         if path_length is not None and (
             not isinstance(path_length, int) or path_length < 0
