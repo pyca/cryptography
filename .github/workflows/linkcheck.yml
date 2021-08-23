@@ -1,0 +1,32 @@
+name: "linkcheck"
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docs-linkcheck:
+    runs-on: ubuntu-latest
+    name: "linkcheck"
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - name: Setup python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - uses: actions-rs/toolchain@v1.0.7
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          default: true
+      - run: python -m pip install -U tox
+      - run: tox -r --  --color=yes
+        env:
+          TOXENV: docs-linkcheck
