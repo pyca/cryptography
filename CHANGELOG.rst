@@ -29,6 +29,14 @@ Changelog
 * Added ``rfc4514_attribute_name`` attribute to
   :attr:`x509.NameAttribute <cryptography.x509.NameAttribute.rfc4514_attribute_name>`,
 
+.. _v3-4-8:
+
+3.4.8 - 2021-08-24
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1l.
+
 .. _v3-4-7:
 
 3.4.7 - 2021-03-25
