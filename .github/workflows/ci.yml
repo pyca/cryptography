@@ -301,7 +301,6 @@ jobs:
         DOWNSTREAM:
           - paramiko
           - pyopenssl
-          - twisted
           - aws-encryption-sdk
           - dynamodb-encryption-sdk
           - certbot
