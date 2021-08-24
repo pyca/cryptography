@@ -18,6 +18,7 @@ Changelog
   accessed.
 * **BACKWARDS INCOMPATIBLE:** Values passed to the X.509 PEM parser must be
   a single PEM payload and will error on extraneous data.
+* Added support for OpenSSL 3.0.0 as a compilation target.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
