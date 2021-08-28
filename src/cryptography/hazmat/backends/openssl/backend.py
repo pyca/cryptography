@@ -231,18 +231,7 @@ class Backend(BackendInterface):
     def _enable_fips(self):
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
-        self.openssl_assert(self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
-        self._lib._base_provider = self._lib.OSSL_PROVIDER_load(
-            self._ffi.NULL, b"base"
-        )
-        self.openssl_assert(self._lib._base_provider != self._ffi.NULL)
-        self._lib._fips_provider = self._lib.OSSL_PROVIDER_load(
-            self._ffi.NULL, b"fips"
-        )
-        self.openssl_assert(self._lib._fips_provider != self._ffi.NULL)
-
-        res = self._lib.EVP_default_properties_enable_fips(self._ffi.NULL, 1)
-        self.openssl_assert(res == 1)
+        self._binding._enable_fips()
         assert self._is_fips_enabled()
         self._fips_enabled = self._is_fips_enabled()
 

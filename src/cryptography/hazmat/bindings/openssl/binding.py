@@ -116,6 +116,22 @@ class Binding(object):
     def __init__(self):
         self._ensure_ffi_initialized()
 
+    def _enable_fips(self):
+        # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
+        # have the FIPS provider installed properly.
+        _openssl_assert(self.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
+        self._base_provider = self.lib.OSSL_PROVIDER_load(
+            self.ffi.NULL, b"base"
+        )
+        _openssl_assert(self._base_provider != self.ffi.NULL)
+        self._lib._fips_provider = self._lib.OSSL_PROVIDER_load(
+            self.ffi.NULL, b"fips"
+        )
+        _openssl_assert(self.lib._fips_provider != self.ffi.NULL)
+
+        res = self.lib.EVP_default_properties_enable_fips(self.ffi.NULL, 1)
+        _openssl_assert(res == 1)
+
     @classmethod
     def _register_osrandom_engine(cls):
         # Clear any errors extant in the queue before we start. In many

@@ -10,12 +10,12 @@ from cryptography.hazmat.backends.openssl import backend as openssl_backend
 from .utils import check_backend_support
 
 
-def pytest_report_header(config):
-    # Performed in this function to enable it before any test collection
-    # and before the information about FIPS is printed
+def pytest_configure(config):
     if config.getoption("--enable-fips"):
-        openssl_backend._enable_fips()
+        openssl_backend._binding._enable_fips()
 
+
+def pytest_report_header(config):
     return "\n".join(
         [
             "OpenSSL: {}".format(openssl_backend.openssl_version_text()),
