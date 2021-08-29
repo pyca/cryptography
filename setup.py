@@ -8,7 +8,7 @@ import os
 import platform
 import sys
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 try:
     from setuptools_rust import RustExtension
