@@ -68,6 +68,8 @@ int PKCS7_final(PKCS7 *, BIO *, int);
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                  BIO *, int);
 PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
+/* Included due to external consumer, see
+   https://github.com/pyca/pyopenssl/issues/1031 */
 Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
                                                Cryptography_STACK_OF_X509 *,
                                                int);
