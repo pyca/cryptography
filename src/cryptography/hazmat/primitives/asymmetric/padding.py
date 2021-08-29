@@ -6,7 +6,9 @@
 import typing
 
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
+from cryptography.hazmat.primitives._asymmetric import (
+    AsymmetricPadding as AsymmetricPadding,
+)
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 

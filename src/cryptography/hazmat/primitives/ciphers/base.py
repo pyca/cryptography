@@ -16,7 +16,9 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend, CipherBackend
-from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
+from cryptography.hazmat.primitives._cipheralgorithm import (
+    CipherAlgorithm as CipherAlgorithm,
+)
 from cryptography.hazmat.primitives.ciphers import modes
 
 

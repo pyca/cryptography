@@ -18,8 +18,8 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     serialize_key_and_certificates,
 )
 
-from .utils import load_vectors_from_file
 from ...doubles import DummyKeySerializationEncryption
+from ...utils import load_vectors_from_file
 
 
 @pytest.mark.skip_fips(

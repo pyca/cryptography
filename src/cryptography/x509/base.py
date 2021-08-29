@@ -21,8 +21,8 @@ from cryptography.hazmat.primitives.asymmetric import (
     rsa,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
-    PRIVATE_KEY_TYPES,
-    PUBLIC_KEY_TYPES,
+    PRIVATE_KEY_TYPES as PRIVATE_KEY_TYPES,
+    PUBLIC_KEY_TYPES as PUBLIC_KEY_TYPES,
 )
 from cryptography.x509.extensions import Extension, ExtensionType, Extensions
 from cryptography.x509.name import Name

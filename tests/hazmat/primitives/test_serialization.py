@@ -43,9 +43,9 @@ from .test_ec import _skip_curve_unsupported
 from .utils import (
     _check_dsa_private_numbers,
     _check_rsa_private_numbers,
-    load_vectors_from_file,
 )
 from ...doubles import DummyKeySerializationEncryption
+from ...utils import load_vectors_from_file
 
 
 def _skip_fips_format(key_path, password, backend):
