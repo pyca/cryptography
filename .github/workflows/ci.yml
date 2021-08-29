@@ -23,7 +23,9 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
+          - {VERSION: "3.9", TOXENV: "flake", COVERAGE: "false"}
+          - {VERSION: "3.9", TOXENV: "rust", COVERAGE: "false"}
+          - {VERSION: "3.9", TOXENV: "docs", COVERAGE: "false"}
           - {VERSION: "pypy-3.6", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
