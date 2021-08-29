@@ -124,7 +124,7 @@ class Binding(object):
             self.ffi.NULL, b"base"
         )
         _openssl_assert(self._base_provider != self.ffi.NULL)
-        self._lib._fips_provider = self._lib.OSSL_PROVIDER_load(
+        self.lib._fips_provider = self.lib.OSSL_PROVIDER_load(
             self.ffi.NULL, b"fips"
         )
         _openssl_assert(self.lib._fips_provider != self.ffi.NULL)

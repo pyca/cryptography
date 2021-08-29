@@ -12,7 +12,7 @@ from .utils import check_backend_support
 
 def pytest_configure(config):
     if config.getoption("--enable-fips"):
-        openssl_backend._binding._enable_fips()
+        openssl_backend._enable_fips()
 
 
 def pytest_report_header(config):
