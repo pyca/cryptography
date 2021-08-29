@@ -244,4 +244,6 @@ __all__ = [
     "PrecertPoison",
     "OCSPNonce",
     "SignedCertificateTimestamps",
+    "SignatureAlgorithmOID",
+    "NameOID",
 ]
