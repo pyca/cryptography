@@ -34,18 +34,9 @@ src_dir = os.path.join(base_dir, "src")
 # means that we need to add the src/ directory to the sys.path.
 sys.path.insert(0, src_dir)
 
-about = {}
-with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
-
-with open(os.path.join(base_dir, "README.rst")) as f:
-    long_description = f.read()
-
-
 try:
     # See setup.cfg for most of the config metadata.
     setup(
-        long_description=long_description,
         cffi_modules=[
             "src/_cffi_src/build_openssl.py:ffi",
         ],
