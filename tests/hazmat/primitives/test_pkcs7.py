@@ -335,6 +335,9 @@ class TestPKCS7Builder(object):
     def test_sign_alternate_digests_der(
         self, hash_alg, expected_value, backend
     ):
+        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (
@@ -358,7 +361,12 @@ class TestPKCS7Builder(object):
             (hashes.SHA512(), b"sha-512"),
         ],
     )
-    def test_sign_alternate_digests_detached(self, hash_alg, expected_value):
+    def test_sign_alternate_digests_detached(
+        self, hash_alg, expected_value, backend
+    ):
+        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         data = b"hello world"
         cert, key = _load_cert_key()
         builder = (

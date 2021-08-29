@@ -10,6 +10,11 @@ from cryptography.hazmat.backends.openssl import backend as openssl_backend
 from .utils import check_backend_support
 
 
+def pytest_configure(config):
+    if config.getoption("--enable-fips"):
+        openssl_backend._enable_fips()
+
+
 def pytest_report_header(config):
     return "\n".join(
         [
@@ -21,6 +26,7 @@ def pytest_report_header(config):
 
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
+    parser.addoption("--enable-fips", default=False)
 
 
 def pytest_runtest_setup(item):
