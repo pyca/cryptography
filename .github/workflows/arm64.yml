@@ -41,8 +41,11 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
-      - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
-      - run: 'tox -- --wycheproof-root="$HOME/wycheproof"'
+      - uses: actions/checkout@v2.3.4
+        with:
+          repository: "google/wycheproof"
+          path: "wycheproof"
+      - run: 'tox -- --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
