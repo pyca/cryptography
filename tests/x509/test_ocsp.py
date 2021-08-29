@@ -819,6 +819,22 @@ class TestSignedCertificateTimestampsExtension(object):
         assert hash(sct1) == hash(sct2)
         assert hash(sct1) != hash(sct3)
 
+    def test_entry_type(self, backend):
+        [sct, _, _, _] = (
+            _load_data(
+                os.path.join("x509", "ocsp", "resp-sct-extension.der"),
+                ocsp.load_der_ocsp_response,
+            )
+            .single_extensions.get_extension_for_class(
+                x509.SignedCertificateTimestamps
+            )
+            .value
+        )
+        assert (
+            sct.entry_type
+            == x509.certificate_transparency.LogEntryType.X509_CERTIFICATE
+        )
+
 
 class TestOCSPResponse(object):
     def test_bad_response(self):
