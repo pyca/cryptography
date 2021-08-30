@@ -229,3 +229,10 @@ class GCM(Mode, ModeWithInitializationVector, ModeWithAuthenticationTag):
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
         _check_aes_key_length(self, algorithm)
+        block_size_bytes = algorithm.block_size // 8
+        if self._tag is not None and len(self._tag) > block_size_bytes:
+            raise ValueError(
+                "Authentication tag cannot be more than {} bytes.".format(
+                    block_size_bytes
+                )
+            )

@@ -333,6 +333,13 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")
 
     with pytest.raises(ValueError):
+        Cipher(
+            cipher_factory(binascii.unhexlify(b"0" * 32)),
+            mode_factory(binascii.unhexlify(b"0" * 24), b"toolong" * 12),
+            backend,
+        )
+
+    with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000000", 2)
 
     cipher = Cipher(

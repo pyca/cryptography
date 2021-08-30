@@ -238,10 +238,17 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
     def finalize_with_tag(self, tag: bytes) -> bytes:
-        if len(tag) < self._mode._min_tag_length:
+        tag_len = len(tag)
+        if tag_len < self._mode._min_tag_length:
             raise ValueError(
                 "Authentication tag must be {} bytes or longer.".format(
                     self._mode._min_tag_length
+                )
+            )
+        elif tag_len > self._block_size_bytes:
+            raise ValueError(
+                "Authentication tag cannot be more than {} bytes.".format(
+                    self._block_size_bytes
                 )
             )
         res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
