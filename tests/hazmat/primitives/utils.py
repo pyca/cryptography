@@ -18,11 +18,16 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm,
+    Cipher,
+    algorithms,
+)
 from cryptography.hazmat.primitives.ciphers.modes import GCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation,
+    KBKDFCMAC,
     KBKDFHMAC,
     Mode,
 )
@@ -411,8 +416,8 @@ def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
     return test_kbkdf
 
 
-def kbkdf_counter_mode_test(backend, params):
-    supported_algorithms: typing.Dict[
+def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, params):
+    supported_hash_algorithms: typing.Dict[
         str, typing.Type[hashes.HashAlgorithm]
     ] = {
         "hmac_sha1": hashes.SHA1,
@@ -422,24 +427,9 @@ def kbkdf_counter_mode_test(backend, params):
         "hmac_sha512": hashes.SHA512,
     }
 
-    supported_counter_locations = {
-        "before_fixed": CounterLocation.BeforeFixed,
-        "after_fixed": CounterLocation.AfterFixed,
-    }
-
-    algorithm = supported_algorithms.get(params.get("prf"))
-    if algorithm is None or not backend.hmac_supported(algorithm()):
-        pytest.skip(
-            "KBKDF does not support algorithm: {}".format(params.get("prf"))
-        )
-
-    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
-    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
-        pytest.skip(
-            "Does not support counter location: {}".format(
-                params.get("ctrlocation")
-            )
-        )
+    algorithm = supported_hash_algorithms.get(prf)
+    assert algorithm is not None
+    assert backend.hmac_supported(algorithm())
 
     ctrkdf = KBKDFHMAC(
         algorithm(),
@@ -456,6 +446,63 @@ def kbkdf_counter_mode_test(backend, params):
 
     ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
     assert binascii.hexlify(ko) == params["ko"]
+
+
+def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, params):
+    supported_cipher_algorithms: typing.Dict[
+        str, typing.Type[BlockCipherAlgorithm]
+    ] = {
+        "cmac_aes128": algorithms.AES,
+        "cmac_aes192": algorithms.AES,
+        "cmac_aes256": algorithms.AES,
+        "cmac_tdes2": algorithms.TripleDES,
+        "cmac_tdes3": algorithms.TripleDES,
+    }
+
+    algorithm = supported_cipher_algorithms.get(prf)
+    assert algorithm is not None
+
+    ctrkdf = KBKDFCMAC(
+        algorithm,
+        Mode.CounterMode,
+        params["l"] // 8,
+        params["rlen"] // 8,
+        None,
+        ctr_loc,
+        None,
+        None,
+        binascii.unhexlify(params["fixedinputdata"]),
+        backend=backend,
+    )
+
+    ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
+    assert binascii.hexlify(ko) == params["ko"]
+
+
+def kbkdf_counter_mode_test(backend, params):
+    supported_counter_locations = {
+        "before_fixed": CounterLocation.BeforeFixed,
+        "after_fixed": CounterLocation.AfterFixed,
+    }
+
+    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
+    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
+        pytest.skip(
+            "Does not support counter location: {}".format(
+                params.get("ctrlocation")
+            )
+        )
+    del params["ctrlocation"]
+
+    prf = params.get("prf")
+    assert prf is not None
+    assert isinstance(prf, str)
+    del params["prf"]
+    if prf.startswith("hmac"):
+        _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, params)
+    else:
+        assert prf.startswith("cmac")
+        _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, params)
 
 
 def generate_rsa_verification_test(

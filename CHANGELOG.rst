@@ -26,8 +26,9 @@ Changelog
   in regions where they may be required, and are not generally recommended.
 * We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
   and ``manylinux2014`` wheels.
-* Added ``rfc4514_attribute_name`` attribute to
-  :attr:`x509.NameAttribute <cryptography.x509.NameAttribute.rfc4514_attribute_name>`,
+* Added ``rfc4514_attribute_name`` attribute to :attr:`x509.NameAttribute
+  <cryptography.x509.NameAttribute.rfc4514_attribute_name>`.
+* Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`.
 
 .. _v3-4-8:
 
