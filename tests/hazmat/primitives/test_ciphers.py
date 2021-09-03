@@ -211,11 +211,10 @@ def test_invalid_backend():
 
 def test_invalid_gcm_algorithm():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-        cipher = ciphers.Cipher(
+        ciphers.Cipher(
             ARC4(b"\x00" * 16),
             modes.GCM(b"\x00" * 12),
         )
-        cipher.encryptor()
 
 
 @pytest.mark.supported(
