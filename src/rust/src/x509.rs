@@ -10,6 +10,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
 lazy_static::lazy_static! {
     static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
@@ -547,11 +548,11 @@ fn load_der_x509_crl(
     let raw = OwnedRawCertificateRevocationList::try_new(
         data.to_vec(),
         |data| asn1::parse_single(data),
-        |_| Ok(None),
+        // |_| Ok(None),
     )?;
 
     Ok(CertificateRevocationList {
-        raw,
+        raw: Arc::new(raw),
         cached_extensions: None,
     })
 }
@@ -575,15 +576,14 @@ struct OwnedRawCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
-
-    #[borrows(data)]
-    #[covariant]
-    sorted_crls: Option<Vec<RevokedCertificate<'this>>>,
+    // #[borrows(data)]
+    // #[covariant]
+    // sorted_crls: Option<Vec<RawRevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass]
 struct CertificateRevocationList {
-    raw: OwnedRawCertificateRevocationList,
+    raw: Arc<OwnedRawCertificateRevocationList>,
 
     cached_extensions: Option<pyo3::PyObject>,
 }
@@ -618,6 +618,17 @@ impl pyo3::class::basic::PyObjectProtocol for CertificateRevocationList {
         let mut hasher = DefaultHasher::new();
         self.raw.borrow_value().hash(&mut hasher);
         hasher.finish()
+    }
+}
+
+#[pyo3::prelude::pyproto]
+impl pyo3::PySequenceProtocol for CertificateRevocationList {
+    fn __len__(&self) -> usize {
+        self.raw
+            .borrow_value()
+            .tbs_cert_list
+            .revoked_certificates
+            .map_or(0, |v| v.len())
     }
 }
 
@@ -801,17 +812,37 @@ impl CertificateRevocationList {
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CertificateRevocationList {
     fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> CRLIterator {
-        CRLIterator {}
+        CRLIterator {
+            contents: OwnedCRLIteratorData::new(Arc::clone(&slf.raw), |v| {
+                v.borrow_value().tbs_cert_list.revoked_certificates.clone()
+            }),
+        }
     }
 }
 
+#[ouroboros::self_referencing]
+struct OwnedCRLIteratorData {
+    data: Arc<OwnedRawCertificateRevocationList>,
+    #[borrows(data)]
+    #[covariant]
+    value: Option<asn1::SequenceOf<'this, RawRevokedCertificate<'this>>>,
+}
+
 #[pyo3::prelude::pyclass]
-struct CRLIterator {}
+struct CRLIterator {
+    contents: OwnedCRLIteratorData,
+}
 
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CRLIterator {
-    fn __next__(slf: pyo3::pycell::PyRef<'p, Self>) -> Option<()> {
-        unimplemented!()
+    fn __next__(mut slf: pyo3::pycell::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
+        slf.contents.with_value_mut(|v| match v {
+            Some(v) => match v.next() {
+                Some(_) => Some(RevokedCertificate {}),
+                None => None,
+            },
+            None => None,
+        })
     }
 }
 
@@ -829,17 +860,20 @@ struct TBSCertList<'a> {
     issuer: Name<'a>,
     this_update: Time,
     next_update: Option<Time>,
-    revoked_certificates: Option<asn1::SequenceOf<'a, RevokedCertificate<'a>>>,
+    revoked_certificates: Option<asn1::SequenceOf<'a, RawRevokedCertificate<'a>>>,
     #[explicit(0)]
     crl_extensions: Option<Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
-struct RevokedCertificate<'a> {
+struct RawRevokedCertificate<'a> {
     user_certificate: asn1::BigUint<'a>,
     revocation_date: Time,
     crl_entry_extensions: Option<Extensions<'a>>,
 }
+
+#[pyo3::prelude::pyclass]
+struct RevokedCertificate {}
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
@@ -1854,6 +1888,7 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
     submod.add_class::<Certificate>()?;
     submod.add_class::<CertificateRevocationList>()?;
+    submod.add_class::<RevokedCertificate>()?;
     submod.add_class::<Sct>()?;
 
     Ok(submod)

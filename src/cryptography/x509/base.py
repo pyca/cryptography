@@ -215,6 +215,10 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
         """
 
 
+# Runtime isinstance checks need this since the rust class is not a subclass.
+RevokedCertificate.register(rust_x509.RevokedCertificate)
+
+
 class CertificateRevocationList(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_bytes(self, encoding: serialization.Encoding) -> bytes:
