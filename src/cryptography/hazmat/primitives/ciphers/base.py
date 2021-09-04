@@ -16,18 +16,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend, CipherBackend
-from cryptography.hazmat.primitives._cipheralgorithm import (
-    CipherAlgorithm as CipherAlgorithm,
-)
+from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
-
-
-class BlockCipherAlgorithm(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
-    def block_size(self) -> int:
-        """
-        The size of a block as an integer in bits (e.g. 64, 128).
-        """
 
 
 class CipherContext(metaclass=abc.ABCMeta):

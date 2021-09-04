@@ -168,12 +168,13 @@ class TestAESModeGCM(object):
 
         decryptor.finalize_with_tag(tag)
 
-    def test_gcm_tag_decrypt_finalize_tag_length(self, backend):
+    @pytest.mark.parametrize("tag", [b"tagtooshort", b"toolong" * 12])
+    def test_gcm_tag_decrypt_finalize_tag_length(self, tag, backend):
         decryptor = base.Cipher(
             algorithms.AES(b"0" * 16), modes.GCM(b"0" * 12), backend=backend
         ).decryptor()
         with pytest.raises(ValueError):
-            decryptor.finalize_with_tag(b"tagtooshort")
+            decryptor.finalize_with_tag(tag)
 
     def test_buffer_protocol(self, backend):
         data = bytearray(b"helloworld")

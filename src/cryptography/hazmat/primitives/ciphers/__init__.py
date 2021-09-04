@@ -3,13 +3,15 @@
 # for complete details.
 
 
+from cryptography.hazmat.primitives._cipheralgorithm import (
+    BlockCipherAlgorithm,
+    CipherAlgorithm,
+)
 from cryptography.hazmat.primitives.ciphers.base import (
     AEADCipherContext,
     AEADDecryptionContext,
     AEADEncryptionContext,
-    BlockCipherAlgorithm,
     Cipher,
-    CipherAlgorithm,
     CipherContext,
 )
 
