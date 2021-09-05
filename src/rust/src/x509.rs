@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use chrono::{Datelike, Timelike};
 use pyo3::conversion::ToPyObject;
 use pyo3::types::IntoPyDict;
@@ -548,7 +548,7 @@ fn load_der_x509_crl(
     let raw = OwnedRawCertificateRevocationList::try_new(
         data.to_vec(),
         |data| asn1::parse_single(data),
-        // |_| Ok(None),
+        |_| Ok(pyo3::once_cell::GILOnceCell::new()),
     )?;
 
     Ok(CertificateRevocationList {
@@ -576,9 +576,9 @@ struct OwnedRawCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
-    // #[borrows(data)]
-    // #[covariant]
-    // sorted_crls: Option<Vec<RawRevokedCertificate<'this>>>,
+    #[borrows(data)]
+    #[not_covariant]
+    sorted_revoked_certs: pyo3::once_cell::GILOnceCell<Vec<RawRevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass]
@@ -628,6 +628,7 @@ impl pyo3::PySequenceProtocol for CertificateRevocationList {
             .borrow_value()
             .tbs_cert_list
             .revoked_certificates
+            .as_ref()
             .map_or(0, |v| v.len())
     }
 }
@@ -806,6 +807,33 @@ impl CertificateRevocationList {
                 }
             },
         )
+    }
+
+    fn get_revoked_certificate_by_serial_number(
+        &self,
+        py: pyo3::Python<'_>,
+        serial: &pyo3::types::PyLong,
+    ) -> pyo3::PyResult<RevokedCertificate> {
+        self.raw.with(|s| {
+            let sorted_certs = s.sorted_revoked_certs.get_or_init(py, || {
+                let mut certs = s
+                    .value
+                    .tbs_cert_list
+                    .revoked_certificates
+                    .clone()
+                    .map_or_else(|| vec![], |v| v.collect());
+                certs.sort_by_key(|v| v.user_certificate.as_bytes());
+                certs
+            });
+
+            let serial_bytes = py_uint_to_big_endian_bytes(py, serial)?;
+            match sorted_certs
+                .binary_search_by(|probe| probe.user_certificate.as_bytes().cmp(&serial_bytes))
+            {
+                Ok(idx) => Ok(RevokedCertificate {}),
+                Err(_) => panic!(),
+            }
+        })
     }
 }
 

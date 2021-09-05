@@ -117,7 +117,7 @@ fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObj
         .to_object(py))
 }
 
-fn py_uint_to_big_endian_bytes<'p>(
+pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: &'p pyo3::types::PyLong,
 ) -> pyo3::PyResult<&'p [u8]> {
