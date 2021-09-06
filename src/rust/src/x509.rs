@@ -80,7 +80,7 @@ pub(crate) struct AttributeTypeValue<'a> {
     pub(crate) value: asn1::Tlv<'a>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 enum Time {
     UtcTime(asn1::UtcTime),
     GeneralizedTime(asn1::GeneralizedTime),
@@ -545,11 +545,8 @@ fn load_der_x509_crl(
     _py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
-    let raw = OwnedRawCertificateRevocationList::try_new(
-        data.to_vec(),
-        |data| asn1::parse_single(data),
-        |_| Ok(pyo3::once_cell::GILOnceCell::new()),
-    )?;
+    let raw =
+        OwnedRawCertificateRevocationList::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
 
     Ok(CertificateRevocationList {
         raw: Arc::new(raw),
@@ -576,9 +573,6 @@ struct OwnedRawCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
-    #[borrows(data)]
-    #[not_covariant]
-    sorted_revoked_certs: pyo3::once_cell::GILOnceCell<Vec<RawRevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass]
@@ -810,30 +804,27 @@ impl CertificateRevocationList {
     }
 
     fn get_revoked_certificate_by_serial_number(
-        &self,
+        &mut self,
         py: pyo3::Python<'_>,
         serial: &pyo3::types::PyLong,
-    ) -> pyo3::PyResult<RevokedCertificate> {
-        self.raw.with(|s| {
-            let sorted_certs = s.sorted_revoked_certs.get_or_init(py, || {
-                let mut certs = s
-                    .value
-                    .tbs_cert_list
-                    .revoked_certificates
-                    .clone()
-                    .map_or_else(|| vec![], |v| v.collect());
-                certs.sort_by_key(|v| v.user_certificate.as_bytes());
-                certs
-            });
-
-            let serial_bytes = py_uint_to_big_endian_bytes(py, serial)?;
-            match sorted_certs
-                .binary_search_by(|probe| probe.user_certificate.as_bytes().cmp(&serial_bytes))
-            {
-                Ok(idx) => Ok(RevokedCertificate {}),
-                Err(_) => panic!(),
+    ) -> pyo3::PyResult<Option<RevokedCertificate>> {
+        let serial_bytes = py_uint_to_big_endian_bytes(py, serial)?;
+        let owned = OwnedRawRevokedCertificate::try_new(Arc::clone(&self.raw), |v| {
+            let certs = match v.borrow_value().tbs_cert_list.revoked_certificates.clone() {
+                Some(certs) => certs,
+                None => return Err(()),
+            };
+            for cert in certs {
+                if serial_bytes == cert.user_certificate.as_bytes() {
+                    return Ok(cert);
+                }
             }
-        })
+            return Err(());
+        });
+        match owned {
+            Ok(o) => Ok(Some(RevokedCertificate { raw: o })),
+            Err(_) => Ok(None),
+        }
     }
 }
 
@@ -866,7 +857,7 @@ impl pyo3::PyIterProtocol<'_> for CRLIterator {
     fn __next__(mut slf: pyo3::pycell::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
         slf.contents.with_value_mut(|v| match v {
             Some(v) => match v.next() {
-                Some(_) => Some(RevokedCertificate {}),
+                Some(_) => Some(RevokedCertificate::new()),
                 None => None,
             },
             None => None,
@@ -893,15 +884,33 @@ struct TBSCertList<'a> {
     crl_extensions: Option<Extensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 struct RawRevokedCertificate<'a> {
     user_certificate: asn1::BigUint<'a>,
     revocation_date: Time,
     crl_entry_extensions: Option<Extensions<'a>>,
 }
 
+#[ouroboros::self_referencing]
+struct OwnedRawRevokedCertificate {
+    data: Arc<OwnedRawCertificateRevocationList>,
+    #[borrows(data)]
+    #[covariant]
+    value: RawRevokedCertificate<'this>,
+}
+
 #[pyo3::prelude::pyclass]
-struct RevokedCertificate {}
+struct RevokedCertificate {
+    raw: OwnedRawRevokedCertificate,
+}
+
+#[pyo3::prelude::pymethods]
+impl RevokedCertificate {
+    #[getter]
+    fn serial_number(&self) -> pyo3::PyResult<&pyo3::PyAny> {
+        unimplemented!("serial_number")
+    }
+}
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
