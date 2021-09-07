@@ -16,10 +16,11 @@ Supported platforms
 Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.1 on these
 operating systems.
 
-* x86-64 & AArch64 CentOS 8.x
+* x86-64 CentOS 8.x
 * x86-64 Fedora (latest)
 * x86-64 macOS 10.15 Catalina
-* x86-64 & AArch64 Ubuntu 18.04, 20.04
+* x86-64 Ubuntu 18.04, 20.04
+* AArch64 Ubuntu 20.04
 * x86-64 Ubuntu rolling
 * x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), and Sid
   (unstable)
@@ -31,6 +32,7 @@ OpenSSL releases:
 
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
+* ``OpenSSL 3.0-latest``
 
 
 Building cryptography on Windows
