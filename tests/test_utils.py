@@ -4450,4 +4450,6 @@ def test_raises_unsupported_algorithm():
 
 def test_inspect_deprecated_module():
     # Check if inspection is supported by _ModuleWithDeprecations.
-    assert inspect.getsourcefile(cryptography.utils).endswith("utils.py")
+    source_file = inspect.getsourcefile(cryptography.utils)
+    assert isinstance(source_file, str)
+    assert source_file.endswith("utils.py")
