@@ -140,6 +140,8 @@ class ExtendedKeyUsageOID(object):
     TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
     OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
     ANY_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37.0")
+    SMARTCARD_LOGON = ObjectIdentifier("1.3.6.1.4.1.311.20.2.2")
+    KERBEROS_PKINIT_KDC = ObjectIdentifier("1.3.6.1.5.2.3.5")
 
 
 class AuthorityInformationAccessOID(object):
@@ -225,6 +227,8 @@ _OID_NAMES = {
     ExtendedKeyUsageOID.EMAIL_PROTECTION: "emailProtection",
     ExtendedKeyUsageOID.TIME_STAMPING: "timeStamping",
     ExtendedKeyUsageOID.OCSP_SIGNING: "OCSPSigning",
+    ExtendedKeyUsageOID.SMARTCARD_LOGON: "msSmartcardLogin",
+    ExtendedKeyUsageOID.KERBEROS_PKINIT_KDC: "pkInitKDC",
     ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
     ExtensionOID.KEY_USAGE: "keyUsage",
