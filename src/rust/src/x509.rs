@@ -294,7 +294,7 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
         let sig_oids_to_hash = py
-            .import("cryptography.x509")?
+            .import("cryptography.hazmat._oid")?
             .getattr("_SIG_OIDS_TO_HASH")?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
