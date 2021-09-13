@@ -7,6 +7,7 @@ import abc
 import enum
 import inspect
 import sys
+import types
 import typing
 import warnings
 
@@ -113,8 +114,9 @@ class _DeprecatedValue(object):
         self.warning_class = warning_class
 
 
-class _ModuleWithDeprecations(object):
+class _ModuleWithDeprecations(types.ModuleType):
     def __init__(self, module):
+        super().__init__(module.__name__)
         self.__dict__["_module"] = module
 
     def __getattr__(self, attr):

@@ -4,6 +4,7 @@
 
 
 import binascii
+import inspect
 import os
 import textwrap
 
@@ -12,6 +13,7 @@ import pretend
 import pytest
 
 import cryptography
+import cryptography.utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 import cryptography_vectors
@@ -4444,3 +4446,13 @@ def test_raises_unsupported_algorithm():
             "An error.", _Reasons.BACKEND_MISSING_INTERFACE
         )
     assert exc_info.type is UnsupportedAlgorithm
+
+
+def test_inspect_deprecated_module():
+    # Check if inspection is supported by _ModuleWithDeprecations.
+    assert isinstance(
+        cryptography.utils, cryptography.utils._ModuleWithDeprecations
+    )
+    source_file = inspect.getsourcefile(cryptography.utils)
+    assert isinstance(source_file, str)
+    assert source_file.endswith("utils.py")
