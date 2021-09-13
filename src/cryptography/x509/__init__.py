@@ -93,7 +93,6 @@ from cryptography.x509.oid import (
     NameOID,
     ObjectIdentifier,
     SignatureAlgorithmOID,
-    _SIG_OIDS_TO_HASH,
 )
 
 
@@ -231,7 +230,6 @@ __all__ = [
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
     "Version",
-    "_SIG_OIDS_TO_HASH",
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",
