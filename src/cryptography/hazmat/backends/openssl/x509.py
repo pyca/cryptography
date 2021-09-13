@@ -10,6 +10,7 @@ import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat._oid import _SIG_OIDS_TO_HASH
 from cryptography.hazmat.backends.openssl import dsa, ec, rsa
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _asn1_integer_to_int,
@@ -131,7 +132,7 @@ class _CertificateRevocationList(x509.CertificateRevocationList):
     ) -> typing.Optional[hashes.HashAlgorithm]:
         oid = self.signature_algorithm_oid
         try:
-            return x509._SIG_OIDS_TO_HASH[oid]
+            return _SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{} not recognized".format(oid)
@@ -292,7 +293,7 @@ class _CertificateSigningRequest(x509.CertificateSigningRequest):
     ) -> typing.Optional[hashes.HashAlgorithm]:
         oid = self.signature_algorithm_oid
         try:
-            return x509._SIG_OIDS_TO_HASH[oid]
+            return _SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{} not recognized".format(oid)

@@ -14,6 +14,7 @@ import pretend
 import pytest
 
 from cryptography import x509
+from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
@@ -25,7 +26,6 @@ from cryptography.x509.oid import (
     NameOID,
     ObjectIdentifier,
     SubjectInformationAccessOID,
-    _OID_NAMES,
 )
 
 from .test_x509 import _load_cert

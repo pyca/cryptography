@@ -7,6 +7,7 @@ import typing
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat._oid import _SIG_OIDS_TO_HASH
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_CODE_TO_ENUM,
     _asn1_integer_to_int,
@@ -141,7 +142,7 @@ class _OCSPResponse(OCSPResponse):
         self._requires_successful_response()
         oid = self.signature_algorithm_oid
         try:
-            return x509._SIG_OIDS_TO_HASH[oid]
+            return _SIG_OIDS_TO_HASH[oid]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{} not recognized".format(oid)
