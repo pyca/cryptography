@@ -20,6 +20,10 @@ from cryptography.hazmat.primitives.serialization.base import (
     load_pem_private_key,
     load_pem_public_key,
 )
+from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    load_key_and_certificates,
+    serialize_key_and_certificates,
+)
 from cryptography.hazmat.primitives.serialization.ssh import (
     load_ssh_private_key,
     load_ssh_public_key,
