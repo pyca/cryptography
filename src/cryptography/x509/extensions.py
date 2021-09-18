@@ -120,6 +120,11 @@ class Extensions(object):
     ) -> None:
         self._extensions = list(extensions)
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def get_extension_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> "Extension[ExtensionType]":
+  =======
   <<<<<<< circleci-project-setup
     def get_extension_for_oid(
         self, oid: ObjectIdentifier
@@ -127,18 +132,25 @@ class Extensions(object):
   =======
     def get_extension_for_oid(self, oid: ObjectIdentifier) -> "Extension":
   >>>>>>> 3.4.x
+  >>>>>>> 3.4.x
         for ext in self:
             if ext.oid == oid:
                 return ext
 
         raise ExtensionNotFound("No {} extension was found".format(oid), oid)
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def get_extension_for_class(
+        self, extclass: typing.Type[ExtensionTypeVar]
+    ) -> "Extension[ExtensionTypeVar]":
+  =======
   <<<<<<< circleci-project-setup
     def get_extension_for_class(
         self, extclass: typing.Type[ExtensionTypeVar]
     ) -> "Extension[ExtensionTypeVar]":
   =======
     def get_extension_for_class(self, extclass) -> "Extension":
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if extclass is UnrecognizedExtension:
             raise TypeError(
@@ -164,10 +176,14 @@ class Extensions(object):
 class CRLNumber(ExtensionType):
     oid = ExtensionOID.CRL_NUMBER
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, crl_number: int) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, crl_number: int) -> None:
   =======
     def __init__(self, crl_number: int):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
@@ -202,10 +218,14 @@ class AuthorityKeyIdentifier(ExtensionType):
         key_identifier: typing.Optional[bytes],
         authority_cert_issuer: typing.Optional[typing.Iterable[GeneralName]],
         authority_cert_serial_number: typing.Optional[int],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if (authority_cert_issuer is None) != (
             authority_cert_serial_number is None
@@ -304,10 +324,14 @@ class AuthorityKeyIdentifier(ExtensionType):
 class SubjectKeyIdentifier(ExtensionType):
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, digest: bytes) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, digest: bytes) -> None:
   =======
     def __init__(self, digest: bytes):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         self._digest = digest
 
@@ -320,11 +344,19 @@ class SubjectKeyIdentifier(ExtensionType):
     @property
     def digest(self) -> bytes:
         return self._digest
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
 
     @property
     def key_identifier(self) -> bytes:
         return self._digest
 
+  =======
+
+    @property
+    def key_identifier(self) -> bytes:
+        return self._digest
+
+  >>>>>>> 3.4.x
     def __repr__(self) -> str:
         return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
 
@@ -344,12 +376,18 @@ class SubjectKeyIdentifier(ExtensionType):
 class AuthorityInformationAccess(ExtensionType):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(
+        self, descriptions: typing.Iterable["AccessDescription"]
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(
         self, descriptions: typing.Iterable["AccessDescription"]
     ) -> None:
   =======
     def __init__(self, descriptions: typing.Iterable["AccessDescription"]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
@@ -381,12 +419,18 @@ class AuthorityInformationAccess(ExtensionType):
 class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(
+        self, descriptions: typing.Iterable["AccessDescription"]
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(
         self, descriptions: typing.Iterable["AccessDescription"]
     ) -> None:
   =======
     def __init__(self, descriptions: typing.Iterable["AccessDescription"]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
@@ -418,10 +462,14 @@ class SubjectInformationAccess(ExtensionType):
 class AccessDescription(object):
     def __init__(
         self, access_method: ObjectIdentifier, access_location: GeneralName
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(access_method, ObjectIdentifier):
             raise TypeError("access_method must be an ObjectIdentifier")
@@ -465,10 +513,14 @@ class AccessDescription(object):
 class BasicConstraints(ExtensionType):
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, ca: bool, path_length: typing.Optional[int]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, ca: bool, path_length: typing.Optional[int]) -> None:
   =======
     def __init__(self, ca: bool, path_length: typing.Optional[int]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
@@ -489,11 +541,19 @@ class BasicConstraints(ExtensionType):
     @property
     def ca(self) -> bool:
         return self._ca
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
 
     @property
     def path_length(self) -> typing.Optional[int]:
         return self._path_length
 
+  =======
+
+    @property
+    def path_length(self) -> typing.Optional[int]:
+        return self._path_length
+
+  >>>>>>> 3.4.x
     def __repr__(self) -> str:
         return (
             "<BasicConstraints(ca={0.ca}, " "path_length={0.path_length})>"
@@ -515,10 +575,14 @@ class BasicConstraints(ExtensionType):
 class DeltaCRLIndicator(ExtensionType):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, crl_number: int) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, crl_number: int) -> None:
   =======
     def __init__(self, crl_number: int):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(crl_number, int):
             raise TypeError("crl_number must be an integer")
@@ -550,10 +614,14 @@ class CRLDistributionPoints(ExtensionType):
 
     def __init__(
         self, distribution_points: typing.Iterable["DistributionPoint"]
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         distribution_points = list(distribution_points)
         if not all(
@@ -591,10 +659,14 @@ class FreshestCRL(ExtensionType):
 
     def __init__(
         self, distribution_points: typing.Iterable["DistributionPoint"]
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         distribution_points = list(distribution_points)
         if not all(
@@ -634,10 +706,14 @@ class DistributionPoint(object):
         relative_name: typing.Optional[RelativeDistinguishedName],
         reasons: typing.Optional[typing.FrozenSet["ReasonFlags"]],
         crl_issuer: typing.Optional[typing.Iterable[GeneralName]],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if full_name and relative_name:
             raise ValueError(
@@ -766,10 +842,14 @@ class PolicyConstraints(ExtensionType):
         self,
         require_explicit_policy: typing.Optional[int],
         inhibit_policy_mapping: typing.Optional[int],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if require_explicit_policy is not None and not isinstance(
             require_explicit_policy, int
@@ -831,10 +911,14 @@ class PolicyConstraints(ExtensionType):
 class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, policies: typing.Iterable["PolicyInformation"]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, policies: typing.Iterable["PolicyInformation"]) -> None:
   =======
     def __init__(self, policies: typing.Iterable["PolicyInformation"]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
@@ -870,10 +954,14 @@ class PolicyInformation(object):
         policy_qualifiers: typing.Optional[
             typing.Iterable[typing.Union[str, "UserNotice"]]
         ],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(policy_identifier, ObjectIdentifier):
             raise TypeError("policy_identifier must be an ObjectIdentifier")
@@ -936,10 +1024,14 @@ class UserNotice(object):
         self,
         notice_reference: typing.Optional["NoticeReference"],
         explicit_text: typing.Optional[str],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if notice_reference and not isinstance(
             notice_reference, NoticeReference
@@ -986,10 +1078,14 @@ class NoticeReference(object):
         self,
         organization: typing.Optional[str],
         notice_numbers: typing.Iterable[int],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         self._organization = organization
         notice_numbers = list(notice_numbers)
@@ -1031,10 +1127,14 @@ class NoticeReference(object):
 class ExtendedKeyUsage(ExtensionType):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, usages: typing.Iterable[ObjectIdentifier]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, usages: typing.Iterable[ObjectIdentifier]) -> None:
   =======
     def __init__(self, usages: typing.Iterable[ObjectIdentifier]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         usages = list(usages)
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
@@ -1103,10 +1203,14 @@ class PrecertPoison(ExtensionType):
 class TLSFeature(ExtensionType):
     oid = ExtensionOID.TLS_FEATURE
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, features: typing.Iterable["TLSFeatureType"]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, features: typing.Iterable["TLSFeatureType"]) -> None:
   =======
     def __init__(self, features: typing.Iterable["TLSFeatureType"]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         features = list(features)
         if (
@@ -1155,10 +1259,14 @@ _TLS_FEATURE_TYPE_TO_ENUM = {x.value: x for x in TLSFeatureType}
 class InhibitAnyPolicy(ExtensionType):
     oid = ExtensionOID.INHIBIT_ANY_POLICY
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, skip_certs: int) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, skip_certs: int) -> None:
   =======
     def __init__(self, skip_certs: int):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(skip_certs, int):
             raise TypeError("skip_certs must be an integer")
@@ -1202,10 +1310,14 @@ class KeyUsage(ExtensionType):
         crl_sign: bool,
         encipher_only: bool,
         decipher_only: bool,
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not key_agreement and (encipher_only or decipher_only):
             raise ValueError(
@@ -1242,6 +1354,7 @@ class KeyUsage(ExtensionType):
     @property
     def key_agreement(self) -> bool:
         return self._key_agreement
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
 
     @property
     def key_cert_sign(self) -> bool:
@@ -1252,6 +1365,18 @@ class KeyUsage(ExtensionType):
         return self._crl_sign
 
     @property
+  =======
+
+    @property
+    def key_cert_sign(self) -> bool:
+        return self._key_cert_sign
+
+    @property
+    def crl_sign(self) -> bool:
+        return self._crl_sign
+
+    @property
+  >>>>>>> 3.4.x
     def encipher_only(self) -> bool:
         if not self.key_agreement:
             raise ValueError(
@@ -1332,10 +1457,14 @@ class NameConstraints(ExtensionType):
         self,
         permitted_subtrees: typing.Optional[typing.Iterable[GeneralName]],
         excluded_subtrees: typing.Optional[typing.Iterable[GeneralName]],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
@@ -1427,16 +1556,22 @@ class NameConstraints(ExtensionType):
         return self._excluded_subtrees
 
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
+  >>>>>>> 3.4.x
 class Extension(typing.Generic[ExtensionTypeVar]):
     def __init__(
         self, oid: ObjectIdentifier, critical: bool, value: ExtensionTypeVar
     ) -> None:
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   =======
 class Extension(object):
     def __init__(
         self, oid: ObjectIdentifier, critical: bool, value: ExtensionType
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -1457,11 +1592,19 @@ class Extension(object):
     @property
     def critical(self) -> bool:
         return self._critical
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
 
     @property
     def value(self) -> ExtensionTypeVar:
         return self._value
 
+  =======
+
+    @property
+    def value(self) -> ExtensionTypeVar:
+        return self._value
+
+  >>>>>>> 3.4.x
     def __repr__(self) -> str:
         return (
             "<Extension(oid={0.oid}, critical={0.critical}, "
@@ -1486,10 +1629,14 @@ class Extension(object):
 
 
 class GeneralNames(object):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
   =======
     def __init__(self, general_names: typing.Iterable[GeneralName]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
@@ -1502,7 +1649,10 @@ class GeneralNames(object):
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
+  >>>>>>> 3.4.x
     @typing.overload
     def get_values_for_type(
         self,
@@ -1558,8 +1708,11 @@ class GeneralNames(object):
         typing.List[Name],
         typing.List[ObjectIdentifier],
     ]:
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   =======
     def get_values_for_type(self, type: typing.Type[GeneralName]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         # Return the value of each GeneralName, except for OtherName instances
         # which we return directly because it has two important properties not
@@ -1588,10 +1741,14 @@ class GeneralNames(object):
 class SubjectAlternativeName(ExtensionType):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
   =======
     def __init__(self, general_names: typing.Iterable[GeneralName]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         self._general_names = GeneralNames(general_names)
 
@@ -1673,10 +1830,14 @@ class SubjectAlternativeName(ExtensionType):
 class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
   =======
     def __init__(self, general_names: typing.Iterable[GeneralName]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         self._general_names = GeneralNames(general_names)
 
@@ -1758,10 +1919,14 @@ class IssuerAlternativeName(ExtensionType):
 class CertificateIssuer(ExtensionType):
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
   =======
     def __init__(self, general_names: typing.Iterable[GeneralName]):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         self._general_names = GeneralNames(general_names)
 
@@ -1843,10 +2008,14 @@ class CertificateIssuer(ExtensionType):
 class CRLReason(ExtensionType):
     oid = CRLEntryExtensionOID.CRL_REASON
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, reason: ReasonFlags) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, reason: ReasonFlags) -> None:
   =======
     def __init__(self, reason: ReasonFlags):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(reason, ReasonFlags):
             raise TypeError("reason must be an element from ReasonFlags")
@@ -1876,10 +2045,14 @@ class CRLReason(ExtensionType):
 class InvalidityDate(ExtensionType):
     oid = CRLEntryExtensionOID.INVALIDITY_DATE
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, invalidity_date: datetime.datetime) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, invalidity_date: datetime.datetime) -> None:
   =======
     def __init__(self, invalidity_date: datetime.datetime):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(invalidity_date, datetime.datetime):
             raise TypeError("invalidity_date must be a datetime.datetime")
@@ -1916,10 +2089,14 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
         signed_certificate_timestamps: typing.Iterable[
             SignedCertificateTimestamp
         ],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
@@ -1965,10 +2142,14 @@ class SignedCertificateTimestamps(ExtensionType):
         signed_certificate_timestamps: typing.Iterable[
             SignedCertificateTimestamp
         ],
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    ) -> None:
+  =======
   <<<<<<< circleci-project-setup
     ) -> None:
   =======
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
@@ -2007,10 +2188,14 @@ class SignedCertificateTimestamps(ExtensionType):
 class OCSPNonce(ExtensionType):
     oid = OCSPExtensionOID.NONCE
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, nonce: bytes) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, nonce: bytes) -> None:
   =======
     def __init__(self, nonce: bytes):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(nonce, bytes):
             raise TypeError("nonce must be bytes")
@@ -2198,10 +2383,14 @@ class IssuingDistributionPoint(ExtensionType):
 
 
 class UnrecognizedExtension(ExtensionType):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
   =======
     def __init__(self, oid: ObjectIdentifier, value: bytes):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError("oid must be an ObjectIdentifier")

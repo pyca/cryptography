@@ -21,10 +21,18 @@ __summary__ = (
 )
 __uri__ = "https://github.com/pyca/cryptography"
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  <<<<<<< 3.1.x
+__version__ = "3.1.1"
+  =======
+__version__ = "35.0.0.dev1"
+  >>>>>>> dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
 __version__ = "35.0.0.dev1"
   =======
 __version__ = "3.4.6"
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
 
 __author__ = "The Python Cryptographic Authority and individual contributors"

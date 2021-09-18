@@ -1,7 +1,12 @@
 Changelog
 =========
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  <<<<<<< 3.1.x
+  =======
+  =======
   <<<<<<< circleci-project-setup
+  >>>>>>> 3.4.x
 .. _v35-0-0:
 
 35.0.0 - `main`_
@@ -14,8 +19,22 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+* We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
+  and ``manylinux2014`` wheels.
+
+.. _v3-4-7:
+
+3.4.7 - 2021-03-25
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1k.
 
   =======
+
+  =======
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
 .. _v3-4-6:
 
@@ -164,6 +183,7 @@ Changelog
 * Added basic support for PKCS7 signing (including SMIME) via
   :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`.
 
+  >>>>>>> dependabot/github_actions/actions/upload-artifact-v2.2.2
 .. _v3-1-1:
 
 3.1.1 - 2020-09-22

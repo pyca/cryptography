@@ -49,6 +49,8 @@ def register_interface(iface):
     return register_decorator
 
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
   =======
 def register_interface_if(predicate, iface):
@@ -61,6 +63,7 @@ def register_interface_if(predicate, iface):
     return register_decorator
 
 
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     return integer.to_bytes(

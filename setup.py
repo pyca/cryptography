@@ -44,6 +44,8 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 setuptools_rust = "setuptools-rust>=0.11.4"
 install_requirements = ["cffi>=1.12"]
 setup_requirements = install_requirements + [setuptools_rust]
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
   =======
 
@@ -64,6 +66,7 @@ else:
             rust_version=">=1.41.0",
         )
     ]
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
 
 with open(os.path.join(base_dir, "README.rst")) as f:
@@ -187,10 +190,13 @@ except:  # noqa: E722
        https://cryptography.io/en/latest/faq.html
     4) Ensure you have a recent Rust toolchain installed:
        https://cryptography.io/en/latest/installation.html#rust
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
   <<<<<<< circleci-project-setup
   =======
     5) If you are experiencing issues with Rust for *this release only* you may
        set the environment variable `CRYPTOGRAPHY_DONT_BUILD_RUST=1`.
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
     =============================DEBUG ASSISTANCE=============================
     """

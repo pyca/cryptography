@@ -16,8 +16,13 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "flake,rust,docs", COVERAGE: "false"}
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+          - {VERSION: "pypy-3.6", TOXENV: "pypy3-nocoverage"}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
+  =======
           - {VERSION: "pypy-3.6", TOXENV: "pypy3"}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3"}
+  >>>>>>> 3.4.x
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
           - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
@@ -25,7 +30,11 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.5"}}
+  =======
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.4"}}
+  >>>>>>> 3.4.x
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.1"}}
         RUST:
           - stable
@@ -39,7 +48,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v2.2.1
@@ -90,6 +99,7 @@ jobs:
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
@@ -122,7 +132,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - run: 'git clone --depth=1 https://github.com/google/wycheproof "$HOME/wycheproof"'
       - run: |
@@ -133,6 +143,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
@@ -178,6 +189,7 @@ jobs:
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
@@ -201,7 +213,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v2.2.1
@@ -232,6 +244,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -260,7 +273,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ matrix.PYTHON.VERSION }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v2.2.1
@@ -290,6 +303,7 @@ jobs:
       - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -337,6 +351,8 @@ jobs:
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip uninstall -y enum34
       - run: pip install .
+        env:
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:

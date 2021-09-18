@@ -30,12 +30,18 @@ def load_pem_public_key(
     return backend.load_pem_public_key(data)
 
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+def load_pem_parameters(
+    data: bytes, backend: typing.Optional[Backend] = None
+) -> "dh.DHParameters":
+  =======
   <<<<<<< circleci-project-setup
 def load_pem_parameters(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> "dh.DHParameters":
   =======
 def load_pem_parameters(data: bytes, backend=None) -> "dh.DHParameters":
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
     backend = _get_backend(backend)
     return backend.load_pem_parameters(data)
@@ -57,12 +63,18 @@ def load_der_public_key(
     return backend.load_der_public_key(data)
 
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+def load_der_parameters(
+    data: bytes, backend: typing.Optional[Backend] = None
+) -> "dh.DHParameters":
+  =======
   <<<<<<< circleci-project-setup
 def load_der_parameters(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> "dh.DHParameters":
   =======
 def load_der_parameters(data: bytes, backend=None) -> "dh.DHParameters":
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
     backend = _get_backend(backend)
     return backend.load_der_parameters(data)

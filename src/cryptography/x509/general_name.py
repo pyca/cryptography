@@ -46,10 +46,14 @@ class GeneralName(metaclass=abc.ABCMeta):
 
 
 class RFC822Name(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: str) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
   =======
     def __init__(self, value: str):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
@@ -98,10 +102,14 @@ class RFC822Name(GeneralName):
 
 
 class DNSName(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: str) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
   =======
     def __init__(self, value: str):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
@@ -144,10 +152,14 @@ class DNSName(GeneralName):
 
 
 class UniformResourceIdentifier(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: str) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: str) -> None:
   =======
     def __init__(self, value: str):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if isinstance(value, str):
             try:
@@ -192,10 +204,14 @@ class UniformResourceIdentifier(GeneralName):
 
 
 class DirectoryName(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: Name) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: Name) -> None:
   =======
     def __init__(self, value: Name):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
@@ -223,10 +239,14 @@ class DirectoryName(GeneralName):
 
 
 class RegisteredID(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: ObjectIdentifier) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: ObjectIdentifier) -> None:
   =======
     def __init__(self, value: ObjectIdentifier):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
@@ -254,6 +274,9 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, value: _IPADDRESS_TYPES) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, value: _IPADDRESS_TYPES) -> None:
   =======
@@ -266,6 +289,7 @@ class IPAddress(GeneralName):
             ipaddress.IPv6Network,
         ],
     ):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(
             value,
@@ -305,10 +329,14 @@ class IPAddress(GeneralName):
 
 
 class OtherName(GeneralName):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
+  =======
   <<<<<<< circleci-project-setup
     def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
   =======
     def __init__(self, type_id: ObjectIdentifier, value: bytes):
+  >>>>>>> 3.4.x
   >>>>>>> 3.4.x
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")

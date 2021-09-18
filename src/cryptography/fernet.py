@@ -27,7 +27,15 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+    def __init__(
+        self,
+        key: typing.Union[bytes, str],
+        backend: typing.Optional[Backend] = None,
+    ):
+  =======
     def __init__(self, key: bytes, backend: typing.Optional[Backend] = None):
+  >>>>>>> 3.4.x
         backend = _get_backend(backend)
 
         key = base64.urlsafe_b64decode(key)
