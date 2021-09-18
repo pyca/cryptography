@@ -102,6 +102,14 @@ class TestCertificateRevocationList(object):
         with pytest.raises(ValueError):
             x509.load_pem_x509_crl(b"notacrl", backend)
 
+        pem_bytes = _load_cert(
+            os.path.join("x509", "custom", "valid_signature_cert.pem"),
+            lambda data, backend: data,
+            backend,
+        )
+        with pytest.raises(ValueError):
+            x509.load_pem_x509_crl(pem_bytes, backend)
+
     def test_invalid_der(self, backend):
         with pytest.raises(ValueError):
             x509.load_der_x509_crl(b"notacrl", backend)
@@ -169,6 +177,15 @@ class TestCertificateRevocationList(object):
         assert crl1 == crl2
         assert crl1 != crl3
         assert crl1 != object()
+
+    def test_comparison(self, backend):
+        crl1 = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend,
+        )
+        with pytest.raises(TypeError):
+            crl1 < crl1
 
     def test_update_dates(self, backend):
         crl = _load_cert(
