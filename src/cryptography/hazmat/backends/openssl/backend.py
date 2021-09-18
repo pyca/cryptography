@@ -1236,9 +1236,13 @@ class Backend(BackendInterface):
     ) -> x509.RevokedCertificate:
         if not isinstance(builder, x509.RevokedCertificateBuilder):
             raise TypeError("Builder type mismatch.")
+        serial_number = builder._serial_number
+        revocation_date = builder._revocation_date
+        assert serial_number is not None
+        assert revocation_date is not None
         return _RawRevokedCertificate(
-            builder._serial_number,
-            builder._revocation_date,
+            serial_number,
+            revocation_date,
             x509.Extensions(builder._extensions),
         )
 
