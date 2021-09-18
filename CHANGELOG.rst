@@ -2,6 +2,7 @@ Changelog
 =========
 
   <<<<<<< 3.4.x
+  <<<<<<< 3.4.x
   <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
   <<<<<<< 3.1.x
   =======
@@ -122,6 +123,8 @@ Changelog
 * ``cryptography`` now has :pep:`484` type hints on nearly all of of its public
   APIs. Users can begin using them to type check their code with ``mypy``.
 
+  =======
+  >>>>>>> 3.3.x
 .. _v3-3-2:
 
 3.3.2 - 2021-02-07
@@ -129,9 +132,13 @@ Changelog
 
 * **SECURITY ISSUE:** Fixed a bug where certain sequences of ``update()`` calls
   when symmetrically encrypting very large payloads (>2GB) could result in an
+  exsx,<<<<<<< 3.4.x
   integer overflow, leading to buffer overflows. *CVE-2020-36242* **Update:**
   This fix is a workaround for *CVE-2021-23840* in OpenSSL, fixed in OpenSSL
   1.1.1j.
+  =======
+  integer overflow, leading to buffer overflows. *CVE-2020-36242*
+  >>>>>>> 3.3.x
 
 .. _v3-3-1:
 

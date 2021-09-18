@@ -8,7 +8,11 @@ on:
 jobs:
   manylinux:
     runs-on: ubuntu-latest
+  <<<<<<< 3.4.x
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
+  =======
+    container: ghcr.io/${{ matrix.MANYLINUX.CONTAINER }}
+  >>>>>>> 3.3.x
     strategy:
       matrix:
         PYTHON:

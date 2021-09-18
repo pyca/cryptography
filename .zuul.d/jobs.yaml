@@ -40,10 +40,13 @@
       wheel_builds:
         - platform: manylinux2014_aarch64
           image: ghcr.io/pyca/cryptography-manylinux2014_aarch64
+  <<<<<<< 3.4.x
           pythons:
             - cp36-cp36m
         - platform: manylinux_2_24_aarch64
           image: ghcr.io/pyca/cryptography-manylinux_2_24:aarch64
+  =======
+  >>>>>>> 3.3.x
           pythons:
             - cp36-cp36m
 
@@ -53,15 +56,25 @@
     nodeset: ubuntu-bionic
     vars:
       wheel_builds:
+  <<<<<<< 3.4.x
         - platform: manylinux2010_x86_64
           image: ghcr.io/pyca/cryptography-manylinux2010:x86_64
+  =======
+        - platform: manylinux1_x86_64
+          image: ghcr.io/pyca/cryptography-manylinux1:x86_64
+  >>>>>>> 3.3.x
           pythons:
             - cp36-cp36m
+  <<<<<<< 3.4.x
         - platform: manylinux2014_x86_64
           image: ghcr.io/pyca/cryptography-manylinux2014:x86_64
           pythons:
             - cp36-cp36m
         - platform: manylinux_2_24_x86_64
           image: ghcr.io/pyca/cryptography-manylinux_2_24:x86_64
+  =======
+        - platform: manylinux2010_x86_64
+          image: ghcr.io/pyca/cryptography-manylinux2010:x86_64
+  >>>>>>> 3.3.x
           pythons:
             - cp36-cp36m
