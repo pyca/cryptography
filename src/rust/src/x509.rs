@@ -592,6 +592,26 @@ impl CertificateRevocationList {
     fn public_bytes_der(&self) -> Vec<u8> {
         asn1::write_single(self.raw.borrow_value())
     }
+
+    fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> pyo3::PyResult<RevokedCertificate> {
+        let raw = try_map_arc_data_crl(&self.raw, |_crl, revoked_certs| {
+            let revoked_certs = revoked_certs.get(py).unwrap();
+            Ok::<_, pyo3::PyErr>(revoked_certs.get(idx).cloned().unwrap())
+        })?;
+        Ok(RevokedCertificate {
+            raw,
+            cached_extensions: None,
+        })
+    }
+
+    fn len(&self) -> usize {
+        self.raw
+            .borrow_value()
+            .tbs_cert_list
+            .revoked_certificates
+            .as_ref()
+            .map_or(0, |v| v.len())
+    }
 }
 
 #[pyo3::prelude::pyproto]
@@ -622,34 +642,46 @@ impl pyo3::class::basic::PyObjectProtocol for CertificateRevocationList {
 }
 
 #[pyo3::prelude::pyproto]
-impl pyo3::PySequenceProtocol for CertificateRevocationList {
+impl pyo3::PyMappingProtocol for CertificateRevocationList {
     fn __len__(&self) -> usize {
-        self.raw
-            .borrow_value()
-            .tbs_cert_list
-            .revoked_certificates
-            .as_ref()
-            .map_or(0, |v| v.len())
+        self.len()
     }
 
-    fn __getitem__(&self, idx: isize) -> pyo3::PyResult<RevokedCertificate> {
+    fn __getitem__(&self, idx: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
         let gil = pyo3::Python::acquire_gil();
         let py = gil.python();
 
-        let raw = try_map_arc_data_crl(&self.raw, |crl, revoked_certs| {
-            let revoked_certs = revoked_certs.get_or_init(py, || {
-                match &crl.borrow_value().tbs_cert_list.revoked_certificates {
+        self.raw.with(|val| {
+            val.revoked_certs.get_or_init(py, || {
+                match &val.value.tbs_cert_list.revoked_certificates {
                     Some(c) => c.clone().collect(),
                     None => vec![],
                 }
-            });
+            })
+        });
 
-            match revoked_certs.get(idx as usize).cloned() {
-                Some(cert) => Ok(cert),
-                None => Err(pyo3::exceptions::PyIndexError::new_err("xxx ill me in")),
+        if idx.is_instance::<pyo3::types::PySlice>()? {
+            let indices = idx
+                .downcast::<pyo3::types::PySlice>()?
+                .indices(self.len().try_into().unwrap())?;
+            let result = pyo3::types::PyList::empty(py);
+            for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {
+                result.append(pyo3::pycell::PyCell::new(
+                    py,
+                    self.revoked_cert(py, i as usize)?,
+                )?)?;
             }
-        })?;
-        Ok(RevokedCertificate { raw })
+            Ok(result.to_object(py))
+        } else {
+            let mut idx = idx.extract::<isize>()?;
+            if idx < 0 {
+                idx += self.len() as isize;
+            }
+            if idx >= (self.len() as isize) || idx < 0 {
+                return Err(pyo3::exceptions::PyIndexError::new_err(()));
+            }
+            Ok(pyo3::pycell::PyCell::new(py, self.revoked_cert(py, idx as usize)?)?.to_object(py))
+        }
     }
 }
 
@@ -681,9 +713,9 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid = self.signature_algorithm_oid(py)?;
-        let x509_module = py.import("cryptography.x509")?;
+        let oid_module = py.import("cryptography.hazmat._oid")?;
         let exceptions_module = py.import("cryptography.exceptions")?;
-        match x509_module.getattr("_SIG_OIDS_TO_HASH")?.get_item(oid) {
+        match oid_module.getattr("_SIG_OIDS_TO_HASH")?.get_item(oid) {
             Ok(v) => Ok(v),
             Err(_) => Err(pyo3::PyErr::from_instance(exceptions_module.call_method1(
                 "UnsupportedAlgorithm",
@@ -850,9 +882,23 @@ impl CertificateRevocationList {
             return Err(());
         });
         match owned {
-            Ok(o) => Ok(Some(RevokedCertificate { raw: o })),
+            Ok(o) => Ok(Some(RevokedCertificate {
+                raw: o,
+                cached_extensions: None,
+            })),
             Err(()) => Ok(None),
         }
+    }
+
+    fn is_signature_valid<'p>(
+        slf: pyo3::pycell::PyRef<'_, Self>,
+        py: pyo3::Python<'p>,
+        public_key: &'p pyo3::PyAny,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let backend = py
+            .import("cryptography.hazmat.backends.openssl.backend")?
+            .getattr("backend")?;
+        Ok(backend.call_method1("_crl_is_signature_valid", (slf, public_key))?)
     }
 }
 
@@ -920,7 +966,10 @@ impl pyo3::PyIterProtocol<'_> for CRLIterator {
             None => Err(()),
         })
         .ok()?;
-        Some(RevokedCertificate { raw: revoked })
+        Some(RevokedCertificate {
+            raw: revoked,
+            cached_extensions: None,
+        })
     }
 }
 
@@ -961,6 +1010,7 @@ struct OwnedRawRevokedCertificate {
 #[pyo3::prelude::pyclass]
 struct RevokedCertificate {
     raw: OwnedRawRevokedCertificate,
+    cached_extensions: Option<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -973,6 +1023,16 @@ impl RevokedCertificate {
     #[getter]
     fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         chrono_to_py(py, self.raw.borrow_value().revocation_date.as_chrono())
+    }
+
+    #[getter]
+    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        parse_and_cache_extensions(
+            py,
+            &mut self.cached_extensions,
+            &self.raw.borrow_value().crl_entry_extensions,
+            |oid, ext_data| parse_crl_entry_ext(py, oid.clone(), ext_data),
+        )
     }
 }
 
@@ -1926,10 +1986,11 @@ fn parse_csr_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) ->
     }
 }
 
-#[pyo3::prelude::pyfunction]
-pub fn parse_crl_entry_ext(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) -> PyAsn1Result {
-    let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
-
+pub fn parse_crl_entry_ext<'p>(
+    py: pyo3::Python<'p>,
+    oid: asn1::ObjectIdentifier<'_>,
+    data: &[u8],
+) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
     if oid == *CRL_REASON_OID {
         let flag_name = match asn1::parse_single::<asn1::Enumerated>(data)?.value() {
@@ -1950,26 +2011,21 @@ pub fn parse_crl_entry_ext(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) ->
             }
         };
         let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
-        Ok(x509_module
-            .getattr("CRLReason")?
-            .call1((flag,))?
-            .to_object(py))
+        Ok(Some(x509_module.getattr("CRLReason")?.call1((flag,))?))
     } else if oid == *CERTIFICATE_ISSUER_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(data)?;
         let gns = parse_general_names(py, gn_seq)?;
-        Ok(x509_module
-            .getattr("CertificateIssuer")?
-            .call1((gns,))?
-            .to_object(py))
+        Ok(Some(
+            x509_module.getattr("CertificateIssuer")?.call1((gns,))?,
+        ))
     } else if oid == *INVALIDITY_DATE_OID {
         let time = asn1::parse_single::<asn1::GeneralizedTime>(data)?;
         let py_dt = chrono_to_py(py, time.as_chrono())?;
-        Ok(x509_module
-            .getattr("InvalidityDate")?
-            .call1((py_dt,))?
-            .to_object(py))
+        Ok(Some(
+            x509_module.getattr("InvalidityDate")?.call1((py_dt,))?,
+        ))
     } else {
-        Ok(py.None())
+        Ok(None)
     }
 }
 
@@ -1982,7 +2038,6 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_crl))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_crl))?;
 
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_crl_entry_ext))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(
         encode_precertificate_signed_certificate_timestamps
     ))?;
