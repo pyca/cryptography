@@ -795,7 +795,7 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn extensions<'p>(&mut self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let x509_module = py.import("cryptography.x509")?;
         parse_and_cache_extensions(
             py,
@@ -879,7 +879,7 @@ impl CertificateRevocationList {
                     return Ok(cert);
                 }
             }
-            return Err(());
+            Err(())
         });
         match owned {
             Ok(o) => Ok(Some(RevokedCertificate {
@@ -898,7 +898,7 @@ impl CertificateRevocationList {
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
             .getattr("backend")?;
-        Ok(backend.call_method1("_crl_is_signature_valid", (slf, public_key))?)
+        backend.call_method1("_crl_is_signature_valid", (slf, public_key))
     }
 }
 
@@ -937,7 +937,7 @@ fn try_map_arc_data_crl<E>(
 ) -> Result<OwnedRawRevokedCertificate, E> {
     OwnedRawRevokedCertificate::try_new(Arc::clone(crl), |inner_crl| {
         crl.with(|value| {
-            f(&inner_crl, unsafe {
+            f(inner_crl, unsafe {
                 std::mem::transmute(value.revoked_certs)
             })
         })
@@ -950,8 +950,8 @@ fn try_map_arc_data_mut_crl_iterator<E>(
         &mut Option<asn1::SequenceOf<'this, RawRevokedCertificate<'this>>>,
     ) -> Result<RawRevokedCertificate<'this>, E>,
 ) -> Result<OwnedRawRevokedCertificate, E> {
-    OwnedRawRevokedCertificate::try_new(Arc::clone(&it.borrow_data()), |inner_it| {
-        it.with_value_mut(|value| f(&inner_it, unsafe { std::mem::transmute(value) }))
+    OwnedRawRevokedCertificate::try_new(Arc::clone(it.borrow_data()), |inner_it| {
+        it.with_value_mut(|value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }
 
