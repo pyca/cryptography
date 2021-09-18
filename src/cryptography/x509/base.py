@@ -456,13 +456,13 @@ def load_der_x509_csr(
 def load_pem_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    return x509.load_pem_x509_crl(data)
+    return rust_x509.load_pem_x509_crl(data)
 
 
 def load_der_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    return x509.load_der_x509_crl(data)
+    return rust_x509.load_der_x509_crl(data)
 
 
 class CertificateSigningRequestBuilder(object):
