@@ -9,7 +9,6 @@ import os
 import typing
 
 from cryptography import utils
-from cryptography.hazmat.bindings._rust import x509
 from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.bindings._rust import x509 as rust_x509

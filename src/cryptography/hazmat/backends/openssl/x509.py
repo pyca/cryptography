@@ -4,23 +4,18 @@
 
 
 import datetime
-import operator
 import typing
 import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat._oid import _SIG_OIDS_TO_HASH
-from cryptography.hazmat.backends.openssl import dsa, ec, rsa
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _asn1_integer_to_int,
     _asn1_string_to_bytes,
     _decode_x509_name,
     _obj2txt,
-    _parse_asn1_time,
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_int_gc,
     _txt2obj_gc,
 )
 from cryptography.hazmat.primitives import hashes, serialization
