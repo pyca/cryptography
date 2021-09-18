@@ -564,7 +564,9 @@ fn load_pem_x509_crl(
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
     let block = pem::parse(data)?;
     if block.tag != "X509 CRL" {
-        unimplemented!()
+        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?"
+        )));
     }
     // TODO: Produces an extra copy
     load_der_x509_crl(py, &block.contents)
@@ -632,12 +634,6 @@ impl pyo3::class::basic::PyObjectProtocol for CertificateRevocationList {
                 "CRLs cannot be ordered",
             )),
         }
-    }
-
-    fn __hash__(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        self.raw.borrow_value().hash(&mut hasher);
-        hasher.finish()
     }
 }
 
