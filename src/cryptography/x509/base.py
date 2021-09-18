@@ -338,7 +338,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
 
-CertificateRevocationList.register(x509.CertificateRevocationList)
+CertificateRevocationList.register(rust_x509.CertificateRevocationList)
 
 
 class CertificateSigningRequest(metaclass=abc.ABCMeta):
