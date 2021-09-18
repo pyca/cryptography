@@ -565,7 +565,7 @@ fn load_pem_x509_crl(
     let block = pem::parse(data)?;
     if block.tag != "X509 CRL" {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?"
+            "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
         )));
     }
     // TODO: Produces an extra copy
