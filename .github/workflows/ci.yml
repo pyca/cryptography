@@ -24,9 +24,15 @@ jobs:
           - {VERSION: "pypy-3.7", TOXENV: "pypy3"}
   >>>>>>> 3.4.x
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+  <<<<<<< 3.4.x
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
           - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1j", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+  =======
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1l"}}
+          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1l"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1l", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+  >>>>>>> 3.4.x
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "2.9.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.0.2"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
@@ -118,10 +124,10 @@ jobs:
           - {IMAGE: "sid", TOXENV: "py39"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py38-randomorder"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py39-randomorder"}
           - {IMAGE: "fedora", TOXENV: "py39"}
-          - {IMAGE: "alpine", TOXENV: "py38"}
+          - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 30
     steps:
@@ -316,7 +322,6 @@ jobs:
         DOWNSTREAM:
           - paramiko
           - pyopenssl
-          - twisted
           - aws-encryption-sdk
           - dynamodb-encryption-sdk
           - certbot

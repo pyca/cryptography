@@ -1,6 +1,7 @@
 Changelog
 =========
 
+  <<<<<<< 3.4.x
   <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
   <<<<<<< 3.1.x
   =======
@@ -22,6 +23,15 @@ Changelog
   <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
 * We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
   and ``manylinux2014`` wheels.
+  =======
+.. _v3-4-8:
+
+3.4.8 - 2021-08-24
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1l.
+  >>>>>>> 3.4.x
 
 .. _v3-4-7:
 
@@ -31,10 +41,13 @@ Changelog
 * Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
   OpenSSL 1.1.1k.
 
+  <<<<<<< 3.4.x
   =======
 
   =======
   >>>>>>> 3.4.x
+  >>>>>>> 3.4.x
+  =======
   >>>>>>> 3.4.x
 .. _v3-4-6:
 
