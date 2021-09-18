@@ -76,6 +76,7 @@ from cryptography.hazmat.backends.openssl.x448 import (
 )
 from cryptography.hazmat.backends.openssl.x509 import (
     _CertificateSigningRequest,
+    _RawRevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
     asn1,
@@ -1131,13 +1132,30 @@ class Backend(BackendInterface):
 
         # add revoked certificates
         for revoked_cert in builder._revoked_certificates:
-            # Duplicating because the X509_CRL takes ownership and will free
-            # this memory when X509_CRL_free is called.
-            revoked = self._lib.X509_REVOKED_dup(
-                revoked_cert._x509_revoked  # type: ignore[attr-defined]
+            x509_revoked = self._lib.X509_REVOKED_new()
+            self.openssl_assert(x509_revoked != self._ffi.NULL)
+            serial_number = _encode_asn1_int_gc(
+                self, revoked_cert.serial_number
             )
-            self.openssl_assert(revoked != self._ffi.NULL)
-            res = self._lib.X509_CRL_add0_revoked(x509_crl, revoked)
+            res = self._lib.X509_REVOKED_set_serialNumber(
+                x509_revoked, serial_number
+            )
+            self.openssl_assert(res == 1)
+            rev_date = self._create_asn1_time(revoked_cert.revocation_date)
+            res = self._lib.X509_REVOKED_set_revocationDate(
+                x509_revoked, rev_date
+            )
+            self.openssl_assert(res == 1)
+            # add CRL entry extensions
+            self._create_x509_extensions(
+                extensions=revoked_cert.extensions,
+                handlers=self._crl_entry_extension_encode_handlers,
+                x509_obj=x509_revoked,
+                add_func=self._lib.X509_REVOKED_add_ext,
+                gc=True,
+            )
+
+            res = self._lib.X509_CRL_add0_revoked(x509_crl, x509_revoked)
             self.openssl_assert(res == 1)
 
         res = self._lib.X509_CRL_sign(
@@ -1147,7 +1165,10 @@ class Backend(BackendInterface):
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
 
-        return _CertificateRevocationList(self, x509_crl)
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_X509_CRL_bio(bio, x509_crl)
+        self.openssl_assert(res == 1)
+        return rust_x509.load_der_x509_crl(self._read_mem_bio(bio))
 
     def _create_x509_extensions(
         self, extensions, handlers, x509_obj, add_func, gc
@@ -1215,27 +1236,11 @@ class Backend(BackendInterface):
     ) -> x509.RevokedCertificate:
         if not isinstance(builder, x509.RevokedCertificateBuilder):
             raise TypeError("Builder type mismatch.")
-
-        x509_revoked = self._lib.X509_REVOKED_new()
-        self.openssl_assert(x509_revoked != self._ffi.NULL)
-        x509_revoked = self._ffi.gc(x509_revoked, self._lib.X509_REVOKED_free)
-        serial_number = _encode_asn1_int_gc(self, builder._serial_number)
-        res = self._lib.X509_REVOKED_set_serialNumber(
-            x509_revoked, serial_number
+        return _RawRevokedCertificate(
+            builder._serial_number,
+            builder._revocation_date,
+            x509.Extensions(builder._extensions),
         )
-        self.openssl_assert(res == 1)
-        rev_date = self._create_asn1_time(builder._revocation_date)
-        res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
-        self.openssl_assert(res == 1)
-        # add CRL entry extensions
-        self._create_x509_extensions(
-            extensions=builder._extensions,
-            handlers=self._crl_entry_extension_encode_handlers,
-            x509_obj=x509_revoked,
-            add_func=self._lib.X509_REVOKED_add_ext,
-            gc=True,
-        )
-        return _RevokedCertificate(self, None, x509_revoked)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
@@ -1377,7 +1382,9 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
-    def _crl_is_signature_valid(self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES) -> bool:
+    def _crl_is_signature_valid(
+        self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES
+    ) -> bool:
         if not isinstance(
             public_key,
             (
@@ -1396,16 +1403,13 @@ class Backend(BackendInterface):
         self.openssl_assert(x509_crl != self._ffi.NULL)
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
 
-        res = self._lib.X509_CRL_verify(
-            x509_crl, public_key._evp_pkey
-        )
+        res = self._lib.X509_CRL_verify(x509_crl, public_key._evp_pkey)
 
         if res != 1:
             self._consume_errors()
             return False
 
         return True
-
 
     def load_pem_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
         mem_bio = self._bytes_to_bio(data)

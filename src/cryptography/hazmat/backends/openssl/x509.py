@@ -192,3 +192,27 @@ class _CertificateSigningRequest(x509.CertificateSigningRequest):
         # that it is always a type of ASN1_STRING
         data = self._backend._ffi.cast("ASN1_STRING *", data)
         return _asn1_string_to_bytes(self._backend, data)
+
+
+class _RawRevokedCertificate(x509.RevokedCertificate):
+    def __init__(
+        self,
+        serial_number: int,
+        revocation_date: datetime.datetime,
+        extensions: x509.Extensions,
+    ):
+        self._serial_number = serial_number
+        self._revocation_date = revocation_date
+        self._extensions = extensions
+
+    @property
+    def serial_number(self) -> int:
+        return self._serial_number
+
+    @property
+    def revocation_date(self) -> datetime.datetime:
+        return self._revocation_date
+
+    @property
+    def extensions(self) -> x509.Extensions:
+        return self._extensions
