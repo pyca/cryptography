@@ -196,6 +196,21 @@ Algorithms
         :term:`bits` in length.
     :type key: :term:`bytes-like`
 
+.. class:: SM4(key)
+
+    .. versionadded:: 35.0.0
+
+    SM4 is a block cipher developed by the Chinese Government and standardized
+    in the GB/T 32907-2016. It is used in the Chinese WAPI
+    (Wired Authentication and Privacy Infrastructure) standard. (An English
+    description is available at `draft-ribose-cfrg-sm4-10`_.) This block
+    cipher should be used for compatibility purposes where required and is
+    not otherwise recommended for use.
+
+    :param key: The secret key. This must be kept secret. ``128``
+        :term:`bits` in length.
+    :type key: :term:`bytes-like`
+
 Weak ciphers
 ------------
 
@@ -815,3 +830,4 @@ Exceptions
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: https://www.openpgp.org/
 .. _`disk encryption`: https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS
+.. _`draft-ribose-cfrg-sm4-10`: https://tools.ietf.org/html/draft-ribose-cfrg-sm4-10

@@ -8,7 +8,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from .utils import _load_all_params, generate_encrypt_test
@@ -22,7 +21,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support AES XTS",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeXTS(object):
     def test_xts_vectors(self, backend, subtests):
         # This list comprehension excludes any vector that does not have a
@@ -54,6 +52,14 @@ class TestAESModeXTS(object):
                 computed_pt = dec.update(ct) + dec.finalize()
                 assert computed_pt == pt
 
+    def test_xts_too_short(self):
+        key = b"thirty_two_byte_keys_are_great!!"
+        tweak = b"\x00" * 16
+        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
+        enc = cipher.encryptor()
+        with pytest.raises(ValueError):
+            enc.update(b"0" * 15)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
@@ -61,7 +67,6 @@ class TestAESModeXTS(object):
     ),
     skip_message="Does not support AES CBC",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCBC(object):
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
@@ -94,7 +99,6 @@ class TestAESModeCBC(object):
     ),
     skip_message="Does not support AES ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeECB(object):
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
@@ -127,7 +131,6 @@ class TestAESModeECB(object):
     ),
     skip_message="Does not support AES OFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeOFB(object):
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
@@ -160,7 +163,6 @@ class TestAESModeOFB(object):
     ),
     skip_message="Does not support AES CFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB(object):
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
@@ -193,7 +195,6 @@ class TestAESModeCFB(object):
     ),
     skip_message="Does not support AES CFB8",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB8(object):
     test_cfb8 = generate_encrypt_test(
         load_nist_vectors,
@@ -226,7 +227,6 @@ class TestAESModeCFB8(object):
     ),
     skip_message="Does not support AES CTR",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCTR(object):
     test_ctr = generate_encrypt_test(
         load_nist_vectors,
@@ -250,7 +250,6 @@ class TestAESModeCTR(object):
         DummyMode(),
     ],
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 def test_buffer_protocol_alternate_modes(mode, backend):
     data = bytearray(b"sixteen_byte_msg")
     key = algorithms.AES(bytearray(os.urandom(32)))

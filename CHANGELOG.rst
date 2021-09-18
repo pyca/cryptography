@@ -1,6 +1,29 @@
 Changelog
 =========
 
+  <<<<<<< 3.4.x
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  <<<<<<< 3.1.x
+  =======
+  =======
+  <<<<<<< circleci-project-setup
+  >>>>>>> 3.4.x
+.. _v35-0-0:
+
+35.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+ .. note:: This version is not yet released and is under active development.
+
+* Added support for
+  :class:`~cryptography.hazmat.primitives.hashes.SM3` and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
+  when using OpenSSL 1.1.1. These algorithms are provided for compatibility
+  in regions where they may be required, and are not generally recommended.
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+* We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
+  and ``manylinux2014`` wheels.
+  =======
 .. _v3-4-8:
 
 3.4.8 - 2021-08-24
@@ -8,6 +31,7 @@ Changelog
 
 * Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
   OpenSSL 1.1.1l.
+  >>>>>>> 3.4.x
 
 .. _v3-4-7:
 
@@ -17,6 +41,14 @@ Changelog
 * Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
   OpenSSL 1.1.1k.
 
+  <<<<<<< 3.4.x
+  =======
+
+  =======
+  >>>>>>> 3.4.x
+  >>>>>>> 3.4.x
+  =======
+  >>>>>>> 3.4.x
 .. _v3-4-6:
 
 3.4.6 - 2021-02-16
@@ -97,7 +129,9 @@ Changelog
 
 * **SECURITY ISSUE:** Fixed a bug where certain sequences of ``update()`` calls
   when symmetrically encrypting very large payloads (>2GB) could result in an
-  integer overflow, leading to buffer overflows. *CVE-2020-36242*
+  integer overflow, leading to buffer overflows. *CVE-2020-36242* **Update:**
+  This fix is a workaround for *CVE-2021-23840* in OpenSSL, fixed in OpenSSL
+  1.1.1j.
 
 .. _v3-3-1:
 
@@ -162,6 +196,7 @@ Changelog
 * Added basic support for PKCS7 signing (including SMIME) via
   :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`.
 
+  >>>>>>> dependabot/github_actions/actions/upload-artifact-v2.2.2
 .. _v3-1-1:
 
 3.1.1 - 2020-09-22
@@ -1721,5 +1756,5 @@ Changelog
 
 * Initial release.
 
-.. _`master`: https://github.com/pyca/cryptography/
+.. _`main`: https://github.com/pyca/cryptography/
 .. _`cffi`: https://cffi.readthedocs.io/

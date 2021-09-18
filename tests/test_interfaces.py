@@ -8,31 +8,8 @@ import pytest
 
 from cryptography.utils import (
     InterfaceNotImplemented,
-    register_interface_if,
     verify_interface,
 )
-
-
-def test_register_interface_if_true():
-    class SimpleInterface(metaclass=abc.ABCMeta):
-        pass
-
-    @register_interface_if(1 == 1, SimpleInterface)
-    class SimpleClass(object):
-        pass
-
-    assert issubclass(SimpleClass, SimpleInterface) is True
-
-
-def test_register_interface_if_false():
-    class SimpleInterface(metaclass=abc.ABCMeta):
-        pass
-
-    @register_interface_if(1 == 2, SimpleInterface)
-    class SimpleClass(object):
-        pass
-
-    assert issubclass(SimpleClass, SimpleInterface) is False
 
 
 class TestVerifyInterface(object):

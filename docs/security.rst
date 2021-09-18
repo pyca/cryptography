@@ -64,7 +64,7 @@ further follow-up emails.
 Supported Versions
 ------------------
 
-At any given time, we will provide security support for the `master`_ branch
+At any given time, we will provide security support for the `main`_ branch
 as well as the most recent release.
 
 New releases for OpenSSL updates
@@ -89,4 +89,4 @@ The steps for issuing a security release are described in our
 :doc:`/doing-a-release` documentation.
 
 
-.. _`master`: https://github.com/pyca/cryptography
+.. _`main`: https://github.com/pyca/cryptography

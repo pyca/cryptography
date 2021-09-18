@@ -14,10 +14,6 @@ from cryptography.exceptions import (
     InvalidSignature,
     _Reasons,
 )
-from cryptography.hazmat.backends.interfaces import (
-    PEMSerializationBackend,
-    RSABackend,
-)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     padding,
@@ -138,7 +134,6 @@ def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
         )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 def test_skip_pss_hash_algorithm_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_pss_hash_algorithm_unsupported(backend, DummyHashAlgorithm())
@@ -168,7 +163,6 @@ def test_modular_inverse():
     )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
@@ -387,10 +381,11 @@ def test_rsa_generate_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        rsa.generate_private_key(65537, 2048, pretend_backend)
+        rsa.generate_private_key(
+            65537, 2048, pretend_backend  # type:ignore[arg-type]
+        )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASignature(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -755,7 +750,6 @@ class TestRSASignature(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1023,7 +1017,7 @@ class TestRSAVerification(object):
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA1())
 
-        # Hash algorithm can not be absent for PSS padding
+        # Hash algorithm cannot be absent for PSS padding
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
                 signature, pss_padding, None  # type: ignore[arg-type]
@@ -1212,7 +1206,6 @@ class TestRSAVerification(object):
             public_key.verify(b"\x00" * 64, data, pkcs, prehashed_alg)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPSSMGF1Verification(object):
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1350,7 +1343,6 @@ class TestRSAPSSMGF1Verification(object):
     )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPKCS1Verification(object):
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
@@ -1506,7 +1498,6 @@ class TestOAEP(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSADecryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1750,7 +1741,6 @@ class TestRSADecryption(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAEncryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1938,7 +1928,6 @@ class TestRSAEncryption(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSANumbers(object):
     def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
@@ -2160,8 +2149,6 @@ class TestRSAPrimeFactorRecovery(object):
             rsa.rsa_recover_prime_factors(34, 3, 7)
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPrivateKeySerialization(object):
     @pytest.mark.parametrize(
         ("fmt", "password"),
@@ -2351,8 +2338,6 @@ class TestRSAPrivateKeySerialization(object):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "format"),

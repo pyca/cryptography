@@ -127,10 +127,23 @@ by upgrading to a newer version of ``pip`` which will install a pre-compiled
 :ref:`instructions<installation:Rust>` to ensure you install a recent Rust
 version.
 
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
+  <<<<<<< circleci-project-setup
+  >>>>>>> 3.4.x
+Rust is only required during the build phase of ``cryptography``, you do not
+need to have Rust installed after you've built ``cryptography``. This is the
+same as the C compiler toolchain which is also required to build
+``cryptography``, but not afterwards.
+  <<<<<<< dependabot/github_actions/actions/upload-artifact-v2.2.2
+  =======
+  =======
 For the current release *only* you can temporarily bypass the requirement to
 have Rust installed by setting the ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment
 variable. Note that this option will be removed in the next release and not
 having Rust available will be a hard error.
+  >>>>>>> 3.4.x
+  >>>>>>> 3.4.x
 
 Why are there no wheels for my Python3.x version?
 -------------------------------------------------

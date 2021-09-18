@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
-from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -28,7 +27,6 @@ _DIGESTS = {
 }
 
 
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @wycheproof_tests(
     "ecdsa_test.json",
     "ecdsa_brainpoolP224r1_sha224_test.json",

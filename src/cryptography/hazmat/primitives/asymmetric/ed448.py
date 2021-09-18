@@ -33,7 +33,7 @@ class Ed448PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify(self, signature: bytes, data: bytes):
+    def verify(self, signature: bytes, data: bytes) -> None:
         """
         Verify the signature.
         """
@@ -81,7 +81,7 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
         encryption_algorithm: _serialization.KeySerializationEncryption,
-    ):
+    ) -> bytes:
         """
         The serialized bytes of the private key.
         """

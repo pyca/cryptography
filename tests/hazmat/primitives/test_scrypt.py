@@ -13,7 +13,6 @@ from cryptography.exceptions import (
     InvalidKey,
     UnsupportedAlgorithm,
 )
-from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt, _MEM_LIMIT
 
 from tests.utils import load_nist_vectors, load_vectors_from_file
@@ -44,7 +43,10 @@ def test_memory_limit_skip():
     _skip_if_memory_limited(2 ** 31, {"p": 16, "r": 64, "n": 1024})
 
 
-@pytest.mark.requires_backend_interface(interface=ScryptBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.scrypt_supported(),
+    skip_message="Does not support Scrypt",
+)
 class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
@@ -82,7 +84,7 @@ class TestScrypt(object):
                 work_factor,
                 block_size,
                 parallelization_factor,
-                backend,
+                backend,  # type: ignore[arg-type]
             )
 
     def test_salt_not_bytes(self, backend):

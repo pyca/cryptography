@@ -1574,6 +1574,12 @@ X.509 Extensions
     This is the interface against which all the following extension types are
     registered.
 
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID associated with the given extension type.
+
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
 
     .. versionadded:: 0.9
@@ -1945,11 +1951,19 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.SUBJECT_KEY_IDENTIFIER`.
 
-    .. attribute:: digest
+    .. attribute:: key_identifier
+
+        .. versionadded:: 35.0.0
 
         :type: bytes
 
         The binary value of the identifier.
+
+    .. attribute:: digest
+
+        :type: bytes
+
+        The binary value of the identifier. An alias of ``key_identifier``.
 
     .. classmethod:: from_public_key(public_key)
 

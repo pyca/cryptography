@@ -5,7 +5,6 @@
 
 import typing
 
-from cryptography import utils
 from cryptography.hazmat._der import (
     DERReader,
     INTEGER,
@@ -39,4 +38,4 @@ class Prehashed(object):
         self._algorithm = algorithm
         self._digest_size = algorithm.digest_size
 
-    digest_size = utils.read_only_property("_digest_size")
+    digest_size = property(lambda self: self._digest_size)

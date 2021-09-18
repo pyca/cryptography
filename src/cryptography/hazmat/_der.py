@@ -31,20 +31,20 @@ GENERALIZED_TIME = 0x18
 
 
 class DERReader(object):
-    def __init__(self, data):
+    def __init__(self, data: bytes) -> None:
         self.data = memoryview(data)
 
-    def __enter__(self):
+    def __enter__(self) -> "DERReader":
         return self
 
     def __exit__(self, exc_type, exc_value, tb):
         if exc_value is None:
             self.check_empty()
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return len(self.data) == 0
 
-    def check_empty(self):
+    def check_empty(self) -> None:
         if not self.is_empty():
             raise ValueError("Invalid DER input: trailing data")
 
@@ -55,7 +55,7 @@ class DERReader(object):
         self.data = self.data[1:]
         return ret
 
-    def read_bytes(self, n) -> memoryview:
+    def read_bytes(self, n: int) -> memoryview:
         if len(self.data) < n:
             raise ValueError("Invalid DER input: insufficient data")
         ret = self.data[:n]

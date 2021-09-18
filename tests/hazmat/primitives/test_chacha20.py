@@ -9,7 +9,6 @@ import struct
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
 
 from .utils import _load_all_params
@@ -22,7 +21,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support ChaCha20",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestChaCha20(object):
     @pytest.mark.parametrize(
         "vector",

@@ -43,6 +43,11 @@ Key interfaces
 
         :returns: :class:`Ed25519PrivateKey`
 
+        :raises ValueError: This is raised if the private key is not 32 bytes long.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the private key
+            is of a type that is not supported by the backend.
+
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import serialization
@@ -107,6 +112,11 @@ Key interfaces
         :param bytes data: 32 byte public key.
 
         :returns: :class:`Ed25519PublicKey`
+
+        :raises ValueError: This is raised if the public key is not 32 bytes long.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the public key
+            is of a type that is not supported by the backend.
 
         .. doctest::
 

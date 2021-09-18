@@ -5,6 +5,7 @@
 
 import datetime
 import ipaddress
+import typing
 
 from cryptography import x509
 from cryptography.hazmat._der import DERReader, INTEGER, NULL, SEQUENCE
@@ -185,7 +186,7 @@ class _X509ExtensionParser(object):
         self._backend = backend
 
     def parse(self, x509_obj):
-        extensions = []
+        extensions: typing.List[x509.Extension[x509.ExtensionType]] = []
         seen_oids = set()
         for i in range(self.ext_count(x509_obj)):
             ext = self.get_ext(x509_obj, i)

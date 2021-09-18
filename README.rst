@@ -9,11 +9,11 @@ pyca/cryptography
     :target: https://cryptography.io
     :alt: Latest Docs
 
-.. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=master
-    :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amaster
+.. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=main
+    :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amain
 
-.. image:: https://codecov.io/github/pyca/cryptography/coverage.svg?branch=master
-    :target: https://codecov.io/github/pyca/cryptography?branch=master
+.. image:: https://codecov.io/github/pyca/cryptography/coverage.svg?branch=main
+    :target: https://codecov.io/github/pyca/cryptography?branch=main
 
 
 ``cryptography`` is a package which provides cryptographic recipes and

@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidTag
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from .utils import wycheproof_tests
@@ -19,7 +18,6 @@ from ..hazmat.primitives.test_aead import _aead_supported
     not _aead_supported(ChaCha20Poly1305),
     reason="Requires OpenSSL with ChaCha20Poly1305 support",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 @wycheproof_tests("chacha20_poly1305_test.json")
 def test_chacha2poly1305(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])

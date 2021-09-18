@@ -8,7 +8,6 @@ import os
 import pytest
 
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -27,7 +26,6 @@ vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support HMAC-SHA1.",
 )
-@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHOTP(object):
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
@@ -122,4 +120,6 @@ def test_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        HOTP(secret, 8, hashes.SHA1(), pretend_backend)
+        HOTP(
+            secret, 8, hashes.SHA1(), pretend_backend  # type: ignore[arg-type]
+        )

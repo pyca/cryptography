@@ -28,7 +28,7 @@ for P in ${PYTHONS}; do
     # NOTE(ianw) : no execstack on aarch64, comes from
     # prelink, which was never supported.  CentOS 8 does
     # have it separate, skip for now.
-    if [[ "${PLAT}" != "manylinux2014_aarch64" ]]; then
+    if [[ ! "${PLAT}" =~ "aarch64" ]]; then
         for f in wheelhouse/*.whl; do
             unzip $f -d execstack.check
 

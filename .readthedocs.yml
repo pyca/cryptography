@@ -1,5 +1,6 @@
 version: 2
 
 build:
+  # First RTD build env which includes a rust toolchain
   image: "7.0"
 

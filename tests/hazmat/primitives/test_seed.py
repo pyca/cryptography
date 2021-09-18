@@ -8,7 +8,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -21,7 +20,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support SEED ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeECB(object):
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
@@ -38,7 +36,6 @@ class TestSEEDModeECB(object):
     ),
     skip_message="Does not support SEED CBC",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeCBC(object):
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
@@ -55,7 +52,6 @@ class TestSEEDModeCBC(object):
     ),
     skip_message="Does not support SEED OFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeOFB(object):
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
@@ -72,7 +68,6 @@ class TestSEEDModeOFB(object):
     ),
     skip_message="Does not support SEED CFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestSEEDModeCFB(object):
     test_cfb = generate_encrypt_test(
         load_nist_vectors,

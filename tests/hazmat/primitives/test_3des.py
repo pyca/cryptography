@@ -12,7 +12,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -25,7 +24,6 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support TripleDES CBC",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCBC(object):
     test_kat = generate_encrypt_test(
         load_nist_vectors,
@@ -58,7 +56,6 @@ class TestTripleDESModeCBC(object):
     ),
     skip_message="Does not support TripleDES OFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeOFB(object):
     test_kat = generate_encrypt_test(
         load_nist_vectors,
@@ -91,7 +88,6 @@ class TestTripleDESModeOFB(object):
     ),
     skip_message="Does not support TripleDES CFB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCFB(object):
     test_kat = generate_encrypt_test(
         load_nist_vectors,
@@ -124,7 +120,6 @@ class TestTripleDESModeCFB(object):
     ),
     skip_message="Does not support TripleDES CFB8",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeCFB8(object):
     test_kat = generate_encrypt_test(
         load_nist_vectors,
@@ -157,7 +152,6 @@ class TestTripleDESModeCFB8(object):
     ),
     skip_message="Does not support TripleDES ECB",
 )
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestTripleDESModeECB(object):
     test_kat = generate_encrypt_test(
         load_nist_vectors,

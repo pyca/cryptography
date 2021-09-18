@@ -14,7 +14,7 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import HashBackend
+from cryptography.hazmat.backends.interfaces import Backend, HashBackend
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -29,14 +29,14 @@ class X963KDF(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         sharedinfo: typing.Optional[bytes],
-        backend=None,
+        backend: typing.Optional[Backend] = None,
     ):
         backend = _get_backend(backend)
 
         max_len = algorithm.digest_size * (2 ** 32 - 1)
         if length > max_len:
             raise ValueError(
-                "Can not derive keys larger than {} bits.".format(max_len)
+                "Cannot derive keys larger than {} bits.".format(max_len)
             )
         if sharedinfo is not None:
             utils._check_bytes("sharedinfo", sharedinfo)

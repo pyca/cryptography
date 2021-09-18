@@ -8,7 +8,10 @@ import typing
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.bindings._padding import lib
+from cryptography.hazmat.bindings._rust import (
+    check_ansix923_padding,
+    check_pkcs7_padding,
+)
 
 
 class PaddingContext(metaclass=abc.ABCMeta):
@@ -84,7 +87,7 @@ def _byte_unpadding_update(
 def _byte_unpadding_check(
     buffer_: typing.Optional[bytes],
     block_size: int,
-    checkfn: typing.Callable[[bytes, int], int],
+    checkfn: typing.Callable[[bytes], int],
 ) -> bytes:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
@@ -92,7 +95,7 @@ def _byte_unpadding_check(
     if len(buffer_) != block_size // 8:
         raise ValueError("Invalid padding bytes.")
 
-    valid = checkfn(buffer_, block_size // 8)
+    valid = checkfn(buffer_)
 
     if not valid:
         raise ValueError("Invalid padding bytes.")
@@ -154,7 +157,7 @@ class _PKCS7UnpaddingContext(PaddingContext):
 
     def finalize(self) -> bytes:
         result = _byte_unpadding_check(
-            self._buffer, self.block_size, lib.Cryptography_check_pkcs7_padding
+            self._buffer, self.block_size, check_pkcs7_padding
         )
         self._buffer = None
         return result
@@ -215,7 +218,7 @@ class _ANSIX923UnpaddingContext(PaddingContext):
         result = _byte_unpadding_check(
             self._buffer,
             self.block_size,
-            lib.Cryptography_check_ansix923_padding,
+            check_ansix923_padding,
         )
         self._buffer = None
         return result

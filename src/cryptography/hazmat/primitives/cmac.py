@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
@@ -10,13 +12,16 @@ from cryptography.exceptions import (
     _Reasons,
 )
 from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import CMACBackend
+from cryptography.hazmat.backends.interfaces import Backend, CMACBackend
 from cryptography.hazmat.primitives import ciphers
 
 
 class CMAC(object):
     def __init__(
-        self, algorithm: ciphers.BlockCipherAlgorithm, backend=None, ctx=None
+        self,
+        algorithm: ciphers.BlockCipherAlgorithm,
+        backend: typing.Optional[Backend] = None,
+        ctx=None,
     ):
         backend = _get_backend(backend)
         if not isinstance(backend, CMACBackend):

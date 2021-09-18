@@ -7,13 +7,11 @@ import binascii
 
 import pytest
 
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import keywrap
 
 from .utils import wycheproof_tests
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 @wycheproof_tests("kwp_test.json")
 def test_keywrap_with_padding(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])
@@ -38,7 +36,6 @@ def test_keywrap_with_padding(backend, wycheproof):
             )
 
 
-@pytest.mark.requires_backend_interface(interface=CipherBackend)
 @wycheproof_tests("kw_test.json")
 def test_keywrap(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])

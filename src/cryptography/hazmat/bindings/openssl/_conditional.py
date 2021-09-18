@@ -31,20 +31,6 @@ def cryptography_has_ssl3_method():
     ]
 
 
-def cryptography_has_102_verification():
-    return [
-        "X509_V_ERR_SUITE_B_INVALID_VERSION",
-        "X509_V_ERR_SUITE_B_INVALID_ALGORITHM",
-        "X509_V_ERR_SUITE_B_INVALID_CURVE",
-        "X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM",
-        "X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED",
-        "X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256",
-        "X509_V_FLAG_SUITEB_128_LOS_ONLY",
-        "X509_V_FLAG_SUITEB_192_LOS",
-        "X509_V_FLAG_SUITEB_128_LOS",
-    ]
-
-
 def cryptography_has_110_verification_params():
     return ["X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"]
 
@@ -280,7 +266,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
     "Cryptography_HAS_RSA_OAEP_LABEL": cryptography_has_rsa_oaep_label,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
-    "Cryptography_HAS_102_VERIFICATION": cryptography_has_102_verification,
     "Cryptography_HAS_110_VERIFICATION_PARAMS": (
         cryptography_has_110_verification_params
     ),

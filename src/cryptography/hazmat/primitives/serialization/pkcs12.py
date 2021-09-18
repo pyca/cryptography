@@ -6,6 +6,7 @@ import typing
 
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
@@ -18,7 +19,9 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
 
 
 def load_key_and_certificates(
-    data: bytes, password: typing.Optional[bytes], backend=None
+    data: bytes,
+    password: typing.Optional[bytes],
+    backend: typing.Optional[Backend] = None,
 ) -> typing.Tuple[
     typing.Optional[_ALLOWED_PKCS12_TYPES],
     typing.Optional[x509.Certificate],

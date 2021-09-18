@@ -10,7 +10,6 @@ import pytest
 import pytz
 
 from cryptography import x509
-from cryptography.hazmat.backends.interfaces import X509Backend
 
 
 class TestRevokedCertificateBuilder(object):
@@ -28,7 +27,6 @@ class TestRevokedCertificateBuilder(object):
         with pytest.raises(ValueError):
             x509.RevokedCertificateBuilder().serial_number(0)
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_minimal_serial_number(self, backend):
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
         builder = (
@@ -40,7 +38,6 @@ class TestRevokedCertificateBuilder(object):
         revoked_certificate = builder.build(backend)
         assert revoked_certificate.serial_number == 1
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_biggest_serial_number(self, backend):
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
         builder = (
@@ -61,7 +58,6 @@ class TestRevokedCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.serial_number(4)
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_aware_revocation_date(self, backend):
         time = datetime.datetime(2012, 1, 16, 22, 43)
         tz = pytz.timezone("US/Pacific")
@@ -112,7 +108,6 @@ class TestRevokedCertificateBuilder(object):
                 "notanextension", False  # type: ignore[arg-type]
             )
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_serial_number(self, backend):
         builder = x509.RevokedCertificateBuilder().revocation_date(
             datetime.datetime(2002, 1, 1, 12, 1)
@@ -121,14 +116,12 @@ class TestRevokedCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.build(backend)
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_revocation_date(self, backend):
         builder = x509.RevokedCertificateBuilder().serial_number(3)
 
         with pytest.raises(ValueError):
             builder.build(backend)
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_create_revoked(self, backend):
         serial_number = 333
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
@@ -151,7 +144,6 @@ class TestRevokedCertificateBuilder(object):
             x509.CertificateIssuer([x509.DNSName("cryptography.io")]),
         ],
     )
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_add_extensions(self, backend, extension):
         serial_number = 333
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
@@ -172,7 +164,6 @@ class TestRevokedCertificateBuilder(object):
         assert ext.critical is False
         assert ext.value == extension
 
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_add_multiple_extensions(self, backend):
         serial_number = 333
         revocation_date = datetime.datetime(2002, 1, 1, 12, 1)

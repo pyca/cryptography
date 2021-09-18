@@ -31,18 +31,5 @@ def pytest_runtest_setup(item):
 
 @pytest.fixture()
 def backend(request):
-    required_interfaces = [
-        mark.kwargs["interface"]
-        for mark in request.node.iter_markers("requires_backend_interface")
-    ]
-    if not all(
-        isinstance(openssl_backend, iface) for iface in required_interfaces
-    ):
-        pytest.skip(
-            "OpenSSL doesn't implement required interfaces: {}".format(
-                required_interfaces
-            )
-        )
-
     check_backend_support(openssl_backend, request)
     return openssl_backend
