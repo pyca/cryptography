@@ -545,8 +545,11 @@ fn load_der_x509_crl(
     _py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
-    let raw =
-        OwnedRawCertificateRevocationList::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawCertificateRevocationList::try_new(
+        data.to_vec(),
+        |data| asn1::parse_single(data),
+        |_| Ok(pyo3::once_cell::GILOnceCell::new()),
+    )?;
 
     Ok(CertificateRevocationList {
         raw: Arc::new(raw),
@@ -573,6 +576,9 @@ struct OwnedRawCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
+    #[borrows(data)]
+    #[not_covariant]
+    revoked_certs: pyo3::once_cell::GILOnceCell<Vec<RawRevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass]
@@ -624,6 +630,26 @@ impl pyo3::PySequenceProtocol for CertificateRevocationList {
             .revoked_certificates
             .as_ref()
             .map_or(0, |v| v.len())
+    }
+
+    fn __getitem__(&self, idx: isize) -> pyo3::PyResult<RevokedCertificate> {
+        let gil = pyo3::Python::acquire_gil();
+        let py = gil.python();
+
+        let raw = try_map_arc_data_crl(&self.raw, |crl, revoked_certs| {
+            let revoked_certs = revoked_certs.get_or_init(py, || {
+                match &crl.borrow_value().tbs_cert_list.revoked_certificates {
+                    Some(c) => c.clone().collect(),
+                    None => vec![],
+                }
+            });
+
+            match revoked_certs.get(idx as usize).cloned() {
+                Some(cert) => Ok(cert),
+                None => Err(pyo3::exceptions::PyIndexError::new_err("xxx ill me in")),
+            }
+        })?;
+        Ok(RevokedCertificate { raw })
     }
 }
 
@@ -814,6 +840,8 @@ impl CertificateRevocationList {
                 Some(certs) => certs,
                 None => return Err(()),
             };
+
+            // TODO: linear scan. Make a hash or bisect!
             for cert in certs {
                 if serial_bytes == cert.user_certificate.as_bytes() {
                     return Ok(cert);
@@ -823,7 +851,7 @@ impl CertificateRevocationList {
         });
         match owned {
             Ok(o) => Ok(Some(RevokedCertificate { raw: o })),
-            Err(_) => Ok(None),
+            Err(()) => Ok(None),
         }
     }
 }
@@ -852,16 +880,47 @@ struct CRLIterator {
     contents: OwnedCRLIteratorData,
 }
 
+// Open-coded implementation of the API discussed in
+// https://github.com/joshua-maros/ouroboros/issues/38
+fn try_map_arc_data_crl<E>(
+    crl: &Arc<OwnedRawCertificateRevocationList>,
+    f: impl for<'this> FnOnce(
+        &'this OwnedRawCertificateRevocationList,
+        &pyo3::once_cell::GILOnceCell<Vec<RawRevokedCertificate<'this>>>,
+    ) -> Result<RawRevokedCertificate<'this>, E>,
+) -> Result<OwnedRawRevokedCertificate, E> {
+    OwnedRawRevokedCertificate::try_new(Arc::clone(crl), |inner_crl| {
+        crl.with(|value| {
+            f(&inner_crl, unsafe {
+                std::mem::transmute(value.revoked_certs)
+            })
+        })
+    })
+}
+fn try_map_arc_data_mut_crl_iterator<E>(
+    it: &mut OwnedCRLIteratorData,
+    f: impl for<'this> FnOnce(
+        &'this OwnedRawCertificateRevocationList,
+        &mut Option<asn1::SequenceOf<'this, RawRevokedCertificate<'this>>>,
+    ) -> Result<RawRevokedCertificate<'this>, E>,
+) -> Result<OwnedRawRevokedCertificate, E> {
+    OwnedRawRevokedCertificate::try_new(Arc::clone(&it.borrow_data()), |inner_it| {
+        it.with_value_mut(|value| f(&inner_it, unsafe { std::mem::transmute(value) }))
+    })
+}
+
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CRLIterator {
     fn __next__(mut slf: pyo3::pycell::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
-        slf.contents.with_value_mut(|v| match v {
+        let revoked = try_map_arc_data_mut_crl_iterator(&mut slf.contents, |_data, v| match v {
             Some(v) => match v.next() {
-                Some(_) => Some(RevokedCertificate::new()),
-                None => None,
+                Some(revoked) => Ok(revoked),
+                None => Err(()),
             },
-            None => None,
+            None => Err(()),
         })
+        .ok()?;
+        Some(RevokedCertificate { raw: revoked })
     }
 }
 
@@ -907,8 +966,13 @@ struct RevokedCertificate {
 #[pyo3::prelude::pymethods]
 impl RevokedCertificate {
     #[getter]
-    fn serial_number(&self) -> pyo3::PyResult<&pyo3::PyAny> {
-        unimplemented!("serial_number")
+    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        big_asn1_uint_to_py(py, self.raw.borrow_value().user_certificate)
+    }
+
+    #[getter]
+    fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        chrono_to_py(py, self.raw.borrow_value().revocation_date.as_chrono())
     }
 }
 
