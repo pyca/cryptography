@@ -653,7 +653,7 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
                     Some(c) => c.clone().collect(),
                     None => vec![],
                 }
-            })
+            });
         });
 
         if idx.is_instance::<pyo3::types::PySlice>()? {
