@@ -22,6 +22,8 @@ for P in ${PYTHONS}; do
            CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
            .venv/bin/python setup.py bdist_wheel $PY_LIMITED_API
 
+    auditwheel --version
+
     auditwheel repair --plat ${PLAT} -w wheelhouse/ dist/cryptography*.whl
 
     # Sanity checks
