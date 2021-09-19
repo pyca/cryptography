@@ -32,6 +32,10 @@
           image: ghcr.io/pyca/cryptography-manylinux_2_24:aarch64
           pythons:
             - cp36-cp36m
+        - platform: musllinux_1_1_aarch64
+          image: ghcr.io/pyca/cryptography-musllinux_1_1:aarch64
+          pythons:
+            - cp36-cp36m
 
 - job:
     name: pyca-cryptography-build-wheel-x86_64
