@@ -246,10 +246,6 @@ class TestCertificateRevocationList(object):
 
         # Check that len() works for CRLs.
         assert len(crl) == 12
-        it = iter(crl)
-        assert len(it) == 12
-        next(it)
-        assert len(it) == 11
 
     def test_get_revoked_certificate_by_serial_number(self, backend):
         crl = _load_cert(
