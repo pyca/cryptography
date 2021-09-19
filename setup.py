@@ -73,12 +73,12 @@ except:  # noqa: E722
     successfully install cryptography:
     1) Upgrade to the latest pip and try again. This will fix errors for most
        users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
-    2) Read https://cryptography.io/en/latest/installation.html for specific
+    2) Read https://cryptography.io/en/latest/installation/ for specific
        instructions for your platform.
     3) Check our frequently asked questions for more information:
-       https://cryptography.io/en/latest/faq.html
+       https://cryptography.io/en/latest/faq/
     4) Ensure you have a recent Rust toolchain installed:
-       https://cryptography.io/en/latest/installation.html#rust
+       https://cryptography.io/en/latest/installation/#rust
     """
     )
     print(f"    Python: {'.'.join(str(v) for v in sys.version_info[:3])}")
