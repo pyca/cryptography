@@ -157,7 +157,8 @@ class _CertificateRevocationList(x509.CertificateRevocationList):
     @property
     def next_update(self) -> datetime.datetime:
         nu = self._backend._lib.X509_CRL_get0_nextUpdate(self._x509_crl)
-        self._backend.openssl_assert(nu != self._backend._ffi.NULL)
+        if nu == self._backend._ffi.NULL:
+            return None
         return _parse_asn1_time(self._backend, nu)
 
     @property
