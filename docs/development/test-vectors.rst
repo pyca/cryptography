@@ -540,6 +540,8 @@ Custom X.509 Certificate Revocation List Vectors
   ``extnValue`` of ``abcdef``.
 * ``crl_invalid_time.der`` - Contains a CRL with an invalid ``UTCTime``
   value in ``thisUpdate``. The signature on this CRL is invalid.
+* ``crl_no_next_time.pem`` - Contains a CRL with no ``nextUpdate`` value. The
+  signature on this CRL is invalid.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
