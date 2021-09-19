@@ -108,6 +108,11 @@ class TestCertificateRevocationList(object):
         )
         assert len(crl) == 0
 
+        with pytest.raises(IndexError):
+            crl[0]
+        assert crl.get_revoked_certificate_by_serial_number(12) is None
+        assert list(iter(crl)) == []
+
     def test_invalid_pem(self, backend):
         with pytest.raises(ValueError):
             x509.load_pem_x509_crl(b"notacrl", backend)
