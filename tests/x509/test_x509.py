@@ -215,6 +215,14 @@ class TestCertificateRevocationList(object):
         assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
         assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
 
+    def test_no_next_update(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_no_next_update.pem"),
+            x509.load_pem_x509_crl,
+            backend,
+        )
+        assert crl.next_update is None
+
     def test_unrecognized_extension(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_unrecognized_extension.der"),

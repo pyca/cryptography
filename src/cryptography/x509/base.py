@@ -258,7 +258,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def next_update(self) -> datetime.datetime:
+    def next_update(self) -> typing.Optional[datetime.datetime]:
         """
         Returns the date of next update for this CRL.
         """
