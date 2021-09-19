@@ -952,6 +952,10 @@ fn try_map_arc_data_mut_crl_iterator<E>(
 
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CRLIterator {
+    fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> pyo3::pycell::PyRef<'p, Self> {
+        slf
+    }
+
     fn __next__(mut slf: pyo3::pycell::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
         let revoked = try_map_arc_data_mut_crl_iterator(&mut slf.contents, |_data, v| match v {
             Some(v) => match v.next() {
