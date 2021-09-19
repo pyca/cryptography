@@ -219,7 +219,7 @@ impl Certificate {
             Ok(pyo3::types::PyBytes::new(py, &pem))
         } else {
             Err(pyo3::exceptions::PyTypeError::new_err(
-                "encoding must be an item from the Encoding enum",
+                "encoding must be Encoding.DER or Encoding.PEM",
             ))
         }
     }
@@ -759,7 +759,7 @@ impl CertificateRevocationList {
             Ok(pyo3::types::PyBytes::new(py, &pem))
         } else {
             Err(pyo3::exceptions::PyTypeError::new_err(
-                "encoding must be an item from the Encoding enum",
+                "encoding must be Encoding.DER or Encoding.PEM",
             ))
         }
     }
