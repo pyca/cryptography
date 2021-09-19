@@ -4,6 +4,8 @@
 cd /io
 
 mkdir -p wheelhouse.final
+rm -rf build
+rm -rf dist
 
 for P in ${PYTHONS}; do
 
@@ -22,8 +24,7 @@ for P in ${PYTHONS}; do
            CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
            .venv/bin/python setup.py bdist_wheel $PY_LIMITED_API
 
-    ls dist/
-    auditwheel repair --plat ${PLAT} -w wheelhouse/ dist/cryptography*-linux*.whl
+    auditwheel repair --plat ${PLAT} -w wheelhouse/ dist/cryptography*.whl
 
     # Sanity checks
     # NOTE(ianw) : no execstack on aarch64, comes from
