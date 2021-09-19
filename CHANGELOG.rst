@@ -24,8 +24,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
-* We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
-  and ``manylinux2014`` wheels.
+* We now ship ``manylinux_2_24`` and ``musllinux_1_1`` wheels, in addition to
+  our ``manylinux2010`` and ``manylinux2014`` wheels. Users on distributions
+  like Alpine Linux should ensure they upgrade to the latest ``pip`` to
+  correctly receive wheels.
 * Added ``rfc4514_attribute_name`` attribute to :attr:`x509.NameAttribute
   <cryptography.x509.NameAttribute.rfc4514_attribute_name>`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`.
