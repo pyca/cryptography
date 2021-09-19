@@ -972,6 +972,13 @@ impl pyo3::PyIterProtocol<'_> for CRLIterator {
     }
 }
 
+#[pyo3::prelude::pyproto]
+impl pyo3::PySequenceProtocol<'_> for CRLIterator {
+    fn __len__(&self) -> usize {
+        self.contents.borrow_value().clone().map_or(0, |v| v.len())
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 struct RawCertificateRevocationList<'a> {
     tbs_cert_list: TBSCertList<'a>,
