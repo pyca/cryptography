@@ -322,9 +322,10 @@ Rust
 .. note::
 
     If you are using Linux, then you should **upgrade pip** (in
-    a virtual environment!) and attempt to install ``cryptography`` again
-    before trying to install the Rust toolchain. Most Linux distros will receive
-    a binary wheel and require no compiler if you have an updated ``pip``!
+    a virtual environment!) and attempt to install ``cryptography`` again before
+    trying to install the Rust toolchain. On most Linux distributions, the latest
+    version of ``pip`` will be able to install a binary wheel, so you won't need
+    a Rust toolchain.
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
 minimum supported Rust version is 1.41.0. **This is newer than the Rust most
