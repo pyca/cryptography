@@ -662,10 +662,9 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
                 .indices(self.len().try_into().unwrap())?;
             let result = pyo3::types::PyList::empty(py);
             for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {
-                result.append(pyo3::pycell::PyCell::new(
-                    py,
-                    self.revoked_cert(py, i as usize)?,
-                )?)?;
+                let revoked_cert =
+                    pyo3::pycell::PyCell::new(py, self.revoked_cert(py, i as usize)?)?;
+                result.append(revoked_cert)?;
             }
             Ok(result.to_object(py))
         } else {
