@@ -130,14 +130,12 @@ class TestCertificateRevocationList(object):
             x509.load_der_x509_crl(b"notacrl", backend)
 
     def test_invalid_time(self, backend):
-        crl = _load_cert(
-            os.path.join("x509", "custom", "crl_invalid_time.der"),
-            x509.load_der_x509_crl,
-            backend,
-        )
-
-        with pytest.raises(ValueError, match="18102813516Z"):
-            crl.last_update
+        with pytest.raises(ValueError, match="TBSCertList::this_update"):
+            _load_cert(
+                os.path.join("x509", "custom", "crl_invalid_time.der"),
+                x509.load_der_x509_crl,
+                backend,
+            )
 
     def test_unknown_signature_algorithm(self, backend):
         crl = _load_cert(
@@ -248,6 +246,10 @@ class TestCertificateRevocationList(object):
 
         # Check that len() works for CRLs.
         assert len(crl) == 12
+        it = iter(crl)
+        assert len(typing.cast(typing.Sized, it)) == 12
+        next(it)
+        assert len(typing.cast(typing.Sized, it)) == 11
 
     def test_get_revoked_certificate_by_serial_number(self, backend):
         crl = _load_cert(

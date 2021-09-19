@@ -214,6 +214,10 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
         """
 
 
+# Runtime isinstance checks need this since the rust class is not a subclass.
+RevokedCertificate.register(rust_x509.RevokedCertificate)
+
+
 class CertificateRevocationList(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_bytes(self, encoding: serialization.Encoding) -> bytes:
@@ -334,6 +338,9 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
 
+CertificateRevocationList.register(rust_x509.CertificateRevocationList)
+
+
 class CertificateSigningRequest(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
@@ -449,15 +456,13 @@ def load_der_x509_csr(
 def load_pem_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    backend = _get_backend(backend)
-    return backend.load_pem_x509_crl(data)
+    return rust_x509.load_pem_x509_crl(data)
 
 
 def load_der_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
-    backend = _get_backend(backend)
-    return backend.load_der_x509_crl(data)
+    return rust_x509.load_der_x509_crl(data)
 
 
 class CertificateSigningRequestBuilder(object):

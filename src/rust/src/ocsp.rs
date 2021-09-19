@@ -226,7 +226,9 @@ fn parse_ocsp_singleresp_ext(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) 
             .call1((scts,))?
             .to_object(py))
     } else {
-        x509::parse_crl_entry_ext(py, der_oid, data)
+        Ok(x509::parse_crl_entry_ext(py, oid, data)?
+            .map(|p| p.to_object(py))
+            .unwrap_or_else(|| py.None()))
     }
 }
 
