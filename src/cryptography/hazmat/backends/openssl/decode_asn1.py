@@ -177,24 +177,6 @@ def _asn1_string_to_utf8(backend, asn1_string) -> str:
     return backend._ffi.buffer(buf[0], res)[:].decode("utf8")
 
 
-def _parse_asn1_time(backend, asn1_time):
-    backend.openssl_assert(asn1_time != backend._ffi.NULL)
-    generalized_time = backend._lib.ASN1_TIME_to_generalizedtime(
-        asn1_time, backend._ffi.NULL
-    )
-    if generalized_time == backend._ffi.NULL:
-        raise ValueError(
-            "Couldn't parse ASN.1 time as generalizedtime {!r}".format(
-                _asn1_string_to_bytes(backend, asn1_time)
-            )
-        )
-
-    generalized_time = backend._ffi.gc(
-        generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
-    )
-    return _parse_asn1_generalized_time(backend, generalized_time)
-
-
 def _parse_asn1_generalized_time(backend, generalized_time):
     time = _asn1_string_to_ascii(
         backend, backend._ffi.cast("ASN1_STRING *", generalized_time)

@@ -341,18 +341,6 @@ class X509Backend(metaclass=abc.ABCMeta):
         Compute the DER encoded bytes of an X509 Name object.
         """
 
-    @abc.abstractmethod
-    def load_pem_x509_crl(self, data: bytes) -> "CertificateRevocationList":
-        """
-        Load an X.509 CRL from PEM encoded data.
-        """
-
-    @abc.abstractmethod
-    def load_der_x509_crl(self, data: bytes) -> "CertificateRevocationList":
-        """
-        Load an X.509 CRL from DER encoded data.
-        """
-
 
 class DHBackend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
