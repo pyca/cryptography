@@ -78,9 +78,8 @@ OpenSSL. If you see this error it is likely because your copy of ``pip`` is too
 old to find our wheel files. Upgrade your ``pip`` with ``pip install -U pip``
 and then try to install ``cryptography`` again.
 
-Users on PyPy, unusual CPU architectures, or distributions of Linux using
-``musl`` (like Alpine) will need to compile ``cryptography`` themselves. Please
-view our :doc:`/installation` documentation.
+Users on unusual CPU architectures will need to compile ``cryptography``
+themselves. Please view our :doc:`/installation` documentation.
 
 ``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
 -------------------------------------------------------------------------

@@ -87,17 +87,16 @@ Building cryptography on Linux
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
 are included. For users on **pip 19.0** or above running on a ``manylinux2010``
-(or greater) compatible distribution (almost everything **except Alpine**) all
+(or greater) compatible distribution (or **pip 21.2.4** for ``musllinux``) all
 you should need to do is:
 
 .. code-block:: console
 
     $ pip install cryptography
 
-If you are on Alpine or just want to compile it yourself then
-``cryptography`` requires a C compiler, a Rust compiler, headers for Python (if
-you're not using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
-available on your system.
+If you want to compile ``cryptography`` yourself you'll need a C compiler, a
+Rust compiler, headers for Python (if you're not using ``pypy``), and headers
+for the OpenSSL and ``libffi`` libraries available on your system.
 
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
@@ -198,15 +197,15 @@ Static Wheels
 ~~~~~~~~~~~~~
 
 Cryptography ships statically-linked wheels for macOS, Windows, and Linux (via
-``manylinux``). This allows compatible environments to use the most recent
-OpenSSL, regardless of what is shipped by default on those platforms. Some
-Linux distributions (most notably Alpine) are not ``manylinux`` compatible so
-we cannot distribute wheels for them.
+``manylinux`` and ``musllinux``). This allows compatible environments to use
+the most recent OpenSSL, regardless of what is shipped by default on those
+platforms.
 
-However, you can build your own statically-linked wheels that will work on your
-own systems. This will allow you to continue to use relatively old Linux
-distributions (such as LTS releases), while making sure you have the most
-recent OpenSSL available to your Python programs.
+If you are using a platform not covered by our wheels, you can build your own
+statically-linked wheels that will work on your own systems. This will allow
+you to continue to use relatively old Linux distributions (such as LTS
+releases), while making sure you have the most recent OpenSSL available to
+your Python programs.
 
 To do so, you should find yourself a machine that is as similar as possible to
 your target environment (e.g. your production environment): for example, spin
