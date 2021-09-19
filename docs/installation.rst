@@ -321,10 +321,9 @@ Rust
 
 .. note::
 
-    If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
-    derived from the preceding list, then you should **upgrade pip** (in
+    If you are using Linux, then you should **upgrade pip** (in
     a virtual environment!) and attempt to install ``cryptography`` again
-    before trying to install the Rust toolchain. These platforms will receive
+    before trying to install the Rust toolchain. Most Linux distros will receive
     a binary wheel and require no compiler if you have an updated ``pip``!
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
