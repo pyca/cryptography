@@ -155,7 +155,7 @@ class _CertificateRevocationList(x509.CertificateRevocationList):
         return _decode_x509_name(self._backend, issuer)
 
     @property
-    def next_update(self) -> datetime.datetime:
+    def next_update(self) -> typing.Optional[datetime.datetime]:
         nu = self._backend._lib.X509_CRL_get0_nextUpdate(self._x509_crl)
         if nu == self._backend._ffi.NULL:
             return None
