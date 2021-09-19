@@ -748,6 +748,9 @@ class TestCertificateRevocationListBuilder(object):
             .serial_number(2)
             .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
             .add_extension(invalidity_date, False)
+            .add_extension(
+                x509.CRLReason(x509.ReasonFlags.ca_compromise), False
+            )
             .build(backend)
         )
         builder = (
@@ -776,7 +779,7 @@ class TestCertificateRevocationListBuilder(object):
         assert len(crl[0].extensions) == 0
         assert crl[1].serial_number == revoked_cert1.serial_number
         assert crl[1].revocation_date == revoked_cert1.revocation_date
-        assert len(crl[1].extensions) == 1
+        assert len(crl[1].extensions) == 2
         ext = crl[1].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
         assert ext.value == invalidity_date
