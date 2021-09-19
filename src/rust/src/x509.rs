@@ -901,9 +901,10 @@ impl CertificateRevocationList {
 impl pyo3::PyIterProtocol<'_> for CertificateRevocationList {
     fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> CRLIterator {
         CRLIterator {
-            contents: OwnedCRLIteratorData::new(Arc::clone(&slf.raw), |v| {
-                v.borrow_value().tbs_cert_list.revoked_certificates.clone()
-            }),
+            contents: OwnedCRLIteratorData::try_new(Arc::clone(&slf.raw), |v| {
+                Ok::<_, ()>(v.borrow_value().tbs_cert_list.revoked_certificates.clone())
+            })
+            .unwrap(),
         }
     }
 }
