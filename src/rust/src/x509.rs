@@ -598,7 +598,7 @@ impl CertificateRevocationList {
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> pyo3::PyResult<RevokedCertificate> {
         let raw = try_map_arc_data_crl(&self.raw, |_crl, revoked_certs| {
             let revoked_certs = revoked_certs.get(py).unwrap();
-            Ok::<_, pyo3::PyErr>(revoked_certs.get(idx).cloned().unwrap())
+            Ok::<_, pyo3::PyErr>(revoked_certs[idx].clone())
         })?;
         Ok(RevokedCertificate {
             raw,
