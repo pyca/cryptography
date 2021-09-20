@@ -70,6 +70,17 @@ legacy libraries:
   :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 
+Why does ``cryptography`` require Rust?
+---------------------------------------
+
+``cryptography`` uses OpenSSL for its cryptographic operations. OpenSSL is
+the de facto standard for cryptographic libraries and provides high performance
+along with various certifications that may be relevant to developers. However,
+it is written in C and lacks `memory safety`_.  We want ``cryptography`` to be
+as secure as possible while retaining the advantages of OpenSSL, so we've
+chosen to rewrite non-cryptographic operations (such as ASN.1 parsing) in a
+high performance memory safe language: Rust.
+
 Installing ``cryptography`` produces a ``fatal error: 'openssl/opensslv.h' file not found`` error
 -------------------------------------------------------------------------------------------------
 
@@ -175,3 +186,4 @@ For example, this is a PEM file for a RSA Public Key: ::
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues
+.. _`memory safety`: https://alexgaynor.net/2019/aug/12/introduction-to-memory-unsafety-for-vps-of-engineering/
