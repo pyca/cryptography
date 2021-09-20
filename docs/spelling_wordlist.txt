@@ -27,6 +27,7 @@ Cryptanalysis
 crypto
 cryptographic
 cryptographically
+de
 Debian
 deallocated
 decrypt
@@ -49,6 +50,7 @@ El
 Encodings
 endian
 extendable
+facto
 fallback
 Fernet
 fernet
