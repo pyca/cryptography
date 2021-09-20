@@ -74,7 +74,7 @@ Why does ``cryptography`` require Rust?
 ---------------------------------------
 
 ``cryptography`` uses OpenSSL for its cryptographic operations. OpenSSL is
-the de facto standard for cryptographic operaitons and provides high performance
+the de facto standard for cryptographic libraries and provides high performance
 along with various certifications that may be relevant to developers. However,
 it is written in C and lacks `memory safety`_.  We want ``cryptography`` to be
 as secure as possible while retaining the advantages of OpenSSL, so we've
