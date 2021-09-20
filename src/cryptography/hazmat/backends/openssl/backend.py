@@ -967,7 +967,10 @@ class Backend(BackendInterface):
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
 
-        return _CertificateSigningRequest(self, x509_req)
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_X509_REQ_bio(bio, x509_req)
+        self.openssl_assert(res == 1)
+        return rust_x509.load_der_x509_csr(self._read_mem_bio(bio))
 
     def create_x509_certificate(
         self,
@@ -1401,31 +1404,24 @@ class Backend(BackendInterface):
 
         return True
 
-    def load_pem_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
-        mem_bio = self._bytes_to_bio(data)
-        x509_req = self._lib.PEM_read_bio_X509_REQ(
-            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
-        )
-        if x509_req == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError(
-                "Unable to load request. See https://cryptography.io/en/"
-                "latest/faq.html#why-can-t-i-import-my-pem-file for more"
-                " details."
-            )
-
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-        return _CertificateSigningRequest(self, x509_req)
-
-    def load_der_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
+    def _csr_is_signature_valid(
+        self, csr: x509.CertificateSigningRequest
+    ) -> bool:
+        data = csr.public_bytes(serialization.Encoding.DER)
         mem_bio = self._bytes_to_bio(data)
         x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
-        if x509_req == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load request")
-
+        self.openssl_assert(x509_req != self._ffi.NULL)
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-        return _CertificateSigningRequest(self, x509_req)
+        pkey = self._lib.X509_REQ_get_pubkey(x509_req)
+        self.openssl_assert(pkey != self._ffi.NULL)
+        pkey = self._ffi.gc(pkey, self._lib.EVP_PKEY_free)
+        res = self._lib.X509_REQ_verify(x509_req, pkey)
+
+        if res != 1:
+            self._consume_errors()
+            return False
+
+        return True
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
