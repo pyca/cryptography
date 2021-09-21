@@ -1235,7 +1235,7 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
     Ok(certificate_policies.to_object(py))
 }
 
-fn chrono_to_py<'p>(
+pub(crate) fn chrono_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &chrono::DateTime<chrono::Utc>,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
@@ -1522,7 +1522,10 @@ fn parse_rdn<'a>(
         .to_object(py))
 }
 
-fn parse_name<'p>(py: pyo3::Python<'p>, name: &Name<'_>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+pub(crate) fn parse_name<'p>(
+    py: pyo3::Python<'p>,
+    name: &Name<'_>,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.clone() {
@@ -1993,6 +1996,33 @@ fn parse_csr_extension(py: pyo3::Python<'_>, der_oid: &[u8], ext_data: &[u8]) ->
     }
 }
 
+pub(crate) type CRLReason = asn1::Enumerated;
+
+pub(crate) fn parse_crl_reason_flags<'p>(
+    py: pyo3::Python<'p>,
+    reason: &CRLReason,
+) -> PyAsn1Result<&'p pyo3::PyAny> {
+    let x509_module = py.import("cryptography.x509")?;
+    let flag_name = match reason.value() {
+        0 => "unspecified",
+        1 => "key_compromise",
+        2 => "ca_compromise",
+        3 => "affiliation_changed",
+        4 => "superseded",
+        5 => "cessation_of_operation",
+        6 => "certificate_hold",
+        8 => "remove_from_crl",
+        9 => "privilege_withdrawn",
+        10 => "aa_compromise",
+        value => {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                format!("Unsupported reason code: {}", value),
+            )))
+        }
+    };
+    Ok(x509_module.getattr("ReasonFlags")?.getattr(flag_name)?)
+}
+
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
     oid: asn1::ObjectIdentifier<'_>,
@@ -2000,25 +2030,8 @@ pub fn parse_crl_entry_ext<'p>(
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
     if oid == *CRL_REASON_OID {
-        let flag_name = match asn1::parse_single::<asn1::Enumerated>(data)?.value() {
-            0 => "unspecified",
-            1 => "key_compromise",
-            2 => "ca_compromise",
-            3 => "affiliation_changed",
-            4 => "superseded",
-            5 => "cessation_of_operation",
-            6 => "certificate_hold",
-            8 => "remove_from_crl",
-            9 => "privilege_withdrawn",
-            10 => "aa_compromise",
-            value => {
-                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                    format!("Unsupported reason code: {}", value),
-                )))
-            }
-        };
-        let flag = x509_module.getattr("ReasonFlags")?.getattr(flag_name)?;
-        Ok(Some(x509_module.getattr("CRLReason")?.call1((flag,))?))
+        let flags = parse_crl_reason_flags(py, &asn1::parse_single::<CRLReason>(data)?)?;
+        Ok(Some(x509_module.getattr("CRLReason")?.call1((flags,))?))
     } else if oid == *CERTIFICATE_ISSUER_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, GeneralName<'_>>>(data)?;
         let gns = parse_general_names(py, gn_seq)?;

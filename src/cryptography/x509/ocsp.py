@@ -65,9 +65,6 @@ class OCSPCertStatus(utils.Enum):
     UNKNOWN = 2
 
 
-_CERT_STATUS_TO_ENUM = {x.value: x for x in OCSPCertStatus}
-
-
 class _SingleResponse(object):
     def __init__(
         self,

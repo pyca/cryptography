@@ -426,18 +426,6 @@ class Backend(BackendInterface):
             get_ext=self._lib.sk_X509_EXTENSION_value,
             rust_callback=rust_x509.parse_csr_extension,
         )
-        self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
-            get_ext=self._lib.OCSP_BASICRESP_get_ext,
-            rust_callback=rust_ocsp.parse_ocsp_resp_extension,
-        )
-        self._ocsp_singleresp_ext_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
-            get_ext=self._lib.OCSP_SINGLERESP_get_ext,
-            rust_callback=rust_ocsp.parse_ocsp_singleresp_ext,
-        )
 
     def _register_x509_encoders(self):
         self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()
@@ -1816,7 +1804,6 @@ class Backend(BackendInterface):
         self.openssl_assert(res > 0)
         data = self._read_mem_bio(bio)
         return ocsp.load_der_ocsp_response(data)
-
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         if self._fips_enabled and not isinstance(
