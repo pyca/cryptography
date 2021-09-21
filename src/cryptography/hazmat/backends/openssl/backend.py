@@ -1386,6 +1386,34 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
+    def _cert_is_signature_valid(
+        self, cert: x509.Certificate, public_key: PUBLIC_KEY_TYPES) -> bool:
+        if not isinstance(
+            public_key,
+            (
+                _DSAPublicKey,
+                _RSAPublicKey,
+                _EllipticCurvePublicKey,
+            ),
+        ):
+            raise TypeError(
+                "Expecting one of DSAPublicKey, RSAPublicKey,"
+                " or EllipticCurvePublicKey."
+            )
+        data = cert.public_bytes(serialization.Encoding.DER)
+        mem_bio = self._bytes_to_bio(data)
+        x509_cert = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
+        self.openssl_assert(x509_cert != self._ffi.NULL)
+        x509_cert = self._ffi.gc(x509_cert, self._lib.X509_free)
+
+        res = self._lib.X509_verify(x509_cert, public_key._evp_pkey)
+
+        if res != 1:
+            self._consume_errors()
+            return False
+
+        return True
+
     def _crl_is_signature_valid(
         self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES
     ) -> bool:

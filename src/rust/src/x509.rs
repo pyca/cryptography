@@ -482,6 +482,18 @@ impl Certificate {
             },
         )
     }
+
+    fn is_signature_valid<'p>(
+        slf: pyo3::pycell::PyRef<'_, Self>,
+        py: pyo3::Python<'p>,
+        public_key: &'p pyo3::PyAny,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let backend = py
+            .import("cryptography.hazmat.backends.openssl.backend")?
+            .getattr("backend")?;
+        backend.call_method1("_cert_is_signature_valid", (slf, public_key))
+    }
+
     // This getter exists for compatibility with pyOpenSSL and will be removed.
     // DO NOT RELY ON IT. WE WILL BREAK YOU WHEN WE FEEL LIKE IT.
     #[getter]

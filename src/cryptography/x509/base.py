@@ -189,6 +189,12 @@ class Certificate(metaclass=abc.ABCMeta):
         Serializes the certificate to PEM or DER format.
         """
 
+    @abc.abstractmethod
+    def is_signature_valid(self, public_key: PUBLIC_KEY_TYPES) -> bool:
+        """
+        Verifies signature of certificate against given public key.
+        """
+
 
 # Runtime isinstance checks need this since the rust class is not a subclass.
 Certificate.register(rust_x509.Certificate)
