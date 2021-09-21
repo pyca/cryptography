@@ -41,7 +41,7 @@ struct OwnedRawOCSPRequest {
 fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPRequest, PyAsn1Error> {
     let raw = OwnedRawOCSPRequest::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
 
-    if raw.borrow_value().tbs_request.request_list.clone().count() != 1 {
+    if raw.borrow_value().tbs_request.request_list.len() != 1 {
         return Err(PyAsn1Error::from(
             exceptions::PyNotImplementedError::new_err(
                 "OCSP request contains more than one request",
