@@ -195,6 +195,92 @@ struct CertID<'a> {
 }
 
 #[pyo3::prelude::pyfunction]
+fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResponse, PyAsn1Error> {
+    let raw = OwnedRawOCSPResponse::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+
+    Ok(OCSPResponse {
+        raw,
+        cached_extensions: None,
+    })
+}
+
+#[ouroboros::self_referencing]
+struct OwnedRawOCSPResponse {
+    data: Vec<u8>,
+    #[borrows(data)]
+    #[covariant]
+    value: RawOCSPResponse<'this>,
+}
+
+#[pyo3::prelude::pyclass]
+struct OCSPResponse {
+    raw: OwnedRawOCSPResponse,
+
+    cached_extensions: Option<pyo3::PyObject>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct RawOCSPResponse<'a> {
+    response_status: asn1::Enumerated,
+    #[explicit(0)]
+    response_bytes: Option<ResponseBytes<'a>>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct ResponseBytes<'a> {
+    response_type: asn1::ObjectIdentifier<'a>,
+    response: &'a [u8],
+}
+
+// OCSPResponseStatus ::= ENUMERATED {
+//     successful            (0),  -- Response has valid confirmations
+//     malformedRequest      (1),  -- Illegal confirmation request
+//     internalError         (2),  -- Internal error in issuer
+//     tryLater              (3),  -- Try again later
+//                                 -- (4) is not used
+//     sigRequired           (5),  -- Must sign the request
+//     unauthorized          (6)   -- Request unauthorized
+// }
+
+// BasicOCSPResponse       ::= SEQUENCE {
+//    tbsResponseData      ResponseData,
+//    signatureAlgorithm   AlgorithmIdentifier,
+//    signature            BIT STRING,
+//    certs            [0] EXPLICIT SEQUENCE OF Certificate OPTIONAL }
+
+// ResponseData ::= SEQUENCE {
+//    version              [0] EXPLICIT Version DEFAULT v1,
+//    responderID              ResponderID,
+//    producedAt               GeneralizedTime,
+//    responses                SEQUENCE OF SingleResponse,
+//    responseExtensions   [1] EXPLICIT Extensions OPTIONAL }
+
+// ResponderID ::= CHOICE {
+//    byName               [1] Name,
+//    byKey                [2] KeyHash }
+
+// KeyHash ::= OCTET STRING -- SHA-1 hash of responder's public key
+// (excluding the tag and length fields)
+
+// SingleResponse ::= SEQUENCE {
+//    certID                       CertID,
+//    certStatus                   CertStatus,
+//    thisUpdate                   GeneralizedTime,
+//    nextUpdate         [0]       EXPLICIT GeneralizedTime OPTIONAL,
+//    singleExtensions   [1]       EXPLICIT Extensions OPTIONAL }
+
+// CertStatus ::= CHOICE {
+//     good        [0]     IMPLICIT NULL,
+//     revoked     [1]     IMPLICIT RevokedInfo,
+//     unknown     [2]     IMPLICIT UnknownInfo }
+
+// RevokedInfo ::= SEQUENCE {
+//     revocationTime              GeneralizedTime,
+//     revocationReason    [0]     EXPLICIT CRLReason OPTIONAL }
+
+// UnknownInfo ::= NULL
+
+#[pyo3::prelude::pyfunction]
 fn parse_ocsp_resp_extension(py: pyo3::Python<'_>, der_oid: &[u8], data: &[u8]) -> PyAsn1Result {
     let oid = asn1::ObjectIdentifier::from_der(der_oid).unwrap();
 
@@ -237,6 +323,7 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     let submod = pyo3::prelude::PyModule::new(py, "ocsp")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_response))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_resp_extension))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_ocsp_singleresp_ext))?;
 
