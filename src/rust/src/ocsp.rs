@@ -204,7 +204,7 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
             if response.response_status.value() == SUCCESSFUL_RESPONSE {
                 match response.response_bytes {
                     Some(ref bytes) => {
-                        if &bytes.response_type == &*BASIC_RESPONSE_OID {
+                        if bytes.response_type == *BASIC_RESPONSE_OID {
                             asn1::parse_single(bytes.response)
                         } else {
                             unimplemented!()
