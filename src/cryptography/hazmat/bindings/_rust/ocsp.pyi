@@ -1,4 +1,5 @@
 from cryptography.x509 import ExtensionType
-from cryptography.x509.ocsp import OCSPRequest
+from cryptography.x509.ocsp import OCSPRequest, OCSPResponse
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest: ...
+def load_der_ocsp_response(data: bytes) -> OCSPResponse: ...
