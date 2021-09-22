@@ -198,7 +198,7 @@ struct CertID<'a> {
 #[pyo3::prelude::pyfunction]
 fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResponse, PyAsn1Error> {
     let raw = OwnedRawOCSPResponse::try_new(
-        data.to_vec(),
+        Arc::from(data),
         |data| asn1::parse_single(data),
         |_data, response| {
             if response.response_status.value() == SUCCESSFUL_RESPONSE {
@@ -239,7 +239,7 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
 
 #[ouroboros::self_referencing]
 struct OwnedRawOCSPResponse {
-    data: Vec<u8>,
+    data: Arc<[u8]>,
     #[borrows(data)]
     #[covariant]
     value: RawOCSPResponse<'this>,
@@ -373,6 +373,47 @@ impl OCSPResponse {
     fn certificates<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
         let resp = self.requires_successful_response()?;
         unimplemented!()
+    }
+
+    #[getter]
+    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = resp.single_response();
+        big_asn1_uint_to_py(py, single_resp.cert_id.serial_number)
+    }
+
+    #[getter]
+    fn issuer_key_hash(&self) -> Result<&[u8], PyAsn1Error> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = resp.single_response();
+        Ok(single_resp.cert_id.issuer_key_hash)
+    }
+
+    #[getter]
+    fn issuer_name_hash(&self) -> Result<&[u8], PyAsn1Error> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = resp.single_response();
+        Ok(single_resp.cert_id.issuer_name_hash)
+    }
+
+    #[getter]
+    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = resp.single_response();
+
+        let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
+        match OIDS_TO_HASH.get(&single_resp.cert_id.hash_algorithm.oid) {
+            Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
+            None => {
+                let exceptions = py.import("cryptography.exceptions")?;
+                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                    exceptions.getattr("UnsupportedAlgorithm")?.call1((format!(
+                        "Signature algorithm OID: {} not recognized",
+                        single_resp.cert_id.hash_algorithm.oid
+                    ),))?,
+                )))
+            }
+        }
     }
 
     #[getter]
