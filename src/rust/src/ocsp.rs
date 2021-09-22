@@ -338,18 +338,19 @@ impl OCSPResponse {
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
-            Err(_) => Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                py.import("cryptography.exceptions")?.call_method1(
-                    "UnsupportedAlgorithm",
-                    (format!(
-                        "Signature algorithm OID: {} not recognized",
-                        self.requires_successful_response()?
-                            .signature_algorithm
-                            .oid
-                            .to_string()
-                    ),),
-                )?,
-            ))),
+            Err(_) => {
+                let exc_messsage = format!(
+                    "Signature algorithm OID: {} not recognized",
+                    self.requires_successful_response()?
+                        .signature_algorithm
+                        .oid
+                        .to_string()
+                );
+                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                    py.import("cryptography.exceptions")?
+                        .call_method1("UnsupportedAlgorithm", (exc_messsage,))?,
+                )))
+            }
         }
     }
 
