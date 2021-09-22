@@ -587,7 +587,7 @@ fn map_arc_data_ocsp_response(
         &Option<BasicOCSPResponse<'this>>,
     ) -> x509::RawCertificate<'this>,
 ) -> x509::OwnedRawCertificate {
-    x509::OwnedRawCertificate::new(Arc::clone(it.borrow_data()), |inner_it| {
+    x509::OwnedRawCertificate::new_public(Arc::clone(it.borrow_data()), |inner_it| {
         it.with(|value| {
             f(
                 inner_it,

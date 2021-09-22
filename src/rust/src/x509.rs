@@ -101,12 +101,23 @@ pub(crate) struct Validity {
     not_after: Time,
 }
 
-#[ouroboros::self_referencing(pub_extras)]
+#[ouroboros::self_referencing]
 pub(crate) struct OwnedRawCertificate {
     data: Arc<[u8]>,
+
     #[borrows(data)]
     #[covariant]
     value: RawCertificate<'this>,
+}
+
+impl OwnedRawCertificate {
+    // Re-expose ::new with `pub(crate)` visibility.
+    pub(crate) fn new_public(
+        data: Arc<[u8]>,
+        value_ref_builder: impl for<'this> FnOnce(&'this Arc<[u8]>) -> RawCertificate<'this>,
+    ) -> OwnedRawCertificate {
+        OwnedRawCertificate::new(data, value_ref_builder)
+    }
 }
 
 #[pyo3::prelude::pyclass]
