@@ -7,6 +7,7 @@ use crate::x509;
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 lazy_static::lazy_static! {
     static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
@@ -31,7 +32,7 @@ lazy_static::lazy_static! {
 
 #[ouroboros::self_referencing]
 struct OwnedRawOCSPRequest {
-    data: Vec<u8>,
+    data: Arc<[u8]>,
     #[borrows(data)]
     #[covariant]
     value: RawOCSPRequest<'this>,
@@ -39,7 +40,7 @@ struct OwnedRawOCSPRequest {
 
 #[pyo3::prelude::pyfunction]
 fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPRequest, PyAsn1Error> {
-    let raw = OwnedRawOCSPRequest::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawOCSPRequest::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
 
     if raw.borrow_value().tbs_request.request_list.len() != 1 {
         return Err(PyAsn1Error::from(

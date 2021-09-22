@@ -103,7 +103,7 @@ pub(crate) struct Validity {
 
 #[ouroboros::self_referencing]
 struct OwnedRawCertificate {
-    data: Vec<u8>,
+    data: Arc<[u8]>,
     #[borrows(data)]
     #[covariant]
     value: RawCertificate<'this>,
@@ -531,7 +531,7 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
-    let raw = OwnedRawCertificate::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawCertificate::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     Ok(Certificate {
@@ -546,7 +546,7 @@ fn load_der_x509_crl(
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
     let raw = OwnedRawCertificateRevocationList::try_new(
-        data.to_vec(),
+        Arc::from(data),
         |data| asn1::parse_single(data),
         |_| Ok(pyo3::once_cell::GILOnceCell::new()),
     )?;
@@ -574,7 +574,7 @@ fn load_pem_x509_crl(
 
 #[ouroboros::self_referencing]
 struct OwnedRawCertificateRevocationList {
-    data: Vec<u8>,
+    data: Arc<[u8]>,
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
