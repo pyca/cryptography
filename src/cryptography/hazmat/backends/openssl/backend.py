@@ -1797,9 +1797,7 @@ class Backend(BackendInterface):
         ocsp_resp = self._ffi.gc(ocsp_resp, self._lib.OCSP_RESPONSE_free)
 
         bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_OCSP_RESPONSE_bio(
-            bio, ocsp_resp
-        )
+        res = self._lib.i2d_OCSP_RESPONSE_bio(bio, ocsp_resp)
         self.openssl_assert(res > 0)
         data = self._read_mem_bio(bio)
         return ocsp.load_der_ocsp_response(data)
