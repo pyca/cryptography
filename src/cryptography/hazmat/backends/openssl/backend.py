@@ -79,7 +79,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
 )
 from cryptography.hazmat.bindings._rust import (
     asn1,
-    ocsp as rust_ocsp,
     x509 as rust_x509,
 )
 from cryptography.hazmat.bindings.openssl import binding
