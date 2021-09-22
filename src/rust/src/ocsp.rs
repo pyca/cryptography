@@ -372,7 +372,33 @@ impl OCSPResponse {
     #[getter]
     fn certificates<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
         let resp = self.requires_successful_response()?;
-        unimplemented!()
+        let py_certs = pyo3::types::PyList::empty(py);
+        let certs = match &resp.certs {
+            Some(certs) => certs,
+            None => return Ok(py_certs),
+        };
+        for i in 0..certs.len() {
+            // TODO: O(n^2), don't have too many certificates!
+            let raw_cert = map_arc_data_ocsp_response(&self.raw, |_data, _resp, basic_response| {
+                basic_response
+                    .as_ref()
+                    .unwrap()
+                    .certs
+                    .as_ref()
+                    .unwrap()
+                    .clone()
+                    .nth(i)
+                    .unwrap()
+            });
+            py_certs.append(pyo3::pycell::PyCell::new(
+                py,
+                x509::Certificate {
+                    raw: raw_cert,
+                    cached_extensions: None,
+                },
+            )?)?;
+        }
+        Ok(py_certs)
     }
 
     #[getter]
@@ -551,6 +577,27 @@ impl OCSPResponse {
     }
 }
 
+// Open-coded implementation of the API discussed in
+// https://github.com/joshua-maros/ouroboros/issues/38
+fn map_arc_data_ocsp_response(
+    it: &OwnedRawOCSPResponse,
+    f: impl for<'this> FnOnce(
+        &'this [u8],
+        &RawOCSPResponse<'this>,
+        &Option<BasicOCSPResponse<'this>>,
+    ) -> x509::RawCertificate<'this>,
+) -> x509::OwnedRawCertificate {
+    x509::OwnedRawCertificate::new(Arc::clone(it.borrow_data()), |inner_it| {
+        it.with(|value| {
+            f(
+                inner_it,
+                unsafe { std::mem::transmute(value.value) },
+                unsafe { std::mem::transmute(value.basic_response) },
+            )
+        })
+    })
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RawOCSPResponse<'a> {
     response_status: asn1::Enumerated,
@@ -570,7 +617,7 @@ struct BasicOCSPResponse<'a> {
     signature_algorithm: x509::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
     #[explicit(0)]
-    certs: Option<asn1::SequenceOf<'a, asn1::Sequence<'a>>>,
+    certs: Option<asn1::SequenceOf<'a, x509::RawCertificate<'a>>>,
 }
 
 impl BasicOCSPResponse<'_> {

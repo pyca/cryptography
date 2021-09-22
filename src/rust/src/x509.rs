@@ -44,14 +44,14 @@ lazy_static::lazy_static! {
     static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct RawCertificate<'a> {
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+pub(crate) struct RawCertificate<'a> {
     tbs_cert: TbsCertificate<'a>,
     signature_alg: AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
 struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
@@ -95,14 +95,14 @@ impl Time {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
 pub(crate) struct Validity {
     not_before: Time,
     not_after: Time,
 }
 
-#[ouroboros::self_referencing]
-struct OwnedRawCertificate {
+#[ouroboros::self_referencing(pub_extras)]
+pub(crate) struct OwnedRawCertificate {
     data: Arc<[u8]>,
     #[borrows(data)]
     #[covariant]
@@ -110,16 +110,16 @@ struct OwnedRawCertificate {
 }
 
 #[pyo3::prelude::pyclass]
-struct Certificate {
-    raw: OwnedRawCertificate,
-    cached_extensions: Option<pyo3::PyObject>,
+pub(crate) struct Certificate {
+    pub(crate) raw: OwnedRawCertificate,
+    pub(crate) cached_extensions: Option<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pyproto]
 impl pyo3::class::basic::PyObjectProtocol for Certificate {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.raw.borrow_data().hash(&mut hasher);
+        self.raw.borrow_value().hash(&mut hasher);
         hasher.finish()
     }
 
@@ -130,10 +130,10 @@ impl pyo3::class::basic::PyObjectProtocol for Certificate {
     ) -> pyo3::PyResult<bool> {
         match op {
             pyo3::class::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_data() == other.raw.borrow_data())
+                Ok(self.raw.borrow_value() == other.raw.borrow_value())
             }
             pyo3::class::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_data() != other.raw.borrow_data())
+                Ok(self.raw.borrow_value() != other.raw.borrow_value())
             }
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "Certificates cannot be ordered",
