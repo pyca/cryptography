@@ -288,14 +288,20 @@ const UNAUTHORIZED_RESPONSE: u32 = 6;
 impl OCSPResponse {
     #[getter]
     fn response_status<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let attr = match self.raw.borrow_value().response_status.value() {
-            SUCCESSFUL_RESPONSE => "SUCCESSFUL",
-            MALFORMED_REQUEST_RESPOSNE => "MALFORMED_REQUEST",
-            INTERNAL_ERROR_RESPONSE => "INTERNAL_ERROR",
-            TRY_LATER_RESPONSE => "TRY_LATER",
-            SIG_REQUIRED_RESPONSE => "SIG_REQUIRED",
-            UNAUTHORIZED_RESPONSE => "UNAUTHORIZED",
-            _ => unreachable!(),
+        let status = self.raw.borrow_value().response_status.value();
+        let attr = if status == SUCCESSFUL_RESPONSE {
+            "SUCCESSFUL"
+        } else if status == MALFORMED_REQUEST_RESPOSNE {
+            "MALFORMED_REQUEST"
+        } else if status == INTERNAL_ERROR_RESPONSE {
+            "INTERNAL_ERROR"
+        } else if status == TRY_LATER_RESPONSE {
+            "TRY_LATER"
+        } else if status == SIG_REQUIRED_RESPONSE {
+            "SIG_REQUIRED"
+        } else {
+            assert_eq!(status, UNAUTHORIZED_RESPONSE);
+            "UNAUTHORIZED"
         };
         py.import("cryptography.x509.ocsp")?
             .getattr("OCSPResponseStatus")?
