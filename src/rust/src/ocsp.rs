@@ -199,22 +199,30 @@ struct CertID<'a> {
 fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResponse, PyAsn1Error> {
     let raw = OwnedRawOCSPResponse::try_new(
         Arc::from(data),
-        |data| asn1::parse_single(data),
-        |_data, response| {
-            if response.response_status.value() == SUCCESSFUL_RESPONSE {
-                match response.response_bytes {
-                    Some(ref bytes) => {
-                        if bytes.response_type == *BASIC_RESPONSE_OID {
-                            asn1::parse_single(bytes.response)
-                        } else {
-                            unimplemented!()
-                        }
+        |data| Ok(asn1::parse_single(data)?),
+        |_data, response| match response.response_status.value() {
+            SUCCESSFUL_RESPONSE => match response.response_bytes {
+                Some(ref bytes) => {
+                    if bytes.response_type == *BASIC_RESPONSE_OID {
+                        Ok(asn1::parse_single(bytes.response)?)
+                    } else {
+                        Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                            "Successful OCSP response does not contain a BasicResponse",
+                        )))
                     }
-                    None => unimplemented!(),
                 }
-            } else {
-                Ok(None)
-            }
+                None => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    "Successful OCSP response does not contain a BasicResponse",
+                ))),
+            },
+            MALFORMED_REQUEST_RESPOSNE
+            | INTERNAL_ERROR_RESPONSE
+            | TRY_LATER_RESPONSE
+            | SIG_REQUIRED_RESPONSE
+            | UNAUTHORIZED_RESPONSE => Ok(None),
+            _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "OCSP response has an unknown status code",
+            ))),
         },
     )?;
 
@@ -287,7 +295,7 @@ impl OCSPResponse {
             TRY_LATER_RESPONSE => "TRY_LATER",
             SIG_REQUIRED_RESPONSE => "SIG_REQUIRED",
             UNAUTHORIZED_RESPONSE => "UNAUTHORIZED",
-            _ => unimplemented!(),
+            _ => unreachable!(),
         };
         py.import("cryptography.x509.ocsp")?
             .getattr("OCSPResponseStatus")?
