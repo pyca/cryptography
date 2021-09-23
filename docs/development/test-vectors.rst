@@ -573,8 +573,8 @@ X.509 OCSP Test Vectors
   an unknown OID for response type. The signature on this response is invalid.
 * ``x509/ocsp/resp-successful-no-response-bytes.der`` - An OCSP request with
   a successful response type but the response bytes are missing.
-* ``x509/ocsp/resp-unknown-response-type.der`` - An OCSP response with an
-  unknown response type.
+* ``x509/ocsp/resp-unknown-response-status.der`` - An OCSP response with an
+  unknown response status.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
