@@ -569,6 +569,12 @@ X.509 OCSP Test Vectors
   ``CT Certificate SCTs`` single extension, from the SwissSign OCSP responder.
 * ``x509/ocsp/ocsp-army.deps.mil-resp.der`` - An OCSP response containing
   multiple ``SINGLERESP`` values.
+* ``x509/ocsp/resp-response-type-unknown-oid.der`` - An OCSP response with
+  an unknown OID for response type. The signature on this response is invalid.
+* ``x509/ocsp/resp-successful-no-response-bytes.der`` - An OCSP request with
+  a successful response type but the response bytes are missing.
+* ``x509/ocsp/resp-unknown-response-type.der`` - An OCSP response with an
+  unknown response type.
 
 Custom X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
