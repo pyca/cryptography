@@ -90,13 +90,17 @@ class _OCSPResponse(OCSPResponse):
         self._backend = backend
         self._ocsp_response = ocsp_response
         status = self._backend._lib.OCSP_response_status(self._ocsp_response)
-        self._backend.openssl_assert(status in _RESPONSE_STATUS_TO_ENUM)
+        if status not in _RESPONSE_STATUS_TO_ENUM:
+            raise ValueError("OCSP response has an unknown status code")
         self._status = _RESPONSE_STATUS_TO_ENUM[status]
         if self._status is OCSPResponseStatus.SUCCESSFUL:
             basic = self._backend._lib.OCSP_response_get1_basic(
                 self._ocsp_response
             )
-            self._backend.openssl_assert(basic != self._backend._ffi.NULL)
+            if basic == self._backend._ffi.NULL:
+                raise ValueError(
+                    "Successful OCSP response does not contain a BasicResponse"
+                )
             self._basic = self._backend._ffi.gc(
                 basic, self._backend._lib.OCSP_BASICRESP_free
             )
