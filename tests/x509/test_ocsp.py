@@ -1084,6 +1084,33 @@ class TestOCSPResponse(object):
         assert ext.oid == x509.CRLReason.oid
         assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
 
+    def test_unknown_response_type(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join(
+                    "x509", "ocsp", "resp-response-type-unknown-oid.der"
+                ),
+                ocsp.load_der_ocsp_response,
+            )
+
+    def test_response_bytes_absent(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join(
+                    "x509", "ocsp", "resp-successful-no-response-bytes.der"
+                ),
+                ocsp.load_der_ocsp_response,
+            )
+
+    def test_unknown_response_status(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join(
+                    "x509", "ocsp", "resp-unknown-response-status.der"
+                ),
+                ocsp.load_der_ocsp_response,
+            )
+
 
 class TestOCSPEdDSA(object):
     @pytest.mark.supported(
