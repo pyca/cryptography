@@ -1078,7 +1078,7 @@ class Backend(BackendInterface):
         res = self._lib.ASN1_TIME_set_string(asn1_time, asn1_str)
         self.openssl_assert(res == 1)
 
-    def _create_asn1_time(self, time):
+    def _create_asn1_time_gc(self, time):
         asn1_time = self._lib.ASN1_TIME_new()
         self.openssl_assert(asn1_time != self._ffi.NULL)
         asn1_time = self._ffi.gc(asn1_time, self._lib.ASN1_TIME_free)
@@ -1112,12 +1112,12 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
 
         # Set the last update time.
-        last_update = self._create_asn1_time(builder._last_update)
+        last_update = self._create_asn1_time_gc(builder._last_update)
         res = self._lib.X509_CRL_set1_lastUpdate(x509_crl, last_update)
         self.openssl_assert(res == 1)
 
         # Set the next update time.
-        next_update = self._create_asn1_time(builder._next_update)
+        next_update = self._create_asn1_time_gc(builder._next_update)
         res = self._lib.X509_CRL_set1_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
 
@@ -1141,7 +1141,7 @@ class Backend(BackendInterface):
                 x509_revoked, serial_number
             )
             self.openssl_assert(res == 1)
-            rev_date = self._create_asn1_time(revoked_cert.revocation_date)
+            rev_date = self._create_asn1_time_gc(revoked_cert.revocation_date)
             res = self._lib.X509_REVOKED_set_revocationDate(
                 x509_revoked, rev_date
             )
@@ -1739,17 +1739,17 @@ class Backend(BackendInterface):
         if builder._response._revocation_time is None:
             rev_time = self._ffi.NULL
         else:
-            rev_time = self._create_asn1_time(
+            rev_time = self._create_asn1_time_gc(
                 builder._response._revocation_time
             )
 
         next_update = self._ffi.NULL
         if builder._response._next_update is not None:
-            next_update = self._create_asn1_time(
+            next_update = self._create_asn1_time_gc(
                 builder._response._next_update
             )
 
-        this_update = self._create_asn1_time(builder._response._this_update)
+        this_update = self._create_asn1_time_gc(builder._response._this_update)
 
         res = self._lib.OCSP_basic_add1_status(
             basic,
