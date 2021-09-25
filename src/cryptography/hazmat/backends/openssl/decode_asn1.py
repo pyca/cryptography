@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import datetime
 import typing
 
 from cryptography import x509
@@ -151,19 +150,8 @@ _CRL_ENTRY_REASON_ENUM_TO_CODE = {
 }
 
 
-def _asn1_integer_to_int(backend, asn1_int):
-    bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
-    backend.openssl_assert(bn != backend._ffi.NULL)
-    bn = backend._ffi.gc(bn, backend._lib.BN_free)
-    return backend._bn_to_int(bn)
-
-
 def _asn1_string_to_bytes(backend, asn1_string):
     return backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
-
-
-def _asn1_string_to_ascii(backend, asn1_string):
-    return _asn1_string_to_bytes(backend, asn1_string).decode("ascii")
 
 
 def _asn1_string_to_utf8(backend, asn1_string) -> str:
@@ -175,10 +163,3 @@ def _asn1_string_to_utf8(backend, asn1_string) -> str:
         buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
     )
     return backend._ffi.buffer(buf[0], res)[:].decode("utf8")
-
-
-def _parse_asn1_generalized_time(backend, generalized_time):
-    time = _asn1_string_to_ascii(
-        backend, backend._ffi.cast("ASN1_STRING *", generalized_time)
-    )
-    return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
