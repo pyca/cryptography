@@ -2538,10 +2538,8 @@ class Backend(BackendInterface):
 
         # Workaround for
         # https://github.com/libressl-portable/portable/issues/659
-        if (
-            self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_333
-        ):
+        # TODO: Once 3.4.0 is released, add branch.
+        if self._lib.CRYPTOGRAPHY_IS_LIBRESSL:
             self._consume_errors()
 
         if res == 0:
