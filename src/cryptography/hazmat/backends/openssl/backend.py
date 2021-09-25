@@ -2789,6 +2789,9 @@ class Backend(BackendInterface):
             # finalize.
             res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
             self.openssl_assert(res == 1)
+            # OpenSSL 3.0 leaves a random bio error on the stack
+            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                self._consume_errors()
             res = self._lib.i2d_PKCS7_bio(bio_out, p7)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio_out)
