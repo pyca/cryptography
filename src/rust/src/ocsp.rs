@@ -405,7 +405,7 @@ impl OCSPResponse {
                     .nth(i)
                     .unwrap()
             });
-            py_certs.append(pyo3::pycell::PyCell::new(
+            py_certs.append(pyo3::PyCell::new(
                 py,
                 x509::Certificate {
                     raw: raw_cert,
