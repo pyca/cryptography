@@ -65,9 +65,6 @@ class OCSPCertStatus(utils.Enum):
     UNKNOWN = 2
 
 
-_CERT_STATUS_TO_ENUM = {x.value: x for x in OCSPCertStatus}
-
-
 class _SingleResponse(object):
     def __init__(
         self,
@@ -499,6 +496,4 @@ def load_der_ocsp_request(data: bytes) -> OCSPRequest:
 
 
 def load_der_ocsp_response(data: bytes) -> OCSPResponse:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_der_ocsp_response(data)
+    return ocsp.load_der_ocsp_response(data)

@@ -57,7 +57,6 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
-from cryptography.hazmat.backends.openssl.ocsp import _OCSPResponse
 from cryptography.hazmat.backends.openssl.poly1305 import (
     _POLY1305_KEY_SIZE,
     _Poly1305Context,
@@ -80,7 +79,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
 )
 from cryptography.hazmat.bindings._rust import (
     asn1,
-    ocsp as rust_ocsp,
     x509 as rust_x509,
 )
 from cryptography.hazmat.bindings.openssl import binding
@@ -426,18 +424,6 @@ class Backend(BackendInterface):
             ext_count=self._lib.sk_X509_EXTENSION_num,
             get_ext=self._lib.sk_X509_EXTENSION_value,
             rust_callback=rust_x509.parse_csr_extension,
-        )
-        self._ocsp_basicresp_ext_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.OCSP_BASICRESP_get_ext_count,
-            get_ext=self._lib.OCSP_BASICRESP_get_ext,
-            rust_callback=rust_ocsp.parse_ocsp_resp_extension,
-        )
-        self._ocsp_singleresp_ext_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.OCSP_SINGLERESP_get_ext_count,
-            get_ext=self._lib.OCSP_SINGLERESP_get_ext,
-            rust_callback=rust_ocsp.parse_ocsp_singleresp_ext,
         )
 
     def _register_x509_encoders(self):
@@ -1677,16 +1663,6 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def load_der_ocsp_response(self, data):
-        mem_bio = self._bytes_to_bio(data)
-        response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
-        if response == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load OCSP response")
-
-        response = self._ffi.gc(response, self._lib.OCSP_RESPONSE_free)
-        return _OCSPResponse(self, response)
-
     def create_ocsp_request(self, builder):
         ocsp_req = self._lib.OCSP_REQUEST_new()
         self.openssl_assert(ocsp_req != self._ffi.NULL)
@@ -1819,7 +1795,12 @@ class Backend(BackendInterface):
         )
         self.openssl_assert(ocsp_resp != self._ffi.NULL)
         ocsp_resp = self._ffi.gc(ocsp_resp, self._lib.OCSP_RESPONSE_free)
-        return _OCSPResponse(self, ocsp_resp)
+
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_OCSP_RESPONSE_bio(bio, ocsp_resp)
+        self.openssl_assert(res > 0)
+        data = self._read_mem_bio(bio)
+        return ocsp.load_der_ocsp_response(data)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         if self._fips_enabled and not isinstance(
