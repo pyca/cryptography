@@ -136,7 +136,7 @@ impl pyo3::class::basic::PyObjectProtocol for Certificate {
 
     fn __richcmp__(
         &self,
-        other: pyo3::pycell::PyRef<Certificate>,
+        other: pyo3::PyRef<Certificate>,
         op: pyo3::class::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
@@ -170,10 +170,7 @@ impl pyo3::class::basic::PyObjectProtocol for Certificate {
 
 #[pyo3::prelude::pymethods]
 impl Certificate {
-    fn __deepcopy__(
-        slf: pyo3::pycell::PyRef<'_, Self>,
-        _memo: pyo3::PyObject,
-    ) -> pyo3::pycell::PyRef<'_, Self> {
+    fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
         slf
     }
 
@@ -497,7 +494,7 @@ impl Certificate {
     // DO NOT RELY ON IT. WE WILL BREAK YOU WHEN WE FEEL LIKE IT.
     #[getter]
     fn _x509<'p>(
-        slf: pyo3::pycell::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
         let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn35")?;
@@ -631,7 +628,7 @@ impl CertificateRevocationList {
 impl pyo3::class::basic::PyObjectProtocol for CertificateRevocationList {
     fn __richcmp__(
         &self,
-        other: pyo3::pycell::PyRef<CertificateRevocationList>,
+        other: pyo3::PyRef<CertificateRevocationList>,
         op: pyo3::class::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
@@ -673,8 +670,7 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
                 .indices(self.len().try_into().unwrap())?;
             let result = pyo3::types::PyList::empty(py);
             for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {
-                let revoked_cert =
-                    pyo3::pycell::PyCell::new(py, self.revoked_cert(py, i as usize)?)?;
+                let revoked_cert = pyo3::PyCell::new(py, self.revoked_cert(py, i as usize)?)?;
                 result.append(revoked_cert)?;
             }
             Ok(result.to_object(py))
@@ -686,7 +682,7 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
             if idx >= (self.len() as isize) || idx < 0 {
                 return Err(pyo3::exceptions::PyIndexError::new_err(()));
             }
-            Ok(pyo3::pycell::PyCell::new(py, self.revoked_cert(py, idx as usize)?)?.to_object(py))
+            Ok(pyo3::PyCell::new(py, self.revoked_cert(py, idx as usize)?)?.to_object(py))
         }
     }
 }
@@ -897,7 +893,7 @@ impl CertificateRevocationList {
     }
 
     fn is_signature_valid<'p>(
-        slf: pyo3::pycell::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
         public_key: &'p pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
@@ -910,7 +906,7 @@ impl CertificateRevocationList {
 
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CertificateRevocationList {
-    fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> CRLIterator {
+    fn __iter__(slf: pyo3::PyRef<'p, Self>) -> CRLIterator {
         CRLIterator {
             contents: OwnedCRLIteratorData::try_new(Arc::clone(&slf.raw), |v| {
                 Ok::<_, ()>(v.borrow_value().tbs_cert_list.revoked_certificates.clone())
@@ -964,11 +960,11 @@ fn try_map_arc_data_mut_crl_iterator<E>(
 
 #[pyo3::prelude::pyproto]
 impl pyo3::PyIterProtocol<'_> for CRLIterator {
-    fn __iter__(slf: pyo3::pycell::PyRef<'p, Self>) -> pyo3::pycell::PyRef<'p, Self> {
+    fn __iter__(slf: pyo3::PyRef<'p, Self>) -> pyo3::PyRef<'p, Self> {
         slf
     }
 
-    fn __next__(mut slf: pyo3::pycell::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
+    fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
         let revoked = try_map_arc_data_mut_crl_iterator(&mut slf.contents, |_data, v| match v {
             Some(v) => match v.next() {
                 Some(revoked) => Ok(revoked),
@@ -1787,7 +1783,7 @@ impl Sct {
 impl pyo3::class::basic::PyObjectProtocol for Sct {
     fn __richcmp__(
         &self,
-        other: pyo3::pycell::PyRef<Sct>,
+        other: pyo3::PyRef<Sct>,
         op: pyo3::class::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
@@ -1813,14 +1809,14 @@ fn encode_precertificate_signed_certificate_timestamps(
 ) -> pyo3::PyResult<pyo3::PyObject> {
     let mut length = 0;
     for sct in extension.iter()? {
-        let sct = sct?.downcast::<pyo3::pycell::PyCell<Sct>>()?;
+        let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
         length += sct.borrow().sct_data.len() + 2;
     }
 
     let mut result = vec![];
     result.extend_from_slice(&(length as u16).to_be_bytes());
     for sct in extension.iter()? {
-        let sct = sct?.downcast::<pyo3::pycell::PyCell<Sct>>()?;
+        let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
         result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
         result.extend_from_slice(&sct.borrow().sct_data);
     }
