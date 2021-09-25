@@ -19,15 +19,6 @@ from cryptography.x509.base import (
 )
 
 
-_OIDS_TO_HASH = {
-    "1.3.14.3.2.26": hashes.SHA1(),
-    "2.16.840.1.101.3.4.2.4": hashes.SHA224(),
-    "2.16.840.1.101.3.4.2.1": hashes.SHA256(),
-    "2.16.840.1.101.3.4.2.2": hashes.SHA384(),
-    "2.16.840.1.101.3.4.2.3": hashes.SHA512(),
-}
-
-
 class OCSPResponderEncoding(utils.Enum):
     HASH = "By Hash"
     NAME = "By Name"
@@ -42,7 +33,6 @@ class OCSPResponseStatus(utils.Enum):
     UNAUTHORIZED = 6
 
 
-_RESPONSE_STATUS_TO_ENUM = {x.value: x for x in OCSPResponseStatus}
 _ALLOWED_HASHES = (
     hashes.SHA1,
     hashes.SHA224,

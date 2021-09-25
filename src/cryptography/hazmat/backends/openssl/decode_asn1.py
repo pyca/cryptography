@@ -122,20 +122,6 @@ _DISTPOINT_TYPE_RELATIVENAME = 1
 #        removeFromCRL           (8),
 #        privilegeWithdrawn      (9),
 #        aACompromise           (10) }
-_CRL_ENTRY_REASON_CODE_TO_ENUM = {
-    0: x509.ReasonFlags.unspecified,
-    1: x509.ReasonFlags.key_compromise,
-    2: x509.ReasonFlags.ca_compromise,
-    3: x509.ReasonFlags.affiliation_changed,
-    4: x509.ReasonFlags.superseded,
-    5: x509.ReasonFlags.cessation_of_operation,
-    6: x509.ReasonFlags.certificate_hold,
-    8: x509.ReasonFlags.remove_from_crl,
-    9: x509.ReasonFlags.privilege_withdrawn,
-    10: x509.ReasonFlags.aa_compromise,
-}
-
-
 _CRL_ENTRY_REASON_ENUM_TO_CODE = {
     x509.ReasonFlags.unspecified: 0,
     x509.ReasonFlags.key_compromise: 1,

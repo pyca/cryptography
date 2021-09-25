@@ -12,17 +12,6 @@ from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
 
-_GENERAL_NAMES = {
-    0: "otherName",
-    1: "rfc822Name",
-    2: "dNSName",
-    3: "x400Address",
-    4: "directoryName",
-    5: "ediPartyName",
-    6: "uniformResourceIdentifier",
-    7: "iPAddress",
-    8: "registeredID",
-}
 _IPADDRESS_TYPES = typing.Union[
     ipaddress.IPv4Address,
     ipaddress.IPv6Address,
