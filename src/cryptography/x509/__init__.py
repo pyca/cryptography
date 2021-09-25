@@ -77,7 +77,6 @@ from cryptography.x509.general_name import (
     RegisteredID,
     UniformResourceIdentifier,
     UnsupportedGeneralNameType,
-    _GENERAL_NAMES,
 )
 from cryptography.x509.name import (
     Name,
@@ -232,7 +231,6 @@ __all__ = [
     "Version",
     "OID_CA_ISSUERS",
     "OID_OCSP",
-    "_GENERAL_NAMES",
     "CertificateIssuer",
     "CRLReason",
     "InvalidityDate",
