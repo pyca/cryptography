@@ -16,11 +16,6 @@ int RAND_set_rand_method(const RAND_METHOD *);
 void RAND_add(const void *, int, double);
 int RAND_status(void);
 int RAND_bytes(unsigned char *, int);
-/* ERR_load_RAND_strings started returning an int in 1.1.0. Unfortunately we
-   can't declare a conditional signature like that. Since it always returns
-   1 we'll just lie about the signature to preserve compatibility for
-   pyOpenSSL (which calls this in its rand.py as of mid-2016) */
-void ERR_load_RAND_strings(void);
 """
 
 CUSTOMIZATIONS = """
