@@ -2536,6 +2536,12 @@ class Backend(BackendInterface):
                 p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
             )
 
+        # Workaround for
+        # https://github.com/libressl-portable/portable/issues/659
+        # TODO: Once 3.4.0 is released, add branch.
+        if self._lib.CRYPTOGRAPHY_IS_LIBRESSL:
+            self._consume_errors()
+
         if res == 0:
             self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
@@ -2783,6 +2789,10 @@ class Backend(BackendInterface):
             # finalize.
             res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
             self.openssl_assert(res == 1)
+            # OpenSSL 3.0 leaves a random bio error on the stack:
+            # https://github.com/openssl/openssl/issues/16681
+            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                self._consume_errors()
             res = self._lib.i2d_PKCS7_bio(bio_out, p7)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio_out)
