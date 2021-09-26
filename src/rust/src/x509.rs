@@ -4,8 +4,8 @@
 
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use chrono::{Datelike, Timelike};
-use pyo3::conversion::ToPyObject;
 use pyo3::types::IntoPyDict;
+use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
 use std::convert::TryInto;
@@ -127,7 +127,7 @@ pub(crate) struct Certificate {
 }
 
 #[pyo3::prelude::pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Certificate {
+impl pyo3::PyObjectProtocol for Certificate {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
         self.raw.borrow_value().hash(&mut hasher);
@@ -137,15 +137,11 @@ impl pyo3::class::basic::PyObjectProtocol for Certificate {
     fn __richcmp__(
         &self,
         other: pyo3::PyRef<Certificate>,
-        op: pyo3::class::basic::CompareOp,
+        op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::class::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_value() == other.raw.borrow_value())
-            }
-            pyo3::class::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_value() != other.raw.borrow_value())
-            }
+            pyo3::basic::CompareOp::Eq => Ok(self.raw.borrow_value() == other.raw.borrow_value()),
+            pyo3::basic::CompareOp::Ne => Ok(self.raw.borrow_value() != other.raw.borrow_value()),
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "Certificates cannot be ordered",
             )),
@@ -625,19 +621,15 @@ impl CertificateRevocationList {
 }
 
 #[pyo3::prelude::pyproto]
-impl pyo3::class::basic::PyObjectProtocol for CertificateRevocationList {
+impl pyo3::PyObjectProtocol for CertificateRevocationList {
     fn __richcmp__(
         &self,
         other: pyo3::PyRef<CertificateRevocationList>,
-        op: pyo3::class::basic::CompareOp,
+        op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::class::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_value() == other.raw.borrow_value())
-            }
-            pyo3::class::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_value() != other.raw.borrow_value())
-            }
+            pyo3::basic::CompareOp::Eq => Ok(self.raw.borrow_value() == other.raw.borrow_value()),
+            pyo3::basic::CompareOp::Ne => Ok(self.raw.borrow_value() != other.raw.borrow_value()),
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "CRLs cannot be ordered",
             )),
@@ -1780,15 +1772,15 @@ impl Sct {
 }
 
 #[pyo3::prelude::pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Sct {
+impl pyo3::PyObjectProtocol for Sct {
     fn __richcmp__(
         &self,
         other: pyo3::PyRef<Sct>,
-        op: pyo3::class::basic::CompareOp,
+        op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::class::basic::CompareOp::Eq => Ok(self.sct_data == other.sct_data),
-            pyo3::class::basic::CompareOp::Ne => Ok(self.sct_data != other.sct_data),
+            pyo3::basic::CompareOp::Eq => Ok(self.sct_data == other.sct_data),
+            pyo3::basic::CompareOp::Ne => Ok(self.sct_data != other.sct_data),
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "SCTs cannot be ordered",
             )),
