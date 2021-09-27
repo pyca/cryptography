@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
+use asn1::SimpleAsn1Readable;
 use chrono::{Datelike, Timelike};
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
@@ -459,7 +460,7 @@ struct CertificateSigningRequest {
 }
 
 #[pyo3::prelude::pyproto]
-impl pyo3::class::basic::PyObjectProtocol for CertificateSigningRequest {
+impl pyo3::basic::PyObjectProtocol for CertificateSigningRequest {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
         self.raw.borrow_data().hash(&mut hasher);
@@ -468,14 +469,14 @@ impl pyo3::class::basic::PyObjectProtocol for CertificateSigningRequest {
 
     fn __richcmp__(
         &self,
-        other: pyo3::pycell::PyRef<CertificateSigningRequest>,
-        op: pyo3::class::basic::CompareOp,
+        other: pyo3::PyRef<CertificateSigningRequest>,
+        op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::class::basic::CompareOp::Eq => {
+            pyo3::basic::CompareOp::Eq => {
                 Ok(self.raw.borrow_data() == other.raw.borrow_data())
             }
-            pyo3::class::basic::CompareOp::Ne => {
+            pyo3::basic::CompareOp::Ne => {
                 Ok(self.raw.borrow_data() != other.raw.borrow_data())
             }
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
@@ -599,7 +600,7 @@ impl CertificateSigningRequest {
                 check_attribute_length(attribute.values.clone())?;
                 if let Some(val) = attribute.values.clone().next() {
                     // We allow utf8string, printablestring, and ia5string at this time
-                    if val.tag() == 0x0c || val.tag() == 0x13 || val.tag() == 0x16 {
+                    if val.tag() == asn1::Utf8String::TAG || val.tag() == asn1::PrintableString::TAG || val.tag() == asn1::IA5String::TAG {
                         return Ok(pyo3::types::PyBytes::new(py, val.data()));
                     } else {
                         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -772,7 +773,7 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn is_signature_valid<'p>(
-        slf: pyo3::pycell::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let backend = py

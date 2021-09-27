@@ -1412,11 +1412,7 @@ class Backend(BackendInterface):
     def _csr_is_signature_valid(
         self, csr: x509.CertificateSigningRequest
     ) -> bool:
-        data = csr.public_bytes(serialization.Encoding.DER)
-        mem_bio = self._bytes_to_bio(data)
-        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(x509_req != self._ffi.NULL)
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        x509_req = self._csr2ossl(csr)
         pkey = self._lib.X509_REQ_get_pubkey(x509_req)
         self.openssl_assert(pkey != self._ffi.NULL)
         pkey = self._ffi.gc(pkey, self._lib.EVP_PKEY_free)
