@@ -1301,6 +1301,18 @@ class TestRSACertificateRequest(object):
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
 
+    def test_invalid_pem(self, backend):
+        with pytest.raises(ValueError, match="Unable to load"):
+            x509.load_pem_x509_csr(b"notacsr", backend)
+
+        crl = load_vectors_from_file(
+            filename=os.path.join("x509", "custom", "crl_empty.pem"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError, match="Valid PEM but no"):
+            x509.load_pem_x509_csr(crl, backend)
+
     def test_get_attribute_for_oid_challenge(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "challenge.pem"),
@@ -1629,6 +1641,20 @@ class TestRSACertificateRequest(object):
 
         assert request1 != request2
         assert request1 != object()
+
+    def test_ordering_unsupported(self, backend):
+        csr = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        csr2 = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.raises(TypeError, match="cannot be ordered"):
+            csr > csr2
 
     def test_hash(self, backend):
         request1 = _load_cert(

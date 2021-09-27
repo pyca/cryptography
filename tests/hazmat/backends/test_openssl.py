@@ -13,7 +13,6 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl import decode_asn1, encode_asn1
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -164,6 +163,7 @@ class TestOpenSSL(object):
     def test_bn_to_int(self):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
+
 
 @pytest.mark.skipif(
     not backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
