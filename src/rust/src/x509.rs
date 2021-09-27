@@ -429,7 +429,7 @@ impl CertificationRequestInfo<'_> {
                         "Only single-valued attributes are supported",
                     )));
                 }
-                for val in attribute.values {
+                if let Some(val) = attribute.values.clone().next() {
                     return Ok(Some(asn1::parse_single::<Extensions<'a>>(val.full_data())?));
                 }
             }
@@ -595,7 +595,7 @@ impl CertificateSigningRequest {
                         "Only single-valued attributes are supported",
                     ));
                 }
-                for val in attribute.values {
+                if let Some(val) = attribute.values.clone().next() {
                     // We allow utf8string, printablestring, and ia5string at this time
                     if val.tag() == 0x0c || val.tag() == 0x13 || val.tag() == 0x16 {
                         return Ok(pyo3::types::PyBytes::new(py, val.data()));
@@ -777,6 +777,28 @@ impl CertificateSigningRequest {
             .import("cryptography.hazmat.backends.openssl.backend")?
             .getattr("backend")?;
         backend.call_method1("_csr_is_signature_valid", (slf,))
+    }
+
+    // This getter exists for compatibility with pyOpenSSL and will be removed.
+    // DO NOT RELY ON IT. WE WILL BREAK YOU WHEN WE FEEL LIKE IT.
+    #[getter]
+    fn _x509_req<'p>(
+        slf: pyo3::PyRef<'_, Self>,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn35")?;
+        let warnings = py.import("warnings")?;
+        warnings.call_method1(
+            "warn",
+            (
+                "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
+                cryptography_warning,
+            ),
+        )?;
+        let backend = py
+            .import("cryptography.hazmat.backends.openssl.backend")?
+            .getattr("backend")?;
+        Ok(backend.call_method1("_csr2ossl", (slf,))?)
     }
 }
 

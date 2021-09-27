@@ -74,7 +74,6 @@ from cryptography.hazmat.backends.openssl.x448 import (
     _X448PublicKey,
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _CertificateSigningRequest,
     _RawRevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
@@ -893,7 +892,7 @@ class Backend(BackendInterface):
         builder: x509.CertificateSigningRequestBuilder,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> _CertificateSigningRequest:
+    ) -> x509.CertificateSigningRequest:
         if not isinstance(builder, x509.CertificateSigningRequestBuilder):
             raise TypeError("Builder type mismatch.")
         self._x509_check_signature_params(private_key, algorithm)
@@ -1374,6 +1373,22 @@ class Backend(BackendInterface):
         res = self._lib.i2d_X509_bio(bio, x509)
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
+
+    def _csr2ossl(self, csr: x509.CertificateSigningRequest) -> typing.Any:
+        data = csr.public_bytes(serialization.Encoding.DER)
+        mem_bio = self._bytes_to_bio(data)
+        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
+        self.openssl_assert(x509_req != self._ffi.NULL)
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        return x509_req
+
+    def _ossl2csr(
+        self, x509_req: typing.Any
+    ) -> x509.CertificateSigningRequest:
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_X509_REQ_bio(bio, x509_req)
+        self.openssl_assert(res == 1)
+        return rust_x509.load_der_x509_csr(self._read_mem_bio(bio))
 
     def _crl_is_signature_valid(
         self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES
