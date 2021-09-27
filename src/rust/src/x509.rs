@@ -43,7 +43,6 @@ lazy_static::lazy_static! {
     static ref CP_CPS_URI_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.1").unwrap();
     static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
 
-    // TODO: does anybody use MS extensions still?
     static ref MS_EXTENSION_REQUEST: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.311.2.1.14").unwrap();
     static ref EXTENSION_REQUEST: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.9.14").unwrap();
 }
@@ -408,7 +407,7 @@ struct CertificationRequestInfo<'a> {
     subject: Name<'a>,
     spki: asn1::Sequence<'a>,
     #[implicit(0)]
-    // TODO: set or sequence? Documented as set in rfc2986 but der2ascii seems to show sequence. And switching between the two both works without issue? wat?
+    // TODO: this needs to be non-optional, but we need to fix rust-asn1 for that
     attributes: Option<asn1::SetOf<'a, Attribute<'a>>>,
 }
 
