@@ -18,7 +18,6 @@ from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
-    _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters,
@@ -191,7 +190,6 @@ class Backend(BackendInterface):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self._register_x509_ext_parsers()
         self._register_x509_encoders()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
@@ -416,14 +414,6 @@ class Backend(BackendInterface):
             self.register_cipher_adapter(
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
             )
-
-    def _register_x509_ext_parsers(self):
-        self._csr_extension_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.sk_X509_EXTENSION_num,
-            get_ext=self._lib.sk_X509_EXTENSION_value,
-            rust_callback=rust_x509.parse_csr_extension,
-        )
 
     def _register_x509_encoders(self):
         self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()

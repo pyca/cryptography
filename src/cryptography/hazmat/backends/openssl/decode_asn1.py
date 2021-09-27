@@ -3,10 +3,7 @@
 # for complete details.
 
 
-import typing
-
 from cryptography import x509
-from cryptography.x509.name import _ASN1_TYPE_TO_ENUM
 
 
 def _obj2txt(backend, obj):
@@ -31,80 +28,6 @@ def _obj2txt(backend, obj):
         res = backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
     backend.openssl_assert(res > 0)
     return backend._ffi.buffer(buf, res)[:].decode()
-
-
-def _decode_x509_name_entry(backend, x509_name_entry):
-    obj = backend._lib.X509_NAME_ENTRY_get_object(x509_name_entry)
-    backend.openssl_assert(obj != backend._ffi.NULL)
-    data = backend._lib.X509_NAME_ENTRY_get_data(x509_name_entry)
-    backend.openssl_assert(data != backend._ffi.NULL)
-    value = _asn1_string_to_utf8(backend, data)
-    oid = _obj2txt(backend, obj)
-    type = _ASN1_TYPE_TO_ENUM[data.type]
-
-    return x509.NameAttribute(x509.ObjectIdentifier(oid), value, type)
-
-
-def _decode_x509_name(backend, x509_name):
-    count = backend._lib.X509_NAME_entry_count(x509_name)
-    attributes = []
-    prev_set_id = -1
-    for x in range(count):
-        entry = backend._lib.X509_NAME_get_entry(x509_name, x)
-        attribute = _decode_x509_name_entry(backend, entry)
-        set_id = backend._lib.X509_NAME_ENTRY_set(entry)
-        if set_id != prev_set_id:
-            attributes.append({attribute})
-        else:
-            # is in the same RDN a previous entry
-            attributes[-1].add(attribute)
-        prev_set_id = set_id
-
-    return x509.Name(x509.RelativeDistinguishedName(rdn) for rdn in attributes)
-
-
-class _X509ExtensionParser(object):
-    def __init__(self, backend, ext_count, get_ext, rust_callback):
-        self.ext_count = ext_count
-        self.get_ext = get_ext
-        self.rust_callback = rust_callback
-        self._backend = backend
-
-    def parse(self, x509_obj):
-        extensions: typing.List[x509.Extension[x509.ExtensionType]] = []
-        seen_oids = set()
-        for i in range(self.ext_count(x509_obj)):
-            ext = self.get_ext(x509_obj, i)
-            self._backend.openssl_assert(ext != self._backend._ffi.NULL)
-            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
-            critical = crit == 1
-            oid = x509.ObjectIdentifier(
-                _obj2txt(
-                    self._backend,
-                    self._backend._lib.X509_EXTENSION_get_object(ext),
-                )
-            )
-            if oid in seen_oids:
-                raise x509.DuplicateExtension(
-                    "Duplicate {} extension found".format(oid), oid
-                )
-
-            # Try to parse this with the rust callback first
-            oid_ptr = self._backend._lib.X509_EXTENSION_get_object(ext)
-            oid_der_bytes = self._backend._ffi.buffer(
-                self._backend._lib.Cryptography_OBJ_get0_data(oid_ptr),
-                self._backend._lib.Cryptography_OBJ_length(oid_ptr),
-            )[:]
-            data = self._backend._lib.X509_EXTENSION_get_data(ext)
-            data_bytes = _asn1_string_to_bytes(self._backend, data)
-            ext_obj = self.rust_callback(oid_der_bytes, data_bytes)
-            if ext_obj is None:
-                ext_obj = x509.UnrecognizedExtension(oid, data_bytes)
-
-            extensions.append(x509.Extension(oid, critical, ext_obj))
-            seen_oids.add(oid)
-
-        return x509.Extensions(extensions)
 
 
 _DISTPOINT_TYPE_FULLNAME = 0
