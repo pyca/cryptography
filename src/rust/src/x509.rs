@@ -422,10 +422,11 @@ impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<Extensions<'a>>, PyAsn1Error> {
         // TODO: no more unwrap once attributes isn't an optional
         for attribute in self.attributes.clone().unwrap() {
-            if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST {
+            if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
+            {
                 if attribute.values.clone().count() > 1 {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "Only single-valued attributes are supported"
+                        "Only single-valued attributes are supported",
                     )));
                 }
                 for val in attribute.values {
@@ -575,16 +576,23 @@ impl CertificateSigningRequest {
         }
     }
 
-    fn get_attribute_for_oid<'p>(&self, py: pyo3::Python<'p>, oid: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn get_attribute_for_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        oid: &pyo3::PyAny,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         // TODO: more efficient way to do this? Possibly convert ObjectIdentifier in python to a rust class.
-        let oid_str = oid.getattr("dotted_string")?.downcast::<pyo3::types::PyString>()?.to_string();
+        let oid_str = oid
+            .getattr("dotted_string")?
+            .downcast::<pyo3::types::PyString>()?
+            .to_string();
         let rust_oid = asn1::ObjectIdentifier::from_string(&oid_str).unwrap();
         // TODO: no more unwrap once attributes isn't an Optional
         for attribute in self.raw.borrow_value().csr_info.attributes.clone().unwrap() {
             if rust_oid == attribute.type_id {
                 if attribute.values.clone().count() > 1 {
                     return Err(pyo3::exceptions::PyValueError::new_err(
-                        "Only single-valued attributes are supported"
+                        "Only single-valued attributes are supported",
                     ));
                 }
                 for val in attribute.values {
@@ -592,10 +600,11 @@ impl CertificateSigningRequest {
                     if val.tag() == 0x0c || val.tag() == 0x13 || val.tag() == 0x16 {
                         return Ok(pyo3::types::PyBytes::new(py, val.data()));
                     } else {
-                        return Err(pyo3::exceptions::PyValueError::new_err(
-                            format!("OID {} has a disallowed ASN.1 type: {}", oid, val.tag()
-                            ))
-                        );
+                        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                            "OID {} has a disallowed ASN.1 type: {}",
+                            oid,
+                            val.tag()
+                        )));
                     }
                 }
             }
@@ -603,10 +612,10 @@ impl CertificateSigningRequest {
         Err(pyo3::PyErr::from_instance(
             py.import("cryptography.x509")?.call_method1(
                 "AttributeNotFound",
-                (format!(
-                    "No {} attribute was found",
-                    rust_oid.to_string()
-                ), oid),
+                (
+                    format!("No {} attribute was found", rust_oid.to_string()),
+                    oid,
+                ),
             )?,
         ))
     }
@@ -767,10 +776,7 @@ impl CertificateSigningRequest {
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
             .getattr("backend")?;
-        backend.call_method1(
-            "_csr_is_signature_valid",
-            (slf,),
-        )
+        backend.call_method1("_csr_is_signature_valid", (slf,))
     }
 }
 
@@ -788,7 +794,10 @@ fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certific
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_csr(_py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<CertificateSigningRequest> {
+fn load_der_x509_csr(
+    _py: pyo3::Python<'_>,
+    data: &[u8],
+) -> PyAsn1Result<CertificateSigningRequest> {
     let raw = OwnedRawCsr::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
     Ok(CertificateSigningRequest {
         raw,
