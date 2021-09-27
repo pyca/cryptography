@@ -418,17 +418,24 @@ struct Attribute<'a> {
     values: asn1::SetOf<'a, asn1::Tlv<'a>>,
 }
 
+fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<(), PyAsn1Error> {
+    if values.count() > 1 {
+        Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Only single-valued attributes are supported",
+        )))
+    } else {
+        Ok(())
+    }
+}
+
 impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<Extensions<'a>>, PyAsn1Error> {
-        // TODO: no more unwrap once attributes isn't an optional
+        // TODO: no more unwrap once attributes isn't an optional. Seems like we could
+        // eliminate a bunch of clones here too
         for attribute in self.attributes.clone().unwrap() {
             if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
             {
-                if attribute.values.clone().count() > 1 {
-                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "Only single-valued attributes are supported",
-                    )));
-                }
+                check_attribute_length(attribute.values.clone())?;
                 if let Some(val) = attribute.values.clone().next() {
                     return Ok(Some(asn1::parse_single::<Extensions<'a>>(val.full_data())?));
                 }
@@ -590,11 +597,7 @@ impl CertificateSigningRequest {
         // TODO: no more unwrap once attributes isn't an Optional
         for attribute in self.raw.borrow_value().csr_info.attributes.clone().unwrap() {
             if rust_oid == attribute.type_id {
-                if attribute.values.clone().count() > 1 {
-                    return Err(pyo3::exceptions::PyValueError::new_err(
-                        "Only single-valued attributes are supported",
-                    ));
-                }
+                check_attribute_length(attribute.values.clone())?;
                 if let Some(val) = attribute.values.clone().next() {
                     // We allow utf8string, printablestring, and ia5string at this time
                     if val.tag() == 0x0c || val.tag() == 0x13 || val.tag() == 0x16 {
