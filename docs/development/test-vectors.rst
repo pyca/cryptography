@@ -476,6 +476,9 @@ Custom X.509 Request Vectors
 * ``challenge-unstructured.pem`` - A certificate signing request for an RSA
   2048 bit key containing a challenge password attribute and an unstructured
   name attribute.
+* ``challenge-multi-valued.der`` - A certificate signing request for an RSA
+  2048 bit key containing a challenge password attribute with two values
+  inside the ASN.1 set. The signature on this request is invalid.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
