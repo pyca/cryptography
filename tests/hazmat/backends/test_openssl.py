@@ -165,17 +165,6 @@ class TestOpenSSL(object):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
 
-    def test_obj2txt_buffer_sizing(self):
-        # This test exercises a branch for larger than default buffer sizing
-        # in _obj2txt
-        oid_str = (
-            "1.2.3.182382138123818.1293813123.12381238123.3434834834888"
-            ".383488234284.2348234.234819299576434.23482434203"
-        )
-        obj = encode_asn1._txt2obj_gc(backend, oid_str)
-        assert decode_asn1._obj2txt(backend, obj) == oid_str
-
-
 @pytest.mark.skipif(
     not backend._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE,
     reason="Requires OpenSSL with ENGINE support and OpenSSL < 1.1.1d",
