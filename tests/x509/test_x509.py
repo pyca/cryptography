@@ -1301,6 +1301,18 @@ class TestRSACertificateRequest(object):
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
 
+    def test_invalid_pem(self, backend):
+        with pytest.raises(ValueError, match="Unable to load"):
+            x509.load_pem_x509_csr(b"notacsr", backend)
+
+        crl = load_vectors_from_file(
+            filename=os.path.join("x509", "custom", "crl_empty.pem"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError, match="Valid PEM but no"):
+            x509.load_pem_x509_csr(crl, backend)
+
     def test_get_attribute_for_oid_challenge(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "challenge.pem"),
@@ -1335,10 +1347,8 @@ class TestRSACertificateRequest(object):
 
     def test_invalid_attribute_for_oid(self, backend):
         """
-        This test deliberately triggers a ValueError because to parse
-        CSR attributes we need to do a C cast. If we're wrong about the
-        type that would be Very Bad so this test confirms we properly explode
-        in the presence of the wrong types.
+        We only support a few string types at the moment. This can
+        be expanded if we find use cases.
         """
         request = _load_cert(
             os.path.join("x509", "requests", "challenge-invalid.der"),
@@ -1346,6 +1356,20 @@ class TestRSACertificateRequest(object):
             backend,
         )
         with pytest.raises(ValueError):
+            request.get_attribute_for_oid(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD
+            )
+
+    def test_challenge_multivalued(self, backend):
+        """
+        We only support single-valued SETs in our X509 request attributes
+        """
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-multi-valued.der"),
+            x509.load_der_x509_csr,
+            backend,
+        )
+        with pytest.raises(ValueError, match="Only single-valued"):
             request.get_attribute_for_oid(
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD
             )
@@ -1414,6 +1438,14 @@ class TestRSACertificateRequest(object):
         assert extensions[0].value == x509.UnrecognizedExtension(
             x509.ObjectIdentifier("1.2.3.4"), b"value"
         )
+
+    def test_no_extension_with_other_attributes(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-unstructured.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        assert len(request.extensions) == 0
 
     def test_request_basic_constraints(self, backend):
         request = _load_cert(
@@ -1629,6 +1661,20 @@ class TestRSACertificateRequest(object):
 
         assert request1 != request2
         assert request1 != object()
+
+    def test_ordering_unsupported(self, backend):
+        csr = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        csr2 = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.raises(TypeError, match="cannot be ordered"):
+            csr > csr2
 
     def test_hash(self, backend):
         request1 = _load_cert(

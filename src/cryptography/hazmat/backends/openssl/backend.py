@@ -18,7 +18,6 @@ from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE,
-    _X509ExtensionParser,
 )
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters,
@@ -74,7 +73,6 @@ from cryptography.hazmat.backends.openssl.x448 import (
     _X448PublicKey,
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _CertificateSigningRequest,
     _RawRevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
@@ -192,7 +190,6 @@ class Backend(BackendInterface):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self._register_x509_ext_parsers()
         self._register_x509_encoders()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
@@ -417,14 +414,6 @@ class Backend(BackendInterface):
             self.register_cipher_adapter(
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
             )
-
-    def _register_x509_ext_parsers(self):
-        self._csr_extension_parser = _X509ExtensionParser(
-            self,
-            ext_count=self._lib.sk_X509_EXTENSION_num,
-            get_ext=self._lib.sk_X509_EXTENSION_value,
-            rust_callback=rust_x509.parse_csr_extension,
-        )
 
     def _register_x509_encoders(self):
         self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()
@@ -893,7 +882,7 @@ class Backend(BackendInterface):
         builder: x509.CertificateSigningRequestBuilder,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> _CertificateSigningRequest:
+    ) -> x509.CertificateSigningRequest:
         if not isinstance(builder, x509.CertificateSigningRequestBuilder):
             raise TypeError("Builder type mismatch.")
         self._x509_check_signature_params(private_key, algorithm)
@@ -967,7 +956,7 @@ class Backend(BackendInterface):
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
 
-        return _CertificateSigningRequest(self, x509_req)
+        return self._ossl2csr(x509_req)
 
     def create_x509_certificate(
         self,
@@ -1372,6 +1361,22 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
+    def _csr2ossl(self, csr: x509.CertificateSigningRequest) -> typing.Any:
+        data = csr.public_bytes(serialization.Encoding.DER)
+        mem_bio = self._bytes_to_bio(data)
+        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
+        self.openssl_assert(x509_req != self._ffi.NULL)
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        return x509_req
+
+    def _ossl2csr(
+        self, x509_req: typing.Any
+    ) -> x509.CertificateSigningRequest:
+        bio = self._create_mem_bio_gc()
+        res = self._lib.i2d_X509_REQ_bio(bio, x509_req)
+        self.openssl_assert(res == 1)
+        return rust_x509.load_der_x509_csr(self._read_mem_bio(bio))
+
     def _crl_is_signature_valid(
         self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES
     ) -> bool:
@@ -1401,31 +1406,20 @@ class Backend(BackendInterface):
 
         return True
 
-    def load_pem_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
-        mem_bio = self._bytes_to_bio(data)
-        x509_req = self._lib.PEM_read_bio_X509_REQ(
-            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
-        )
-        if x509_req == self._ffi.NULL:
+    def _csr_is_signature_valid(
+        self, csr: x509.CertificateSigningRequest
+    ) -> bool:
+        x509_req = self._csr2ossl(csr)
+        pkey = self._lib.X509_REQ_get_pubkey(x509_req)
+        self.openssl_assert(pkey != self._ffi.NULL)
+        pkey = self._ffi.gc(pkey, self._lib.EVP_PKEY_free)
+        res = self._lib.X509_REQ_verify(x509_req, pkey)
+
+        if res != 1:
             self._consume_errors()
-            raise ValueError(
-                "Unable to load request. See https://cryptography.io/en/"
-                "latest/faq.html#why-can-t-i-import-my-pem-file for more"
-                " details."
-            )
+            return False
 
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-        return _CertificateSigningRequest(self, x509_req)
-
-    def load_der_x509_csr(self, data: bytes) -> _CertificateSigningRequest:
-        mem_bio = self._bytes_to_bio(data)
-        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
-        if x509_req == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to load request")
-
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-        return _CertificateSigningRequest(self, x509_req)
+        return True
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
