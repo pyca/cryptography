@@ -956,10 +956,7 @@ class Backend(BackendInterface):
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
 
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_REQ_bio(bio, x509_req)
-        self.openssl_assert(res == 1)
-        return rust_x509.load_der_x509_csr(self._read_mem_bio(bio))
+        return self._ossl2csr(x509_req)
 
     def create_x509_certificate(
         self,

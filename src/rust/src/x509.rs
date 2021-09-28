@@ -597,39 +597,31 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        // TODO: Convert ObjectIdentifier in python to a rust class so this can be more efficient
-        let oid_str = oid
-            .getattr("dotted_string")?
-            .downcast::<pyo3::types::PyString>()?
-            .to_string();
-        let rust_oid = asn1::ObjectIdentifier::from_string(&oid_str).unwrap();
+        let oid_str = oid.getattr("dotted_string")?.extract::<&str>()?;
+        let rust_oid = asn1::ObjectIdentifier::from_string(oid_str).unwrap();
         for attribute in self.raw.borrow_value().csr_info.attributes.clone() {
             if rust_oid == attribute.type_id {
                 check_attribute_length(attribute.values.clone())?;
-                if let Some(val) = attribute.values.clone().next() {
-                    // We allow utf8string, printablestring, and ia5string at this time
-                    if val.tag() == asn1::Utf8String::TAG
-                        || val.tag() == asn1::PrintableString::TAG
-                        || val.tag() == asn1::IA5String::TAG
-                    {
-                        return Ok(pyo3::types::PyBytes::new(py, val.data()));
-                    } else {
-                        return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                            "OID {} has a disallowed ASN.1 type: {}",
-                            oid,
-                            val.tag()
-                        )));
-                    }
+                let val = attribute.values.clone().next().unwrap();
+                // We allow utf8string, printablestring, and ia5string at this time
+                if val.tag() == asn1::Utf8String::TAG
+                    || val.tag() == asn1::PrintableString::TAG
+                    || val.tag() == asn1::IA5String::TAG
+                {
+                    return Ok(pyo3::types::PyBytes::new(py, val.data()));
+                } else {
+                    return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                        "OID {} has a disallowed ASN.1 type: {}",
+                        oid,
+                        val.tag()
+                    )));
                 }
             }
         }
         Err(pyo3::PyErr::from_instance(
             py.import("cryptography.x509")?.call_method1(
                 "AttributeNotFound",
-                (
-                    format!("No {} attribute was found", rust_oid.to_string()),
-                    oid,
-                ),
+                (format!("No {} attribute was found", oid_str), oid),
             )?,
         ))
     }
