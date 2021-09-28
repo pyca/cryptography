@@ -449,10 +449,9 @@ impl CertificationRequestInfo<'_> {
             if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
             {
                 check_attribute_length(attribute.values.clone())?;
-                if let Some(val) = attribute.values.clone().next() {
-                    let exts = asn1::parse_single::<Extensions<'a>>(val.full_data())?;
-                    return Ok(Some(exts));
-                }
+                let val = attribute.values.clone().next().unwrap();
+                let exts = asn1::parse_single::<Extensions<'a>>(val.full_data())?;
+                return Ok(Some(exts));
             }
         }
         Ok(None)
