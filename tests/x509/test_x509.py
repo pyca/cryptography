@@ -1439,6 +1439,14 @@ class TestRSACertificateRequest(object):
             x509.ObjectIdentifier("1.2.3.4"), b"value"
         )
 
+    def test_no_extension_with_other_attributes(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-unstructured.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        assert len(request.extensions) == 0
+
     def test_request_basic_constraints(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "basic_constraints.pem"),
