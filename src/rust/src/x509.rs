@@ -1043,6 +1043,28 @@ impl CertificateRevocationList {
             .getattr("backend")?;
         backend.call_method1("_crl_is_signature_valid", (slf, public_key))
     }
+
+    // This getter exists for compatibility with pyOpenSSL and will be removed.
+    // DO NOT RELY ON IT. WE WILL BREAK YOU WHEN WE FEEL LIKE IT.
+    #[getter]
+    fn _x509_crl<'p>(
+        slf: pyo3::PyRef<'_, Self>,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn35")?;
+        let warnings = py.import("warnings")?;
+        warnings.call_method1(
+            "warn",
+            (
+                "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
+                cryptography_warning,
+            ),
+        )?;
+        let backend = py
+            .import("cryptography.hazmat.backends.openssl.backend")?
+            .getattr("backend")?;
+        Ok(backend.call_method1("_crl2ossl", (slf,))?)
+    }
 }
 
 #[pyo3::prelude::pyproto]

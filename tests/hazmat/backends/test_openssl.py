@@ -708,3 +708,21 @@ def test_pyopenssl_csr_fallback():
 
     with pytest.warns(utils.CryptographyDeprecationWarning):
         _CertificateSigningRequest(backend, req_ossl)
+
+
+def test_pyopenssl_crl_fallback():
+    cert = _load_cert(
+        os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+        x509.load_der_x509_crl,
+    )
+    req_crl = None
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        req_crl = cert._x509_crl
+    assert req_crl is not None
+
+    from cryptography.hazmat.backends.openssl.x509 import (
+        _CertificateRevocationList,
+    )
+
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        _CertificateRevocationList(backend, req_crl)

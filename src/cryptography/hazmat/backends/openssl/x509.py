@@ -33,6 +33,19 @@ def _CertificateSigningRequest(  # noqa: N802
     return backend._ossl2csr(x509_req)
 
 
+# This exists for pyOpenSSL compatibility and SHOULD NOT BE USED
+# WE WILL REMOVE THIS VERY SOON.
+def _CertificateRevocationList(  # noqa: N802
+    backend, x509_crl
+) -> x509.CertificateRevocationList:
+    warnings.warn(
+        "This version of cryptography contains a temporary pyOpenSSL "
+        "fallback path. Upgrade pyOpenSSL now.",
+        utils.DeprecatedIn35,
+    )
+    return backend._ossl2crl(x509_crl)
+
+
 class _RawRevokedCertificate(x509.RevokedCertificate):
     def __init__(
         self,
