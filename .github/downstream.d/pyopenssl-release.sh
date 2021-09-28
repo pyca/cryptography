@@ -2,11 +2,11 @@
 
 case "${1}" in
     install)
-        pip install "pyopenssl[test]"
+        VERSION=$(curl https://pypi.org/pypi/pyOpenSSL/json | jq -r .info.version)
         git clone https://github.com/pyca/pyopenssl
         cd pyopenssl
-        VERSION=$(python -c "import OpenSSL;print(OpenSSL.__version__)")
         git checkout "$VERSION"
+        pip install -e ".[test]"
         ;;
     run)
         cd pyopenssl
