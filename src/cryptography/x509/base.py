@@ -425,6 +425,10 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
 
+# Runtime isinstance checks need this since the rust class is not a subclass.
+CertificateSigningRequest.register(rust_x509.CertificateSigningRequest)
+
+
 # Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_certificate(
     data: bytes, backend: typing.Any = None
@@ -439,26 +443,28 @@ def load_der_x509_certificate(
     return rust_x509.load_der_x509_certificate(data)
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_csr(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateSigningRequest:
-    backend = _get_backend(backend)
-    return backend.load_pem_x509_csr(data)
+    return rust_x509.load_pem_x509_csr(data)
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_csr(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateSigningRequest:
-    backend = _get_backend(backend)
-    return backend.load_der_x509_csr(data)
+    return rust_x509.load_der_x509_csr(data)
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
     return rust_x509.load_pem_x509_crl(data)
 
 
+# Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_crl(
     data: bytes, backend: typing.Optional[Backend] = None
 ) -> CertificateRevocationList:
