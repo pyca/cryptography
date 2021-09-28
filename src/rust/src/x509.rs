@@ -450,7 +450,8 @@ impl CertificationRequestInfo<'_> {
             {
                 check_attribute_length(attribute.values.clone())?;
                 if let Some(val) = attribute.values.clone().next() {
-                    return Ok(Some(asn1::parse_single::<Extensions<'a>>(val.full_data())?));
+                    let exts = asn1::parse_single::<Extensions<'a>>(val.full_data())?;
+                    return Ok(Some(exts));
                 }
             }
         }
