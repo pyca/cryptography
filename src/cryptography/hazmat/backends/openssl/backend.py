@@ -1677,7 +1677,7 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def load_der_ocsp_response(self, data):
+    def load_der_ocsp_response(self, data, request=None):
         mem_bio = self._bytes_to_bio(data)
         response = self._lib.d2i_OCSP_RESPONSE_bio(mem_bio.bio, self._ffi.NULL)
         if response == self._ffi.NULL:
@@ -1685,7 +1685,7 @@ class Backend(BackendInterface):
             raise ValueError("Unable to load OCSP response")
 
         response = self._ffi.gc(response, self._lib.OCSP_RESPONSE_free)
-        return _OCSPResponse(self, response)
+        return _OCSPResponse(self, response, request)
 
     def create_ocsp_request(self, builder):
         ocsp_req = self._lib.OCSP_REQUEST_new()

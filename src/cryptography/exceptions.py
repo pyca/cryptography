@@ -55,3 +55,18 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
+
+
+class MultiOCSPResponseWithoutReq(ValueError):
+    pass
+
+
+class MultiOCSPResponseNoMatchReq(ValueError):
+    def __init__(self, hashes_used):
+        self.hashes_used = hashes_used
+
+    def __str__(self):
+        return (
+            "Multiple OCSP responses received, but "
+            "none matched with {}".format(str(self.hashes_used))
+        )

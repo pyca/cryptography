@@ -6,7 +6,11 @@ import datetime
 import typing
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import (
+    MultiOCSPResponseNoMatchReq,
+    MultiOCSPResponseWithoutReq,
+    UnsupportedAlgorithm,
+)
 from cryptography.hazmat._oid import _SIG_OIDS_TO_HASH
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_CODE_TO_ENUM,
@@ -86,7 +90,7 @@ def _hash_algorithm(backend, cert_id):
 
 
 class _OCSPResponse(OCSPResponse):
-    def __init__(self, backend, ocsp_response):
+    def __init__(self, backend, ocsp_response, ocsp_request=None):
         self._backend = backend
         self._ocsp_response = ocsp_response
         status = self._backend._lib.OCSP_response_status(self._ocsp_response)
@@ -105,22 +109,41 @@ class _OCSPResponse(OCSPResponse):
                 basic, self._backend._lib.OCSP_BASICRESP_free
             )
             num_resp = self._backend._lib.OCSP_resp_count(self._basic)
-            if num_resp != 1:
-                raise ValueError(
-                    "OCSP response contains more than one SINGLERESP structure"
-                    ", which this library does not support. "
-                    "{} found".format(num_resp)
+
+            hashes_used = set()
+
+            for idx in range(num_resp):
+                self._single = self._backend._lib.OCSP_resp_get0(
+                    self._basic, idx
                 )
-            self._single = self._backend._lib.OCSP_resp_get0(self._basic, 0)
-            self._backend.openssl_assert(
-                self._single != self._backend._ffi.NULL
-            )
-            self._cert_id = self._backend._lib.OCSP_SINGLERESP_get0_id(
-                self._single
-            )
-            self._backend.openssl_assert(
-                self._cert_id != self._backend._ffi.NULL
-            )
+                self._backend.openssl_assert(
+                    self._single != self._backend._ffi.NULL
+                )
+                self._cert_id = self._backend._lib.OCSP_SINGLERESP_get0_id(
+                    self._single
+                )
+                self._backend.openssl_assert(
+                    self._cert_id != self._backend._ffi.NULL
+                )
+
+                if num_resp == 1:
+                    return
+
+                if ocsp_request is None:
+                    raise MultiOCSPResponseWithoutReq()
+
+                if (
+                    self.hash_algorithm.name
+                    == ocsp_request.hash_algorithm.name
+                    and self.serial_number == ocsp_request.serial_number
+                    and self.issuer_key_hash == ocsp_request.issuer_key_hash
+                    and self.issuer_name_hash == ocsp_request.issuer_name_hash
+                ):
+                    return
+
+                hashes_used.add(self.hash_algorithm.name)
+
+            raise MultiOCSPResponseNoMatchReq(hashes_used)
 
     response_status = utils.read_only_property("_status")
 

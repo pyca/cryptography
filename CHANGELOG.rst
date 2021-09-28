@@ -31,6 +31,7 @@ Changelog
 * Added ``rfc4514_attribute_name`` attribute to :attr:`x509.NameAttribute
   <cryptography.x509.NameAttribute.rfc4514_attribute_name>`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`.
+* Added support for OCSP Responses with multiple SINGLERESP blocks.
 
 .. _v3-4-8:
 

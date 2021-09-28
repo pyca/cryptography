@@ -10,7 +10,11 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import (
+    MultiOCSPResponseNoMatchReq,
+    MultiOCSPResponseWithoutReq,
+    UnsupportedAlgorithm
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
@@ -899,12 +903,52 @@ class TestOCSPResponse(object):
         assert resp.serial_number == 271024907440004808294641238224534273948400
         assert len(resp.extensions) == 0
 
-    def test_load_multi_valued_response(self):
-        with pytest.raises(ValueError):
+    def test_load_multi_valued_response_no_req(self):
+        with pytest.raises(MultiOCSPResponseWithoutReq):
             _load_data(
                 os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
                 ocsp.load_der_ocsp_response,
             )
+
+    def test_load_multi_valued_response_valid_req(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.valid-req.der"),
+            ocsp.load_der_ocsp_request
+            )
+
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+            lambda data: ocsp.load_der_ocsp_response(data, req)
+            )
+
+        assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
+        assert resp.certificate_status == ocsp.OCSPCertStatus.GOOD
+
+    def test_load_multi_valued_response_revoked_req(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.revoked-req.der"),
+            ocsp.load_der_ocsp_request
+            )
+
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+            lambda data: ocsp.load_der_ocsp_response(data, req)
+            )
+
+        assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
+        assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
+
+    def test_load_multi_valued_response_inapplicable_req(self):
+        req = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.inapplicable-req.der"),
+            ocsp.load_der_ocsp_request
+            )
+
+        with pytest.raises(MultiOCSPResponseNoMatchReq):
+            resp = _load_data(
+                os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+                lambda data: ocsp.load_der_ocsp_response(data, req)
+                )
 
     def test_load_unauthorized(self):
         resp = _load_data(

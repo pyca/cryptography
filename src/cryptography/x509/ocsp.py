@@ -498,7 +498,9 @@ def load_der_ocsp_request(data: bytes) -> OCSPRequest:
     return ocsp.load_der_ocsp_request(data)
 
 
-def load_der_ocsp_response(data: bytes) -> OCSPResponse:
+def load_der_ocsp_response(
+    data: bytes, request: OCSPRequest = None
+) -> OCSPResponse:
     from cryptography.hazmat.backends.openssl.backend import backend
 
-    return backend.load_der_ocsp_response(data)
+    return backend.load_der_ocsp_response(data, request)

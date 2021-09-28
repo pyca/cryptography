@@ -185,13 +185,14 @@ Creating Requests
 Loading Responses
 ~~~~~~~~~~~~~~~~~
 
-.. function:: load_der_ocsp_response(data)
+.. function:: load_der_ocsp_response(data, req=None)
 
     .. versionadded:: 2.4
 
     Deserialize an OCSP response from DER encoded data.
 
     :param bytes data: The DER encoded OCSP response data.
+    :param Optional[OCSPRequest] req: The request to match if multiple responses are present
 
     :returns: An instance of :class:`~cryptography.x509.ocsp.OCSPResponse`.
 
