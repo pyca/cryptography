@@ -423,9 +423,8 @@ struct CertificationRequestInfo<'a> {
     version: u8,
     subject: Name<'a>,
     spki: asn1::Sequence<'a>,
-    #[implicit(0)]
-    // TODO: this needs to be non-optional, but we need to fix rust-asn1 for that
-    attributes: Option<asn1::SetOf<'a, Attribute<'a>>>,
+    #[implicit(0, required)]
+    attributes: asn1::SetOf<'a, Attribute<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -446,9 +445,7 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
 
 impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<Extensions<'a>>, PyAsn1Error> {
-        // TODO: no more unwrap once attributes isn't an optional. Seems like we could
-        // eliminate a bunch of clones here too
-        for attribute in self.attributes.clone().unwrap() {
+        for attribute in self.attributes.clone() {
             if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
             {
                 check_attribute_length(attribute.values.clone())?;
@@ -600,14 +597,13 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        // TODO: more efficient way to do this? Possibly convert ObjectIdentifier in python to a rust class.
+        // TODO: Convert ObjectIdentifier in python to a rust class so this can be more efficient
         let oid_str = oid
             .getattr("dotted_string")?
             .downcast::<pyo3::types::PyString>()?
             .to_string();
         let rust_oid = asn1::ObjectIdentifier::from_string(&oid_str).unwrap();
-        // TODO: no more unwrap once attributes isn't an Optional
-        for attribute in self.raw.borrow_value().csr_info.attributes.clone().unwrap() {
+        for attribute in self.raw.borrow_value().csr_info.attributes.clone() {
             if rust_oid == attribute.type_id {
                 check_attribute_length(attribute.values.clone())?;
                 if let Some(val) = attribute.values.clone().next() {
