@@ -13,11 +13,17 @@ Changelog
   change our existing backwards compatibility policy.
 * **BACKWARDS INCOMPATIBLE:** The X.509 certificate parser no longer allows
   negative serial numbers. :rfc:`5280` has always prohibited these.
-* **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during certificate parsing
-  will raise an error on initial parse rather than when the invalid field is
-  accessed.
-* **BACKWARDS INCOMPATIBLE:** Values passed to the X.509 PEM parser must be
-  a single PEM payload and will error on extraneous data.
+* **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during :doc:`/x509/index`
+  parsing will raise an error on initial parse rather than when the invalid
+  field is accessed.
+* **BACKWARDS INCOMPATIBLE:** Values passed to the :doc:`/x509/index` PEM
+  parsers must be a single PEM payload and will error on extraneous data.
+* Rust is now required for building ``cryptography``, the
+  ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment variable is no longer
+  respected.
+* Parsers for :doc:`/x509/index` no longer use OpenSSL and have been
+  rewritten in Rust. This should be backwards compatible (modulo the items
+  listed above) and improve both security and performance.
 * Added support for OpenSSL 3.0.0 as a compilation target.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
