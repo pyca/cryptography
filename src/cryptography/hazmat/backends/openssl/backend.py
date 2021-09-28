@@ -1140,10 +1140,7 @@ class Backend(BackendInterface):
             errors = self._consume_errors_with_text()
             raise ValueError("Signing failed", errors)
 
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_CRL_bio(bio, x509_crl)
-        self.openssl_assert(res == 1)
-        return rust_x509.load_der_x509_crl(self._read_mem_bio(bio))
+        return self._ossl2crl(x509_crl)
 
     def _create_x509_extensions(
         self, extensions, handlers, x509_obj, add_func, gc
@@ -1408,12 +1405,7 @@ class Backend(BackendInterface):
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
                 " or EllipticCurvePublicKey."
             )
-        data = crl.public_bytes(serialization.Encoding.DER)
-        mem_bio = self._bytes_to_bio(data)
-        x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(x509_crl != self._ffi.NULL)
-        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
-
+        x509_crl = self._crl2ossl(crl)
         res = self._lib.X509_CRL_verify(x509_crl, public_key._evp_pkey)
 
         if res != 1:
