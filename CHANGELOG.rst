@@ -17,7 +17,7 @@ Changelog
   :mod:`~cryptography.x509` parsing will raise an error on initial parse
   rather than when the invalid field is accessed.
 * **BACKWARDS INCOMPATIBLE:** Values passed to the :mod:`~cryptography.x509`
-  PEM parser must be a single PEM payload and will error on extraneous data.
+  PEM parsers must be a single PEM payload and will error on extraneous data.
 * Rust is now required for building ``cryptography``, the
   ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment variable is no longer
   respected.
