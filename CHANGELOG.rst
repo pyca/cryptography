@@ -16,8 +16,6 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during :doc:`/x509/index`
   parsing will raise an error on initial parse rather than when the invalid
   field is accessed.
-* **BACKWARDS INCOMPATIBLE:** Values passed to the :doc:`/x509/index` PEM
-  parsers must be a single PEM payload and will error on extraneous data.
 * Rust is now required for building ``cryptography``, the
   ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment variable is no longer
   respected.
