@@ -84,7 +84,7 @@ def fetch_github_actions_wheels(token, version):
     response = session.get(
         (
             "https://api.github.com/repos/pyca/cryptography/actions/workflows/"
-            "wheel-builder.yml/runs?event=create"
+            "wheel-builder.yml/runs?event=push"
         ),
         headers={
             "Content-Type": "application/json",
