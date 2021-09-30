@@ -3,10 +3,8 @@ Changelog
 
 .. _v35-0-0:
 
-35.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
- .. note:: This version is not yet released and is under active development.
+35.0.0 - 2021-09-29
+~~~~~~~~~~~~~~~~~~~
 
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
