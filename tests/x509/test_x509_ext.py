@@ -15,10 +15,14 @@ import pytest
 
 from cryptography import x509
 from cryptography.hazmat._oid import _OID_NAMES
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
-from cryptography.x509.extensions import _key_identifier_from_public_key
+from cryptography.x509.extensions import (
+    ExtensionType,
+    _key_identifier_from_public_key,
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
     ExtendedKeyUsageOID,
@@ -198,6 +202,12 @@ class TestTLSFeature(object):
         assert ext[-1] == ext[1]
         assert ext[0] == x509.TLSFeatureType.status_request
 
+    def test_public_bytes(self):
+        ext1 = x509.TLSFeature([x509.TLSFeatureType.status_request])
+        assert ext1.public_bytes() == b"\x30\x03\x02\x01\x05"
+        ext2 = x509.TLSFeature([x509.TLSFeatureType.status_request_v2])
+        assert ext2.public_bytes() == b"\x30\x03\x02\x01\x11"
+
 
 class TestUnrecognizedExtension(object):
     def test_invalid_oid(self):
@@ -250,6 +260,20 @@ class TestUnrecognizedExtension(object):
         )
         assert hash(ext1) == hash(ext2)
         assert hash(ext1) != hash(ext3)
+
+    def test_public_bytes(self):
+        ext1 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.5"), b"\x03\x02\x01"
+        )
+        assert ext1.public_bytes() == b"\x03\x02\x01"
+
+        # The following creates a BasicConstraints extension with an invalid
+        # value. The serialization code should still handle it correctly by
+        # special-casing UnrecognizedExtension.
+        ext2 = x509.UnrecognizedExtension(
+            x509.oid.ExtensionOID.BASIC_CONSTRAINTS, b"\x03\x02\x01"
+        )
+        assert ext2.public_bytes() == b"\x03\x02\x01"
 
 
 class TestCertificateIssuer(object):
@@ -308,6 +332,10 @@ class TestCertificateIssuer(object):
         assert hash(ci1) == hash(ci2)
         assert hash(ci1) != hash(ci3)
 
+    def test_public_bytes(self):
+        ext = x509.CertificateIssuer([x509.DNSName("cryptography.io")])
+        assert ext.public_bytes() == b"0\x11\x82\x0fcryptography.io"
+
 
 class TestCRLReason(object):
     def test_invalid_reason_flags(self):
@@ -337,6 +365,10 @@ class TestCRLReason(object):
         reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
         assert repr(reason1) == ("<CRLReason(reason=ReasonFlags.unspecified)>")
 
+    def test_public_bytes(self):
+        ext = x509.CRLReason(x509.ReasonFlags.ca_compromise)
+        assert ext.public_bytes() == b"\n\x01\x02"
+
 
 class TestDeltaCRLIndicator(object):
     def test_not_int(self):
@@ -364,6 +396,10 @@ class TestDeltaCRLIndicator(object):
         delta3 = x509.DeltaCRLIndicator(2)
         assert hash(delta1) == hash(delta2)
         assert hash(delta1) != hash(delta3)
+
+    def test_public_bytes(self):
+        ext = x509.DeltaCRLIndicator(2)
+        assert ext.public_bytes() == b"\x02\x01\x02"
 
 
 class TestInvalidityDate(object):
@@ -394,6 +430,10 @@ class TestInvalidityDate(object):
         invalid3 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 2))
         assert hash(invalid1) == hash(invalid2)
         assert hash(invalid1) != hash(invalid3)
+
+    def test_public_bytes(self):
+        ext = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        assert ext.public_bytes() == b"\x18\x0f20150101010100Z"
 
 
 class TestNoticeReference(object):
@@ -790,6 +830,26 @@ class TestCertificatePoliciesExtension(object):
         with pytest.raises(ValueError, match="Qualifier"):
             builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
+    def test_public_bytes(self):
+        ext = x509.CertificatePolicies(
+            [
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [
+                        x509.UserNotice(
+                            x509.NoticeReference("my org", [1, 2, 3, 4]), None
+                        )
+                    ],
+                )
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0705\x06\x0b`\x86H\x01\xe09\x01\x02\x03\x04\x010&0$\x06\x08+"
+            b"\x06\x01\x05\x05\x07\x02\x020\x180\x16\x0c\x06my org0\x0c\x02"
+            b"\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04"
+        )
+
 
 class TestKeyUsage(object):
     def test_key_agreement_false_encipher_decipher_true(self):
@@ -1013,6 +1073,20 @@ class TestKeyUsage(object):
         assert hash(ku) == hash(ku2)
         assert hash(ku) != hash(ku3)
 
+    def test_public_bytes(self):
+        ext = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False,
+        )
+        assert ext.public_bytes() == b"\x03\x02\x00@"
+
 
 class TestSubjectKeyIdentifier(object):
     def test_properties(self):
@@ -1064,6 +1138,16 @@ class TestSubjectKeyIdentifier(object):
         )
         assert hash(ski1) == hash(ski2)
         assert hash(ski1) != hash(ski3)
+
+    def test_public_bytes(self):
+        ext = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        assert (
+            ext.public_bytes()
+            == b'\x04\x14\t#\x84\x93"0I\x8b\xc9\x80\xaa\x80\x98Eoo\xf7\xff:'
+            b"\xc9"
+        )
 
 
 class TestAuthorityKeyIdentifier(object):
@@ -1185,6 +1269,17 @@ class TestAuthorityKeyIdentifier(object):
         assert hash(aki1) == hash(aki2)
         assert hash(aki1) != hash(aki3)
 
+    def test_public_bytes(self):
+        dirname = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "myCN")])
+        )
+        ext = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
+        assert (
+            ext.public_bytes()
+            == b"0!\x80\x06digest\xa1\x13\xa4\x110\x0f1\r0\x0b\x06\x03U\x04"
+            b"\x03\x0c\x04myCN\x82\x02\x04\xd2"
+        )
+
 
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
@@ -1235,6 +1330,10 @@ class TestBasicConstraints(object):
         assert na != na2
         assert na != na3
         assert na != object()
+
+    def test_public_bytes(self):
+        ext = x509.BasicConstraints(ca=True, path_length=None)
+        assert ext.public_bytes() == b"0\x03\x01\x01\xff"
 
 
 class TestExtendedKeyUsage(object):
@@ -1301,6 +1400,12 @@ class TestExtendedKeyUsage(object):
         eku3 = x509.ExtendedKeyUsage([x509.ObjectIdentifier("1.3.6")])
         assert hash(eku) == hash(eku2)
         assert hash(eku) != hash(eku3)
+
+    def test_public_bytes(self):
+        ext = x509.ExtendedKeyUsage(
+            [x509.ObjectIdentifier("1.3.6"), x509.ObjectIdentifier("1.3.7")]
+        )
+        assert ext.public_bytes() == b"0\x08\x06\x02+\x06\x06\x02+\x07"
 
 
 class TestExtensions(object):
@@ -2152,6 +2257,10 @@ class TestIssuerAlternativeName(object):
         assert hash(ian) == hash(ian2)
         assert hash(ian) != hash(ian3)
 
+    def test_public_bytes(self):
+        ext = x509.IssuerAlternativeName([x509.DNSName("cryptography.io")])
+        assert ext.public_bytes() == b"0\x11\x82\x0fcryptography.io"
+
 
 class TestRSAIssuerAlternativeNameExtension(object):
     def test_uri(self, backend):
@@ -2192,6 +2301,10 @@ class TestCRLNumber(object):
         c3 = x509.CRLNumber(2)
         assert hash(c1) == hash(c2)
         assert hash(c1) != hash(c3)
+
+    def test_public_bytes(self):
+        ext = x509.CRLNumber(15)
+        assert ext.public_bytes() == b"\x02\x01\x0f"
 
 
 class TestSubjectAlternativeName(object):
@@ -2260,6 +2373,10 @@ class TestSubjectAlternativeName(object):
         )
         assert hash(san) == hash(san2)
         assert hash(san) != hash(san3)
+
+    def test_public_bytes(self):
+        ext = x509.SubjectAlternativeName([x509.DNSName("cryptography.io")])
+        assert ext.public_bytes() == b"0\x11\x82\x0fcryptography.io"
 
 
 class TestRSASubjectAlternativeNameExtension(object):
@@ -2702,6 +2819,10 @@ class TestPolicyConstraints(object):
         assert hash(pc) == hash(pc2)
         assert hash(pc) != hash(pc3)
 
+    def test_public_bytes(self):
+        ext = x509.PolicyConstraints(2, 1)
+        assert ext.public_bytes() == b"0\x06\x80\x01\x02\x81\x01\x01"
+
 
 class TestPolicyConstraintsExtension(object):
     def test_inhibit_policy_mapping(self, backend):
@@ -2734,6 +2855,13 @@ class TestPolicyConstraintsExtension(object):
             require_explicit_policy=1,
             inhibit_policy_mapping=None,
         )
+
+    def test_public_bytes(self):
+        ext = x509.PolicyConstraints(
+            require_explicit_policy=None,
+            inhibit_policy_mapping=0,
+        )
+        assert ext.public_bytes() == b"\x30\x03\x81\x01\x00"
 
 
 class TestAuthorityInformationAccess(object):
@@ -2921,6 +3049,26 @@ class TestAuthorityInformationAccess(object):
         assert hash(aia) == hash(aia2)
         assert hash(aia) != hash(aia3)
 
+    def test_public_bytes(self):
+        ext = x509.AuthorityInformationAccess(
+            [
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.OCSP,
+                    x509.UniformResourceIdentifier("http://ocsp.other.com"),
+                ),
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.CA_ISSUERS,
+                    x509.UniformResourceIdentifier("http://domain.com/ca.crt"),
+                ),
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0I0!\x06\x08+\x06\x01\x05\x05\x070\x01\x86\x15http://"
+            b"ocsp.other.com0$\x06\x08+\x06\x01\x05\x05\x070\x02\x86\x18"
+            b"http://domain.com/ca.crt"
+        )
+
 
 class TestSubjectInformationAccess(object):
     def test_invalid_descriptions(self):
@@ -3100,6 +3248,26 @@ class TestSubjectInformationAccess(object):
         assert hash(sia) == hash(sia2)
         assert hash(sia) != hash(sia3)
 
+    def test_public_bytes(self):
+        ext = x509.SubjectInformationAccess(
+            [
+                x509.AccessDescription(
+                    SubjectInformationAccessOID.CA_REPOSITORY,
+                    x509.UniformResourceIdentifier("http://ca.domain.com"),
+                ),
+                x509.AccessDescription(
+                    SubjectInformationAccessOID.CA_REPOSITORY,
+                    x509.UniformResourceIdentifier("http://ca3.domain.com"),
+                ),
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0E0 \x06\x08+\x06\x01\x05\x05\x070\x05\x86\x14http://"
+            b"ca.domain.com0!\x06\x08+\x06\x01\x05\x05\x070\x05\x86\x15"
+            b"http://ca3.domain.com"
+        )
+
 
 class TestSubjectInformationAccessExtension(object):
     def test_sia(self, backend):
@@ -3249,6 +3417,33 @@ class TestAuthorityInformationAccessExtension(object):
                     ),
                 ),
             ]
+        )
+
+    def test_public_bytes(self):
+        ext = x509.AuthorityInformationAccess(
+            [
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.CA_ISSUERS,
+                    x509.DirectoryName(
+                        x509.Name(
+                            [
+                                x509.NameAttribute(
+                                    NameOID.COMMON_NAME, "myCN"
+                                ),
+                                x509.NameAttribute(
+                                    NameOID.ORGANIZATION_NAME, "some Org"
+                                ),
+                            ]
+                        )
+                    ),
+                ),
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b'0200\x06\x08+\x06\x01\x05\x05\x070\x02\xa4$0"1\r0\x0b\x06'
+            b"\x03U\x04\x03\x0c\x04myCN1\x110\x0f\x06\x03U\x04\n\x0c\x08"
+            b"some Org"
         )
 
 
@@ -3495,6 +3690,16 @@ class TestNameConstraints(object):
         assert hash(nc) != hash(nc3)
         assert hash(nc3) != hash(nc4)
 
+    def test_public_bytes(self):
+        ext = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName("name.local")],
+            excluded_subtrees=[x509.DNSName("name2.local")],
+        )
+        assert (
+            ext.public_bytes()
+            == b"0!\xa0\x0e0\x0c\x82\nname.local\xa1\x0f0\r\x82\x0bname2.local"
+        )
+
 
 class TestNameConstraintsExtension(object):
     def test_permitted_excluded(self, backend):
@@ -3659,6 +3864,23 @@ class TestNameConstraintsExtension(object):
             ).value.permitted_subtrees
         ]
         assert result == permitted
+
+    def test_public_bytes(self):
+        ext = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName("zombo.local")],
+            excluded_subtrees=[
+                x509.DirectoryName(
+                    x509.Name(
+                        [x509.NameAttribute(NameOID.COMMON_NAME, "zombo")]
+                    )
+                )
+            ],
+        )
+        assert (
+            ext.public_bytes()
+            == b"0)\xa0\x0f0\r\x82\x0bzombo.local\xa1\x160\x14\xa4\x120\x101"
+            b"\x0e0\x0c\x06\x03U\x04\x03\x0c\x05zombo"
+        )
 
 
 class TestDistributionPoint(object):
@@ -4113,6 +4335,22 @@ class TestFreshestCRL(object):
         assert fcrl[-1] == fcrl[4]
         assert fcrl[2:6:2] == [fcrl[2], fcrl[4]]
 
+    def test_public_bytes(self):
+        ext = x509.FreshestCRL(
+            [
+                x509.DistributionPoint(
+                    [x509.UniformResourceIdentifier("ftp://domain")],
+                    None,
+                    frozenset([x509.ReasonFlags.key_compromise]),
+                    None,
+                ),
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0\x180\x16\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x00@"
+        )
+
 
 class TestCRLDistributionPoints(object):
     def test_invalid_distribution_points(self):
@@ -4369,6 +4607,28 @@ class TestCRLDistributionPoints(object):
         )
         assert ci[-1] == ci[4]
         assert ci[2:6:2] == [ci[2], ci[4]]
+
+    def test_public_bytes(self):
+        ext = x509.CRLDistributionPoints(
+            [
+                x509.DistributionPoint(
+                    [x509.UniformResourceIdentifier("ftp://domain")],
+                    None,
+                    frozenset(
+                        [
+                            x509.ReasonFlags.key_compromise,
+                            x509.ReasonFlags.ca_compromise,
+                        ]
+                    ),
+                    [x509.UniformResourceIdentifier("uri://thing")],
+                ),
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0'0%\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x00`\xa2\r"
+            b"\x86\x0buri://thing"
+        )
 
 
 class TestCRLDistributionPointsExtension(object):
@@ -4655,6 +4915,26 @@ class TestCRLDistributionPointsExtension(object):
             ]
         )
 
+    def test_public_bytes(self):
+        ext = x509.CRLDistributionPoints(
+            [
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            "ldap:///CN=A,OU=B,dc=C,DC=D?E?F?G?H=I"
+                        )
+                    ],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=None,
+                )
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0-0+\xa0)\xa0'\x86%ldap:///CN=A,OU=B,dc=C,DC=D?E?F?G?H=I"
+        )
+
 
 class TestFreshestCRLExtension(object):
     def test_vector(self, backend):
@@ -4701,6 +4981,50 @@ class TestFreshestCRLExtension(object):
             ]
         )
 
+    def test_public_bytes(self):
+        ext = x509.FreshestCRL(
+            [
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            "http://myhost.com/myca.crl"
+                        ),
+                        x509.UniformResourceIdentifier(
+                            "http://backup.myhost.com/myca.crl"
+                        ),
+                    ],
+                    relative_name=None,
+                    reasons=frozenset(
+                        [
+                            x509.ReasonFlags.ca_compromise,
+                            x509.ReasonFlags.key_compromise,
+                        ]
+                    ),
+                    crl_issuer=[
+                        x509.DirectoryName(
+                            x509.Name(
+                                [
+                                    x509.NameAttribute(
+                                        NameOID.COUNTRY_NAME, "US"
+                                    ),
+                                    x509.NameAttribute(
+                                        NameOID.COMMON_NAME, "cryptography CA"
+                                    ),
+                                ]
+                            )
+                        )
+                    ],
+                )
+            ]
+        )
+        assert (
+            ext.public_bytes()
+            == b"0v0t\xa0A\xa0?\x86\x1ahttp://myhost.com/myca.crl\x86!http://"
+            b"backup.myhost.com/myca.crl\x81\x02\x00`\xa2+\xa4)0'1\x0b0\t\x06"
+            b"\x03U\x04\x06\x13\x02US1\x180\x16\x06\x03U\x04\x03\x0c\x0fcrypt"
+            b"ography CA"
+        )
+
 
 class TestOCSPNoCheckExtension(object):
     def test_nocheck(self, backend):
@@ -4737,6 +5061,10 @@ class TestOCSPNoCheckExtension(object):
 
         assert repr(onc) == "<OCSPNoCheck()>"
 
+    def test_public_bytes(self):
+        ext = x509.OCSPNoCheck()
+        assert ext.public_bytes() == b"\x05\x00"
+
 
 class TestInhibitAnyPolicy(object):
     def test_not_int(self):
@@ -4768,6 +5096,10 @@ class TestInhibitAnyPolicy(object):
         iap3 = x509.InhibitAnyPolicy(4)
         assert hash(iap) == hash(iap2)
         assert hash(iap) != hash(iap3)
+
+    def test_public_bytes(self):
+        ext = x509.InhibitAnyPolicy(1)
+        assert ext.public_bytes() == b"\x02\x01\x01"
 
 
 class TestInhibitAnyPolicyExtension(object):
@@ -5288,6 +5620,28 @@ class TestIssuingDistributionPointExtension(object):
         assert ext.critical is True
         assert ext.value == idp
 
+    def test_public_bytes(self):
+        ext = x509.IssuingDistributionPoint(
+            full_name=None,
+            relative_name=x509.RelativeDistinguishedName(
+                [
+                    x509.NameAttribute(
+                        oid=x509.NameOID.ORGANIZATION_NAME,
+                        value="PyCA",
+                    )
+                ]
+            ),
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            only_some_reasons=None,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+        )
+        assert (
+            ext.public_bytes()
+            == b"0\x11\xa0\x0f\xa1\r0\x0b\x06\x03U\x04\n\x0c\x04PyCA"
+        )
+
 
 class TestPrecertPoisonExtension(object):
     def test_load(self, backend):
@@ -5341,6 +5695,10 @@ class TestPrecertPoisonExtension(object):
         pcp = x509.PrecertPoison()
 
         assert repr(pcp) == "<PrecertPoison()>"
+
+    def test_public_bytes(self):
+        ext = x509.PrecertPoison()
+        assert ext.public_bytes() == b"\x05\x00"
 
 
 class TestSignedCertificateTimestamps(object):
@@ -5625,6 +5983,34 @@ class TestPrecertificateSignedCertificateTimestampsExtension(object):
         with pytest.raises(ValueError):
             cert.extensions
 
+    def test_public_bytes(self, backend):
+        ext = (
+            _load_cert(
+                os.path.join("x509", "cryptography-scts.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
+            .extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+            .value
+        )
+        assert (
+            ext.public_bytes()
+            == b"\x04\x81\xf4\x00\xf2\x00w\x00)<Q\x96T\xc89e\xba\xaaP\xfcX"
+            b"\x07\xd4\xb7o\xbfXz)r\xdc\xa4\xc3\x0c\xf4\xe5EG\xf4x\x00\x00"
+            b"\x01f\x17\xabJ\xe9\x00\x00\x04\x03\x00H0F\x02!\x00\xa5\xce\xa8|"
+            b"Pnq\x8c&\xe3H\xbb\xf4\x0b\xc1\x0eu\xe8M}\xe6:\x8bM\x1e~\x89\nr"
+            b"\xda\xa4@\x02!\x00\xde\xa9\xf1\xd0\xc3S\xfc\xd37\xe1[q_\x80("
+            b"\x85u\x80]Kw\x02\xc0'\x02\xee\xd8\xf7\x15N|r\x00w\x00oSv\xac1"
+            b"\xf01\x19\xd8\x99\x00\xa4Q\x15\xffw\x15\x1c\x11\xd9\x02\xc1\x00"
+            b")\x06\x8d\xb2\x08\x9a7\xd9\x13\x00\x00\x01f\x17\xabKp\x00\x00"
+            b"\x04\x03\x00H0F\x02!\x00\xa2\xe0\xd9\xfec\x94\x14\xf8\xbd\xcd"
+            b"\xd7\xf6\x9d\xb0\x90\xd5\xb8\x92\x07\xb4\x80\xc7\x8a\xc2\xc5"
+            b"\xc4\x0e6\x1e\x92\xa3\xa6\x02!\x00\xbc\xe7\r\xc3\x841\xfa\xfc"
+            b"\x85\x1f%\xc0#N\\\xdeK\x90d\xe0\x8d<{\xca\xdbdc\xeft\x87g\x10"
+        )
+
 
 class TestInvalidExtension(object):
     def test_invalid_certificate_policies_data(self, backend):
@@ -5674,9 +6060,24 @@ class TestOCSPNonce(object):
         assert hash(nonce1) == hash(nonce2)
         assert hash(nonce1) != hash(nonce3)
 
+    def test_public_bytes(self):
+        ext = x509.OCSPNonce(b"0" * 5)
+        assert ext.public_bytes() == b"00000"
+
 
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
             continue
         assert getattr(ExtensionOID, oid) in _OID_NAMES
+
+
+def test_unknown_extension():
+    class MyExtension(ExtensionType):
+        oid = x509.ObjectIdentifier("1.2.3.4")
+
+    with pytest.raises(NotImplementedError):
+        MyExtension().public_bytes()
+
+    with pytest.raises(NotImplementedError):
+        rust_x509.encode_extension_value(MyExtension())

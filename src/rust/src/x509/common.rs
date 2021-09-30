@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::PyAsn1Error;
+use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::ToPyObject;
 use std::collections::HashSet;
@@ -639,6 +640,31 @@ pub(crate) fn encode_extensions<
     )))
 }
 
+#[pyo3::prelude::pyfunction]
+fn encode_extension_value<'p>(
+    py: pyo3::Python<'p>,
+    py_ext: &'p pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        py_ext
+            .getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+
+    if let Some(data) = x509::extensions::encode_extension(&oid, py_ext)? {
+        // TODO: extra copy
+        let py_data = pyo3::types::PyBytes::new(py, &data);
+        return Ok(py_data);
+    }
+
+    return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        "Extension not supported: {}",
+        oid
+    )));
+}
+
 pub(crate) fn chrono_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &chrono::DateTime<chrono::Utc>,
@@ -736,6 +762,7 @@ mod tests {
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
 
     Ok(())

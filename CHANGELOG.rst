@@ -42,6 +42,8 @@ Changelog
   :class:`~cryptography.x509.CertificateBuilder`. These key types must be
   signed with a different signing algorithm as ``X25519`` and ``X448`` do
   not support signing.
+* Extension values can now be serialized to a DER byte string by calling
+  :func:`~cryptography.x509.ExtensionType.public_bytes`.
 
 .. _v35-0-0:
 
