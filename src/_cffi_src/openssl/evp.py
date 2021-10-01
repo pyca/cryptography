@@ -209,13 +209,18 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 0;
-static const long Cryptography_HAS_RAW_KEY = 0;
-static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 0;
-int (*EVP_DigestFinalXOF)(EVP_MD_CTX *, unsigned char *, size_t) = NULL;
 int (*EVP_DigestSign)(EVP_MD_CTX *, unsigned char *, size_t *,
                       const unsigned char *tbs, size_t) = NULL;
 int (*EVP_DigestVerify)(EVP_MD_CTX *, const unsigned char *, size_t,
                         const unsigned char *, size_t) = NULL;
+#else
+static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+static const long Cryptography_HAS_RAW_KEY = 0;
+static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 0;
+int (*EVP_DigestFinalXOF)(EVP_MD_CTX *, unsigned char *, size_t) = NULL;
 EVP_PKEY *(*EVP_PKEY_new_raw_private_key)(int, ENGINE *, const unsigned char *,
                                        size_t) = NULL;
 EVP_PKEY *(*EVP_PKEY_new_raw_public_key)(int, ENGINE *, const unsigned char *,
@@ -225,7 +230,6 @@ int (*EVP_PKEY_get_raw_private_key)(const EVP_PKEY *, unsigned char *,
 int (*EVP_PKEY_get_raw_public_key)(const EVP_PKEY *, unsigned char *,
                                    size_t *) = NULL;
 #else
-static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
 static const long Cryptography_HAS_RAW_KEY = 1;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 #endif
