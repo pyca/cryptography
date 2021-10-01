@@ -16,6 +16,10 @@ Changelog
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
   change our existing backwards compatibility policy.
+* **BACKWARDS INCOMPATIBLE:** The :doc:`/x509/index` PEM parsers now require 
+  that the PEM string passed have PEM delimiters of the correct type. For
+  example, pasing a private key PEM concatenated with a certificate PEM will
+  no longer be accepted by the PEM certificate parser.
 * **BACKWARDS INCOMPATIBLE:** The X.509 certificate parser no longer allows
   negative serial numbers. :rfc:`5280` has always prohibited these.
 * **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during :doc:`/x509/index`
