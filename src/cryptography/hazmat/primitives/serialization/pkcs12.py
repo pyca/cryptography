@@ -31,6 +31,22 @@ def load_key_and_certificates(
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
+def load_key_and_certificates_with_name(
+    data: bytes,
+    password: typing.Optional[bytes],
+    backend: typing.Optional[Backend] = None,
+) -> typing.Tuple[
+    typing.Optional[bytes],
+    typing.Optional[_ALLOWED_PKCS12_TYPES],
+    typing.Optional[x509.Certificate],
+    typing.List[x509.Certificate],
+]:
+    backend = _get_backend(backend)
+    return backend.load_key_and_certificates_with_name_from_pkcs12(
+        data, password
+    )
+
+
 def serialize_key_and_certificates(
     name: typing.Optional[bytes],
     key: typing.Optional[_ALLOWED_PKCS12_TYPES],

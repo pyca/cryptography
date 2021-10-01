@@ -2499,6 +2499,17 @@ class Backend(BackendInterface):
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
     def load_key_and_certificates_from_pkcs12(self, data, password):
+        (
+            name,
+            key,
+            cert,
+            additional_certificates,
+        ) = self.load_key_and_certificates_with_name_from_pkcs12(
+            data, password
+        )
+        return (key, cert, additional_certificates)
+
+    def load_key_and_certificates_with_name_from_pkcs12(self, data, password):
         if password is not None:
             utils._check_byteslike("password", password)
 
@@ -2527,6 +2538,7 @@ class Backend(BackendInterface):
             self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
 
+        name = None
         cert = None
         key = None
         additional_certificates = []
@@ -2538,6 +2550,9 @@ class Backend(BackendInterface):
         if x509_ptr[0] != self._ffi.NULL:
             x509 = self._ffi.gc(x509_ptr[0], self._lib.X509_free)
             cert = self._ossl2cert(x509)
+            maybe_name = self._lib.X509_alias_get0(x509_ptr[0], self._ffi.NULL)
+            if maybe_name != self._ffi.NULL:
+                name = self._ffi.string(maybe_name)
 
         if sk_x509_ptr[0] != self._ffi.NULL:
             sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
@@ -2558,7 +2573,7 @@ class Backend(BackendInterface):
                 addl_cert = self._ossl2cert(x509)
                 additional_certificates.append(addl_cert)
 
-        return (key, cert, additional_certificates)
+        return (name, key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(
         self, name, key, cert, cas, encryption_algorithm
