@@ -536,7 +536,7 @@ Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_KEYLOG = 0;
 void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
                                     void (*) (const SSL *, const char *)
