@@ -16,7 +16,7 @@ Changelog
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
   change our existing backwards compatibility policy.
-* **BACKWARDS INCOMPATIBLE:** The :doc:`/x509/index` PEM parsers now require 
+* **BACKWARDS INCOMPATIBLE:** The :doc:`/x509/index` PEM parsers now require
   that the PEM string passed have PEM delimiters of the correct type. For
   example, parsing a private key PEM concatenated with a certificate PEM will
   no longer be accepted by the PEM certificate parser.
