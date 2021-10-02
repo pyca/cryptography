@@ -392,7 +392,9 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn
 #[pyo3::prelude::pyfunction]
 fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
     let parsed = pem::parse(data)?;
-    if parsed.tag != "CERTIFICATE" {
+    // We support both PEM header strings that OpenSSL does
+    // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
+    if parsed.tag != "CERTIFICATE" && parsed.tag != "X509 CERTIFICATE" {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?"
         )));
@@ -671,7 +673,9 @@ impl CertificateSigningRequest {
 #[pyo3::prelude::pyfunction]
 fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<CertificateSigningRequest> {
     let parsed = pem::parse(data)?;
-    if parsed.tag != "CERTIFICATE REQUEST" {
+    // We support both PEM header strings that OpenSSL does
+    // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L35-L36
+    if parsed.tag != "CERTIFICATE REQUEST" && parsed.tag != "NEW CERTIFICATE REQUEST" {
         // TODO: The old errors had the following URL:
         // See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details.
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(

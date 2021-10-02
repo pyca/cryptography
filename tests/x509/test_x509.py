@@ -686,6 +686,14 @@ class TestRSACertificate(object):
             cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
         )
 
+    def test_load_legacy_pem_header(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.old_header.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert isinstance(cert, x509.Certificate)
+
     def test_negative_serial_number(self, backend):
         with pytest.raises(ValueError, match="TbsCertificate::serial"):
             _load_cert(
@@ -1300,6 +1308,14 @@ class TestRSACertificateRequest(object):
         extensions = request.extensions
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == []
+
+    def test_load_legacy_pem_header(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "requests", "ec_sha256_old_header.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        assert isinstance(cert, x509.CertificateSigningRequest)
 
     def test_invalid_pem(self, backend):
         with pytest.raises(ValueError, match="Unable to load"):
