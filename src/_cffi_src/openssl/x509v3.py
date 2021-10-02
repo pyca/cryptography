@@ -8,13 +8,11 @@ INCLUDES = """
 
 /*
  * This is part of a work-around for the difficulty cffi has in dealing with
- * `LHASH_OF(foo)` as the name of a type.  We invent a new, simpler name that
+ * `STACK_OF(foo)` as the name of a type.  We invent a new, simpler name that
  * will be an alias for this type and use the alias throughout.  This works
  * together with another opaque typedef for the same name in the TYPES section.
  * Note that the result is an opaque type.
  */
-typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
-
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
 typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
@@ -119,8 +117,6 @@ typedef struct {
     GENERAL_NAME *location;
 } ACCESS_DESCRIPTION;
 
-typedef ... Cryptography_LHASH_OF_CONF_VALUE;
-
 
 typedef ... Cryptography_STACK_OF_DIST_POINT;
 
@@ -181,15 +177,11 @@ typedef void (*sk_ACCESS_DESCRIPTION_freefunc)(ACCESS_DESCRIPTION *);
 
 
 FUNCTIONS = """
-int X509V3_EXT_add_alias(int, int);
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
 GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
-int X509_check_ca(X509 *);
-/* X509 became a const arg in 1.1.0 */
-void *X509_get_ext_d2i(X509 *, int, int *, int *);
 /* The last two char * args became const char * in 1.1.0 */
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
@@ -213,8 +205,6 @@ void POLICY_CONSTRAINTS_free(POLICY_CONSTRAINTS *);
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
 int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
-GENERAL_NAMES *d2i_GENERAL_NAMES(GENERAL_NAMES **, const unsigned char **,
-                                 long);
 
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
@@ -235,9 +225,6 @@ int sk_ACCESS_DESCRIPTION_push(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
 
 ACCESS_DESCRIPTION *ACCESS_DESCRIPTION_new(void);
 void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
-
-X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
-                                    X509V3_CTX *, int, char *);
 
 Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
