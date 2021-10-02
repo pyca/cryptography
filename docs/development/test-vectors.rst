@@ -202,6 +202,9 @@ X.509
   tree.
 * ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
   cryptography website.
+* ``cryptography.io.old_header.pem`` - A leaf certificate issued by RapidSSL
+  for the cryptography website. This certificate uses the ``X509 CERTIFICATE``
+  legacy PEM header format.
 * ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the
   ``cryptography.io.pem`` certificate.
 * ``cryptography.io.precert.pem`` - A pre-certificate with the CT poison
@@ -450,6 +453,8 @@ Custom X.509 Request Vectors
   using 2048 bit RSA and SHA256 generated using OpenSSL.
 * ``ec_sha256.pem`` and ``ec_sha256.der`` - Contain a certificate request
   using EC (``secp384r1``) and SHA256 generated using OpenSSL.
+* ``ec_sha256_old_header.pem`` - Identical to ``ec_sha256.pem``, but uses
+  the ``-----BEGIN NEW CERTIFICATE REQUEST-----`` legacy PEM header format.
 * ``san_rsa_sha1.pem`` and ``san_rsa_sha1.der`` - Contain a certificate
   request using RSA and SHA1 with a subject alternative name extension
   generated using OpenSSL.
