@@ -164,12 +164,8 @@ int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
                         Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
                                   Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_set0_trusted_stack(X509_STORE_CTX *,
-                                  Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
 void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_set0_untrusted(X509_STORE_CTX *,
-                                  Cryptography_STACK_OF_X509 *);
 X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
 void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
 int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
@@ -199,9 +195,6 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
-/* this CRYPTO_EX_DATA function became a macro in 1.1.0 */
-int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
-                                    CRYPTO_EX_dup *, CRYPTO_EX_free *);
 
 /* X509_STORE_CTX */
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
