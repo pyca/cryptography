@@ -1255,9 +1255,9 @@ class TestRSACertificate(object):
             backend,
         )
         assert repr(cert) == (
-            "<Certificate(subject=<Name(2.5.4.11=GT48742965, 2.5.4.11=See www."
-            "rapidssl.com/resources/cps (c)14, 2.5.4.11=Domain Control Validat"
-            "ed - RapidSSL(R), 2.5.4.3=www.cryptography.io, )>, ...)>"
+            "<Certificate(subject=<Name(OU=GT48742965,OU=See www.rapidssl.com"
+            "/resources/cps (c)14,OU=Domain Control Validated - RapidSSL(R),"
+            "CN=www.cryptography.io)>, ...)>"
         )
 
     def test_parse_tls_feature_extension(self, backend):

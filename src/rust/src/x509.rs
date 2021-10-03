@@ -153,18 +153,12 @@ impl pyo3::PyObjectProtocol for Certificate {
     }
 
     fn __repr__(&self) -> pyo3::PyResult<String> {
-        let mut repr = String::from("<Certificate(subject=<Name(");
-        for rdn in self.raw.borrow_value().tbs_cert.subject.clone() {
-            for attribute in rdn {
-                let mut attr = attribute.type_id.to_string();
-                attr.push('=');
-                attr.push_str(std::str::from_utf8(attribute.value.data()).unwrap());
-                repr.push_str(&attr);
-                repr.push_str(", ");
-            }
-        }
-        repr.push_str(")>, ...)>");
-        Ok(repr)
+        let gil = pyo3::Python::acquire_gil();
+        let py = gil.python();
+
+        let subject = self.subject(py)?;
+        let subject_repr = subject.repr()?.extract::<&str>()?;
+        Ok(format!("<Certificate(subject={}, ...)>", subject_repr))
     }
 }
 
