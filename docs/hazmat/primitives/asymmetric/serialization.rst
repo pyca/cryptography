@@ -499,6 +499,35 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
+.. function:: load_key_and_certificates_with_name(data, password, backend=None)
+
+    .. versionadded:: 36.0
+
+    Deserialize a PKCS12 blob, and return friendly names for all certificates
+    if available.
+
+    :param data: The binary data.
+    :type data: :term:`bytes-like`
+
+    :param password: The password to use to decrypt the data. ``None``
+        if the PKCS12 is not encrypted.
+    :type password: :term:`bytes-like`
+
+    :param backend: An optional backend instance.
+
+    :returns: A tuple of
+        ``(name, private_key, certificate, additional_certificates)``.
+        ``name`` is the friendly name used for the certificate and must be a
+        ``bytes`` string or ``None``.
+        ``private_key`` is a private key type or ``None``, ``certificate``
+        is either the :class:`~cryptography.x509.Certificate` whose public key
+        matches the private key in the PKCS 12 object or ``None``, and
+        ``additional_certificates`` is a list of tuples
+        ``(additional_certificate, friendly_name)`` for all other certificates
+        in the PKCS12 object, where ``additional_certificate`` are
+        :class:`~cryptography.x509.Certificate` instances and ``friendly_name``
+        are either ``None`` or a ``bytes`` string.
+
 .. function:: serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm)
 
     .. versionadded:: 3.0
@@ -534,6 +563,52 @@ file suffix.
 
     :param cas: An optional set of certificates to also include in the structure.
     :type cas: list of :class:`~cryptography.x509.Certificate` or ``None``
+
+    :param encryption_algorithm: The encryption algorithm that should be used
+        for the key and certificate. An instance of an object conforming to the
+        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+        interface. PKCS12 encryption is **very weak** and should not be used
+        as a security boundary.
+
+    :return bytes: Serialized PKCS12.
+
+.. function:: serialize_key_and_certificates_with_names(name, key, cert, cas, encryption_algorithm)
+
+    .. versionadded:: 36.0
+
+    .. warning::
+
+        PKCS12 encryption is not secure and should not be used as a security
+        mechanism. Wrap a PKCS12 blob in a more secure envelope if you need
+        to store or send it safely. Encryption is provided for compatibility
+        reasons only.
+
+    Serialize a PKCS12 blob.
+
+    .. note::
+
+        Due to `a bug in Firefox`_ it's not possible to load unencrypted PKCS12
+        blobs in Firefox.
+
+    :param name: The friendly name to use for the supplied certificate and key.
+    :type name: bytes
+
+    :param key: The private key to include in the structure.
+    :type key: An
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+        ,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+        , or
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
+        object.
+
+    :param cert: The certificate associated with the private key.
+    :type cert: :class:`~cryptography.x509.Certificate` or ``None``
+
+    :param cas: An optional set of certificates with friendly names to also include in the structure.
+    :type cas: ``None`` or a list of tuples ``(certificate, name)``, where ``certificate``
+               is a :class:`~cryptography.x509.Certificate` instance and ``name`` is either ``None``
+               or a ``bytes`` string.
 
     :param encryption_algorithm: The encryption algorithm that should be used
         for the key and certificate. An instance of an object conforming to the
