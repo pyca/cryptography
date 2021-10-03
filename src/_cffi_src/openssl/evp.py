@@ -207,7 +207,8 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
                                       size_t) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
+    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL)
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 0;
 int (*EVP_DigestSign)(EVP_MD_CTX *, unsigned char *, size_t *,
                       const unsigned char *tbs, size_t) = NULL;
@@ -217,7 +218,7 @@ int (*EVP_DigestVerify)(EVP_MD_CTX *, const unsigned char *, size_t,
 static const long Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY = 1;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_RAW_KEY = 0;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 0;
 int (*EVP_DigestFinalXOF)(EVP_MD_CTX *, unsigned char *, size_t) = NULL;

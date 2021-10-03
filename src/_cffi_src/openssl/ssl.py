@@ -536,7 +536,7 @@ Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_KEYLOG = 0;
 void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
                                     void (*) (const SSL *, const char *)
@@ -615,7 +615,7 @@ long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 #else
@@ -711,7 +711,8 @@ int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
 SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
+    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL)
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long TLS1_3_VERSION = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
