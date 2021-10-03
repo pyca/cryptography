@@ -2507,6 +2507,9 @@ class Backend(BackendInterface):
         ) = self.load_key_and_certificates_with_name_from_pkcs12(
             data, password
         )
+        additional_certificates = [
+            cert for (cert, name) in additional_certificates
+        ]
         return (key, cert, additional_certificates)
 
     def load_key_and_certificates_with_name_from_pkcs12(self, data, password):
@@ -2571,11 +2574,26 @@ class Backend(BackendInterface):
                 self.openssl_assert(x509 != self._ffi.NULL)
                 x509 = self._ffi.gc(x509, self._lib.X509_free)
                 addl_cert = self._ossl2cert(x509)
-                additional_certificates.append(addl_cert)
+                addl_name = None
+                maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
+                if maybe_name != self._ffi.NULL:
+                    addl_name = self._ffi.string(maybe_name)
+                additional_certificates.append((addl_cert, addl_name))
 
         return (name, key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(
+        self, name, key, cert, cas, encryption_algorithm
+    ):
+        return self.serialize_key_and_certificates_with_names_to_pkcs12(
+            name,
+            key,
+            cert,
+            [(ca, None) for ca in cas or []],
+            encryption_algorithm,
+        )
+
+    def serialize_key_and_certificates_with_names_to_pkcs12(
         self, name, key, cert, cas, encryption_algorithm
     ):
         password = None
@@ -2612,9 +2630,16 @@ class Backend(BackendInterface):
 
             # This list is to keep the x509 values alive until end of function
             ossl_cas = []
-            for ca in cas:
+            for ca, ca_name in cas:
                 ossl_ca = self._cert2ossl(ca)
                 ossl_cas.append(ossl_ca)
+                if ca_name is not None:
+                    with self._zeroed_null_terminated_buf(
+                        ca_name
+                    ) as ca_name_buf:
+                        self._lib.X509_alias_set1(
+                            ossl_ca, ca_name_buf, len(ca_name)
+                        )
                 res = self._lib.sk_X509_push(sk_x509, ossl_ca)
                 backend.openssl_assert(res >= 1)
 
