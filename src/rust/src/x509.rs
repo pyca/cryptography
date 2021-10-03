@@ -389,50 +389,40 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn
     }
 }
 
-/// An extension of [`pem::PemError`] that also signals if no or multiple matching sections were found.
-pub enum PemParseError {
-    CannotParse(pem::PemError),
-    MultipleMatchingSections,
-    NoMatchingSection,
-}
-
-impl From<pem::PemError> for PemParseError {
-    fn from(e: pem::PemError) -> PemParseError {
-        PemParseError::CannotParse(e)
-    }
-}
-
 /// parse all sections in a PEM file and return the only matching section.
 /// If no or multiple matching sections are found, return an error.
-fn find_in_pem(data: &[u8], filter_fn: fn(&pem::Pem) -> bool) -> Result<pem::Pem, PemParseError> {
+fn find_in_pem(
+    data: &[u8],
+    filter_fn: fn(&pem::Pem) -> bool,
+    no_match_err: &'static str,
+    multiple_match_err: &'static str,
+) -> Result<pem::Pem, PyAsn1Error> {
     let all_sections = pem::parse_many(data)?;
-    if all_sections.len() == 0 {
-        return Err(PemParseError::CannotParse(pem::PemError::MalformedFraming));
+    if all_sections.is_empty() {
+        return Err(PyAsn1Error::from(pem::PemError::MalformedFraming));
     }
     let matching_sections: Vec<pem::Pem> = all_sections.into_iter().filter(filter_fn).collect();
     if matching_sections.len() > 1 {
-        return Err(PemParseError::MultipleMatchingSections);
+        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            multiple_match_err,
+        )));
     }
-    return matching_sections
+    matching_sections
         .into_iter()
-        .nth(0)
-        .ok_or(PemParseError::NoMatchingSection);
+        .next()
+        .ok_or_else(|| PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(no_match_err)))
 }
 
 #[pyo3::prelude::pyfunction]
 fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
-    let parsed = match find_in_pem(data, |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE") {
-        Ok(p) => p,
-        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
-        Err(PemParseError::NoMatchingSection) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?"
-        ))),
-        Err(PemParseError::MultipleMatchingSections) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but multiple BEGIN CERTIFICATE/END CERTIFICATE delimiters."
-        )))
-    };
+    let parsed = find_in_pem(
+        data,
+        |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE",
+        "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?",
+        "Valid PEM but multiple BEGIN CERTIFICATE/END CERTIFICATE delimiters."
+    )?;
     load_der_x509_certificate(py, &parsed.contents)
 }
 
@@ -708,16 +698,12 @@ impl CertificateSigningRequest {
 fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<CertificateSigningRequest> {
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L35-L36
-    let parsed = match find_in_pem(data, |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST") {
-        Ok(p) => p,
-        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
-        Err(PemParseError::NoMatchingSection) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?"
-        ))),
-        Err(PemParseError::MultipleMatchingSections) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but multiple BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters."
-        )))
-    };
+    let parsed = find_in_pem(
+        data,
+        |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST",
+        "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?",
+        "Valid PEM but multiple BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters.",
+    )?;
     load_der_x509_csr(py, &parsed.contents)
 }
 
@@ -755,20 +741,12 @@ fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
-    let block = match find_in_pem(data, |p| p.tag == "X509 CRL") {
-        Ok(p) => p,
-        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
-        Err(PemParseError::NoMatchingSection) => {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
-            )))
-        }
-        Err(PemParseError::MultipleMatchingSections) => {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Valid PEM but multiple BEGIN X509 CRL/END X509 delimiters.",
-            )))
-        }
-    };
+    let block = find_in_pem(
+        data,
+        |p| p.tag == "X509 CRL",
+        "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
+        "Valid PEM but multiple BEGIN X509 CRL/END X509 delimiters.",
+    )?;
     // TODO: Produces an extra copy
     load_der_x509_crl(py, &block.contents)
 }
