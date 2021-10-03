@@ -694,6 +694,22 @@ class TestRSACertificate(object):
         )
         assert isinstance(cert, x509.Certificate)
 
+    def test_load_with_other_sections(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.with_garbage.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert isinstance(cert, x509.Certificate)
+
+    def test_load_multiple_sections(self, backend):
+        with pytest.raises(ValueError, match="Valid PEM but multiple"):
+            _load_cert(
+                os.path.join("x509", "cryptography.io.repeated_twice.pem"),
+                x509.load_pem_x509_certificate,
+                backend,
+            )
+
     def test_negative_serial_number(self, backend):
         with pytest.raises(ValueError, match="TbsCertificate::serial"):
             _load_cert(
