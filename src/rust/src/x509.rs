@@ -389,16 +389,50 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn
     }
 }
 
+/// An extension of [`pem::PemError`] that also signals if no or multiple matching sections were found.
+pub enum PemParseError {
+    CannotParse(pem::PemError),
+    MultipleMatchingSections,
+    NoMatchingSection,
+}
+
+impl From<pem::PemError> for PemParseError {
+    fn from(e: pem::PemError) -> PemParseError {
+        PemParseError::CannotParse(e)
+    }
+}
+
+/// parse all sections in a PEM file and return the only matching section.
+/// If no or multiple matching sections are found, return an error.
+fn find_in_pem(data: &[u8], filter_fn: fn(&pem::Pem) -> bool) -> Result<pem::Pem, PemParseError> {
+    let all_sections = pem::parse_many(data)?;
+    if all_sections.len() == 0 {
+        return Err(PemParseError::CannotParse(pem::PemError::MalformedFraming));
+    }
+    let matching_sections: Vec<pem::Pem> = all_sections.into_iter().filter(filter_fn).collect();
+    if matching_sections.len() > 1 {
+        return Err(PemParseError::MultipleMatchingSections);
+    }
+    return matching_sections
+        .into_iter()
+        .nth(0)
+        .ok_or(PemParseError::NoMatchingSection);
+}
+
 #[pyo3::prelude::pyfunction]
 fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
-    let parsed = pem::parse(data)?;
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
-    if parsed.tag != "CERTIFICATE" && parsed.tag != "X509 CERTIFICATE" {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+    let parsed = match find_in_pem(data, |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE") {
+        Ok(p) => p,
+        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
+        Err(PemParseError::NoMatchingSection) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?"
-        )));
-    }
+        ))),
+        Err(PemParseError::MultipleMatchingSections) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Valid PEM but multiple BEGIN CERTIFICATE/END CERTIFICATE delimiters."
+        )))
+    };
     load_der_x509_certificate(py, &parsed.contents)
 }
 
@@ -672,16 +706,18 @@ impl CertificateSigningRequest {
 
 #[pyo3::prelude::pyfunction]
 fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<CertificateSigningRequest> {
-    let parsed = pem::parse(data)?;
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L35-L36
-    if parsed.tag != "CERTIFICATE REQUEST" && parsed.tag != "NEW CERTIFICATE REQUEST" {
-        // TODO: The old errors had the following URL:
-        // See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details.
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+    let parsed = match find_in_pem(data, |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST") {
+        Ok(p) => p,
+        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
+        Err(PemParseError::NoMatchingSection) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?"
-        )));
-    }
+        ))),
+        Err(PemParseError::MultipleMatchingSections) => return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Valid PEM but multiple BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters."
+        )))
+    };
     load_der_x509_csr(py, &parsed.contents)
 }
 
@@ -719,12 +755,20 @@ fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
-    let block = pem::parse(data)?;
-    if block.tag != "X509 CRL" {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
-        )));
-    }
+    let block = match find_in_pem(data, |p| p.tag == "X509 CRL") {
+        Ok(p) => p,
+        Err(PemParseError::CannotParse(e)) => return Err(PyAsn1Error::from(e)),
+        Err(PemParseError::NoMatchingSection) => {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
+            )))
+        }
+        Err(PemParseError::MultipleMatchingSections) => {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Valid PEM but multiple BEGIN X509 CRL/END X509 delimiters.",
+            )))
+        }
+    };
     // TODO: Produces an extra copy
     load_der_x509_crl(py, &block.contents)
 }
