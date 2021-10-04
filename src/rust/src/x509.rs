@@ -2268,10 +2268,7 @@ fn encode_certificate_extension<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_crl_extension<'p>(
-    py: pyo3::Python<'p>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_crl_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
     Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
         "Extension not supported: {}",
         ext.getattr("oid")?.repr()?.extract::<&str>()?
@@ -2279,10 +2276,7 @@ fn encode_crl_extension<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_crl_entry_extension<'p>(
-    py: pyo3::Python<'p>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_crl_entry_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
     Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
         "Extension not supported: {}",
         ext.getattr("oid")?.repr()?.extract::<&str>()?

@@ -690,10 +690,7 @@ struct RevokedInfo {
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_request_extension<'p>(
-    py: pyo3::Python<'p>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_ocsp_request_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
     Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
         "Extension not supported: {}",
         ext.getattr("oid")?.repr()?.extract::<&str>()?
@@ -701,10 +698,7 @@ fn encode_ocsp_request_extension<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_basic_response_extension<'p>(
-    py: pyo3::Python<'p>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_ocsp_basic_response_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
     Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
         "Extension not supported: {}",
         ext.getattr("oid")?.repr()?.extract::<&str>()?

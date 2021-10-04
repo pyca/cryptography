@@ -76,7 +76,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _RawRevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
-    asn1,
     ocsp as rust_ocsp,
     x509 as rust_x509,
 )
@@ -1151,7 +1150,9 @@ class Backend(BackendInterface):
         self, extensions, handlers, rust_handler, x509_obj, add_func, gc
     ):
         for i, extension in enumerate(extensions):
-            x509_extension = self._create_x509_extension(handlers, rust_handler, extension)
+            x509_extension = self._create_x509_extension(
+                handlers, rust_handler, extension
+            )
             self.openssl_assert(x509_extension != self._ffi.NULL)
 
             if gc:
