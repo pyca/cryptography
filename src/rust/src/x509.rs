@@ -1636,7 +1636,7 @@ enum GeneralName<'a> {
     RegisteredID(asn1::ObjectIdentifier<'a>),
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct BasicConstraints {
     #[default(false)]
     ca: bool,
@@ -2226,7 +2226,17 @@ fn encode_certificate_extension<'p>(
             .extract::<&str>()?,
     )
     .unwrap();
-    if oid == *TLS_FEATURE_OID {
+    if oid == *BASIC_CONSTRAINTS_OID {
+        let bc = BasicConstraints {
+            ca: ext.getattr("value")?.getattr("ca")?.extract::<bool>()?,
+            path_length: ext
+                .getattr("value")?
+                .getattr("path_length")?
+                .extract::<Option<u64>>()?,
+        };
+        let result = asn1::write_single(&bc);
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *TLS_FEATURE_OID {
         // Ideally we'd skip building up a vec and just write directly into the
         // writer. This isn't possible at the moment because the callback to write
         // an asn1::Sequence can't return an error, and we need to handle errors
@@ -2262,7 +2272,7 @@ fn encode_certificate_extension<'p>(
     } else {
         Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
             "Extension not supported: {}",
-            ext.getattr("oid")?.repr()?.extract::<&str>()?
+            oid
         )))
     }
 }

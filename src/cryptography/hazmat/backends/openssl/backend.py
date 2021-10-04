@@ -47,8 +47,6 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS,
     _EXTENSION_ENCODE_HANDLERS,
-    _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS,
-    _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc,
     _encode_asn1_str_gc,
     _encode_name_gc,
@@ -422,12 +420,6 @@ class Backend(BackendInterface):
         )
         self._crl_entry_extension_encode_handlers = (
             _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS.copy()
-        )
-        self._ocsp_request_extension_encode_handlers = (
-            _OCSP_REQUEST_EXTENSION_ENCODE_HANDLERS.copy()
-        )
-        self._ocsp_basicresp_extension_encode_handlers = (
-            _OCSP_BASICRESP_EXTENSION_ENCODE_HANDLERS.copy()
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
@@ -1664,7 +1656,7 @@ class Backend(BackendInterface):
         self.openssl_assert(onereq != self._ffi.NULL)
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=self._ocsp_request_extension_encode_handlers,
+            handlers={},
             rust_handler=rust_ocsp.encode_ocsp_request_extension,
             x509_obj=ocsp_req,
             add_func=self._lib.OCSP_REQUEST_add_ext,
@@ -1743,7 +1735,7 @@ class Backend(BackendInterface):
 
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=self._ocsp_basicresp_extension_encode_handlers,
+            handlers={},
             rust_handler=rust_ocsp.encode_ocsp_basic_response_extension,
             x509_obj=basic,
             add_func=self._lib.OCSP_BASICRESP_add_ext,

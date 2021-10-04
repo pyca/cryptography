@@ -690,19 +690,41 @@ struct RevokedInfo {
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_request_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-        "Extension not supported: {}",
-        ext.getattr("oid")?.repr()?.extract::<&str>()?
-    )))
+fn encode_ocsp_request_extension<'p>(ext: &'p pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+    if oid == *NONCE_OID {
+        Ok(ext.getattr("value")?.getattr("nonce")?)
+    } else {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+            "Extension not supported: {}",
+            oid
+        )))
+    }
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_basic_response_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-        "Extension not supported: {}",
-        ext.getattr("oid")?.repr()?.extract::<&str>()?
-    )))
+fn encode_ocsp_basic_response_extension<'p>(
+    ext: &'p pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+    if oid == *NONCE_OID {
+        Ok(ext.getattr("value")?.getattr("nonce")?)
+    } else {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+            "Extension not supported: {}",
+            oid
+        )))
+    }
 }
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
