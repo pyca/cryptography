@@ -58,11 +58,6 @@ typedef struct {
 } EDIPARTYNAME;
 
 typedef struct {
-    int ca;
-    ASN1_INTEGER *pathlen;
-} BASIC_CONSTRAINTS;
-
-typedef struct {
     Cryptography_STACK_OF_GENERAL_SUBTREE *permittedSubtrees;
     Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
 } NAME_CONSTRAINTS;
@@ -184,10 +179,6 @@ void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 /* The last two char * args became const char * in 1.1.0 */
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
-/* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
-   x509v3.h header. */
-BASIC_CONSTRAINTS *BASIC_CONSTRAINTS_new(void);
-void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
 AUTHORITY_KEYID *AUTHORITY_KEYID_new(void);
