@@ -42,7 +42,7 @@
   find:
     paths: '{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/dist'
     file_type: file
-    patterns: "*.tar.gz"
+    patterns: "*.tar.bz2"
   register: _sdist
 
 - assert:
@@ -62,7 +62,7 @@
 
 - name: Find cryptography subdir from sdist build dir
   set_fact:
-    _build_dir: "{{ ansible_user_dir }}/build/{{ _sdist.files[0].path | basename | replace('.tar.gz', '') }}"
+    _build_dir: "{{ ansible_user_dir }}/build/{{ _sdist.files[0].path | basename | replace('.tar.bz2', '') }}"
 
 - name: Show _build_dir
   debug:
