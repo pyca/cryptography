@@ -1,7 +1,5 @@
 import typing
 
-from cryptography.x509 import TLSFeature
-
 class TestCertificate:
     not_after_tag: int
     not_before_tag: int
