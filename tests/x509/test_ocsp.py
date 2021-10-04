@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.x509 import ocsp
 
-from .test_x509 import _load_cert
+from .test_x509 import _load_cert, DummyExtension
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..utils import load_vectors_from_file
 
@@ -194,6 +194,16 @@ class TestOCSPRequestBuilder(object):
                 "notanext",  # type:ignore[arg-type]
                 False,
             )
+
+    def test_unsupported_extension(self):
+        cert, issuer = _cert_and_issuer()
+        builder = (
+            ocsp.OCSPRequestBuilder()
+            .add_extension(DummyExtension(), critical=False)
+            .add_certificate(cert, issuer, hashes.SHA256())
+        )
+        with pytest.raises(NotImplementedError):
+            builder.build()
 
     def test_create_ocsp_request_invalid_cert(self):
         cert, issuer = _cert_and_issuer()
@@ -433,6 +443,31 @@ class TestOCSPResponseBuilder(object):
             builder.add_extension(
                 "notanextension", True  # type: ignore[arg-type]
             )
+
+    def test_unsupported_extension(self):
+        root_cert, private_key = _generate_root()
+        cert, issuer = _cert_and_issuer()
+        current_time = datetime.datetime.utcnow().replace(microsecond=0)
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+
+        builder = (
+            ocsp.OCSPResponseBuilder()
+            .responder_id(ocsp.OCSPResponderEncoding.NAME, root_cert)
+            .add_response(
+                cert,
+                issuer,
+                hashes.SHA256(),
+                ocsp.OCSPCertStatus.GOOD,
+                this_update,
+                next_update,
+                None,
+                None,
+            )
+            .add_extension(DummyExtension(), critical=False)
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA256())
 
     def test_sign_no_response(self):
         builder = ocsp.OCSPResponseBuilder()
