@@ -690,7 +690,7 @@ struct RevokedInfo {
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_request_extension<'p>(ext: &'p pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_ocsp_request_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
     let oid = asn1::ObjectIdentifier::from_string(
         ext.getattr("oid")?
             .getattr("dotted_string")?
@@ -708,9 +708,7 @@ fn encode_ocsp_request_extension<'p>(ext: &'p pyo3::PyAny) -> pyo3::PyResult<&'p
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_basic_response_extension<'p>(
-    ext: &'p pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+fn encode_ocsp_basic_response_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
     let oid = asn1::ObjectIdentifier::from_string(
         ext.getattr("oid")?
             .getattr("dotted_string")?
