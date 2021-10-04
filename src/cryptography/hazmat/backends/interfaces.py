@@ -453,11 +453,3 @@ class Backend(
         """
         Returns bytes
         """
-
-    @abc.abstractmethod
-    def serialize_key_and_certificates_with_names_to_pkcs12(
-        self, name, key, cert, cas, encryption_algorithm
-    ):
-        """
-        Returns bytes
-        """

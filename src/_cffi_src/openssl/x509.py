@@ -57,7 +57,6 @@ int X509_set_version(X509 *, long);
 EVP_PKEY *X509_get_pubkey(X509 *);
 int X509_set_pubkey(X509 *, EVP_PKEY *);
 
-int X509_alias_set1(X509 *, const unsigned char *, int);
 unsigned char *X509_alias_get0(X509 *, int *);
 int X509_sign(X509 *, EVP_PKEY *, const EVP_MD *);
 

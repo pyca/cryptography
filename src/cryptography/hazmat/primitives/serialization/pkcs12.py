@@ -3,7 +3,6 @@
 # for complete details.
 
 import typing
-from collections.abc import Sequence
 
 from cryptography import x509
 from cryptography.hazmat.backends import _get_backend
@@ -40,7 +39,7 @@ def load_key_and_certificates_with_name(
     typing.Optional[bytes],
     typing.Optional[_ALLOWED_PKCS12_TYPES],
     typing.Optional[x509.Certificate],
-    typing.List[typing.Tuple[x509.Certificate, typing.Optional[bytes]]],
+    typing.List[x509.Certificate],
 ]:
     backend = _get_backend(backend)
     return backend.load_key_and_certificates_with_name_from_pkcs12(
@@ -85,54 +84,5 @@ def serialize_key_and_certificates(
 
     backend = _get_backend(None)
     return backend.serialize_key_and_certificates_to_pkcs12(
-        name, key, cert, cas, encryption_algorithm
-    )
-
-
-def serialize_key_and_certificates_with_names(
-    name: typing.Optional[bytes],
-    key: typing.Optional[_ALLOWED_PKCS12_TYPES],
-    cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[
-        typing.Iterable[typing.Tuple[x509.Certificate, typing.Optional[bytes]]]
-    ],
-    encryption_algorithm: serialization.KeySerializationEncryption,
-) -> bytes:
-    if key is not None and not isinstance(
-        key,
-        (
-            rsa.RSAPrivateKey,
-            dsa.DSAPrivateKey,
-            ec.EllipticCurvePrivateKey,
-        ),
-    ):
-        raise TypeError("Key must be RSA, DSA, or EllipticCurve private key.")
-    if cert is not None and not isinstance(cert, x509.Certificate):
-        raise TypeError("cert must be a certificate")
-
-    if cas is not None:
-        cas = list(cas)
-        if not all(isinstance(val, Sequence) and len(val) == 2 for val in cas):
-            raise TypeError("all values in cas must be tuples of length 2")
-        if not all(isinstance(val, x509.Certificate) for val, _ in cas):
-            raise TypeError("all first elements in cas must be certificates")
-        if not all(val is None or isinstance(val, bytes) for _, val in cas):
-            raise TypeError(
-                "all second elements in cas must be byte strings or None"
-            )
-
-    if not isinstance(
-        encryption_algorithm, serialization.KeySerializationEncryption
-    ):
-        raise TypeError(
-            "Key encryption algorithm must be a "
-            "KeySerializationEncryption instance"
-        )
-
-    if key is None and cert is None and not cas:
-        raise ValueError("You must supply at least one of key, cert, or cas")
-
-    backend = _get_backend(None)
-    return backend.serialize_key_and_certificates_with_names_to_pkcs12(
         name, key, cert, cas, encryption_algorithm
     )
