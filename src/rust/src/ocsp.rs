@@ -689,11 +689,36 @@ struct RevokedInfo {
     revocation_reason: Option<x509::CRLReason>,
 }
 
+#[pyo3::prelude::pyfunction]
+fn encode_ocsp_request_extension<'p>(
+    py: pyo3::Python<'p>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        "Extension not supported: {}",
+        ext.getattr("oid")?.repr()?.extract::<&str>()?
+    )))
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_ocsp_basic_response_extension<'p>(
+    py: pyo3::Python<'p>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        "Extension not supported: {}",
+        ext.getattr("oid")?.repr()?.extract::<&str>()?
+    )))
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "ocsp")?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_response))?;
+
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_ocsp_request_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_ocsp_basic_response_extension))?;
 
     Ok(submod)
 }
