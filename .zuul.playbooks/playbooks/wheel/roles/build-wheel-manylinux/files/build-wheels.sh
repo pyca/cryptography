@@ -22,6 +22,7 @@ for P in ${PYTHONS}; do
 
     LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
            CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
+           CARGO_NET_OFFLINE=true \
            .venv/bin/python setup.py bdist_wheel $PY_LIMITED_API
 
     auditwheel repair --plat ${PLAT} -w wheelhouse/ dist/cryptography*.whl
