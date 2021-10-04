@@ -14,6 +14,9 @@ build-backend = "setuptools.build_meta"
 line-length = 79
 target-version = ["py36"]
 
+[tool.check-manifest]
+ignore = [".cargo/**"]
+
 [tool.pytest.ini_options]
 addopts = "-r s"
 markers = [
