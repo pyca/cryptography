@@ -49,27 +49,6 @@ impl From<PyAsn1Error> for pyo3::PyErr {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
-#[pyo3::prelude::pyfunction]
-fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
-    // Ideally we'd skip building up a vec and just write directly into the
-    // writer. This isn't possible at the moment because the callback to write
-    // an asn1::Sequence can't return an error, and we need to handle errors
-    // from Python.
-    let mut els = vec![];
-    for el in ext.iter()? {
-        els.push(el?.getattr("value")?.extract::<u64>()?);
-    }
-
-    let result = asn1::write_single(&asn1::SequenceOfWriter::new(&els));
-    Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
-}
-
-#[pyo3::prelude::pyfunction]
-fn encode_precert_poison(py: pyo3::Python<'_>, _ext: &pyo3::PyAny) -> pyo3::PyObject {
-    let result = asn1::write_single(&());
-    pyo3::types::PyBytes::new(py, &result).to_object(py)
-}
-
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
     _oid: asn1::ObjectIdentifier<'a>,
@@ -219,8 +198,6 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;

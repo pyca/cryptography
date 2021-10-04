@@ -1985,27 +1985,6 @@ impl pyo3::PyObjectProtocol for Sct {
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn encode_precertificate_signed_certificate_timestamps(
-    py: pyo3::Python<'_>,
-    extension: &pyo3::PyAny,
-) -> pyo3::PyResult<pyo3::PyObject> {
-    let mut length = 0;
-    for sct in extension.iter()? {
-        let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
-        length += sct.borrow().sct_data.len() + 2;
-    }
-
-    let mut result = vec![];
-    result.extend_from_slice(&(length as u16).to_be_bytes());
-    for sct in extension.iter()? {
-        let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
-        result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
-        result.extend_from_slice(&sct.borrow().sct_data);
-    }
-    Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&result.as_slice())).to_object(py))
-}
-
 pub(crate) fn parse_scts(
     py: pyo3::Python<'_>,
     data: &[u8],
@@ -2236,6 +2215,74 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
+#[pyo3::prelude::pyfunction]
+fn encode_certificate_extension<'p>(
+    py: pyo3::Python<'p>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+    if oid == *TLS_FEATURE_OID {
+        // Ideally we'd skip building up a vec and just write directly into the
+        // writer. This isn't possible at the moment because the callback to write
+        // an asn1::Sequence can't return an error, and we need to handle errors
+        // from Python.
+        let mut els = vec![];
+        for el in ext.getattr("value")?.iter()? {
+            els.push(el?.getattr("value")?.extract::<u64>()?);
+        }
+
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(&els));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *PRECERT_POISON_OID {
+        let result = asn1::write_single(&());
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+        let mut length = 0;
+        for sct in ext.getattr("value")?.iter()? {
+            let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
+            length += sct.borrow().sct_data.len() + 2;
+        }
+
+        let mut result = vec![];
+        result.extend_from_slice(&(length as u16).to_be_bytes());
+        for sct in ext.getattr("value")?.iter()? {
+            let sct = sct?.downcast::<pyo3::PyCell<Sct>>()?;
+            result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
+            result.extend_from_slice(&sct.borrow().sct_data);
+        }
+        Ok(pyo3::types::PyBytes::new(
+            py,
+            &asn1::write_single(&result.as_slice()),
+        ))
+    } else {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+            "Extension not supported: {}",
+            ext.getattr("oid")?.repr()?.extract::<&str>()?
+        )))
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_crl_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        "Extension not supported: {}",
+        ext.getattr("oid")?.repr()?.extract::<&str>()?
+    )))
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_crl_entry_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        "Extension not supported: {}",
+        ext.getattr("oid")?.repr()?.extract::<&str>()?
+    )))
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "x509")?;
 
@@ -2246,9 +2293,9 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_csr))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_csr))?;
 
-    submod.add_wrapped(pyo3::wrap_pyfunction!(
-        encode_precertificate_signed_certificate_timestamps
-    ))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_certificate_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_crl_extension))?;
+    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_crl_entry_extension))?;
 
     submod.add_class::<Certificate>()?;
     submod.add_class::<CertificateRevocationList>()?;

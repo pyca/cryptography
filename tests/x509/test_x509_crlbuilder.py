@@ -18,6 +18,7 @@ from cryptography.x509.oid import (
     SignatureAlgorithmOID,
 )
 
+from .test_x509 import DummyExtension
 from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
@@ -366,6 +367,34 @@ class TestCertificateRevocationListBuilder(object):
             .last_update(last_update)
             .next_update(next_update)
             .add_extension(x509.OCSPNoCheck(), False)
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_add_unsupported_entry_extension(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io CA"
+                        )
+                    ]
+                )
+            )
+            .last_update(last_update)
+            .next_update(next_update)
+            .add_revoked_certificate(
+                x509.RevokedCertificateBuilder()
+                .serial_number(1234)
+                .revocation_date(datetime.datetime.utcnow())
+                .add_extension(DummyExtension(), critical=False)
+                .build()
+            )
         )
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)
