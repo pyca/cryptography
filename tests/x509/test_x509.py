@@ -1728,6 +1728,24 @@ class TestRSACertificateRequest(object):
         assert hash(request1) == hash(request2)
         assert hash(request1) != hash(request3)
 
+    def test_freeipa_bad_bool(self, backend):
+        csr = _load_cert(
+            os.path.join("x509", "requests", "freeipa_bad_bool.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        subject_alternative_name = csr.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert subject_alternative_name.critical is False
+        assert len(subject_alternative_name.value) == 3
+
+        san1 = subject_alternative_name.value[1]
+        assert san1.type_id.dotted_string == "1.3.6.1.4.1.311.20.2.3"
+
+        san2 = subject_alternative_name.value[2]
+        assert san2.type_id.dotted_string == "1.3.6.1.5.2.2"
+
     def test_build_cert(self, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
