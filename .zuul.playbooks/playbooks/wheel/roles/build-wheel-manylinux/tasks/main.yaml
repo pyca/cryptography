@@ -11,6 +11,10 @@
   include_role:
     name: ensure-pip
 
+- name: Install rust
+  include_role:
+    name: ensure-rust
+
 # We build an sdist of the checkout, and then build wheels from the
 # sdist.  This ensures that nothing is left out of the sdist.
 - name: Install sdist required packages
