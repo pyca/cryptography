@@ -18,6 +18,90 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
 ]
 
 
+class PKCS12Certificate:
+    def __init__(
+        self,
+        cert: x509.Certificate,
+        friendly_name: typing.Optional[bytes],
+    ):
+        self._cert = cert
+        self._friendly_name = friendly_name
+
+    @property
+    def friendly_name(self) -> typing.Optional[bytes]:
+        return self._friendly_name
+
+    @property
+    def certificate(self) -> x509.Certificate:
+        return self._cert
+
+    def __eq__(self, other: typing.Any) -> bool:
+        if not isinstance(other, PKCS12Certificate):
+            return NotImplemented
+
+        return (
+            self.certificate == other.certificate
+            and self.friendly_name == other.friendly_name
+        )
+
+    def __ne__(self, other: typing.Any) -> bool:
+        return not self == other
+
+    def __hash__(self) -> int:
+        return hash((self.certificate, self.friendly_name))
+
+    def __repr__(self) -> str:
+        return "<PKCS12Certificate({}, friendly_name={!r})>".format(
+            self.certificate, self.friendly_name
+        )
+
+
+class PKCS12KeyAndCertificates:
+    def __init__(
+        self,
+        key: typing.Optional[_ALLOWED_PKCS12_TYPES],
+        cert: typing.Optional[PKCS12Certificate],
+        additional_certs: typing.List[PKCS12Certificate],
+    ):
+        self._key = key
+        self._cert = cert
+        self._additional_certs = additional_certs
+
+    @property
+    def key(self) -> typing.Optional[_ALLOWED_PKCS12_TYPES]:
+        return self._key
+
+    @property
+    def cert(self) -> typing.Optional[PKCS12Certificate]:
+        return self._cert
+
+    @property
+    def additional_certs(self) -> typing.List[PKCS12Certificate]:
+        return self._additional_certs
+
+    def __eq__(self, other: typing.Any) -> bool:
+        if not isinstance(other, PKCS12KeyAndCertificates):
+            return NotImplemented
+
+        return (
+            self.key == other.key
+            and self.cert == other.cert
+            and self.additional_certs == other.additional_certs
+        )
+
+    def __ne__(self, other: typing.Any) -> bool:
+        return not self == other
+
+    def __hash__(self) -> int:
+        return hash((self.key, self.cert, tuple(self.additional_certs)))
+
+    def __repr__(self) -> str:
+        fmt = (
+            "<PKCS12KeyAndCertificates(key={}, cert={}, additional_certs={})>"
+        )
+        return fmt.format(self.key, self.cert, self.additional_certs)
+
+
 def load_key_and_certificates(
     data: bytes,
     password: typing.Optional[bytes],
@@ -31,20 +115,13 @@ def load_key_and_certificates(
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
-def load_key_and_certificates_with_name(
+def load_key_and_certificates_object(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Optional[Backend] = None,
-) -> typing.Tuple[
-    typing.Optional[bytes],
-    typing.Optional[_ALLOWED_PKCS12_TYPES],
-    typing.Optional[x509.Certificate],
-    typing.List[x509.Certificate],
-]:
+) -> PKCS12KeyAndCertificates:
     backend = _get_backend(backend)
-    return backend.load_key_and_certificates_with_name_from_pkcs12(
-        data, password
-    )
+    return backend.load_key_and_certificates_object_from_pkcs12(data, password)
 
 
 def serialize_key_and_certificates(

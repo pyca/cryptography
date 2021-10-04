@@ -8,10 +8,11 @@ Changelog
 
  .. note:: This version is not yet released and is under active development.
 
-* Added support for creating and parsing PKCS12 files with friendly names for
-  all certificates with
-  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates_with_names`.
-  and :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates_with_name`.
+* Added support for parsing PKCS12 files with friendly names for all
+  certificates with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates_object`,
+  which will return an object of type
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`.
 
 .. _v35-0-0:
 

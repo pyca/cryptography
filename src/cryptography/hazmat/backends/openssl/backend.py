@@ -118,6 +118,10 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 )
 from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import pkcs7, ssh
+from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    PKCS12Certificate,
+    PKCS12KeyAndCertificates,
+)
 from cryptography.x509 import ocsp
 from cryptography.x509.base import PUBLIC_KEY_TYPES
 from cryptography.x509.name import Name
@@ -2499,17 +2503,16 @@ class Backend(BackendInterface):
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
     def load_key_and_certificates_from_pkcs12(self, data, password):
-        (
-            name,
-            key,
-            cert,
-            additional_certificates,
-        ) = self.load_key_and_certificates_with_name_from_pkcs12(
+        pkcs12 = self.load_key_and_certificates_object_from_pkcs12(
             data, password
         )
-        return (key, cert, additional_certificates)
+        return (
+            pkcs12.key,
+            pkcs12.cert.certificate if pkcs12.cert else None,
+            [cert.certificate for cert in pkcs12.additional_certs],
+        )
 
-    def load_key_and_certificates_with_name_from_pkcs12(self, data, password):
+    def load_key_and_certificates_object_from_pkcs12(self, data, password):
         if password is not None:
             utils._check_byteslike("password", password)
 
@@ -2538,7 +2541,6 @@ class Backend(BackendInterface):
             self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
 
-        name = None
         cert = None
         key = None
         additional_certificates = []
@@ -2549,10 +2551,12 @@ class Backend(BackendInterface):
 
         if x509_ptr[0] != self._ffi.NULL:
             x509 = self._ffi.gc(x509_ptr[0], self._lib.X509_free)
-            cert = self._ossl2cert(x509)
-            maybe_name = self._lib.X509_alias_get0(x509_ptr[0], self._ffi.NULL)
+            cert_obj = self._ossl2cert(x509)
+            name = None
+            maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
             if maybe_name != self._ffi.NULL:
                 name = self._ffi.string(maybe_name)
+            cert = PKCS12Certificate(cert_obj, name)
 
         if sk_x509_ptr[0] != self._ffi.NULL:
             sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
@@ -2571,9 +2575,15 @@ class Backend(BackendInterface):
                 self.openssl_assert(x509 != self._ffi.NULL)
                 x509 = self._ffi.gc(x509, self._lib.X509_free)
                 addl_cert = self._ossl2cert(x509)
-                additional_certificates.append(addl_cert)
+                addl_name = None
+                maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
+                if maybe_name != self._ffi.NULL:
+                    addl_name = self._ffi.string(maybe_name)
+                additional_certificates.append(
+                    PKCS12Certificate(addl_cert, addl_name)
+                )
 
-        return (name, key, cert, additional_certificates)
+        return PKCS12KeyAndCertificates(key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(
         self, name, key, cert, cas, encryption_algorithm

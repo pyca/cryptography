@@ -441,9 +441,9 @@ class Backend(
         """
 
     @abc.abstractmethod
-    def load_key_and_certificates_with_name_from_pkcs12(self, data, password):
+    def load_key_and_certificates_object_from_pkcs12(self, data, password):
         """
-        Returns a tuple of (name, key, cert, [certs])
+        Returns a PKCS12KeyAndCertificates object
         """
 
     @abc.abstractmethod

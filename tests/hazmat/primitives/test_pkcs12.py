@@ -14,7 +14,10 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    PKCS12Certificate,
+    PKCS12KeyAndCertificates,
     load_key_and_certificates,
+    load_key_and_certificates_object,
     serialize_key_and_certificates,
 )
 
@@ -147,6 +150,112 @@ class TestPKCS12Loading(object):
         assert parsed_key is not None
         assert parsed_cert is not None
         assert parsed_more_certs == []
+
+    @pytest.mark.parametrize(
+        ("name", "name2", "name3", "filename", "password"),
+        [
+            (None, None, None, "no-name-no-pwd.p12", None),
+            (b"name", b"name2", b"name3", "name-all-no-pwd.p12", None),
+            (b"name", None, None, "name-1-no-pwd.p12", None),
+            (None, b"name2", b"name3", "name-2-3-no-pwd.p12", None),
+            (None, b"name2", None, "name-2-no-pwd.p12", None),
+            (None, None, b"name3", "name-3-no-pwd.p12", None),
+            (
+                "☺".encode("utf-8"),
+                "ä".encode("utf-8"),
+                "ç".encode("utf-8"),
+                "name-unicode-no-pwd.p12",
+                None,
+            ),
+            (None, None, None, "no-name-pwd.p12", b"password"),
+            (b"name", b"name2", b"name3", "name-all-pwd.p12", b"password"),
+            (b"name", None, None, "name-1-pwd.p12", b"password"),
+            (None, b"name2", b"name3", "name-2-3-pwd.p12", b"password"),
+            (None, b"name2", None, "name-2-pwd.p12", b"password"),
+            (None, None, b"name3", "name-3-pwd.p12", b"password"),
+            (
+                "☺".encode("utf-8"),
+                "ä".encode("utf-8"),
+                "ç".encode("utf-8"),
+                "name-unicode-pwd.p12",
+                b"password",
+            ),
+        ],
+    )
+    def test_load_object(
+        self, filename, name, name2, name3, password, backend
+    ):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "cryptography.io.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        pkcs12 = load_vectors_from_file(
+            os.path.join("pkcs12", filename),
+            lambda derfile: load_key_and_certificates_object(
+                derfile.read(), password, backend
+            ),
+            mode="rb",
+        )
+        assert pkcs12.cert is not None
+        assert pkcs12.cert.certificate == cert
+        assert pkcs12.cert.friendly_name == name
+        assert pkcs12.key is not None
+        assert pkcs12.key.private_numbers() == key.private_numbers()
+        assert len(pkcs12.additional_certs) == 2
+        assert pkcs12.additional_certs[0].certificate == cert2
+        assert pkcs12.additional_certs[0].friendly_name == name2
+        assert pkcs12.additional_certs[1].certificate == cert3
+        assert pkcs12.additional_certs[1].friendly_name == name3
+
+    @pytest.mark.parametrize(
+        ("name2", "name3", "filename", "password"),
+        [
+            (None, None, "no-cert-no-name-no-pwd.p12", None),
+            (b"name2", b"name3", "no-cert-name-all-no-pwd.p12", None),
+            (b"name2", None, "no-cert-name-2-no-pwd.p12", None),
+            (None, b"name3", "no-cert-name-3-no-pwd.p12", None),
+            (
+                "☹".encode("utf-8"),
+                "ï".encode("utf-8"),
+                "no-cert-name-unicode-no-pwd.p12",
+                None,
+            ),
+            (None, None, "no-cert-no-name-pwd.p12", b"password"),
+            (b"name2", b"name3", "no-cert-name-all-pwd.p12", b"password"),
+            (b"name2", None, "no-cert-name-2-pwd.p12", b"password"),
+            (None, b"name3", "no-cert-name-3-pwd.p12", b"password"),
+            (
+                "☹".encode("utf-8"),
+                "ï".encode("utf-8"),
+                "no-cert-name-unicode-pwd.p12",
+                b"password",
+            ),
+        ],
+    )
+    def test_load_object_no_cert_key(
+        self, filename, name2, name3, password, backend
+    ):
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "cryptography.io.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        pkcs12 = load_vectors_from_file(
+            os.path.join("pkcs12", filename),
+            lambda derfile: load_key_and_certificates_object(
+                derfile.read(), password, backend
+            ),
+            mode="rb",
+        )
+        assert pkcs12.cert is None
+        assert pkcs12.key is None
+        assert len(pkcs12.additional_certs) == 2
+        assert pkcs12.additional_certs[0].certificate == cert2
+        assert pkcs12.additional_certs[0].friendly_name == name2
+        assert pkcs12.additional_certs[1].certificate == cert3
+        assert pkcs12.additional_certs[1].friendly_name == name3
 
 
 def _load_cert(backend, path):
@@ -335,3 +444,193 @@ def test_pkcs12_ordering():
     c_idx = p12.index(c_name.encode("utf-8"))
 
     assert a_idx < b_idx < c_idx
+
+
+class TestPKCS12Objects(object):
+    def test_certificate_equality(self, backend):
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        c2n = PKCS12Certificate(cert2, None)
+        c2a = PKCS12Certificate(cert2, b"a")
+        c2b = PKCS12Certificate(cert2, b"b")
+        c3n = PKCS12Certificate(cert3, None)
+        c3a = PKCS12Certificate(cert3, b"a")
+
+        assert c2n == c2n
+        assert c2a == c2a
+        assert c2n != c2a
+        assert c2n != c3n
+        assert c2a != c2b
+        assert c2a != c3a
+
+        assert c2n != "test"
+
+    def test_certificate_hash(self, backend):
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        c2n = PKCS12Certificate(cert2, None)
+        c2a = PKCS12Certificate(cert2, b"a")
+        c2b = PKCS12Certificate(cert2, b"b")
+        c3n = PKCS12Certificate(cert3, None)
+        c3a = PKCS12Certificate(cert3, b"a")
+
+        assert hash(c2n) == hash(c2n)
+        assert hash(c2a) == hash(c2a)
+        assert hash(c2n) != hash(c2a)
+        assert hash(c2n) != hash(c3n)
+        assert hash(c2a) != hash(c2b)
+        assert hash(c2a) != hash(c3a)
+
+    def test_certificate_repr(self, backend):
+        fake_cert = "fakecert"
+        assert (
+            repr(PKCS12Certificate(fake_cert, None))  # type:ignore[arg-type]
+            == "<PKCS12Certificate(fakecert, friendly_name=None)>"
+        )
+        assert (
+            repr(PKCS12Certificate(fake_cert, b"a"))  # type:ignore[arg-type]
+            == "<PKCS12Certificate(fakecert, friendly_name=b'a')>"
+        )
+
+    def test_key_and_certificates_equality(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        p12a = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12b = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, b"name"),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12c = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert2, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12d = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert3, None), PKCS12Certificate(cert2, None)],
+        )
+        p12e = PKCS12KeyAndCertificates(
+            None,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12f = PKCS12KeyAndCertificates(
+            None,
+            PKCS12Certificate(cert2, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12g = PKCS12KeyAndCertificates(
+            key,
+            None,
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12h = PKCS12KeyAndCertificates(None, None, [])
+
+        assert p12a == p12a
+        assert p12h == p12h
+
+        assert p12a != p12b
+        assert p12a != p12c
+        assert p12a != p12d
+        assert p12a != p12e
+        assert p12a != p12g
+        assert p12a != p12h
+        assert p12e != p12f
+        assert p12e != p12g
+        assert p12e != p12h
+
+        assert p12e != "test"
+
+    def test_key_and_certificates_hash(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+
+        p12a = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12b = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, b"name"),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12c = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert2, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12d = PKCS12KeyAndCertificates(
+            key,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert3, None), PKCS12Certificate(cert2, None)],
+        )
+        p12e = PKCS12KeyAndCertificates(
+            None,
+            PKCS12Certificate(cert, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12f = PKCS12KeyAndCertificates(
+            None,
+            PKCS12Certificate(cert2, None),
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12g = PKCS12KeyAndCertificates(
+            key,
+            None,
+            [PKCS12Certificate(cert2, None), PKCS12Certificate(cert3, None)],
+        )
+        p12h = PKCS12KeyAndCertificates(None, None, [])
+
+        assert hash(p12a) == hash(p12a)
+        assert hash(p12h) == hash(p12h)
+
+        assert hash(p12a) != hash(p12b)
+        assert hash(p12a) != hash(p12c)
+        assert hash(p12a) != hash(p12d)
+        assert hash(p12a) != hash(p12e)
+        assert hash(p12a) != hash(p12g)
+        assert hash(p12a) != hash(p12h)
+        assert hash(p12e) != hash(p12f)
+        assert hash(p12e) != hash(p12g)
+        assert hash(p12e) != hash(p12h)
+
+    def test_key_and_certificates_repr(self, backend):
+        assert (
+            repr(
+                PKCS12KeyAndCertificates(
+                    "fakekey",  # type:ignore[arg-type]
+                    PKCS12Certificate(
+                        "fakecert", None  # type:ignore[arg-type]
+                    ),
+                    [
+                        PKCS12Certificate(
+                            "fakecert2", b"name2"  # type:ignore[arg-type]
+                        )
+                    ],
+                )
+            )
+            == "<PKCS12KeyAndCertificates(key=fakekey, cert=<"
+            "PKCS12Certificate(fakecert, friendly_name=None)>, "
+            "additional_certs=[<PKCS12Certificate(fakecert2, "
+            "friendly_name=b'name2')>])>"
+        )

@@ -499,12 +499,13 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: load_key_and_certificates_with_name(data, password, backend=None)
+.. function:: load_key_and_certificates_object(data, password, backend=None)
 
     .. versionadded:: 36.0
 
-    Deserialize a PKCS12 blob, and return friendly names for all certificates
-    if available.
+    Deserialize a PKCS12 blob, and return a
+    :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
+    instance.
 
     :param data: The binary data.
     :type data: :term:`bytes-like`
@@ -515,18 +516,9 @@ file suffix.
 
     :param backend: An optional backend instance.
 
-    :returns: A tuple of
-        ``(name, private_key, certificate, additional_certificates)``.
-        ``name`` is the friendly name used for the certificate and must be a
-        ``bytes`` string or ``None``.
-        ``private_key`` is a private key type or ``None``, ``certificate``
-        is either the :class:`~cryptography.x509.Certificate` whose public key
-        matches the private key in the PKCS 12 object or ``None``, and
-        ``additional_certificates`` is a list of tuples
-        ``(additional_certificate, friendly_name)`` for all other certificates
-        in the PKCS12 object, where ``additional_certificate`` are
-        :class:`~cryptography.x509.Certificate` instances and ``friendly_name``
-        are either ``None`` or a ``bytes`` string.
+    :returns: A
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
+        instance.
 
 .. function:: serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm)
 
@@ -572,51 +564,44 @@ file suffix.
 
     :return bytes: Serialized PKCS12.
 
-.. function:: serialize_key_and_certificates_with_names(name, key, cert, cas, encryption_algorithm)
+.. class:: PKCS12Certificate
 
     .. versionadded:: 36.0
 
-    .. warning::
+    Represents additional data provided for a certificate in a PKCS12 file.
 
-        PKCS12 encryption is not secure and should not be used as a security
-        mechanism. Wrap a PKCS12 blob in a more secure envelope if you need
-        to store or send it safely. Encryption is provided for compatibility
-        reasons only.
+    .. attribute:: certificate
 
-    Serialize a PKCS12 blob.
+        A :class:`~cryptography.x509.Certificate` instance.
 
-    .. note::
+    .. attribute:: friendly_name
 
-        Due to `a bug in Firefox`_ it's not possible to load unencrypted PKCS12
-        blobs in Firefox.
+        :type: bytes
 
-    :param name: The friendly name to use for the supplied certificate and key.
-    :type name: bytes
+        An optional byte string containing the friendly name of the certificate.
 
-    :param key: The private key to include in the structure.
-    :type key: An
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
-        ,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-        , or
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
-        object.
+.. class:: PKCS12KeyAndCertificates
 
-    :param cert: The certificate associated with the private key.
-    :type cert: :class:`~cryptography.x509.Certificate` or ``None``
+    .. versionadded:: 36.0
 
-    :param cas: An optional set of certificates with friendly names to also include in the structure.
-    :type cas: ``None`` or a list of tuples ``(certificate, name)``, where ``certificate``
-               is a :class:`~cryptography.x509.Certificate` instance and ``name`` is either ``None``
-               or a ``bytes`` string.
+    A simplified representation of a PKCS12 file.
 
-    :param encryption_algorithm: The encryption algorithm that should be used
-        for the key and certificate. An instance of an object conforming to the
-        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface. PKCS12 encryption is **very weak** and should not be used
-        as a security boundary.
+    .. attribute:: key
 
-    :return bytes: Serialized PKCS12.
+        An optional private key belonging to
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.cert`.
+
+    .. attribute:: cert
+
+        An optional
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        instance belonging to the private key
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.key`.
+
+    .. attribute:: additional_certs
+
+        A list of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        instances.
 
 PKCS7
 ~~~~~
