@@ -72,10 +72,6 @@ def _encode_asn1_str_gc(backend, data):
     return s
 
 
-def _encode_inhibit_any_policy(backend, inhibit_any_policy):
-    return _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
-
-
 def _encode_name(backend, name):
     """
     The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
@@ -129,10 +125,6 @@ def _encode_name_entry(backend, attribute):
         backend._ffi.NULL, obj, attribute._type.value, value, len(value)
     )
     return name_entry
-
-
-def _encode_crl_number_delta_crl_indicator(backend, ext):
-    return _encode_asn1_int_gc(backend, ext.crl_number)
 
 
 def _encode_issuing_dist_point(backend, ext):
@@ -265,11 +257,6 @@ def _txt2obj_gc(backend, name):
     return obj
 
 
-def _encode_ocsp_nocheck(backend, ext):
-    # Doesn't need to be GC'd
-    return backend._lib.ASN1_NULL_new()
-
-
 def _encode_key_usage(backend, key_usage):
     set_bit = backend._lib.ASN1_BIT_STRING_set_bit
     ku = backend._lib.ASN1_BIT_STRING_new()
@@ -369,10 +356,6 @@ def _encode_alt_name(backend, san):
         general_names, backend._lib.GENERAL_NAMES_free
     )
     return general_names
-
-
-def _encode_subject_key_identifier(backend, ski):
-    return _encode_asn1_str_gc(backend, ski.digest)
 
 
 def _encode_general_name(backend, name):
@@ -589,7 +572,6 @@ def _encode_general_subtree(backend, subtrees):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
     ExtensionOID.KEY_USAGE: _encode_key_usage,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
@@ -600,8 +582,6 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
-    ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
-    ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
     ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
 }
@@ -610,8 +590,6 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
-    ExtensionOID.CRL_NUMBER: _encode_crl_number_delta_crl_indicator,
-    ExtensionOID.DELTA_CRL_INDICATOR: _encode_crl_number_delta_crl_indicator,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }

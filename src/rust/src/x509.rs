@@ -2236,6 +2236,24 @@ fn encode_certificate_extension<'p>(
         };
         let result = asn1::write_single(&bc);
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
+        let result = asn1::write_single(
+            &ext.getattr("value")?
+                .getattr("digest")?
+                .extract::<&[u8]>()?,
+        );
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *INHIBIT_ANY_POLICY_OID {
+        let intval = ext
+            .getattr("value")?
+            .getattr("skip_certs")?
+            .downcast::<pyo3::types::PyLong>()?;
+        let bytes = py_uint_to_big_endian_bytes(py, intval)?;
+        let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *OCSP_NO_CHECK_OID {
+        let result = asn1::write_single(&());
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *TLS_FEATURE_OID {
         // Ideally we'd skip building up a vec and just write directly into the
         // writer. This isn't possible at the moment because the callback to write
@@ -2278,11 +2296,30 @@ fn encode_certificate_extension<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_crl_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-        "Extension not supported: {}",
-        ext.getattr("oid")?.repr()?.extract::<&str>()?
-    )))
+fn encode_crl_extension<'p>(
+    py: pyo3::Python<'p>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+    if oid == *CRL_NUMBER_OID || oid == *DELTA_CRL_INDICATOR_OID {
+        let intval = ext
+            .getattr("value")?
+            .getattr("crl_number")?
+            .downcast::<pyo3::types::PyLong>()?;
+        let bytes = py_uint_to_big_endian_bytes(py, intval)?;
+        let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+            "Extension not supported: {}",
+            oid
+        )))
+    }
 }
 
 #[pyo3::prelude::pyfunction]
