@@ -433,10 +433,11 @@ jobs:
           - dynamodb-encryption-sdk
           - certbot
           - certbot-josepy
+          - mitmproxy
         RUST:
           - stable
         PYTHON:
-          - 3.7
+          - 3.8
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 20
     steps:
