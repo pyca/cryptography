@@ -1,3 +1,7 @@
+// This file is dual licensed under the terms of the Apache License, Version
+// 2.0, and the BSD License. See the LICENSE file in the root of this repository
+// for complete details.
+
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::certificate;
