@@ -105,7 +105,7 @@ class PKCS12KeyAndCertificates:
         self._additional_certs = additional_certs
 
     @property
-    def key(self) -> typing.Optional[_ALLOWED_PKCS12_TYPES]:
+    def key(self) -> typing.Optional[PRIVATE_KEY_TYPES]:
         return self._key
 
     @property

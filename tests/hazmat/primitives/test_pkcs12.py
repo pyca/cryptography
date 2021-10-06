@@ -505,11 +505,17 @@ class TestPKCS12Objects(object):
 
     def test_key_and_certificates_constructor(self, backend):
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates("hello", None, [])  # type:ignore[arg-type]
+            PKCS12KeyAndCertificates(
+                "hello", None, []  # type:ignore[arg-type]
+            )
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates(None, "hello", [])  # type:ignore[arg-type]
+            PKCS12KeyAndCertificates(
+                None, "hello", []  # type:ignore[arg-type]
+            )
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates(None, None, ["hello"])  # type:ignore[arg-type]
+            PKCS12KeyAndCertificates(
+                None, None, ["hello"]  # type:ignore[arg-type]
+            )
 
     def test_key_and_certificates_equality(self, backend):
         cert, key = _load_ca(backend)
