@@ -443,6 +443,16 @@ def test_pkcs12_ordering():
 
 
 class TestPKCS12Objects(object):
+    def test_certificate_constructor(self, backend):
+        with pytest.raises(TypeError):
+            PKCS12Certificate(None, None)
+        with pytest.raises(TypeError):
+            PKCS12Certificate("hello", None)
+        with pytest.raises(TypeError):
+            PKCS12Certificate(None, "hello")
+        with pytest.raises(TypeError):
+            PKCS12Certificate(None, 42)
+
     def test_certificate_equality(self, backend):
         cert2 = _load_cert(
             backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
@@ -484,15 +494,21 @@ class TestPKCS12Objects(object):
         assert hash(c2a) != hash(c3a)
 
     def test_certificate_repr(self, backend):
-        fake_cert = "fakecert"
-        assert (
-            repr(PKCS12Certificate(fake_cert, None))  # type:ignore[arg-type]
-            == "<PKCS12Certificate(fakecert, friendly_name=None)>"
-        )
-        assert (
-            repr(PKCS12Certificate(fake_cert, b"a"))  # type:ignore[arg-type]
-            == "<PKCS12Certificate(fakecert, friendly_name=b'a')>"
-        )
+        cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
+        assert repr(
+            PKCS12Certificate(cert, None)
+        ) == "<PKCS12Certificate({0}, friendly_name=None)>".format(repr(cert))
+        assert repr(
+            PKCS12Certificate(cert, b"a")
+        ) == "<PKCS12Certificate({0}, friendly_name=b'a')>".format(repr(cert))
+
+    def test_key_and_certificates_constructor(self, backend):
+        with pytest.raises(TypeError):
+            PKCS12KeyAndCertificates("hello", None, [])
+        with pytest.raises(TypeError):
+            PKCS12KeyAndCertificates(None, "hello", [])
+        with pytest.raises(TypeError):
+            PKCS12KeyAndCertificates(None, None, ["hello"])
 
     def test_key_and_certificates_equality(self, backend):
         cert, key = _load_ca(backend)
@@ -611,22 +627,23 @@ class TestPKCS12Objects(object):
         assert hash(p12e) != hash(p12h)
 
     def test_key_and_certificates_repr(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "cryptography.io.pem")
+        )
         assert (
             repr(
                 PKCS12KeyAndCertificates(
-                    "fakekey",  # type:ignore[arg-type]
-                    PKCS12Certificate(
-                        "fakecert", None  # type:ignore[arg-type]
-                    ),
-                    [
-                        PKCS12Certificate(
-                            "fakecert2", b"name2"  # type:ignore[arg-type]
-                        )
-                    ],
+                    key,
+                    PKCS12Certificate(cert, None),
+                    [PKCS12Certificate(cert2, b"name2")],
                 )
             )
-            == "<PKCS12KeyAndCertificates(key=fakekey, cert=<"
-            "PKCS12Certificate(fakecert, friendly_name=None)>, "
-            "additional_certs=[<PKCS12Certificate(fakecert2, "
-            "friendly_name=b'name2')>])>"
+            == "<PKCS12KeyAndCertificates(key={0}, cert=<PKCS12Certificate("
+            "{1}, friendly_name=None)>, additional_certs=[<PKCS12Certificate"
+            "({2}, friendly_name=b'name2')>])>".format(
+                key,
+                cert,
+                cert2,
+            )
         )

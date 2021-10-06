@@ -24,6 +24,10 @@ class PKCS12Certificate:
         cert: x509.Certificate,
         friendly_name: typing.Optional[bytes],
     ):
+        if not isinstance(cert, x509.Certificate):
+            raise TypeError("Expecting x509.Certificate object")
+        if friendly_name is not None and not isinstance(friendly_name, bytes):
+            raise TypeError("friendly_name must be bytes")
         self._cert = cert
         self._friendly_name = friendly_name
 
@@ -63,6 +67,26 @@ class PKCS12KeyAndCertificates:
         cert: typing.Optional[PKCS12Certificate],
         additional_certs: typing.List[PKCS12Certificate],
     ):
+        if key is not None and not isinstance(
+            key,
+            (
+                rsa.RSAPrivateKey,
+                dsa.DSAPrivateKey,
+                ec.EllipticCurvePrivateKey,
+            ),
+        ):
+            raise TypeError(
+                "Key must be RSA, DSA, or EllipticCurve private key."
+            )
+        if cert is not None and not isinstance(cert, PKCS12Certificate):
+            raise TypeError("cert must be a PKCS12Certificate object")
+        if not all(
+            isinstance(add_cert, PKCS12Certificate)
+            for add_cert in additional_certs
+        ):
+            raise TypeError(
+                "all values in additional_certs must be PKCS12Certificate objects"
+            )
         self._key = key
         self._cert = cert
         self._additional_certs = additional_certs
