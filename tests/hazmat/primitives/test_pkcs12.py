@@ -329,12 +329,12 @@ class TestPKCS12Creation(object):
             )
         assert (
             str(exc.value)
-            == "Key must be RSA, DSA, or EllipticCurve private key."
+            == "Key must be RSA, DSA, or EllipticCurve private key or None."
         )
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, key, None, encryption)
-        assert str(exc.value) == "cert must be a certificate"
+        assert str(exc.value) == "cert must be a certificate or None"
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, cert, None, key)
@@ -448,10 +448,11 @@ class TestPKCS12Objects(object):
             PKCS12Certificate(None, None)
         with pytest.raises(TypeError):
             PKCS12Certificate("hello", None)
+        cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
         with pytest.raises(TypeError):
-            PKCS12Certificate(None, "hello")
+            PKCS12Certificate(cert, "hello")
         with pytest.raises(TypeError):
-            PKCS12Certificate(None, 42)
+            PKCS12Certificate(cert, 42)
 
     def test_certificate_equality(self, backend):
         cert2 = _load_cert(

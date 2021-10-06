@@ -88,10 +88,10 @@ class PKCS12KeyAndCertificates:
         ):
             raise TypeError(
                 "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
-                " private key."
+                " private key, or None."
             )
         if cert is not None and not isinstance(cert, PKCS12Certificate):
-            raise TypeError("cert must be a PKCS12Certificate object")
+            raise TypeError("cert must be a PKCS12Certificate object or None")
         if not all(
             isinstance(add_cert, PKCS12Certificate)
             for add_cert in additional_certs
