@@ -445,14 +445,14 @@ def test_pkcs12_ordering():
 class TestPKCS12Objects(object):
     def test_certificate_constructor(self, backend):
         with pytest.raises(TypeError):
-            PKCS12Certificate(None, None)
+            PKCS12Certificate(None, None)  # type:ignore[arg-type]
         with pytest.raises(TypeError):
-            PKCS12Certificate("hello", None)
+            PKCS12Certificate("hello", None)  # type:ignore[arg-type]
         cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
         with pytest.raises(TypeError):
-            PKCS12Certificate(cert, "hello")
+            PKCS12Certificate(cert, "hello")  # type:ignore[arg-type]
         with pytest.raises(TypeError):
-            PKCS12Certificate(cert, 42)
+            PKCS12Certificate(cert, 42)  # type:ignore[arg-type]
 
     def test_certificate_equality(self, backend):
         cert2 = _load_cert(
@@ -505,11 +505,11 @@ class TestPKCS12Objects(object):
 
     def test_key_and_certificates_constructor(self, backend):
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates("hello", None, [])
+            PKCS12KeyAndCertificates("hello", None, [])  # type:ignore[arg-type]
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates(None, "hello", [])
+            PKCS12KeyAndCertificates(None, "hello", [])  # type:ignore[arg-type]
         with pytest.raises(TypeError):
-            PKCS12KeyAndCertificates(None, None, ["hello"])
+            PKCS12KeyAndCertificates(None, None, ["hello"])  # type:ignore[arg-type]
 
     def test_key_and_certificates_equality(self, backend):
         cert, key = _load_ca(backend)
