@@ -13,6 +13,9 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,
   which will return an object of type
   :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`.
+* The source distribution (sdist) now contains vendored Rust crates. Users
+  can perform offline installation from sdist without additional downloads.
+  We also switched to ``tar.bz2`` format in order to reduce size.
 
 .. _v35-0-0:
 
