@@ -27,7 +27,7 @@ class PKCS12Certificate:
         if not isinstance(cert, x509.Certificate):
             raise TypeError("Expecting x509.Certificate object")
         if friendly_name is not None and not isinstance(friendly_name, bytes):
-            raise TypeError("friendly_name must be bytes")
+            raise TypeError("friendly_name must be bytes or None")
         self._cert = cert
         self._friendly_name = friendly_name
 
@@ -163,9 +163,9 @@ def serialize_key_and_certificates(
             ec.EllipticCurvePrivateKey,
         ),
     ):
-        raise TypeError("Key must be RSA, DSA, or EllipticCurve private key.")
+        raise TypeError("Key must be RSA, DSA, or EllipticCurve private key or None.")
     if cert is not None and not isinstance(cert, x509.Certificate):
-        raise TypeError("cert must be a certificate")
+        raise TypeError("cert must be a certificate or None")
 
     if cas is not None:
         cas = list(cas)

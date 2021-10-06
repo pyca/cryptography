@@ -576,7 +576,7 @@ file suffix.
 
     .. attribute:: friendly_name
 
-        :type: bytes
+        :type: bytes or None
 
         An optional byte string containing the friendly name of the certificate.
 
