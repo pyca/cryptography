@@ -40,7 +40,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.7"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.5"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.0"}}
-          - {VERSION: "3.10-dev", TOXENV: "py310"}
+          - {VERSION: "3.10", TOXENV: "py310"}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
@@ -295,7 +295,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.9", TOXENV: "py39", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.10", TOXENV: "py310", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
@@ -362,7 +362,7 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
-          - {VERSION: "3.9", TOXENV: "py39", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.10", TOXENV: "py310", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
         JOB_NUMBER: [0, 1, 2, 3]
