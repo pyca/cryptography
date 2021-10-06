@@ -46,6 +46,24 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
     }
 }
 
+pub(crate) type CsrExtensions<'a> = asn1::SequenceOf<'a, CsrExtension<'a>>;
+
+// CsrExtension has same layout as Extension, but uses #[relaxeddefault]
+// instead of #[default] for critical attribute.
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+pub(crate) struct CsrExtension<'a> {
+    pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
+    #[relaxeddefault(false)]
+    pub(crate) critical: bool,
+    pub(crate) extn_value: &'a [u8],
+}
+
+impl<'a> From<CsrExtension<'a>> for x509::common::Extension<'a> {
+    fn from(ext: CsrExtension<'a>) -> Self {
+        x509::common::Extension { extn_id: ext.extn_id, critical: ext.critical, extn_value: ext.extn_value}
+    }
+}
+
 impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<x509::Extensions<'a>>, PyAsn1Error> {
         for attribute in self.attributes.clone() {
@@ -53,7 +71,9 @@ impl CertificationRequestInfo<'_> {
             {
                 check_attribute_length(attribute.values.clone())?;
                 let val = attribute.values.clone().next().unwrap();
-                let exts = asn1::parse_single::<x509::Extensions<'a>>(val.full_data())?;
+                let csrexts = asn1::parse_single::<CsrExtensions<'a>>(val.full_data())?;
+                // TODO: convert sequence of CSRExtensions to sequence of Extensions
+                let exts = csrexts.into();
                 return Ok(Some(exts));
             }
         }
