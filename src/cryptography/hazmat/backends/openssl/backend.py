@@ -2503,16 +2503,14 @@ class Backend(BackendInterface):
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
     def load_key_and_certificates_from_pkcs12(self, data, password):
-        pkcs12 = self.load_key_and_certificates_object_from_pkcs12(
-            data, password
-        )
+        pkcs12 = self.load_pkcs12(data, password)
         return (
             pkcs12.key,
             pkcs12.cert.certificate if pkcs12.cert else None,
             [cert.certificate for cert in pkcs12.additional_certs],
         )
 
-    def load_key_and_certificates_object_from_pkcs12(self, data, password):
+    def load_pkcs12(self, data, password):
         if password is not None:
             utils._check_byteslike("password", password)
 

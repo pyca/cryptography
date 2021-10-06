@@ -499,7 +499,7 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: load_key_and_certificates_object(data, password, backend=None)
+.. function:: load_pkcs12(data, password, backend=None)
 
     .. versionadded:: 36.0
 

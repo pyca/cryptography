@@ -115,13 +115,13 @@ def load_key_and_certificates(
     return backend.load_key_and_certificates_from_pkcs12(data, password)
 
 
-def load_key_and_certificates_object(
+def load_pkcs12(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Optional[Backend] = None,
 ) -> PKCS12KeyAndCertificates:
     backend = _get_backend(backend)
-    return backend.load_key_and_certificates_object_from_pkcs12(data, password)
+    return backend.load_pkcs12(data, password)
 
 
 def serialize_key_and_certificates(

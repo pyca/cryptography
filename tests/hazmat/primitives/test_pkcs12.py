@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     load_key_and_certificates,
-    load_key_and_certificates_object,
+    load_pkcs12,
     serialize_key_and_certificates,
 )
 
@@ -193,9 +193,7 @@ class TestPKCS12Loading(object):
 
         pkcs12 = load_vectors_from_file(
             os.path.join("pkcs12", filename),
-            lambda derfile: load_key_and_certificates_object(
-                derfile.read(), password, backend
-            ),
+            lambda derfile: load_pkcs12(derfile.read(), password, backend),
             mode="rb",
         )
         assert pkcs12.cert is not None
@@ -244,9 +242,7 @@ class TestPKCS12Loading(object):
 
         pkcs12 = load_vectors_from_file(
             os.path.join("pkcs12", filename),
-            lambda derfile: load_key_and_certificates_object(
-                derfile.read(), password, backend
-            ),
+            lambda derfile: load_pkcs12(derfile.read(), password, backend),
             mode="rb",
         )
         assert pkcs12.cert is None
