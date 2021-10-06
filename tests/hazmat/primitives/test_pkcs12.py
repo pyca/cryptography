@@ -514,7 +514,7 @@ class TestPKCS12Objects(object):
             )
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
-                None, None, ["hello"]  # type:ignore[arg-type]
+                None, None, ["hello"]  # type:ignore[list-item]
             )
 
     def test_key_and_certificates_equality(self, backend):
