@@ -441,6 +441,12 @@ class Backend(
         """
 
     @abc.abstractmethod
+    def load_pkcs12(self, data, password):
+        """
+        Returns a PKCS12KeyAndCertificates object
+        """
+
+    @abc.abstractmethod
     def serialize_key_and_certificates_to_pkcs12(
         self, name, key, cert, cas, encryption_algorithm
     ):

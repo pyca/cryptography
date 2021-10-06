@@ -499,6 +499,27 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
+.. function:: load_pkcs12(data, password, backend=None)
+
+    .. versionadded:: 36.0
+
+    Deserialize a PKCS12 blob, and return a
+    :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
+    instance.
+
+    :param data: The binary data.
+    :type data: :term:`bytes-like`
+
+    :param password: The password to use to decrypt the data. ``None``
+        if the PKCS12 is not encrypted.
+    :type password: :term:`bytes-like`
+
+    :param backend: An optional backend instance.
+
+    :returns: A
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
+        instance.
+
 .. function:: serialize_key_and_certificates(name, key, cert, cas, encryption_algorithm)
 
     .. versionadded:: 3.0
@@ -542,6 +563,45 @@ file suffix.
         as a security boundary.
 
     :return bytes: Serialized PKCS12.
+
+.. class:: PKCS12Certificate
+
+    .. versionadded:: 36.0
+
+    Represents additional data provided for a certificate in a PKCS12 file.
+
+    .. attribute:: certificate
+
+        A :class:`~cryptography.x509.Certificate` instance.
+
+    .. attribute:: friendly_name
+
+        :type: bytes or None
+
+        An optional byte string containing the friendly name of the certificate.
+
+.. class:: PKCS12KeyAndCertificates
+
+    .. versionadded:: 36.0
+
+    A simplified representation of a PKCS12 file.
+
+    .. attribute:: key
+
+        An optional private key belonging to
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.cert`.
+
+    .. attribute:: cert
+
+        An optional
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        instance belonging to the private key
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.key`.
+
+    .. attribute:: additional_certs
+
+        A list of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        instances.
 
 PKCS7
 ~~~~~
