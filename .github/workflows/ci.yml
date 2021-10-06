@@ -44,7 +44,7 @@ jobs:
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -136,7 +136,7 @@ jobs:
           - {IMAGE: "fedora", TOXENV: "py39"}
           - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -182,7 +182,7 @@ jobs:
           - beta
           - nightly
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -225,7 +225,7 @@ jobs:
   linux-rust-coverage:
     runs-on: ubuntu-latest
     name: "Rust Coverage"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -299,7 +299,7 @@ jobs:
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -367,7 +367,7 @@ jobs:
           - stable
         JOB_NUMBER: [0, 1, 2, 3]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -439,7 +439,7 @@ jobs:
         PYTHON:
           - 3.8
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
