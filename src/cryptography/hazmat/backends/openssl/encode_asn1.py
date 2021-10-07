@@ -8,7 +8,6 @@ import ipaddress
 
 from cryptography import utils, x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CRL_ENTRY_REASON_ENUM_TO_CODE,
     _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME,
 )
@@ -147,18 +146,6 @@ def _encode_issuing_dist_point(backend, ext):
         idp.distpoint = _encode_relative_name(backend, ext.relative_name)
 
     return idp
-
-
-def _encode_crl_reason(backend, crl_reason):
-    asn1enum = backend._lib.ASN1_ENUMERATED_new()
-    backend.openssl_assert(asn1enum != backend._ffi.NULL)
-    asn1enum = backend._ffi.gc(asn1enum, backend._lib.ASN1_ENUMERATED_free)
-    res = backend._lib.ASN1_ENUMERATED_set(
-        asn1enum, _CRL_ENTRY_REASON_ENUM_TO_CODE[crl_reason.reason]
-    )
-    backend.openssl_assert(res == 1)
-
-    return asn1enum
 
 
 def _encode_invalidity_date(backend, invalidity_date):
@@ -448,17 +435,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         raise ValueError("{} is an unknown GeneralName type".format(name))
 
 
-def _encode_extended_key_usage(backend, extended_key_usage):
-    eku = backend._lib.sk_ASN1_OBJECT_new_null()
-    eku = backend._ffi.gc(eku, backend._lib.sk_ASN1_OBJECT_free)
-    for oid in extended_key_usage:
-        obj = _txt2obj(backend, oid.dotted_string)
-        res = backend._lib.sk_ASN1_OBJECT_push(eku, obj)
-        backend.openssl_assert(res >= 1)
-
-    return eku
-
-
 _CRLREASONFLAGS = {
     x509.ReasonFlags.key_compromise: 1,
     x509.ReasonFlags.ca_compromise: 2,
@@ -540,23 +516,6 @@ def _encode_name_constraints(backend, name_constraints):
     return nc
 
 
-def _encode_policy_constraints(backend, policy_constraints):
-    pc = backend._lib.POLICY_CONSTRAINTS_new()
-    backend.openssl_assert(pc != backend._ffi.NULL)
-    pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
-    if policy_constraints.require_explicit_policy is not None:
-        pc.requireExplicitPolicy = _encode_asn1_int(
-            backend, policy_constraints.require_explicit_policy
-        )
-
-    if policy_constraints.inhibit_policy_mapping is not None:
-        pc.inhibitPolicyMapping = _encode_asn1_int(
-            backend, policy_constraints.inhibit_policy_mapping
-        )
-
-    return pc
-
-
 def _encode_general_subtree(backend, subtrees):
     if subtrees is None:
         return backend._ffi.NULL
@@ -575,7 +534,6 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.KEY_USAGE: _encode_key_usage,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
-    ExtensionOID.EXTENDED_KEY_USAGE: _encode_extended_key_usage,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.CERTIFICATE_POLICIES: _encode_certificate_policies,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
@@ -583,7 +541,6 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
-    ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
@@ -596,6 +553,5 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
-    CRLEntryExtensionOID.CRL_REASON: _encode_crl_reason,
     CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
 }

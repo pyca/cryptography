@@ -649,11 +649,31 @@ fn encode_crl_extension<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_crl_entry_extension<'p>(ext: &pyo3::PyAny) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-        "Extension not supported: {}",
-        ext.getattr("oid")?.repr()?.extract::<&str>()?
-    )))
+fn encode_crl_entry_extension<'p>(
+    py: pyo3::Python<'p>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+
+    if oid == *CRL_REASON_OID {
+        let value = py
+            .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+            .getattr("_CRL_ENTRY_REASON_ENUM_TO_CODE")?
+            .get_item(ext.getattr("value")?.getattr("reason")?)?
+            .extract::<u32>()?;
+        let result = asn1::write_single(&asn1::Enumerated::new(value));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+            "Extension not supported: {}",
+            oid,
+        )))
+    }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

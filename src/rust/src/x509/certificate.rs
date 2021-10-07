@@ -633,7 +633,7 @@ struct BasicConstraints {
     path_length: Option<u64>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct PolicyConstraints {
     #[implicit(0)]
     require_explicit_policy: Option<u64>,
@@ -858,6 +858,30 @@ fn encode_certificate_extension<'p>(
                 .getattr("digest")?
                 .extract::<&[u8]>()?,
         );
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *EXTENDED_KEY_USAGE_OID {
+        let mut oids = vec![];
+        for el in ext.getattr("value")?.iter()? {
+            let oid = asn1::ObjectIdentifier::from_string(
+                el?.getattr("dotted_string")?.extract::<&str>()?,
+            )
+            .unwrap();
+            oids.push(oid);
+        }
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(&oids));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *POLICY_CONSTRAINTS_OID {
+        let pc = PolicyConstraints {
+            require_explicit_policy: ext
+                .getattr("value")?
+                .getattr("require_explicit_policy")?
+                .extract()?,
+            inhibit_policy_mapping: ext
+                .getattr("value")?
+                .getattr("inhibit_policy_mapping")?
+                .extract()?,
+        };
+        let result = asn1::write_single(&pc);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *INHIBIT_ANY_POLICY_OID {
         let intval = ext
