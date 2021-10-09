@@ -142,6 +142,13 @@ need to have Rust installed after you've built ``cryptography``. This is the
 same as the C compiler toolchain which is also required to build
 ``cryptography``, but not afterwards.
 
+I'm getting errors installing or importing ``cryptography`` on AWS Lambda
+-------------------------------------------------------------------------
+
+Make sure you're following AWS's documentation either for
+`building .zip archives for Lambda`_ or
+`building container images for Lambda`_.
+
 Why are there no wheels for my Python3.x version?
 -------------------------------------------------
 
@@ -187,3 +194,5 @@ For example, this is a PEM file for a RSA Public Key: ::
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues
 .. _`memory safety`: https://alexgaynor.net/2019/aug/12/introduction-to-memory-unsafety-for-vps-of-engineering/
+.. _`building .zip archives for Lambda`: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
+.. _`building container images for Lambda`: https://docs.aws.amazon.com/lambda/latest/dg/python-image.html
