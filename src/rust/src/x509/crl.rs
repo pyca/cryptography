@@ -668,6 +668,10 @@ fn encode_crl_entry_extension<'p>(
             .extract::<u32>()?;
         let result = asn1::write_single(&asn1::Enumerated::new(value));
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *INVALIDITY_DATE_OID {
+        let chrono_dt = x509::py_to_chrono(ext.getattr("value")?.getattr("invalidity_date")?)?;
+        let result = asn1::write_single(&asn1::GeneralizedTime::new(chrono_dt));
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else {
         Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
             "Extension not supported: {}",

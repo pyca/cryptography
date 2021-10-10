@@ -859,6 +859,73 @@ fn encode_certificate_extension<'p>(
                 .extract::<&[u8]>()?,
         );
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *KEY_USAGE_OID {
+        fn set_bit(vals: &mut [u8], n: usize, set: bool) {
+            let idx = n / 8;
+            let v = 1 << (7 - (n & 0x07));
+            if set {
+                vals[idx] |= v;
+            }
+        }
+        let mut bs = [0, 0];
+        set_bit(
+            &mut bs,
+            0,
+            ext.getattr("value")?
+                .getattr("digital_signature")?
+                .is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            1,
+            ext.getattr("value")?
+                .getattr("content_commitment")?
+                .is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            2,
+            ext.getattr("value")?
+                .getattr("key_encipherment")?
+                .is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            3,
+            ext.getattr("value")?
+                .getattr("data_encipherment")?
+                .is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            4,
+            ext.getattr("value")?.getattr("key_agreement")?.is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            5,
+            ext.getattr("value")?.getattr("key_cert_sign")?.is_true()?,
+        );
+        set_bit(
+            &mut bs,
+            6,
+            ext.getattr("value")?.getattr("crl_sign")?.is_true()?,
+        );
+        if ext.getattr("value")?.getattr("key_agreement")?.is_true()? {
+            set_bit(
+                &mut bs,
+                7,
+                ext.getattr("value")?.getattr("encipher_only")?.is_true()?,
+            );
+            set_bit(
+                &mut bs,
+                8,
+                ext.getattr("value")?.getattr("decipher_only")?.is_true()?,
+            );
+        }
+        let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
+        let result = asn1::write_single(&asn1::BitString::new(bits, 0));
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *EXTENDED_KEY_USAGE_OID {
         let mut oids = vec![];
         for el in ext.getattr("value")?.iter()? {

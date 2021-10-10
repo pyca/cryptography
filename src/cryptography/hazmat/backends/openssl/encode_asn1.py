@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import calendar
 import ipaddress
 
 from cryptography import utils, x509
@@ -148,17 +147,6 @@ def _encode_issuing_dist_point(backend, ext):
     return idp
 
 
-def _encode_invalidity_date(backend, invalidity_date):
-    time = backend._lib.ASN1_GENERALIZEDTIME_set(
-        backend._ffi.NULL,
-        calendar.timegm(invalidity_date.invalidity_date.timetuple()),
-    )
-    backend.openssl_assert(time != backend._ffi.NULL)
-    time = backend._ffi.gc(time, backend._lib.ASN1_GENERALIZEDTIME_free)
-
-    return time
-
-
 def _encode_certificate_policies(backend, certificate_policies):
     cp = backend._lib.sk_POLICYINFO_new_null()
     backend.openssl_assert(cp != backend._ffi.NULL)
@@ -242,38 +230,6 @@ def _txt2obj_gc(backend, name):
     obj = _txt2obj(backend, name)
     obj = backend._ffi.gc(obj, backend._lib.ASN1_OBJECT_free)
     return obj
-
-
-def _encode_key_usage(backend, key_usage):
-    set_bit = backend._lib.ASN1_BIT_STRING_set_bit
-    ku = backend._lib.ASN1_BIT_STRING_new()
-    ku = backend._ffi.gc(ku, backend._lib.ASN1_BIT_STRING_free)
-    res = set_bit(ku, 0, key_usage.digital_signature)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 1, key_usage.content_commitment)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 2, key_usage.key_encipherment)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 3, key_usage.data_encipherment)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 4, key_usage.key_agreement)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 5, key_usage.key_cert_sign)
-    backend.openssl_assert(res == 1)
-    res = set_bit(ku, 6, key_usage.crl_sign)
-    backend.openssl_assert(res == 1)
-    if key_usage.key_agreement:
-        res = set_bit(ku, 7, key_usage.encipher_only)
-        backend.openssl_assert(res == 1)
-        res = set_bit(ku, 8, key_usage.decipher_only)
-        backend.openssl_assert(res == 1)
-    else:
-        res = set_bit(ku, 7, 0)
-        backend.openssl_assert(res == 1)
-        res = set_bit(ku, 8, 0)
-        backend.openssl_assert(res == 1)
-
-    return ku
 
 
 def _encode_authority_key_identifier(backend, authority_keyid):
@@ -531,7 +487,6 @@ def _encode_general_subtree(backend, subtrees):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.KEY_USAGE: _encode_key_usage,
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
@@ -553,5 +508,4 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
-    CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
 }
