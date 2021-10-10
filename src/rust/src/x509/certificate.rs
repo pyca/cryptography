@@ -935,7 +935,7 @@ fn encode_certificate_extension<'p>(
             .unwrap();
             oids.push(oid);
         }
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(&oids));
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(oids));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = PolicyConstraints {
@@ -971,7 +971,7 @@ fn encode_certificate_extension<'p>(
             els.push(el?.getattr("value")?.extract::<u64>()?);
         }
 
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(&els));
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(els));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *PRECERT_POISON_OID {
         let result = asn1::write_single(&());
