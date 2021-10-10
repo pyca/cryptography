@@ -7,6 +7,7 @@ use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::ToPyObject;
 use std::collections::HashSet;
 use std::convert::TryInto;
+use std::marker::PhantomData;
 
 /// parse all sections in a PEM file and return the only matching section.
 /// If no or multiple matching sections are found, return an error.
@@ -368,4 +369,52 @@ pub(crate) fn py_to_chrono(val: &pyo3::PyAny) -> pyo3::PyResult<chrono::DateTime
             val.getattr("minute")?.extract()?,
             val.getattr("second")?.extract()?,
         ))
+}
+
+pub(crate) enum Asn1ReadableOrWritable<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> {
+    Read(T, PhantomData<&'a ()>),
+    Write(U, PhantomData<&'a ()>),
+}
+
+impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> Asn1ReadableOrWritable<'a, T, U> {
+    pub(crate) fn new_write(v: U) -> Self {
+        Asn1ReadableOrWritable::Write(v, PhantomData)
+    }
+
+    pub(crate) fn unwrap_read(&self) -> &T {
+        match self {
+            Asn1ReadableOrWritable::Read(v, _) => v,
+            Asn1ReadableOrWritable::Write(_, _) => panic!("unwrap_read called on a Write value"),
+        }
+    }
+
+    pub(crate) fn unwrap_write(&self) -> &U {
+        match self {
+            Asn1ReadableOrWritable::Write(v, _) => v,
+            Asn1ReadableOrWritable::Read(_, _) => panic!("unwrap_write called on a Read value"),
+        }
+    }
+}
+
+impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Readable<'a>
+    for Asn1ReadableOrWritable<'a, T, U>
+{
+    fn can_parse(tag: u8) -> bool {
+        T::can_parse(tag)
+    }
+
+    fn parse(parser: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
+        Ok(Asn1ReadableOrWritable::Read(
+            parser.read_element()?,
+            PhantomData,
+        ))
+    }
+}
+
+impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Writable<'a>
+    for Asn1ReadableOrWritable<'a, T, U>
+{
+    fn write(&self, w: &mut asn1::Writer<'_>) {
+        U::write(self.unwrap_write(), w)
+    }
 }

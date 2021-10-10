@@ -147,74 +147,6 @@ def _encode_issuing_dist_point(backend, ext):
     return idp
 
 
-def _encode_certificate_policies(backend, certificate_policies):
-    cp = backend._lib.sk_POLICYINFO_new_null()
-    backend.openssl_assert(cp != backend._ffi.NULL)
-    cp = backend._ffi.gc(cp, backend._lib.sk_POLICYINFO_free)
-    for policy_info in certificate_policies:
-        pi = backend._lib.POLICYINFO_new()
-        backend.openssl_assert(pi != backend._ffi.NULL)
-        res = backend._lib.sk_POLICYINFO_push(cp, pi)
-        backend.openssl_assert(res >= 1)
-        oid = _txt2obj(backend, policy_info.policy_identifier.dotted_string)
-        pi.policyid = oid
-        if policy_info.policy_qualifiers:
-            pqis = backend._lib.sk_POLICYQUALINFO_new_null()
-            backend.openssl_assert(pqis != backend._ffi.NULL)
-            for qualifier in policy_info.policy_qualifiers:
-                pqi = backend._lib.POLICYQUALINFO_new()
-                backend.openssl_assert(pqi != backend._ffi.NULL)
-                res = backend._lib.sk_POLICYQUALINFO_push(pqis, pqi)
-                backend.openssl_assert(res >= 1)
-                if isinstance(qualifier, str):
-                    pqi.pqualid = _txt2obj(
-                        backend, x509.OID_CPS_QUALIFIER.dotted_string
-                    )
-                    pqi.d.cpsuri = _encode_asn1_str(
-                        backend,
-                        qualifier.encode("ascii"),
-                    )
-                else:
-                    assert isinstance(qualifier, x509.UserNotice)
-                    pqi.pqualid = _txt2obj(
-                        backend, x509.OID_CPS_USER_NOTICE.dotted_string
-                    )
-                    un = backend._lib.USERNOTICE_new()
-                    backend.openssl_assert(un != backend._ffi.NULL)
-                    pqi.d.usernotice = un
-                    if qualifier.explicit_text:
-                        un.exptext = _encode_asn1_utf8_str(
-                            backend, qualifier.explicit_text
-                        )
-
-                    un.noticeref = _encode_notice_reference(
-                        backend, qualifier.notice_reference
-                    )
-
-            pi.qualifiers = pqis
-
-    return cp
-
-
-def _encode_notice_reference(backend, notice):
-    if notice is None:
-        return backend._ffi.NULL
-    else:
-        nr = backend._lib.NOTICEREF_new()
-        backend.openssl_assert(nr != backend._ffi.NULL)
-        # organization is a required field
-        nr.organization = _encode_asn1_utf8_str(backend, notice.organization)
-
-        notice_stack = backend._lib.sk_ASN1_INTEGER_new_null()
-        nr.noticenos = notice_stack
-        for number in notice.notice_numbers:
-            num = _encode_asn1_int(backend, number)
-            res = backend._lib.sk_ASN1_INTEGER_push(notice_stack, num)
-            backend.openssl_assert(res >= 1)
-
-        return nr
-
-
 def _txt2obj(backend, name):
     """
     Converts a Python string with an ASN.1 object ID in dotted form to a
@@ -490,7 +422,6 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    ExtensionOID.CERTIFICATE_POLICIES: _encode_certificate_policies,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
