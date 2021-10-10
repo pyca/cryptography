@@ -64,7 +64,6 @@ void ASN1_TIME_free(ASN1_TIME *);
 int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
 /*  ASN1 GENERALIZEDTIME */
-ASN1_GENERALIZEDTIME *ASN1_GENERALIZEDTIME_set(ASN1_GENERALIZEDTIME *, time_t);
 void ASN1_GENERALIZEDTIME_free(ASN1_GENERALIZEDTIME *);
 
 /*  ASN1 ENUMERATED */
@@ -87,7 +86,6 @@ ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
 ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
-void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 

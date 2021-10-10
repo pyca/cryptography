@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::asn1::PyAsn1Error;
-use chrono::{Datelike, Timelike};
+use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::ToPyObject;
 use std::collections::HashSet;
 use std::convert::TryInto;
@@ -340,6 +340,7 @@ pub(crate) fn parse_and_cache_extensions<
     *cached_extensions = Some(extensions.clone_ref(py));
     Ok(extensions)
 }
+
 pub(crate) fn chrono_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &chrono::DateTime<chrono::Utc>,
@@ -353,4 +354,18 @@ pub(crate) fn chrono_to_py<'p>(
         dt.minute(),
         dt.second(),
     ))
+}
+
+pub(crate) fn py_to_chrono(val: &pyo3::PyAny) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
+    Ok(chrono::Utc
+        .ymd(
+            val.getattr("year")?.extract()?,
+            val.getattr("month")?.extract()?,
+            val.getattr("day")?.extract()?,
+        )
+        .and_hms(
+            val.getattr("hour")?.extract()?,
+            val.getattr("minute")?.extract()?,
+            val.getattr("second")?.extract()?,
+        ))
 }
