@@ -81,7 +81,6 @@ ffi = build_ffi_for_binding(
         "cryptography",
         # Provider comes early as well so we define OSSL_LIB_CTX
         "provider",
-        "aes",
         "asn1",
         "bignum",
         "bio",
