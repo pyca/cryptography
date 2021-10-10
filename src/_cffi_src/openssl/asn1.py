@@ -86,8 +86,6 @@ ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
 ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
-/* This is not a macro, but is const on some versions of OpenSSL */
-int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 
 int ASN1_STRING_length(ASN1_STRING *);
 int ASN1_STRING_set_default_mask_asc(char *);
