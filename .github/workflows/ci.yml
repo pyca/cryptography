@@ -320,7 +320,9 @@ jobs:
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
       - name: Tests
-        run: cargo test --manifest-path=src/rust/Cargo.toml --no-default-features
+        run: |
+            cd src/rust
+            cargo test --no-default-features
         env:
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
