@@ -243,6 +243,16 @@ class IPAddress(GeneralName):
     def value(self) -> _IPADDRESS_TYPES:
         return self._value
 
+    def _packed(self) -> bytes:
+        if isinstance(
+            self.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        ):
+            return self.value.packed
+        else:
+            return (
+                self.value.network_address.packed + self.value.netmask.packed
+            )
+
     def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)
 

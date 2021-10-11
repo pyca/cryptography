@@ -1051,6 +1051,10 @@ fn encode_certificate_extension<'p>(
         let bytes = py_uint_to_big_endian_bytes(py, intval)?;
         let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID || oid == *SUBJECT_ALTERNATIVE_NAME_OID {
+        let gns = encode_general_names(py, ext)?;
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *OCSP_NO_CHECK_OID {
         let result = asn1::write_single(&());
         Ok(pyo3::types::PyBytes::new(py, &result))
@@ -1091,6 +1095,63 @@ fn encode_certificate_extension<'p>(
         Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
             "Extension not supported: {}",
             oid
+        )))
+    }
+}
+
+fn encode_general_names<'a>(
+    py: pyo3::Python<'a>,
+    ext: &'a pyo3::PyAny,
+) -> Result<Vec<x509::GeneralName<'a>>, PyAsn1Error> {
+    let mut gns = vec![];
+    for el in ext.getattr("value")?.iter()? {
+        let gn = encode_general_name(py, el?)?;
+        gns.push(gn)
+    }
+    Ok(gns)
+}
+
+fn encode_general_name<'a>(
+    py: pyo3::Python<'a>,
+    gn: &'a pyo3::PyAny,
+) -> Result<x509::GeneralName<'a>, PyAsn1Error> {
+    let gn_module = py.import("cryptography.x509.general_name")?;
+    let dns_name = gn_module.getattr("DNSName")?;
+    let rfc822_name = gn_module.getattr("RFC822Name")?;
+    let directory_name = gn_module.getattr("DirectoryName")?;
+    let other_name = gn_module.getattr("OtherName")?;
+    let uri = gn_module.getattr("UniformResourceIdentifier")?;
+    let ip_address = gn_module.getattr("IPAddress")?;
+    let registered_id = gn_module.getattr("RegisteredID")?;
+    let gn_type = gn.get_type().as_ref();
+    let gn_value = gn.getattr("value")?;
+    if gn_type == dns_name {
+        Ok(x509::GeneralName::DNSName(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+    } else if gn_type == rfc822_name {
+        Ok(x509::GeneralName::RFC822Name(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+    } else if gn_type == directory_name {
+        let name = x509::encode_name(py, gn_value)?;
+        Ok(x509::GeneralName::DirectoryName(name))
+    } else if gn_type == other_name {
+        Ok(x509::GeneralName::OtherName(x509::OtherName {
+            type_id: asn1::ObjectIdentifier::from_string(
+                gn.getattr("type_id")?.getattr("dotted_string")?.extract::<&str>()?
+            ).unwrap(),
+            value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
+        }))
+    } else if gn_type == uri {
+        Ok(x509::GeneralName::UniformResourceIdentifier(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+    } else if gn_type == ip_address {
+        Ok(x509::GeneralName::IPAddress(gn.getattr("_packed")?.call0()?.extract::<&[u8]>()?))
+    } else if gn_type == registered_id {
+        let oid = asn1::ObjectIdentifier::from_string(
+            gn_value.getattr("dotted_string")?.extract::<&str>()?,
+        )
+        .unwrap();
+        Ok(x509::GeneralName::RegisteredID(oid))
+    } else {
+        Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Unsupported GeneralName type"
         )))
     }
 }

@@ -405,8 +405,6 @@ def _encode_general_subtree(backend, subtrees):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,

@@ -4100,7 +4100,8 @@ class TestCertificateSigningRequestBuilder(object):
                     [
                         x509.OtherName(
                             type_id=x509.ObjectIdentifier("1.2.3.3.3.3"),
-                            value=b"\x01\x02\x01\x05",
+                            # Invalid length
+                            value=b"\x01\x05\x01\x05",
                         ),
                     ]
                 ),
