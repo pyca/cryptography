@@ -50,20 +50,6 @@ def _encode_asn1_str(backend, data):
     return s
 
 
-def _encode_asn1_utf8_str(backend, string):
-    """
-    Create an ASN1_UTF8STRING from a Python unicode string.
-    This object will be an ASN1_STRING with UTF8 type in OpenSSL and
-    can be decoded with ASN1_STRING_to_UTF8.
-    """
-    s = backend._lib.ASN1_UTF8STRING_new()
-    res = backend._lib.ASN1_STRING_set(
-        s, string.encode("utf8"), len(string.encode("utf8"))
-    )
-    backend.openssl_assert(res == 1)
-    return s
-
-
 def _encode_asn1_str_gc(backend, data):
     s = _encode_asn1_str(backend, data)
     s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
