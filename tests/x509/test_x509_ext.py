@@ -756,6 +756,40 @@ class TestCertificatePoliciesExtension(object):
             ]
         )
 
+    def test_non_ascii_qualifier(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+            .public_key(subject_private_key.public_key())
+            .serial_number(123)
+            .add_extension(
+                x509.CertificatePolicies(
+                    [
+                        x509.PolicyInformation(
+                            x509.ObjectIdentifier("1.2.3"), "🤓"
+                        )
+                    ]
+                ),
+                critical=False,
+            )
+        )
+
+        with pytest.raises(ValueError, match="Qualifier"):
+            builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
 
 class TestKeyUsage(object):
     def test_key_agreement_false_encipher_decipher_true(self):

@@ -960,12 +960,17 @@ fn encode_certificate_extension<'p>(
                 for py_qualifier in py_policy_qualifiers.iter()? {
                     let py_qualifier = py_qualifier?;
                     let qualifier = if py_qualifier.is_instance::<pyo3::types::PyString>()? {
+                        let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
+                            Some(s) => s,
+                            None => {
+                                return Err(pyo3::exceptions::PyValueError::new_err(
+                                    "Qualifier must be an ASCII-string.",
+                                ))
+                            }
+                        };
                         PolicyQualifierInfo {
                             policy_qualifier_id: (*CP_CPS_URI_OID).clone(),
-                            // TODO: I think this unwrap is genuinely reachable.
-                            qualifier: Qualifier::CpsUri(
-                                asn1::IA5String::new(py_qualifier.extract()?).unwrap(),
-                            ),
+                            qualifier: Qualifier::CpsUri(cps_uri),
                         }
                     } else {
                         let py_notice = py_qualifier.getattr("notice_reference")?;
