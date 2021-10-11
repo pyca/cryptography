@@ -266,6 +266,7 @@ jobs:
       - name: Tests
         run: |
             tox -r --  --color=yes --wycheproof-root=wycheproof
+            cargo test --manifest-path=src/rust/Cargo.toml --no-default-features
         env:
           TOXENV: py39
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}

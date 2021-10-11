@@ -377,6 +377,10 @@ pub(crate) enum Asn1ReadableOrWritable<'a, T: asn1::Asn1Readable<'a>, U: asn1::A
 }
 
 impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> Asn1ReadableOrWritable<'a, T, U> {
+    pub(crate) fn new_read(v: T) -> Self {
+        Asn1ReadableOrWritable::Read(v, PhantomData)
+    }
+
     pub(crate) fn new_write(v: U) -> Self {
         Asn1ReadableOrWritable::Write(v, PhantomData)
     }
@@ -404,10 +408,7 @@ impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Readabl
     }
 
     fn parse(parser: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
-        Ok(Asn1ReadableOrWritable::Read(
-            parser.read_element()?,
-            PhantomData,
-        ))
+        Ok(Self::new_read(parser.read_element()?))
     }
 }
 
@@ -416,5 +417,22 @@ impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Writabl
 {
     fn write(&self, w: &mut asn1::Writer<'_>) {
         U::write(self.unwrap_write(), w)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Asn1ReadableOrWritable;
+
+    #[test]
+    #[should_panic]
+    fn test_asn1_readable_or_writable_unwrap_read() {
+        Asn1ReadableOrWritable::<u32, u32>::new_write(17).unwrap_read();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_asn1_readable_or_writable_unwrap_write() {
+        Asn1ReadableOrWritable::<u32, u32>::new_read(17).unwrap_write();
     }
 }
