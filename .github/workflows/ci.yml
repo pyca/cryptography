@@ -271,12 +271,14 @@ jobs:
           TOXENV: py39
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Zinstrument-coverage"
-          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%p-%m.profraw"
       - name: Process coverage data
         run: |
             cd src/rust/
             cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o rust-cov.profdata
-            cargo cov -- export ../../.tox/py39/lib/python3.9/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+            cargo cov -- export \
+              -object ../../.tox/py39/lib/python3.9/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+              -object $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
