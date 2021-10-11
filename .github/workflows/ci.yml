@@ -325,7 +325,7 @@ jobs:
             cargo test --no-default-features
         env:
           RUSTFLAGS: "-Zinstrument-coverage"
-          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%m-%p.profraw"
       - name: Process coverage data
         run: |
             cd src/rust/
