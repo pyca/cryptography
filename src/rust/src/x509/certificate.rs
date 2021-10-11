@@ -370,16 +370,17 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
     })
 }
 
+// Needed due to clippy type complexity warning.
+type SequenceOfPolicyQualifiers<'a> = x509::Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
+    asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
+>;
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct PolicyInformation<'a> {
     policy_identifier: asn1::ObjectIdentifier<'a>,
-    policy_qualifiers: Option<
-        x509::Asn1ReadableOrWritable<
-            'a,
-            asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
-            asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
-        >,
-    >,
+    policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
