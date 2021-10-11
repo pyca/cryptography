@@ -288,6 +288,61 @@ jobs:
         with:
           name: "Rust Coverage"
 
+  linux-cargo-coverage:
+    runs-on: ubuntu-latest
+    name: "Cargo Coverage"
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v2.1.6
+        id: cargo-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src/rust/target/
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-rust-nightly-cargo-coverage
+
+      - uses: actions-rs/toolchain@v1.0.7
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          default: true
+          components: llvm-tools-preview
+      - uses: actions-rs/install@v0.1.2
+        with:
+          crate: cargo-binutils
+          version: latest
+        if: steps.cargo-cache.outputs.cache-hit != 'true'
+
+      - name: Tests
+        run: |
+            cd src/rust
+            cargo test --no-default-features
+        env:
+          RUSTFLAGS: "-Zinstrument-coverage"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%m-%p.profraw"
+      - name: Process coverage data
+        run: |
+            cd src/rust/
+            cargo profdata -- merge -sparse rust-cov/*.profraw -o rust-cov.profdata
+            cargo cov -- export \
+              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
+              -instr-profile=rust-cov.profdata \
+              --ignore-filename-regex='/.cargo/registry' \
+              --ignore-filename-regex='/rustc/' \
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
+
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
+
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Cargo Coverage"
 
   macos:
     runs-on: macos-latest

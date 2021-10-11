@@ -370,39 +370,50 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
     })
 }
 
-#[derive(asn1::Asn1Read)]
+// Needed due to clippy type complexity warning.
+type SequenceOfPolicyQualifiers<'a> = x509::Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
+    asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
+>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct PolicyInformation<'a> {
     policy_identifier: asn1::ObjectIdentifier<'a>,
-    policy_qualifiers: Option<asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>>,
+    policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct PolicyQualifierInfo<'a> {
     policy_qualifier_id: asn1::ObjectIdentifier<'a>,
     qualifier: Qualifier<'a>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 enum Qualifier<'a> {
     CpsUri(asn1::IA5String<'a>),
     UserNotice(UserNotice<'a>),
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct UserNotice<'a> {
     notice_ref: Option<NoticeReference<'a>>,
     explicit_text: Option<DisplayText<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct NoticeReference<'a> {
     organization: DisplayText<'a>,
-    notice_numbers: asn1::SequenceOf<'a, asn1::BigUint<'a>>,
+    notice_numbers: x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SequenceOf<'a, asn1::BigUint<'a>>,
+        asn1::SequenceOfWriter<'a, asn1::BigUint<'a>, Vec<asn1::BigUint<'a>>>,
+    >,
 }
 
 // DisplayText also allows BMPString, which we currently do not support.
 #[allow(clippy::enum_variant_names)]
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
@@ -430,7 +441,7 @@ fn parse_user_notice(
         Some(data) => {
             let org = parse_display_text(py, data.organization);
             let numbers = pyo3::types::PyList::empty(py);
-            for num in data.notice_numbers {
+            for num in data.notice_numbers.unwrap_read().clone() {
                 numbers.append(big_asn1_uint_to_py(py, num)?.to_object(py))?;
             }
             x509_module
@@ -446,10 +457,10 @@ fn parse_user_notice(
 
 fn parse_policy_qualifiers<'a>(
     py: pyo3::Python<'_>,
-    policy_qualifiers: asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
+    policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let py_pq = pyo3::types::PyList::empty(py);
-    for pqi in policy_qualifiers {
+    for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
             Qualifier::CpsUri(data) => {
                 if pqi.policy_qualifier_id == *CP_CPS_URI_OID {
@@ -486,7 +497,9 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
             )?
             .to_object(py);
         let py_pqis = match policyinfo.policy_qualifiers {
-            Some(policy_qualifiers) => parse_policy_qualifiers(py, policy_qualifiers)?,
+            Some(policy_qualifiers) => {
+                parse_policy_qualifiers(py, policy_qualifiers.unwrap_read())?
+            }
             None => py.None(),
         };
         let pi = x509_module
@@ -936,6 +949,86 @@ fn encode_certificate_extension<'p>(
             oids.push(oid);
         }
         let result = asn1::write_single(&asn1::SequenceOfWriter::new(oids));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *CERTIFICATE_POLICIES_OID {
+        let mut policy_informations = vec![];
+        for py_policy_info in ext.getattr("value")?.iter()? {
+            let py_policy_info = py_policy_info?;
+            let py_policy_qualifiers = py_policy_info.getattr("policy_qualifiers")?;
+            let qualifiers = if py_policy_qualifiers.is_true()? {
+                let mut qualifiers = vec![];
+                for py_qualifier in py_policy_qualifiers.iter()? {
+                    let py_qualifier = py_qualifier?;
+                    let qualifier = if py_qualifier.is_instance::<pyo3::types::PyString>()? {
+                        let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
+                            Some(s) => s,
+                            None => {
+                                return Err(pyo3::exceptions::PyValueError::new_err(
+                                    "Qualifier must be an ASCII-string.",
+                                ))
+                            }
+                        };
+                        PolicyQualifierInfo {
+                            policy_qualifier_id: (*CP_CPS_URI_OID).clone(),
+                            qualifier: Qualifier::CpsUri(cps_uri),
+                        }
+                    } else {
+                        let py_notice = py_qualifier.getattr("notice_reference")?;
+                        let notice_ref = if py_notice.is_true()? {
+                            let mut notice_numbers = vec![];
+                            for py_num in py_notice.getattr("notice_numbers")?.iter()? {
+                                let bytes = py_uint_to_big_endian_bytes(py, py_num?.downcast()?)?;
+                                notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
+                            }
+
+                            Some(NoticeReference {
+                                organization: DisplayText::Utf8String(asn1::Utf8String::new(
+                                    py_notice.getattr("organization")?.extract()?,
+                                )),
+                                notice_numbers: x509::Asn1ReadableOrWritable::new_write(
+                                    asn1::SequenceOfWriter::new(notice_numbers),
+                                ),
+                            })
+                        } else {
+                            None
+                        };
+                        let py_explicit_text = py_qualifier.getattr("explicit_text")?;
+                        let explicit_text = if py_explicit_text.is_true()? {
+                            Some(DisplayText::Utf8String(asn1::Utf8String::new(
+                                py_explicit_text.extract()?,
+                            )))
+                        } else {
+                            None
+                        };
+
+                        PolicyQualifierInfo {
+                            policy_qualifier_id: (*CP_USER_NOTICE_OID).clone(),
+                            qualifier: Qualifier::UserNotice(UserNotice {
+                                notice_ref,
+                                explicit_text,
+                            }),
+                        }
+                    };
+                    qualifiers.push(qualifier);
+                }
+                Some(x509::Asn1ReadableOrWritable::new_write(
+                    asn1::SequenceOfWriter::new(qualifiers),
+                ))
+            } else {
+                None
+            };
+            policy_informations.push(PolicyInformation {
+                policy_identifier: asn1::ObjectIdentifier::from_string(
+                    py_policy_info
+                        .getattr("policy_identifier")?
+                        .getattr("dotted_string")?
+                        .extract()?,
+                )
+                .unwrap(),
+                policy_qualifiers: qualifiers,
+            });
+        }
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(policy_informations));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *POLICY_CONSTRAINTS_OID {
         let pc = PolicyConstraints {

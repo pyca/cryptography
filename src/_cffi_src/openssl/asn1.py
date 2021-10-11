@@ -82,7 +82,6 @@ int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
 
-ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
 ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
