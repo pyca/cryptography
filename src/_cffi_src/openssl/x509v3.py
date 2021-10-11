@@ -15,17 +15,11 @@ INCLUDES = """
  */
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
-typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
-typedef STACK_OF(POLICYINFO) Cryptography_STACK_OF_POLICYINFO;
-typedef STACK_OF(ASN1_INTEGER) Cryptography_STACK_OF_ASN1_INTEGER;
 typedef STACK_OF(GENERAL_SUBTREE) Cryptography_STACK_OF_GENERAL_SUBTREE;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
-typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
-typedef ... Cryptography_STACK_OF_POLICYINFO;
-typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
 typedef ... EXTENDED_KEY_USAGE;
 typedef ... CONF;
@@ -35,8 +29,6 @@ typedef struct {
     X509 *subject_cert;
     ...;
 } X509V3_CTX;
-
-typedef void * (*X509V3_EXT_D2I)(void *, const unsigned char **, long);
 
 static const int GEN_OTHERNAME;
 static const int GEN_EMAIL;
@@ -61,11 +53,6 @@ typedef struct {
     Cryptography_STACK_OF_GENERAL_SUBTREE *permittedSubtrees;
     Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
 } NAME_CONSTRAINTS;
-
-typedef struct {
-    ASN1_INTEGER *requireExplicitPolicy;
-    ASN1_INTEGER *inhibitPolicyMapping;
-} POLICY_CONSTRAINTS;
 
 
 typedef struct {
@@ -140,30 +127,6 @@ typedef struct {
     int onlyattr;
 } ISSUING_DIST_POINT;
 
-typedef struct {
-    ASN1_STRING *organization;
-    Cryptography_STACK_OF_ASN1_INTEGER *noticenos;
-} NOTICEREF;
-
-typedef struct {
-    NOTICEREF *noticeref;
-    ASN1_STRING *exptext;
-} USERNOTICE;
-
-typedef struct {
-    ASN1_OBJECT *pqualid;
-    union {
-        ASN1_IA5STRING *cpsuri;
-        USERNOTICE *usernotice;
-        ASN1_TYPE *other;
-    } d;
-} POLICYQUALINFO;
-
-typedef struct {
-    ASN1_OBJECT *policyid;
-    Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
-} POLICYINFO;
-
 typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
 typedef void (*sk_DIST_POINT_freefunc)(DIST_POINT *);
 typedef void (*sk_ACCESS_DESCRIPTION_freefunc)(ACCESS_DESCRIPTION *);
@@ -222,23 +185,6 @@ void sk_DIST_POINT_pop_free(Cryptography_STACK_OF_DIST_POINT *,
                             sk_DIST_POINT_freefunc);
 void CRL_DIST_POINTS_free(Cryptography_STACK_OF_DIST_POINT *);
 
-int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
-POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
-void CERTIFICATEPOLICIES_free(Cryptography_STACK_OF_POLICYINFO *);
-
-void POLICYINFO_free(POLICYINFO *);
-
-void POLICYQUALINFO_free(POLICYQUALINFO *);
-
-void NOTICEREF_free(NOTICEREF *);
-
-void USERNOTICE_free(USERNOTICE *);
-
-void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
-int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
-POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
-                                        int);
-
 Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
 void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
@@ -249,10 +195,6 @@ int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
                             GENERAL_SUBTREE *);
 
 GENERAL_SUBTREE *GENERAL_SUBTREE_new(void);
-
-void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
-int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
-ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 
 X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
 
