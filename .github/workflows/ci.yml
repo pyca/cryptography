@@ -128,6 +128,7 @@ jobs:
           - {IMAGE: "centos8-fips", TOXENV: "py36", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
+          - {IMAGE: "bookworm", TOXENV: "py39"}
           - {IMAGE: "sid", TOXENV: "py39"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
