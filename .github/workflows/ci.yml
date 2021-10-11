@@ -331,7 +331,7 @@ jobs:
             cd src/rust/
             cargo profdata -- merge -sparse rust-cov/*.profraw -o rust-cov.profdata
             cargo cov -- export
-              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
+              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
