@@ -8,11 +8,6 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... ECDSA_SIG;
-
-typedef ... CRYPTO_EX_new;
-typedef ... CRYPTO_EX_dup;
-typedef ... CRYPTO_EX_free;
 """
 
 FUNCTIONS = """
