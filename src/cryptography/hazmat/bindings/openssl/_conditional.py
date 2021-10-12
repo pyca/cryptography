@@ -259,6 +259,15 @@ def cryptography_has_300_fips():
     ]
 
 
+def cryptography_has_ssl_cookie():
+    return [
+        "SSL_OP_COOKIE_EXCHANGE",
+        "DTLSv1_listen",
+        "SSL_CTX_set_cookie_generate_cb",
+        "SSL_CTX_set_cookie_verify_cb",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -311,4 +320,5 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
     "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
+    "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
 }
