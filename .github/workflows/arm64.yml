@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: "Delete workspace" # self-hosted runners need this, sigh
         run: find ! -name '.' ! -name '..' -delete
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.6
@@ -41,7 +41,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
