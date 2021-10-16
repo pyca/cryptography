@@ -33,12 +33,56 @@ pub(crate) fn find_in_pem(
         .ok_or_else(|| PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(no_match_err)))
 }
 
-pub(crate) type Name<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>;
+pub(crate) type Name<'a> = Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, asn1::SetOf<'a, AttributeTypeValue<'a>>>,
+    asn1::SequenceOfWriter<
+        'a,
+        asn1::SetOfWriter<'a, AttributeTypeValue<'a>, Vec<AttributeTypeValue<'a>>>,
+        Vec<asn1::SetOfWriter<'a, AttributeTypeValue<'a>, Vec<AttributeTypeValue<'a>>>>,
+    >,
+>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct AttributeTypeValue<'a> {
     pub(crate) type_id: asn1::ObjectIdentifier<'a>,
-    pub(crate) value: asn1::Tlv<'a>,
+    pub(crate) value: RawTlv<'a>,
+}
+
+// Like `asn1::Tlv` but doesn't store `full_data` so it can be constucted from
+// an un-encoded tag and value.
+#[derive(Hash, PartialEq)]
+pub(crate) struct RawTlv<'a> {
+    tag: u8,
+    value: &'a [u8],
+}
+
+impl<'a> RawTlv<'a> {
+    fn new(tag: u8, value: &'a [u8]) -> Self {
+        RawTlv { tag, value }
+    }
+
+    pub(crate) fn tag(&self) -> u8 {
+        self.tag
+    }
+    pub(crate) fn data(&self) -> &'a [u8] {
+        self.value
+    }
+}
+impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
+    fn parse(parser: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
+        let tlv = parser.read_element::<asn1::Tlv<'a>>()?;
+        Ok(RawTlv::new(tlv.tag(), tlv.data()))
+    }
+
+    fn can_parse(_tag: u8) -> bool {
+        true
+    }
+}
+impl<'a> asn1::Asn1Writable<'a> for RawTlv<'a> {
+    fn write(&self, w: &mut asn1::Writer<'_>) {
+        w.write_tlv(self.tag, move |dest| dest.extend_from_slice(self.value))
+    }
 }
 
 pub(crate) struct UnvalidatedIA5String<'a>(&'a str);
@@ -129,7 +173,7 @@ pub(crate) fn parse_name<'p>(
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
-    for rdn in name.clone() {
+    for rdn in name.unwrap_read().clone() {
         let py_rdn = parse_rdn(py, rdn)?;
         py_rdns.append(py_rdn)?;
     }
@@ -378,6 +422,7 @@ pub(crate) fn py_to_chrono(val: &pyo3::PyAny) -> pyo3::PyResult<chrono::DateTime
         ))
 }
 
+#[derive(Hash, PartialEq)]
 pub(crate) enum Asn1ReadableOrWritable<'a, T, U> {
     Read(T, PhantomData<&'a ()>),
     Write(U, PhantomData<&'a ()>),
@@ -424,7 +469,8 @@ impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
 
 #[cfg(test)]
 mod tests {
-    use super::Asn1ReadableOrWritable;
+    use super::{Asn1ReadableOrWritable, RawTlv};
+    use asn1::Asn1Readable;
 
     #[test]
     #[should_panic]
@@ -436,5 +482,10 @@ mod tests {
     fn test_asn1_readable_or_writable_write_read_data() {
         let v = Asn1ReadableOrWritable::<u32, u32>::new_read(17);
         assert_eq!(&asn1::write_single(&v), b"\x02\x01\x11");
+    }
+
+    #[test]
+    fn test_raw_tlv_can_parse() {
+        assert!(RawTlv::can_parse(123));
     }
 }
