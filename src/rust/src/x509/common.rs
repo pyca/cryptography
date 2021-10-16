@@ -371,12 +371,12 @@ pub(crate) fn py_to_chrono(val: &pyo3::PyAny) -> pyo3::PyResult<chrono::DateTime
         ))
 }
 
-pub(crate) enum Asn1ReadableOrWritable<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> {
+pub(crate) enum Asn1ReadableOrWritable<'a, T, U> {
     Read(T, PhantomData<&'a ()>),
     Write(U, PhantomData<&'a ()>),
 }
 
-impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> Asn1ReadableOrWritable<'a, T, U> {
+impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
     pub(crate) fn new_read(v: T) -> Self {
         Asn1ReadableOrWritable::Read(v, PhantomData)
     }
@@ -391,18 +391,9 @@ impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> Asn1ReadableOrWri
             Asn1ReadableOrWritable::Write(_, _) => panic!("unwrap_read called on a Write value"),
         }
     }
-
-    pub(crate) fn unwrap_write(&self) -> &U {
-        match self {
-            Asn1ReadableOrWritable::Write(v, _) => v,
-            Asn1ReadableOrWritable::Read(_, _) => panic!("unwrap_write called on a Read value"),
-        }
-    }
 }
 
-impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Readable<'a>
-    for Asn1ReadableOrWritable<'a, T, U>
-{
+impl<'a, T: asn1::Asn1Readable<'a>, U> asn1::Asn1Readable<'a> for Asn1ReadableOrWritable<'a, T, U> {
     fn can_parse(tag: u8) -> bool {
         T::can_parse(tag)
     }
@@ -412,11 +403,15 @@ impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Readabl
     }
 }
 
-impl<'a, T: asn1::Asn1Readable<'a>, U: asn1::Asn1Writable<'a>> asn1::Asn1Writable<'a>
-    for Asn1ReadableOrWritable<'a, T, U>
+impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
+    asn1::SimpleAsn1Writable<'a> for Asn1ReadableOrWritable<'a, T, U>
 {
-    fn write(&self, w: &mut asn1::Writer<'_>) {
-        U::write(self.unwrap_write(), w)
+    const TAG: u8 = U::TAG;
+    fn write_data(&self, w: &mut Vec<u8>) {
+        match self {
+            Asn1ReadableOrWritable::Read(v, _) => T::write_data(v, w),
+            Asn1ReadableOrWritable::Write(v, _) => U::write_data(v, w),
+        }
     }
 }
 
@@ -431,8 +426,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn test_asn1_readable_or_writable_unwrap_write() {
-        Asn1ReadableOrWritable::<u32, u32>::new_read(17).unwrap_write();
+    fn test_asn1_readable_or_writable_write_read_data() {
+        let v = Asn1ReadableOrWritable::<u32, u32>::new_read(17);
+        assert_eq!(&asn1::write_single(&v), b"\x02\x01\x11");
     }
 }
