@@ -22,8 +22,8 @@ operating systems.
 * x86-64 Ubuntu 18.04, 20.04
 * AArch64 Ubuntu 20.04
 * x86-64 Ubuntu rolling
-* x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), and Sid
-  (unstable)
+* x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), Bookworm (12.x)
+  and Sid (unstable)
 * x86-64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2019
 
