@@ -52,10 +52,17 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     }
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+pub(crate) struct OtherName<'a> {
+    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
+    #[explicit(0, required)]
+    pub(crate) value: asn1::Tlv<'a>,
+}
+
 #[derive(asn1::Asn1Read)]
 pub(crate) enum GeneralName<'a> {
     #[implicit(0)]
-    OtherName(AttributeTypeValue<'a>),
+    OtherName(OtherName<'a>),
 
     #[implicit(1)]
     RFC822Name(UnvalidatedIA5String<'a>),
@@ -174,7 +181,7 @@ pub(crate) fn parse_general_name(
                 .call_method1("ObjectIdentifier", (data.type_id.to_string(),))?
                 .to_object(py);
             x509_module
-                .call_method1("OtherName", (oid, data.value.data()))?
+                .call_method1("OtherName", (oid, data.value.full_data()))?
                 .to_object(py)
         }
         GeneralName::RFC822Name(data) => x509_module
