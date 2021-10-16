@@ -175,7 +175,7 @@ struct Validity<'a> {
 
 fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
     let mut tags = vec![];
-    for rdn in rdns {
+    for rdn in rdns.unwrap_read().clone() {
         let mut attributes = rdn.collect::<Vec<_>>();
         assert_eq!(attributes.len(), 1);
 
