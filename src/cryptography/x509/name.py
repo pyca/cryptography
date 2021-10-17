@@ -265,7 +265,7 @@ class Name(object):
         return self._attributes
 
     def public_bytes(
-        self, backend: typing.Optional[typing.Any] = None
+        self, backend: typing.Any = None
     ) -> bytes:
         return rust_x509.encode_name_bytes(self)
 
