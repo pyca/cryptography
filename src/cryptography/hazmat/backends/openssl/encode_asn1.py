@@ -11,7 +11,7 @@ from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _DISTPOINT_TYPE_RELATIVENAME,
 )
 from cryptography.x509.name import _ASN1Type
-from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID
+from cryptography.x509.oid import ExtensionOID
 
 
 def _encode_asn1_int(backend, x):
@@ -211,14 +211,6 @@ def _encode_general_names(backend, names):
     return general_names
 
 
-def _encode_alt_name(backend, san):
-    general_names = _encode_general_names(backend, san)
-    general_names = backend._ffi.gc(
-        general_names, backend._lib.GENERAL_NAMES_free
-    )
-    return general_names
-
-
 def _encode_general_name(backend, name):
     gn = backend._lib.GENERAL_NAME_new()
     _encode_general_name_preallocated(backend, name, gn)
@@ -380,13 +372,8 @@ _EXTENSION_ENCODE_HANDLERS = {
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
-}
-
-_CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
 }

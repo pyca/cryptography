@@ -640,6 +640,10 @@ fn encode_crl_extension<'p>(
         let bytes = py_uint_to_big_endian_bytes(py, intval)?;
         let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
+        let gns = x509::common::encode_general_names(py, ext)?;
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else {
         Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
             "Extension not supported: {}",
@@ -667,6 +671,10 @@ fn encode_crl_entry_extension<'p>(
             .get_item(ext.getattr("value")?.getattr("reason")?)?
             .extract::<u32>()?;
         let result = asn1::write_single(&asn1::Enumerated::new(value));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *CERTIFICATE_ISSUER_OID {
+        let gns = x509::common::encode_general_names(py, ext)?;
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *INVALIDITY_DATE_OID {
         let chrono_dt = x509::py_to_chrono(ext.getattr("value")?.getattr("invalidity_date")?)?;

@@ -206,6 +206,67 @@ pub(crate) enum GeneralName<'a> {
     RegisteredID(asn1::ObjectIdentifier<'a>),
 }
 
+pub(crate) fn encode_general_names<'a>(
+    py: pyo3::Python<'a>,
+    ext: &'a pyo3::PyAny,
+) -> Result<Vec<GeneralName<'a>>, PyAsn1Error> {
+    let mut gns = vec![];
+    for el in ext.getattr("value")?.iter()? {
+        let gn = encode_general_name(py, el?)?;
+        gns.push(gn)
+    }
+    Ok(gns)
+}
+
+fn encode_general_name<'a>(
+    py: pyo3::Python<'a>,
+    gn: &'a pyo3::PyAny,
+) -> Result<GeneralName<'a>, PyAsn1Error> {
+    let gn_module = py.import("cryptography.x509.general_name")?;
+    let gn_type = gn.get_type().as_ref();
+    let gn_value = gn.getattr("value")?;
+    if gn_type == gn_module.getattr("DNSName")? {
+        Ok(GeneralName::DNSName(UnvalidatedIA5String(
+            gn_value.extract::<&str>()?,
+        )))
+    } else if gn_type == gn_module.getattr("RFC822Name")? {
+        Ok(GeneralName::RFC822Name(UnvalidatedIA5String(
+            gn_value.extract::<&str>()?,
+        )))
+    } else if gn_type == gn_module.getattr("DirectoryName")? {
+        let name = encode_name(py, gn_value)?;
+        Ok(GeneralName::DirectoryName(name))
+    } else if gn_type == gn_module.getattr("OtherName")? {
+        Ok(GeneralName::OtherName(OtherName {
+            type_id: asn1::ObjectIdentifier::from_string(
+                gn.getattr("type_id")?
+                    .getattr("dotted_string")?
+                    .extract::<&str>()?,
+            )
+            .unwrap(),
+            value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
+        }))
+    } else if gn_type == gn_module.getattr("UniformResourceIdentifier")? {
+        Ok(GeneralName::UniformResourceIdentifier(
+            UnvalidatedIA5String(gn_value.extract::<&str>()?),
+        ))
+    } else if gn_type == gn_module.getattr("IPAddress")? {
+        Ok(GeneralName::IPAddress(
+            gn.call_method0("_packed")?.extract::<&[u8]>()?,
+        ))
+    } else if gn_type == gn_module.getattr("RegisteredID")? {
+        let oid = asn1::ObjectIdentifier::from_string(
+            gn_value.getattr("dotted_string")?.extract::<&str>()?,
+        )
+        .unwrap();
+        Ok(GeneralName::RegisteredID(oid))
+    } else {
+        Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Unsupported GeneralName type",
+        )))
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) enum Time {
     UtcTime(asn1::UtcTime),
