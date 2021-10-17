@@ -532,10 +532,10 @@ struct GeneralSubtree<'a> {
 
     #[implicit(0)]
     #[default(0u64)]
-    _minimum: u64,
+    minimum: u64,
 
     #[implicit(1)]
-    _maximum: Option<u64>,
+    maximum: Option<u64>,
 }
 
 fn encode_general_subtrees<'a>(
@@ -550,8 +550,8 @@ fn encode_general_subtrees<'a>(
             let gn = x509::common::encode_general_name(py, name?)?;
             subtree_seq.push(GeneralSubtree {
                 base: gn,
-                _minimum: 0,
-                _maximum: None,
+                minimum: 0,
+                maximum: None,
             });
         }
         Ok(Some(x509::Asn1ReadableOrWritable::new_write(
