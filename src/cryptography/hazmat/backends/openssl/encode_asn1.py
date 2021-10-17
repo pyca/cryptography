@@ -264,7 +264,8 @@ def _encode_general_name_preallocated(backend, name, gn):
         ipaddr = _encode_asn1_str(backend, packed)
         gn.type = backend._lib.GEN_IPADD
         gn.d.iPAddress = ipaddr
-    elif isinstance(name, x509.UniformResourceIdentifier):
+    else:
+        assert isinstance(name, x509.UniformResourceIdentifier)
         backend.openssl_assert(gn != backend._ffi.NULL)
         # ia5strings are supposed to be ITU T.50 but to allow round-tripping
         # of broken certs that encode utf8 we'll encode utf8 here too.
@@ -272,8 +273,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         asn1_str = _encode_asn1_str(backend, data)
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
-    else:
-        raise ValueError("{} is an unknown GeneralName type".format(name))
 
 
 _CRLREASONFLAGS = {
