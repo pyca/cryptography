@@ -218,7 +218,7 @@ pub(crate) fn encode_general_names<'a>(
     Ok(gns)
 }
 
-fn encode_general_name<'a>(
+pub(crate) fn encode_general_name<'a>(
     py: pyo3::Python<'a>,
     gn: &'a pyo3::PyAny,
 ) -> Result<GeneralName<'a>, PyAsn1Error> {

@@ -510,16 +510,23 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
     Ok(certificate_policies.to_object(py))
 }
 
-#[derive(asn1::Asn1Read)]
+// Needed due to clippy type complexity warning.
+type SequenceOfSubtrees<'a> = x509::Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, GeneralSubtree<'a>>,
+    asn1::SequenceOfWriter<'a, GeneralSubtree<'a>, Vec<GeneralSubtree<'a>>>,
+>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct NameConstraints<'a> {
     #[implicit(0)]
-    permitted_subtrees: Option<asn1::SequenceOf<'a, GeneralSubtree<'a>>>,
+    permitted_subtrees: Option<SequenceOfSubtrees<'a>>,
 
     #[implicit(1)]
-    excluded_subtrees: Option<asn1::SequenceOf<'a, GeneralSubtree<'a>>>,
+    excluded_subtrees: Option<SequenceOfSubtrees<'a>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct GeneralSubtree<'a> {
     base: x509::GeneralName<'a>,
 
@@ -531,12 +538,34 @@ struct GeneralSubtree<'a> {
     _maximum: Option<u64>,
 }
 
+fn encode_general_subtrees<'a>(
+    py: pyo3::Python<'a>,
+    subtrees: &'a pyo3::PyAny,
+) -> Result<Option<SequenceOfSubtrees<'a>>, PyAsn1Error> {
+    if subtrees.is_none() {
+        Ok(None)
+    } else {
+        let mut subtree_seq = vec![];
+        for name in subtrees.iter()? {
+            let gn = x509::common::encode_general_name(py, name?)?;
+            subtree_seq.push(GeneralSubtree {
+                base: gn,
+                _minimum: 0,
+                _maximum: None,
+            });
+        }
+        Ok(Some(x509::Asn1ReadableOrWritable::new_write(
+            asn1::SequenceOfWriter::new(subtree_seq),
+        )))
+    }
+}
+
 fn parse_general_subtrees<'a>(
     py: pyo3::Python<'_>,
-    subtrees: asn1::SequenceOf<'a, GeneralSubtree<'a>>,
+    subtrees: SequenceOfSubtrees<'a>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let gns = pyo3::types::PyList::empty(py);
-    for gs in subtrees {
+    for gs in subtrees.unwrap_read().clone() {
         gns.append(x509::parse_general_name(py, gs.base)?)?;
     }
     Ok(gns.to_object(py))
@@ -1042,6 +1071,16 @@ fn encode_certificate_extension<'p>(
                 .extract()?,
         };
         let result = asn1::write_single(&pc);
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *NAME_CONSTRAINTS_OID {
+        let py_nc = ext.getattr("value")?;
+        let permitted = py_nc.getattr("permitted_subtrees")?;
+        let excluded = py_nc.getattr("excluded_subtrees")?;
+        let nc = NameConstraints {
+            permitted_subtrees: encode_general_subtrees(py, permitted)?,
+            excluded_subtrees: encode_general_subtrees(py, excluded)?,
+        };
+        let result = asn1::write_single(&nc);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *INHIBIT_ANY_POLICY_OID {
         let intval = ext
