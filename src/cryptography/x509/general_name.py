@@ -245,6 +245,9 @@ class IPAddress(GeneralName):
 
     # TODO: This needs to support IP networks when we implement NC
     def _packed(self) -> bytes:
+        assert isinstance(
+            self.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        )
         return self.value.packed
 
     def __repr__(self) -> str:

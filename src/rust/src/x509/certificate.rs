@@ -1145,7 +1145,7 @@ fn encode_general_name<'a>(
         ))
     } else if gn_type == gn_module.getattr("IPAddress")? {
         Ok(x509::GeneralName::IPAddress(
-            gn.getattr("_packed")?.call0()?.extract::<&[u8]>()?,
+            gn.call_method0("_packed")?.extract::<&[u8]>()?,
         ))
     } else if gn_type == gn_module.getattr("RegisteredID")? {
         let oid = asn1::ObjectIdentifier::from_string(
