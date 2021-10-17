@@ -96,12 +96,12 @@ def _encode_sk_name_entry(backend, attributes):
 
 
 def _encode_name_entry(backend, attribute):
-    if attribute._type is _ASN1Type.BMPString:
-        value = attribute.value.encode("utf_16_be")
-    elif attribute._type is _ASN1Type.UniversalString:
-        value = attribute.value.encode("utf_32_be")
-    else:
-        value = attribute.value.encode("utf8")
+    # TODO: remove this entire func by completing extension encoding
+    assert attribute._type not in (
+        _ASN1Type.BMPString,
+        _ASN1Type.UniversalString,
+    )
+    value = attribute.value.encode("utf8")
 
     obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
 
