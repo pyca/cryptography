@@ -4621,7 +4621,7 @@ class TestNameAttribute(object):
             "nName)>, value='value')>"
         )
 
-    def test_distinugished_name(self):
+    def test_distinguished_name(self):
         # Escaping
         na = x509.NameAttribute(NameOID.COMMON_NAME, 'James "Jim" Smith, III')
         assert na.rfc4514_string() == r"CN=James \"Jim\" Smith\, III"

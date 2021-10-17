@@ -3,7 +3,7 @@
 // for complete details.
 
 pub(crate) mod certificate;
-mod common;
+pub(crate) mod common;
 pub(crate) mod crl;
 pub(crate) mod csr;
 mod ocsp;

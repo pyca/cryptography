@@ -2240,15 +2240,7 @@ class Backend(BackendInterface):
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x509_name_bytes(self, name: Name) -> bytes:
-        x509_name = _encode_name_gc(self, name)
-        pp = self._ffi.new("unsigned char **")
-        res = self._lib.i2d_X509_NAME(x509_name, pp)
-        self.openssl_assert(pp[0] != self._ffi.NULL)
-        pp = self._ffi.gc(
-            pp, lambda pointer: self._lib.OPENSSL_free(pointer[0])
-        )
-        self.openssl_assert(res > 0)
-        return self._ffi.buffer(pp[0], res)[:]
+        return rust_x509.encode_name_bytes(name)
 
     def x25519_load_public_bytes(self, data):
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can

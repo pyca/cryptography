@@ -85,6 +85,69 @@ impl<'a> asn1::Asn1Writable<'a> for RawTlv<'a> {
     }
 }
 
+pub(crate) fn encode_name<'p>(
+    py: pyo3::Python<'p>,
+    py_name: &'p pyo3::PyAny,
+) -> pyo3::PyResult<Name<'p>> {
+    let mut rdns = vec![];
+
+    for py_rdn in py_name.getattr("rdns")?.iter()? {
+        let py_rdn = py_rdn?;
+        let mut attrs = vec![];
+
+        for py_attr in py_rdn.iter()? {
+            attrs.push(encode_name_entry(py, py_attr?)?);
+        }
+        rdns.push(asn1::SetOfWriter::new(attrs));
+    }
+    Ok(Asn1ReadableOrWritable::new_write(
+        asn1::SequenceOfWriter::new(rdns),
+    ))
+}
+
+pub(crate) fn encode_name_entry<'p>(
+    py: pyo3::Python<'p>,
+    py_name_entry: &'p pyo3::PyAny,
+) -> pyo3::PyResult<AttributeTypeValue<'p>> {
+    let asn1_type = py.import("cryptography.x509.name")?.getattr("_ASN1Type")?;
+
+    let attr_type = py_name_entry.getattr("_type")?;
+    let tag = attr_type.getattr("value")?.extract::<u8>()?;
+    let encoding = if attr_type == asn1_type.getattr("BMPString")? {
+        "utf_16_be"
+    } else if attr_type == asn1_type.getattr("UniversalString")? {
+        "utf_32_be"
+    } else {
+        "utf8"
+    };
+    let value = py_name_entry
+        .getattr("value")?
+        .call_method1("encode", (encoding,))?
+        .extract()?;
+    let oid = asn1::ObjectIdentifier::from_string(
+        py_name_entry
+            .getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+
+    Ok(AttributeTypeValue {
+        type_id: oid,
+        value: RawTlv::new(tag, value),
+    })
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_name_bytes<'p>(
+    py: pyo3::Python<'p>,
+    py_name: &'p pyo3::PyAny,
+) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    let name = encode_name(py, py_name)?;
+    let result = asn1::write_single(&name);
+    Ok(pyo3::types::PyBytes::new(py, &result))
+}
+
 pub(crate) struct UnvalidatedIA5String<'a>(&'a str);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
@@ -488,4 +551,10 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         assert!(RawTlv::can_parse(123));
     }
+}
+
+pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
+
+    Ok(())
 }

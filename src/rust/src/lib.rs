@@ -79,6 +79,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
 
     let x509_mod = pyo3::prelude::PyModule::new(py, "x509")?;
     crate::x509::certificate::add_to_module(x509_mod)?;
+    crate::x509::common::add_to_module(x509_mod)?;
     crate::x509::crl::add_to_module(x509_mod)?;
     crate::x509::csr::add_to_module(x509_mod)?;
     crate::x509::sct::add_to_module(x509_mod)?;
