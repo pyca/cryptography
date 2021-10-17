@@ -821,6 +821,9 @@ class TestCertificateRevocationListBuilder(object):
         ext = crl[1].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
         assert ext.value == invalidity_date
-        assert crl[2].extensions.get_extension_for_class(
-            x509.CertificateIssuer
-        ).value == ci
+        assert (
+            crl[2]
+            .extensions.get_extension_for_class(x509.CertificateIssuer)
+            .value
+            == ci
+        )
