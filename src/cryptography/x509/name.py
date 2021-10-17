@@ -5,8 +5,9 @@
 import typing
 
 from cryptography import utils
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
+from cryptography.hazmat.bindings._rust import (
+    x509 as rust_x509,
+)
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
@@ -263,9 +264,8 @@ class Name(object):
     def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend: typing.Optional[Backend] = None) -> bytes:
-        backend = _get_backend(backend)
-        return backend.x509_name_bytes(self)
+    def public_bytes(self, backend: typing.Optional[typing.Any] = None) -> bytes:
+        return rust_x509.encode_name_bytes(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Name):

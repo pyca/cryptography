@@ -124,7 +124,6 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
 )
 from cryptography.x509 import ocsp
 from cryptography.x509.base import PUBLIC_KEY_TYPES
-from cryptography.x509.name import Name
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -2238,9 +2237,6 @@ class Backend(BackendInterface):
 
     def dh_x942_serialization_supported(self):
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
-
-    def x509_name_bytes(self, name: Name) -> bytes:
-        return rust_x509.encode_name_bytes(name)
 
     def x25519_load_public_bytes(self, data):
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can

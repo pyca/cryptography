@@ -22,7 +22,6 @@ if typing.TYPE_CHECKING:
         RevokedCertificate,
         RevokedCertificateBuilder,
     )
-    from cryptography.x509.name import Name
 
 
 class CipherBackend(metaclass=abc.ABCMeta):
@@ -321,12 +320,6 @@ class X509Backend(metaclass=abc.ABCMeta):
         """
         Create a RevokedCertificate object from a RevokedCertificateBuilder
         object.
-        """
-
-    @abc.abstractmethod
-    def x509_name_bytes(self, name: "Name") -> bytes:
-        """
-        Compute the DER encoded bytes of an X509 Name object.
         """
 
 
