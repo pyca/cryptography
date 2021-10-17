@@ -782,6 +782,14 @@ class TestCertificateRevocationListBuilder(object):
             )
             .build(backend)
         )
+        ci = x509.CertificateIssuer([x509.DNSName("cryptography.io")])
+        revoked_cert2 = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(40)
+            .revocation_date(datetime.datetime(2011, 1, 1, 1, 1))
+            .add_extension(ci, False)
+            .build(backend)
+        )
         builder = (
             x509.CertificateRevocationListBuilder()
             .issuer_name(
@@ -797,10 +805,11 @@ class TestCertificateRevocationListBuilder(object):
             .next_update(next_update)
             .add_revoked_certificate(revoked_cert0)
             .add_revoked_certificate(revoked_cert1)
+            .add_revoked_certificate(revoked_cert2)
         )
 
         crl = builder.sign(private_key, hashes.SHA256(), backend)
-        assert len(crl) == 2
+        assert len(crl) == 3
         assert crl.last_update == last_update
         assert crl.next_update == next_update
         assert crl[0].serial_number == revoked_cert0.serial_number
@@ -812,3 +821,6 @@ class TestCertificateRevocationListBuilder(object):
         ext = crl[1].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
         assert ext.value == invalidity_date
+        assert crl[2].extensions.get_extension_for_class(
+            x509.CertificateIssuer
+        ).value == ci
