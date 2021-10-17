@@ -44,7 +44,6 @@ from cryptography.hazmat.backends.openssl.ed448 import (
     _Ed448PublicKey,
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS,
     _EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc,
@@ -420,9 +419,6 @@ class Backend(BackendInterface):
         self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()
         self._crl_extension_encode_handlers = (
             _CRL_EXTENSION_ENCODE_HANDLERS.copy()
-        )
-        self._crl_entry_extension_encode_handlers = (
-            _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS.copy()
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
@@ -1122,7 +1118,7 @@ class Backend(BackendInterface):
             # add CRL entry extensions
             self._create_x509_extensions(
                 extensions=revoked_cert.extensions,
-                handlers=self._crl_entry_extension_encode_handlers,
+                handlers={},
                 rust_handler=rust_x509.encode_crl_entry_extension,
                 x509_obj=x509_revoked,
                 add_func=self._lib.X509_REVOKED_add_ext,
