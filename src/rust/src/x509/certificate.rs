@@ -1116,27 +1116,20 @@ fn encode_general_name<'a>(
     gn: &'a pyo3::PyAny,
 ) -> Result<x509::GeneralName<'a>, PyAsn1Error> {
     let gn_module = py.import("cryptography.x509.general_name")?;
-    let dns_name = gn_module.getattr("DNSName")?;
-    let rfc822_name = gn_module.getattr("RFC822Name")?;
-    let directory_name = gn_module.getattr("DirectoryName")?;
-    let other_name = gn_module.getattr("OtherName")?;
-    let uri = gn_module.getattr("UniformResourceIdentifier")?;
-    let ip_address = gn_module.getattr("IPAddress")?;
-    let registered_id = gn_module.getattr("RegisteredID")?;
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr("value")?;
-    if gn_type == dns_name {
+    if gn_type == gn_module.getattr("DNSName")? {
         Ok(x509::GeneralName::DNSName(x509::UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type == rfc822_name {
+    } else if gn_type == gn_module.getattr("RFC822Name")? {
         Ok(x509::GeneralName::RFC822Name(x509::UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type == directory_name {
+    } else if gn_type == gn_module.getattr("DirectoryName")? {
         let name = x509::encode_name(py, gn_value)?;
         Ok(x509::GeneralName::DirectoryName(name))
-    } else if gn_type == other_name {
+    } else if gn_type == gn_module.getattr("OtherName")? {
         Ok(x509::GeneralName::OtherName(x509::OtherName {
             type_id: asn1::ObjectIdentifier::from_string(
                 gn.getattr("type_id")?
@@ -1146,15 +1139,15 @@ fn encode_general_name<'a>(
             .unwrap(),
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
         }))
-    } else if gn_type == uri {
+    } else if gn_type == gn_module.getattr("UniformResourceIdentifier")? {
         Ok(x509::GeneralName::UniformResourceIdentifier(
             x509::UnvalidatedIA5String(gn_value.extract::<&str>()?),
         ))
-    } else if gn_type == ip_address {
+    } else if gn_type == gn_module.getattr("IPAddress")? {
         Ok(x509::GeneralName::IPAddress(
             gn.getattr("_packed")?.call0()?.extract::<&[u8]>()?,
         ))
-    } else if gn_type == registered_id {
+    } else if gn_type == gn_module.getattr("RegisteredID")? {
         let oid = asn1::ObjectIdentifier::from_string(
             gn_value.getattr("dotted_string")?.extract::<&str>()?,
         )
