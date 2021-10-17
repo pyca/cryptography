@@ -1126,23 +1126,34 @@ fn encode_general_name<'a>(
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr("value")?;
     if gn_type == dns_name {
-        Ok(x509::GeneralName::DNSName(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+        Ok(x509::GeneralName::DNSName(x509::UnvalidatedIA5String(
+            gn_value.extract::<&str>()?,
+        )))
     } else if gn_type == rfc822_name {
-        Ok(x509::GeneralName::RFC822Name(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+        Ok(x509::GeneralName::RFC822Name(x509::UnvalidatedIA5String(
+            gn_value.extract::<&str>()?,
+        )))
     } else if gn_type == directory_name {
         let name = x509::encode_name(py, gn_value)?;
         Ok(x509::GeneralName::DirectoryName(name))
     } else if gn_type == other_name {
         Ok(x509::GeneralName::OtherName(x509::OtherName {
             type_id: asn1::ObjectIdentifier::from_string(
-                gn.getattr("type_id")?.getattr("dotted_string")?.extract::<&str>()?
-            ).unwrap(),
+                gn.getattr("type_id")?
+                    .getattr("dotted_string")?
+                    .extract::<&str>()?,
+            )
+            .unwrap(),
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
         }))
     } else if gn_type == uri {
-        Ok(x509::GeneralName::UniformResourceIdentifier(x509::UnvalidatedIA5String(gn_value.extract::<&str>()?)))
+        Ok(x509::GeneralName::UniformResourceIdentifier(
+            x509::UnvalidatedIA5String(gn_value.extract::<&str>()?),
+        ))
     } else if gn_type == ip_address {
-        Ok(x509::GeneralName::IPAddress(gn.getattr("_packed")?.call0()?.extract::<&[u8]>()?))
+        Ok(x509::GeneralName::IPAddress(
+            gn.getattr("_packed")?.call0()?.extract::<&[u8]>()?,
+        ))
     } else if gn_type == registered_id {
         let oid = asn1::ObjectIdentifier::from_string(
             gn_value.getattr("dotted_string")?.extract::<&str>()?,
@@ -1151,7 +1162,7 @@ fn encode_general_name<'a>(
         Ok(x509::GeneralName::RegisteredID(oid))
     } else {
         Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Unsupported GeneralName type"
+            "Unsupported GeneralName type",
         )))
     }
 }
