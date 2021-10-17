@@ -445,13 +445,12 @@ impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
     }
 }
 
-impl<'a, T: asn1::Asn1Readable<'a>, U> asn1::Asn1Readable<'a> for Asn1ReadableOrWritable<'a, T, U> {
-    fn can_parse(tag: u8) -> bool {
-        T::can_parse(tag)
-    }
-
-    fn parse(parser: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
-        Ok(Self::new_read(parser.read_element()?))
+impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
+    for Asn1ReadableOrWritable<'a, T, U>
+{
+    const TAG: u8 = T::TAG;
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        Ok(Self::new_read(T::parse_data(data)?))
     }
 }
 
