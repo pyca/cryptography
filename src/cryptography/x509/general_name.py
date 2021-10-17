@@ -243,7 +243,6 @@ class IPAddress(GeneralName):
     def value(self) -> _IPADDRESS_TYPES:
         return self._value
 
-    # TODO: This needs to support IP networks when we implement NC
     def _packed(self) -> bytes:
         if isinstance(
             self.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
