@@ -3,9 +3,7 @@
 # for complete details.
 
 
-import ipaddress
-
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME,
@@ -219,7 +217,8 @@ def _encode_general_name(backend, name):
 
 def _encode_general_name_preallocated(backend, name, gn):
     assert not isinstance(
-        name, (x509.RegisteredID, x509.OtherName, x509.RFC822Name)
+        name,
+        (x509.RegisteredID, x509.OtherName, x509.RFC822Name, x509.IPAddress),
     )
     if isinstance(name, x509.DNSName):
         backend.openssl_assert(gn != backend._ffi.NULL)
@@ -239,23 +238,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         dir_name = _encode_name(backend, name.value)
         gn.type = backend._lib.GEN_DIRNAME
         gn.d.directoryName = dir_name
-    elif isinstance(name, x509.IPAddress):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        assert not isinstance(
-            name.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
-        )
-        if isinstance(name.value, ipaddress.IPv4Network):
-            packed = name.value.network_address.packed + utils.int_to_bytes(
-                ((1 << 32) - name.value.num_addresses), 4
-            )
-        else:
-            assert isinstance(name.value, ipaddress.IPv6Network)
-            packed = name.value.network_address.packed + utils.int_to_bytes(
-                (1 << 128) - name.value.num_addresses, 16
-            )
-        ipaddr = _encode_asn1_str(backend, packed)
-        gn.type = backend._lib.GEN_IPADD
-        gn.d.iPAddress = ipaddr
     else:
         assert isinstance(name, x509.UniformResourceIdentifier)
         backend.openssl_assert(gn != backend._ffi.NULL)
@@ -332,43 +314,12 @@ def _encode_cdps_freshest_crl(backend, cdps):
     return cdp
 
 
-def _encode_name_constraints(backend, name_constraints):
-    nc = backend._lib.NAME_CONSTRAINTS_new()
-    backend.openssl_assert(nc != backend._ffi.NULL)
-    nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
-    permitted = _encode_general_subtree(
-        backend, name_constraints.permitted_subtrees
-    )
-    nc.permittedSubtrees = permitted
-    excluded = _encode_general_subtree(
-        backend, name_constraints.excluded_subtrees
-    )
-    nc.excludedSubtrees = excluded
-
-    return nc
-
-
-def _encode_general_subtree(backend, subtrees):
-    if subtrees is None:
-        return backend._ffi.NULL
-    else:
-        general_subtrees = backend._lib.sk_GENERAL_SUBTREE_new_null()
-        for name in subtrees:
-            gs = backend._lib.GENERAL_SUBTREE_new()
-            gs.base = _encode_general_name(backend, name)
-            res = backend._lib.sk_GENERAL_SUBTREE_push(general_subtrees, gs)
-            backend.openssl_assert(res >= 1)
-
-        return general_subtrees
-
-
 _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
-    ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
