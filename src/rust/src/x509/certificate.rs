@@ -560,9 +560,9 @@ fn encode_general_subtrees<'a>(
     }
 }
 
-fn parse_general_subtrees<'a>(
+fn parse_general_subtrees(
     py: pyo3::Python<'_>,
-    subtrees: SequenceOfSubtrees<'a>,
+    subtrees: SequenceOfSubtrees<'_>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let gns = pyo3::types::PyList::empty(py);
     for gs in subtrees.unwrap_read().clone() {
