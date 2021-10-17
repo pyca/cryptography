@@ -148,7 +148,7 @@ fn encode_name_bytes<'p>(
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
-pub(crate) struct UnvalidatedIA5String<'a>(&'a str);
+pub(crate) struct UnvalidatedIA5String<'a>(pub(crate) &'a str);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     const TAG: u8 = 0x16;
@@ -159,6 +159,13 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     }
 }
 
+impl<'a> asn1::SimpleAsn1Writable<'a> for UnvalidatedIA5String<'a> {
+    const TAG: u8 = 0x16;
+    fn write_data(&self, dest: &mut Vec<u8>) {
+        dest.extend_from_slice(self.0.as_bytes());
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct OtherName<'a> {
     pub(crate) type_id: asn1::ObjectIdentifier<'a>,
@@ -166,7 +173,7 @@ pub(crate) struct OtherName<'a> {
     pub(crate) value: asn1::Tlv<'a>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) enum GeneralName<'a> {
     #[implicit(0)]
     OtherName(OtherName<'a>),

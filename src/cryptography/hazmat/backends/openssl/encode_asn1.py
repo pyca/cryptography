@@ -226,6 +226,9 @@ def _encode_general_name(backend, name):
 
 
 def _encode_general_name_preallocated(backend, name, gn):
+    assert not isinstance(
+        name, (x509.RegisteredID, x509.OtherName, x509.RFC822Name)
+    )
     if isinstance(name, x509.DNSName):
         backend.openssl_assert(gn != backend._ffi.NULL)
         gn.type = backend._lib.GEN_DNS
@@ -239,14 +242,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
         backend.openssl_assert(res == 1)
         gn.d.dNSName = ia5
-    elif isinstance(name, x509.RegisteredID):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        gn.type = backend._lib.GEN_RID
-        obj = backend._lib.OBJ_txt2obj(
-            name.value.dotted_string.encode("ascii"), 1
-        )
-        backend.openssl_assert(obj != backend._ffi.NULL)
-        gn.d.registeredID = obj
     elif isinstance(name, x509.DirectoryName):
         backend.openssl_assert(gn != backend._ffi.NULL)
         dir_name = _encode_name(backend, name.value)
@@ -254,50 +249,23 @@ def _encode_general_name_preallocated(backend, name, gn):
         gn.d.directoryName = dir_name
     elif isinstance(name, x509.IPAddress):
         backend.openssl_assert(gn != backend._ffi.NULL)
+        assert not isinstance(
+            name.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        )
         if isinstance(name.value, ipaddress.IPv4Network):
             packed = name.value.network_address.packed + utils.int_to_bytes(
                 ((1 << 32) - name.value.num_addresses), 4
             )
-        elif isinstance(name.value, ipaddress.IPv6Network):
+        else:
+            assert isinstance(name.value, ipaddress.IPv6Network)
             packed = name.value.network_address.packed + utils.int_to_bytes(
                 (1 << 128) - name.value.num_addresses, 16
             )
-        else:
-            packed = name.value.packed
         ipaddr = _encode_asn1_str(backend, packed)
         gn.type = backend._lib.GEN_IPADD
         gn.d.iPAddress = ipaddr
-    elif isinstance(name, x509.OtherName):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        other_name = backend._lib.OTHERNAME_new()
-        backend.openssl_assert(other_name != backend._ffi.NULL)
-
-        type_id = backend._lib.OBJ_txt2obj(
-            name.type_id.dotted_string.encode("ascii"), 1
-        )
-        backend.openssl_assert(type_id != backend._ffi.NULL)
-        data = backend._ffi.new("unsigned char[]", name.value)
-        data_ptr_ptr = backend._ffi.new("unsigned char **")
-        data_ptr_ptr[0] = data
-        value = backend._lib.d2i_ASN1_TYPE(
-            backend._ffi.NULL, data_ptr_ptr, len(name.value)
-        )
-        if value == backend._ffi.NULL:
-            backend._consume_errors()
-            raise ValueError("Invalid ASN.1 data")
-        other_name.type_id = type_id
-        other_name.value = value
-        gn.type = backend._lib.GEN_OTHERNAME
-        gn.d.otherName = other_name
-    elif isinstance(name, x509.RFC822Name):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        # ia5strings are supposed to be ITU T.50 but to allow round-tripping
-        # of broken certs that encode utf8 we'll encode utf8 here too.
-        data = name.value.encode("utf8")
-        asn1_str = _encode_asn1_str(backend, data)
-        gn.type = backend._lib.GEN_EMAIL
-        gn.d.rfc822Name = asn1_str
-    elif isinstance(name, x509.UniformResourceIdentifier):
+    else:
+        assert isinstance(name, x509.UniformResourceIdentifier)
         backend.openssl_assert(gn != backend._ffi.NULL)
         # ia5strings are supposed to be ITU T.50 but to allow round-tripping
         # of broken certs that encode utf8 we'll encode utf8 here too.
@@ -305,8 +273,6 @@ def _encode_general_name_preallocated(backend, name, gn):
         asn1_str = _encode_asn1_str(backend, data)
         gn.type = backend._lib.GEN_URI
         gn.d.uniformResourceIdentifier = asn1_str
-    else:
-        raise ValueError("{} is an unknown GeneralName type".format(name))
 
 
 _CRLREASONFLAGS = {
@@ -405,8 +371,6 @@ def _encode_general_subtree(backend, subtrees):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
-    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
