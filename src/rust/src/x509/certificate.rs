@@ -683,12 +683,6 @@ struct PolicyConstraints {
     inhibit_policy_mapping: Option<u64>,
 }
 
-#[derive(asn1::Asn1Read)]
-struct AccessDescription<'a> {
-    access_method: asn1::ObjectIdentifier<'a>,
-    access_location: x509::GeneralName<'a>,
-}
-
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext_data: &[u8],
@@ -716,7 +710,8 @@ pub(crate) fn parse_access_descriptions(
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let ads = pyo3::types::PyList::empty(py);
-    for access in asn1::parse_single::<asn1::SequenceOf<'_, AccessDescription<'_>>>(ext_data)? {
+    let parsed = asn1::parse_single::<x509::common::SequenceOfAccessDescriptions<'_>>(ext_data)?;
+    for access in parsed.unwrap_read().clone() {
         let py_oid = x509_module
             .call_method1("ObjectIdentifier", (access.access_method.to_string(),))?
             .to_object(py);
@@ -967,6 +962,11 @@ fn encode_certificate_extension<'p>(
         }
         let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
         let result = asn1::write_single(&asn1::BitString::new(bits, 0));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID || oid == *SUBJECT_INFORMATION_ACCESS_OID {
+        let py_ads = ext.getattr("value")?;
+        let ads = x509::common::encode_access_descriptions(py, py_ads)?;
+        let result = asn1::write_single(&ads);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *EXTENDED_KEY_USAGE_OID {
         let mut oids = vec![];

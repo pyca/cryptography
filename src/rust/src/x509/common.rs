@@ -267,6 +267,43 @@ pub(crate) fn encode_general_name<'a>(
     }
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct AccessDescription<'a> {
+    pub(crate) access_method: asn1::ObjectIdentifier<'a>,
+    pub(crate) access_location: GeneralName<'a>,
+}
+
+pub(crate) type SequenceOfAccessDescriptions<'a> = Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, AccessDescription<'a>>,
+    asn1::SequenceOfWriter<'a, AccessDescription<'a>, Vec<AccessDescription<'a>>>,
+>;
+
+pub(crate) fn encode_access_descriptions<'a>(
+    py: pyo3::Python<'a>,
+    py_ads: &'a pyo3::PyAny,
+) -> Result<SequenceOfAccessDescriptions<'a>, PyAsn1Error> {
+    let mut ads = vec![];
+    for py_ad in py_ads.iter()? {
+        let py_ad = py_ad?;
+        let access_method = asn1::ObjectIdentifier::from_string(
+            py_ad
+                .getattr("access_method")?
+                .getattr("dotted_string")?
+                .extract::<&str>()?,
+        )
+        .unwrap();
+        let access_location = encode_general_name(py, py_ad.getattr("access_location")?)?;
+        ads.push(AccessDescription {
+            access_method,
+            access_location,
+        });
+    }
+    Ok(Asn1ReadableOrWritable::new_write(
+        asn1::SequenceOfWriter::new(ads),
+    ))
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) enum Time {
     UtcTime(asn1::UtcTime),

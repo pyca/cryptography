@@ -640,6 +640,11 @@ fn encode_crl_extension<'p>(
         let bytes = py_uint_to_big_endian_bytes(py, intval)?;
         let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
         Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
+        let py_ads = ext.getattr("value")?;
+        let ads = x509::common::encode_access_descriptions(py, py_ads)?;
+        let result = asn1::write_single(&ads);
+        Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
         let gns = x509::common::encode_general_names(py, ext)?;
         let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
