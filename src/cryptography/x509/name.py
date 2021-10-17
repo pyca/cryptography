@@ -264,9 +264,7 @@ class Name(object):
     def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(
-        self, backend: typing.Any = None
-    ) -> bytes:
+    def public_bytes(self, backend: typing.Any = None) -> bytes:
         return rust_x509.encode_name_bytes(self)
 
     def __eq__(self, other: object) -> bool:
