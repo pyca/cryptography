@@ -623,10 +623,8 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     {
         None
     } else {
-        let serial_bytes = py_uint_to_big_endian_bytes(
-            py,
-            py_aki.getattr("authority_cert_serial_number")?.downcast()?,
-        )?;
+        let py_num = py_aki.getattr("authority_cert_serial_number")?.downcast()?;
+        let serial_bytes = py_uint_to_big_endian_bytes(py, py_num)?;
         Some(asn1::BigUint::new(serial_bytes).unwrap())
     };
     Ok(AuthorityKeyIdentifier {
