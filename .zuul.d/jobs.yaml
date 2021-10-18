@@ -19,19 +19,33 @@
     run: .zuul.playbooks/playbooks/wheel/main.yaml
 
 - job:
-    name: pyca-cryptography-build-wheel-arm64
+    name: pyca-cryptography-build-wheel-arm64-manylinux2014
     parent: pyca-cryptography-build-wheel
-    nodeset: ubuntu-bionic-arm64
+    nodeset: ubuntu-focal-arm64
     vars:
       wheel_builds:
         - platform: manylinux2014_aarch64
           image: ghcr.io/pyca/cryptography-manylinux2014_aarch64
           pythons:
             - cp36-cp36m
+
+- job:
+    name: pyca-cryptography-build-wheel-arm64-manylinux224
+    parent: pyca-cryptography-build-wheel
+    nodeset: ubuntu-focal-arm64
+    vars:
+      wheel_builds:
         - platform: manylinux_2_24_aarch64
           image: ghcr.io/pyca/cryptography-manylinux_2_24:aarch64
           pythons:
             - cp36-cp36m
+
+- job:
+    name: pyca-cryptography-build-wheel-arm64-musllinux11
+    parent: pyca-cryptography-build-wheel
+    nodeset: ubuntu-focal-arm64
+    vars:
+      wheel_builds:
         - platform: musllinux_1_1_aarch64
           image: ghcr.io/pyca/cryptography-musllinux_1_1:aarch64
           pythons:
