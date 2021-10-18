@@ -206,12 +206,18 @@ pub(crate) enum GeneralName<'a> {
     RegisteredID(asn1::ObjectIdentifier<'a>),
 }
 
+pub(crate) type SequenceOfGeneralName<'a> = Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, GeneralName<'a>>,
+    asn1::SequenceOfWriter<'a, GeneralName<'a>, Vec<GeneralName<'a>>>,
+>;
+
 pub(crate) fn encode_general_names<'a>(
     py: pyo3::Python<'a>,
-    ext: &'a pyo3::PyAny,
+    py_gns: &'a pyo3::PyAny,
 ) -> Result<Vec<GeneralName<'a>>, PyAsn1Error> {
     let mut gns = vec![];
-    for el in ext.getattr("value")?.iter()? {
+    for el in py_gns.iter()? {
         let gn = encode_general_name(py, el?)?;
         gns.push(gn)
     }
