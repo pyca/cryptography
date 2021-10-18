@@ -1,7 +1,11 @@
 - hosts: all
   tasks:
     - name: Run tox
-      include_role:
-        name: tox
-      vars:
-        tox_extra_args: "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
+      command: |
+        docker run --rm \
+          -e TOXENV=py38 \
+          -v {{ ansible_facts.env['HOME'] }}:/io \
+          {{ item.image }} \
+          cd /io/cryptography; \
+          tox "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
+      become: yes
