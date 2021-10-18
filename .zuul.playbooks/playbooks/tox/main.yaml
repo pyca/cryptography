@@ -6,6 +6,8 @@
           -e TOXENV={{ toxenv }} \
           -v {{ ansible_facts.env['HOME'] }}:/io \
           {{ image }} \
+          /bin/bash -c '\
           cd /io; \
-          tox "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
+          tox -- --wycheproof-root=/io/wycheproof/ \
+          '
       become: yes
