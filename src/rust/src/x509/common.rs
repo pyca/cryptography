@@ -348,7 +348,7 @@ pub(crate) fn parse_name<'p>(
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.unwrap_read().clone() {
-        let py_rdn = parse_rdn(py, rdn)?;
+        let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
     }
     x509_module.call_method1("Name", (py_rdns,))
@@ -375,11 +375,11 @@ fn parse_name_attribute(
 
 pub(crate) fn parse_rdn<'a>(
     py: pyo3::Python<'_>,
-    rdn: asn1::SetOf<'a, AttributeTypeValue<'a>>,
+    rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_attrs = pyo3::types::PySet::empty(py)?;
-    for attribute in rdn {
+    for attribute in rdn.clone() {
         let na = parse_name_attribute(py, attribute)?;
         py_attrs.add(na)?;
     }
@@ -455,10 +455,10 @@ pub(crate) fn parse_general_name(
 
 pub(crate) fn parse_general_names<'a>(
     py: pyo3::Python<'_>,
-    gn_seq: asn1::SequenceOf<'a, GeneralName<'a>>,
+    gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let gns = pyo3::types::PyList::empty(py);
-    for gn in gn_seq {
+    for gn in gn_seq.clone() {
         let py_gn = parse_general_name(py, gn)?;
         gns.append(py_gn)?;
     }

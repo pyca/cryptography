@@ -109,28 +109,6 @@ def _encode_name_entry(backend, attribute):
     return name_entry
 
 
-def _encode_issuing_dist_point(backend, ext):
-    idp = backend._lib.ISSUING_DIST_POINT_new()
-    backend.openssl_assert(idp != backend._ffi.NULL)
-    idp = backend._ffi.gc(idp, backend._lib.ISSUING_DIST_POINT_free)
-    idp.onlyuser = 255 if ext.only_contains_user_certs else 0
-    idp.onlyCA = 255 if ext.only_contains_ca_certs else 0
-    idp.indirectCRL = 255 if ext.indirect_crl else 0
-    idp.onlyattr = 255 if ext.only_contains_attribute_certs else 0
-    if ext.only_some_reasons:
-        idp.onlysomereasons = _encode_reasonflags(
-            backend, ext.only_some_reasons
-        )
-
-    if ext.full_name:
-        idp.distpoint = _encode_full_name(backend, ext.full_name)
-
-    if ext.relative_name:
-        idp.distpoint = _encode_relative_name(backend, ext.relative_name)
-
-    return idp
-
-
 def _txt2obj(backend, name):
     """
     Converts a Python string with an ASN.1 object ID in dotted form to a
@@ -263,6 +241,5 @@ _EXTENSION_ENCODE_HANDLERS = {
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
