@@ -1,10 +1,13 @@
 - hosts: all
   tasks:
+    - name: Show env
+      command: |
+        ls
     - name: Run tox
       command: |
         docker run --rm \
           -e TOXENV={{ toxenv }} \
-          -v {{ ansible_facts.env['HOME'] }}:/io \
+          -v $(pwd):/io \
           {{ image }} \
           /bin/bash -c '\
           cd /io; \
