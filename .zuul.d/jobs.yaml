@@ -41,7 +41,7 @@
             - cp36-cp36m
 
 - job:
-    name: pyca-cryptography-build-wheel-arm64-musllinux-11
+    name: pyca-cryptography-build-wheel-arm64-musllinux11
     parent: pyca-cryptography-build-wheel
     nodeset: ubuntu-focal-arm64
     vars:
