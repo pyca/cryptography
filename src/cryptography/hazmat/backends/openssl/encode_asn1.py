@@ -171,33 +171,6 @@ def _encode_authority_key_identifier(backend, authority_keyid):
     return akid
 
 
-def _encode_information_access(backend, info_access):
-    aia = backend._lib.sk_ACCESS_DESCRIPTION_new_null()
-    backend.openssl_assert(aia != backend._ffi.NULL)
-    aia = backend._ffi.gc(
-        aia,
-        lambda x: backend._lib.sk_ACCESS_DESCRIPTION_pop_free(
-            x,
-            backend._ffi.addressof(
-                backend._lib._original_lib, "ACCESS_DESCRIPTION_free"
-            ),
-        ),
-    )
-    for access_description in info_access:
-        ad = backend._lib.ACCESS_DESCRIPTION_new()
-        method = _txt2obj(
-            backend, access_description.access_method.dotted_string
-        )
-        _encode_general_name_preallocated(
-            backend, access_description.access_location, ad.location
-        )
-        ad.method = method
-        res = backend._lib.sk_ACCESS_DESCRIPTION_push(aia, ad)
-        backend.openssl_assert(res >= 1)
-
-    return aia
-
-
 def _encode_general_names(backend, names):
     general_names = backend._lib.GENERAL_NAMES_new()
     backend.openssl_assert(general_names != backend._ffi.NULL)
@@ -218,22 +191,15 @@ def _encode_general_name(backend, name):
 def _encode_general_name_preallocated(backend, name, gn):
     assert not isinstance(
         name,
-        (x509.RegisteredID, x509.OtherName, x509.RFC822Name, x509.IPAddress),
+        (
+            x509.RegisteredID,
+            x509.OtherName,
+            x509.RFC822Name,
+            x509.IPAddress,
+            x509.DNSName,
+        ),
     )
-    if isinstance(name, x509.DNSName):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        gn.type = backend._lib.GEN_DNS
-
-        ia5 = backend._lib.ASN1_IA5STRING_new()
-        backend.openssl_assert(ia5 != backend._ffi.NULL)
-        # ia5strings are supposed to be ITU T.50 but to allow round-tripping
-        # of broken certs that encode utf8 we'll encode utf8 here too.
-        value = name.value.encode("utf8")
-
-        res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
-        backend.openssl_assert(res == 1)
-        gn.d.dNSName = ia5
-    elif isinstance(name, x509.DirectoryName):
+    if isinstance(name, x509.DirectoryName):
         backend.openssl_assert(gn != backend._ffi.NULL)
         dir_name = _encode_name(backend, name.value)
         gn.type = backend._lib.GEN_DIRNAME
@@ -316,15 +282,12 @@ def _encode_cdps_freshest_crl(backend, cdps):
 
 _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
-    ExtensionOID.SUBJECT_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: _encode_information_access,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
