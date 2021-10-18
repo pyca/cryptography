@@ -646,8 +646,12 @@ fn encode_crl_extension<'p>(
         let result = asn1::write_single(&ads);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(py, ext)?;
+        let gns = x509::common::encode_general_names(py, ext.getattr("value")?)?;
         let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+        let aki = x509::certificate::encode_authority_key_identifier(py, ext.getattr("value")?)?;
+        let result = asn1::write_single(&aki);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else {
         Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
@@ -678,7 +682,7 @@ fn encode_crl_entry_extension<'p>(
         let result = asn1::write_single(&asn1::Enumerated::new(value));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *CERTIFICATE_ISSUER_OID {
-        let gns = x509::common::encode_general_names(py, ext)?;
+        let gns = x509::common::encode_general_names(py, ext.getattr("value")?)?;
         let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *INVALIDITY_DATE_OID {

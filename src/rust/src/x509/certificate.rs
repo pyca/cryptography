@@ -592,14 +592,46 @@ pub(crate) enum DistributionPointName<'a> {
     NameRelativeToCRLIssuer(asn1::SetOf<'a, x509::AttributeTypeValue<'a>>),
 }
 
-#[derive(asn1::Asn1Read)]
-struct AuthorityKeyIdentifier<'a> {
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct AuthorityKeyIdentifier<'a> {
     #[implicit(0)]
     key_identifier: Option<&'a [u8]>,
     #[implicit(1)]
-    authority_cert_issuer: Option<asn1::SequenceOf<'a, x509::GeneralName<'a>>>,
+    authority_cert_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
     #[implicit(2)]
     authority_cert_serial_number: Option<asn1::BigUint<'a>>,
+}
+
+pub(crate) fn encode_authority_key_identifier<'a>(
+    py: pyo3::Python<'a>,
+    py_aki: &'a pyo3::PyAny,
+) -> pyo3::PyResult<AuthorityKeyIdentifier<'a>> {
+    let key_identifier = if py_aki.getattr("key_identifier")?.is_none() {
+        None
+    } else {
+        Some(py_aki.getattr("key_identifier")?.extract::<&[u8]>()?)
+    };
+    let authority_cert_issuer = if py_aki.getattr("authority_cert_issuer")?.is_none() {
+        None
+    } else {
+        let gns = x509::common::encode_general_names(py, py_aki.getattr("authority_cert_issuer")?)?;
+        Some(x509::Asn1ReadableOrWritable::new_write(
+            asn1::SequenceOfWriter::new(gns),
+        ))
+    };
+    let authority_cert_serial_number = if py_aki.getattr("authority_cert_serial_number")?.is_none()
+    {
+        None
+    } else {
+        let py_num = py_aki.getattr("authority_cert_serial_number")?.downcast()?;
+        let serial_bytes = py_uint_to_big_endian_bytes(py, py_num)?;
+        Some(asn1::BigUint::new(serial_bytes).unwrap())
+    };
+    Ok(AuthorityKeyIdentifier {
+        key_identifier,
+        authority_cert_issuer,
+        authority_cert_serial_number,
+    })
 }
 
 pub(crate) fn parse_distribution_point_name(
@@ -694,7 +726,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         None => py.None(),
     };
     let issuer = match aki.authority_cert_issuer {
-        Some(aci) => x509::parse_general_names(py, aci)?,
+        Some(aci) => x509::parse_general_names(py, aci.unwrap_read().clone())?,
         None => py.None(),
     };
     Ok(x509_module.getattr("AuthorityKeyIdentifier")?.call1((
@@ -1091,8 +1123,12 @@ fn encode_certificate_extension<'p>(
         let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID || oid == *SUBJECT_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(py, ext)?;
+        let gns = x509::common::encode_general_names(py, ext.getattr("value")?)?;
         let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+        let aki = encode_authority_key_identifier(py, ext.getattr("value")?)?;
+        let result = asn1::write_single(&aki);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *OCSP_NO_CHECK_OID {
         let result = asn1::write_single(&());

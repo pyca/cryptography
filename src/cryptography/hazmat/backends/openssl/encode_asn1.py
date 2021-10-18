@@ -148,29 +148,6 @@ def _txt2obj_gc(backend, name):
     return obj
 
 
-def _encode_authority_key_identifier(backend, authority_keyid):
-    akid = backend._lib.AUTHORITY_KEYID_new()
-    backend.openssl_assert(akid != backend._ffi.NULL)
-    akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
-    if authority_keyid.key_identifier is not None:
-        akid.keyid = _encode_asn1_str(
-            backend,
-            authority_keyid.key_identifier,
-        )
-
-    if authority_keyid.authority_cert_issuer is not None:
-        akid.issuer = _encode_general_names(
-            backend, authority_keyid.authority_cert_issuer
-        )
-
-    if authority_keyid.authority_cert_serial_number is not None:
-        akid.serial = _encode_asn1_int(
-            backend, authority_keyid.authority_cert_serial_number
-        )
-
-    return akid
-
-
 def _encode_general_names(backend, names):
     general_names = backend._lib.GENERAL_NAMES_new()
     backend.openssl_assert(general_names != backend._ffi.NULL)
@@ -281,13 +258,11 @@ def _encode_cdps_freshest_crl(backend, cdps):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     ExtensionOID.ISSUING_DISTRIBUTION_POINT: _encode_issuing_dist_point,
     ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }
