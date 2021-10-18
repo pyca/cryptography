@@ -38,7 +38,5 @@
 
     - name: Pre-pull containers
       command: >-
-        docker pull {{ item.image }}
+        docker pull {{ image }}
       become: yes
-      loop: '{{ wheel_builds }}'
-

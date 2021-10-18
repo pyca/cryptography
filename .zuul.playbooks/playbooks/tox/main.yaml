@@ -3,9 +3,9 @@
     - name: Run tox
       command: |
         docker run --rm \
-          -e TOXENV=py38 \
+          -e TOXENV={{ toxenv }} \
           -v {{ ansible_facts.env['HOME'] }}:/io \
-          {{ item.image }} \
-          cd /io/cryptography; \
+          {{ image }} \
+          cd /io; \
           tox "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"
       become: yes

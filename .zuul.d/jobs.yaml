@@ -10,7 +10,8 @@
     parent: pyca-cryptography-base
     nodeset: ubuntu-focal-arm64
     vars:
-      tox_envlist: py38
+      image: ghcr.io/pyca/cryptography-runner-ubuntu-focal:aarch64
+      toxenv: py38
 
 - job:
     name: pyca-cryptography-build-wheel
