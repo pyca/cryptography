@@ -71,7 +71,6 @@ ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
 void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
 int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
 
-int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 /* These became const ASN1_* in 1.1.0 */
 int ASN1_STRING_type(ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
@@ -81,15 +80,11 @@ int i2a_ASN1_INTEGER(BIO *, ASN1_INTEGER *);
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
 
-ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
-
 int ASN1_STRING_length(ASN1_STRING *);
 int ASN1_STRING_set_default_mask_asc(char *);
 
 BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
 ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
-
-ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
