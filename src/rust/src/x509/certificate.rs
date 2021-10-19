@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::sct;
+use crate::x509::{crl, sct};
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -571,16 +571,16 @@ fn parse_general_subtrees(
     Ok(gns.to_object(py))
 }
 
-#[derive(asn1::Asn1Read)]
-struct DistributionPoint<'a> {
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct DistributionPoint<'a> {
     #[explicit(0)]
     distribution_point: Option<DistributionPointName<'a>>,
 
     #[implicit(1)]
-    reasons: Option<asn1::BitString<'a>>,
+    reasons: crl::ReasonFlags<'a>,
 
     #[implicit(2)]
-    crl_issuer: Option<asn1::SequenceOf<'a, x509::GeneralName<'a>>>,
+    crl_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -663,9 +663,10 @@ fn parse_distribution_point(
         Some(data) => parse_distribution_point_name(py, data)?,
         None => (py.None(), py.None()),
     };
-    let reasons = parse_distribution_point_reasons(py, dp.reasons.as_ref())?;
+    let reasons =
+        parse_distribution_point_reasons(py, dp.reasons.as_ref().map(|v| v.unwrap_read()))?;
     let crl_issuer = match dp.crl_issuer {
-        Some(aci) => x509::parse_general_names(py, &aci)?,
+        Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
     let x509_module = py.import("cryptography.x509")?;
@@ -686,6 +687,54 @@ pub(crate) fn parse_distribution_points(
         py_dps.append(py_dp)?;
     }
     Ok(py_dps.to_object(py))
+}
+
+pub(crate) fn encode_distribution_points<'p>(
+    py: pyo3::Python<'p>,
+    py_dps: &'p pyo3::PyAny,
+) -> pyo3::PyResult<Vec<DistributionPoint<'p>>> {
+    let mut dps = vec![];
+    for py_dp in py_dps.iter()? {
+        let py_dp = py_dp?;
+
+        let crl_issuer = if py_dp.getattr("crl_issuer")?.is_true()? {
+            let gns = x509::common::encode_general_names(py, py_dp.getattr("crl_issuer")?)?;
+            Some(x509::Asn1ReadableOrWritable::new_write(
+                asn1::SequenceOfWriter::new(gns),
+            ))
+        } else {
+            None
+        };
+        let distribution_point = if py_dp.getattr("full_name")?.is_true()? {
+            let gns = x509::common::encode_general_names(py, py_dp.getattr("full_name")?)?;
+            Some(DistributionPointName::FullName(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+            ))
+        } else if py_dp.getattr("relative_name")?.is_true()? {
+            let mut name_entries = vec![];
+            for py_name_entry in py_dp.getattr("relative_name")?.iter()? {
+                name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
+            }
+            Some(DistributionPointName::NameRelativeToCRLIssuer(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+            ))
+        } else {
+            None
+        };
+        let reasons = if py_dp.getattr("reasons")?.is_true()? {
+            let py_reasons = py_dp.getattr("reasons")?;
+            let reasons = encode_distribution_point_reasons(py, py_reasons)?;
+            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
+        } else {
+            None
+        };
+        dps.push(DistributionPoint {
+            crl_issuer,
+            distribution_point,
+            reasons,
+        });
+    }
+    Ok(dps)
 }
 
 pub(crate) fn parse_distribution_point_reasons(
@@ -1160,6 +1209,10 @@ fn encode_certificate_extension<'p>(
     } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
         let aki = encode_authority_key_identifier(py, ext.getattr("value")?)?;
         let result = asn1::write_single(&aki);
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *FRESHEST_CRL_OID || oid == *CRL_DISTRIBUTION_POINTS_OID {
+        let dps = encode_distribution_points(py, ext.getattr("value")?)?;
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(dps));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *OCSP_NO_CHECK_OID {
         let result = asn1::write_single(&());

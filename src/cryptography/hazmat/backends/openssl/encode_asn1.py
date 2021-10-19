@@ -4,12 +4,7 @@
 
 
 from cryptography import x509
-from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _DISTPOINT_TYPE_FULLNAME,
-    _DISTPOINT_TYPE_RELATIVENAME,
-)
 from cryptography.x509.name import _ASN1Type
-from cryptography.x509.oid import ExtensionOID
 
 
 def _encode_asn1_int(backend, x):
@@ -81,18 +76,6 @@ def _encode_name_gc(backend, attributes):
     return subject
 
 
-def _encode_sk_name_entry(backend, attributes):
-    """
-    The sk_X509_NAME_ENTRY created will not be gc'd.
-    """
-    stack = backend._lib.sk_X509_NAME_ENTRY_new_null()
-    for attribute in attributes:
-        name_entry = _encode_name_entry(backend, attribute)
-        res = backend._lib.sk_X509_NAME_ENTRY_push(stack, name_entry)
-        backend.openssl_assert(res >= 1)
-    return stack
-
-
 def _encode_name_entry(backend, attribute):
     # TODO: remove this entire func by completing extension encoding
     assert attribute._type not in (
@@ -126,50 +109,6 @@ def _txt2obj_gc(backend, name):
     return obj
 
 
-def _encode_general_names(backend, names):
-    general_names = backend._lib.GENERAL_NAMES_new()
-    backend.openssl_assert(general_names != backend._ffi.NULL)
-    for name in names:
-        gn = _encode_general_name(backend, name)
-        res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
-        backend.openssl_assert(res != 0)
-
-    return general_names
-
-
-def _encode_general_name(backend, name):
-    gn = backend._lib.GENERAL_NAME_new()
-    _encode_general_name_preallocated(backend, name, gn)
-    return gn
-
-
-def _encode_general_name_preallocated(backend, name, gn):
-    assert not isinstance(
-        name,
-        (
-            x509.RegisteredID,
-            x509.OtherName,
-            x509.RFC822Name,
-            x509.IPAddress,
-            x509.DNSName,
-        ),
-    )
-    if isinstance(name, x509.DirectoryName):
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        dir_name = _encode_name(backend, name.value)
-        gn.type = backend._lib.GEN_DIRNAME
-        gn.d.directoryName = dir_name
-    else:
-        assert isinstance(name, x509.UniformResourceIdentifier)
-        backend.openssl_assert(gn != backend._ffi.NULL)
-        # ia5strings are supposed to be ITU T.50 but to allow round-tripping
-        # of broken certs that encode utf8 we'll encode utf8 here too.
-        data = name.value.encode("utf8")
-        asn1_str = _encode_asn1_str(backend, data)
-        gn.type = backend._lib.GEN_URI
-        gn.d.uniformResourceIdentifier = asn1_str
-
-
 _CRLREASONFLAGS = {
     x509.ReasonFlags.key_compromise: 1,
     x509.ReasonFlags.ca_compromise: 2,
@@ -179,67 +118,4 @@ _CRLREASONFLAGS = {
     x509.ReasonFlags.certificate_hold: 6,
     x509.ReasonFlags.privilege_withdrawn: 7,
     x509.ReasonFlags.aa_compromise: 8,
-}
-
-
-def _encode_reasonflags(backend, reasons):
-    bitmask = backend._lib.ASN1_BIT_STRING_new()
-    backend.openssl_assert(bitmask != backend._ffi.NULL)
-    for reason in reasons:
-        res = backend._lib.ASN1_BIT_STRING_set_bit(
-            bitmask, _CRLREASONFLAGS[reason], 1
-        )
-        backend.openssl_assert(res == 1)
-
-    return bitmask
-
-
-def _encode_full_name(backend, full_name):
-    dpn = backend._lib.DIST_POINT_NAME_new()
-    backend.openssl_assert(dpn != backend._ffi.NULL)
-    dpn.type = _DISTPOINT_TYPE_FULLNAME
-    dpn.name.fullname = _encode_general_names(backend, full_name)
-    return dpn
-
-
-def _encode_relative_name(backend, relative_name):
-    dpn = backend._lib.DIST_POINT_NAME_new()
-    backend.openssl_assert(dpn != backend._ffi.NULL)
-    dpn.type = _DISTPOINT_TYPE_RELATIVENAME
-    dpn.name.relativename = _encode_sk_name_entry(backend, relative_name)
-    return dpn
-
-
-def _encode_cdps_freshest_crl(backend, cdps):
-    cdp = backend._lib.sk_DIST_POINT_new_null()
-    cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
-    for point in cdps:
-        dp = backend._lib.DIST_POINT_new()
-        backend.openssl_assert(dp != backend._ffi.NULL)
-
-        if point.reasons:
-            dp.reasons = _encode_reasonflags(backend, point.reasons)
-
-        if point.full_name:
-            dp.distpoint = _encode_full_name(backend, point.full_name)
-
-        if point.relative_name:
-            dp.distpoint = _encode_relative_name(backend, point.relative_name)
-
-        if point.crl_issuer:
-            dp.CRLissuer = _encode_general_names(backend, point.crl_issuer)
-
-        res = backend._lib.sk_DIST_POINT_push(cdp, dp)
-        backend.openssl_assert(res >= 1)
-
-    return cdp
-
-
-_EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_cdps_freshest_crl,
-    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
-}
-
-_CRL_EXTENSION_ENCODE_HANDLERS = {
-    ExtensionOID.FRESHEST_CRL: _encode_cdps_freshest_crl,
 }

@@ -5,9 +5,6 @@
 
 from cryptography import x509
 
-_DISTPOINT_TYPE_FULLNAME = 0
-_DISTPOINT_TYPE_RELATIVENAME = 1
-
 #    CRLReason ::= ENUMERATED {
 #        unspecified             (0),
 #        keyCompromise           (1),
