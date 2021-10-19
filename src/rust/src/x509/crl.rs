@@ -288,7 +288,7 @@ impl CertificateRevocationList {
                     let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(
                         ext_data,
                     )?;
-                    let ians = x509::parse_general_names(py, gn_seq)?;
+                    let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
                         x509_module
                             .getattr("IssuerAlternativeName")?
@@ -311,15 +311,21 @@ impl CertificateRevocationList {
                         Some(data) => certificate::parse_distribution_point_name(py, data)?,
                         None => (py.None(), py.None()),
                     };
-                    let reasons =
-                        certificate::parse_distribution_point_reasons(py, idp.only_some_reasons)?;
+                    let py_reasons = if let Some(reasons) = idp.only_some_reasons {
+                        certificate::parse_distribution_point_reasons(
+                            py,
+                            Some(reasons.unwrap_read()),
+                        )?
+                    } else {
+                        py.None()
+                    };
                     Ok(Some(
                         x509_module.getattr("IssuingDistributionPoint")?.call1((
                             full_name,
                             relative_name,
                             idp.only_contains_user_certs,
                             idp.only_contains_ca_certs,
-                            reasons,
+                            py_reasons,
                             idp.indirect_crl,
                             idp.only_contains_attribute_certs,
                         ))?,
@@ -543,7 +549,10 @@ impl RevokedCertificate {
     }
 }
 
-#[derive(asn1::Asn1Read)]
+type ReasonFlags<'a> =
+    Option<x509::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct IssuingDistributionPoint<'a> {
     #[explicit(0)]
     distribution_point: Option<certificate::DistributionPointName<'a>>,
@@ -557,7 +566,7 @@ struct IssuingDistributionPoint<'a> {
     only_contains_ca_certs: bool,
 
     #[implicit(3)]
-    only_some_reasons: Option<asn1::BitString<'a>>,
+    only_some_reasons: ReasonFlags<'a>,
 
     #[implicit(4)]
     #[default(false)]
@@ -606,7 +615,7 @@ pub fn parse_crl_entry_ext<'p>(
         Ok(Some(x509_module.getattr("CRLReason")?.call1((flags,))?))
     } else if oid == *CERTIFICATE_ISSUER_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(data)?;
-        let gns = x509::parse_general_names(py, gn_seq)?;
+        let gns = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
             x509_module.getattr("CertificateIssuer")?.call1((gns,))?,
         ))
@@ -639,6 +648,45 @@ fn encode_crl_extension<'p>(
             .downcast::<pyo3::types::PyLong>()?;
         let bytes = py_uint_to_big_endian_bytes(py, intval)?;
         let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *ISSUING_DISTRIBUTION_POINT_OID {
+        let py_idp = ext.getattr("value")?;
+
+        let only_some_reasons = if py_idp.getattr("only_some_reasons")?.is_true()? {
+            let py_reasons = py_idp.getattr("only_some_reasons")?;
+            let reasons = certificate::encode_distribution_point_reasons(py, py_reasons)?;
+            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
+        } else {
+            None
+        };
+        let distribution_point = if py_idp.getattr("full_name")?.is_true()? {
+            let gns = x509::common::encode_general_names(py, py_idp.getattr("full_name")?)?;
+            Some(certificate::DistributionPointName::FullName(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+            ))
+        } else if py_idp.getattr("relative_name")?.is_true()? {
+            let mut name_entries = vec![];
+            for py_name_entry in py_idp.getattr("relative_name")?.iter()? {
+                name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
+            }
+            Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+            ))
+        } else {
+            None
+        };
+
+        let idp = IssuingDistributionPoint {
+            distribution_point,
+            indirect_crl: py_idp.getattr("indirect_crl")?.extract()?,
+            only_contains_attribute_certs: py_idp
+                .getattr("only_contains_attribute_certs")?
+                .extract()?,
+            only_contains_ca_certs: py_idp.getattr("only_contains_ca_certs")?.extract()?,
+            only_contains_user_certs: py_idp.getattr("only_contains_user_certs")?.extract()?,
+            only_some_reasons,
+        };
+        let result = asn1::write_single(&idp);
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
         let py_ads = ext.getattr("value")?;

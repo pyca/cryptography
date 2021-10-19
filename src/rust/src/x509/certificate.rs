@@ -583,13 +583,19 @@ struct DistributionPoint<'a> {
     crl_issuer: Option<asn1::SequenceOf<'a, x509::GeneralName<'a>>>,
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) enum DistributionPointName<'a> {
     #[implicit(0)]
-    FullName(asn1::SequenceOf<'a, x509::GeneralName<'a>>),
+    FullName(x509::common::SequenceOfGeneralName<'a>),
 
     #[implicit(1)]
-    NameRelativeToCRLIssuer(asn1::SetOf<'a, x509::AttributeTypeValue<'a>>),
+    NameRelativeToCRLIssuer(
+        x509::Asn1ReadableOrWritable<
+            'a,
+            asn1::SetOf<'a, x509::AttributeTypeValue<'a>>,
+            asn1::SetOfWriter<'a, x509::AttributeTypeValue<'a>, Vec<x509::AttributeTypeValue<'a>>>,
+        >,
+    ),
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -639,9 +645,12 @@ pub(crate) fn parse_distribution_point_name(
     dp: DistributionPointName<'_>,
 ) -> Result<(pyo3::PyObject, pyo3::PyObject), PyAsn1Error> {
     Ok(match dp {
-        DistributionPointName::FullName(data) => (x509::parse_general_names(py, data)?, py.None()),
+        DistributionPointName::FullName(data) => (
+            x509::parse_general_names(py, data.unwrap_read())?,
+            py.None(),
+        ),
         DistributionPointName::NameRelativeToCRLIssuer(data) => {
-            (py.None(), x509::parse_rdn(py, data)?)
+            (py.None(), x509::parse_rdn(py, data.unwrap_read())?)
         }
     })
 }
@@ -654,9 +663,9 @@ fn parse_distribution_point(
         Some(data) => parse_distribution_point_name(py, data)?,
         None => (py.None(), py.None()),
     };
-    let reasons = parse_distribution_point_reasons(py, dp.reasons)?;
+    let reasons = parse_distribution_point_reasons(py, dp.reasons.as_ref())?;
     let crl_issuer = match dp.crl_issuer {
-        Some(aci) => x509::parse_general_names(py, aci)?,
+        Some(aci) => x509::parse_general_names(py, &aci)?,
         None => py.None(),
     };
     let x509_module = py.import("cryptography.x509")?;
@@ -681,7 +690,7 @@ pub(crate) fn parse_distribution_points(
 
 pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
-    reasons: Option<asn1::BitString<'_>>,
+    reasons: Option<&asn1::BitString<'_>>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let reason_bit_mapping = py
         .import("cryptography.x509.extensions")?
@@ -698,6 +707,27 @@ pub(crate) fn parse_distribution_point_reasons(
         }
         None => py.None(),
     })
+}
+
+pub(crate) fn encode_distribution_point_reasons(
+    py: pyo3::Python<'_>,
+    py_reasons: &pyo3::PyAny,
+) -> pyo3::PyResult<asn1::OwnedBitString> {
+    let reason_flag_mapping = py
+        .import("cryptography.hazmat.backends.openssl.encode_asn1")?
+        .getattr("_CRLREASONFLAGS")?;
+
+    let mut bits = vec![0, 0];
+    for py_reason in py_reasons.iter()? {
+        let bit = reason_flag_mapping
+            .get_item(py_reason?)?
+            .extract::<usize>()?;
+        set_bit(&mut bits, bit, true)
+    }
+    if bits[1] == 0 {
+        bits.truncate(1);
+    }
+    Ok(asn1::OwnedBitString::new(bits, 0).unwrap())
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -726,7 +756,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         None => py.None(),
     };
     let issuer = match aki.authority_cert_issuer {
-        Some(aci) => x509::parse_general_names(py, aci.unwrap_read().clone())?,
+        Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
     Ok(x509_module.getattr("AuthorityKeyIdentifier")?.call1((
@@ -765,7 +795,7 @@ pub fn parse_cert_ext<'p>(
     let x509_module = py.import("cryptography.x509")?;
     if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
-        let sans = x509::parse_general_names(py, gn_seq)?;
+        let sans = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
             x509_module
                 .getattr("SubjectAlternativeName")?
@@ -773,7 +803,7 @@ pub fn parse_cert_ext<'p>(
         ))
     } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
-        let ians = x509::parse_general_names(py, gn_seq)?;
+        let ians = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
             x509_module
                 .getattr("IssuerAlternativeName")?
@@ -900,6 +930,14 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
+fn set_bit(vals: &mut [u8], n: usize, set: bool) {
+    let idx = n / 8;
+    let v = 1 << (7 - (n & 0x07));
+    if set {
+        vals[idx] |= v;
+    }
+}
+
 #[pyo3::prelude::pyfunction]
 fn encode_certificate_extension<'p>(
     py: pyo3::Python<'p>,
@@ -929,13 +967,6 @@ fn encode_certificate_extension<'p>(
         );
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *KEY_USAGE_OID {
-        fn set_bit(vals: &mut [u8], n: usize, set: bool) {
-            let idx = n / 8;
-            let v = 1 << (7 - (n & 0x07));
-            if set {
-                vals[idx] |= v;
-            }
-        }
         let mut bs = [0, 0];
         set_bit(
             &mut bs,
