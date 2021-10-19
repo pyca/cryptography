@@ -13,14 +13,9 @@ INCLUDES = """
  * together with another opaque typedef for the same name in the TYPES section.
  * Note that the result is an opaque type.
  */
-typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
-typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
-typedef STACK_OF(GENERAL_SUBTREE) Cryptography_STACK_OF_GENERAL_SUBTREE;
 """
 
 TYPES = """
-typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
-typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
 typedef ... EXTENDED_KEY_USAGE;
 typedef ... CONF;
 
@@ -30,30 +25,14 @@ typedef struct {
     ...;
 } X509V3_CTX;
 
-static const int GEN_OTHERNAME;
 static const int GEN_EMAIL;
-static const int GEN_X400;
 static const int GEN_DNS;
 static const int GEN_URI;
-static const int GEN_DIRNAME;
-static const int GEN_EDIPARTY;
-static const int GEN_IPADD;
-static const int GEN_RID;
 
-typedef struct {
-    ASN1_OBJECT *type_id;
-    ASN1_TYPE *value;
-} OTHERNAME;
+typedef ... OTHERNAME;
+typedef ... EDIPARTYNAME;
 
-typedef struct {
-    ...;
-} EDIPARTYNAME;
-
-typedef struct {
-    Cryptography_STACK_OF_GENERAL_SUBTREE *permittedSubtrees;
-    Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
-} NAME_CONSTRAINTS;
-
+typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
 
 typedef struct {
     int type;
@@ -79,136 +58,21 @@ typedef struct {
     } d;
     ...;
 } GENERAL_NAME;
-
-typedef struct {
-    GENERAL_NAME *base;
-    ASN1_INTEGER *minimum;
-    ASN1_INTEGER *maximum;
-} GENERAL_SUBTREE;
-
-typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
-
-typedef struct {
-    ASN1_OCTET_STRING *keyid;
-    GENERAL_NAMES *issuer;
-    ASN1_INTEGER *serial;
-} AUTHORITY_KEYID;
-
-typedef struct {
-    ASN1_OBJECT *method;
-    GENERAL_NAME *location;
-} ACCESS_DESCRIPTION;
-
-
-typedef ... Cryptography_STACK_OF_DIST_POINT;
-
-typedef struct {
-    int type;
-    union {
-        GENERAL_NAMES *fullname;
-        Cryptography_STACK_OF_X509_NAME_ENTRY *relativename;
-    } name;
-    ...;
-} DIST_POINT_NAME;
-
-typedef struct {
-    DIST_POINT_NAME *distpoint;
-    ASN1_BIT_STRING *reasons;
-    GENERAL_NAMES *CRLissuer;
-    ...;
-} DIST_POINT;
-
-typedef struct {
-    DIST_POINT_NAME *distpoint;
-    int onlyuser;
-    int onlyCA;
-    ASN1_BIT_STRING *onlysomereasons;
-    int indirectCRL;
-    int onlyattr;
-} ISSUING_DIST_POINT;
-
-typedef void (*sk_GENERAL_NAME_freefunc)(GENERAL_NAME *);
-typedef void (*sk_DIST_POINT_freefunc)(DIST_POINT *);
-typedef void (*sk_ACCESS_DESCRIPTION_freefunc)(ACCESS_DESCRIPTION *);
 """
 
 
 FUNCTIONS = """
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
-GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 /* The last two char * args became const char * in 1.1.0 */
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
-/* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
-   x509v3.h header. */
-AUTHORITY_KEYID *AUTHORITY_KEYID_new(void);
-void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
-
-NAME_CONSTRAINTS *NAME_CONSTRAINTS_new(void);
-void NAME_CONSTRAINTS_free(NAME_CONSTRAINTS *);
-
-OTHERNAME *OTHERNAME_new(void);
-void OTHERNAME_free(OTHERNAME *);
 
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
-int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
-
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
-int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
-void sk_GENERAL_NAME_pop_free(struct stack_st_GENERAL_NAME *,
-                              sk_GENERAL_NAME_freefunc);
-
-Cryptography_STACK_OF_ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_new_null(void);
-int sk_ACCESS_DESCRIPTION_num(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
-ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_value(
-    Cryptography_STACK_OF_ACCESS_DESCRIPTION *, int
-);
-void sk_ACCESS_DESCRIPTION_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
-void sk_ACCESS_DESCRIPTION_pop_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
-                              sk_ACCESS_DESCRIPTION_freefunc);
-int sk_ACCESS_DESCRIPTION_push(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
-                               ACCESS_DESCRIPTION *);
-
-ACCESS_DESCRIPTION *ACCESS_DESCRIPTION_new(void);
-void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
-
-Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
-void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
-int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
-DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
-int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
-void sk_DIST_POINT_pop_free(Cryptography_STACK_OF_DIST_POINT *,
-                            sk_DIST_POINT_freefunc);
-void CRL_DIST_POINTS_free(Cryptography_STACK_OF_DIST_POINT *);
-
-Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
-void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
-int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
-GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
-    Cryptography_STACK_OF_GENERAL_SUBTREE *, int
-);
-int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
-                            GENERAL_SUBTREE *);
-
-GENERAL_SUBTREE *GENERAL_SUBTREE_new(void);
-
-X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
-
-DIST_POINT *DIST_POINT_new(void);
-void DIST_POINT_free(DIST_POINT *);
-
-DIST_POINT_NAME *DIST_POINT_NAME_new(void);
-void DIST_POINT_NAME_free(DIST_POINT_NAME *);
-
-GENERAL_NAME *GENERAL_NAME_new(void);
-void GENERAL_NAME_free(GENERAL_NAME *);
-
-ISSUING_DIST_POINT *ISSUING_DIST_POINT_new(void);
-void ISSUING_DIST_POINT_free(ISSUING_DIST_POINT *);
 """
 
 CUSTOMIZATIONS = """
