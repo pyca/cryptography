@@ -32,6 +32,8 @@ static const int GEN_URI;
 typedef ... OTHERNAME;
 typedef ... EDIPARTYNAME;
 
+typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
+
 typedef struct {
     int type;
     union {
