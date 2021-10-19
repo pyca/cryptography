@@ -230,7 +230,7 @@ class TestAssertNoMemoryLeaks(object):
             )
 
     def test_errors(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="ZeroDivisionError"):
             assert_no_memory_leaks(
                 textwrap.dedent(
                     """
