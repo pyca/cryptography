@@ -44,8 +44,6 @@ from cryptography.hazmat.backends.openssl.ed448 import (
     _Ed448PublicKey,
 )
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _CRL_EXTENSION_ENCODE_HANDLERS,
-    _EXTENSION_ENCODE_HANDLERS,
     _encode_asn1_int_gc,
     _encode_asn1_str_gc,
     _encode_name_gc,
@@ -190,7 +188,6 @@ class Backend(BackendInterface):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self._register_x509_encoders()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
                 "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
@@ -414,12 +411,6 @@ class Backend(BackendInterface):
             self.register_cipher_adapter(
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
             )
-
-    def _register_x509_encoders(self):
-        self._extension_encode_handlers = _EXTENSION_ENCODE_HANDLERS.copy()
-        self._crl_extension_encode_handlers = (
-            _CRL_EXTENSION_ENCODE_HANDLERS.copy()
-        )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
@@ -919,7 +910,6 @@ class Backend(BackendInterface):
         # sk_extensions and will be freed along with it.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=self._extension_encode_handlers,
             rust_handler=rust_x509.encode_certificate_extension,
             x509_obj=sk_extension,
             add_func=self._lib.sk_X509_EXTENSION_insert,
@@ -1004,7 +994,6 @@ class Backend(BackendInterface):
         # Add extensions.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=self._extension_encode_handlers,
             rust_handler=rust_x509.encode_certificate_extension,
             x509_obj=x509_cert,
             add_func=self._lib.X509_add_ext,
@@ -1092,7 +1081,6 @@ class Backend(BackendInterface):
         # Add extensions.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers=self._crl_extension_encode_handlers,
             rust_handler=rust_x509.encode_crl_extension,
             x509_obj=x509_crl,
             add_func=self._lib.X509_CRL_add_ext,
@@ -1118,7 +1106,6 @@ class Backend(BackendInterface):
             # add CRL entry extensions
             self._create_x509_extensions(
                 extensions=revoked_cert.extensions,
-                handlers={},
                 rust_handler=rust_x509.encode_crl_entry_extension,
                 x509_obj=x509_revoked,
                 add_func=self._lib.X509_REVOKED_add_ext,
@@ -1138,11 +1125,11 @@ class Backend(BackendInterface):
         return self._ossl2crl(x509_crl)
 
     def _create_x509_extensions(
-        self, extensions, handlers, rust_handler, x509_obj, add_func, gc
+        self, extensions, rust_handler, x509_obj, add_func, gc
     ):
         for i, extension in enumerate(extensions):
             x509_extension = self._create_x509_extension(
-                handlers, rust_handler, extension
+                rust_handler, extension
             )
             self.openssl_assert(x509_extension != self._ffi.NULL)
 
@@ -1159,25 +1146,13 @@ class Backend(BackendInterface):
             self._ffi.NULL, obj, 1 if extension.critical else 0, value
         )
 
-    def _create_x509_extension(self, handlers, rust_handler, extension):
+    def _create_x509_extension(self, rust_handler, extension):
         if isinstance(extension.value, x509.UnrecognizedExtension):
             value = _encode_asn1_str_gc(self, extension.value.value)
             return self._create_raw_x509_extension(extension, value)
 
-        try:
-            encode = handlers[extension.oid]
-        except KeyError:
-            value = _encode_asn1_str_gc(self, rust_handler(extension))
-            return self._create_raw_x509_extension(extension, value)
-
-        ext_struct = encode(self, extension.value)
-        nid = self._lib.OBJ_txt2nid(
-            extension.oid.dotted_string.encode("ascii")
-        )
-        self.openssl_assert(nid != self._lib.NID_undef)
-        return self._lib.X509V3_EXT_i2d(
-            nid, 1 if extension.critical else 0, ext_struct
-        )
+        value = _encode_asn1_str_gc(self, rust_handler(extension))
+        return self._create_raw_x509_extension(extension, value)
 
     def create_x509_revoked_certificate(
         self, builder: x509.RevokedCertificateBuilder
@@ -1655,7 +1630,6 @@ class Backend(BackendInterface):
         self.openssl_assert(onereq != self._ffi.NULL)
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers={},
             rust_handler=rust_ocsp.encode_ocsp_request_extension,
             x509_obj=ocsp_req,
             add_func=self._lib.OCSP_REQUEST_add_ext,
@@ -1734,7 +1708,6 @@ class Backend(BackendInterface):
 
         self._create_x509_extensions(
             extensions=builder._extensions,
-            handlers={},
             rust_handler=rust_ocsp.encode_ocsp_basic_response_extension,
             x509_obj=basic,
             add_func=self._lib.OCSP_BASICRESP_add_ext,

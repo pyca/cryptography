@@ -549,7 +549,7 @@ impl RevokedCertificate {
     }
 }
 
-type ReasonFlags<'a> =
+pub(crate) type ReasonFlags<'a> =
     Option<x509::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -687,6 +687,10 @@ fn encode_crl_extension<'p>(
             only_some_reasons,
         };
         let result = asn1::write_single(&idp);
+        Ok(pyo3::types::PyBytes::new(py, &result))
+    } else if oid == *FRESHEST_CRL_OID {
+        let dps = certificate::encode_distribution_points(py, ext.getattr("value")?)?;
+        let result = asn1::write_single(&asn1::SequenceOfWriter::new(dps));
         Ok(pyo3::types::PyBytes::new(py, &result))
     } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
         let py_ads = ext.getattr("value")?;
