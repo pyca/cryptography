@@ -29,32 +29,14 @@ static const int GEN_EMAIL;
 static const int GEN_DNS;
 static const int GEN_URI;
 
-typedef ... OTHERNAME;
-typedef ... EDIPARTYNAME;
-
 typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
 
+/* Only include the one union element used by pyOpenSSL. */
 typedef struct {
     int type;
     union {
-        char *ptr;
-        OTHERNAME *otherName;  /* otherName */
-        ASN1_IA5STRING *rfc822Name;
-        ASN1_IA5STRING *dNSName;
-        ASN1_TYPE *x400Address;
-        X509_NAME *directoryName;
-        EDIPARTYNAME *ediPartyName;
-        ASN1_IA5STRING *uniformResourceIdentifier;
-        ASN1_OCTET_STRING *iPAddress;
-        ASN1_OBJECT *registeredID;
-
-        /* Old names */
-        ASN1_OCTET_STRING *ip; /* iPAddress */
-        X509_NAME *dirn;       /* dirn */
         ASN1_IA5STRING *ia5;   /* rfc822Name, dNSName, */
                                /*   uniformResourceIdentifier */
-        ASN1_OBJECT *rid;      /* registeredID */
-        ASN1_TYPE *other;      /* x400Address */
     } d;
     ...;
 } GENERAL_NAME;
