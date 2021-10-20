@@ -325,15 +325,19 @@ impl Time {
     }
 }
 
-pub(crate) type Extensions<'a> = asn1::SequenceOf<'a, Extension<'a>>;
+pub(crate) type Extensions<'a> = Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, Extension<'a>>,
+    asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
+>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct AlgorithmIdentifier<'a> {
     pub(crate) oid: asn1::ObjectIdentifier<'a>,
-    pub(crate) _params: Option<asn1::Tlv<'a>>,
+    pub(crate) params: Option<asn1::Tlv<'a>>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct Extension<'a> {
     pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
     #[default(false)]
@@ -535,7 +539,7 @@ pub(crate) fn parse_and_cache_extensions<
     let exts = pyo3::types::PyList::empty(py);
     let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
-        for raw_ext in raw_exts.clone() {
+        for raw_ext in raw_exts.unwrap_read().clone() {
             let oid_obj =
                 x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
 
@@ -567,6 +571,50 @@ pub(crate) fn parse_and_cache_extensions<
     Ok(extensions)
 }
 
+pub(crate) fn encode_extensions<
+    'p,
+    F: Fn(&asn1::ObjectIdentifier<'_>, &pyo3::PyAny) -> pyo3::PyResult<Option<Vec<u8>>>,
+>(
+    py: pyo3::Python<'p>,
+    py_exts: &'p pyo3::PyAny,
+    encode_ext: F,
+) -> pyo3::PyResult<Option<Extensions<'p>>> {
+    let mut exts = vec![];
+    for py_ext in py_exts.iter()? {
+        let py_ext = py_ext?;
+        let oid = asn1::ObjectIdentifier::from_string(
+            py_ext
+                .getattr("oid")?
+                .getattr("dotted_string")?
+                .extract::<&str>()?,
+        )
+        .unwrap();
+        match encode_ext(&oid, py_ext.getattr("value")?)? {
+            Some(data) => {
+                // TODO: extra copy
+                let py_data = pyo3::types::PyBytes::new(py, &data);
+                exts.push(Extension {
+                    extn_id: oid,
+                    critical: py_ext.getattr("critical")?.extract()?,
+                    extn_value: py_data.as_bytes(),
+                })
+            }
+            None => {
+                return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+                    "Extension not supported: {}",
+                    oid
+                )))
+            }
+        }
+    }
+    if exts.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(Asn1ReadableOrWritable::new_write(
+        asn1::SequenceOfWriter::new(exts),
+    )))
+}
+
 pub(crate) fn chrono_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &chrono::DateTime<chrono::Utc>,
@@ -596,7 +644,7 @@ pub(crate) fn py_to_chrono(val: &pyo3::PyAny) -> pyo3::PyResult<chrono::DateTime
         ))
 }
 
-#[derive(Hash, PartialEq)]
+#[derive(Hash, PartialEq, Clone)]
 pub(crate) enum Asn1ReadableOrWritable<'a, T, U> {
     Read(T, PhantomData<&'a ()>),
     Write(U, PhantomData<&'a ()>),

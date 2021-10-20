@@ -8,7 +8,6 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... OCSP_REQUEST;
 typedef ... OCSP_ONEREQ;
 typedef ... OCSP_RESPONSE;
 typedef ... OCSP_BASICRESP;
@@ -19,10 +18,8 @@ static const long OCSP_RESPID_KEY;
 """
 
 FUNCTIONS = """
-OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
 OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
 void OCSP_CERTID_free(OCSP_CERTID *);
-
 
 OCSP_BASICRESP *OCSP_BASICRESP_new(void);
 void OCSP_BASICRESP_free(OCSP_BASICRESP *);
@@ -36,10 +33,6 @@ int OCSP_basic_sign(OCSP_BASICRESP *, X509 *, EVP_PKEY *, const EVP_MD *,
 OCSP_RESPONSE *OCSP_response_create(int, OCSP_BASICRESP *);
 void OCSP_RESPONSE_free(OCSP_RESPONSE *);
 
-OCSP_REQUEST *OCSP_REQUEST_new(void);
-void OCSP_REQUEST_free(OCSP_REQUEST *);
-int OCSP_REQUEST_add_ext(OCSP_REQUEST *, X509_EXTENSION *, int);
-int i2d_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST *);
 int i2d_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE *);
 """
 
