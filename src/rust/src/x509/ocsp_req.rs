@@ -147,10 +147,8 @@ struct TBSRequest<'a> {
     #[explicit(0)]
     #[default(0)]
     version: u8,
-    // This is virtually unused, not supported until GeneralName is implemented
-    // and used elsewhere.
-    // #[explicit(1)]
-    // _requestor_name: Option<GeneralName<'a>>,
+    #[explicit(1)]
+    _requestor_name: Option<x509::GeneralName<'a>>,
     request_list: asn1::SequenceOf<'a, Request<'a>>,
     #[explicit(2)]
     request_extensions: Option<x509::Extensions<'a>>,
