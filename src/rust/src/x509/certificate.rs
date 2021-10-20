@@ -53,7 +53,7 @@ struct TbsCertificate<'a> {
     validity: Validity,
     subject: x509::Name<'a>,
 
-    spki: asn1::Sequence<'a>,
+    spki: SubjectPublicKeyInfo<'a>,
     #[implicit(1)]
     _issuer_unique_id: Option<asn1::BitString<'a>>,
     #[implicit(2)]
@@ -66,6 +66,12 @@ struct TbsCertificate<'a> {
 pub(crate) struct Validity {
     not_before: x509::Time,
     not_after: x509::Time,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+pub(crate) struct SubjectPublicKeyInfo<'a> {
+    _algorithm: x509::AlgorithmIdentifier<'a>,
+    _subject_public_key: asn1::BitString<'a>,
 }
 
 #[ouroboros::self_referencing]
