@@ -1616,31 +1616,6 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def create_ocsp_request(self, builder):
-        ocsp_req = self._lib.OCSP_REQUEST_new()
-        self.openssl_assert(ocsp_req != self._ffi.NULL)
-        ocsp_req = self._ffi.gc(ocsp_req, self._lib.OCSP_REQUEST_free)
-        cert, issuer, algorithm = builder._request
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
-        ossl_cert = self._cert2ossl(cert)
-        ossl_issuer = self._cert2ossl(issuer)
-        certid = self._lib.OCSP_cert_to_id(evp_md, ossl_cert, ossl_issuer)
-        self.openssl_assert(certid != self._ffi.NULL)
-        onereq = self._lib.OCSP_request_add0_id(ocsp_req, certid)
-        self.openssl_assert(onereq != self._ffi.NULL)
-        self._create_x509_extensions(
-            extensions=builder._extensions,
-            rust_handler=rust_ocsp.encode_ocsp_request_extension,
-            x509_obj=ocsp_req,
-            add_func=self._lib.OCSP_REQUEST_add_ext,
-            gc=True,
-        )
-
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_OCSP_REQUEST_bio(bio, ocsp_req)
-        self.openssl_assert(res > 0)
-        return ocsp.load_der_ocsp_request(self._read_mem_bio(bio))
-
     def _create_ocsp_basic_response(self, builder, private_key, algorithm):
         self._x509_check_signature_params(private_key, algorithm)
 

@@ -343,12 +343,10 @@ class OCSPRequestBuilder(object):
         )
 
     def build(self) -> OCSPRequest:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if self._request is None:
             raise ValueError("You must add a certificate before building")
 
-        return backend.create_ocsp_request(self)
+        return ocsp.create_ocsp_request(self)
 
 
 class OCSPResponseBuilder(object):

@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error};
+use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::ocsp;
 use std::sync::Arc;
@@ -16,10 +16,17 @@ struct OwnedRawOCSPRequest {
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPRequest, PyAsn1Error> {
+fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<OCSPRequest> {
     let raw = OwnedRawOCSPRequest::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
 
-    if raw.borrow_value().tbs_request.request_list.len() != 1 {
+    if raw
+        .borrow_value()
+        .tbs_request
+        .request_list
+        .unwrap_read()
+        .len()
+        != 1
+    {
         return Err(PyAsn1Error::from(
             pyo3::exceptions::PyNotImplementedError::new_err(
                 "OCSP request contains more than one request",
@@ -47,6 +54,7 @@ impl OCSPRequest {
             .borrow_value()
             .tbs_request
             .request_list
+            .unwrap_read()
             .clone()
             .next()
             .unwrap()
@@ -139,7 +147,7 @@ struct RawOCSPRequest<'a> {
     // certificate is more trouble than it's worth, since it's not in the
     // Python API.
     #[explicit(0)]
-    _optional_signature: Option<asn1::Sequence<'a>>,
+    optional_signature: Option<asn1::Sequence<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -148,8 +156,12 @@ struct TBSRequest<'a> {
     #[default(0)]
     version: u8,
     #[explicit(1)]
-    _requestor_name: Option<x509::GeneralName<'a>>,
-    request_list: asn1::SequenceOf<'a, Request<'a>>,
+    requestor_name: Option<x509::GeneralName<'a>>,
+    request_list: x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SequenceOf<'a, Request<'a>>,
+        asn1::SequenceOfWriter<'a, Request<'a>>,
+    >,
     #[explicit(2)]
     request_extensions: Option<x509::Extensions<'a>>,
 }
@@ -158,30 +170,84 @@ struct TBSRequest<'a> {
 struct Request<'a> {
     req_cert: ocsp::CertID<'a>,
     #[explicit(0)]
-    _single_request_extensions: Option<x509::Extensions<'a>>,
+    single_request_extensions: Option<x509::Extensions<'a>>,
 }
 
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_request_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
-    let oid = asn1::ObjectIdentifier::from_string(
-        ext.getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
-    if oid == *ocsp::NONCE_OID {
-        Ok(ext.getattr("value")?.getattr("nonce")?)
+fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Result<OCSPRequest> {
+    let (py_cert, py_issuer, py_hash): (
+        pyo3::PyRef<'_, x509::Certificate>,
+        pyo3::PyRef<'_, x509::Certificate>,
+        &pyo3::PyAny,
+    ) = builder.getattr("_request")?.extract()?;
+
+    let issuer_name_hash = ocsp::hash_data(
+        py,
+        py_hash,
+        &asn1::write_single(&py_cert.raw.borrow_value_public().tbs_cert.issuer),
+    )?;
+    let issuer_key_hash = ocsp::hash_data(
+        py,
+        py_hash,
+        py_issuer
+            .raw
+            .borrow_value_public()
+            .tbs_cert
+            .spki
+            .subject_public_key
+            .as_bytes(),
+    )?;
+
+    let extensions = x509::common::encode_extensions(
+        py,
+        builder.getattr("_extensions")?,
+        encode_ocsp_request_extension,
+    )?;
+    let null_der = asn1::write_single(&());
+    let reqs = [Request {
+        req_cert: ocsp::CertID {
+            hash_algorithm: x509::AlgorithmIdentifier {
+                oid: ocsp::HASH_NAME_TO_OIDS[py_hash.getattr("name")?.extract::<&str>()?].clone(),
+                // TODO: kind of verbose way to say "\x05\x00".
+                params: Some(asn1::parse_single(&null_der)?),
+            },
+            issuer_name_hash,
+            issuer_key_hash,
+            serial_number: py_cert.raw.borrow_value_public().tbs_cert.serial,
+        },
+        single_request_extensions: None,
+    }];
+    let ocsp_req = RawOCSPRequest {
+        tbs_request: TBSRequest {
+            version: 0,
+            requestor_name: None,
+            request_list: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+                &reqs,
+            )),
+            request_extensions: extensions,
+        },
+        optional_signature: None,
+    };
+    let data = asn1::write_single(&ocsp_req);
+    // TODO: extra copy as we round-trip through a slice
+    load_der_ocsp_request(py, &data)
+}
+
+fn encode_ocsp_request_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*ocsp::NONCE_OID {
+        let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
+        Ok(Some(nonce.to_vec()))
     } else {
-        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-            "Extension not supported: {}",
-            oid
-        )))
+        Ok(None)
     }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_ocsp_request_extension))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(create_ocsp_request))?;
 
     Ok(())
 }

@@ -36,24 +36,24 @@ lazy_static::lazy_static! {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
 pub(crate) struct RawCertificate<'a> {
-    tbs_cert: TbsCertificate<'a>,
+    pub(crate) tbs_cert: TbsCertificate<'a>,
     signature_alg: x509::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
-struct TbsCertificate<'a> {
+pub(crate) struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
     version: u8,
-    serial: asn1::BigUint<'a>,
+    pub(crate) serial: asn1::BigUint<'a>,
     _signature_alg: asn1::Sequence<'a>,
 
-    issuer: x509::Name<'a>,
+    pub(crate) issuer: x509::Name<'a>,
     validity: Validity,
     subject: x509::Name<'a>,
 
-    spki: SubjectPublicKeyInfo<'a>,
+    pub(crate) spki: SubjectPublicKeyInfo<'a>,
     #[implicit(1)]
     _issuer_unique_id: Option<asn1::BitString<'a>>,
     #[implicit(2)]
@@ -71,7 +71,7 @@ pub(crate) struct Validity {
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
 pub(crate) struct SubjectPublicKeyInfo<'a> {
     _algorithm: x509::AlgorithmIdentifier<'a>,
-    _subject_public_key: asn1::BitString<'a>,
+    pub(crate) subject_public_key: asn1::BitString<'a>,
 }
 
 #[ouroboros::self_referencing]
@@ -90,6 +90,10 @@ impl OwnedRawCertificate {
         value_ref_builder: impl for<'this> FnOnce(&'this Arc<[u8]>) -> RawCertificate<'this>,
     ) -> OwnedRawCertificate {
         OwnedRawCertificate::new(data, value_ref_builder)
+    }
+
+    pub(crate) fn borrow_value_public(&self) -> &RawCertificate<'_> {
+        self.borrow_value()
     }
 }
 
