@@ -19,8 +19,8 @@ jobs:
       matrix:
         PYTHON:
           - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
-          - { VERSION: "pypy3.6", PATH: "/opt/pypy3.6/bin/pypy" }
           - { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
+          - { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
         MANYLINUX:
           - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
@@ -28,9 +28,9 @@ jobs:
           - { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
         exclude:
           # There are no readily available musllinux PyPy distributions
-          - PYTHON: { VERSION: "pypy3.6", PATH: "/opt/pypy3.6/bin/pypy" }
-            MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64" }
           - PYTHON: { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
+            MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64" }
+          - PYTHON: { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
             MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
@@ -85,7 +85,7 @@ jobs:
             ABI_VERSION: 'cp36'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.10/python-3.8.10-macosx10.9.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
-          - VERSION: 'pypy-3.7'
+          - VERSION: 'pypy-3.8'
             BIN_PATH: 'pypy3'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
     steps:
@@ -153,11 +153,11 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.8", MSVC_VERSION: "2019", "ABI_VERSION": "cp36"}
-          - {VERSION: "pypy-3.7", MSVC_VERSION: "2019"}
+          - {VERSION: "pypy-3.8", MSVC_VERSION: "2019"}
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-            PYTHON: {VERSION: "pypy-3.7", MSVC_VERSION: "2019"}
+            PYTHON: {VERSION: "pypy-3.8", MSVC_VERSION: "2019"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - uses: actions/checkout@v2.3.4
