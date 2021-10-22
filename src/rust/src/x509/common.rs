@@ -43,7 +43,7 @@ pub(crate) type Name<'a> = Asn1ReadableOrWritable<
     >,
 >;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct AttributeTypeValue<'a> {
     pub(crate) type_id: asn1::ObjectIdentifier<'a>,
     pub(crate) value: RawTlv<'a>,
@@ -51,7 +51,7 @@ pub(crate) struct AttributeTypeValue<'a> {
 
 // Like `asn1::Tlv` but doesn't store `full_data` so it can be constucted from
 // an un-encoded tag and value.
-#[derive(Hash, PartialEq)]
+#[derive(Hash, PartialEq, Clone)]
 pub(crate) struct RawTlv<'a> {
     tag: u8,
     value: &'a [u8],

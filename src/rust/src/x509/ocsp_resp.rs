@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{certificate, crl, ocsp, sct};
+use crate::x509::{certificate, crl, ocsp, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
@@ -444,7 +444,7 @@ struct ResponseBytes<'a> {
     response: &'a [u8],
 }
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct BasicOCSPResponse<'a> {
     tbs_response_data: ResponseData<'a>,
     signature_algorithm: x509::AlgorithmIdentifier<'a>,
@@ -507,27 +507,107 @@ struct RevokedInfo {
     revocation_reason: Option<crl::CRLReason>,
 }
 
+fn create_ocsp_basic_response<'p>(
+    py: pyo3::Python<'p>,
+    builder: &'p pyo3::PyAny,
+    private_key: &'p pyo3::PyAny,
+    hash_algorithm: &'p pyo3::PyAny,
+) -> pyo3::PyResult<BasicOCSPResponse<'p>> {
+    let ocsp_mod = py.import("cryptography.x509.ocsp")?;
+
+    let py_single_resp = builder.getattr("_response")?;
+    let (responder_cert, responder_encoding): (pyo3::PyRef<'_, x509::Certificate>, &pyo3::PyAny) =
+        builder.getattr("_responder_id")?.extract()?;
+
+    let responder_id =
+        if responder_encoding == ocsp_mod.getattr("OCSPResponderEncoding")?.getattr("HASH")? {
+            todo!()
+        } else {
+            ResponderId::ByName(
+                responder_cert
+                    .raw
+                    .borrow_value_public()
+                    .tbs_cert
+                    .subject
+                    .clone(),
+            )
+        };
+
+    let tbs_response_data = ResponseData {
+        version: 0,
+        produced_at: asn1::GeneralizedTime::new(py_to_chrono(
+            py_single_resp.getattr("_this_update")?,
+        )?),
+        responder_id,
+        responses: todo!(),
+        response_extensions: x509::common::encode_extensions(
+            py,
+            builder.getattr("_extensions")?,
+            encode_ocsp_basic_response_extension,
+        )?,
+    };
+
+    let sigalg = x509::sign::compute_signature_algorithm(private_key, hash_algorithm)?;
+    let tbs_bytes = asn1::write_single(&tbs_response_data);
+    let signature = x509::sign::sign_data(private_key, hash_algorithm, &tbs_bytes)?;
+
+    Ok(BasicOCSPResponse {
+        tbs_response_data,
+        signature: asn1::BitString::new(signature, 0).unwrap(),
+        signature_algorithm: sigalg,
+        certs: todo!(),
+    })
+}
+
 #[pyo3::prelude::pyfunction]
-fn encode_ocsp_basic_response_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
-    let oid = asn1::ObjectIdentifier::from_string(
-        ext.getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
-    if oid == *ocsp::NONCE_OID {
-        Ok(ext.getattr("value")?.getattr("nonce")?)
+fn create_ocsp_response(
+    py: pyo3::Python<'_>,
+    status: &pyo3::PyAny,
+    builder: &pyo3::PyAny,
+    private_key: &pyo3::PyAny,
+    hash_algorithm: &pyo3::PyAny,
+) -> PyAsn1Result<OCSPResponse> {
+    let response_status = status.getattr("value")?.extract::<u32>()?;
+    let data;
+    let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
+        let basic_resp = create_ocsp_basic_response(py, builder, private_key, hash_algorithm)?;
+        data = asn1::write_single(&basic_resp);
+        Some(ResponseBytes {
+            response_type: (*BASIC_RESPONSE_OID).clone(),
+            response: &data,
+        })
     } else {
-        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-            "Extension not supported: {}",
-            oid
-        )))
+        None
+    };
+
+    let resp = RawOCSPResponse {
+        response_status: asn1::Enumerated::new(response_status),
+        response_bytes,
+    };
+    let data = asn1::write_single(&resp);
+    // TODO: extra copy as we round-trip through a slice
+    load_der_ocsp_response(py, &data)
+}
+
+fn encode_ocsp_basic_response_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*ocsp::NONCE_OID {
+        Ok(Some(
+            ext.getattr("value")?
+                .getattr("nonce")?
+                .extract::<&[u8]>()?
+                .to_vec(),
+        ))
+    } else {
+        Ok(None)
     }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_response))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_ocsp_basic_response_extension))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(create_ocsp_response))?;
 
     Ok(())
 }

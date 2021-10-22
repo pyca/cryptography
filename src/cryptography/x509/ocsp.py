@@ -459,7 +459,7 @@ class OCSPResponseBuilder(object):
         if self._responder_id is None:
             raise ValueError("You must add a responder_id before signing")
 
-        return backend.create_ocsp_response(
+        return ocsp.create_ocsp_response(
             OCSPResponseStatus.SUCCESSFUL, self, private_key, algorithm
         )
 
@@ -476,7 +476,7 @@ class OCSPResponseBuilder(object):
         if response_status is OCSPResponseStatus.SUCCESSFUL:
             raise ValueError("response_status cannot be SUCCESSFUL")
 
-        return backend.create_ocsp_response(response_status, None, None, None)
+        return ocsp.create_ocsp_response(response_status, None, None, None)
 
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest:

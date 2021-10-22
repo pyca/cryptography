@@ -51,7 +51,7 @@ pub(crate) struct TbsCertificate<'a> {
 
     pub(crate) issuer: x509::Name<'a>,
     validity: Validity,
-    subject: x509::Name<'a>,
+    pub(crate) subject: x509::Name<'a>,
 
     pub(crate) spki: SubjectPublicKeyInfo<'a>,
     #[implicit(1)]
