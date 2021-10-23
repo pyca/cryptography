@@ -4,7 +4,7 @@ requires = [
     # and may be stricter than the version required in `setup.cfg`
     "setuptools>=40.6.0",
     "wheel",
-    # Must be kept in sync with the `setup_requirements` in `setup.cfg`
+    # Must be kept in sync with the `install_requirements` in `setup.cfg`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
     "setuptools-rust>=0.11.4",
 ]
