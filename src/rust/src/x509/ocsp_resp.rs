@@ -45,7 +45,11 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
     )?;
 
     if let Some(basic_response) = raw.borrow_basic_response() {
-        let num_responses = basic_response.tbs_response_data.responses.len();
+        let num_responses = basic_response
+            .tbs_response_data
+            .responses
+            .unwrap_read()
+            .len();
         if num_responses != 1 {
             return Err(PyAsn1Error::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -455,7 +459,12 @@ struct BasicOCSPResponse<'a> {
 
 impl BasicOCSPResponse<'_> {
     fn single_response(&self) -> SingleResponse<'_> {
-        self.tbs_response_data.responses.clone().next().unwrap()
+        self.tbs_response_data
+            .responses
+            .unwrap_read()
+            .clone()
+            .next()
+            .unwrap()
     }
 }
 
@@ -466,7 +475,11 @@ struct ResponseData<'a> {
     version: u8,
     responder_id: ResponderId<'a>,
     produced_at: asn1::GeneralizedTime,
-    responses: asn1::SequenceOf<'a, SingleResponse<'a>>,
+    responses: x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SequenceOf<'a, SingleResponse<'a>>,
+        asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
+    >,
     #[explicit(1)]
     response_extensions: Option<x509::Extensions<'a>>,
 }
@@ -533,13 +546,21 @@ fn create_ocsp_basic_response<'p>(
             )
         };
 
+    let responses = vec![SingleResponse {
+        cert_id: ocsp::CertID::new,
+        cert_status: todo!(),
+        next_update: todo!(),
+        this_update: todo!(),
+        single_extensions: None,
+    }];
+
     let tbs_response_data = ResponseData {
         version: 0,
         produced_at: asn1::GeneralizedTime::new(py_to_chrono(
             py_single_resp.getattr("_this_update")?,
         )?),
         responder_id,
-        responses: todo!(),
+        responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(responses)),
         response_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
