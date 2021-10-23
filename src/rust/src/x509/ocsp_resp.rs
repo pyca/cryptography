@@ -566,17 +566,16 @@ fn create_ocsp_basic_response<'p>(
             None
         };
         // REVOKED
+        let revocation_time =
+            asn1::GeneralizedTime::new(py_to_chrono(py_single_resp.getattr("_revocation_time")?)?);
         CertStatus::Revoked(RevokedInfo {
-            revocation_time: asn1::GeneralizedTime::new(py_to_chrono(
-                py_single_resp.getattr("_revocation_time")?,
-            )?),
+            revocation_time,
             revocation_reason,
         })
     };
     let next_update = if !py_single_resp.getattr("_next_update")?.is_none() {
-        Some(asn1::GeneralizedTime::new(py_to_chrono(
-            py_single_resp.getattr("_next_update")?,
-        )?))
+        let py_next_update = py_single_resp.getattr("_next_update")?;
+        Some(asn1::GeneralizedTime::new(py_to_chrono(py_next_update)?))
     } else {
         None
     };
