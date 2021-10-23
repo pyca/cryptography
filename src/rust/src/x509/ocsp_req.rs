@@ -181,40 +181,13 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         &pyo3::PyAny,
     ) = builder.getattr("_request")?.extract()?;
 
-    let issuer_name_hash = ocsp::hash_data(
-        py,
-        py_hash,
-        &asn1::write_single(&py_cert.raw.borrow_value_public().tbs_cert.issuer),
-    )?;
-    let issuer_key_hash = ocsp::hash_data(
-        py,
-        py_hash,
-        py_issuer
-            .raw
-            .borrow_value_public()
-            .tbs_cert
-            .spki
-            .subject_public_key
-            .as_bytes(),
-    )?;
-
     let extensions = x509::common::encode_extensions(
         py,
         builder.getattr("_extensions")?,
         encode_ocsp_request_extension,
     )?;
-    let null_der = asn1::write_single(&());
     let reqs = [Request {
-        req_cert: ocsp::CertID {
-            hash_algorithm: x509::AlgorithmIdentifier {
-                oid: ocsp::HASH_NAME_TO_OIDS[py_hash.getattr("name")?.extract::<&str>()?].clone(),
-                // TODO: kind of verbose way to say "\x05\x00".
-                params: Some(asn1::parse_single(&null_der)?),
-            },
-            issuer_name_hash,
-            issuer_key_hash,
-            serial_number: py_cert.raw.borrow_value_public().tbs_cert.serial,
-        },
+        req_cert: ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?,
         single_request_extensions: None,
     }];
     let ocsp_req = RawOCSPRequest {
