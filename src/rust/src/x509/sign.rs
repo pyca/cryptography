@@ -143,7 +143,8 @@ pub(crate) fn sign_data<'p>(
                 (data, ec_mod.getattr("ECDSA")?.call1((hash_algorithm,))?),
             )?
         }
-        _ => todo!("{:?}", key_type),
+        KeyType::Rsa => todo!(),
+        KeyType::Dsa => todo!(),
     };
     signature.extract()
 }
