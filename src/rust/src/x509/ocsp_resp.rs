@@ -449,13 +449,7 @@ struct ResponseBytes<'a> {
     response: &'a [u8],
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct BasicOCSPResponse<'a> {
-    tbs_response_data: ResponseData<'a>,
-    signature_algorithm: x509::AlgorithmIdentifier<'a>,
-    signature: asn1::BitString<'a>,
-    #[explicit(0)]
-    certs: Option<
+type OCSPCerts<'a> = Option<
         x509::Asn1ReadableOrWritable<
             'a,
             asn1::SequenceOf<'a, certificate::RawCertificate<'a>>,
@@ -465,7 +459,15 @@ struct BasicOCSPResponse<'a> {
                 Vec<certificate::RawCertificate<'a>>,
             >,
         >,
-    >,
+    >;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct BasicOCSPResponse<'a> {
+    tbs_response_data: ResponseData<'a>,
+    signature_algorithm: x509::AlgorithmIdentifier<'a>,
+    signature: asn1::BitString<'a>,
+    #[explicit(0)]
+    certs: OCSPCerts<'a>,
 }
 
 impl BasicOCSPResponse<'_> {
@@ -585,7 +587,7 @@ fn create_ocsp_basic_response<'p>(
         cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
         cert_status,
         next_update,
-        this_update: this_update,
+        this_update,
         single_extensions: None,
     }];
 
@@ -646,18 +648,16 @@ fn create_ocsp_basic_response<'p>(
 
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>> =
         builder.getattr("_certs")?.extract()?;
-    let certs = if let Some(py_certs) = py_certs.as_ref() {
-        Some(x509::Asn1ReadableOrWritable::new_write(
+    let certs = py_certs.as_ref().map(|py_certs| {
+        x509::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(
                 py_certs
                     .iter()
                     .map(|c| c.raw.borrow_value_public().clone())
                     .collect(),
             ),
-        ))
-    } else {
-        None
-    };
+        )
+    });
 
     let basic_resp = BasicOCSPResponse {
         tbs_response_data,

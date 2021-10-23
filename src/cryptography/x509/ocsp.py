@@ -452,8 +452,6 @@ class OCSPResponseBuilder(object):
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if self._response is None:
             raise ValueError("You must add a response before signing")
         if self._responder_id is None:
@@ -467,8 +465,6 @@ class OCSPResponseBuilder(object):
     def build_unsuccessful(
         cls, response_status: OCSPResponseStatus
     ) -> OCSPResponse:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if not isinstance(response_status, OCSPResponseStatus):
             raise TypeError(
                 "response_status must be an item from OCSPResponseStatus"

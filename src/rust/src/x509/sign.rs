@@ -13,9 +13,9 @@ lazy_static::lazy_static! {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum KeyType {
-    RSA,
-    DSA,
-    EC,
+    Rsa,
+    Dsa,
+    Ec,
     Ed25519,
     Ed448,
 }
@@ -23,8 +23,8 @@ enum KeyType {
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum HashType {
     None,
-    MD5,
-    SHA256,
+    Md5,
+    Sha256,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
@@ -50,11 +50,11 @@ fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::P
         .extract()?;
 
     if rsa_private_key.is_instance(private_key)? {
-        Ok(KeyType::RSA)
+        Ok(KeyType::Rsa)
     } else if dsa_key_type.is_instance(private_key)? {
-        Ok(KeyType::DSA)
+        Ok(KeyType::Dsa)
     } else if ec_key_type.is_instance(private_key)? {
-        Ok(KeyType::EC)
+        Ok(KeyType::Ec)
     } else if ed25519_key_type.is_instance(private_key)? {
         Ok(KeyType::Ed25519)
     } else if ed448_key_type.is_instance(private_key)? {
@@ -81,7 +81,7 @@ fn identify_hash_type(
     }
 
     match hash_algorithm.getattr("name")?.extract()? {
-        "sha256" => Ok(HashType::SHA256),
+        "sha256" => Ok(HashType::Sha256),
         _ => todo!("{:?}", hash_algorithm),
     }
 }
@@ -103,7 +103,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
         identify_hash_type(py, hash_algorithm)?
     };
 
-    if hash_type == HashType::MD5 && key_type != KeyType::RSA {
+    if hash_type == HashType::Md5 && key_type != KeyType::Rsa {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "MD5 hash algorithm is only supported with RSA keys",
         ));
@@ -118,7 +118,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*ED448_OID).clone(),
             params: None,
         }),
-        (KeyType::EC, HashType::SHA256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
@@ -136,7 +136,7 @@ pub(crate) fn sign_data<'p>(
 
     let signature = match key_type {
         KeyType::Ed25519 | KeyType::Ed448 => private_key.call_method1("sign", (data,))?,
-        KeyType::EC => {
+        KeyType::Ec => {
             let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
             private_key.call_method1(
                 "sign",

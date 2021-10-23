@@ -16,9 +16,6 @@ from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
-from cryptography.hazmat.backends.openssl.decode_asn1 import (
-    _CRL_ENTRY_REASON_ENUM_TO_CODE,
-)
 from cryptography.hazmat.backends.openssl.dh import (
     _DHParameters,
     _DHPrivateKey,
@@ -71,7 +68,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _RawRevokedCertificate,
 )
 from cryptography.hazmat.bindings._rust import (
-    ocsp as rust_ocsp,
     x509 as rust_x509,
 )
 from cryptography.hazmat.bindings.openssl import binding
@@ -119,7 +115,6 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
 )
-from cryptography.x509 import ocsp
 from cryptography.x509.base import PUBLIC_KEY_TYPES
 
 
