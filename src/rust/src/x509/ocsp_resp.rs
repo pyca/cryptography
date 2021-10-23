@@ -544,8 +544,24 @@ fn create_ocsp_basic_response<'p>(
     let py_issuer: pyo3::PyRef<'_, x509::Certificate> =
         py_single_resp.getattr("_issuer")?.extract()?;
     let py_cert_hash_algorithm = py_single_resp.getattr("_algorithm")?;
-    let (responder_cert, responder_encoding): (pyo3::PyRef<'_, x509::Certificate>, &pyo3::PyAny) =
+    let (responder_cert, responder_encoding): (&pyo3::PyCell<x509::Certificate>, &pyo3::PyAny) =
         builder.getattr("_responder_id")?.extract()?;
+
+    if responder_cert
+        .call_method0("public_key")?
+        .call_method0("public_numbers")?
+        .rich_compare(
+            private_key
+                .call_method0("public_key")?
+                .call_method0("public_numbers")?,
+            pyo3::basic::CompareOp::Ne,
+        )?
+        .is_true()?
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "Responder cert does not match private key",
+        ));
+    }
 
     let py_cert_status = py_single_resp.getattr("_cert_status")?;
     let cert_status = if py_cert_status == ocsp_mod.getattr("OCSPCertStatus")?.getattr("GOOD")? {
@@ -589,6 +605,7 @@ fn create_ocsp_basic_response<'p>(
         single_extensions: None,
     }];
 
+    let borrowed_cert = responder_cert.borrow();
     let responder_id =
         if responder_encoding == ocsp_mod.getattr("OCSPResponderEncoding")?.getattr("HASH")? {
             let sha1 = py
@@ -598,7 +615,7 @@ fn create_ocsp_basic_response<'p>(
             ResponderId::ByKey(ocsp::hash_data(
                 py,
                 sha1,
-                responder_cert
+                borrowed_cert
                     .raw
                     .borrow_value_public()
                     .tbs_cert
@@ -608,7 +625,7 @@ fn create_ocsp_basic_response<'p>(
             )?)
         } else {
             ResponderId::ByName(
-                responder_cert
+                borrowed_cert
                     .raw
                     .borrow_value_public()
                     .tbs_cert
@@ -691,12 +708,7 @@ fn encode_ocsp_basic_response_extension(
     ext: &pyo3::PyAny,
 ) -> pyo3::PyResult<Option<Vec<u8>>> {
     if oid == &*ocsp::NONCE_OID {
-        Ok(Some(
-            ext.getattr("value")?
-                .getattr("nonce")?
-                .extract::<&[u8]>()?
-                .to_vec(),
-        ))
+        Ok(Some(ext.getattr("nonce")?.extract::<&[u8]>()?.to_vec()))
     } else {
         Ok(None)
     }
