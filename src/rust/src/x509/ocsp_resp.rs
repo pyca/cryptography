@@ -553,8 +553,30 @@ fn create_ocsp_basic_response<'p>(
     } else if py_cert_status == ocsp_mod.getattr("OCSPCertStatus")?.getattr("UNKNOWN")? {
         CertStatus::Unknown(())
     } else {
+        let revocation_reason = if !py_single_resp.getattr("_revocation_reason")?.is_none() {
+            let value = py
+                .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+                .getattr("_CRL_ENTRY_REASON_ENUM_TO_CODE")?
+                .get_item(py_single_resp.getattr("_revocation_reason")?)?
+                .extract::<u32>()?;
+            Some(asn1::Enumerated::new(value))
+        } else {
+            None
+        };
         // REVOKED
-        todo!()
+        CertStatus::Revoked(RevokedInfo {
+            revocation_time: asn1::GeneralizedTime::new(py_to_chrono(
+                py_single_resp.getattr("_revocation_time")?,
+            )?),
+            revocation_reason,
+        })
+    };
+    let next_update = if !py_single_resp.getattr("_next_update")?.is_none() {
+        Some(asn1::GeneralizedTime::new(py_to_chrono(
+            py_single_resp.getattr("_next_update")?,
+        )?))
+    } else {
+        None
     };
     let this_update =
         asn1::GeneralizedTime::new(py_to_chrono(py_single_resp.getattr("_this_update")?)?);
@@ -562,16 +584,28 @@ fn create_ocsp_basic_response<'p>(
     let responses = vec![SingleResponse {
         cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
         cert_status,
-        next_update: Some(asn1::GeneralizedTime::new(py_to_chrono(
-            py_single_resp.getattr("_next_update")?,
-        )?)),
+        next_update,
         this_update: this_update,
         single_extensions: None,
     }];
 
     let responder_id =
         if responder_encoding == ocsp_mod.getattr("OCSPResponderEncoding")?.getattr("HASH")? {
-            todo!()
+            let sha1 = py
+                .import("cryptography.hazmat.primitives.hashes")?
+                .getattr("SHA1")?
+                .call0()?;
+            ResponderId::ByKey(ocsp::hash_data(
+                py,
+                sha1,
+                responder_cert
+                    .raw
+                    .borrow_value_public()
+                    .tbs_cert
+                    .spki
+                    .subject_public_key
+                    .as_bytes(),
+            )?)
         } else {
             ResponderId::ByName(
                 responder_cert
