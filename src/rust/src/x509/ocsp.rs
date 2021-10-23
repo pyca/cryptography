@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::asn1::PyAsn1Result;
 use crate::x509;
 use std::collections::HashMap;
 
@@ -32,6 +33,10 @@ lazy_static::lazy_static! {
     };
 
     pub(crate) static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
+
+    // TODO: kind of verbose way to say "\x05\x00".
+    static ref NULL_DER: Vec<u8> = asn1::write_single(&());
+    pub(crate) static ref NULL_TLV: asn1::Tlv<'static> = asn1::parse_single(&NULL_DER).unwrap();
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -40,6 +45,42 @@ pub(crate) struct CertID<'a> {
     pub(crate) issuer_name_hash: &'a [u8],
     pub(crate) issuer_key_hash: &'a [u8],
     pub(crate) serial_number: asn1::BigUint<'a>,
+}
+
+impl CertID<'_> {
+    pub(crate) fn new<'p>(
+        py: pyo3::Python<'p>,
+        cert: &'p x509::Certificate,
+        issuer: &'p x509::Certificate,
+        hash_algorithm: &'p pyo3::PyAny,
+    ) -> PyAsn1Result<CertID<'p>> {
+        let issuer_name_hash = hash_data(
+            py,
+            hash_algorithm,
+            &asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer),
+        )?;
+        let issuer_key_hash = hash_data(
+            py,
+            hash_algorithm,
+            issuer
+                .raw
+                .borrow_value_public()
+                .tbs_cert
+                .spki
+                .subject_public_key
+                .as_bytes(),
+        )?;
+
+        Ok(CertID {
+            hash_algorithm: x509::AlgorithmIdentifier {
+                oid: HASH_NAME_TO_OIDS[hash_algorithm.getattr("name")?.extract::<&str>()?].clone(),
+                params: Some(*NULL_TLV),
+            },
+            issuer_name_hash,
+            issuer_key_hash,
+            serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
+        })
+    }
 }
 
 pub(crate) fn hash_data<'p>(
