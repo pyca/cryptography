@@ -114,7 +114,7 @@ jobs:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Print logs
         if: ${{ failure() }}
-        run: cat .tox/.package/log/*.log
+        run: "cat .tox/.package/log/*"
       - uses: ./.github/actions/upload-coverage
         with:
           name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
