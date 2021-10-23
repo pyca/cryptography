@@ -211,7 +211,7 @@ impl OCSPResponse {
         let resp = self.requires_successful_response()?;
         let py_certs = pyo3::types::PyList::empty(py);
         let certs = match &resp.certs {
-            Some(certs) => certs,
+            Some(certs) => certs.unwrap_read(),
             None => return Ok(py_certs),
         };
         for i in 0..certs.len() {
@@ -223,6 +223,7 @@ impl OCSPResponse {
                     .certs
                     .as_ref()
                     .unwrap()
+                    .unwrap_read()
                     .clone()
                     .nth(i)
                     .unwrap()
@@ -454,7 +455,17 @@ struct BasicOCSPResponse<'a> {
     signature_algorithm: x509::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
     #[explicit(0)]
-    certs: Option<asn1::SequenceOf<'a, certificate::RawCertificate<'a>>>,
+    certs: Option<
+        x509::Asn1ReadableOrWritable<
+            'a,
+            asn1::SequenceOf<'a, certificate::RawCertificate<'a>>,
+            asn1::SequenceOfWriter<
+                'a,
+                certificate::RawCertificate<'a>,
+                Vec<certificate::RawCertificate<'a>>,
+            >,
+        >,
+    >,
 }
 
 impl BasicOCSPResponse<'_> {
@@ -525,12 +536,38 @@ fn create_ocsp_basic_response<'p>(
     builder: &'p pyo3::PyAny,
     private_key: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
-) -> pyo3::PyResult<BasicOCSPResponse<'p>> {
+) -> pyo3::PyResult<Vec<u8>> {
     let ocsp_mod = py.import("cryptography.x509.ocsp")?;
 
     let py_single_resp = builder.getattr("_response")?;
+    let py_cert: pyo3::PyRef<'_, x509::Certificate> = py_single_resp.getattr("_cert")?.extract()?;
+    let py_issuer: pyo3::PyRef<'_, x509::Certificate> =
+        py_single_resp.getattr("_issuer")?.extract()?;
+    let py_cert_hash_algorithm = py_single_resp.getattr("_algorithm")?;
     let (responder_cert, responder_encoding): (pyo3::PyRef<'_, x509::Certificate>, &pyo3::PyAny) =
         builder.getattr("_responder_id")?.extract()?;
+
+    let py_cert_status = py_single_resp.getattr("_cert_status")?;
+    let cert_status = if py_cert_status == ocsp_mod.getattr("OCSPCertStatus")?.getattr("GOOD")? {
+        CertStatus::Good(())
+    } else if py_cert_status == ocsp_mod.getattr("OCSPCertStatus")?.getattr("UNKNOWN")? {
+        CertStatus::Unknown(())
+    } else {
+        // REVOKED
+        todo!()
+    };
+    let this_update =
+        asn1::GeneralizedTime::new(py_to_chrono(py_single_resp.getattr("_this_update")?)?);
+
+    let responses = vec![SingleResponse {
+        cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
+        cert_status,
+        next_update: Some(asn1::GeneralizedTime::new(py_to_chrono(
+            py_single_resp.getattr("_next_update")?,
+        )?)),
+        this_update: this_update,
+        single_extensions: None,
+    }];
 
     let responder_id =
         if responder_encoding == ocsp_mod.getattr("OCSPResponderEncoding")?.getattr("HASH")? {
@@ -546,19 +583,9 @@ fn create_ocsp_basic_response<'p>(
             )
         };
 
-    let responses = vec![SingleResponse {
-        cert_id: ocsp::CertID::new,
-        cert_status: todo!(),
-        next_update: todo!(),
-        this_update: todo!(),
-        single_extensions: None,
-    }];
-
     let tbs_response_data = ResponseData {
         version: 0,
-        produced_at: asn1::GeneralizedTime::new(py_to_chrono(
-            py_single_resp.getattr("_this_update")?,
-        )?),
+        produced_at: asn1::GeneralizedTime::new(chrono::Utc::now()),
         responder_id,
         responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(responses)),
         response_extensions: x509::common::encode_extensions(
@@ -568,16 +595,32 @@ fn create_ocsp_basic_response<'p>(
         )?,
     };
 
-    let sigalg = x509::sign::compute_signature_algorithm(private_key, hash_algorithm)?;
+    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let tbs_bytes = asn1::write_single(&tbs_response_data);
-    let signature = x509::sign::sign_data(private_key, hash_algorithm, &tbs_bytes)?;
+    let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
 
-    Ok(BasicOCSPResponse {
+    let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>> =
+        builder.getattr("_certs")?.extract()?;
+    let certs = if let Some(py_certs) = py_certs.as_ref() {
+        Some(x509::Asn1ReadableOrWritable::new_write(
+            asn1::SequenceOfWriter::new(
+                py_certs
+                    .iter()
+                    .map(|c| c.raw.borrow_value_public().clone())
+                    .collect(),
+            ),
+        ))
+    } else {
+        None
+    };
+
+    let basic_resp = BasicOCSPResponse {
         tbs_response_data,
         signature: asn1::BitString::new(signature, 0).unwrap(),
         signature_algorithm: sigalg,
-        certs: todo!(),
-    })
+        certs,
+    };
+    Ok(asn1::write_single(&basic_resp))
 }
 
 #[pyo3::prelude::pyfunction]
@@ -589,13 +632,12 @@ fn create_ocsp_response(
     hash_algorithm: &pyo3::PyAny,
 ) -> PyAsn1Result<OCSPResponse> {
     let response_status = status.getattr("value")?.extract::<u32>()?;
-    let data;
+    let basic_resp_bytes;
     let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
-        let basic_resp = create_ocsp_basic_response(py, builder, private_key, hash_algorithm)?;
-        data = asn1::write_single(&basic_resp);
+        basic_resp_bytes = create_ocsp_basic_response(py, builder, private_key, hash_algorithm)?;
         Some(ResponseBytes {
             response_type: (*BASIC_RESPONSE_OID).clone(),
-            response: &data,
+            response: &basic_resp_bytes,
         })
     } else {
         None

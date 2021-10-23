@@ -331,7 +331,7 @@ pub(crate) type Extensions<'a> = Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct AlgorithmIdentifier<'a> {
     pub(crate) oid: asn1::ObjectIdentifier<'a>,
     pub(crate) params: Option<asn1::Tlv<'a>>,

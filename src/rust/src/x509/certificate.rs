@@ -34,14 +34,14 @@ lazy_static::lazy_static! {
     static ref NAME_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.30").unwrap();
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct RawCertificate<'a> {
     pub(crate) tbs_cert: TbsCertificate<'a>,
     signature_alg: x509::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
@@ -62,13 +62,13 @@ pub(crate) struct TbsCertificate<'a> {
     extensions: Option<x509::Extensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct Validity {
     not_before: x509::Time,
     not_after: x509::Time,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct SubjectPublicKeyInfo<'a> {
     _algorithm: x509::AlgorithmIdentifier<'a>,
     pub(crate) subject_public_key: asn1::BitString<'a>,
