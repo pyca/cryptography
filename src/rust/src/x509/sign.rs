@@ -94,7 +94,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
     let key_type = identify_key_type(py, private_key)?;
     let hash_type = if key_type == KeyType::Ed25519 || key_type == KeyType::Ed448 {
         if !hash_algorithm.is_none() {
-            return Err(pyo3::exceptions::PyTypeError::new_err(
+            return Err(pyo3::exceptions::PyValueError::new_err(
                 "algorithm must be None when signing via ed25519 or ed448",
             ));
         }
@@ -110,6 +110,14 @@ pub(crate) fn compute_signature_algorithm<'p>(
     }
 
     match (key_type, hash_type) {
+        (KeyType::Ed25519, _) => Ok(x509::AlgorithmIdentifier {
+            oid: (*ED25519_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ed448, _) => Ok(x509::AlgorithmIdentifier {
+            oid: (*ED448_OID).clone(),
+            params: None,
+        }),
         (KeyType::EC, HashType::SHA256) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA256_OID).clone(),
             params: None,
@@ -127,6 +135,7 @@ pub(crate) fn sign_data<'p>(
     let key_type = identify_key_type(py, private_key)?;
 
     let signature = match key_type {
+        KeyType::Ed25519 | KeyType::Ed448 => private_key.call_method1("sign", (data,))?,
         KeyType::EC => {
             let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
             private_key.call_method1(

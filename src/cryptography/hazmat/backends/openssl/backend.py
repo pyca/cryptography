@@ -1380,6 +1380,10 @@ class Backend(BackendInterface):
 
         return True
 
+    def _check_keys_correspond(self, key1, key2):
+        if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
+            raise ValueError("Keys do not correspond")
+
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 

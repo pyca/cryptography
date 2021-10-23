@@ -547,22 +547,6 @@ fn create_ocsp_basic_response<'p>(
     let (responder_cert, responder_encoding): (&pyo3::PyCell<x509::Certificate>, &pyo3::PyAny) =
         builder.getattr("_responder_id")?.extract()?;
 
-    if responder_cert
-        .call_method0("public_key")?
-        .call_method0("public_numbers")?
-        .rich_compare(
-            private_key
-                .call_method0("public_key")?
-                .call_method0("public_numbers")?,
-            pyo3::basic::CompareOp::Ne,
-        )?
-        .is_true()?
-    {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "Responder cert does not match private key",
-        ));
-    }
-
     let py_cert_status = py_single_resp.getattr("_cert_status")?;
     let cert_status = if py_cert_status == ocsp_mod.getattr("OCSPCertStatus")?.getattr("GOOD")? {
         CertStatus::Good(())
@@ -649,6 +633,16 @@ fn create_ocsp_basic_response<'p>(
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let tbs_bytes = asn1::write_single(&tbs_response_data);
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+
+    py.import("cryptography.hazmat.backends.openssl.backend")?
+        .getattr("backend")?
+        .call_method1(
+            "_check_keys_correspond",
+            (
+                responder_cert.call_method0("public_key")?,
+                private_key.call_method0("public_key")?,
+            ),
+        )?;
 
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>> =
         builder.getattr("_certs")?.extract()?;
