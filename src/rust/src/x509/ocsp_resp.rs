@@ -450,16 +450,16 @@ struct ResponseBytes<'a> {
 }
 
 type OCSPCerts<'a> = Option<
-        x509::Asn1ReadableOrWritable<
+    x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SequenceOf<'a, certificate::RawCertificate<'a>>,
+        asn1::SequenceOfWriter<
             'a,
-            asn1::SequenceOf<'a, certificate::RawCertificate<'a>>,
-            asn1::SequenceOfWriter<
-                'a,
-                certificate::RawCertificate<'a>,
-                Vec<certificate::RawCertificate<'a>>,
-            >,
+            certificate::RawCertificate<'a>,
+            Vec<certificate::RawCertificate<'a>>,
         >,
-    >;
+    >,
+>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct BasicOCSPResponse<'a> {
@@ -649,14 +649,12 @@ fn create_ocsp_basic_response<'p>(
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>> =
         builder.getattr("_certs")?.extract()?;
     let certs = py_certs.as_ref().map(|py_certs| {
-        x509::Asn1ReadableOrWritable::new_write(
-            asn1::SequenceOfWriter::new(
-                py_certs
-                    .iter()
-                    .map(|c| c.raw.borrow_value_public().clone())
-                    .collect(),
-            ),
-        )
+        x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            py_certs
+                .iter()
+                .map(|c| c.raw.borrow_value_public().clone())
+                .collect(),
+        ))
     });
 
     let basic_resp = BasicOCSPResponse {
