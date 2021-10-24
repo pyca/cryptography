@@ -181,7 +181,6 @@ jobs:
           - 1.41.0
           - 1.45.0
           - beta
-          - nightly
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
@@ -225,6 +224,12 @@ jobs:
 
   linux-rust-coverage:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON:
+          - {VERSION: "3.10", TOXENV: "py310"}
+        RUST:
+          - nightly
     name: "Rust Coverage"
     timeout-minutes: 15
     steps:
@@ -245,11 +250,11 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1.0.7
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: ${{ matrix.RUST }}
           override: true
           default: true
           components: llvm-tools-preview
@@ -268,59 +273,11 @@ jobs:
         run: |
             tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
-          TOXENV: py39
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
-      - name: Process coverage data
-        run: |
-            cd src/rust/
-            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o rust-cov.profdata
-            cargo cov -- export ../../.tox/py39/lib/python3.9/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              -instr-profile=rust-cov.profdata \
-              --ignore-filename-regex='/.cargo/registry' \
-              --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
-
-            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
-
-      - uses: ./.github/actions/upload-coverage
-        with:
-          name: "Rust Coverage"
-
-  linux-cargo-coverage:
-    runs-on: ubuntu-latest
-    name: "Cargo Coverage"
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2.3.4
-        with:
-          persist-credentials: false
-      - uses: actions/cache@v2.1.6
-        id: cargo-cache
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            src/rust/target/
-          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-rust-nightly-cargo-coverage
-
-      - uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          default: true
-          components: llvm-tools-preview
-      - uses: actions-rs/install@v0.1.2
-        with:
-          crate: cargo-binutils
-          version: latest
-        if: steps.cargo-cache.outputs.cache-hit != 'true'
-
-      - name: Tests
+      - name: Rust Tests
         run: |
             cd src/rust
             cargo test --no-default-features
@@ -330,19 +287,28 @@ jobs:
       - name: Process coverage data
         run: |
             cd src/rust/
-            cargo profdata -- merge -sparse rust-cov/*.profraw -o rust-cov.profdata
+            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o pytest-rust-cov.profdata
+            cargo profdata -- merge -sparse rust-cov/*.profraw -o cargo-test-rust-cov.profdata
+
             cargo cov -- export \
-              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
-              -instr-profile=rust-cov.profdata \
+              ../../.tox/${{ matrix.PYTHON.TOXENV }}/lib/python${{ matrix.PYTHON.VERSION }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+              -instr-profile=pytest-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../pytest-rust-cov.lcov
+            cargo cov -- export \
+              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
+              -instr-profile=cargo-test-rust-cov.profdata \
+              --ignore-filename-regex='/.cargo/registry' \
+              --ignore-filename-regex='/rustc/' \
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../cargo-test-rust-cov.lcov
 
-            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../pytest-rust-cov.lcov
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../cargo-test-rust-cov.lcov
 
       - uses: ./.github/actions/upload-coverage
         with:
-          name: "Cargo Coverage"
+          name: "Rust Coverage"
 
   macos:
     runs-on: macos-latest
