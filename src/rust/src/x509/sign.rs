@@ -12,14 +12,12 @@ lazy_static::lazy_static! {
     static ref ED448_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.101.113").unwrap();
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
 enum KeyType {
     Ec,
     Ed25519,
     Ed448,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
 enum HashType {
     None,
     Sha256,
