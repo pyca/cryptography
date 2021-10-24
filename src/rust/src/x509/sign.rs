@@ -13,8 +13,6 @@ lazy_static::lazy_static! {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum KeyType {
-    Rsa,
-    Dsa,
     Ec,
     Ed25519,
     Ed448,
@@ -23,19 +21,10 @@ enum KeyType {
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum HashType {
     None,
-    Md5,
     Sha256,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
-    let rsa_private_key: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.rsa")?
-        .getattr("RSAPrivateKey")?
-        .extract()?;
-    let dsa_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.dsa")?
-        .getattr("DSAPrivateKey")?
-        .extract()?;
     let ec_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ec")?
         .getattr("EllipticCurvePrivateKey")?
@@ -49,11 +38,7 @@ fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::P
         .getattr("Ed448PrivateKey")?
         .extract()?;
 
-    if rsa_private_key.is_instance(private_key)? {
-        Ok(KeyType::Rsa)
-    } else if dsa_key_type.is_instance(private_key)? {
-        Ok(KeyType::Dsa)
-    } else if ec_key_type.is_instance(private_key)? {
+    if ec_key_type.is_instance(private_key)? {
         Ok(KeyType::Ec)
     } else if ed25519_key_type.is_instance(private_key)? {
         Ok(KeyType::Ed25519)
@@ -103,12 +88,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
         identify_hash_type(py, hash_algorithm)?
     };
 
-    if hash_type == HashType::Md5 && key_type != KeyType::Rsa {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "MD5 hash algorithm is only supported with RSA keys",
-        ));
-    }
-
     match (key_type, hash_type) {
         (KeyType::Ed25519, _) => Ok(x509::AlgorithmIdentifier {
             oid: (*ED25519_OID).clone(),
@@ -141,8 +120,6 @@ pub(crate) fn sign_data<'p>(
             let ecdsa = ec_mod.getattr("ECDSA")?.call1((hash_algorithm,))?;
             private_key.call_method1("sign", (data, ecdsa))?
         }
-        KeyType::Rsa => todo!(),
-        KeyType::Dsa => todo!(),
     };
     signature.extract()
 }
