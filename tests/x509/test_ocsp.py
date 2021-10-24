@@ -586,6 +586,33 @@ class TestOCSPResponseBuilder(object):
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
 
+    def test_sign_unknown_cert(self):
+        builder = ocsp.OCSPResponseBuilder()
+        cert, issuer = _cert_and_issuer()
+        root_cert, private_key = _generate_root()
+        current_time = datetime.datetime.utcnow().replace(microsecond=0)
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.NAME, root_cert
+        ).add_response(
+            cert,
+            issuer,
+            hashes.SHA1(),
+            ocsp.OCSPCertStatus.UNKNOWN,
+            this_update,
+            next_update,
+            None,
+            None,
+        )
+        resp = builder.sign(private_key, hashes.SHA384())
+        assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
+        assert resp.this_update == this_update
+        assert resp.next_update == next_update
+        private_key.public_key().verify(
+            resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA384())
+        )
+
     def test_sign_with_appended_certs(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
@@ -797,9 +824,38 @@ class TestOCSPResponseBuilder(object):
             None,
             None,
         )
-
         with pytest.raises(TypeError):
             builder.sign(object(), hashes.SHA256())  # type:ignore[arg-type]
+
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.BLAKE2b(digest_size=64)
+        ),
+        skip_message="Does not support BLAKE2b",
+    )
+    def test_sign_unrecognized_hash_algorithm(self, backend):
+        builder = ocsp.OCSPResponseBuilder()
+        cert, issuer = _cert_and_issuer()
+        root_cert, private_key = _generate_root()
+        current_time = datetime.datetime.utcnow().replace(microsecond=0)
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.NAME, root_cert
+        ).add_response(
+            cert,
+            issuer,
+            hashes.SHA1(),
+            ocsp.OCSPCertStatus.GOOD,
+            this_update,
+            next_update,
+            None,
+            None,
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.BLAKE2b(digest_size=64))
 
 
 class TestSignedCertificateTimestampsExtension(object):
