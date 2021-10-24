@@ -6,6 +6,7 @@ use crate::x509;
 
 lazy_static::lazy_static! {
     static ref ECDSA_WITH_SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.2").unwrap();
+    static ref ECDSA_WITH_SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.3").unwrap();
 
     static ref ED25519_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.101.112").unwrap();
     static ref ED448_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.101.113").unwrap();
@@ -22,6 +23,7 @@ enum KeyType {
 enum HashType {
     None,
     Sha256,
+    Sha384,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
@@ -71,7 +73,11 @@ fn identify_hash_type(
 
     match hash_algorithm.getattr("name")?.extract()? {
         "sha256" => Ok(HashType::Sha256),
-        _ => todo!("{:?}", hash_algorithm),
+        "sha384" => Ok(HashType::Sha384),
+        name => Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "Hash algorith {:?} not supported for signatures",
+            name
+        ))),
     }
 }
 
@@ -100,6 +106,10 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA256_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ec, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
+            oid: (*ECDSA_WITH_SHA384_OID).clone(),
             params: None,
         }),
 
