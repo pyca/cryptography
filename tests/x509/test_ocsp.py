@@ -593,7 +593,6 @@ class TestOCSPResponseBuilder(object):
         current_time = datetime.datetime.utcnow().replace(microsecond=0)
         this_update = current_time - datetime.timedelta(days=1)
         next_update = this_update + datetime.timedelta(days=7)
-        revoked_date = this_update - datetime.timedelta(days=300)
         builder = builder.responder_id(
             ocsp.OCSPResponderEncoding.NAME, root_cert
         ).add_response(
@@ -603,13 +602,11 @@ class TestOCSPResponseBuilder(object):
             ocsp.OCSPCertStatus.UNKNOWN,
             this_update,
             next_update,
-            revoked_date,
+            None,
             None,
         )
         resp = builder.sign(private_key, hashes.SHA384())
         assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
-        assert resp.revocation_time == revoked_date
-        assert resp.revocation_reason is None
         assert resp.this_update == this_update
         assert resp.next_update == next_update
         private_key.public_key().verify(
