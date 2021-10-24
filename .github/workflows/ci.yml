@@ -287,16 +287,24 @@ jobs:
       - name: Process coverage data
         run: |
             cd src/rust/
-            cargo profdata -- merge -sparse ../../rust-cov/*.profraw rust-cov/*.profraw -o rust-cov.profdata
+            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o pytest-rust-cov.profdata
+            cargo profdata -- merge -sparse rust-cov/*.profraw -o cargo-test-rust-cov.profdata
+
             cargo cov -- export \
               ../../.tox/${{ matrix.PYTHON.TOXENV }}/lib/python${{ matrix.PYTHON.VERSION }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
-              -instr-profile=rust-cov.profdata \
+              -instr-profile=pytest-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../rust-cov.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../pytest-rust-cov.lcov
+            cargo cov -- export \
+              $(env RUSTFLAGS="-Zinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
+              -instr-profile=cargo-test-rust-cov.profdata \
+              --ignore-filename-regex='/.cargo/registry' \
+              --ignore-filename-regex='/rustc/' \
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../cargo-test-rust-cov.lcov
 
-            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../pytest-rust-cov.lcov
+            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../cargo-test-rust-cov.lcov
 
       - uses: ./.github/actions/upload-coverage
         with:
