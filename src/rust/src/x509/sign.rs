@@ -55,6 +55,10 @@ fn identify_hash_type(
     py: pyo3::Python<'_>,
     hash_algorithm: &pyo3::PyAny,
 ) -> pyo3::PyResult<HashType> {
+    if hash_algorithm.is_none() {
+        return Ok(HashType::None);
+    }
+
     let hash_algorithm_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.hashes")?
         .getattr("HashAlgorithm")?
@@ -77,31 +81,31 @@ pub(crate) fn compute_signature_algorithm<'p>(
     hash_algorithm: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<x509::AlgorithmIdentifier<'static>> {
     let key_type = identify_key_type(py, private_key)?;
-    let hash_type = if key_type == KeyType::Ed25519 || key_type == KeyType::Ed448 {
-        if !hash_algorithm.is_none() {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "algorithm must be None when signing via ed25519 or ed448",
-            ));
-        }
-        HashType::None
-    } else {
-        identify_hash_type(py, hash_algorithm)?
-    };
+    let hash_type = identify_hash_type(py, hash_algorithm)?;
 
     match (key_type, hash_type) {
-        (KeyType::Ed25519, _) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ed25519, HashType::None) => Ok(x509::AlgorithmIdentifier {
             oid: (*ED25519_OID).clone(),
             params: None,
         }),
-        (KeyType::Ed448, _) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ed448, HashType::None) => Ok(x509::AlgorithmIdentifier {
             oid: (*ED448_OID).clone(),
             params: None,
         }),
+        (KeyType::Ed25519, _) | (KeyType::Ed448, _) => {
+            Err(pyo3::exceptions::PyValueError::new_err(
+                "Algorithm must be None when signing via ed25519 or ed448",
+            ))
+        }
+
         (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
-        _ => todo!("{:?}, {:?}", key_type, hash_type),
+
+        (_, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
+            "Algorithm must be a registered hash algorithm, not None.",
+        )),
     }
 }
 
