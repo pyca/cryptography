@@ -778,6 +778,29 @@ class TestOCSPResponseBuilder(object):
                 ocsp.OCSPResponseStatus.SUCCESSFUL
             )
 
+    def test_sign_unknown_private_key(self, backend):
+        builder = ocsp.OCSPResponseBuilder()
+        cert, issuer = _cert_and_issuer()
+        root_cert, _ = _generate_root()
+        current_time = datetime.datetime.utcnow().replace(microsecond=0)
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.NAME, root_cert
+        ).add_response(
+            cert,
+            issuer,
+            hashes.SHA1(),
+            ocsp.OCSPCertStatus.GOOD,
+            this_update,
+            next_update,
+            None,
+            None,
+        )
+
+        with pytest.raises(TypeError):
+            builder.sign(object(), hashes.SHA256())  # type:ignore[arg-type]
+
 
 class TestSignedCertificateTimestampsExtension(object):
     def test_init(self):
