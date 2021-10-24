@@ -827,7 +827,6 @@ class TestOCSPResponseBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(object(), hashes.SHA256())  # type:ignore[arg-type]
 
-
     @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(
             hashes.BLAKE2b(digest_size=64)
