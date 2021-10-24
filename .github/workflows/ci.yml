@@ -298,6 +298,10 @@ jobs:
 
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../rust-cov.lcov
 
+      - uses: ./.github/actions/upload-coverage
+        with:
+          name: "Rust Coverage"
+
   macos:
     runs-on: macos-latest
     strategy:
