@@ -138,10 +138,8 @@ pub(crate) fn sign_data<'p>(
         KeyType::Ed25519 | KeyType::Ed448 => private_key.call_method1("sign", (data,))?,
         KeyType::Ec => {
             let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
-            private_key.call_method1(
-                "sign",
-                (data, ec_mod.getattr("ECDSA")?.call1((hash_algorithm,))?),
-            )?
+            let ecdsa = ec_mod.getattr("ECDSA")?.call1((hash_algorithm,))?;
+            private_key.call_method1("sign", (data, ecdsa))?
         }
         KeyType::Rsa => todo!(),
         KeyType::Dsa => todo!(),
