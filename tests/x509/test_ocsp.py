@@ -778,7 +778,13 @@ class TestOCSPResponseBuilder(object):
                 ocsp.OCSPResponseStatus.SUCCESSFUL
             )
 
-    def test_sign_unrecognized_hash_algorithm(self):
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.BLAKE2b(digest_size=64)
+        ),
+        skip_message="Does not support BLAKE2b",
+    )
+    def test_sign_unrecognized_hash_algorithm(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
