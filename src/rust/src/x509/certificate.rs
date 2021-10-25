@@ -47,7 +47,7 @@ pub(crate) struct TbsCertificate<'a> {
     #[default(0)]
     version: u8,
     pub(crate) serial: asn1::BigUint<'a>,
-    _signature_alg: asn1::Sequence<'a>,
+    _signature_alg: x509::AlgorithmIdentifier<'a>,
 
     pub(crate) issuer: x509::Name<'a>,
     validity: Validity,
