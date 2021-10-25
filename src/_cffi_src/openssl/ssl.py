@@ -19,7 +19,6 @@ static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
-static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
@@ -185,9 +184,6 @@ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
 X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
 
-int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
-                    unsigned char *);
-
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
@@ -271,8 +267,6 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 void SSL_CTX_set_keylog_callback(SSL_CTX *,
                                  void (*)(const SSL *, const char *));
 void (*SSL_CTX_get_keylog_callback(SSL_CTX *))(const SSL *, const char *);
-
-long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
@@ -633,15 +627,6 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
 
     return r;
 }
-
-#if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_SIGALGS = 0;
-const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
-                             unsigned char *) = NULL;
-const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
-#else
-static const long Cryptography_HAS_SIGALGS = 1;
-#endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_PSK)
 static const long Cryptography_HAS_PSK = 0;

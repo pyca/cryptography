@@ -129,13 +129,6 @@ def cryptography_has_fips():
     ]
 
 
-def cryptography_has_ssl_sigalgs():
-    return [
-        "SSL_CTX_set1_sigalgs_list",
-        "SSL_get_sigalgs",
-    ]
-
-
 def cryptography_has_psk():
     return [
         "SSL_CTX_use_psk_identity_hint",
@@ -293,7 +286,6 @@ CONDITIONAL_NAMES = {
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
-    "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
