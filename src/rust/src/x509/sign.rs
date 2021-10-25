@@ -73,7 +73,7 @@ fn identify_hash_type(
         "sha256" => Ok(HashType::Sha256),
         "sha384" => Ok(HashType::Sha384),
         name => Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "Hash algorith {:?} not supported for signatures",
+            "Hash algorithm {:?} not supported for signatures",
             name
         ))),
     }
