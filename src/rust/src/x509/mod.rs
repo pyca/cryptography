@@ -10,6 +10,7 @@ mod ocsp;
 pub(crate) mod ocsp_req;
 pub(crate) mod ocsp_resp;
 pub(crate) mod sct;
+pub(crate) mod sign;
 
 pub(crate) use certificate::Certificate;
 pub(crate) use common::{

@@ -99,7 +99,6 @@ ffi = build_ffi_for_binding(
         "hmac",
         "nid",
         "objects",
-        "ocsp",
         "opensslv",
         "osrandom_engine",
         "pem",
