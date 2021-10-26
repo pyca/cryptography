@@ -167,6 +167,8 @@ class SignatureAlgorithmOID(object):
     DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
     DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
+    DSA_WITH_SHA384 = ObjectIdentifier("2.16.840.1.101.3.4.3.3")
+    DSA_WITH_SHA512 = ObjectIdentifier("2.16.840.1.101.3.4.3.4")
     ED25519 = ObjectIdentifier("1.3.101.112")
     ED448 = ObjectIdentifier("1.3.101.113")
     GOSTR3411_94_WITH_3410_2001 = ObjectIdentifier("1.2.643.2.2.3")

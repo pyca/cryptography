@@ -2586,6 +2586,7 @@ class TestCertificateBuilder(object):
         ("hashalg", "hashalg_oid"),
         [
             (hashes.SHA1, x509.SignatureAlgorithmOID.DSA_WITH_SHA1),
+            (hashes.SHA224, x509.SignatureAlgorithmOID.DSA_WITH_SHA224),
             (hashes.SHA256, x509.SignatureAlgorithmOID.DSA_WITH_SHA256),
         ],
     )

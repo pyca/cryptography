@@ -2964,6 +2964,20 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.2"``. This is
         a SHA256 digest signed by a DSA key.
 
+    .. attribute:: DSA_WITH_SHA384
+
+        .. versionadded:: 36.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.3"``. This is
+        a SHA384 digest signed by a DSA key.
+
+    .. attribute:: DSA_WITH_SHA512
+
+        .. versionadded:: 36.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.4"``. This is
+        a SHA512 digest signed by a DSA key.
+
     .. attribute:: ED25519
 
         .. versionadded:: 2.8
