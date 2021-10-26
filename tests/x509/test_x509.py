@@ -1739,6 +1739,9 @@ class TestRSACertificateRequest(object):
         ],
     )
     def test_build_cert(self, hashalg, hashalg_oid, backend):
+        if backend._fips_enabled and hashalg is hashes.SHA1:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
@@ -2589,6 +2592,9 @@ class TestCertificateBuilder(object):
     def test_build_cert_with_dsa_private_key(
         self, hashalg, hashalg_oid, backend
     ):
+        if backend._fips_enabled and hashalg is hashes.SHA1:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         issuer_private_key = DSA_KEY_2048.private_key(backend)
         subject_private_key = DSA_KEY_2048.private_key(backend)
 
@@ -2653,6 +2659,9 @@ class TestCertificateBuilder(object):
         self, hashalg, hashalg_oid, backend
     ):
         _skip_curve_unsupported(backend, ec.SECP256R1())
+        if backend._fips_enabled and hashalg is hashes.SHA1:
+            pytest.skip("SHA1 not supported in FIPS mode")
+
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
 
