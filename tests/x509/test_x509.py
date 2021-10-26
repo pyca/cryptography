@@ -2649,7 +2649,9 @@ class TestCertificateBuilder(object):
             (hashes.SHA512, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA512),
         ],
     )
-    def test_build_cert_with_ec_private_key(self, hashalg, hashalg_oid, backend):
+    def test_build_cert_with_ec_private_key(
+        self, hashalg, hashalg_oid, backend
+    ):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
