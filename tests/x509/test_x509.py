@@ -1728,7 +1728,17 @@ class TestRSACertificateRequest(object):
         assert hash(request1) == hash(request2)
         assert hash(request1) != hash(request3)
 
-    def test_build_cert(self, backend):
+    @pytest.mark.parametrize(
+        ("hashalg", "hashalg_oid"),
+        [
+            (hashes.SHA1, x509.SignatureAlgorithmOID.RSA_WITH_SHA1),
+            (hashes.SHA224, x509.SignatureAlgorithmOID.RSA_WITH_SHA224),
+            (hashes.SHA256, x509.SignatureAlgorithmOID.RSA_WITH_SHA256),
+            (hashes.SHA384, x509.SignatureAlgorithmOID.RSA_WITH_SHA384),
+            (hashes.SHA512, x509.SignatureAlgorithmOID.RSA_WITH_SHA512),
+        ],
+    )
+    def test_build_cert(self, hashalg, hashalg_oid, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
 
@@ -1781,9 +1791,10 @@ class TestRSACertificateRequest(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        cert = builder.sign(issuer_private_key, hashalg(), backend)
 
         assert cert.version is x509.Version.v3
+        assert cert.signature_algorithm_oid == hashalg_oid
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
@@ -2568,7 +2579,16 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.MD5(), backend)
 
-    def test_build_cert_with_dsa_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("hashalg", "hashalg_oid"),
+        [
+            (hashes.SHA1, x509.SignatureAlgorithmOID.DSA_WITH_SHA1),
+            (hashes.SHA256, x509.SignatureAlgorithmOID.DSA_WITH_SHA256),
+        ],
+    )
+    def test_build_cert_with_dsa_private_key(
+        self, hashalg, hashalg_oid, backend
+    ):
         issuer_private_key = DSA_KEY_2048.private_key(backend)
         subject_private_key = DSA_KEY_2048.private_key(backend)
 
@@ -2597,9 +2617,10 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        cert = builder.sign(issuer_private_key, hashalg(), backend)
 
         assert cert.version is x509.Version.v3
+        assert cert.signature_algorithm_oid == hashalg_oid
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
@@ -2618,7 +2639,17 @@ class TestCertificateBuilder(object):
             x509.DNSName("cryptography.io"),
         ]
 
-    def test_build_cert_with_ec_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("hashalg", "hashalg_oid"),
+        [
+            (hashes.SHA1, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA1),
+            (hashes.SHA224, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA224),
+            (hashes.SHA256, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA256),
+            (hashes.SHA384, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA384),
+            (hashes.SHA512, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA512),
+        ],
+    )
+    def test_build_cert_with_ec_private_key(self, hashalg, hashalg_oid, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -2648,9 +2679,10 @@ class TestCertificateBuilder(object):
             .not_valid_after(not_valid_after)
         )
 
-        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        cert = builder.sign(issuer_private_key, hashalg(), backend)
 
         assert cert.version is x509.Version.v3
+        assert cert.signature_algorithm_oid == hashalg_oid
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
