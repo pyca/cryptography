@@ -291,17 +291,6 @@ class X509Backend(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def create_x509_certificate(
-        self,
-        builder: "CertificateBuilder",
-        private_key: "PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "Certificate":
-        """
-        Create and sign an X.509 certificate from a CertificateBuilder object.
-        """
-
-    @abc.abstractmethod
     def create_x509_crl(
         self,
         builder: "CertificateRevocationListBuilder",

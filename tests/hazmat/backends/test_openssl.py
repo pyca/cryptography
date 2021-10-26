@@ -472,29 +472,6 @@ class TestOpenSSLCMAC(object):
             backend.create_cmac_ctx(DummyCipherAlgorithm())
 
 
-class TestOpenSSLSignX509Certificate(object):
-    def test_requires_certificate_builder(self):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_certificate(
-                object(),  # type: ignore[arg-type]
-                private_key,
-                DummyHashAlgorithm(),
-            )
-
-    def test_builder_requires_public_key(self):
-        builder = x509.CertificateBuilder()
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_certificate(
-                builder,
-                private_key,
-                DummyHashAlgorithm(),
-            )
-
-
 class TestOpenSSLSignX509CSR(object):
     def test_requires_csr_builder(self):
         private_key = RSA_KEY_2048.private_key(backend)
