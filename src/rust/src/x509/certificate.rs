@@ -1008,26 +1008,21 @@ fn create_x509_certificate(
 ) -> PyAsn1Result<Certificate> {
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
+    let der_encoding = serialization_mod.getattr("Encoding")?.getattr("DER")?;
+    let spki_format = serialization_mod
+        .getattr("PublicFormat")?
+        .getattr("SubjectPublicKeyInfo")?;
+
     let spki_bytes = builder
         .getattr("_public_key")?
-        .call_method1(
-            "public_bytes",
-            (
-                serialization_mod.getattr("Encoding")?.getattr("DER")?,
-                serialization_mod
-                    .getattr("PublicFormat")?
-                    .getattr("SubjectPublicKeyInfo")?,
-            ),
-        )?
+        .call_method1("public_bytes", (der_encoding, spki_format))?
         .extract::<&[u8]>()?;
+
+    let py_serial = builder.getattr("_serial_number")?.extract()?;
 
     let tbs_cert = TbsCertificate {
         version: builder.getattr("_version")?.getattr("value")?.extract()?,
-        serial: asn1::BigUint::new(py_uint_to_big_endian_bytes(
-            py,
-            builder.getattr("_serial_number")?.extract()?,
-        )?)
-        .unwrap(),
+        serial: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
         signature_alg: sigalg.clone(),
         issuer: x509::common::encode_name(py, builder.getattr("_issuer_name")?)?,
         validity: Validity {

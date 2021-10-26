@@ -945,10 +945,8 @@ class Backend(BackendInterface):
             return self._evp_md_non_null_from_algorithm(algorithm)
 
     def _set_asn1_time(self, asn1_time, time):
-        if time.year >= 2050:
-            asn1_str = time.strftime("%Y%m%d%H%M%SZ").encode("ascii")
-        else:
-            asn1_str = time.strftime("%y%m%d%H%M%SZ").encode("ascii")
+        self.openssl_assert(time.year < 2050)
+        asn1_str = time.strftime("%y%m%d%H%M%SZ").encode("ascii")
         res = self._lib.ASN1_TIME_set_string(asn1_time, asn1_str)
         self.openssl_assert(res == 1)
 
@@ -1064,10 +1062,6 @@ class Backend(BackendInterface):
         )
 
     def _create_x509_extension(self, rust_handler, extension):
-        if isinstance(extension.value, x509.UnrecognizedExtension):
-            value = _encode_asn1_str_gc(self, extension.value.value)
-            return self._create_raw_x509_extension(extension, value)
-
         value = _encode_asn1_str_gc(self, rust_handler(extension))
         return self._create_raw_x509_extension(extension, value)
 
