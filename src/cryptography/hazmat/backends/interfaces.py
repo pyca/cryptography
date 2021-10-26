@@ -13,8 +13,6 @@ if typing.TYPE_CHECKING:
     )
     from cryptography.hazmat.primitives import hashes
     from cryptography.x509.base import (
-        Certificate,
-        CertificateBuilder,
         CertificateRevocationList,
         CertificateRevocationListBuilder,
         CertificateSigningRequest,
