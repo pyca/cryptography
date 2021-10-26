@@ -6,17 +6,23 @@ use crate::x509;
 
 lazy_static::lazy_static! {
     static ref ECDSA_WITH_SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.1").unwrap();
+    static ref ECDSA_WITH_SHA224_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.1").unwrap();
     static ref ECDSA_WITH_SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.2").unwrap();
     static ref ECDSA_WITH_SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.3").unwrap();
+    static ref ECDSA_WITH_SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10045.4.3.4").unwrap();
 
     static ref RSA_WITH_MD5_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.4").unwrap();
     static ref RSA_WITH_SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.5").unwrap();
+    static ref RSA_WITH_SHA224_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.14").unwrap();
     static ref RSA_WITH_SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.11").unwrap();
     static ref RSA_WITH_SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.12").unwrap();
+    static ref RSA_WITH_SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.13").unwrap();
 
     static ref DSA_WITH_SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10040.4.3").unwrap();
+    static ref DSA_WITH_SHA224_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.3.1").unwrap();
     static ref DSA_WITH_SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.3.2").unwrap();
     static ref DSA_WITH_SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.3.3").unwrap();
+    static ref DSA_WITH_SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.3.4").unwrap();
 
     static ref ED25519_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.101.112").unwrap();
     static ref ED448_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.101.113").unwrap();
@@ -38,8 +44,10 @@ enum HashType {
     None,
     Md5,
     Sha1,
+    Sha224,
     Sha256,
     Sha384,
+    Sha512,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
@@ -102,8 +110,10 @@ fn identify_hash_type(
     match hash_algorithm.getattr("name")?.extract()? {
         "md5" => Ok(HashType::Md5),
         "sha1" => Ok(HashType::Sha1),
+        "sha224" => Ok(HashType::Sha224),
         "sha256" => Ok(HashType::Sha256),
         "sha384" => Ok(HashType::Sha384),
+        "sha512" => Ok(HashType::Sha512),
         name => Err(pyo3::exceptions::PyValueError::new_err(format!(
             "Hash algorithm {:?} not supported for signatures",
             name
@@ -138,12 +148,20 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*ECDSA_WITH_SHA1_OID).clone(),
             params: None,
         }),
+        (KeyType::Ec, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+            oid: (*ECDSA_WITH_SHA224_OID).clone(),
+            params: None,
+        }),
         (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
             oid: (*ECDSA_WITH_SHA384_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ec, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+            oid: (*ECDSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
 
@@ -155,6 +173,10 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*RSA_WITH_SHA1_OID).clone(),
             params: Some(*NULL_TLV),
         }),
+        (KeyType::Rsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+            oid: (*RSA_WITH_SHA224_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
         (KeyType::Rsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
             oid: (*RSA_WITH_SHA256_OID).clone(),
             params: Some(*NULL_TLV),
@@ -163,9 +185,17 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*RSA_WITH_SHA384_OID).clone(),
             params: Some(*NULL_TLV),
         }),
+        (KeyType::Rsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+            oid: (*RSA_WITH_SHA512_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
 
         (KeyType::Dsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
             oid: (*DSA_WITH_SHA1_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Dsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+            oid: (*DSA_WITH_SHA224_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
@@ -174,6 +204,10 @@ pub(crate) fn compute_signature_algorithm<'p>(
         }),
         (KeyType::Dsa, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
             oid: (*DSA_WITH_SHA384_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Dsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+            oid: (*DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
 
