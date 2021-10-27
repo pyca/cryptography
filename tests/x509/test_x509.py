@@ -2588,6 +2588,8 @@ class TestCertificateBuilder(object):
             (hashes.SHA1, x509.SignatureAlgorithmOID.DSA_WITH_SHA1),
             (hashes.SHA224, x509.SignatureAlgorithmOID.DSA_WITH_SHA224),
             (hashes.SHA256, x509.SignatureAlgorithmOID.DSA_WITH_SHA256),
+            (hashes.SHA384, x509.SignatureAlgorithmOID.DSA_WITH_SHA384),
+            (hashes.SHA512, x509.SignatureAlgorithmOID.DSA_WITH_SHA512),
         ],
     )
     def test_build_cert_with_dsa_private_key(
