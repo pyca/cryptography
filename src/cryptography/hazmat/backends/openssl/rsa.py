@@ -201,7 +201,10 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init_func(pkey_ctx)
-    backend.openssl_assert(res == 1)
+    if res != 1:
+        errors = backend._consume_errors()
+        raise ValueError("Unable to sign/verify with this key", errors)
+
     if algorithm is not None:
         evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
         res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
