@@ -13,6 +13,15 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,
   which will return an object of type
   :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`.
+* :meth:`~cryptography.x509.Name.rfc4514_string` and related methods now have
+  an optional ``attr_name_overrides`` parameter to supply custom OID to name
+  mappings, which can be used to match vendor-specific extensions.
+* **BACKWARDS INCOMPATIBLE:** Reverted the nonstandard formatting of
+  email address fields as ``E`` in
+  :meth:`~cryptography.x509.Name.rfc4514_string` methods from version 35.0.
+
+  The previous behavior can be restored with:
+  ``name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"})``
 
 .. _v35-0-0:
 

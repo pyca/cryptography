@@ -1292,12 +1292,42 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :return bytes: The DER encoded name.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
 
-        :return str: Format the given name as a :rfc:`4514` Distinguished Name
-            string, for example ``CN=mydomain.com,O=My Org,C=US``.
+            Added ``attr_name_overrides`` parameter.
+
+        Format the given name as a :rfc:`4514` Distinguished Name
+        string, for example ``CN=mydomain.com,O=My Org,C=US``.
+
+        By default, attributes ``CN``, ``L``, ``ST``, ``O``, ``OU``, ``C``,
+        ``STREET``, ``DC``, ``UID`` are represented by their short name.
+        Unrecognized attributes are formatted as dotted OID strings.
+
+        Example:
+
+        .. doctest::
+
+            >>> name = x509.Name([
+            ...     x509.NameAttribute(NameOID.EMAIL_ADDRESS, "santa@north.pole"),
+            ...     x509.NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
+            ... ])
+            >>> name.rfc4514_string()
+            'CN=Santa Claus,1.2.840.113549.1.9.1=santa@north.pole'
+            >>> name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"})
+            'CN=Santa Claus,E=santa@north.pole'
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions. See
+            :class:`~cryptography.x509.oid.NameOID` for common attribute
+            OIDs.
+
+        :rtype: str
 
 
 .. class:: Version
@@ -1342,12 +1372,21 @@ X.509 CSR (Certificate Signing Request) Builder Object
         The :rfc:`4514` short attribute name (for example "CN"),
         or the OID dotted string if a short name is unavailable.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
+
+            Added ``attr_name_overrides`` parameter.
 
         :return str: Format the given attribute as a :rfc:`4514` Distinguished
             Name string.
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions.
 
 
 .. class:: RelativeDistinguishedName(attributes)
@@ -1365,12 +1404,21 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A list of :class:`NameAttribute` instances that match the OID
             provided.  The list should contain zero or one values.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
+
+            Added ``attr_name_overrides`` parameter.
 
         :return str: Format the given RDN set as a :rfc:`4514` Distinguished
             Name string.
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions.
 
 
 .. class:: ObjectIdentifier
