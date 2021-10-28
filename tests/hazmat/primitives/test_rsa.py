@@ -1932,7 +1932,8 @@ class TestRSAEncryption(object):
             public_key.encrypt(b"\x00" * (private_key.key_size // 8 + 5), pad)
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend._fips_enabled, reason="Requires FIPS"
+        only_if=lambda backend: backend._fips_enabled,
+        skip_message="Requires FIPS",
     )
     def test_rsa_fips_small_key(self, backend):
         key = RSA_KEY_512.private_key(backend)
