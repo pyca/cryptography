@@ -500,24 +500,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for working with X.509 objects.
 
-    .. method:: load_pem_x509_csr(data)
-
-        .. versionadded:: 0.9
-
-        :param bytes data: PEM formatted certificate signing request data.
-
-        :returns: An instance of
-            :class:`~cryptography.x509.CertificateSigningRequest`.
-
-    .. method:: load_der_x509_csr(data)
-
-        .. versionadded:: 0.9
-
-        :param bytes data: DER formatted certificate signing request data.
-
-        :returns: An instance of
-            :class:`~cryptography.x509.CertificateSigningRequest`.
-
     .. method:: create_x509_csr(builder, private_key, algorithm)
 
         .. versionadded:: 1.0
@@ -568,14 +550,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: A new instance of
             :class:`~cryptography.x509.RevokedCertificate`.
-
-    .. method:: x509_name_bytes(name)
-
-        .. versionadded:: 1.6
-
-        :param name: An instance of :class:`~cryptography.x509.Name`.
-
-        :return bytes: The DER encoded bytes.
 
 .. class:: DHBackend
 
