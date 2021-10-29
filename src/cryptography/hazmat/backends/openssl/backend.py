@@ -905,7 +905,7 @@ class Backend(BackendInterface):
         # sk_extensions and will be freed along with it.
         self._create_x509_extensions(
             extensions=builder._extensions,
-            rust_handler=rust_x509.encode_certificate_extension,
+            rust_handler=rust_x509.encode_csr_extension,
             x509_obj=sk_extension,
             add_func=self._lib.sk_X509_EXTENSION_insert,
             gc=False,
@@ -935,84 +935,6 @@ class Backend(BackendInterface):
 
         return self._ossl2csr(x509_req)
 
-    def create_x509_certificate(
-        self,
-        builder: x509.CertificateBuilder,
-        private_key: PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> x509.Certificate:
-        if not isinstance(builder, x509.CertificateBuilder):
-            raise TypeError("Builder type mismatch.")
-        if builder._public_key is None:
-            raise TypeError("Builder has no public key.")
-        self._x509_check_signature_params(private_key, algorithm)
-
-        # Resolve the signature algorithm.
-        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
-
-        # Create an empty certificate.
-        x509_cert = self._lib.X509_new()
-        x509_cert = self._ffi.gc(x509_cert, self._lib.X509_free)
-
-        # Set the x509 version.
-        res = self._lib.X509_set_version(x509_cert, builder._version.value)
-        self.openssl_assert(res == 1)
-
-        # Set the subject's name.
-        res = self._lib.X509_set_subject_name(
-            x509_cert, _encode_name_gc(self, builder._subject_name)
-        )
-        self.openssl_assert(res == 1)
-
-        # Set the subject's public key.
-        res = self._lib.X509_set_pubkey(
-            x509_cert,
-            builder._public_key._evp_pkey,  # type: ignore[union-attr]
-        )
-        self.openssl_assert(res == 1)
-
-        # Set the certificate serial number.
-        serial_number = _encode_asn1_int_gc(self, builder._serial_number)
-        res = self._lib.X509_set_serialNumber(x509_cert, serial_number)
-        self.openssl_assert(res == 1)
-
-        # Set the "not before" time.
-        self._set_asn1_time(
-            self._lib.X509_getm_notBefore(x509_cert), builder._not_valid_before
-        )
-
-        # Set the "not after" time.
-        self._set_asn1_time(
-            self._lib.X509_getm_notAfter(x509_cert), builder._not_valid_after
-        )
-
-        # Add extensions.
-        self._create_x509_extensions(
-            extensions=builder._extensions,
-            rust_handler=rust_x509.encode_certificate_extension,
-            x509_obj=x509_cert,
-            add_func=self._lib.X509_add_ext,
-            gc=True,
-        )
-
-        # Set the issuer name.
-        res = self._lib.X509_set_issuer_name(
-            x509_cert, _encode_name_gc(self, builder._issuer_name)
-        )
-        self.openssl_assert(res == 1)
-
-        # Sign the certificate with the issuer's private key.
-        res = self._lib.X509_sign(
-            x509_cert,
-            private_key._evp_pkey,  # type: ignore[union-attr]
-            evp_md,
-        )
-        if res == 0:
-            errors = self._consume_errors_with_text()
-            raise ValueError("Signing failed", errors)
-
-        return self._ossl2cert(x509_cert)
-
     def _evp_md_x509_null_if_eddsa(self, private_key, algorithm):
         if isinstance(
             private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
@@ -1023,10 +945,8 @@ class Backend(BackendInterface):
             return self._evp_md_non_null_from_algorithm(algorithm)
 
     def _set_asn1_time(self, asn1_time, time):
-        if time.year >= 2050:
-            asn1_str = time.strftime("%Y%m%d%H%M%SZ").encode("ascii")
-        else:
-            asn1_str = time.strftime("%y%m%d%H%M%SZ").encode("ascii")
+        self.openssl_assert(time.year < 2050)
+        asn1_str = time.strftime("%y%m%d%H%M%SZ").encode("ascii")
         res = self._lib.ASN1_TIME_set_string(asn1_time, asn1_str)
         self.openssl_assert(res == 1)
 
@@ -1142,10 +1062,6 @@ class Backend(BackendInterface):
         )
 
     def _create_x509_extension(self, rust_handler, extension):
-        if isinstance(extension.value, x509.UnrecognizedExtension):
-            value = _encode_asn1_str_gc(self, extension.value.value)
-            return self._create_raw_x509_extension(extension, value)
-
         value = _encode_asn1_str_gc(self, rust_handler(extension))
         return self._create_raw_x509_extension(extension, value)
 

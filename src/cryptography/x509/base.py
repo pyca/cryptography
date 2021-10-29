@@ -782,7 +782,7 @@ class CertificateBuilder(object):
         if self._public_key is None:
             raise ValueError("A certificate must have a public key")
 
-        return backend.create_x509_certificate(self, private_key, algorithm)
+        return rust_x509.create_x509_certificate(self, private_key, algorithm)
 
 
 class CertificateRevocationListBuilder(object):

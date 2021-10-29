@@ -5,7 +5,8 @@
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{crl, sct};
-use pyo3::ToPyObject;
+use chrono::Datelike;
+use pyo3::{PyNativeType, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -47,7 +48,7 @@ pub(crate) struct TbsCertificate<'a> {
     #[default(0)]
     version: u8,
     pub(crate) serial: asn1::BigUint<'a>,
-    _signature_alg: x509::AlgorithmIdentifier<'a>,
+    signature_alg: x509::AlgorithmIdentifier<'a>,
 
     pub(crate) issuer: x509::Name<'a>,
     validity: Validity,
@@ -55,9 +56,9 @@ pub(crate) struct TbsCertificate<'a> {
 
     pub(crate) spki: SubjectPublicKeyInfo<'a>,
     #[implicit(1)]
-    _issuer_unique_id: Option<asn1::BitString<'a>>,
+    issuer_unique_id: Option<asn1::BitString<'a>>,
     #[implicit(2)]
-    _subject_unique_id: Option<asn1::BitString<'a>>,
+    subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
     extensions: Option<x509::Extensions<'a>>,
 }
@@ -989,6 +990,67 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
+fn time_from_py(val: &pyo3::PyAny) -> pyo3::PyResult<x509::Time> {
+    let dt = x509::py_to_chrono(val)?;
+    if dt.year() >= 2050 {
+        Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)))
+    } else {
+        Ok(x509::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn create_x509_certificate(
+    py: pyo3::Python<'_>,
+    builder: &pyo3::PyAny,
+    private_key: &pyo3::PyAny,
+    hash_algorithm: &pyo3::PyAny,
+) -> PyAsn1Result<Certificate> {
+    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+    let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
+    let der_encoding = serialization_mod.getattr("Encoding")?.getattr("DER")?;
+    let spki_format = serialization_mod
+        .getattr("PublicFormat")?
+        .getattr("SubjectPublicKeyInfo")?;
+
+    let spki_bytes = builder
+        .getattr("_public_key")?
+        .call_method1("public_bytes", (der_encoding, spki_format))?
+        .extract::<&[u8]>()?;
+
+    let py_serial = builder.getattr("_serial_number")?.extract()?;
+
+    let tbs_cert = TbsCertificate {
+        version: builder.getattr("_version")?.getattr("value")?.extract()?,
+        serial: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
+        signature_alg: sigalg.clone(),
+        issuer: x509::common::encode_name(py, builder.getattr("_issuer_name")?)?,
+        validity: Validity {
+            not_before: time_from_py(builder.getattr("_not_valid_before")?)?,
+            not_after: time_from_py(builder.getattr("_not_valid_after")?)?,
+        },
+        subject: x509::common::encode_name(py, builder.getattr("_subject_name")?)?,
+        spki: asn1::parse_single(spki_bytes)?,
+        issuer_unique_id: None,
+        subject_unique_id: None,
+        extensions: x509::common::encode_extensions(
+            py,
+            builder.getattr("_extensions")?,
+            encode_certificate_extension,
+        )?,
+    };
+
+    let tbs_bytes = asn1::write_single(&tbs_cert);
+    let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+    let data = asn1::write_single(&RawCertificate {
+        tbs_cert,
+        signature_alg: sigalg,
+        signature: asn1::BitString::new(signature, 0).unwrap(),
+    });
+    // TODO: extra copy as we round-trip through a slice
+    load_der_x509_certificate(py, &data)
+}
+
 fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     let idx = n / 8;
     let v = 1 << (7 - (n & 0x07));
@@ -997,113 +1059,51 @@ fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn encode_certificate_extension<'p>(
-    py: pyo3::Python<'p>,
+fn encode_certificate_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
     ext: &pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let oid = asn1::ObjectIdentifier::from_string(
-        ext.getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
-    if oid == *BASIC_CONSTRAINTS_OID {
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*BASIC_CONSTRAINTS_OID {
         let bc = BasicConstraints {
-            ca: ext.getattr("value")?.getattr("ca")?.extract::<bool>()?,
-            path_length: ext
-                .getattr("value")?
-                .getattr("path_length")?
-                .extract::<Option<u64>>()?,
+            ca: ext.getattr("ca")?.extract::<bool>()?,
+            path_length: ext.getattr("path_length")?.extract::<Option<u64>>()?,
         };
-        let result = asn1::write_single(&bc);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
-        let result = asn1::write_single(
-            &ext.getattr("value")?
-                .getattr("digest")?
-                .extract::<&[u8]>()?,
-        );
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *KEY_USAGE_OID {
+        Ok(Some(asn1::write_single(&bc)))
+    } else if oid == &*SUBJECT_KEY_IDENTIFIER_OID {
+        Ok(Some(asn1::write_single(
+            &ext.getattr("digest")?.extract::<&[u8]>()?,
+        )))
+    } else if oid == &*KEY_USAGE_OID {
         let mut bs = [0, 0];
-        set_bit(
-            &mut bs,
-            0,
-            ext.getattr("value")?
-                .getattr("digital_signature")?
-                .is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            1,
-            ext.getattr("value")?
-                .getattr("content_commitment")?
-                .is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            2,
-            ext.getattr("value")?
-                .getattr("key_encipherment")?
-                .is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            3,
-            ext.getattr("value")?
-                .getattr("data_encipherment")?
-                .is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            4,
-            ext.getattr("value")?.getattr("key_agreement")?.is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            5,
-            ext.getattr("value")?.getattr("key_cert_sign")?.is_true()?,
-        );
-        set_bit(
-            &mut bs,
-            6,
-            ext.getattr("value")?.getattr("crl_sign")?.is_true()?,
-        );
-        if ext.getattr("value")?.getattr("key_agreement")?.is_true()? {
-            set_bit(
-                &mut bs,
-                7,
-                ext.getattr("value")?.getattr("encipher_only")?.is_true()?,
-            );
-            set_bit(
-                &mut bs,
-                8,
-                ext.getattr("value")?.getattr("decipher_only")?.is_true()?,
-            );
+        set_bit(&mut bs, 0, ext.getattr("digital_signature")?.is_true()?);
+        set_bit(&mut bs, 1, ext.getattr("content_commitment")?.is_true()?);
+        set_bit(&mut bs, 2, ext.getattr("key_encipherment")?.is_true()?);
+        set_bit(&mut bs, 3, ext.getattr("data_encipherment")?.is_true()?);
+        set_bit(&mut bs, 4, ext.getattr("key_agreement")?.is_true()?);
+        set_bit(&mut bs, 5, ext.getattr("key_cert_sign")?.is_true()?);
+        set_bit(&mut bs, 6, ext.getattr("crl_sign")?.is_true()?);
+        if ext.getattr("key_agreement")?.is_true()? {
+            set_bit(&mut bs, 7, ext.getattr("encipher_only")?.is_true()?);
+            set_bit(&mut bs, 8, ext.getattr("decipher_only")?.is_true()?);
         }
         let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
-        let result = asn1::write_single(&asn1::BitString::new(bits, 0));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID || oid == *SUBJECT_INFORMATION_ACCESS_OID {
-        let py_ads = ext.getattr("value")?;
-        let ads = x509::common::encode_access_descriptions(py, py_ads)?;
-        let result = asn1::write_single(&ads);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *EXTENDED_KEY_USAGE_OID {
+        Ok(Some(asn1::write_single(&asn1::BitString::new(bits, 0))))
+    } else if oid == &*AUTHORITY_INFORMATION_ACCESS_OID || oid == &*SUBJECT_INFORMATION_ACCESS_OID {
+        let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&ads)))
+    } else if oid == &*EXTENDED_KEY_USAGE_OID {
         let mut oids = vec![];
-        for el in ext.getattr("value")?.iter()? {
+        for el in ext.iter()? {
             let oid = asn1::ObjectIdentifier::from_string(
                 el?.getattr("dotted_string")?.extract::<&str>()?,
             )
             .unwrap();
             oids.push(oid);
         }
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(oids));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *CERTIFICATE_POLICIES_OID {
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(oids))))
+    } else if oid == &*CERTIFICATE_POLICIES_OID {
         let mut policy_informations = vec![];
-        for py_policy_info in ext.getattr("value")?.iter()? {
+        for py_policy_info in ext.iter()? {
             let py_policy_info = py_policy_info?;
             let py_policy_qualifiers = py_policy_info.getattr("policy_qualifiers")?;
             let qualifiers = if py_policy_qualifiers.is_true()? {
@@ -1128,7 +1128,8 @@ fn encode_certificate_extension<'p>(
                         let notice_ref = if py_notice.is_true()? {
                             let mut notice_numbers = vec![];
                             for py_num in py_notice.getattr("notice_numbers")?.iter()? {
-                                let bytes = py_uint_to_big_endian_bytes(py, py_num?.downcast()?)?;
+                                let bytes =
+                                    py_uint_to_big_endian_bytes(ext.py(), py_num?.downcast()?)?;
                                 notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
                             }
 
@@ -1179,99 +1180,98 @@ fn encode_certificate_extension<'p>(
                 policy_qualifiers: qualifiers,
             });
         }
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(policy_informations));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *POLICY_CONSTRAINTS_OID {
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
+            policy_informations,
+        ))))
+    } else if oid == &*POLICY_CONSTRAINTS_OID {
         let pc = PolicyConstraints {
-            require_explicit_policy: ext
-                .getattr("value")?
-                .getattr("require_explicit_policy")?
-                .extract()?,
-            inhibit_policy_mapping: ext
-                .getattr("value")?
-                .getattr("inhibit_policy_mapping")?
-                .extract()?,
+            require_explicit_policy: ext.getattr("require_explicit_policy")?.extract()?,
+            inhibit_policy_mapping: ext.getattr("inhibit_policy_mapping")?.extract()?,
         };
-        let result = asn1::write_single(&pc);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *NAME_CONSTRAINTS_OID {
-        let py_nc = ext.getattr("value")?;
-        let permitted = py_nc.getattr("permitted_subtrees")?;
-        let excluded = py_nc.getattr("excluded_subtrees")?;
+        Ok(Some(asn1::write_single(&pc)))
+    } else if oid == &*NAME_CONSTRAINTS_OID {
+        let permitted = ext.getattr("permitted_subtrees")?;
+        let excluded = ext.getattr("excluded_subtrees")?;
         let nc = NameConstraints {
-            permitted_subtrees: encode_general_subtrees(py, permitted)?,
-            excluded_subtrees: encode_general_subtrees(py, excluded)?,
+            permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
+            excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
         };
-        let result = asn1::write_single(&nc);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *INHIBIT_ANY_POLICY_OID {
+        Ok(Some(asn1::write_single(&nc)))
+    } else if oid == &*INHIBIT_ANY_POLICY_OID {
         let intval = ext
-            .getattr("value")?
             .getattr("skip_certs")?
             .downcast::<pyo3::types::PyLong>()?;
-        let bytes = py_uint_to_big_endian_bytes(py, intval)?;
-        let result = asn1::write_single(&asn1::BigUint::new(bytes).unwrap());
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID || oid == *SUBJECT_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(py, ext.getattr("value")?)?;
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(gns));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = encode_authority_key_identifier(py, ext.getattr("value")?)?;
-        let result = asn1::write_single(&aki);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *FRESHEST_CRL_OID || oid == *CRL_DISTRIBUTION_POINTS_OID {
-        let dps = encode_distribution_points(py, ext.getattr("value")?)?;
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(dps));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *OCSP_NO_CHECK_OID {
-        let result = asn1::write_single(&());
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *TLS_FEATURE_OID {
+        let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
+        Ok(Some(asn1::write_single(
+            &asn1::BigUint::new(bytes).unwrap(),
+        )))
+    } else if oid == &*ISSUER_ALTERNATIVE_NAME_OID || oid == &*SUBJECT_ALTERNATIVE_NAME_OID {
+        let gns = x509::common::encode_general_names(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
+    } else if oid == &*AUTHORITY_KEY_IDENTIFIER_OID {
+        let aki = encode_authority_key_identifier(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&aki)))
+    } else if oid == &*FRESHEST_CRL_OID || oid == &*CRL_DISTRIBUTION_POINTS_OID {
+        let dps = encode_distribution_points(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
+    } else if oid == &*OCSP_NO_CHECK_OID {
+        Ok(Some(asn1::write_single(&())))
+    } else if oid == &*TLS_FEATURE_OID {
         // Ideally we'd skip building up a vec and just write directly into the
         // writer. This isn't possible at the moment because the callback to write
         // an asn1::Sequence can't return an error, and we need to handle errors
         // from Python.
         let mut els = vec![];
-        for el in ext.getattr("value")?.iter()? {
+        for el in ext.iter()? {
             els.push(el?.getattr("value")?.extract::<u64>()?);
         }
 
-        let result = asn1::write_single(&asn1::SequenceOfWriter::new(els));
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *PRECERT_POISON_OID {
-        let result = asn1::write_single(&());
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    } else if oid == *PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))))
+    } else if oid == &*PRECERT_POISON_OID {
+        Ok(Some(asn1::write_single(&())))
+    } else if oid == &*PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
         let mut length = 0;
-        for sct in ext.getattr("value")?.iter()? {
+        for sct in ext.iter()? {
             let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
             length += sct.borrow().sct_data.len() + 2;
         }
 
         let mut result = vec![];
         result.extend_from_slice(&(length as u16).to_be_bytes());
-        for sct in ext.getattr("value")?.iter()? {
+        for sct in ext.iter()? {
             let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
             result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
             result.extend_from_slice(&sct.borrow().sct_data);
         }
-        Ok(pyo3::types::PyBytes::new(
-            py,
-            &asn1::write_single(&result.as_slice()),
-        ))
+        Ok(Some(asn1::write_single(&result.as_slice())))
     } else {
-        Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+        Ok(None)
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn encode_csr_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
+    let oid = asn1::ObjectIdentifier::from_string(
+        ext.getattr("oid")?
+            .getattr("dotted_string")?
+            .extract::<&str>()?,
+    )
+    .unwrap();
+    match encode_certificate_extension(&oid, ext.getattr("value")?)? {
+        Some(val) => Ok(pyo3::types::PyBytes::new(ext.py(), &val)),
+        None => Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
             "Extension not supported: {}",
             oid
-        )))
+        ))),
     }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_certificate_extension))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_certificate))?;
+
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_csr_extension))?;
 
     module.add_class::<Certificate>()?;
 

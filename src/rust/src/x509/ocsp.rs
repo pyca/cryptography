@@ -33,10 +33,6 @@ lazy_static::lazy_static! {
     };
 
     pub(crate) static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
-
-    // TODO: kind of verbose way to say "\x05\x00".
-    static ref NULL_DER: Vec<u8> = asn1::write_single(&());
-    pub(crate) static ref NULL_TLV: asn1::Tlv<'static> = asn1::parse_single(&NULL_DER).unwrap();
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -74,7 +70,7 @@ impl CertID<'_> {
         Ok(CertID {
             hash_algorithm: x509::AlgorithmIdentifier {
                 oid: HASH_NAME_TO_OIDS[hash_algorithm.getattr("name")?.extract::<&str>()?].clone(),
-                params: Some(*NULL_TLV),
+                params: Some(*x509::sign::NULL_TLV),
             },
             issuer_name_hash,
             issuer_key_hash,

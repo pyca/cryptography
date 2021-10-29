@@ -579,6 +579,11 @@ pub(crate) fn encode_extensions<
     py_exts: &'p pyo3::PyAny,
     encode_ext: F,
 ) -> pyo3::PyResult<Option<Extensions<'p>>> {
+    let unrecognized_extension_type: &pyo3::types::PyType = py
+        .import("cryptography.x509")?
+        .getattr("UnrecognizedExtension")?
+        .extract()?;
+
     let mut exts = vec![];
     for py_ext in py_exts.iter()? {
         let py_ext = py_ext?;
@@ -589,7 +594,17 @@ pub(crate) fn encode_extensions<
                 .extract::<&str>()?,
         )
         .unwrap();
-        match encode_ext(&oid, py_ext.getattr("value")?)? {
+
+        let ext_val = py_ext.getattr("value")?;
+        if unrecognized_extension_type.is_instance(ext_val)? {
+            exts.push(Extension {
+                extn_id: oid,
+                critical: py_ext.getattr("critical")?.extract()?,
+                extn_value: ext_val.getattr("value")?.extract::<&[u8]>()?,
+            });
+            continue;
+        }
+        match encode_ext(&oid, ext_val)? {
             Some(data) => {
                 // TODO: extra copy
                 let py_data = pyo3::types::PyBytes::new(py, &data);
