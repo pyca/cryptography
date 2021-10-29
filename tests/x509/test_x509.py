@@ -2715,6 +2715,41 @@ class TestCertificateBuilder(object):
             x509.DNSName("cryptography.io"),
         ]
 
+    def test_build_cert_with_bmpstring_universalstring_name(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        issuer = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.COMMON_NAME,
+                    "cryptography.io",
+                    _ASN1Type.BMPString,
+                ),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+            ]
+        )
+        subject = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.COMMON_NAME,
+                    "cryptography.io",
+                    _ASN1Type.UniversalString,
+                ),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+            ]
+        )
+        builder = x509.CertificateBuilder()
+        builder = (
+            builder.subject_name(subject)
+            .issuer_name(issuer)
+            .serial_number(1)
+            .public_key(private_key.public_key())
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
+        )
+        cert = builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.issuer == issuer
+        assert cert.subject == subject
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 support",
