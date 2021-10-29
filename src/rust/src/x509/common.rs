@@ -374,17 +374,19 @@ fn parse_name_attribute(
         // BMPString tag value
         30 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes.call_method1("decode", ("utf_16_be",))?.extract::<&str>()?
-        },
+            py_bytes
+                .call_method1("decode", ("utf_16_be",))?
+                .extract::<&str>()?
+        }
         // UniversalString
         28 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes.call_method1("decode", ("utf_32_be",))?.extract::<&str>()?
-        },
-        _ => {
-            std::str::from_utf8(attribute.value.data())
-                .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?
+            py_bytes
+                .call_method1("decode", ("utf_32_be",))?
+                .extract::<&str>()?
         }
+        _ => std::str::from_utf8(attribute.value.data())
+            .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?,
     };
     Ok(x509_module
         .call_method1("NameAttribute", (oid, py_data, py_tag))?
