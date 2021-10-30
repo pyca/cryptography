@@ -8,10 +8,6 @@ import typing
 
 
 if typing.TYPE_CHECKING:
-    from cryptography.hazmat.primitives.asymmetric.types import (
-        PRIVATE_KEY_TYPES,
-    )
-    from cryptography.hazmat.primitives import hashes
     from cryptography.x509.base import (
         RevokedCertificate,
         RevokedCertificateBuilder,

@@ -71,7 +71,6 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
-    ed448,
     rsa,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
@@ -80,7 +79,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
     PSS,
 )
-from cryptography.hazmat.primitives.asymmetric.types import PRIVATE_KEY_TYPES
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
