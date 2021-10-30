@@ -918,7 +918,6 @@ class Backend(BackendInterface):
             rust_handler=rust_x509.encode_crl_extension,
             x509_obj=x509_crl,
             add_func=self._lib.X509_CRL_add_ext,
-            gc=True,
         )
 
         # add revoked certificates
@@ -943,7 +942,6 @@ class Backend(BackendInterface):
                 rust_handler=rust_x509.encode_crl_entry_extension,
                 x509_obj=x509_revoked,
                 add_func=self._lib.X509_REVOKED_add_ext,
-                gc=True,
             )
 
             res = self._lib.X509_CRL_add0_revoked(x509_crl, x509_revoked)
@@ -959,7 +957,7 @@ class Backend(BackendInterface):
         return self._ossl2crl(x509_crl)
 
     def _create_x509_extensions(
-        self, extensions, rust_handler, x509_obj, add_func, gc
+        self, extensions, rust_handler, x509_obj, add_func
     ):
         for i, extension in enumerate(extensions):
             x509_extension = self._create_x509_extension(
@@ -967,10 +965,9 @@ class Backend(BackendInterface):
             )
             self.openssl_assert(x509_extension != self._ffi.NULL)
 
-            if gc:
-                x509_extension = self._ffi.gc(
-                    x509_extension, self._lib.X509_EXTENSION_free
-                )
+            x509_extension = self._ffi.gc(
+                x509_extension, self._lib.X509_EXTENSION_free
+            )
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 

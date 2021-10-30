@@ -355,7 +355,9 @@ fn create_x509_csr(
         let tag = if std::str::from_utf8(value).is_ok() {
             asn1::Utf8String::TAG
         } else {
-            <&[u8] as asn1::SimpleAsn1Readable>::TAG
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Attribute values must be valid utf-8.",
+            )));
         };
         attrs.push(Attribute {
             type_id: oid,
