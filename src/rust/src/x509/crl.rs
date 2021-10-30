@@ -746,15 +746,12 @@ fn create_x509_crl(
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder.getattr("_revoked_certificates")?.iter()? {
         let py_revoked_cert = py_revoked_cert?;
+        let serial_number = py_revoked_cert.getattr("serial_number")?.extract()?;
+        let py_revocation_date = py_revoked_cert.getattr("revocation_date")?;
         revoked_certs.push(RawRevokedCertificate {
-            user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(
-                py,
-                py_revoked_cert.getattr("serial_number")?.extract()?,
-            )?)
-            .unwrap(),
-            revocation_date: x509::certificate::time_from_py(
-                py_revoked_cert.getattr("revocation_date")?,
-            )?,
+            user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
+                .unwrap(),
+            revocation_date: x509::certificate::time_from_py(py_revocation_date)?,
             crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 py_revoked_cert.getattr("extensions")?,
@@ -763,14 +760,13 @@ fn create_x509_crl(
         });
     }
 
+    let py_next_update = builder.getattr("_next_update")?;
     let tbs_cert_list = TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),
         issuer: x509::common::encode_name(py, builder.getattr("_issuer_name")?)?,
         this_update: x509::certificate::time_from_py(builder.getattr("_last_update")?)?,
-        next_update: Some(x509::certificate::time_from_py(
-            builder.getattr("_next_update")?,
-        )?),
+        next_update: Some(x509::certificate::time_from_py(py_next_update)?),
         revoked_certificates: if revoked_certs.is_empty() {
             None
         } else {
