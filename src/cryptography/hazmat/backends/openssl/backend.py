@@ -40,11 +40,6 @@ from cryptography.hazmat.backends.openssl.ed448 import (
     _Ed448PrivateKey,
     _Ed448PublicKey,
 )
-from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_str_gc,
-    _encode_name_gc,
-    _txt2obj_gc,
-)
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.poly1305 import (
@@ -828,61 +823,6 @@ class Backend(BackendInterface):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
-
-    def _x509_check_signature_params(self, private_key, algorithm):
-        if isinstance(
-            private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
-        ):
-            if algorithm is not None:
-                raise ValueError(
-                    "algorithm must be None when signing via ed25519 or ed448"
-                )
-        elif not isinstance(
-            private_key,
-            (rsa.RSAPrivateKey, dsa.DSAPrivateKey, ec.EllipticCurvePrivateKey),
-        ):
-            raise TypeError(
-                "Key must be an rsa, dsa, ec, ed25519, or ed448 private key."
-            )
-        elif not isinstance(algorithm, hashes.HashAlgorithm):
-            raise TypeError("Algorithm must be a registered hash algorithm.")
-        elif isinstance(algorithm, hashes.MD5) and not isinstance(
-            private_key, rsa.RSAPrivateKey
-        ):
-            raise ValueError(
-                "MD5 hash algorithm is only supported with RSA keys"
-            )
-
-    def _evp_md_x509_null_if_eddsa(self, private_key, algorithm):
-        if isinstance(
-            private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
-        ):
-            # OpenSSL requires us to pass NULL for EVP_MD for ed25519/ed448
-            return self._ffi.NULL
-        else:
-            return self._evp_md_non_null_from_algorithm(algorithm)
-
-    def _create_x509_extensions(
-        self, extensions, rust_handler, x509_obj, add_func
-    ):
-        for i, extension in enumerate(extensions):
-            x509_extension = self._create_x509_extension(
-                rust_handler, extension
-            )
-            self.openssl_assert(x509_extension != self._ffi.NULL)
-
-            res = add_func(x509_obj, x509_extension, i)
-            self.openssl_assert(res >= 1)
-
-    def _create_raw_x509_extension(self, extension, value):
-        obj = _txt2obj_gc(self, extension.oid.dotted_string)
-        return self._lib.X509_EXTENSION_create_by_OBJ(
-            self._ffi.NULL, obj, 1 if extension.critical else 0, value
-        )
-
-    def _create_x509_extension(self, rust_handler, extension):
-        value = _encode_asn1_str_gc(self, rust_handler(extension))
-        return self._create_raw_x509_extension(extension, value)
 
     def create_x509_revoked_certificate(
         self, builder: x509.RevokedCertificateBuilder
