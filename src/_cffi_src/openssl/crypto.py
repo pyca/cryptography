@@ -76,12 +76,12 @@ CUSTOMIZATIONS = """
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
-
 void (*OPENSSL_cleanup)(void) = NULL;
+#else
+static const long Cryptography_HAS_OPENSSL_CLEANUP = 1;
+#endif
 
-/* This function has a significantly different signature pre-1.1.0. since it is
- * for testing only, we don't bother to expose it on older OpenSSLs.
- */
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
 int (*Cryptography_CRYPTO_set_mem_functions)(
     void *(*)(size_t, const char *, int),
@@ -89,7 +89,6 @@ int (*Cryptography_CRYPTO_set_mem_functions)(
     void (*)(void *, const char *, int)) = NULL;
 
 #else
-static const long Cryptography_HAS_OPENSSL_CLEANUP = 1;
 static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
 
 int Cryptography_CRYPTO_set_mem_functions(
