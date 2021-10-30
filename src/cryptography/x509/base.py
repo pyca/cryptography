@@ -907,7 +907,6 @@ class CertificateRevocationListBuilder(object):
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Optional[Backend] = None,
     ) -> CertificateRevocationList:
-        backend = _get_backend(backend)
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
 
@@ -917,7 +916,7 @@ class CertificateRevocationListBuilder(object):
         if self._next_update is None:
             raise ValueError("A CRL must have a next update time")
 
-        return backend.create_x509_crl(self, private_key, algorithm)
+        return rust_x509.create_x509_crl(self, private_key, algorithm)
 
 
 class RevokedCertificateBuilder(object):

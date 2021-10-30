@@ -500,26 +500,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for working with X.509 objects.
 
-    .. method:: create_x509_crl(builder, private_key, algorithm)
-
-        .. versionadded:: 1.2
-
-        :param builder: An instance of
-            :class:`~cryptography.x509.CertificateRevocationListBuilder`.
-
-        :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-            that will be used to sign the CRL.
-
-        :param algorithm: The
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            that will be used to generate the CRL signature.
-
-        :returns: A new instance of
-            :class:`~cryptography.x509.CertificateRevocationList`.
-
     .. method:: create_x509_revoked_certificate(builder)
 
         .. versionadded:: 1.2

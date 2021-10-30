@@ -7,32 +7,6 @@ from cryptography import x509
 from cryptography.x509.name import _ASN1Type
 
 
-def _encode_asn1_int(backend, x):
-    """
-    Converts a python integer to an ASN1_INTEGER. The returned ASN1_INTEGER
-    will not be garbage collected (to support adding them to structs that take
-    ownership of the object). Be sure to register it for GC if it will be
-    discarded after use.
-
-    """
-    # Convert Python integer to OpenSSL "bignum" in case value exceeds
-    # machine's native integer limits (note: `int_to_bn` doesn't automatically
-    # GC).
-    i = backend._int_to_bn(x)
-    i = backend._ffi.gc(i, backend._lib.BN_free)
-
-    # Wrap in an ASN.1 integer.  Don't GC -- as documented.
-    i = backend._lib.BN_to_ASN1_INTEGER(i, backend._ffi.NULL)
-    backend.openssl_assert(i != backend._ffi.NULL)
-    return i
-
-
-def _encode_asn1_int_gc(backend, x):
-    i = _encode_asn1_int(backend, x)
-    i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
-    return i
-
-
 def _encode_asn1_str(backend, data):
     """
     Create an ASN1_OCTET_STRING from a Python byte string.
