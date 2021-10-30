@@ -279,6 +279,15 @@ def cryptography_has_pkcs7_funcs():
         "PKCS7_get0_signers",
     ]
 
+
+def cryptography_has_bn_flags():
+    return [
+        "BN_FLG_CONSTTIME",
+        "BN_set_flags",
+        "BN_prime_checks_for_size",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -333,4 +342,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
+    "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
 }

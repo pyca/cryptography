@@ -8,6 +8,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const long Cryptography_HAS_BN_FLAGS;
+
 typedef ... BN_CTX;
 typedef ... BN_MONT_CTX;
 typedef ... BIGNUM;
@@ -81,4 +83,13 @@ const int BN_prime_checks_for_size(int);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_BN_FLAGS = 0;
+
+static const int BN_FLG_CONSTTIME = 0;
+void (*BN_set_flags)(BIGNUM *, int) = NULL;
+int (*BN_prime_checks_for_size)(int) = NULL;
+#else
+static const long Cryptography_HAS_BN_FLAGS = 1;
+#endif
 """
