@@ -1059,7 +1059,7 @@ fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     }
 }
 
-fn encode_certificate_extension(
+pub(crate) fn encode_certificate_extension(
     oid: &asn1::ObjectIdentifier<'_>,
     ext: &pyo3::PyAny,
 ) -> pyo3::PyResult<Option<Vec<u8>>> {
@@ -1249,29 +1249,10 @@ fn encode_certificate_extension(
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn encode_csr_extension(ext: &pyo3::PyAny) -> pyo3::PyResult<&pyo3::PyAny> {
-    let oid = asn1::ObjectIdentifier::from_string(
-        ext.getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
-    match encode_certificate_extension(&oid, ext.getattr("value")?)? {
-        Some(val) => Ok(pyo3::types::PyBytes::new(ext.py(), &val)),
-        None => Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-            "Extension not supported: {}",
-            oid
-        ))),
-    }
-}
-
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_certificate))?;
-
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_csr_extension))?;
 
     module.add_class::<Certificate>()?;
 

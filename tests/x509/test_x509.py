@@ -4046,6 +4046,20 @@ class TestCertificateSigningRequestBuilder(object):
             == locality
         )
 
+    def test_add_attributes_non_utf8(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(x509.Name([]))
+            .add_attribute(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+                b"\xbb\xad\x16\x9a\xac\xc9\x03i\xec\xcc\xdd6\xcbh\xfc\xf3",
+            )
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
     def test_add_attribute_bad_types(self, backend):
         request = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):

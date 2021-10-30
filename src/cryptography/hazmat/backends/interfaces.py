@@ -15,8 +15,6 @@ if typing.TYPE_CHECKING:
     from cryptography.x509.base import (
         CertificateRevocationList,
         CertificateRevocationListBuilder,
-        CertificateSigningRequest,
-        CertificateSigningRequestBuilder,
         RevokedCertificate,
         RevokedCertificateBuilder,
     )
@@ -277,17 +275,6 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
 
 
 class X509Backend(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def create_x509_csr(
-        self,
-        builder: "CertificateSigningRequestBuilder",
-        private_key: "PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "CertificateSigningRequest":
-        """
-        Create and sign an X.509 CSR from a CSR builder object.
-        """
-
     @abc.abstractmethod
     def create_x509_crl(
         self,

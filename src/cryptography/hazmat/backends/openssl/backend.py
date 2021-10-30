@@ -854,87 +854,6 @@ class Backend(BackendInterface):
                 "MD5 hash algorithm is only supported with RSA keys"
             )
 
-    def create_x509_csr(
-        self,
-        builder: x509.CertificateSigningRequestBuilder,
-        private_key: PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> x509.CertificateSigningRequest:
-        if not isinstance(builder, x509.CertificateSigningRequestBuilder):
-            raise TypeError("Builder type mismatch.")
-        self._x509_check_signature_params(private_key, algorithm)
-
-        # Resolve the signature algorithm.
-        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
-
-        # Create an empty request.
-        x509_req = self._lib.X509_REQ_new()
-        self.openssl_assert(x509_req != self._ffi.NULL)
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-
-        # Set x509 version.
-        res = self._lib.X509_REQ_set_version(x509_req, x509.Version.v1.value)
-        self.openssl_assert(res == 1)
-
-        # Set subject name.
-        res = self._lib.X509_REQ_set_subject_name(
-            x509_req, _encode_name_gc(self, builder._subject_name)
-        )
-        self.openssl_assert(res == 1)
-
-        # Set subject public key.
-        public_key = private_key.public_key()
-        res = self._lib.X509_REQ_set_pubkey(
-            x509_req, public_key._evp_pkey  # type: ignore[union-attr]
-        )
-        self.openssl_assert(res == 1)
-
-        # Add extensions.
-        sk_extension = self._lib.sk_X509_EXTENSION_new_null()
-        self.openssl_assert(sk_extension != self._ffi.NULL)
-        sk_extension = self._ffi.gc(
-            sk_extension,
-            lambda x: self._lib.sk_X509_EXTENSION_pop_free(
-                x,
-                self._ffi.addressof(
-                    self._lib._original_lib, "X509_EXTENSION_free"
-                ),
-            ),
-        )
-        # Don't GC individual extensions because the memory is owned by
-        # sk_extensions and will be freed along with it.
-        self._create_x509_extensions(
-            extensions=builder._extensions,
-            rust_handler=rust_x509.encode_csr_extension,
-            x509_obj=sk_extension,
-            add_func=self._lib.sk_X509_EXTENSION_insert,
-            gc=False,
-        )
-        res = self._lib.X509_REQ_add_extensions(x509_req, sk_extension)
-        self.openssl_assert(res == 1)
-
-        # Add attributes (all bytes encoded as ASN1 UTF8_STRING)
-        for attr_oid, attr_val in builder._attributes:
-            obj = _txt2obj_gc(self, attr_oid.dotted_string)
-            res = self._lib.X509_REQ_add1_attr_by_OBJ(
-                x509_req,
-                obj,
-                x509.name._ASN1Type.UTF8String.value,
-                attr_val,
-                len(attr_val),
-            )
-            self.openssl_assert(res == 1)
-
-        # Sign the request using the requester's private key.
-        res = self._lib.X509_REQ_sign(
-            x509_req, private_key._evp_pkey, evp_md  # type: ignore[union-attr]
-        )
-        if res == 0:
-            errors = self._consume_errors_with_text()
-            raise ValueError("Signing failed", errors)
-
-        return self._ossl2csr(x509_req)
-
     def _evp_md_x509_null_if_eddsa(self, private_key, algorithm):
         if isinstance(
             private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
@@ -999,7 +918,6 @@ class Backend(BackendInterface):
             rust_handler=rust_x509.encode_crl_extension,
             x509_obj=x509_crl,
             add_func=self._lib.X509_CRL_add_ext,
-            gc=True,
         )
 
         # add revoked certificates
@@ -1024,7 +942,6 @@ class Backend(BackendInterface):
                 rust_handler=rust_x509.encode_crl_entry_extension,
                 x509_obj=x509_revoked,
                 add_func=self._lib.X509_REVOKED_add_ext,
-                gc=True,
             )
 
             res = self._lib.X509_CRL_add0_revoked(x509_crl, x509_revoked)
@@ -1040,7 +957,7 @@ class Backend(BackendInterface):
         return self._ossl2crl(x509_crl)
 
     def _create_x509_extensions(
-        self, extensions, rust_handler, x509_obj, add_func, gc
+        self, extensions, rust_handler, x509_obj, add_func
     ):
         for i, extension in enumerate(extensions):
             x509_extension = self._create_x509_extension(
@@ -1048,10 +965,9 @@ class Backend(BackendInterface):
             )
             self.openssl_assert(x509_extension != self._ffi.NULL)
 
-            if gc:
-                x509_extension = self._ffi.gc(
-                    x509_extension, self._lib.X509_EXTENSION_free
-                )
+            x509_extension = self._ffi.gc(
+                x509_extension, self._lib.X509_EXTENSION_free
+            )
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 

@@ -58,7 +58,7 @@ pub(crate) struct RawTlv<'a> {
 }
 
 impl<'a> RawTlv<'a> {
-    fn new(tag: u8, value: &'a [u8]) -> Self {
+    pub(crate) fn new(tag: u8, value: &'a [u8]) -> Self {
         RawTlv { tag, value }
     }
 
