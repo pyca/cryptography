@@ -8,13 +8,7 @@ import typing
 
 
 if typing.TYPE_CHECKING:
-    from cryptography.hazmat.primitives.asymmetric.types import (
-        PRIVATE_KEY_TYPES,
-    )
-    from cryptography.hazmat.primitives import hashes
     from cryptography.x509.base import (
-        CertificateRevocationList,
-        CertificateRevocationListBuilder,
         RevokedCertificate,
         RevokedCertificateBuilder,
     )
@@ -275,18 +269,6 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
 
 
 class X509Backend(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def create_x509_crl(
-        self,
-        builder: "CertificateRevocationListBuilder",
-        private_key: "PRIVATE_KEY_TYPES",
-        algorithm: typing.Optional["hashes.HashAlgorithm"],
-    ) -> "CertificateRevocationList":
-        """
-        Create and sign an X.509 CertificateRevocationList from a
-        CertificateRevocationListBuilder object.
-        """
-
     @abc.abstractmethod
     def create_x509_revoked_certificate(
         self, builder: "RevokedCertificateBuilder"

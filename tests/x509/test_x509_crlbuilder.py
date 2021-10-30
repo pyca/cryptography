@@ -468,7 +468,7 @@ class TestCertificateRevocationListBuilder(object):
             .next_update(next_update)
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             builder.sign(
                 private_key,
                 object(),  # type:ignore[arg-type]
@@ -500,7 +500,7 @@ class TestCertificateRevocationListBuilder(object):
             .next_update(next_update)
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             builder.sign(
                 private_key,
                 object(),  # type:ignore[arg-type]

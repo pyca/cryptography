@@ -40,12 +40,6 @@ from cryptography.hazmat.backends.openssl.ed448 import (
     _Ed448PrivateKey,
     _Ed448PublicKey,
 )
-from cryptography.hazmat.backends.openssl.encode_asn1 import (
-    _encode_asn1_int_gc,
-    _encode_asn1_str_gc,
-    _encode_name_gc,
-    _txt2obj_gc,
-)
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.poly1305 import (
@@ -77,7 +71,6 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
-    ed448,
     rsa,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
@@ -86,7 +79,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
     PSS,
 )
-from cryptography.hazmat.primitives.asymmetric.types import PRIVATE_KEY_TYPES
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -829,157 +821,6 @@ class Backend(BackendInterface):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
-
-    def _x509_check_signature_params(self, private_key, algorithm):
-        if isinstance(
-            private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
-        ):
-            if algorithm is not None:
-                raise ValueError(
-                    "algorithm must be None when signing via ed25519 or ed448"
-                )
-        elif not isinstance(
-            private_key,
-            (rsa.RSAPrivateKey, dsa.DSAPrivateKey, ec.EllipticCurvePrivateKey),
-        ):
-            raise TypeError(
-                "Key must be an rsa, dsa, ec, ed25519, or ed448 private key."
-            )
-        elif not isinstance(algorithm, hashes.HashAlgorithm):
-            raise TypeError("Algorithm must be a registered hash algorithm.")
-        elif isinstance(algorithm, hashes.MD5) and not isinstance(
-            private_key, rsa.RSAPrivateKey
-        ):
-            raise ValueError(
-                "MD5 hash algorithm is only supported with RSA keys"
-            )
-
-    def _evp_md_x509_null_if_eddsa(self, private_key, algorithm):
-        if isinstance(
-            private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
-        ):
-            # OpenSSL requires us to pass NULL for EVP_MD for ed25519/ed448
-            return self._ffi.NULL
-        else:
-            return self._evp_md_non_null_from_algorithm(algorithm)
-
-    def _set_asn1_time(self, asn1_time, time):
-        self.openssl_assert(time.year < 2050)
-        asn1_str = time.strftime("%y%m%d%H%M%SZ").encode("ascii")
-        res = self._lib.ASN1_TIME_set_string(asn1_time, asn1_str)
-        self.openssl_assert(res == 1)
-
-    def _create_asn1_time_gc(self, time):
-        asn1_time = self._lib.ASN1_TIME_new()
-        self.openssl_assert(asn1_time != self._ffi.NULL)
-        asn1_time = self._ffi.gc(asn1_time, self._lib.ASN1_TIME_free)
-        self._set_asn1_time(asn1_time, time)
-        return asn1_time
-
-    def create_x509_crl(
-        self,
-        builder: x509.CertificateRevocationListBuilder,
-        private_key: PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
-    ) -> x509.CertificateRevocationList:
-        if not isinstance(builder, x509.CertificateRevocationListBuilder):
-            raise TypeError("Builder type mismatch.")
-        self._x509_check_signature_params(private_key, algorithm)
-
-        evp_md = self._evp_md_x509_null_if_eddsa(private_key, algorithm)
-
-        # Create an empty CRL.
-        x509_crl = self._lib.X509_CRL_new()
-        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
-
-        # Set the x509 CRL version. We only support v2 (integer value 1).
-        res = self._lib.X509_CRL_set_version(x509_crl, 1)
-        self.openssl_assert(res == 1)
-
-        # Set the issuer name.
-        res = self._lib.X509_CRL_set_issuer_name(
-            x509_crl, _encode_name_gc(self, builder._issuer_name)
-        )
-        self.openssl_assert(res == 1)
-
-        # Set the last update time.
-        last_update = self._create_asn1_time_gc(builder._last_update)
-        res = self._lib.X509_CRL_set1_lastUpdate(x509_crl, last_update)
-        self.openssl_assert(res == 1)
-
-        # Set the next update time.
-        next_update = self._create_asn1_time_gc(builder._next_update)
-        res = self._lib.X509_CRL_set1_nextUpdate(x509_crl, next_update)
-        self.openssl_assert(res == 1)
-
-        # Add extensions.
-        self._create_x509_extensions(
-            extensions=builder._extensions,
-            rust_handler=rust_x509.encode_crl_extension,
-            x509_obj=x509_crl,
-            add_func=self._lib.X509_CRL_add_ext,
-        )
-
-        # add revoked certificates
-        for revoked_cert in builder._revoked_certificates:
-            x509_revoked = self._lib.X509_REVOKED_new()
-            self.openssl_assert(x509_revoked != self._ffi.NULL)
-            serial_number = _encode_asn1_int_gc(
-                self, revoked_cert.serial_number
-            )
-            res = self._lib.X509_REVOKED_set_serialNumber(
-                x509_revoked, serial_number
-            )
-            self.openssl_assert(res == 1)
-            rev_date = self._create_asn1_time_gc(revoked_cert.revocation_date)
-            res = self._lib.X509_REVOKED_set_revocationDate(
-                x509_revoked, rev_date
-            )
-            self.openssl_assert(res == 1)
-            # add CRL entry extensions
-            self._create_x509_extensions(
-                extensions=revoked_cert.extensions,
-                rust_handler=rust_x509.encode_crl_entry_extension,
-                x509_obj=x509_revoked,
-                add_func=self._lib.X509_REVOKED_add_ext,
-            )
-
-            res = self._lib.X509_CRL_add0_revoked(x509_crl, x509_revoked)
-            self.openssl_assert(res == 1)
-
-        res = self._lib.X509_CRL_sign(
-            x509_crl, private_key._evp_pkey, evp_md  # type: ignore[union-attr]
-        )
-        if res == 0:
-            errors = self._consume_errors_with_text()
-            raise ValueError("Signing failed", errors)
-
-        return self._ossl2crl(x509_crl)
-
-    def _create_x509_extensions(
-        self, extensions, rust_handler, x509_obj, add_func
-    ):
-        for i, extension in enumerate(extensions):
-            x509_extension = self._create_x509_extension(
-                rust_handler, extension
-            )
-            self.openssl_assert(x509_extension != self._ffi.NULL)
-
-            x509_extension = self._ffi.gc(
-                x509_extension, self._lib.X509_EXTENSION_free
-            )
-            res = add_func(x509_obj, x509_extension, i)
-            self.openssl_assert(res >= 1)
-
-    def _create_raw_x509_extension(self, extension, value):
-        obj = _txt2obj_gc(self, extension.oid.dotted_string)
-        return self._lib.X509_EXTENSION_create_by_OBJ(
-            self._ffi.NULL, obj, 1 if extension.critical else 0, value
-        )
-
-    def _create_x509_extension(self, rust_handler, extension):
-        value = _encode_asn1_str_gc(self, rust_handler(extension))
-        return self._create_raw_x509_extension(extension, value)
 
     def create_x509_revoked_certificate(
         self, builder: x509.RevokedCertificateBuilder
