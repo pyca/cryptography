@@ -25,15 +25,23 @@ struct RawCsr<'a> {
 struct CertificationRequestInfo<'a> {
     version: u8,
     subject: x509::Name<'a>,
-    spki: asn1::Sequence<'a>,
+    spki: certificate::SubjectPublicKeyInfo<'a>,
     #[implicit(0, required)]
-    attributes: asn1::SetOf<'a, Attribute<'a>>,
+    attributes: x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SetOf<'a, Attribute<'a>>,
+        asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
+    >,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Attribute<'a> {
     type_id: asn1::ObjectIdentifier<'a>,
-    values: asn1::SetOf<'a, asn1::Tlv<'a>>,
+    values: x509::Asn1ReadableOrWritable<
+        'a,
+        asn1::SetOf<'a, asn1::Tlv<'a>>,
+        asn1::SetOfWriter<'a, x509::common::RawTlv<'a>, [x509::common::RawTlv<'a>; 1]>,
+    >,
 }
 
 fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<(), PyAsn1Error> {
@@ -48,11 +56,11 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
 
 impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<x509::Extensions<'a>>, PyAsn1Error> {
-        for attribute in self.attributes.clone() {
+        for attribute in self.attributes.unwrap_read().clone() {
             if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
             {
-                check_attribute_length(attribute.values.clone())?;
-                let val = attribute.values.clone().next().unwrap();
+                check_attribute_length(attribute.values.unwrap_read().clone())?;
+                let val = attribute.values.unwrap_read().clone().next().unwrap();
                 let exts = asn1::parse_single::<x509::Extensions<'a>>(val.full_data())?;
                 return Ok(Some(exts));
             }
@@ -202,10 +210,17 @@ impl CertificateSigningRequest {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid_str = oid.getattr("dotted_string")?.extract::<&str>()?;
         let rust_oid = asn1::ObjectIdentifier::from_string(oid_str).unwrap();
-        for attribute in self.raw.borrow_value().csr_info.attributes.clone() {
+        for attribute in self
+            .raw
+            .borrow_value()
+            .csr_info
+            .attributes
+            .unwrap_read()
+            .clone()
+        {
             if rust_oid == attribute.type_id {
-                check_attribute_length(attribute.values.clone())?;
-                let val = attribute.values.clone().next().unwrap();
+                check_attribute_length(attribute.values.unwrap_read().clone())?;
+                let val = attribute.values.unwrap_read().clone().next().unwrap();
                 // We allow utf8string, printablestring, and ia5string at this time
                 if val.tag() == asn1::Utf8String::TAG
                     || val.tag() == asn1::PrintableString::TAG
@@ -296,9 +311,82 @@ fn load_der_x509_csr(
     })
 }
 
+#[pyo3::prelude::pyfunction]
+fn create_x509_csr(
+    py: pyo3::Python<'_>,
+    builder: &pyo3::PyAny,
+    private_key: &pyo3::PyAny,
+    hash_algorithm: &pyo3::PyAny,
+) -> PyAsn1Result<CertificateSigningRequest> {
+    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+    let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
+    let der_encoding = serialization_mod.getattr("Encoding")?.getattr("DER")?;
+    let spki_format = serialization_mod
+        .getattr("PublicFormat")?
+        .getattr("SubjectPublicKeyInfo")?;
+
+    let spki_bytes = private_key
+        .call_method0("public_key")?
+        .call_method1("public_bytes", (der_encoding, spki_format))?
+        .extract::<&[u8]>()?;
+
+    let mut attrs = vec![];
+    let ext_bytes;
+    if let Some(exts) = x509::common::encode_extensions(
+        py,
+        builder.getattr("_extensions")?,
+        x509::certificate::encode_certificate_extension,
+    )? {
+        ext_bytes = asn1::write_single(&exts);
+        attrs.push(Attribute {
+            type_id: (*EXTENSION_REQUEST).clone(),
+            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                asn1::parse_single(&ext_bytes)?,
+            ])),
+        })
+    }
+
+    for py_attr in builder.getattr("_attributes")?.iter()? {
+        let (py_oid, value): (&pyo3::PyAny, &[u8]) = py_attr?.extract()?;
+        let oid = asn1::ObjectIdentifier::from_string(
+            py_oid.getattr("dotted_string")?.extract::<&str>()?,
+        )
+        .unwrap();
+        let tag = if std::str::from_utf8(value).is_ok() {
+            asn1::Utf8String::TAG
+        } else {
+            <&[u8] as asn1::SimpleAsn1Readable>::TAG
+        };
+        attrs.push(Attribute {
+            type_id: oid,
+            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                x509::common::RawTlv::new(tag, value),
+            ])),
+        })
+    }
+
+    let csr_info = CertificationRequestInfo {
+        version: 0,
+        subject: x509::common::encode_name(py, builder.getattr("_subject_name")?)?,
+        spki: asn1::parse_single(spki_bytes)?,
+        attributes: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
+    };
+
+    let tbs_bytes = asn1::write_single(&csr_info);
+    let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+    let data = asn1::write_single(&RawCsr {
+        csr_info,
+        signature_alg: sigalg,
+        signature: asn1::BitString::new(signature, 0).unwrap(),
+    });
+    // TODO: extra copy as we round-trip through a slice
+    load_der_x509_csr(py, &data)
+}
+
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_csr))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_csr))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_csr))?;
 
     module.add_class::<CertificateSigningRequest>()?;
 
