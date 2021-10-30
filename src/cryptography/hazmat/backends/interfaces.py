@@ -15,8 +15,6 @@ if typing.TYPE_CHECKING:
     from cryptography.x509.base import (
         CertificateRevocationList,
         CertificateRevocationListBuilder,
-        CertificateSigningRequest,
-        CertificateSigningRequestBuilder,
         RevokedCertificate,
         RevokedCertificateBuilder,
     )
