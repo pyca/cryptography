@@ -182,6 +182,10 @@ class TestChaCha20Poly1305(object):
         assert computed_pt2 == pt
 
 
+@pytest.mark.skipif(
+    not _aead_supported(AESCCM),
+    reason="Does not support AESCCM",
+)
 class TestAESCCM(object):
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
