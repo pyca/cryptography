@@ -268,6 +268,17 @@ def cryptography_has_ssl_cookie():
     ]
 
 
+def cryptography_has_pkcs7_funcs():
+    return [
+        "SMIME_write_PKCS7",
+        "PEM_write_bio_PKCS7_stream",
+        "PKCS7_sign_add_signer",
+        "PKCS7_final",
+        "PKCS7_verify",
+        "SMIME_read_PKCS7",
+        "PKCS7_get0_signers",
+    ]
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -321,4 +332,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
     "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
+    "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
 }
