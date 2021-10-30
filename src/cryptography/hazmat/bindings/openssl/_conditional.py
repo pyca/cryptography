@@ -288,6 +288,12 @@ def cryptography_has_bn_flags():
     ]
 
 
+def cryptography_has_evp_pkey_dh():
+    return [
+        "EVP_PKEY_set1_DH",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -343,4 +349,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
+    "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
 }

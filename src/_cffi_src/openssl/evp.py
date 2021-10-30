@@ -37,6 +37,7 @@ static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
 static const long Cryptography_HAS_RAW_KEY;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 static const long Cryptography_HAS_300_FIPS;
+static const long Cryptography_HAS_EVP_PKEY_DH;
 """
 
 FUNCTIONS = """
@@ -279,5 +280,12 @@ static const long Cryptography_HAS_300_FIPS = 1;
 static const long Cryptography_HAS_300_FIPS = 0;
 int (*EVP_default_properties_is_fips_enabled)(OSSL_LIB_CTX *) = NULL;
 int (*EVP_default_properties_enable_fips)(OSSL_LIB_CTX *, int) = NULL;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_EVP_PKEY_DH = 0;
+int (*EVP_PKEY_set1_DH)(EVP_PKEY *, DH *) = NULL;
+#else
+static const long Cryptography_HAS_EVP_PKEY_DH = 1;
 #endif
 """
