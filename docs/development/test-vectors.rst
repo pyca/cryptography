@@ -259,6 +259,8 @@ X.509
 * ``server-ed448-cert.pem`` - An ``ed448`` server certificate (RSA
   signature with ``ed448`` public key) from the OpenSSL test suite.
   (`server-ed448-cert.pem`_)
+* ``accvraiz1.pem`` - An RSA root certificate that contains an
+  ``explicitText`` entry with a ``BMPString`` type.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
