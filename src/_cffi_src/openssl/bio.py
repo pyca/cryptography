@@ -44,7 +44,7 @@ void BIO_ADDR_free(BIO_ADDR *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 #include <sys/socket.h>
 #include <stdlib.h>
 typedef struct sockaddr BIO_ADDR;
