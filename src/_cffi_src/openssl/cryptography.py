@@ -18,6 +18,12 @@ INCLUDES = """
 #define CRYPTOGRAPHY_IS_LIBRESSL 0
 #endif
 
+#if defined(OPENSSL_IS_BORINGSSL)
+#define CRYPTOGRAPHY_IS_BORINGSSL 1
+#else
+#define CRYPTOGRAPHY_IS_BORINGSSL 0
+#endif
+
 /*
     LibreSSL removed e_os2.h from the public headers so we'll only include it
     if we're using vanilla OpenSSL.
@@ -79,6 +85,7 @@ static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B;
 static const int CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE;
 
 static const int CRYPTOGRAPHY_IS_LIBRESSL;
+static const int CRYPTOGRAPHY_IS_BORINGSSL;
 """
 
 FUNCTIONS = """
