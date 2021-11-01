@@ -4728,6 +4728,23 @@ class TestNameAttribute(object):
         na = x509.NameAttribute(NameOID.BUSINESS_CATEGORY, "banking")
         assert na.rfc4514_string() == "2.5.4.15=banking"
 
+    def test_distinguished_name_custom_attrs(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(NameOID.EMAIL_ADDRESS, "santa@north.pole"),
+                x509.NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
+            ]
+        )
+        assert name.rfc4514_string({}) == (
+            "CN=Santa Claus,1.2.840.113549.1.9.1=santa@north.pole"
+        )
+        assert name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"}) == (
+            "CN=Santa Claus,E=santa@north.pole"
+        )
+        assert name.rfc4514_string(
+            {NameOID.COMMON_NAME: "CommonName", NameOID.EMAIL_ADDRESS: "E"}
+        ) == ("CommonName=Santa Claus,E=santa@north.pole")
+
     def test_empty_value(self):
         na = x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "")
         assert na.rfc4514_string() == r"ST="
