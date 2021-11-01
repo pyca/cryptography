@@ -137,7 +137,7 @@ jobs:
           - {IMAGE: "fedora", TOXENV: "py39"}
           - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
         with:
