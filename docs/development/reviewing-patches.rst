@@ -16,7 +16,7 @@ Intent
 Architecture
 ------------
 
-* Is the proposed change being made in the correct place? Is it a fix in a
+* Is the proposed change being made in the correct place? Is it a fix in the
   backend when it should be in the primitives?
 
 Implementation

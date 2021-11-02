@@ -5,7 +5,7 @@ Message digests (Hashing)
 
 .. module:: cryptography.hazmat.primitives.hashes
 
-.. class:: Hash(algorithm, backend=None)
+.. class:: Hash(algorithm)
 
     A cryptographic hash function takes an arbitrary block of data and
     calculates a fixed-size bit string (a digest), such that different data
@@ -27,10 +27,6 @@ Message digests (Hashing)
         >>> digest.finalize()
         b'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
-    If the backend doesn't support the requested ``algorithm`` an
-    :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
-    raised.
-
     Keep in mind that attacks against cryptographic hashes only get stronger
     with time, and that often algorithms that were once thought to be strong,
     become broken. Because of this it's important to include a plan for
@@ -41,13 +37,9 @@ Message digests (Hashing)
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         instance such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
-    :param backend: An optional
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        provided ``algorithm`` is unsupported.
 
     .. method:: update(data)
 
