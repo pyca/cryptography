@@ -1266,7 +1266,9 @@ class Backend(BackendInterface):
             bn_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = get_func(group, point, bn_x, bn_y, bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("Unable to derive key from private_value")
 
         res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
         self.openssl_assert(res == 1)
