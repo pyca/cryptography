@@ -4,7 +4,6 @@
 
 import binascii
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms
 
@@ -65,7 +64,6 @@ def _build_vectors():
             cipher = ciphers.Cipher(
                 algorithms.ARC4(binascii.unhexlify(key)),
                 None,
-                default_backend(),
             )
             encryptor = cipher.encryptor()
             current_offset = 0

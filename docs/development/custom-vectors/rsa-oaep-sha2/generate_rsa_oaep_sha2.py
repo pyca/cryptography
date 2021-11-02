@@ -6,7 +6,6 @@ import binascii
 import itertools
 import os
 
-from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
@@ -24,7 +23,7 @@ def build_vectors(mgf1alg, hashalg, filename):
         # small. Instead we parse the vectors for the test cases, then
         # generate our own 2048-bit keys for each.
         private, _ = vector
-        skey = rsa.generate_private_key(65537, 2048, backend)
+        skey = rsa.generate_private_key(65537, 2048)
         pn = skey.private_numbers()
         examples = private["examples"]
         output.append("# =============================================")
@@ -62,7 +61,7 @@ def build_vectors(mgf1alg, hashalg, filename):
             public_numbers=rsa.RSAPublicNumbers(
                 e=private["public_exponent"], n=private["modulus"]
             ),
-        ).private_key(backend)
+        ).private_key()
         count = 1
 
         for example in examples:
