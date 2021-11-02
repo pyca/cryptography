@@ -115,26 +115,19 @@ peer::
     peer_public_key = peer_public_numbers.public_key()
 
 
-See also the :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
-API for additional functionality.
-
 Group parameters
 ~~~~~~~~~~~~~~~~
 
-.. function:: generate_parameters(generator, key_size, backend=None)
+.. function:: generate_parameters(generator, key_size)
 
     .. versionadded:: 1.7
 
-    Generate a new DH parameter group for use with ``backend``.
+    Generate a new DH parameter group.
 
     :param generator: The :class:`int` to use as a generator. Must be
         2 or 5.
 
     :param key_size: The bit length of the prime modulus to generate.
-
-    :param backend: An optional
-        :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
-        instance.
 
     :returns: DH parameters as a new instance of
         :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
@@ -336,12 +329,9 @@ Numbers
 
         p subgroup order value.
 
-    .. method:: parameters(backend=None)
+    .. method:: parameters()
 
         .. versionadded:: 1.7
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHParameters`.
 
@@ -364,12 +354,9 @@ Numbers
 
         The private value.
 
-    .. method:: private_key(backend=None)
+    .. method:: private_key()
 
         .. versionadded:: 1.7
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHPrivateKey`.
 
@@ -392,12 +379,9 @@ Numbers
 
         The public value.
 
-    .. method:: public_key(backend=None)
+    .. method:: public_key()
 
         .. versionadded:: 1.7
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.DHBackend`.
 
         :returns: A new instance of :class:`DHPublicKey`.
 

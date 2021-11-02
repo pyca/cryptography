@@ -125,7 +125,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     extract the public key with
     :meth:`Certificate.public_key <cryptography.x509.Certificate.public_key>`.
 
-.. function:: load_pem_private_key(data, password, backend=None)
+.. function:: load_pem_private_key(data, password)
 
     .. versionadded:: 0.6
 
@@ -138,9 +138,6 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :param password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
     :type data: :term:`bytes-like`
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
@@ -162,9 +159,9 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         password was supplied.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
-        is of a type that is not supported by the backend.
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
-.. function:: load_pem_public_key(data, backend=None)
+.. function:: load_pem_public_key(data)
 
     .. versionadded:: 0.6
 
@@ -180,10 +177,6 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         True
 
     :param bytes data: The PEM encoded key data.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
-
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
@@ -201,10 +194,9 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         successfully.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
-        is of a type that is not supported by the backend.
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
-.. function:: load_pem_parameters(data, backend=None)
-
+.. function:: load_pem_parameters(data)
     .. versionadded:: 2.0
 
     Deserialize parameters from PEM encoded data to one of the supported
@@ -220,10 +212,6 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :param bytes data: The PEM encoded parameters data.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
-
-
     :returns: Currently only
         :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
         supported.
@@ -231,8 +219,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :raises ValueError: If the PEM data's structure could not be decoded
         successfully.
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized parameters
-        is of a type that is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
 DER
 ~~~
@@ -242,7 +230,7 @@ data is binary. DER keys may be in a variety of formats, but as long as you
 know whether it is a public or private key the loading functions will handle
 the rest.
 
-.. function:: load_der_private_key(data, password, backend=None)
+.. function:: load_der_private_key(data, password)
 
     .. versionadded:: 0.8
 
@@ -255,9 +243,6 @@ the rest.
     :param password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
     :type password: :term:`bytes-like`
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
@@ -279,7 +264,7 @@ the rest.
         password was supplied.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
-        is of a type that is not supported by the backend.
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
     .. doctest::
 
@@ -289,7 +274,7 @@ the rest.
         >>> isinstance(key, rsa.RSAPrivateKey)
         True
 
-.. function:: load_der_public_key(data, backend=None)
+.. function:: load_der_public_key(data)
 
     .. versionadded:: 0.8
 
@@ -298,9 +283,6 @@ the rest.
     ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
 
     :param bytes data: The DER encoded key data.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
@@ -317,8 +299,8 @@ the rest.
     :raises ValueError: If the DER data's structure could not be decoded
         successfully.
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
-        is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
     .. doctest::
 
@@ -328,7 +310,7 @@ the rest.
         >>> isinstance(key, rsa.RSAPublicKey)
         True
 
-.. function:: load_der_parameters(data, backend=None)
+.. function:: load_der_parameters(data)
 
     .. versionadded:: 2.0
 
@@ -337,9 +319,6 @@ the rest.
 
     :param bytes data: The DER encoded parameters data.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
-
     :returns: Currently only
         :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
         supported.
@@ -347,8 +326,8 @@ the rest.
     :raises ValueError: If the DER data's structure could not be decoded
         successfully.
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
-        is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        type is not supported by the OpenSSL version ``cryptography`` is using.
 
     .. doctest::
 
@@ -379,22 +358,16 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 ``ssh-rsa``. ECDSA keys have a slightly different format, they begin with
 ``ecdsa-sha2-{curve}``.
 
-.. function:: load_ssh_public_key(data, backend=None)
+.. function:: load_ssh_public_key(data)
 
     .. versionadded:: 0.7
 
     Deserialize a public key from OpenSSH (:rfc:`4253` and
     `PROTOCOL.certkeys`_) encoded data to an
-    instance of the public key type for the specified backend.
+    instance of the public key type.
 
     :param data: The OpenSSH encoded key data.
     :type data: :term:`bytes-like`
-
-    :param backend: An optional backend which implements
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
-        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-        depending on the key's type.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
@@ -428,24 +401,18 @@ An example ECDSA key in OpenSSH format::
     BAUGBw==
     -----END OPENSSH PRIVATE KEY-----
 
-.. function:: load_ssh_private_key(data, password, backend=None)
+.. function:: load_ssh_private_key(data, password)
 
     .. versionadded:: 3.0
 
     Deserialize a private key from OpenSSH encoded data to an
-    instance of the private key type for the specified backend.
+    instance of the private key type.
 
     :param data: The PEM encoded OpenSSH private key data.
     :type data: :term:`bytes-like`
 
     :param bytes password: Password bytes to use to decrypt
         password-protected key. Or ``None`` if not needed.
-
-    :param backend: An optional backend which implements
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
-        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-        depending on the key's type.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -476,7 +443,7 @@ file suffix.
     ``cryptography`` only supports a single private key and associated
     certificates when parsing PKCS12 files at this time.
 
-.. function:: load_key_and_certificates(data, password, backend=None)
+.. function:: load_key_and_certificates(data, password)
 
     .. versionadded:: 2.5
 
@@ -489,8 +456,6 @@ file suffix.
         if the PKCS12 is not encrypted.
     :type password: :term:`bytes-like`
 
-    :param backend: An optional backend instance.
-
     :returns: A tuple of
         ``(private_key, certificate, additional_certificates)``.
         ``private_key`` is a private key type or ``None``, ``certificate``
@@ -499,7 +464,7 @@ file suffix.
         ``additional_certificates`` is a list of all other
         :class:`~cryptography.x509.Certificate` instances in the PKCS12 object.
 
-.. function:: load_pkcs12(data, password, backend=None)
+.. function:: load_pkcs12(data, password)
 
     .. versionadded:: 36.0
 
@@ -513,8 +478,6 @@ file suffix.
     :param password: The password to use to decrypt the data. ``None``
         if the PKCS12 is not encrypted.
     :type password: :term:`bytes-like`
-
-    :param backend: An optional backend instance.
 
     :returns: A
         :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
@@ -734,7 +697,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
         :param certificate: The :class:`~cryptography.x509.Certificate` to add.
 
-    .. method:: sign(encoding, options, backend=None)
+    .. method:: sign(encoding, options)
 
         :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
             :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`,
@@ -744,8 +707,6 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
             :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`.
 
         :return bytes: The signed PKCS7 message.
-
-        :param backend: An optional backend.
 
 
 .. class:: PKCS7Options
@@ -1011,7 +972,7 @@ Serialization Encryption Types
 
 .. class:: BestAvailableEncryption(password)
 
-    Encrypt using the best available encryption for a given key's backend.
+    Encrypt using the best available encryption for a given key.
     This is a curated encryption choice and the algorithm may change over
     time.
 
