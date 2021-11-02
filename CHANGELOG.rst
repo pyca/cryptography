@@ -8,6 +8,9 @@ Changelog
 
  .. note:: This version is not yet released and is under active development.
 
+
+* :ref:`Deprecated the backend argument<faq-missing-backend>` for all
+  functions.
 * Added support for parsing PKCS12 files with friendly names for all
   certificates with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,

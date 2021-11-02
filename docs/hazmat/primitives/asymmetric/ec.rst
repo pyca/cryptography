@@ -6,33 +6,26 @@ Elliptic curve cryptography
 .. module:: cryptography.hazmat.primitives.asymmetric.ec
 
 
-.. function:: generate_private_key(curve, backend=None)
+.. function:: generate_private_key(curve)
 
     .. versionadded:: 0.5
 
-    Generate a new private key on ``curve`` for use with ``backend``.
+    Generate a new private key on ``curve``.
 
     :param curve: An instance of :class:`EllipticCurve`.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
     :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
-.. function:: derive_private_key(private_value, curve, backend=None)
+.. function:: derive_private_key(private_value, curve)
 
     .. versionadded:: 1.6
 
-    Derive a private key from ``private_value`` on ``curve`` for use with
-    ``backend``.
+    Derive a private key from ``private_value`` on ``curve``.
 
     :param int private_value: The secret scalar value.
 
     :param curve: An instance of :class:`EllipticCurve`.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
     :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
@@ -147,13 +140,10 @@ Elliptic Curve Signature Algorithms
 
         The private value.
 
-    .. method:: private_key(backend=None)
+    .. method:: private_key()
 
         Convert a collection of numbers into a private key suitable for doing
         actual cryptographic operations.
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
         :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
@@ -189,13 +179,10 @@ Elliptic Curve Signature Algorithms
 
         The affine y component of the public point used for verifying.
 
-    .. method:: public_key(backend=None)
+    .. method:: public_key()
 
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
         :raises ValueError: Raised if the point is invalid for the curve.
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
