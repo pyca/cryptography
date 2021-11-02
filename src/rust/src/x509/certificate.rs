@@ -429,13 +429,26 @@ enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
     VisibleString(asn1::VisibleString<'a>),
+    BmpString(asn1::BMPString<'a>),
 }
 
-fn parse_display_text(py: pyo3::Python<'_>, text: DisplayText<'_>) -> pyo3::PyObject {
+fn parse_display_text(
+    py: pyo3::Python<'_>,
+    text: DisplayText<'_>,
+) -> pyo3::PyResult<pyo3::PyObject> {
     match text {
-        DisplayText::IA5String(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
-        DisplayText::Utf8String(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
-        DisplayText::VisibleString(o) => pyo3::types::PyString::new(py, o.as_str()).to_object(py),
+        DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
+        DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
+        DisplayText::VisibleString(o) => {
+            Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py))
+        }
+        DisplayText::BmpString(o) => {
+            let py_bytes = pyo3::types::PyBytes::new(py, o.as_utf16_be_bytes());
+            // TODO: do the string conversion in rust perhaps
+            Ok(py_bytes
+                .call_method1("decode", ("utf_16_be",))?
+                .to_object(py))
+        }
     }
 }
 
@@ -445,12 +458,12 @@ fn parse_user_notice(
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let et = match un.explicit_text {
-        Some(data) => parse_display_text(py, data),
+        Some(data) => parse_display_text(py, data)?,
         None => py.None(),
     };
     let nr = match un.notice_ref {
         Some(data) => {
-            let org = parse_display_text(py, data.organization);
+            let org = parse_display_text(py, data.organization)?;
             let numbers = pyo3::types::PyList::empty(py);
             for num in data.notice_numbers.unwrap_read().clone() {
                 numbers.append(big_asn1_uint_to_py(py, num)?.to_object(py))?;
