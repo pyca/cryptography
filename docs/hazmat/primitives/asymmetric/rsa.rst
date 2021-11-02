@@ -14,7 +14,7 @@ Unlike symmetric cryptography, where the key is typically just a random series
 of bytes, RSA keys have a complex internal structure with `specific
 mathematical properties`_.
 
-.. function:: generate_private_key(public_exponent, key_size, backend=None)
+.. function:: generate_private_key(public_exponent, key_size)
 
     .. versionadded:: 0.5
 
@@ -22,7 +22,7 @@ mathematical properties`_.
 
         Tightened restrictions on ``public_exponent``.
 
-    Generates a new RSA private key using the provided ``backend``.
+    Generates a new RSA private key.
     ``key_size`` describes how many :term:`bits` long the key should be. Larger
     keys provide more security; currently ``1024`` and below are considered
     breakable while ``2048`` or ``4096`` are reasonable default key sizes for
@@ -45,17 +45,9 @@ mathematical properties`_.
     :param int key_size: The length of the modulus in :term:`bits`. For keys
         generated in 2015 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
-        Some backends may have additional limitations.
-
-    :param backend: An optional backend which implements
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
     :return: An instance of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
-        the provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
 Key loading
 ~~~~~~~~~~~
@@ -402,10 +394,7 @@ is unavailable.
 
         The public exponent.
 
-    .. method:: public_key(backend=None)
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+    .. method:: public_key()
 
         :returns: A new instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
@@ -469,10 +458,7 @@ is unavailable.
         A `Chinese remainder theorem`_ coefficient used to speed up RSA
         operations. Calculated as: q\ :sup:`-1` mod p
 
-    .. method:: private_key(backend=None)
-
-        :param backend: An optional instance of
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+    .. method:: private_key()
 
         :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.

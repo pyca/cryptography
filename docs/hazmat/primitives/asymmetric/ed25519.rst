@@ -45,8 +45,8 @@ Key interfaces
 
         :raises ValueError: This is raised if the private key is not 32 bytes long.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the private key
-            is of a type that is not supported by the backend.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If Ed25519 is not
+            supported by the OpenSSL version ``cryptography`` is using.
 
         .. doctest::
 
@@ -115,8 +115,8 @@ Key interfaces
 
         :raises ValueError: This is raised if the public key is not 32 bytes long.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the public key
-            is of a type that is not supported by the backend.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If Ed25519 is not
+            supported by the OpenSSL version ``cryptography`` is using.
 
         .. doctest::
 
