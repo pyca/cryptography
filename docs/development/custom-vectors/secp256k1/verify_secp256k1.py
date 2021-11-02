@@ -1,6 +1,5 @@
 import os
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -27,7 +26,7 @@ def verify_one_vector(vector):
 
     numbers = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256K1())
 
-    key = numbers.public_key(default_backend())
+    key = numbers.public_key()
 
     verifier = key.verifier(
         signature, ec.ECDSA(CRYPTOGRAPHY_HASH_TYPES[digest_algorithm]())

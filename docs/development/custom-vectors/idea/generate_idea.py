@@ -1,6 +1,5 @@
 import binascii
 
-from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 
@@ -8,7 +7,6 @@ def encrypt(mode, key, iv, plaintext):
     cipher = base.Cipher(
         algorithms.IDEA(binascii.unhexlify(key)),
         mode(binascii.unhexlify(iv)),
-        backend,
     )
     encryptor = cipher.encryptor()
     ct = encryptor.update(binascii.unhexlify(plaintext))
