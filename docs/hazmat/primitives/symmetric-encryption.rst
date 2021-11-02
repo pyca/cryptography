@@ -21,7 +21,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 **To minimize the risk of security issues you should evaluate Fernet to see if
 it fits your needs before implementing anything using this module.**
 
-.. class:: Cipher(algorithm, mode, backend=None)
+.. class:: Cipher(algorithm, mode)
 
     Cipher objects combine an algorithm such as
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` with a
@@ -50,13 +50,9 @@ it fits your needs before implementing anything using this module.**
     :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
         instance such as those described
         :ref:`below <symmetric-encryption-modes>`.
-    :param backend: An optional
-        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+        provided ``algorithm`` is unsupported.
 
     .. method:: encryptor()
 
@@ -64,8 +60,8 @@ it fits your needs before implementing anything using this module.**
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
             instance.
 
-        If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
+        If the requested combination of ``algorithm`` and ``mode`` is
+        unsupported an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
         exception will be raised.
 
     .. method:: decryptor()
@@ -74,8 +70,8 @@ it fits your needs before implementing anything using this module.**
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
             instance.
 
-        If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
+        If the requested combination of ``algorithm`` and ``mode`` is
+        unsupported an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
         exception will be raised.
 
 .. _symmetric-encryption-algorithms:
@@ -740,9 +736,6 @@ Interfaces used by the symmetric cipher modes described in
 
         This should be the standard shorthand name for the mode, for example
         Cipher-Block Chaining mode is "CBC".
-
-        The name may be used by a backend to influence the operation of a
-        cipher in conjunction with the algorithm's name.
 
     .. method:: validate_for_algorithm(algorithm)
 
