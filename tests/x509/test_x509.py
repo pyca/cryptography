@@ -730,6 +730,20 @@ class TestRSACertificate(object):
             == SignatureAlgorithmOID._RSA_WITH_SHA1
         )
 
+    def test_load_bmpstring_explicittext(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "accvraiz1.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        ext = cert.extensions.get_extension_for_class(x509.CertificatePolicies)
+        et = ext.value[0].policy_qualifiers[0].explicit_text
+        assert et == (
+            "Autoridad de Certificación Raíz de la ACCV (Agencia "
+            "de Tecnología y Certificación Electrónica, CIF Q4601"
+            "156E). CPS en http://www.accv.es"
+        )
+
     def test_load_der_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
