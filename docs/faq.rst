@@ -188,6 +188,19 @@ For example, this is a PEM file for a RSA Public Key: ::
    2QIDAQAB
    -----END PUBLIC KEY-----
 
+.. _faq-missing-backend:
+
+What happened to the backend argument?
+--------------------------------------
+``cryptography`` stopped requiring the use of ``backend`` arguments in
+version 3.1 and deprecated their use in version 36.0. If you are on an older
+version that requires these arguments please view the appropriate documentation
+version or upgrade to the latest release.
+
+Note that for forward compatibility ``backend`` is still silently accepted by
+functions that previously required it, but it is ignored and no longer
+documented.
+
 
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
