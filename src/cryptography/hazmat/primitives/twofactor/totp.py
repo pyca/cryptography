@@ -4,9 +4,6 @@
 
 import typing
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
@@ -23,18 +20,13 @@ class TOTP(object):
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
         time_step: int,
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
         enforce_key_length: bool = True,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         self._time_step = time_step
-        self._hotp = HOTP(key, length, algorithm, backend, enforce_key_length)
+        self._hotp = HOTP(
+            key, length, algorithm, enforce_key_length=enforce_key_length
+        )
 
     def generate(self, time: typing.Union[int, float]) -> bytes:
         counter = int(time / self._time_step)
