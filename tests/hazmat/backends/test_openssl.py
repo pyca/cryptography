@@ -13,7 +13,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dh, dsa, padding
@@ -82,17 +82,17 @@ class TestOpenSSL(object):
             backend.register_cipher_adapter(AES, CBC, None)
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
-    def test_nonexistent_cipher(self, mode):
-        b = Backend()
-        b.register_cipher_adapter(
-            DummyCipherAlgorithm,
-            type(mode),
+    def test_nonexistent_cipher(self, mode, backend, monkeypatch):
+        # We can't use register_cipher_adapter because backend is a
+        # global singleton and we want to revert the change after the test
+        monkeypatch.setitem(
+            backend._cipher_registry,
+            (DummyCipherAlgorithm, type(mode)),
             lambda backend, cipher, mode: backend._ffi.NULL,
         )
         cipher = Cipher(
             DummyCipherAlgorithm(),
             mode,
-            backend=b,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
