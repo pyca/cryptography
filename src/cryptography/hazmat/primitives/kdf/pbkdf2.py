@@ -12,8 +12,6 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, PBKDF2HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -25,16 +23,13 @@ class PBKDF2HMAC(KeyDerivationFunction):
         length: int,
         salt: bytes,
         iterations: int,
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, PBKDF2HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement PBKDF2HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
 
-        if not backend.pbkdf2_hmac_supported(algorithm):
+        if not ossl.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "{} is not supported for PBKDF2 by this backend.".format(
                     algorithm.name
@@ -47,7 +42,6 @@ class PBKDF2HMAC(KeyDerivationFunction):
         utils._check_bytes("salt", salt)
         self._salt = salt
         self._iterations = iterations
-        self._backend = backend
 
     def derive(self, key_material: bytes) -> bytes:
         if self._used:
@@ -55,7 +49,9 @@ class PBKDF2HMAC(KeyDerivationFunction):
         self._used = True
 
         utils._check_byteslike("key_material", key_material)
-        return self._backend.derive_pbkdf2_hmac(
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        return backend.derive_pbkdf2_hmac(
             self._algorithm,
             self._length,
             self._salt,
