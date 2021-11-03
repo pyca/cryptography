@@ -12,8 +12,6 @@ from base64 import encodebytes as _base64_encode
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
@@ -107,14 +105,14 @@ def _check_empty(data):
         raise ValueError("Corrupt data: unparsed data")
 
 
-def _init_cipher(ciphername, password, salt, rounds, backend):
+def _init_cipher(ciphername, password, salt, rounds):
     """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
 
     algo, key_len, mode, iv_len = _SSH_CIPHERS[ciphername]
     seed = _bcrypt_kdf(password, salt, key_len + iv_len, rounds, True)
-    return Cipher(algo(seed[:key_len]), mode(seed[key_len:]), backend)
+    return Cipher(algo(seed[:key_len]), mode(seed[key_len:]))
 
 
 def _get_u32(data):
@@ -220,14 +218,14 @@ class _SSHFormatRSA(object):
         n, data = _get_mpint(data)
         return (e, n), data
 
-    def load_public(self, key_type, data, backend):
+    def load_public(self, key_type, data):
         """Make RSA public key from data."""
         (e, n), data = self.get_public(data)
         public_numbers = rsa.RSAPublicNumbers(e, n)
-        public_key = public_numbers.public_key(backend)
+        public_key = public_numbers.public_key()
         return public_key, data
 
-    def load_private(self, data, pubfields, backend):
+    def load_private(self, data, pubfields):
         """Make RSA private key from data."""
         n, data = _get_mpint(data)
         e, data = _get_mpint(data)
@@ -244,7 +242,7 @@ class _SSHFormatRSA(object):
         private_numbers = rsa.RSAPrivateNumbers(
             p, q, d, dmp1, dmq1, iqmp, public_numbers
         )
-        private_key = private_numbers.private_key(backend)
+        private_key = private_numbers.private_key()
         return private_key, data
 
     def encode_public(self, public_key, f_pub):
@@ -284,16 +282,16 @@ class _SSHFormatDSA(object):
         y, data = _get_mpint(data)
         return (p, q, g, y), data
 
-    def load_public(self, key_type, data, backend):
+    def load_public(self, key_type, data):
         """Make DSA public key from data."""
         (p, q, g, y), data = self.get_public(data)
         parameter_numbers = dsa.DSAParameterNumbers(p, q, g)
         public_numbers = dsa.DSAPublicNumbers(y, parameter_numbers)
         self._validate(public_numbers)
-        public_key = public_numbers.public_key(backend)
+        public_key = public_numbers.public_key()
         return public_key, data
 
-    def load_private(self, data, pubfields, backend):
+    def load_private(self, data, pubfields):
         """Make DSA private key from data."""
         (p, q, g, y), data = self.get_public(data)
         x, data = _get_mpint(data)
@@ -304,7 +302,7 @@ class _SSHFormatDSA(object):
         public_numbers = dsa.DSAPublicNumbers(y, parameter_numbers)
         self._validate(public_numbers)
         private_numbers = dsa.DSAPrivateNumbers(x, public_numbers)
-        private_key = private_numbers.private_key(backend)
+        private_key = private_numbers.private_key()
         return private_key, data
 
     def encode_public(self, public_key, f_pub):
@@ -355,7 +353,7 @@ class _SSHFormatECDSA(object):
             raise NotImplementedError("Need uncompressed point")
         return (curve, point), data
 
-    def load_public(self, key_type, data, backend):
+    def load_public(self, key_type, data):
         """Make ECDSA public key from data."""
         (curve_name, point), data = self.get_public(data)
         public_key = ec.EllipticCurvePublicKey.from_encoded_point(
@@ -363,14 +361,14 @@ class _SSHFormatECDSA(object):
         )
         return public_key, data
 
-    def load_private(self, data, pubfields, backend):
+    def load_private(self, data, pubfields):
         """Make ECDSA private key from data."""
         (curve_name, point), data = self.get_public(data)
         secret, data = _get_mpint(data)
 
         if (curve_name, point) != pubfields:
             raise ValueError("Corrupt data: ecdsa field mismatch")
-        private_key = ec.derive_private_key(secret, self.curve, backend)
+        private_key = ec.derive_private_key(secret, self.curve)
         return private_key, data
 
     def encode_public(self, public_key, f_pub):
@@ -405,7 +403,7 @@ class _SSHFormatEd25519(object):
         point, data = _get_sshstr(data)
         return (point,), data
 
-    def load_public(self, key_type, data, backend):
+    def load_public(self, key_type, data):
         """Make Ed25519 public key from data."""
         (point,), data = self.get_public(data)
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(
@@ -413,7 +411,7 @@ class _SSHFormatEd25519(object):
         )
         return public_key, data
 
-    def load_private(self, data, pubfields, backend):
+    def load_private(self, data, pubfields):
         """Make Ed25519 private key from data."""
         (point,), data = self.get_public(data)
         keypair, data = _get_sshstr(data)
@@ -477,11 +475,10 @@ _SSH_PRIVATE_KEY_TYPES = typing.Union[
 def load_ssh_private_key(
     data: bytes,
     password: typing.Optional[bytes],
-    backend: typing.Optional[Backend] = None,
+    backend: typing.Any = None,
 ) -> _SSH_PRIVATE_KEY_TYPES:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
-    backend = _get_backend(backend)
     if password is not None:
         utils._check_bytes("password", password)
 
@@ -525,9 +522,7 @@ def load_ssh_private_key(
         salt, kbuf = _get_sshstr(kdfoptions)
         rounds, kbuf = _get_u32(kbuf)
         _check_empty(kbuf)
-        ciph = _init_cipher(
-            ciphername, password, salt.tobytes(), rounds, backend
-        )
+        ciph = _init_cipher(ciphername, password, salt.tobytes(), rounds)
         edata = memoryview(ciph.decryptor().update(edata))
     else:
         blklen = 8
@@ -541,7 +536,7 @@ def load_ssh_private_key(
     key_type, edata = _get_sshstr(edata)
     if key_type != pub_key_type:
         raise ValueError("Corrupt data: key type mismatch")
-    private_key, edata = kformat.load_private(edata, pubfields, backend)
+    private_key, edata = kformat.load_private(edata, pubfields)
     comment, edata = _get_sshstr(edata)
 
     # yes, SSH does padding check *after* all other parsing is done.
@@ -587,8 +582,7 @@ def serialize_ssh_private_key(
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
-        backend: Backend = _get_backend(None)
-        ciph = _init_cipher(ciphername, password, salt, rounds, backend)
+        ciph = _init_cipher(ciphername, password, salt, rounds)
     else:
         ciphername = kdfname = _NONE
         blklen = 8
@@ -646,10 +640,9 @@ _SSH_PUBLIC_KEY_TYPES = typing.Union[
 
 
 def load_ssh_public_key(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> _SSH_PUBLIC_KEY_TYPES:
     """Load public key from OpenSSH one-line format."""
-    backend = _get_backend(backend)
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)
@@ -673,7 +666,7 @@ def load_ssh_public_key(
         raise ValueError("Invalid key format")
     if with_cert:
         nonce, data = _get_sshstr(data)
-    public_key, data = kformat.load_public(key_type, data, backend)
+    public_key, data = kformat.load_public(key_type, data)
     if with_cert:
         serial, data = _get_u64(data)
         cctype, data = _get_u32(data)

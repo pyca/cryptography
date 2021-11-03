@@ -5,8 +5,6 @@
 import typing
 
 from cryptography import x509
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -142,23 +140,25 @@ class PKCS12KeyAndCertificates:
 def load_key_and_certificates(
     data: bytes,
     password: typing.Optional[bytes],
-    backend: typing.Optional[Backend] = None,
+    backend: typing.Any = None,
 ) -> typing.Tuple[
     typing.Optional[_ALLOWED_PKCS12_TYPES],
     typing.Optional[x509.Certificate],
     typing.List[x509.Certificate],
 ]:
-    backend = _get_backend(backend)
-    return backend.load_key_and_certificates_from_pkcs12(data, password)
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
+    return ossl.load_key_and_certificates_from_pkcs12(data, password)
 
 
 def load_pkcs12(
     data: bytes,
     password: typing.Optional[bytes],
-    backend: typing.Optional[Backend] = None,
+    backend: typing.Any = None,
 ) -> PKCS12KeyAndCertificates:
-    backend = _get_backend(backend)
-    return backend.load_pkcs12(data, password)
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
+    return ossl.load_pkcs12(data, password)
 
 
 def serialize_key_and_certificates(
@@ -198,7 +198,8 @@ def serialize_key_and_certificates(
     if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
-    backend = _get_backend(None)
+    from cryptography.hazmat.backends.openssl.backend import backend
+
     return backend.serialize_key_and_certificates_to_pkcs12(
         name, key, cert, cas, encryption_algorithm
     )
