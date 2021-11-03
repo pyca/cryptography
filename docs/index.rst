@@ -67,7 +67,6 @@ hazmat layer only when necessary.
     hazmat/primitives/index
     exceptions
     random-numbers
-    hazmat/backends/index
 
 .. toctree::
     :maxdepth: 2
@@ -77,6 +76,7 @@ hazmat layer only when necessary.
     changelog
     faq
     development/index
+    openssl
     security
     limitations
     api-stability
