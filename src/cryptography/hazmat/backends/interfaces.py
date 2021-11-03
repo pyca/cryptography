@@ -4,14 +4,6 @@
 
 
 import abc
-import typing
-
-
-if typing.TYPE_CHECKING:
-    from cryptography.x509.base import (
-        RevokedCertificate,
-        RevokedCertificateBuilder,
-    )
 
 
 class CipherBackend(metaclass=abc.ABCMeta):
@@ -268,17 +260,6 @@ class DERSerializationBackend(metaclass=abc.ABCMeta):
         """
 
 
-class X509Backend(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def create_x509_revoked_certificate(
-        self, builder: "RevokedCertificateBuilder"
-    ) -> "RevokedCertificate":
-        """
-        Create a RevokedCertificate object from a RevokedCertificateBuilder
-        object.
-        """
-
-
 class DHBackend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def generate_dh_parameters(self, generator, key_size):
@@ -362,7 +343,6 @@ class Backend(
     RSABackend,
     PEMSerializationBackend,
     ScryptBackend,
-    X509Backend,
     metaclass=abc.ABCMeta,
 ):
     @abc.abstractmethod

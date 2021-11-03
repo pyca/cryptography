@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import datetime
 import warnings
 
 from cryptography import utils, x509
@@ -44,27 +43,3 @@ def _CertificateRevocationList(  # noqa: N802
         utils.DeprecatedIn35,
     )
     return backend._ossl2crl(x509_crl)
-
-
-class _RawRevokedCertificate(x509.RevokedCertificate):
-    def __init__(
-        self,
-        serial_number: int,
-        revocation_date: datetime.datetime,
-        extensions: x509.Extensions,
-    ):
-        self._serial_number = serial_number
-        self._revocation_date = revocation_date
-        self._extensions = extensions
-
-    @property
-    def serial_number(self) -> int:
-        return self._serial_number
-
-    @property
-    def revocation_date(self) -> datetime.datetime:
-        return self._revocation_date
-
-    @property
-    def extensions(self) -> x509.Extensions:
-        return self._extensions

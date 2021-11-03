@@ -9,8 +9,6 @@ import os
 import typing
 
 from cryptography import utils
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -216,6 +214,30 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
 
 # Runtime isinstance checks need this since the rust class is not a subclass.
 RevokedCertificate.register(rust_x509.RevokedCertificate)
+
+
+class _RawRevokedCertificate(RevokedCertificate):
+    def __init__(
+        self,
+        serial_number: int,
+        revocation_date: datetime.datetime,
+        extensions: Extensions,
+    ):
+        self._serial_number = serial_number
+        self._revocation_date = revocation_date
+        self._extensions = extensions
+
+    @property
+    def serial_number(self) -> int:
+        return self._serial_number
+
+    @property
+    def revocation_date(self) -> datetime.datetime:
+        return self._revocation_date
+
+    @property
+    def extensions(self) -> Extensions:
+        return self._extensions
 
 
 class CertificateRevocationList(metaclass=abc.ABCMeta):
@@ -445,28 +467,28 @@ def load_der_x509_certificate(
 
 # Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_csr(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> CertificateSigningRequest:
     return rust_x509.load_pem_x509_csr(data)
 
 
 # Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_csr(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> CertificateSigningRequest:
     return rust_x509.load_der_x509_csr(data)
 
 
 # Backend argument preserved for API compatibility, but ignored.
 def load_pem_x509_crl(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> CertificateRevocationList:
     return rust_x509.load_pem_x509_crl(data)
 
 
 # Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_crl(
-    data: bytes, backend: typing.Optional[Backend] = None
+    data: bytes, backend: typing.Any = None
 ) -> CertificateRevocationList:
     return rust_x509.load_der_x509_crl(data)
 
@@ -539,7 +561,7 @@ class CertificateSigningRequestBuilder(object):
         self,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
@@ -757,12 +779,11 @@ class CertificateBuilder(object):
         self,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
         """
-        backend = _get_backend(backend)
         if self._subject_name is None:
             raise ValueError("A certificate must have a subject name")
 
@@ -905,7 +926,7 @@ class CertificateRevocationListBuilder(object):
         self,
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ) -> CertificateRevocationList:
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
@@ -978,18 +999,18 @@ class RevokedCertificateBuilder(object):
             self._extensions + [extension],
         )
 
-    def build(
-        self, backend: typing.Optional[Backend] = None
-    ) -> RevokedCertificate:
-        backend = _get_backend(backend)
+    def build(self, backend: typing.Any = None) -> RevokedCertificate:
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")
         if self._revocation_date is None:
             raise ValueError(
                 "A revoked certificate must have a revocation date"
             )
-
-        return backend.create_x509_revoked_certificate(self)
+        return _RawRevokedCertificate(
+            self._serial_number,
+            self._revocation_date,
+            Extensions(self._extensions),
+        )
 
 
 def random_serial_number() -> int:
