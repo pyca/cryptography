@@ -11,11 +11,7 @@ from cryptography.exceptions import (
     AlreadyFinalized,
     AlreadyUpdated,
     NotYetFinalized,
-    UnsupportedAlgorithm,
-    _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, CipherBackend
 from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
 
@@ -73,14 +69,8 @@ class Cipher(object):
         self,
         algorithm: CipherAlgorithm,
         mode: typing.Optional[modes.Mode],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, CipherBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement CipherBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
 
         if not isinstance(algorithm, CipherAlgorithm):
             raise TypeError("Expected interface of CipherAlgorithm.")
@@ -90,7 +80,6 @@ class Cipher(object):
 
         self.algorithm = algorithm
         self.mode = mode
-        self._backend = backend
 
     def encryptor(self):
         if isinstance(self.mode, modes.ModeWithAuthenticationTag):
@@ -98,13 +87,17 @@ class Cipher(object):
                 raise ValueError(
                     "Authentication tag must be None when encrypting."
                 )
-        ctx = self._backend.create_symmetric_encryption_ctx(
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        ctx = backend.create_symmetric_encryption_ctx(
             self.algorithm, self.mode
         )
         return self._wrap_ctx(ctx, encrypt=True)
 
     def decryptor(self):
-        ctx = self._backend.create_symmetric_decryption_ctx(
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        ctx = backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
         )
         return self._wrap_ctx(ctx, encrypt=False)
