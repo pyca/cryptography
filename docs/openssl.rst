@@ -1,40 +1,19 @@
-.. hazmat::
+Use of OpenSSL
+==============
 
-OpenSSL backend
-===============
+``cryptography`` depends on the `OpenSSL`_ C library for all cryptographic
+operation. OpenSSL is the de facto standard for cryptographic libraries and
+provides high performance along with various certifications that may be
+relevant to developers.
 
-The `OpenSSL`_ C library. Cryptography supports OpenSSL version 1.1.0 and
-greater.
+A list of supported versions can be found in our :doc:`/installation`
+documentation.
+
+In general the backend should be considered an internal implementation detail
+of the project, but there are some public methods available for more advanced
+control.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
-
-    This is the exposed API for the OpenSSL backend.
-
-    It implements the following interfaces:
-
-    * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-
-    It also implements the following interface for OpenSSL versions ``1.1.0``
-    and above.
-
-    * :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`
-
-    It also exposes the following:
-
-    .. attribute:: name
-
-        The string name of this backend: ``"openssl"``
 
     .. method:: openssl_version_text()
 
@@ -72,7 +51,7 @@ OS random engine
 
     As of OpenSSL 1.1.1d its CSPRNG is fork-safe by default.
     ``cryptography`` does not compile or load the custom engine on
-    these versions.
+    >= 1.1.1d.
 
 By default OpenSSL uses a user-space CSPRNG that is seeded from system random (
 ``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded

@@ -1590,8 +1590,7 @@ Changelog
 * Deprecated ``elliptic_curve_private_key_from_numbers`` and
   ``elliptic_curve_public_key_from_numbers`` in favor of
   ``load_elliptic_curve_private_numbers`` and
-  ``load_elliptic_curve_public_numbers`` on
-  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+  ``load_elliptic_curve_public_numbers`` on ``EllipticCurveBackend``.
 * Added ``EllipticCurvePrivateKeyWithNumbers`` and
   ``EllipticCurvePublicKeyWithNumbers`` support.
 * Work around three GCM related bugs in CommonCrypto and OpenSSL.
@@ -1661,17 +1660,15 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and ``openssl``.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
 * Added ``PKCS8SerializationBackend`` and
-  ``TraditionalOpenSSLSerializationBackend`` support to the
-  :doc:`/hazmat/backends/openssl`.
-* Added :doc:`/hazmat/primitives/asymmetric/ec` and
-  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+  ``TraditionalOpenSSLSerializationBackend`` support to ``openssl``.
+* Added :doc:`/hazmat/primitives/asymmetric/ec` and ``EllipticCurveBackend``.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and ``openssl``.
 * Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
   specific providers of the
   :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -1693,10 +1690,9 @@ Changelog
   :class:`cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
   interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
-  ``create_rsa_verification_ctx`` on
-  :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+  ``create_rsa_verification_ctx`` on ``RSABackend``.
 * Deprecated ``create_dsa_signature_ctx`` and ``create_dsa_verification_ctx``
-  on :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
+  on ``DSABackend``.
 
 
 .. _v0-4:
@@ -1763,8 +1759,7 @@ Changelog
 
 * Added ``commoncrypto``.
 * Added initial ``commoncrypto``.
-* Removed ``register_cipher_adapter`` method from
-  :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
+* Removed ``register_cipher_adapter`` method from ``CipherBackend``.
 * Added support for the OpenSSL backend under Windows.
 * Improved thread-safety for the OpenSSL backend.
 * Fixed compilation on systems where OpenSSL's ``ec.h`` header is not
@@ -1772,8 +1767,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Added ``multibackend``.
-* Set default random for the :doc:`/hazmat/backends/openssl` to the OS
-  random engine.
+* Set default random for ``openssl`` to the OS random engine.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
   (CAST-128) support.
 

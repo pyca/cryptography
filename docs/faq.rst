@@ -73,7 +73,7 @@ legacy libraries:
 Why does ``cryptography`` require Rust?
 ---------------------------------------
 
-``cryptography`` uses OpenSSL for its cryptographic operations. OpenSSL is
+``cryptography`` uses OpenSSL (see: :doc:`/openssl`) for its cryptographic operations. OpenSSL is
 the de facto standard for cryptographic libraries and provides high performance
 along with various certifications that may be relevant to developers. However,
 it is written in C and lacks `memory safety`_.  We want ``cryptography`` to be
