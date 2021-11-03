@@ -7,9 +7,6 @@ import abc
 import typing
 from math import gcd
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, RSABackend
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
@@ -148,17 +145,12 @@ RSAPublicKeyWithSerialization = RSAPublicKey
 def generate_private_key(
     public_exponent: int,
     key_size: int,
-    backend: typing.Optional[Backend] = None,
+    backend: typing.Any = None,
 ) -> RSAPrivateKey:
-    backend = _get_backend(backend)
-    if not isinstance(backend, RSABackend):
-        raise UnsupportedAlgorithm(
-            "Backend object does not implement RSABackend.",
-            _Reasons.BACKEND_MISSING_INTERFACE,
-        )
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
     _verify_rsa_parameters(public_exponent, key_size)
-    return backend.generate_rsa_private_key(public_exponent, key_size)
+    return ossl.generate_rsa_private_key(public_exponent, key_size)
 
 
 def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
@@ -363,11 +355,12 @@ class RSAPrivateNumbers(object):
     iqmp = property(lambda self: self._iqmp)
     public_numbers = property(lambda self: self._public_numbers)
 
-    def private_key(
-        self, backend: typing.Optional[Backend] = None
-    ) -> RSAPrivateKey:
-        backend = _get_backend(backend)
-        return backend.load_rsa_private_numbers(self)
+    def private_key(self, backend: typing.Any = None) -> RSAPrivateKey:
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_rsa_private_numbers(self)
 
     def __eq__(self, other):
         if not isinstance(other, RSAPrivateNumbers):
@@ -411,11 +404,12 @@ class RSAPublicNumbers(object):
     e = property(lambda self: self._e)
     n = property(lambda self: self._n)
 
-    def public_key(
-        self, backend: typing.Optional[Backend] = None
-    ) -> RSAPublicKey:
-        backend = _get_backend(backend)
-        return backend.load_rsa_public_numbers(self)
+    def public_key(self, backend: typing.Any = None) -> RSAPublicKey:
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_rsa_public_numbers(self)
 
     def __repr__(self):
         return "<RSAPublicNumbers(e={0.e}, n={0.n})>".format(self)

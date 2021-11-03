@@ -385,15 +385,6 @@ class TestRSA(object):
             )
 
 
-def test_rsa_generate_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        rsa.generate_private_key(
-            65537, 2048, pretend_backend  # type:ignore[arg-type]
-        )
-
-
 class TestRSASignature(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
