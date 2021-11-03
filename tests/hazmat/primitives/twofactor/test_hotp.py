@@ -7,7 +7,6 @@ import os
 
 import pytest
 
-from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -16,7 +15,6 @@ from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from ....utils import (
     load_nist_vectors,
     load_vectors_from_file,
-    raises_unsupported_algorithm,
 )
 
 vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
@@ -112,14 +110,3 @@ class TestHOTP(object):
         key = bytearray(b"a long key with lots of entropy goes here")
         hotp = HOTP(key, 6, SHA1(), backend)
         assert hotp.generate(10) == b"559978"
-
-
-def test_invalid_backend():
-    secret = b"12345678901234567890"
-
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        HOTP(
-            secret, 8, hashes.SHA1(), pretend_backend  # type: ignore[arg-type]
-        )
