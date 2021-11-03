@@ -472,14 +472,6 @@ class TestOpenSSLCMAC(object):
             backend.create_cmac_ctx(DummyCipherAlgorithm())
 
 
-class TestOpenSSLCreateRevokedCertificate(object):
-    def test_invalid_builder(self):
-        with pytest.raises(TypeError):
-            backend.create_x509_revoked_certificate(
-                object()  # type: ignore[arg-type]
-            )
-
-
 class TestOpenSSLSerializationWithOpenSSL(object):
     def test_pem_password_cb(self):
         userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")

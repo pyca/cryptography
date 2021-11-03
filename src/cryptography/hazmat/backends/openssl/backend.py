@@ -58,9 +58,6 @@ from cryptography.hazmat.backends.openssl.x448 import (
     _X448PrivateKey,
     _X448PublicKey,
 )
-from cryptography.hazmat.backends.openssl.x509 import (
-    _RawRevokedCertificate,
-)
 from cryptography.hazmat.bindings._rust import (
     x509 as rust_x509,
 )
@@ -821,21 +818,6 @@ class Backend(BackendInterface):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
-
-    def create_x509_revoked_certificate(
-        self, builder: x509.RevokedCertificateBuilder
-    ) -> x509.RevokedCertificate:
-        if not isinstance(builder, x509.RevokedCertificateBuilder):
-            raise TypeError("Builder type mismatch.")
-        serial_number = builder._serial_number
-        revocation_date = builder._revocation_date
-        assert serial_number is not None
-        assert revocation_date is not None
-        return _RawRevokedCertificate(
-            serial_number,
-            revocation_date,
-            x509.Extensions(builder._extensions),
-        )
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
