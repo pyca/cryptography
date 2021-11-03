@@ -134,7 +134,7 @@ jobs:
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py39-randomorder"}
-          - {IMAGE: "fedora", TOXENV: "py39"}
+          - {IMAGE: "fedora", TOXENV: "py310"}
           - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
