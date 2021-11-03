@@ -9,8 +9,6 @@ import warnings
 
 from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext,
@@ -341,18 +339,20 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
 
 
 def generate_private_key(
-    curve: EllipticCurve, backend: typing.Optional[Backend] = None
+    curve: EllipticCurve, backend: typing.Any = None
 ) -> EllipticCurvePrivateKey:
-    backend = _get_backend(backend)
-    return backend.generate_elliptic_curve_private_key(curve)
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
+    return ossl.generate_elliptic_curve_private_key(curve)
 
 
 def derive_private_key(
     private_value: int,
     curve: EllipticCurve,
-    backend: typing.Optional[Backend] = None,
+    backend: typing.Any = None,
 ) -> EllipticCurvePrivateKey:
-    backend = _get_backend(backend)
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
     if not isinstance(private_value, int):
         raise TypeError("private_value must be an integer type.")
 
@@ -362,7 +362,7 @@ def derive_private_key(
     if not isinstance(curve, EllipticCurve):
         raise TypeError("curve must provide the EllipticCurve interface.")
 
-    return backend.derive_elliptic_curve_private_key(private_value, curve)
+    return ossl.derive_elliptic_curve_private_key(private_value, curve)
 
 
 class EllipticCurvePublicNumbers(object):
@@ -377,11 +377,12 @@ class EllipticCurvePublicNumbers(object):
         self._x = x
         self._curve = curve
 
-    def public_key(
-        self, backend: typing.Optional[Backend] = None
-    ) -> EllipticCurvePublicKey:
-        backend = _get_backend(backend)
-        return backend.load_elliptic_curve_public_numbers(self)
+    def public_key(self, backend: typing.Any = None) -> EllipticCurvePublicKey:
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_elliptic_curve_public_numbers(self)
 
     def encode_point(self) -> bytes:
         warnings.warn(
@@ -472,10 +473,13 @@ class EllipticCurvePrivateNumbers(object):
         self._public_numbers = public_numbers
 
     def private_key(
-        self, backend: typing.Optional[Backend] = None
+        self, backend: typing.Any = None
     ) -> EllipticCurvePrivateKey:
-        backend = _get_backend(backend)
-        return backend.load_elliptic_curve_private_numbers(self)
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_elliptic_curve_private_numbers(self)
 
     private_value = property(lambda self: self._private_value)
     public_numbers = property(lambda self: self._public_numbers)
