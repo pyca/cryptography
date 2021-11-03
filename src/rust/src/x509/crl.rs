@@ -5,7 +5,7 @@
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::certificate;
-use pyo3::{PyNativeType, ToPyObject};
+use pyo3::ToPyObject;
 use std::convert::TryInto;
 use std::sync::Arc;
 

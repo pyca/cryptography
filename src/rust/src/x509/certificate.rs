@@ -6,7 +6,7 @@ use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error,
 use crate::x509;
 use crate::x509::{crl, sct};
 use chrono::Datelike;
-use pyo3::{PyNativeType, ToPyObject};
+use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
