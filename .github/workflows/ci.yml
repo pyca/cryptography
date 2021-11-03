@@ -311,7 +311,7 @@ jobs:
           name: "Rust Coverage"
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       fail-fast: false
       matrix:
