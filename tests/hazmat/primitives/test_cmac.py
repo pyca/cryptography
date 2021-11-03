@@ -10,7 +10,6 @@ import pytest
 from cryptography.exceptions import (
     AlreadyFinalized,
     InvalidSignature,
-    _Reasons,
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
@@ -22,7 +21,6 @@ from cryptography.hazmat.primitives.cmac import CMAC
 from ...utils import (
     load_nist_vectors,
     load_vectors_from_file,
-    raises_unsupported_algorithm,
 )
 
 
@@ -210,11 +208,3 @@ class TestCMAC(object):
         assert cmac.finalize() == binascii.unhexlify(
             b"a21e6e647bfeaf5ca0a5e1bcd957dfad"
         )
-
-
-def test_invalid_backend():
-    key = b"2b7e151628aed2a6abf7158809cf4f3c"
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        CMAC(AES(key), pretend_backend)  # type: ignore[arg-type]
