@@ -8,11 +8,7 @@ import typing
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
-    UnsupportedAlgorithm,
-    _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, CMACBackend
 from cryptography.hazmat.primitives import ciphers
 
 
@@ -20,23 +16,19 @@ class CMAC(object):
     def __init__(
         self,
         algorithm: ciphers.BlockCipherAlgorithm,
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
         ctx=None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, CMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement CMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         if not isinstance(algorithm, ciphers.BlockCipherAlgorithm):
             raise TypeError("Expected instance of BlockCipherAlgorithm.")
         self._algorithm = algorithm
 
-        self._backend = backend
         if ctx is None:
-            self._ctx = self._backend.create_cmac_ctx(self._algorithm)
+            from cryptography.hazmat.backends.openssl.backend import (
+                backend as ossl,
+            )
+
+            self._ctx = ossl.create_cmac_ctx(self._algorithm)
         else:
             self._ctx = ctx
 
@@ -65,6 +57,4 @@ class CMAC(object):
     def copy(self) -> "CMAC":
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        return CMAC(
-            self._algorithm, backend=self._backend, ctx=self._ctx.copy()
-        )
+        return CMAC(self._algorithm, ctx=self._ctx.copy())
