@@ -11,12 +11,6 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import (
-    Backend,
-    CMACBackend,
-    HMACBackend,
-)
 from cryptography.hazmat.primitives import (
     ciphers,
     cmac,
@@ -157,29 +151,25 @@ class KBKDFHMAC(KeyDerivationFunction):
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise UnsupportedAlgorithm(
                 "Algorithm supplied is not a supported hash algorithm.",
                 _Reasons.UNSUPPORTED_HASH,
             )
 
-        if not backend.hmac_supported(algorithm):
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "Algorithm supplied is not a supported hmac algorithm.",
                 _Reasons.UNSUPPORTED_HASH,
             )
 
         self._algorithm = algorithm
-        self._backend = backend
 
         self._deriver = _KBKDFDeriver(
             self._prf,
@@ -194,7 +184,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         )
 
     def _prf(self, key_material: bytes):
-        return hmac.HMAC(key_material, self._algorithm, backend=self._backend)
+        return hmac.HMAC(key_material, self._algorithm)
 
     def derive(self, key_material) -> bytes:
         return self._deriver.derive(key_material, self._algorithm.digest_size)
@@ -216,15 +206,8 @@ class KBKDFCMAC(KeyDerivationFunction):
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, CMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement CMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         if not issubclass(
             algorithm, ciphers.BlockCipherAlgorithm
         ) or not issubclass(algorithm, ciphers.CipherAlgorithm):
@@ -234,7 +217,6 @@ class KBKDFCMAC(KeyDerivationFunction):
             )
 
         self._algorithm = algorithm
-        self._backend = backend
         self._cipher: typing.Optional[ciphers.BlockCipherAlgorithm] = None
 
         self._deriver = _KBKDFDeriver(
@@ -252,14 +234,18 @@ class KBKDFCMAC(KeyDerivationFunction):
     def _prf(self, _: bytes):
         assert self._cipher is not None
 
-        return cmac.CMAC(self._cipher, backend=self._backend)
+        return cmac.CMAC(self._cipher)
 
     def derive(self, key_material: bytes) -> bytes:
         self._cipher = self._algorithm(key_material)
 
         assert self._cipher is not None
 
-        if not self._backend.cmac_algorithm_supported(self._cipher):
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.cmac_algorithm_supported(self._cipher):
             raise UnsupportedAlgorithm(
                 "Algorithm supplied is not a supported cipher algorithm.",
                 _Reasons.UNSUPPORTED_CIPHER,

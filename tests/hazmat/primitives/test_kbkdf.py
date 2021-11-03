@@ -262,21 +262,6 @@ class TestKBKDFHMAC(object):
                 backend=backend,
             )
 
-    def test_invalid_backend(self, backend):
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            KBKDFHMAC(
-                hashes.SHA256(),
-                Mode.CounterMode,
-                32,
-                4,
-                4,
-                CounterLocation.BeforeFixed,
-                b"label",
-                b"context",
-                None,
-                backend=object(),  # type: ignore[arg-type]
-            )
-
     def test_unicode_error_label(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(
@@ -594,21 +579,6 @@ class TestKBKDFCMAC(object):
                 b"context",
                 None,
                 backend=backend,
-            )
-
-    def test_invalid_backend(self, backend):
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            KBKDFCMAC(
-                algorithms.AES,
-                Mode.CounterMode,
-                32,
-                4,
-                4,
-                CounterLocation.BeforeFixed,
-                b"label",
-                b"context",
-                None,
-                backend=object(),  # type: ignore[arg-type]
             )
 
     def test_unicode_error_label(self, backend):

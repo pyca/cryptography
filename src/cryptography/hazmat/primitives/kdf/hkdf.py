@@ -9,11 +9,7 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
     InvalidKey,
-    UnsupportedAlgorithm,
-    _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -25,15 +21,8 @@ class HKDF(KeyDerivationFunction):
         length: int,
         salt: typing.Optional[bytes],
         info: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         self._algorithm = algorithm
 
         if salt is None:
@@ -43,12 +32,10 @@ class HKDF(KeyDerivationFunction):
 
         self._salt = salt
 
-        self._backend = backend
-
-        self._hkdf_expand = HKDFExpand(self._algorithm, length, info, backend)
+        self._hkdf_expand = HKDFExpand(self._algorithm, length, info)
 
     def _extract(self, key_material: bytes) -> bytes:
-        h = hmac.HMAC(self._salt, self._algorithm, backend=self._backend)
+        h = hmac.HMAC(self._salt, self._algorithm)
         h.update(key_material)
         return h.finalize()
 
@@ -67,18 +54,9 @@ class HKDFExpand(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         info: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         self._algorithm = algorithm
-
-        self._backend = backend
 
         max_length = 255 * algorithm.digest_size
 
@@ -103,7 +81,7 @@ class HKDFExpand(KeyDerivationFunction):
         counter = 1
 
         while self._algorithm.digest_size * (len(output) - 1) < self._length:
-            h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
+            h = hmac.HMAC(key_material, self._algorithm)
             h.update(output[-1])
             h.update(self._info)
             h.update(bytes([counter]))

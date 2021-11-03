@@ -8,14 +8,13 @@ import os
 
 import pytest
 
-from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
+from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
 from ...utils import (
     load_nist_vectors,
     load_vectors_from_file,
-    raises_unsupported_algorithm,
 )
 
 
@@ -211,21 +210,3 @@ class TestHKDFExpand(object):
 
         with pytest.raises(TypeError):
             hkdf.derive("first")  # type: ignore[arg-type]
-
-
-def test_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        HKDF(
-            hashes.SHA256(),
-            16,
-            None,
-            None,
-            pretend_backend,  # type:ignore[arg-type]
-        )
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        HKDFExpand(
-            hashes.SHA256(), 16, None, pretend_backend  # type:ignore[arg-type]
-        )
