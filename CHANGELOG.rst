@@ -9,8 +9,17 @@ Changelog
  .. note:: This version is not yet released and is under active development.
 
 
+* The entire :doc:`/x509/index` layer is now written in Rust. This allows
+  alternate asymmetric key implementations that can support cloud key
+  management services or hardware security modules provided they implement
+  the necessary interface (for example:
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`).
 * :ref:`Deprecated the backend argument<faq-missing-backend>` for all
   functions.
+* Fixed handling of PEM files to allow loading when certificate and key are
+  in the same file.
+* Fixed parsing of :class:`~cryptography.x509.CertificatePolicies` extensions
+  containing legacy ``BMPString`` values in their ``explicitText``.
 * Added support for parsing PKCS12 files with friendly names for all
   certificates with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,
