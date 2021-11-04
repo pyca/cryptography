@@ -11,6 +11,7 @@ TYPES = """
 """
 
 FUNCTIONS = """
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 long SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
 """
 

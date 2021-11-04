@@ -47,12 +47,10 @@ int EVP_CipherInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
 int EVP_CipherUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
                      const unsigned char *, int);
 int EVP_CipherFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
-int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *);
 EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
-const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
 
 int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
@@ -94,7 +92,6 @@ int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
 
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
 EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
 void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
 int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
 int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
@@ -122,12 +119,12 @@ int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
 int EVP_PKEY_set_type(EVP_PKEY *, int);
 
 int EVP_PKEY_id(const EVP_PKEY *);
-int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
 EVP_MD_CTX *EVP_MD_CTX_new(void);
 void EVP_MD_CTX_free(EVP_MD_CTX *);
-/* Backwards compat aliases for pyOpenSSL */
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 
 /* Added in 1.1.1 */
@@ -179,9 +176,6 @@ const long Cryptography_HAS_EVP_PKEY_DHX = 0;
 const long EVP_PKEY_DHX = -1;
 #endif
 
-int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
-    return EVP_PKEY_id(key);
-}
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
     return EVP_MD_CTX_new();
 }

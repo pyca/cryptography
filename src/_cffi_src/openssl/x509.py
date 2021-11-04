@@ -175,18 +175,15 @@ int X509_REVOKED_get_ext_count(X509_REVOKED *);
 X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 
 X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
 long X509_get_version(X509 *);
 
-ASN1_TIME *X509_get_notBefore(X509 *);
-ASN1_TIME *X509_get_notAfter(X509 *);
 ASN1_TIME *X509_getm_notBefore(const X509 *);
 ASN1_TIME *X509_getm_notAfter(const X509 *);
-const ASN1_TIME *X509_get0_notBefore(const X509 *);
-const ASN1_TIME *X509_get0_notAfter(const X509 *);
 
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
@@ -217,16 +214,13 @@ const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
-/* These aren't macros these arguments are all const X on openssl > 1.0.x */
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
-int X509_set_notBefore(X509 *, ASN1_TIME *);
-int X509_set_notAfter(X509 *, ASN1_TIME *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_set1_notBefore(X509 *, const ASN1_TIME *);
-int X509_set1_notAfter(X509 *, const ASN1_TIME *);
 
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
