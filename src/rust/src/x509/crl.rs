@@ -48,7 +48,6 @@ fn load_pem_x509_crl(
         data,
         |p| p.tag == "X509 CRL",
         "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
-        "Valid PEM but multiple BEGIN X509 CRL/END X509 delimiters.",
     )?;
     // TODO: Produces an extra copy
     load_der_x509_crl(py, &block.contents)

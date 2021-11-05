@@ -204,8 +204,8 @@ X.509
 * ``cryptography.io.old_header.pem`` - A leaf certificate issued by RapidSSL
   for the cryptography website. This certificate uses the ``X509 CERTIFICATE``
   legacy PEM header format.
-* ``cryptography.io.repeated_twice.pem`` - The same as ``cryptography.io.pem``,
-  but the certificate is repeated twice.
+* ``cryptography.io.chain.pem`` - The same as ``cryptography.io.pem``,
+  but ``rapidssl_sha256_ca_g3.pem`` is concatenated to the end.
 * ``cryptography.io.with_garbage.pem`` - The same as ``cryptography.io.pem``,
   but with other sections and text around it.
 * ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the

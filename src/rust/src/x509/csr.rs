@@ -294,7 +294,6 @@ fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certific
         data,
         |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST",
         "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?",
-        "Valid PEM but multiple BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters.",
     )?;
     load_der_x509_csr(py, &parsed.contents)
 }

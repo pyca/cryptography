@@ -365,7 +365,6 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
         data,
         |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE",
         "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?",
-        "Valid PEM but multiple BEGIN CERTIFICATE/END CERTIFICATE delimiters."
     )?;
     load_der_x509_certificate(py, &parsed.contents)
 }
