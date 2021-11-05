@@ -155,6 +155,11 @@ def cryptography_has_tlsv13():
     return [
         "TLS1_3_VERSION",
         "SSL_OP_NO_TLSv1_3",
+    ]
+
+
+def cryptography_has_tlsv13_functions():
+    return [
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
         "SSL_verify_client_post_handshake",
@@ -290,6 +295,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
+    "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
     "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
