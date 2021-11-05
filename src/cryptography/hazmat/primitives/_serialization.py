@@ -51,5 +51,9 @@ class BestAvailableEncryption(KeySerializationEncryption):
         self.password = password
 
 
+class Encryption2021(BestAvailableEncryption):
+    pass
+
+
 class NoEncryption(KeySerializationEncryption):
     pass

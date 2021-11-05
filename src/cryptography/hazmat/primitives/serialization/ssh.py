@@ -550,6 +550,8 @@ def load_ssh_private_key(
 def serialize_ssh_private_key(
     private_key: _SSH_PRIVATE_KEY_TYPES,
     password: typing.Optional[bytes] = None,
+    *,
+    ciphername: typing.Optional[bytes] = None,
 ) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
@@ -575,7 +577,8 @@ def serialize_ssh_private_key(
     # setup parameters
     f_kdfoptions = _FragList()
     if password:
-        ciphername = _DEFAULT_CIPHER
+        if ciphername is None:
+            ciphername = _DEFAULT_CIPHER
         blklen = _SSH_CIPHERS[ciphername][3]
         kdfname = _BCRYPT
         rounds = _DEFAULT_ROUNDS

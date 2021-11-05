@@ -2180,7 +2180,7 @@ class TestRSAPrimeFactorRecovery(object):
 
 class TestRSAPrivateKeySerialization(object):
     @pytest.mark.parametrize(
-        ("fmt", "password"),
+        ("fmt", "password", "encryption"),
         itertools.product(
             [
                 serialization.PrivateFormat.TraditionalOpenSSL,
@@ -2192,15 +2192,21 @@ class TestRSAPrivateKeySerialization(object):
                 b"!*$&(@#$*&($T@%_somesymbols",
                 b"\x01" * 1000,
             ],
+            [
+                serialization.BestAvailableEncryption,
+                serialization.Encryption2021,
+            ],
         ),
     )
-    def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+    def test_private_bytes_encrypted_pem(
+        self, backend, fmt, password, encryption
+    ):
         skip_fips_traditional_openssl(backend, fmt)
         key = RSA_KEY_2048.private_key(backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
-            serialization.BestAvailableEncryption(password),
+            encryption(password),
         )
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
@@ -2225,20 +2231,29 @@ class TestRSAPrivateKeySerialization(object):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(
-        ("fmt", "password"),
-        [
-            [serialization.PrivateFormat.PKCS8, b"s"],
-            [serialization.PrivateFormat.PKCS8, b"longerpassword"],
-            [serialization.PrivateFormat.PKCS8, b"!*$&(@#$*&($T@%_somesymbol"],
-            [serialization.PrivateFormat.PKCS8, b"\x01" * 1000],
-        ],
+        ("fmt", "password", "encryption"),
+        itertools.product(
+            [serialization.PrivateFormat.PKCS8],
+            [
+                b"s",
+                b"longerpassword",
+                b"!*$&(@#$*&($T@%_somesymbols",
+                b"\x01" * 1000,
+            ],
+            [
+                serialization.BestAvailableEncryption,
+                serialization.Encryption2021,
+            ],
+        ),
     )
-    def test_private_bytes_encrypted_der(self, backend, fmt, password):
+    def test_private_bytes_encrypted_der(
+        self, backend, fmt, password, encryption
+    ):
         key = RSA_KEY_2048.private_key(backend)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
-            serialization.BestAvailableEncryption(password),
+            encryption(password),
         )
         loaded_key = serialization.load_der_private_key(
             serialized, password, backend

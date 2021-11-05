@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
+    Encryption2021,
     KeySerializationEncryption,
     NoEncryption,
     PrivateFormat,
@@ -1372,13 +1373,19 @@ class TestEd25519SSHSerialization(object):
 
 
 class TestKeySerializationEncryptionTypes(object):
-    def test_non_bytes_password(self):
+    @pytest.mark.parametrize(
+        "encryption_class", [BestAvailableEncryption, Encryption2021]
+    )
+    def test_non_bytes_password(self, encryption_class):
         with pytest.raises(ValueError):
-            BestAvailableEncryption(object())  # type:ignore[arg-type]
+            encryption_class(object())  # type:ignore[arg-type]
 
-    def test_encryption_with_zero_length_password(self):
+    @pytest.mark.parametrize(
+        "encryption_class", [BestAvailableEncryption, Encryption2021]
+    )
+    def test_encryption_with_zero_length_password(self, encryption_class):
         with pytest.raises(ValueError):
-            BestAvailableEncryption(b"")
+            encryption_class(b"")
 
 
 @pytest.mark.supported(
@@ -1990,15 +1997,16 @@ class TestOpenSSHSerialization(object):
             b"x" * 72,
         ):
             # BestAvailableEncryption does not handle bytes-like?
-            best = BestAvailableEncryption(psw)
-            encdata = private_key.private_bytes(
-                Encoding.PEM, PrivateFormat.OpenSSH, best
-            )
-            decoded_key = load_ssh_private_key(encdata, psw, backend)
-            pub2 = decoded_key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
-            )
-            assert pub1 == pub2
+            for encryption_class in [BestAvailableEncryption, Encryption2021]:
+                encryption = encryption_class(psw)
+                encdata = private_key.private_bytes(
+                    Encoding.PEM, PrivateFormat.OpenSSH, encryption
+                )
+                decoded_key = load_ssh_private_key(encdata, psw, backend)
+                pub2 = decoded_key.public_key().public_bytes(
+                    Encoding.OpenSSH, PublicFormat.OpenSSH
+                )
+                assert pub1 == pub2
 
             # bytearray
             decoded_key2 = load_ssh_private_key(

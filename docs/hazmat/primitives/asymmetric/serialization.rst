@@ -978,6 +978,17 @@ Serialization Encryption Types
 
     :param bytes password: The password to use for encryption.
 
+.. class:: Encryption2021(password)
+
+    Encrypt using the best available encryption for a given key in year 2021.
+    The algorithm will never change. In the future, encryption may fail or the
+    class may be removed if the encryption algorithm is considered too weak.
+
+    As of now it uses the same algorithms as
+    :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`.
+
+    :param bytes password: The password to use for encryption.
+
 .. class:: NoEncryption
 
     Do not encrypt.

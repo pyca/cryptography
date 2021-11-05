@@ -1397,6 +1397,15 @@ class Backend(BackendInterface):
         else:
             raise ValueError("Unsupported encryption type")
 
+        # get cipher
+        if isinstance(encryption_algorithm, serialization.Encryption2021):
+            pkcs8_cipher = b"aes-256-cbc"
+            traditionalopenssl_cipher = pkcs8_cipher
+            openssh_cipher = b"aes256-ctr"
+        else:
+            # use defaults
+            pkcs8_cipher = traditionalopenssl_cipher = openssh_cipher = None
+
         # PKCS8 + PEM/DER
         if format is serialization.PrivateFormat.PKCS8:
             if encoding is serialization.Encoding.PEM:
@@ -1406,7 +1415,7 @@ class Backend(BackendInterface):
             else:
                 raise ValueError("Unsupported encoding for PKCS8")
             return self._private_key_bytes_via_bio(
-                write_bio, evp_pkey, password
+                write_bio, evp_pkey, password, pkcs8_cipher
             )
 
         # TraditionalOpenSSL + PEM/DER
@@ -1432,7 +1441,7 @@ class Backend(BackendInterface):
                         "Unsupported key type for TraditionalOpenSSL"
                     )
                 return self._private_key_bytes_via_bio(
-                    write_bio, cdata, password
+                    write_bio, cdata, password, traditionalopenssl_cipher
                 )
 
             if encoding is serialization.Encoding.DER:
@@ -1458,7 +1467,9 @@ class Backend(BackendInterface):
         # OpenSSH + PEM
         if format is serialization.PrivateFormat.OpenSSH:
             if encoding is serialization.Encoding.PEM:
-                return ssh.serialize_ssh_private_key(key, password)
+                return ssh.serialize_ssh_private_key(
+                    key, password, ciphername=openssh_cipher
+                )
 
             raise ValueError(
                 "OpenSSH private key format can only be used"
@@ -1469,12 +1480,16 @@ class Backend(BackendInterface):
         # like Raw.
         raise ValueError("format is invalid with this key")
 
-    def _private_key_bytes_via_bio(self, write_bio, evp_pkey, password):
+    def _private_key_bytes_via_bio(
+        self, write_bio, evp_pkey, password, ciphername
+    ):
         if not password:
             evp_cipher = self._ffi.NULL
         else:
             # This is a curated value that we will update over time.
-            evp_cipher = self._lib.EVP_get_cipherbyname(b"aes-256-cbc")
+            if ciphername is None:
+                ciphername = b"aes-256-cbc"
+            evp_cipher = self._lib.EVP_get_cipherbyname(ciphername)
 
         return self._bio_func_output(
             write_bio,
