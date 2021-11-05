@@ -18,7 +18,12 @@ from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
+from cryptography.x509 import (
+    DNSName,
+    NameConstraints,
+    SubjectAlternativeName,
+    ocsp,
+)
 from cryptography.x509.extensions import (
     ExtensionType,
     _key_identifier_from_public_key,
@@ -5789,6 +5794,22 @@ class TestSignedCertificateTimestamps(object):
         )
         assert hash(sct) == hash(sct2)
         assert hash(sct) != hash(sct3)
+
+    def test_public_bytes(self, backend):
+        ext = (
+            load_vectors_from_file(
+                os.path.join("x509", "ocsp", "resp-sct-extension.der"),
+                lambda data: ocsp.load_der_ocsp_response(data.read()),
+                mode="rb",
+            )
+            .single_extensions.get_extension_for_class(
+                x509.SignedCertificateTimestamps
+            )
+            .value
+        )
+
+        with pytest.raises(NotImplementedError):
+            ext.public_bytes()
 
 
 class TestPrecertificateSignedCertificateTimestampsExtension(object):
