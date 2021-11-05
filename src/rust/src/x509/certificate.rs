@@ -281,7 +281,7 @@ impl Certificate {
                     "UnsupportedAlgorithm",
                     (format!(
                         "Signature algorithm OID: {} not recognized",
-                        self.raw.borrow_value().signature_alg.oid.to_string()
+                        self.raw.borrow_value().signature_alg.oid
                     ),),
                 )?,
             ))),
