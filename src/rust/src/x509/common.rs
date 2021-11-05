@@ -15,21 +15,14 @@ pub(crate) fn find_in_pem(
     data: &[u8],
     filter_fn: fn(&pem::Pem) -> bool,
     no_match_err: &'static str,
-    multiple_match_err: &'static str,
 ) -> Result<pem::Pem, PyAsn1Error> {
     let all_sections = pem::parse_many(data)?;
     if all_sections.is_empty() {
         return Err(PyAsn1Error::from(pem::PemError::MalformedFraming));
     }
-    let matching_sections: Vec<pem::Pem> = all_sections.into_iter().filter(filter_fn).collect();
-    if matching_sections.len() > 1 {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            multiple_match_err,
-        )));
-    }
-    matching_sections
+    all_sections
         .into_iter()
-        .next()
+        .find(filter_fn)
         .ok_or_else(|| PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(no_match_err)))
 }
 

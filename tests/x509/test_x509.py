@@ -703,12 +703,20 @@ class TestRSACertificate(object):
         assert isinstance(cert, x509.Certificate)
 
     def test_load_multiple_sections(self, backend):
-        with pytest.raises(ValueError, match="Valid PEM but multiple"):
-            _load_cert(
-                os.path.join("x509", "cryptography.io.repeated_twice.pem"),
-                x509.load_pem_x509_certificate,
-                backend,
-            )
+        # We match OpenSSL's behavior of loading the first cert
+        # if there are multiple. Arguably this would ideally be an
+        # error, but "load the first" is a common expectation.
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.chain.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        cert2 = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert cert == cert2
 
     def test_negative_serial_number(self, backend):
         with pytest.raises(ValueError, match="TbsCertificate::serial"):
