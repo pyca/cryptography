@@ -177,10 +177,7 @@ impl OCSPResponse {
             Err(_) => {
                 let exc_messsage = format!(
                     "Signature algorithm OID: {} not recognized",
-                    self.requires_successful_response()?
-                        .signature_algorithm
-                        .oid
-                        .to_string()
+                    self.requires_successful_response()?.signature_algorithm.oid
                 );
                 Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
                     py.import("cryptography.exceptions")?
