@@ -25,6 +25,7 @@ static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
+static const long Cryptography_HAS_SSL_COOKIE;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -725,5 +726,26 @@ long (*SSL_get_min_proto_version)(SSL *) = NULL;
 long (*SSL_get_max_proto_version)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_SSL_COOKIE = 0;
+
+static const long SSL_OP_COOKIE_EXCHANGE = 0;
+int (*DTLSv1_listen)(SSL *, BIO_ADDR *) = NULL;
+void (*SSL_CTX_set_cookie_generate_cb)(SSL_CTX *,
+                                       int (*)(
+                                           SSL *,
+                                           unsigned char *,
+                                           unsigned int *
+                                       )) = NULL;
+void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
+                                       int (*)(
+                                           SSL *,
+                                           const unsigned char *,
+                                           unsigned int
+                                       )) = NULL;
+#else
+static const long Cryptography_HAS_SSL_COOKIE = 1;
 #endif
 """

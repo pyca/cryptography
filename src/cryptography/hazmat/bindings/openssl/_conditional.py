@@ -259,6 +259,41 @@ def cryptography_has_300_fips():
     ]
 
 
+def cryptography_has_ssl_cookie():
+    return [
+        "SSL_OP_COOKIE_EXCHANGE",
+        "DTLSv1_listen",
+        "SSL_CTX_set_cookie_generate_cb",
+        "SSL_CTX_set_cookie_verify_cb",
+    ]
+
+
+def cryptography_has_pkcs7_funcs():
+    return [
+        "SMIME_write_PKCS7",
+        "PEM_write_bio_PKCS7_stream",
+        "PKCS7_sign_add_signer",
+        "PKCS7_final",
+        "PKCS7_verify",
+        "SMIME_read_PKCS7",
+        "PKCS7_get0_signers",
+    ]
+
+
+def cryptography_has_bn_flags():
+    return [
+        "BN_FLG_CONSTTIME",
+        "BN_set_flags",
+        "BN_prime_checks_for_size",
+    ]
+
+
+def cryptography_has_evp_pkey_dh():
+    return [
+        "EVP_PKEY_set1_DH",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -311,4 +346,8 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
     "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
+    "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
+    "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
+    "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
+    "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
 }
