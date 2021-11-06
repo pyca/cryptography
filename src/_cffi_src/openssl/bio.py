@@ -17,7 +17,6 @@ FUNCTIONS = """
 int BIO_free(BIO *);
 void BIO_free_all(BIO *);
 BIO *BIO_new_file(const char *, const char *);
-BIO *BIO_new_dgram(int, int);
 size_t BIO_ctrl_pending(BIO *);
 int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
@@ -27,7 +26,6 @@ int BIO_up_ref(BIO *);
 
 BIO *BIO_new(BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
-BIO_METHOD *BIO_s_datagram(void);
 BIO *BIO_new_mem_buf(const void *, int);
 long BIO_set_mem_eof_return(BIO *, int);
 long BIO_get_mem_data(BIO *, char **);
