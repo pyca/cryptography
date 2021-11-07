@@ -68,8 +68,8 @@ class TestOpenSSL(object):
         to be true for every OpenSSL-alike.
         """
         assert backend.openssl_version_text().startswith(
-            "OpenSSL"
-        ) or backend.openssl_version_text().startswith("LibreSSL")
+            ("OpenSSL", "LibreSSL")
+        )
 
     def test_openssl_version_number(self):
         assert backend.openssl_version_number() > 0
