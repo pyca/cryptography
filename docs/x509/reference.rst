@@ -310,8 +310,10 @@ X.509 Certificate Object
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`
 
         .. doctest::
 
@@ -702,8 +704,10 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
 
     .. method:: serial_number(serial_number)
 
