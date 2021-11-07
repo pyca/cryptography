@@ -27,6 +27,8 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed448,
     padding,
     rsa,
+    x25519,
+    x448,
 )
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
@@ -2967,6 +2969,56 @@ class TestCertificateBuilder(object):
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.x25519_supported() and backend.x448_supported()
+        ),
+        skip_message="Requires OpenSSL with x25519 & x448 support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "pub_key_cls"),
+        [
+            (x25519.X25519PrivateKey, x25519.X25519PublicKey),
+            (x448.X448PrivateKey, x448.X448PublicKey),
+        ],
+    )
+    def test_build_cert_with_public_x25519_x448_rsa_sig(
+        self, priv_key_cls, pub_key_cls, backend
+    ):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = priv_key_cls.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(subject_private_key.public_key())
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        assert cert.signature_hash_algorithm is not None
+        issuer_private_key.public_key().verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),
+            cert.signature_hash_algorithm,
+        )
+        assert cert.signature_algorithm_oid == (
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+        assert isinstance(cert.public_key(), pub_key_cls)
 
     def test_build_cert_with_rsa_key_too_small(self, backend):
         issuer_private_key = RSA_KEY_512.private_key(backend)

@@ -17,8 +17,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed25519,
     ed448,
     rsa,
+    x25519,
+    x448,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
+    CERTIFICATE_PUBLIC_KEY_TYPES,
     PRIVATE_KEY_TYPES as PRIVATE_KEY_TYPES,
     PUBLIC_KEY_TYPES as PUBLIC_KEY_TYPES,
 )
@@ -101,7 +104,7 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> PUBLIC_KEY_TYPES:
+    def public_key(self) -> CERTIFICATE_PUBLIC_KEY_TYPES:
         """
         Returns the public key
         """
@@ -578,7 +581,7 @@ class CertificateBuilder(object):
         self,
         issuer_name: typing.Optional[Name] = None,
         subject_name: typing.Optional[Name] = None,
-        public_key: typing.Optional[PUBLIC_KEY_TYPES] = None,
+        public_key: typing.Optional[CERTIFICATE_PUBLIC_KEY_TYPES] = None,
         serial_number: typing.Optional[int] = None,
         not_valid_before: typing.Optional[datetime.datetime] = None,
         not_valid_after: typing.Optional[datetime.datetime] = None,
@@ -631,7 +634,7 @@ class CertificateBuilder(object):
 
     def public_key(
         self,
-        key: PUBLIC_KEY_TYPES,
+        key: CERTIFICATE_PUBLIC_KEY_TYPES,
     ) -> "CertificateBuilder":
         """
         Sets the requestor's public key (as found in the signing request).
@@ -644,12 +647,15 @@ class CertificateBuilder(object):
                 ec.EllipticCurvePublicKey,
                 ed25519.Ed25519PublicKey,
                 ed448.Ed448PublicKey,
+                x25519.X25519PublicKey,
+                x448.X448PublicKey,
             ),
         ):
             raise TypeError(
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
-                " EllipticCurvePublicKey, Ed25519PublicKey or"
-                " Ed448PublicKey."
+                " EllipticCurvePublicKey, Ed25519PublicKey,"
+                " Ed448PublicKey, X25519PublicKey, or "
+                "X448PublicKey."
             )
         if self._public_key is not None:
             raise ValueError("The public key may only be set once.")
