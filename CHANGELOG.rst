@@ -34,6 +34,14 @@ Changelog
 
   The previous behavior can be restored with:
   ``name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"})``
+* Allow
+  :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey` to
+  be used as public keys when parsing certificates or creating them with
+  :class:`~cryptography.x509.CertificateBuilder`. These key types must be
+  signed with a different signing algorithm as ``X25519`` and ``X448`` do
+  not support signing.
 
 .. _v35-0-0:
 
