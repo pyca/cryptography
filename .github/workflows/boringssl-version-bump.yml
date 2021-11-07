@@ -11,10 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.4.0
-      - uses: actions/checkout@v2.4.0
-        with:
-          repository: "https://boringssl.googlesource.com/boringssl"
-          ref: "main-with-bazel"
+      - run: git clone https://boringssl.googlesource.com/boringssl --branch=main-with-bazel
       - id: check-sha
         run: |
           SHA=$(git -C boringssl/ rev-parse HEAD)
