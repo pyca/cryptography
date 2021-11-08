@@ -6,6 +6,7 @@ pub(crate) mod certificate;
 pub(crate) mod common;
 pub(crate) mod crl;
 pub(crate) mod csr;
+pub(crate) mod extensions;
 mod ocsp;
 pub(crate) mod ocsp_req;
 pub(crate) mod ocsp_resp;

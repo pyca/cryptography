@@ -334,7 +334,7 @@ fn create_x509_csr(
     if let Some(exts) = x509::common::encode_extensions(
         py,
         builder.getattr("_extensions")?,
-        x509::certificate::encode_certificate_extension,
+        x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts);
         attrs.push(Attribute {

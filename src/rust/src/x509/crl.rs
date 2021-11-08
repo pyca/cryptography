@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::certificate;
+use crate::x509::{certificate, extensions};
 use pyo3::ToPyObject;
 use std::convert::TryInto;
 use std::sync::Arc;
@@ -692,7 +692,7 @@ fn encode_crl_extension(
         };
         Ok(Some(asn1::write_single(&idp)))
     } else if oid == &*FRESHEST_CRL_OID {
-        let dps = certificate::encode_distribution_points(ext.py(), ext)?;
+        let dps = extensions::encode_distribution_points(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
     } else if oid == &*AUTHORITY_INFORMATION_ACCESS_OID {
         let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
@@ -701,7 +701,7 @@ fn encode_crl_extension(
         let gns = x509::common::encode_general_names(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
     } else if oid == &*AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = x509::certificate::encode_authority_key_identifier(ext.py(), ext)?;
+        let aki = x509::extensions::encode_authority_key_identifier(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&aki)))
     } else {
         Ok(None)
