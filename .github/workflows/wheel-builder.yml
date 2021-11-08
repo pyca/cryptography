@@ -76,18 +76,39 @@ jobs:
           path: cryptography-wheelhouse/
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       fail-fast: false
       matrix:
         PYTHON:
-          - VERSION: '3.8'
+          - VERSION: '3.10'
             ABI_VERSION: 'cp36'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.8.10/python-3.8.10-macosx10.9.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.8/bin/python3'
+            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.10.0/python-3.10.0post2-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.10/bin/python3'
+            DEPLOYMENT_TARGET: '10.10'
+            # This archflags is default, but let's be explicit
+            ARCHFLAGS: '-arch x86_64 -arch arm64'
+            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
+            # This will change in the future as we change the base Python we
+            # build against
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+          - VERSION: '3.10'
+            ABI_VERSION: 'cp36'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.10.0/python-3.10.0post2-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.10/bin/python3'
+            DEPLOYMENT_TARGET: '10.10'
+            # We continue to build a non-universal2 for a bit to see metrics on
+            # download counts (this is a proxy for pip version since universal2
+            # requires a 21.x pip)
+            ARCHFLAGS: '-arch x86_64'
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
           - VERSION: 'pypy-3.8'
             BIN_PATH: 'pypy3'
-    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS"
+            DEPLOYMENT_TARGET: '10.10'
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
+            ARCHFLAGS: '-arch x86_64'
+    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
       - uses: actions/checkout@v2.4.0
         with:
@@ -109,7 +130,7 @@ jobs:
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
       - name: Download OpenSSL
         run: |
-            ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-x86-64
+            ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions-rs/toolchain@v1.0.7
@@ -118,6 +139,8 @@ jobs:
           toolchain: stable
           override: true
           default: true
+          # Add the arm64 target in addition to the native arch (x86_64)
+          target: aarch64-apple-darwin
 
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
       - run: venv/bin/pip install -U pip wheel cffi setuptools-rust
@@ -127,20 +150,27 @@ jobs:
         run: |
           cd cryptography*
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS="1" \
-              LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
-              CFLAGS="-I${HOME}/openssl-macos-x86-64/include -mmacosx-version-min=10.10 -march=core2" \
+              LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
+              CFLAGS="-I${HOME}/openssl-macos-universal2/include" \
               ../venv/bin/python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
         env:
-          MACOSX_DEPLOYMENT_TARGET:  "10.10"
+          MACOSX_DEPLOYMENT_TARGET:  ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
+          ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
+          _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
+      - name: Show the wheel's minimum macOS SDK and architectures
+        run: |
+          find venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
       - run: |
           venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
+      - run: |
+          echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls cryptography-wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v2.2.0
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-macOS-${{ matrix.PYTHON.ABI_VERSION }}"
+          name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: cryptography-wheelhouse/
 
   windows:
