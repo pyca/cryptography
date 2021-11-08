@@ -1398,13 +1398,23 @@ class Backend(BackendInterface):
             raise ValueError("Unsupported encryption type")
 
         # get cipher
+        pkcs8_cipher: typing.Optional[bytes] = None
+        traditionalopenssl_cipher: typing.Optional[bytes] = None
+        openssh_cipher: typing.Optional[bytes] = None
+
         if isinstance(encryption_algorithm, serialization.Encryption2021):
+            # fixed values, deprecate and eventually remove the class
+            # if these algorithms become too weak.
             pkcs8_cipher = b"aes-256-cbc"
-            traditionalopenssl_cipher = pkcs8_cipher
+            traditionalopenssl_cipher = b"aes-256-cbc"
             openssh_cipher = b"aes256-ctr"
-        else:
-            # use defaults
-            pkcs8_cipher = traditionalopenssl_cipher = openssh_cipher = None
+        elif isinstance(
+            encryption_algorithm, serialization.BestAvailableEncryption
+        ):
+            # Curated values that we will update over time.
+            pkcs8_cipher = b"aes-256-cbc"
+            traditionalopenssl_cipher = b"aes-256-cbc"
+            openssh_cipher = b"aes256-ctr"
 
         # PKCS8 + PEM/DER
         if format is serialization.PrivateFormat.PKCS8:
@@ -1486,9 +1496,6 @@ class Backend(BackendInterface):
         if not password:
             evp_cipher = self._ffi.NULL
         else:
-            # This is a curated value that we will update over time.
-            if ciphername is None:
-                ciphername = b"aes-256-cbc"
             evp_cipher = self._lib.EVP_get_cipherbyname(ciphername)
 
         return self._bio_func_output(
