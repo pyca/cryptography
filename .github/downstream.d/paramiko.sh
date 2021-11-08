@@ -10,7 +10,7 @@ case "${1}" in
         ;;
     run)
         cd paramiko
-        inv test
+        inv test || inv test
         ;;
     *)
         exit 1
