@@ -10,6 +10,7 @@ case "${1}" in
         ;;
     run)
         cd paramiko
+        # https://github.com/paramiko/paramiko/issues/1927
         inv test || inv test
         ;;
     *)
