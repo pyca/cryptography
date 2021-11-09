@@ -184,7 +184,7 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
     let extensions = x509::common::encode_extensions(
         py,
         builder.getattr("_extensions")?,
-        extensions::encode_ocsp_request_extension,
+        extensions::encode_extension,
     )?;
     let reqs = [Request {
         req_cert: ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?,

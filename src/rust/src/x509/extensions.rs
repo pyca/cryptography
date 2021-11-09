@@ -140,6 +140,8 @@ pub(crate) fn encode_extension(
     } else if oid == &*certificate::AUTHORITY_INFORMATION_ACCESS_OID
         || oid == &*certificate::SUBJECT_INFORMATION_ACCESS_OID
     {
+        // Note that certificate::AUTHORITY_INFORMATION_ACCESS_OID ==
+        // crl::AUTHORITY_INFORMATION_ACCESS_OID
         let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&ads)))
     } else if oid == &*certificate::EXTENDED_KEY_USAGE_OID {
@@ -263,14 +265,19 @@ pub(crate) fn encode_extension(
     } else if oid == &*certificate::ISSUER_ALTERNATIVE_NAME_OID
         || oid == &*certificate::SUBJECT_ALTERNATIVE_NAME_OID
     {
+        // Note that crl::ISSUER_ALTERNATIVE_NAME_OID ==
+        // certificate::ISSUER_ALTERNATIVE_NAME_OID
         let gns = x509::common::encode_general_names(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
     } else if oid == &*certificate::AUTHORITY_KEY_IDENTIFIER_OID {
+        // Note that certificate::AUTHORITY_KEY_IDENTIFIER_OID ==
+        // crl::AUTHORITY_KEY_IDENTIFIER_OID
         let aki = encode_authority_key_identifier(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&aki)))
     } else if oid == &*certificate::FRESHEST_CRL_OID
         || oid == &*certificate::CRL_DISTRIBUTION_POINTS_OID
     {
+        // Note that certificate::FRESHEST_CRL_OID == crl::FRESHEST_CRL_OID
         let dps = encode_distribution_points(ext.py(), ext)?;
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
     } else if oid == &*certificate::OCSP_NO_CHECK_OID {
@@ -303,16 +310,7 @@ pub(crate) fn encode_extension(
             result.extend_from_slice(&sct.borrow().sct_data);
         }
         Ok(Some(asn1::write_single(&result.as_slice())))
-    } else {
-        Ok(None)
-    }
-}
-
-pub(crate) fn encode_crl_entry_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*crl::CRL_REASON_OID {
+    } else if oid == &*crl::CRL_REASON_OID {
         let value = ext
             .py()
             .import("cryptography.hazmat.backends.openssl.decode_asn1")?
@@ -328,39 +326,7 @@ pub(crate) fn encode_crl_entry_extension(
         Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
             chrono_dt,
         ))))
-    } else {
-        Ok(None)
-    }
-}
-
-pub(crate) fn encode_ocsp_request_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*ocsp::NONCE_OID {
-        let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
-        Ok(Some(nonce.to_vec()))
-    } else {
-        Ok(None)
-    }
-}
-
-pub(crate) fn encode_ocsp_basic_response_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*ocsp::NONCE_OID {
-        Ok(Some(ext.getattr("nonce")?.extract::<&[u8]>()?.to_vec()))
-    } else {
-        Ok(None)
-    }
-}
-
-pub(crate) fn encode_crl_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*crl::CRL_NUMBER_OID || oid == &*crl::DELTA_CRL_INDICATOR_OID {
+    } else if oid == &*crl::CRL_NUMBER_OID || oid == &*crl::DELTA_CRL_INDICATOR_OID {
         let intval = ext
             .getattr("crl_number")?
             .downcast::<pyo3::types::PyLong>()?;
@@ -404,18 +370,9 @@ pub(crate) fn encode_crl_extension(
             only_some_reasons,
         };
         Ok(Some(asn1::write_single(&idp)))
-    } else if oid == &*crl::FRESHEST_CRL_OID {
-        let dps = encode_distribution_points(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
-    } else if oid == &*crl::AUTHORITY_INFORMATION_ACCESS_OID {
-        let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&ads)))
-    } else if oid == &*crl::ISSUER_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
-    } else if oid == &*crl::AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = encode_authority_key_identifier(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&aki)))
+    } else if oid == &*ocsp::NONCE_OID {
+        let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
+        Ok(Some(nonce.to_vec()))
     } else {
         Ok(None)
     }

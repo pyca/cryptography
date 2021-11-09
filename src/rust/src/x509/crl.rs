@@ -664,7 +664,7 @@ fn create_x509_crl(
             crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 py_revoked_cert.getattr("extensions")?,
-                extensions::encode_crl_entry_extension,
+                extensions::encode_extension,
             )?,
         });
     }
@@ -686,7 +686,7 @@ fn create_x509_crl(
         crl_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            extensions::encode_crl_extension,
+            extensions::encode_extension,
         )?,
     };
 

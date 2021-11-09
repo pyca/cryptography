@@ -624,7 +624,7 @@ fn create_ocsp_basic_response<'p>(
         response_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            extensions::encode_ocsp_basic_response_extension,
+            extensions::encode_extension,
         )?,
     };
 
