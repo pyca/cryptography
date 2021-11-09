@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{certificate, crl, ocsp, py_to_chrono, sct};
+use crate::x509::{certificate, crl, extensions, ocsp, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
@@ -624,7 +624,7 @@ fn create_ocsp_basic_response<'p>(
         response_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            encode_ocsp_basic_response_extension,
+            extensions::encode_ocsp_basic_response_extension,
         )?,
     };
 
@@ -689,17 +689,6 @@ fn create_ocsp_response(
     let data = asn1::write_single(&resp);
     // TODO: extra copy as we round-trip through a slice
     load_der_ocsp_response(py, &data)
-}
-
-fn encode_ocsp_basic_response_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*ocsp::NONCE_OID {
-        Ok(Some(ext.getattr("nonce")?.extract::<&[u8]>()?.to_vec()))
-    } else {
-        Ok(None)
-    }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

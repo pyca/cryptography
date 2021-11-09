@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::ocsp;
+use crate::x509::{extensions, ocsp};
 use std::sync::Arc;
 
 #[ouroboros::self_referencing]
@@ -184,7 +184,7 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
     let extensions = x509::common::encode_extensions(
         py,
         builder.getattr("_extensions")?,
-        encode_ocsp_request_extension,
+        extensions::encode_ocsp_request_extension,
     )?;
     let reqs = [Request {
         req_cert: ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?,
@@ -204,18 +204,6 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
     let data = asn1::write_single(&ocsp_req);
     // TODO: extra copy as we round-trip through a slice
     load_der_ocsp_request(py, &data)
-}
-
-fn encode_ocsp_request_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*ocsp::NONCE_OID {
-        let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
-        Ok(Some(nonce.to_vec()))
-    } else {
-        Ok(None)
-    }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

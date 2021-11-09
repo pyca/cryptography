@@ -10,16 +10,16 @@ use std::convert::TryInto;
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
-    static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
-    static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
-    static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
-    static ref AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.1").unwrap();
-    static ref AUTHORITY_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap();
-    static ref ISSUING_DISTRIBUTION_POINT_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.28").unwrap();
-    static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
-    static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
-    static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
-    static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
+    pub(crate) static ref CRL_NUMBER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.20").unwrap();
+    pub(crate) static ref DELTA_CRL_INDICATOR_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.27").unwrap();
+    pub(crate) static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
+    pub(crate) static ref AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.1").unwrap();
+    pub(crate) static ref AUTHORITY_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap();
+    pub(crate) static ref ISSUING_DISTRIBUTION_POINT_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.28").unwrap();
+    pub(crate) static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
+    pub(crate) static ref CRL_REASON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.21").unwrap();
+    pub(crate) static ref CERTIFICATE_ISSUER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.29").unwrap();
+    pub(crate) static ref INVALIDITY_DATE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.24").unwrap();
 }
 
 #[pyo3::prelude::pyfunction]
@@ -566,28 +566,28 @@ pub(crate) type ReasonFlags<'a> =
     Option<x509::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct IssuingDistributionPoint<'a> {
+pub(crate) struct IssuingDistributionPoint<'a> {
     #[explicit(0)]
-    distribution_point: Option<certificate::DistributionPointName<'a>>,
+    pub distribution_point: Option<certificate::DistributionPointName<'a>>,
 
     #[implicit(1)]
     #[default(false)]
-    only_contains_user_certs: bool,
+    pub only_contains_user_certs: bool,
 
     #[implicit(2)]
     #[default(false)]
-    only_contains_ca_certs: bool,
+    pub only_contains_ca_certs: bool,
 
     #[implicit(3)]
-    only_some_reasons: ReasonFlags<'a>,
+    pub only_some_reasons: ReasonFlags<'a>,
 
     #[implicit(4)]
     #[default(false)]
-    indirect_crl: bool,
+    pub indirect_crl: bool,
 
     #[implicit(5)]
     #[default(false)]
-    only_contains_attribute_certs: bool,
+    pub only_contains_attribute_certs: bool,
 }
 
 pub(crate) type CRLReason = asn1::Enumerated;
@@ -643,96 +643,6 @@ pub fn parse_crl_entry_ext<'p>(
     }
 }
 
-fn encode_crl_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*CRL_NUMBER_OID || oid == &*DELTA_CRL_INDICATOR_OID {
-        let intval = ext
-            .getattr("crl_number")?
-            .downcast::<pyo3::types::PyLong>()?;
-        let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
-        Ok(Some(asn1::write_single(
-            &asn1::BigUint::new(bytes).unwrap(),
-        )))
-    } else if oid == &*ISSUING_DISTRIBUTION_POINT_OID {
-        let only_some_reasons = if ext.getattr("only_some_reasons")?.is_true()? {
-            let py_reasons = ext.getattr("only_some_reasons")?;
-            let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
-            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
-        } else {
-            None
-        };
-        let distribution_point = if ext.getattr("full_name")?.is_true()? {
-            let gns = x509::common::encode_general_names(ext.py(), ext.getattr("full_name")?)?;
-            Some(certificate::DistributionPointName::FullName(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
-            ))
-        } else if ext.getattr("relative_name")?.is_true()? {
-            let mut name_entries = vec![];
-            for py_name_entry in ext.getattr("relative_name")?.iter()? {
-                name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
-            }
-            Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
-            ))
-        } else {
-            None
-        };
-
-        let idp = IssuingDistributionPoint {
-            distribution_point,
-            indirect_crl: ext.getattr("indirect_crl")?.extract()?,
-            only_contains_attribute_certs: ext
-                .getattr("only_contains_attribute_certs")?
-                .extract()?,
-            only_contains_ca_certs: ext.getattr("only_contains_ca_certs")?.extract()?,
-            only_contains_user_certs: ext.getattr("only_contains_user_certs")?.extract()?,
-            only_some_reasons,
-        };
-        Ok(Some(asn1::write_single(&idp)))
-    } else if oid == &*FRESHEST_CRL_OID {
-        let dps = extensions::encode_distribution_points(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
-    } else if oid == &*AUTHORITY_INFORMATION_ACCESS_OID {
-        let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&ads)))
-    } else if oid == &*ISSUER_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
-    } else if oid == &*AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = x509::extensions::encode_authority_key_identifier(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&aki)))
-    } else {
-        Ok(None)
-    }
-}
-
-fn encode_crl_entry_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*CRL_REASON_OID {
-        let value = ext
-            .py()
-            .import("cryptography.hazmat.backends.openssl.decode_asn1")?
-            .getattr("_CRL_ENTRY_REASON_ENUM_TO_CODE")?
-            .get_item(ext.getattr("reason")?)?
-            .extract::<u32>()?;
-        Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))))
-    } else if oid == &*CERTIFICATE_ISSUER_OID {
-        let gns = x509::common::encode_general_names(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
-    } else if oid == &*INVALIDITY_DATE_OID {
-        let chrono_dt = x509::py_to_chrono(ext.getattr("invalidity_date")?)?;
-        Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
-            chrono_dt,
-        ))))
-    } else {
-        Ok(None)
-    }
-}
-
 #[pyo3::prelude::pyfunction]
 fn create_x509_crl(
     py: pyo3::Python<'_>,
@@ -754,7 +664,7 @@ fn create_x509_crl(
             crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 py_revoked_cert.getattr("extensions")?,
-                encode_crl_entry_extension,
+                extensions::encode_crl_entry_extension,
             )?,
         });
     }
@@ -776,7 +686,7 @@ fn create_x509_crl(
         crl_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            encode_crl_extension,
+            extensions::encode_crl_extension,
         )?,
     };
 

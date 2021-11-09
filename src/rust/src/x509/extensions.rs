@@ -4,7 +4,7 @@
 
 use crate::asn1::{py_uint_to_big_endian_bytes, PyAsn1Error};
 use crate::x509;
-use crate::x509::{certificate, sct};
+use crate::x509::{certificate, crl, ocsp, sct};
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
@@ -303,6 +303,119 @@ pub(crate) fn encode_extension(
             result.extend_from_slice(&sct.borrow().sct_data);
         }
         Ok(Some(asn1::write_single(&result.as_slice())))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn encode_crl_entry_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*crl::CRL_REASON_OID {
+        let value = ext
+            .py()
+            .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+            .getattr("_CRL_ENTRY_REASON_ENUM_TO_CODE")?
+            .get_item(ext.getattr("reason")?)?
+            .extract::<u32>()?;
+        Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))))
+    } else if oid == &*crl::CERTIFICATE_ISSUER_OID {
+        let gns = x509::common::encode_general_names(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
+    } else if oid == &*crl::INVALIDITY_DATE_OID {
+        let chrono_dt = x509::py_to_chrono(ext.getattr("invalidity_date")?)?;
+        Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
+            chrono_dt,
+        ))))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn encode_ocsp_request_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*ocsp::NONCE_OID {
+        let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
+        Ok(Some(nonce.to_vec()))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn encode_ocsp_basic_response_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*ocsp::NONCE_OID {
+        Ok(Some(ext.getattr("nonce")?.extract::<&[u8]>()?.to_vec()))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn encode_crl_extension(
+    oid: &asn1::ObjectIdentifier<'_>,
+    ext: &pyo3::PyAny,
+) -> pyo3::PyResult<Option<Vec<u8>>> {
+    if oid == &*crl::CRL_NUMBER_OID || oid == &*crl::DELTA_CRL_INDICATOR_OID {
+        let intval = ext
+            .getattr("crl_number")?
+            .downcast::<pyo3::types::PyLong>()?;
+        let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
+        Ok(Some(asn1::write_single(
+            &asn1::BigUint::new(bytes).unwrap(),
+        )))
+    } else if oid == &*crl::ISSUING_DISTRIBUTION_POINT_OID {
+        let only_some_reasons = if ext.getattr("only_some_reasons")?.is_true()? {
+            let py_reasons = ext.getattr("only_some_reasons")?;
+            let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
+            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
+        } else {
+            None
+        };
+        let distribution_point = if ext.getattr("full_name")?.is_true()? {
+            let gns = x509::common::encode_general_names(ext.py(), ext.getattr("full_name")?)?;
+            Some(certificate::DistributionPointName::FullName(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+            ))
+        } else if ext.getattr("relative_name")?.is_true()? {
+            let mut name_entries = vec![];
+            for py_name_entry in ext.getattr("relative_name")?.iter()? {
+                name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
+            }
+            Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
+                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+            ))
+        } else {
+            None
+        };
+
+        let idp = crl::IssuingDistributionPoint {
+            distribution_point,
+            indirect_crl: ext.getattr("indirect_crl")?.extract()?,
+            only_contains_attribute_certs: ext
+                .getattr("only_contains_attribute_certs")?
+                .extract()?,
+            only_contains_ca_certs: ext.getattr("only_contains_ca_certs")?.extract()?,
+            only_contains_user_certs: ext.getattr("only_contains_user_certs")?.extract()?,
+            only_some_reasons,
+        };
+        Ok(Some(asn1::write_single(&idp)))
+    } else if oid == &*crl::FRESHEST_CRL_OID {
+        let dps = encode_distribution_points(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
+    } else if oid == &*crl::AUTHORITY_INFORMATION_ACCESS_OID {
+        let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&ads)))
+    } else if oid == &*crl::ISSUER_ALTERNATIVE_NAME_OID {
+        let gns = x509::common::encode_general_names(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
+    } else if oid == &*crl::AUTHORITY_KEY_IDENTIFIER_OID {
+        let aki = encode_authority_key_identifier(ext.py(), ext)?;
+        Ok(Some(asn1::write_single(&aki)))
     } else {
         Ok(None)
     }
