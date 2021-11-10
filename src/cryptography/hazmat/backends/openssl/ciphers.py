@@ -198,17 +198,23 @@ class _CipherContext(object):
             if not errors and isinstance(self._mode, modes.GCM):
                 raise InvalidTag
 
+            lib = self._backend._lib
             self._backend.openssl_assert(
                 errors[0]._lib_reason_match(
-                    self._backend._lib.ERR_LIB_EVP,
-                    self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+                    lib.ERR_LIB_EVP,
+                    lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
                 )
                 or (
-                    self._backend._lib.Cryptography_HAS_PROVIDERS
+                    lib.Cryptography_HAS_PROVIDERS
                     and errors[0]._lib_reason_match(
-                        self._backend._lib.ERR_LIB_PROV,
-                        self._backend._lib.PROV_R_WRONG_FINAL_BLOCK_LENGTH,
+                        lib.ERR_LIB_PROV,
+                        lib.PROV_R_WRONG_FINAL_BLOCK_LENGTH,
                     )
+                )
+                or (
+                    lib.CRYPTOGRAPHY_IS_BORINGSSL
+                    and errors[0].reason
+                    == lib.CIPHER_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
                 ),
                 errors=errors,
             )
