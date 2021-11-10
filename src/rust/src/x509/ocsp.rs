@@ -4,35 +4,28 @@
 
 use crate::asn1::PyAsn1Result;
 use crate::x509;
+use crate::x509::oid;
 use std::collections::HashMap;
 
 lazy_static::lazy_static! {
-    static ref SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.14.3.2.26").unwrap();
-    static ref SHA224_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.4").unwrap();
-    static ref SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.1").unwrap();
-    static ref SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.2").unwrap();
-    static ref SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.3").unwrap();
-
     pub(crate) static ref OIDS_TO_HASH: HashMap<&'static asn1::ObjectIdentifier<'static>, &'static str> = {
         let mut h = HashMap::new();
-        h.insert(&*SHA1_OID, "SHA1");
-        h.insert(&*SHA224_OID, "SHA224");
-        h.insert(&*SHA256_OID, "SHA256");
-        h.insert(&*SHA384_OID, "SHA384");
-        h.insert(&*SHA512_OID, "SHA512");
+        h.insert(&*oid::SHA1_OID, "SHA1");
+        h.insert(&*oid::SHA224_OID, "SHA224");
+        h.insert(&*oid::SHA256_OID, "SHA256");
+        h.insert(&*oid::SHA384_OID, "SHA384");
+        h.insert(&*oid::SHA512_OID, "SHA512");
         h
     };
     pub(crate) static ref HASH_NAME_TO_OIDS: HashMap<&'static str, &'static asn1::ObjectIdentifier<'static>> = {
         let mut h = HashMap::new();
-        h.insert("sha1", &*SHA1_OID);
-        h.insert("sha224", &*SHA224_OID);
-        h.insert("sha256", &*SHA256_OID);
-        h.insert("sha384", &*SHA384_OID);
-        h.insert("sha512", &*SHA512_OID);
+        h.insert("sha1", &*oid::SHA1_OID);
+        h.insert("sha224", &*oid::SHA224_OID);
+        h.insert("sha256", &*oid::SHA256_OID);
+        h.insert("sha384", &*oid::SHA384_OID);
+        h.insert("sha512", &*oid::SHA512_OID);
         h
     };
-
-    pub(crate) static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

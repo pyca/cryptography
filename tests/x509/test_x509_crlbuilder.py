@@ -366,7 +366,7 @@ class TestCertificateRevocationListBuilder(object):
             )
             .last_update(last_update)
             .next_update(next_update)
-            .add_extension(x509.OCSPNoCheck(), False)
+            .add_extension(DummyExtension(), False)
         )
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)

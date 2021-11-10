@@ -4,15 +4,10 @@
 
 use crate::asn1::{PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::certificate;
+use crate::x509::{certificate, oid};
 use asn1::SimpleAsn1Readable;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-
-lazy_static::lazy_static! {
-    static ref MS_EXTENSION_REQUEST: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.311.2.1.14").unwrap();
-    static ref EXTENSION_REQUEST: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.9.14").unwrap();
-}
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct RawCsr<'a> {
@@ -57,7 +52,8 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
 impl CertificationRequestInfo<'_> {
     fn get_extension_attribute<'a>(&'a self) -> Result<Option<x509::Extensions<'a>>, PyAsn1Error> {
         for attribute in self.attributes.unwrap_read().clone() {
-            if attribute.type_id == *EXTENSION_REQUEST || attribute.type_id == *MS_EXTENSION_REQUEST
+            if attribute.type_id == *oid::EXTENSION_REQUEST
+                || attribute.type_id == *oid::MS_EXTENSION_REQUEST
             {
                 check_attribute_length(attribute.values.unwrap_read().clone())?;
                 let val = attribute.values.unwrap_read().clone().next().unwrap();
@@ -334,11 +330,11 @@ fn create_x509_csr(
     if let Some(exts) = x509::common::encode_extensions(
         py,
         builder.getattr("_extensions")?,
-        x509::certificate::encode_certificate_extension,
+        x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts);
         attrs.push(Attribute {
-            type_id: (*EXTENSION_REQUEST).clone(),
+            type_id: (*oid::EXTENSION_REQUEST).clone(),
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),

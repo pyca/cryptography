@@ -4,12 +4,10 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{certificate, crl, ocsp, py_to_chrono, sct};
+use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
-    static ref SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.5").unwrap();
-
     static ref BASIC_RESPONSE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.1").unwrap();
 }
 
@@ -348,7 +346,7 @@ impl OCSPResponse {
                 .tbs_response_data
                 .response_extensions,
             |oid, ext_data| {
-                if oid == &*ocsp::NONCE_OID {
+                if oid == &*oid::NONCE_OID {
                     // This is a disaster. RFC 2560 says that the contents of the nonce is
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
@@ -378,7 +376,7 @@ impl OCSPResponse {
             &mut self.cached_single_extensions,
             &single_resp.single_extensions,
             |oid, ext_data| {
-                if oid == &*SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                if oid == &*oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(
@@ -624,7 +622,7 @@ fn create_ocsp_basic_response<'p>(
         response_extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            encode_ocsp_basic_response_extension,
+            extensions::encode_extension,
         )?,
     };
 
@@ -689,17 +687,6 @@ fn create_ocsp_response(
     let data = asn1::write_single(&resp);
     // TODO: extra copy as we round-trip through a slice
     load_der_ocsp_response(py, &data)
-}
-
-fn encode_ocsp_basic_response_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*ocsp::NONCE_OID {
-        Ok(Some(ext.getattr("nonce")?.extract::<&[u8]>()?.to_vec()))
-    } else {
-        Ok(None)
-    }
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

@@ -4,36 +4,12 @@
 
 use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{crl, sct};
+use crate::x509::{crl, extensions, oid, sct};
 use chrono::Datelike;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
-
-lazy_static::lazy_static! {
-    static ref PRECERT_POISON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.3").unwrap();
-    static ref PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.2").unwrap();
-    static ref CP_CPS_URI_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.1").unwrap();
-    static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
-    static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
-    static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
-    static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
-    static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
-    static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
-    static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
-    static ref AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.1").unwrap();
-    static ref SUBJECT_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.11").unwrap();
-    static ref CERTIFICATE_POLICIES_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.32").unwrap();
-    static ref POLICY_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.36").unwrap();
-    static ref OCSP_NO_CHECK_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.5").unwrap();
-    static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
-    static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
-    static ref AUTHORITY_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap();
-    static ref CRL_DISTRIBUTION_POINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.31").unwrap();
-    static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
-    static ref NAME_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.30").unwrap();
-}
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct RawCertificate<'a> {
@@ -304,10 +280,10 @@ impl Certificate {
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_cert.extensions,
             |oid, ext_data| {
-                if oid == &*PRECERT_POISON_OID {
+                if oid == &*oid::PRECERT_POISON_OID {
                     asn1::parse_single::<()>(ext_data)?;
                     Ok(Some(x509_module.getattr("PrecertPoison")?.call0()?))
-                } else if oid == &*PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
@@ -388,33 +364,33 @@ type SequenceOfPolicyQualifiers<'a> = x509::Asn1ReadableOrWritable<
 >;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct PolicyInformation<'a> {
-    policy_identifier: asn1::ObjectIdentifier<'a>,
-    policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
+pub(crate) struct PolicyInformation<'a> {
+    pub policy_identifier: asn1::ObjectIdentifier<'a>,
+    pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct PolicyQualifierInfo<'a> {
-    policy_qualifier_id: asn1::ObjectIdentifier<'a>,
-    qualifier: Qualifier<'a>,
+pub(crate) struct PolicyQualifierInfo<'a> {
+    pub policy_qualifier_id: asn1::ObjectIdentifier<'a>,
+    pub qualifier: Qualifier<'a>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-enum Qualifier<'a> {
+pub(crate) enum Qualifier<'a> {
     CpsUri(asn1::IA5String<'a>),
     UserNotice(UserNotice<'a>),
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct UserNotice<'a> {
-    notice_ref: Option<NoticeReference<'a>>,
-    explicit_text: Option<DisplayText<'a>>,
+pub(crate) struct UserNotice<'a> {
+    pub notice_ref: Option<NoticeReference<'a>>,
+    pub explicit_text: Option<DisplayText<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct NoticeReference<'a> {
-    organization: DisplayText<'a>,
-    notice_numbers: x509::Asn1ReadableOrWritable<
+pub(crate) struct NoticeReference<'a> {
+    pub organization: DisplayText<'a>,
+    pub notice_numbers: x509::Asn1ReadableOrWritable<
         'a,
         asn1::SequenceOf<'a, asn1::BigUint<'a>>,
         asn1::SequenceOfWriter<'a, asn1::BigUint<'a>, Vec<asn1::BigUint<'a>>>,
@@ -424,7 +400,7 @@ struct NoticeReference<'a> {
 // DisplayText also allows BMPString, which we currently do not support.
 #[allow(clippy::enum_variant_names)]
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-enum DisplayText<'a> {
+pub(crate) enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
     VisibleString(asn1::VisibleString<'a>),
@@ -486,7 +462,7 @@ fn parse_policy_qualifiers<'a>(
     for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
             Qualifier::CpsUri(data) => {
-                if pqi.policy_qualifier_id == *CP_CPS_URI_OID {
+                if pqi.policy_qualifier_id == *oid::CP_CPS_URI_OID {
                     pyo3::types::PyString::new(py, data.as_str()).to_object(py)
                 } else {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -495,7 +471,7 @@ fn parse_policy_qualifiers<'a>(
                 }
             }
             Qualifier::UserNotice(un) => {
-                if pqi.policy_qualifier_id != *CP_USER_NOTICE_OID {
+                if pqi.policy_qualifier_id != *oid::CP_USER_NOTICE_OID {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
                         "UserNotice ASN.1 structure found but OID did not match",
                     )));
@@ -534,53 +510,31 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
 }
 
 // Needed due to clippy type complexity warning.
-type SequenceOfSubtrees<'a> = x509::Asn1ReadableOrWritable<
+pub(crate) type SequenceOfSubtrees<'a> = x509::Asn1ReadableOrWritable<
     'a,
     asn1::SequenceOf<'a, GeneralSubtree<'a>>,
     asn1::SequenceOfWriter<'a, GeneralSubtree<'a>, Vec<GeneralSubtree<'a>>>,
 >;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct NameConstraints<'a> {
+pub(crate) struct NameConstraints<'a> {
     #[implicit(0)]
-    permitted_subtrees: Option<SequenceOfSubtrees<'a>>,
+    pub permitted_subtrees: Option<SequenceOfSubtrees<'a>>,
 
     #[implicit(1)]
-    excluded_subtrees: Option<SequenceOfSubtrees<'a>>,
+    pub excluded_subtrees: Option<SequenceOfSubtrees<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct GeneralSubtree<'a> {
-    base: x509::GeneralName<'a>,
+pub(crate) struct GeneralSubtree<'a> {
+    pub base: x509::GeneralName<'a>,
 
     #[implicit(0)]
     #[default(0u64)]
-    minimum: u64,
+    pub minimum: u64,
 
     #[implicit(1)]
-    maximum: Option<u64>,
-}
-
-fn encode_general_subtrees<'a>(
-    py: pyo3::Python<'a>,
-    subtrees: &'a pyo3::PyAny,
-) -> Result<Option<SequenceOfSubtrees<'a>>, PyAsn1Error> {
-    if subtrees.is_none() {
-        Ok(None)
-    } else {
-        let mut subtree_seq = vec![];
-        for name in subtrees.iter()? {
-            let gn = x509::common::encode_general_name(py, name?)?;
-            subtree_seq.push(GeneralSubtree {
-                base: gn,
-                minimum: 0,
-                maximum: None,
-            });
-        }
-        Ok(Some(x509::Asn1ReadableOrWritable::new_write(
-            asn1::SequenceOfWriter::new(subtree_seq),
-        )))
-    }
+    pub maximum: Option<u64>,
 }
 
 fn parse_general_subtrees(
@@ -597,13 +551,13 @@ fn parse_general_subtrees(
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct DistributionPoint<'a> {
     #[explicit(0)]
-    distribution_point: Option<DistributionPointName<'a>>,
+    pub distribution_point: Option<DistributionPointName<'a>>,
 
     #[implicit(1)]
-    reasons: crl::ReasonFlags<'a>,
+    pub reasons: crl::ReasonFlags<'a>,
 
     #[implicit(2)]
-    crl_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
+    pub crl_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -624,43 +578,11 @@ pub(crate) enum DistributionPointName<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct AuthorityKeyIdentifier<'a> {
     #[implicit(0)]
-    key_identifier: Option<&'a [u8]>,
+    pub key_identifier: Option<&'a [u8]>,
     #[implicit(1)]
-    authority_cert_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
+    pub authority_cert_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
     #[implicit(2)]
-    authority_cert_serial_number: Option<asn1::BigUint<'a>>,
-}
-
-pub(crate) fn encode_authority_key_identifier<'a>(
-    py: pyo3::Python<'a>,
-    py_aki: &'a pyo3::PyAny,
-) -> pyo3::PyResult<AuthorityKeyIdentifier<'a>> {
-    let key_identifier = if py_aki.getattr("key_identifier")?.is_none() {
-        None
-    } else {
-        Some(py_aki.getattr("key_identifier")?.extract::<&[u8]>()?)
-    };
-    let authority_cert_issuer = if py_aki.getattr("authority_cert_issuer")?.is_none() {
-        None
-    } else {
-        let gns = x509::common::encode_general_names(py, py_aki.getattr("authority_cert_issuer")?)?;
-        Some(x509::Asn1ReadableOrWritable::new_write(
-            asn1::SequenceOfWriter::new(gns),
-        ))
-    };
-    let authority_cert_serial_number = if py_aki.getattr("authority_cert_serial_number")?.is_none()
-    {
-        None
-    } else {
-        let py_num = py_aki.getattr("authority_cert_serial_number")?.downcast()?;
-        let serial_bytes = py_uint_to_big_endian_bytes(py, py_num)?;
-        Some(asn1::BigUint::new(serial_bytes).unwrap())
-    };
-    Ok(AuthorityKeyIdentifier {
-        key_identifier,
-        authority_cert_issuer,
-        authority_cert_serial_number,
-    })
+    pub authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
 
 pub(crate) fn parse_distribution_point_name(
@@ -712,54 +634,6 @@ pub(crate) fn parse_distribution_points(
     Ok(py_dps.to_object(py))
 }
 
-pub(crate) fn encode_distribution_points<'p>(
-    py: pyo3::Python<'p>,
-    py_dps: &'p pyo3::PyAny,
-) -> pyo3::PyResult<Vec<DistributionPoint<'p>>> {
-    let mut dps = vec![];
-    for py_dp in py_dps.iter()? {
-        let py_dp = py_dp?;
-
-        let crl_issuer = if py_dp.getattr("crl_issuer")?.is_true()? {
-            let gns = x509::common::encode_general_names(py, py_dp.getattr("crl_issuer")?)?;
-            Some(x509::Asn1ReadableOrWritable::new_write(
-                asn1::SequenceOfWriter::new(gns),
-            ))
-        } else {
-            None
-        };
-        let distribution_point = if py_dp.getattr("full_name")?.is_true()? {
-            let gns = x509::common::encode_general_names(py, py_dp.getattr("full_name")?)?;
-            Some(DistributionPointName::FullName(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
-            ))
-        } else if py_dp.getattr("relative_name")?.is_true()? {
-            let mut name_entries = vec![];
-            for py_name_entry in py_dp.getattr("relative_name")?.iter()? {
-                name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
-            }
-            Some(DistributionPointName::NameRelativeToCRLIssuer(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
-            ))
-        } else {
-            None
-        };
-        let reasons = if py_dp.getattr("reasons")?.is_true()? {
-            let py_reasons = py_dp.getattr("reasons")?;
-            let reasons = encode_distribution_point_reasons(py, py_reasons)?;
-            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
-        } else {
-            None
-        };
-        dps.push(DistributionPoint {
-            crl_issuer,
-            distribution_point,
-            reasons,
-        });
-    }
-    Ok(dps)
-}
-
 pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
     reasons: Option<&asn1::BitString<'_>>,
@@ -803,18 +677,18 @@ pub(crate) fn encode_distribution_point_reasons(
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct BasicConstraints {
+pub(crate) struct BasicConstraints {
     #[default(false)]
-    ca: bool,
-    path_length: Option<u64>,
+    pub ca: bool,
+    pub path_length: Option<u64>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct PolicyConstraints {
+pub(crate) struct PolicyConstraints {
     #[implicit(0)]
-    require_explicit_policy: Option<u64>,
+    pub require_explicit_policy: Option<u64>,
     #[implicit(1)]
-    inhibit_policy_mapping: Option<u64>,
+    pub inhibit_policy_mapping: Option<u64>,
 }
 
 pub(crate) fn parse_authority_key_identifier<'p>(
@@ -865,7 +739,7 @@ pub fn parse_cert_ext<'p>(
     ext_data: &[u8],
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
-    if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
+    if oid == *oid::SUBJECT_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
         let sans = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
@@ -873,7 +747,7 @@ pub fn parse_cert_ext<'p>(
                 .getattr("SubjectAlternativeName")?
                 .call1((sans,))?,
         ))
-    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
+    } else if oid == *oid::ISSUER_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
         let ians = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
@@ -881,7 +755,7 @@ pub fn parse_cert_ext<'p>(
                 .getattr("IssuerAlternativeName")?
                 .call1((ians,))?,
         ))
-    } else if oid == *TLS_FEATURE_OID {
+    } else if oid == *oid::TLS_FEATURE_OID {
         let tls_feature_type_to_enum = py
             .import("cryptography.x509.extensions")?
             .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
@@ -892,14 +766,14 @@ pub fn parse_cert_ext<'p>(
             features.append(py_feature)?;
         }
         Ok(Some(x509_module.getattr("TLSFeature")?.call1((features,))?))
-    } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
+    } else if oid == *oid::SUBJECT_KEY_IDENTIFIER_OID {
         let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("SubjectKeyIdentifier")?
                 .call1((identifier,))?,
         ))
-    } else if oid == *EXTENDED_KEY_USAGE_OID {
+    } else if oid == *oid::EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
         for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier<'_>>>(ext_data)?
         {
@@ -909,7 +783,7 @@ pub fn parse_cert_ext<'p>(
         Ok(Some(
             x509_module.getattr("ExtendedKeyUsage")?.call1((ekus,))?,
         ))
-    } else if oid == *KEY_USAGE_OID {
+    } else if oid == *oid::KEY_USAGE_OID {
         let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
         let digital_signature = kus.has_bit_set(0);
         let content_comitment = kus.has_bit_set(1);
@@ -931,58 +805,58 @@ pub fn parse_cert_ext<'p>(
             encipher_only,
             decipher_only,
         ))?))
-    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
+    } else if oid == *oid::AUTHORITY_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("AuthorityInformationAccess")?
                 .call1((ads,))?,
         ))
-    } else if oid == *SUBJECT_INFORMATION_ACCESS_OID {
+    } else if oid == *oid::SUBJECT_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("SubjectInformationAccess")?
                 .call1((ads,))?,
         ))
-    } else if oid == *CERTIFICATE_POLICIES_OID {
+    } else if oid == *oid::CERTIFICATE_POLICIES_OID {
         let cp = parse_cp(py, ext_data)?;
         Ok(Some(
             x509_module.call_method1("CertificatePolicies", (cp,))?,
         ))
-    } else if oid == *POLICY_CONSTRAINTS_OID {
+    } else if oid == *oid::POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
         Ok(Some(x509_module.getattr("PolicyConstraints")?.call1((
             pc.require_explicit_policy,
             pc.inhibit_policy_mapping,
         ))?))
-    } else if oid == *OCSP_NO_CHECK_OID {
+    } else if oid == *oid::OCSP_NO_CHECK_OID {
         asn1::parse_single::<()>(ext_data)?;
         Ok(Some(x509_module.getattr("OCSPNoCheck")?.call0()?))
-    } else if oid == *INHIBIT_ANY_POLICY_OID {
+    } else if oid == *oid::INHIBIT_ANY_POLICY_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(Some(
             x509_module.getattr("InhibitAnyPolicy")?.call1((pynum,))?,
         ))
-    } else if oid == *BASIC_CONSTRAINTS_OID {
+    } else if oid == *oid::BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("BasicConstraints")?
                 .call1((bc.ca, bc.path_length))?,
         ))
-    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+    } else if oid == *oid::AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(Some(parse_authority_key_identifier(py, ext_data)?))
-    } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
+    } else if oid == *oid::CRL_DISTRIBUTION_POINTS_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(Some(
             x509_module.getattr("CRLDistributionPoints")?.call1((dp,))?,
         ))
-    } else if oid == *FRESHEST_CRL_OID {
+    } else if oid == *oid::FRESHEST_CRL_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(Some(x509_module.getattr("FreshestCRL")?.call1((dp,))?))
-    } else if oid == *NAME_CONSTRAINTS_OID {
+    } else if oid == *oid::NAME_CONSTRAINTS_OID {
         let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
         let permitted_subtrees = match nc.permitted_subtrees {
             Some(data) => parse_general_subtrees(py, data)?,
@@ -1048,7 +922,7 @@ fn create_x509_certificate(
         extensions: x509::common::encode_extensions(
             py,
             builder.getattr("_extensions")?,
-            encode_certificate_extension,
+            extensions::encode_extension,
         )?,
     };
 
@@ -1063,201 +937,11 @@ fn create_x509_certificate(
     load_der_x509_certificate(py, &data)
 }
 
-fn set_bit(vals: &mut [u8], n: usize, set: bool) {
+pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     let idx = n / 8;
     let v = 1 << (7 - (n & 0x07));
     if set {
         vals[idx] |= v;
-    }
-}
-
-pub(crate) fn encode_certificate_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
-    ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
-    if oid == &*BASIC_CONSTRAINTS_OID {
-        let bc = BasicConstraints {
-            ca: ext.getattr("ca")?.extract::<bool>()?,
-            path_length: ext.getattr("path_length")?.extract::<Option<u64>>()?,
-        };
-        Ok(Some(asn1::write_single(&bc)))
-    } else if oid == &*SUBJECT_KEY_IDENTIFIER_OID {
-        Ok(Some(asn1::write_single(
-            &ext.getattr("digest")?.extract::<&[u8]>()?,
-        )))
-    } else if oid == &*KEY_USAGE_OID {
-        let mut bs = [0, 0];
-        set_bit(&mut bs, 0, ext.getattr("digital_signature")?.is_true()?);
-        set_bit(&mut bs, 1, ext.getattr("content_commitment")?.is_true()?);
-        set_bit(&mut bs, 2, ext.getattr("key_encipherment")?.is_true()?);
-        set_bit(&mut bs, 3, ext.getattr("data_encipherment")?.is_true()?);
-        set_bit(&mut bs, 4, ext.getattr("key_agreement")?.is_true()?);
-        set_bit(&mut bs, 5, ext.getattr("key_cert_sign")?.is_true()?);
-        set_bit(&mut bs, 6, ext.getattr("crl_sign")?.is_true()?);
-        if ext.getattr("key_agreement")?.is_true()? {
-            set_bit(&mut bs, 7, ext.getattr("encipher_only")?.is_true()?);
-            set_bit(&mut bs, 8, ext.getattr("decipher_only")?.is_true()?);
-        }
-        let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
-        Ok(Some(asn1::write_single(&asn1::BitString::new(bits, 0))))
-    } else if oid == &*AUTHORITY_INFORMATION_ACCESS_OID || oid == &*SUBJECT_INFORMATION_ACCESS_OID {
-        let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&ads)))
-    } else if oid == &*EXTENDED_KEY_USAGE_OID {
-        let mut oids = vec![];
-        for el in ext.iter()? {
-            let oid = asn1::ObjectIdentifier::from_string(
-                el?.getattr("dotted_string")?.extract::<&str>()?,
-            )
-            .unwrap();
-            oids.push(oid);
-        }
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(oids))))
-    } else if oid == &*CERTIFICATE_POLICIES_OID {
-        let mut policy_informations = vec![];
-        for py_policy_info in ext.iter()? {
-            let py_policy_info = py_policy_info?;
-            let py_policy_qualifiers = py_policy_info.getattr("policy_qualifiers")?;
-            let qualifiers = if py_policy_qualifiers.is_true()? {
-                let mut qualifiers = vec![];
-                for py_qualifier in py_policy_qualifiers.iter()? {
-                    let py_qualifier = py_qualifier?;
-                    let qualifier = if py_qualifier.is_instance::<pyo3::types::PyString>()? {
-                        let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
-                            Some(s) => s,
-                            None => {
-                                return Err(pyo3::exceptions::PyValueError::new_err(
-                                    "Qualifier must be an ASCII-string.",
-                                ))
-                            }
-                        };
-                        PolicyQualifierInfo {
-                            policy_qualifier_id: (*CP_CPS_URI_OID).clone(),
-                            qualifier: Qualifier::CpsUri(cps_uri),
-                        }
-                    } else {
-                        let py_notice = py_qualifier.getattr("notice_reference")?;
-                        let notice_ref = if py_notice.is_true()? {
-                            let mut notice_numbers = vec![];
-                            for py_num in py_notice.getattr("notice_numbers")?.iter()? {
-                                let bytes =
-                                    py_uint_to_big_endian_bytes(ext.py(), py_num?.downcast()?)?;
-                                notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
-                            }
-
-                            Some(NoticeReference {
-                                organization: DisplayText::Utf8String(asn1::Utf8String::new(
-                                    py_notice.getattr("organization")?.extract()?,
-                                )),
-                                notice_numbers: x509::Asn1ReadableOrWritable::new_write(
-                                    asn1::SequenceOfWriter::new(notice_numbers),
-                                ),
-                            })
-                        } else {
-                            None
-                        };
-                        let py_explicit_text = py_qualifier.getattr("explicit_text")?;
-                        let explicit_text = if py_explicit_text.is_true()? {
-                            Some(DisplayText::Utf8String(asn1::Utf8String::new(
-                                py_explicit_text.extract()?,
-                            )))
-                        } else {
-                            None
-                        };
-
-                        PolicyQualifierInfo {
-                            policy_qualifier_id: (*CP_USER_NOTICE_OID).clone(),
-                            qualifier: Qualifier::UserNotice(UserNotice {
-                                notice_ref,
-                                explicit_text,
-                            }),
-                        }
-                    };
-                    qualifiers.push(qualifier);
-                }
-                Some(x509::Asn1ReadableOrWritable::new_write(
-                    asn1::SequenceOfWriter::new(qualifiers),
-                ))
-            } else {
-                None
-            };
-            policy_informations.push(PolicyInformation {
-                policy_identifier: asn1::ObjectIdentifier::from_string(
-                    py_policy_info
-                        .getattr("policy_identifier")?
-                        .getattr("dotted_string")?
-                        .extract()?,
-                )
-                .unwrap(),
-                policy_qualifiers: qualifiers,
-            });
-        }
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
-            policy_informations,
-        ))))
-    } else if oid == &*POLICY_CONSTRAINTS_OID {
-        let pc = PolicyConstraints {
-            require_explicit_policy: ext.getattr("require_explicit_policy")?.extract()?,
-            inhibit_policy_mapping: ext.getattr("inhibit_policy_mapping")?.extract()?,
-        };
-        Ok(Some(asn1::write_single(&pc)))
-    } else if oid == &*NAME_CONSTRAINTS_OID {
-        let permitted = ext.getattr("permitted_subtrees")?;
-        let excluded = ext.getattr("excluded_subtrees")?;
-        let nc = NameConstraints {
-            permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
-            excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
-        };
-        Ok(Some(asn1::write_single(&nc)))
-    } else if oid == &*INHIBIT_ANY_POLICY_OID {
-        let intval = ext
-            .getattr("skip_certs")?
-            .downcast::<pyo3::types::PyLong>()?;
-        let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
-        Ok(Some(asn1::write_single(
-            &asn1::BigUint::new(bytes).unwrap(),
-        )))
-    } else if oid == &*ISSUER_ALTERNATIVE_NAME_OID || oid == &*SUBJECT_ALTERNATIVE_NAME_OID {
-        let gns = x509::common::encode_general_names(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
-    } else if oid == &*AUTHORITY_KEY_IDENTIFIER_OID {
-        let aki = encode_authority_key_identifier(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&aki)))
-    } else if oid == &*FRESHEST_CRL_OID || oid == &*CRL_DISTRIBUTION_POINTS_OID {
-        let dps = encode_distribution_points(ext.py(), ext)?;
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
-    } else if oid == &*OCSP_NO_CHECK_OID {
-        Ok(Some(asn1::write_single(&())))
-    } else if oid == &*TLS_FEATURE_OID {
-        // Ideally we'd skip building up a vec and just write directly into the
-        // writer. This isn't possible at the moment because the callback to write
-        // an asn1::Sequence can't return an error, and we need to handle errors
-        // from Python.
-        let mut els = vec![];
-        for el in ext.iter()? {
-            els.push(el?.getattr("value")?.extract::<u64>()?);
-        }
-
-        Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))))
-    } else if oid == &*PRECERT_POISON_OID {
-        Ok(Some(asn1::write_single(&())))
-    } else if oid == &*PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
-        let mut length = 0;
-        for sct in ext.iter()? {
-            let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-            length += sct.borrow().sct_data.len() + 2;
-        }
-
-        let mut result = vec![];
-        result.extend_from_slice(&(length as u16).to_be_bytes());
-        for sct in ext.iter()? {
-            let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-            result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
-            result.extend_from_slice(&sct.borrow().sct_data);
-        }
-        Ok(Some(asn1::write_single(&result.as_slice())))
-    } else {
-        Ok(None)
     }
 }
 
