@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{certificate, crl, extensions, ocsp, py_to_chrono, sct};
+use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
@@ -346,7 +346,7 @@ impl OCSPResponse {
                 .tbs_response_data
                 .response_extensions,
             |oid, ext_data| {
-                if oid == &*extensions::NONCE_OID {
+                if oid == &*oid::NONCE_OID {
                     // This is a disaster. RFC 2560 says that the contents of the nonce is
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
@@ -376,7 +376,7 @@ impl OCSPResponse {
             &mut self.cached_single_extensions,
             &single_resp.single_extensions,
             |oid, ext_data| {
-                if oid == &*extensions::SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                if oid == &*oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(

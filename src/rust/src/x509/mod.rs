@@ -10,6 +10,7 @@ pub(crate) mod extensions;
 mod ocsp;
 pub(crate) mod ocsp_req;
 pub(crate) mod ocsp_resp;
+mod oid;
 pub(crate) mod sct;
 pub(crate) mod sign;
 

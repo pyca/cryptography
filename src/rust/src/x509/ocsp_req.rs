@@ -4,7 +4,7 @@
 
 use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{extensions, ocsp};
+use crate::x509::{extensions, ocsp, oid};
 use std::sync::Arc;
 
 #[ouroboros::self_referencing]
@@ -106,7 +106,7 @@ impl OCSPRequest {
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_request.request_extensions,
             |oid, value| {
-                if oid == &*extensions::NONCE_OID {
+                if oid == &*oid::NONCE_OID {
                     // This is a disaster. RFC 2560 says that the contents of the nonce is
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
