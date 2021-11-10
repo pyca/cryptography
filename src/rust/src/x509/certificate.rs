@@ -12,27 +12,8 @@ use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
-    pub(crate) static ref PRECERT_POISON_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.3").unwrap();
-    pub(crate) static ref PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.2").unwrap();
     pub(crate) static ref CP_CPS_URI_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.1").unwrap();
     pub(crate) static ref CP_USER_NOTICE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.2.2").unwrap();
-    pub(crate) static ref SUBJECT_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap();
-    pub(crate) static ref ISSUER_ALTERNATIVE_NAME_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.18").unwrap();
-    pub(crate) static ref TLS_FEATURE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.24").unwrap();
-    pub(crate) static ref EXTENDED_KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.37").unwrap();
-    pub(crate) static ref SUBJECT_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap();
-    pub(crate) static ref KEY_USAGE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.15").unwrap();
-    pub(crate) static ref AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.1").unwrap();
-    pub(crate) static ref SUBJECT_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.1.11").unwrap();
-    pub(crate) static ref CERTIFICATE_POLICIES_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.32").unwrap();
-    pub(crate) static ref POLICY_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.36").unwrap();
-    pub(crate) static ref OCSP_NO_CHECK_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.5").unwrap();
-    pub(crate) static ref INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.54").unwrap();
-    pub(crate) static ref BASIC_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.19").unwrap();
-    pub(crate) static ref AUTHORITY_KEY_IDENTIFIER_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap();
-    pub(crate) static ref CRL_DISTRIBUTION_POINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.31").unwrap();
-    pub(crate) static ref FRESHEST_CRL_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.46").unwrap();
-    pub(crate) static ref NAME_CONSTRAINTS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.5.29.30").unwrap();
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
@@ -304,10 +285,10 @@ impl Certificate {
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_cert.extensions,
             |oid, ext_data| {
-                if oid == &*PRECERT_POISON_OID {
+                if oid == &*extensions::PRECERT_POISON_OID {
                     asn1::parse_single::<()>(ext_data)?;
                     Ok(Some(x509_module.getattr("PrecertPoison")?.call0()?))
-                } else if oid == &*PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                } else if oid == &*extensions::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
@@ -763,7 +744,7 @@ pub fn parse_cert_ext<'p>(
     ext_data: &[u8],
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
-    if oid == *SUBJECT_ALTERNATIVE_NAME_OID {
+    if oid == *extensions::SUBJECT_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
         let sans = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
@@ -771,7 +752,7 @@ pub fn parse_cert_ext<'p>(
                 .getattr("SubjectAlternativeName")?
                 .call1((sans,))?,
         ))
-    } else if oid == *ISSUER_ALTERNATIVE_NAME_OID {
+    } else if oid == *extensions::ISSUER_ALTERNATIVE_NAME_OID {
         let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
         let ians = x509::parse_general_names(py, &gn_seq)?;
         Ok(Some(
@@ -779,7 +760,7 @@ pub fn parse_cert_ext<'p>(
                 .getattr("IssuerAlternativeName")?
                 .call1((ians,))?,
         ))
-    } else if oid == *TLS_FEATURE_OID {
+    } else if oid == *extensions::TLS_FEATURE_OID {
         let tls_feature_type_to_enum = py
             .import("cryptography.x509.extensions")?
             .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
@@ -790,14 +771,14 @@ pub fn parse_cert_ext<'p>(
             features.append(py_feature)?;
         }
         Ok(Some(x509_module.getattr("TLSFeature")?.call1((features,))?))
-    } else if oid == *SUBJECT_KEY_IDENTIFIER_OID {
+    } else if oid == *extensions::SUBJECT_KEY_IDENTIFIER_OID {
         let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("SubjectKeyIdentifier")?
                 .call1((identifier,))?,
         ))
-    } else if oid == *EXTENDED_KEY_USAGE_OID {
+    } else if oid == *extensions::EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
         for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier<'_>>>(ext_data)?
         {
@@ -807,7 +788,7 @@ pub fn parse_cert_ext<'p>(
         Ok(Some(
             x509_module.getattr("ExtendedKeyUsage")?.call1((ekus,))?,
         ))
-    } else if oid == *KEY_USAGE_OID {
+    } else if oid == *extensions::KEY_USAGE_OID {
         let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
         let digital_signature = kus.has_bit_set(0);
         let content_comitment = kus.has_bit_set(1);
@@ -829,58 +810,58 @@ pub fn parse_cert_ext<'p>(
             encipher_only,
             decipher_only,
         ))?))
-    } else if oid == *AUTHORITY_INFORMATION_ACCESS_OID {
+    } else if oid == *extensions::AUTHORITY_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("AuthorityInformationAccess")?
                 .call1((ads,))?,
         ))
-    } else if oid == *SUBJECT_INFORMATION_ACCESS_OID {
+    } else if oid == *extensions::SUBJECT_INFORMATION_ACCESS_OID {
         let ads = parse_access_descriptions(py, ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("SubjectInformationAccess")?
                 .call1((ads,))?,
         ))
-    } else if oid == *CERTIFICATE_POLICIES_OID {
+    } else if oid == *extensions::CERTIFICATE_POLICIES_OID {
         let cp = parse_cp(py, ext_data)?;
         Ok(Some(
             x509_module.call_method1("CertificatePolicies", (cp,))?,
         ))
-    } else if oid == *POLICY_CONSTRAINTS_OID {
+    } else if oid == *extensions::POLICY_CONSTRAINTS_OID {
         let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
         Ok(Some(x509_module.getattr("PolicyConstraints")?.call1((
             pc.require_explicit_policy,
             pc.inhibit_policy_mapping,
         ))?))
-    } else if oid == *OCSP_NO_CHECK_OID {
+    } else if oid == *extensions::OCSP_NO_CHECK_OID {
         asn1::parse_single::<()>(ext_data)?;
         Ok(Some(x509_module.getattr("OCSPNoCheck")?.call0()?))
-    } else if oid == *INHIBIT_ANY_POLICY_OID {
+    } else if oid == *extensions::INHIBIT_ANY_POLICY_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
         let pynum = big_asn1_uint_to_py(py, bignum)?;
         Ok(Some(
             x509_module.getattr("InhibitAnyPolicy")?.call1((pynum,))?,
         ))
-    } else if oid == *BASIC_CONSTRAINTS_OID {
+    } else if oid == *extensions::BASIC_CONSTRAINTS_OID {
         let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
         Ok(Some(
             x509_module
                 .getattr("BasicConstraints")?
                 .call1((bc.ca, bc.path_length))?,
         ))
-    } else if oid == *AUTHORITY_KEY_IDENTIFIER_OID {
+    } else if oid == *extensions::AUTHORITY_KEY_IDENTIFIER_OID {
         Ok(Some(parse_authority_key_identifier(py, ext_data)?))
-    } else if oid == *CRL_DISTRIBUTION_POINTS_OID {
+    } else if oid == *extensions::CRL_DISTRIBUTION_POINTS_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(Some(
             x509_module.getattr("CRLDistributionPoints")?.call1((dp,))?,
         ))
-    } else if oid == *FRESHEST_CRL_OID {
+    } else if oid == *extensions::FRESHEST_CRL_OID {
         let dp = parse_distribution_points(py, ext_data)?;
         Ok(Some(x509_module.getattr("FreshestCRL")?.call1((dp,))?))
-    } else if oid == *NAME_CONSTRAINTS_OID {
+    } else if oid == *extensions::NAME_CONSTRAINTS_OID {
         let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
         let permitted_subtrees = match nc.permitted_subtrees {
             Some(data) => parse_general_subtrees(py, data)?,

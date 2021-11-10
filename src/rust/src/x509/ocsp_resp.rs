@@ -8,8 +8,6 @@ use crate::x509::{certificate, crl, extensions, ocsp, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
-    static ref SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.4.1.11129.2.4.5").unwrap();
-
     static ref BASIC_RESPONSE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.1").unwrap();
 }
 
@@ -348,7 +346,7 @@ impl OCSPResponse {
                 .tbs_response_data
                 .response_extensions,
             |oid, ext_data| {
-                if oid == &*ocsp::NONCE_OID {
+                if oid == &*extensions::NONCE_OID {
                     // This is a disaster. RFC 2560 says that the contents of the nonce is
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
@@ -378,7 +376,7 @@ impl OCSPResponse {
             &mut self.cached_single_extensions,
             &single_resp.single_extensions,
             |oid, ext_data| {
-                if oid == &*SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                if oid == &*extensions::SIGNED_CERTIFICATE_TIMESTAMPS_OID {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(

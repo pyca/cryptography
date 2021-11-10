@@ -31,8 +31,6 @@ lazy_static::lazy_static! {
         h.insert("sha512", &*SHA512_OID);
         h
     };
-
-    pub(crate) static ref NONCE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.2").unwrap();
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
