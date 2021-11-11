@@ -1825,7 +1825,10 @@ class Backend(BackendInterface):
     def x448_supported(self):
         if self._fips_enabled:
             return False
-        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+        return (
+            not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        )
 
     def ed25519_supported(self):
         if self._fips_enabled:
@@ -1867,7 +1870,10 @@ class Backend(BackendInterface):
     def ed448_supported(self):
         if self._fips_enabled:
             return False
-        return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+        return (
+            not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        )
 
     def ed448_load_public_bytes(self, data):
         utils._check_bytes("data", data)
