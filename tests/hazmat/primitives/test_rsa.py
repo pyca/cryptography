@@ -176,7 +176,7 @@ class TestRSA(object):
         ("public_exponent", "key_size"),
         itertools.product(
             (3, 65537),
-            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048),
+            (1024, 1536, 2048),
         ),
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):

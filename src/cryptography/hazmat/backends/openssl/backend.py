@@ -1187,7 +1187,9 @@ class Backend(BackendInterface):
             self._int_to_bn(numbers.private_value), self._lib.BN_clear_free
         )
         res = self._lib.EC_KEY_set_private_key(ec_cdata, private_value)
-        self.openssl_assert(res == 1)
+        if res != 1:
+            self._consume_errors()
+            raise ValueError("Invalid EC key.")
 
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, public.x, public.y
@@ -2043,7 +2045,10 @@ class Backend(BackendInterface):
             # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
             # certificates.
             indices: typing.Iterable[int]
-            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            if (
+                self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+                or self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            ):
                 indices = range(num)
             else:
                 indices = reversed(range(num))
