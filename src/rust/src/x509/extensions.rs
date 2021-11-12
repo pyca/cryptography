@@ -136,7 +136,11 @@ pub(crate) fn encode_extension(
             certificate::set_bit(&mut bs, 8, ext.getattr("decipher_only")?.is_true()?);
         }
         let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
-        Ok(Some(asn1::write_single(&asn1::BitString::new(bits, 0))))
+        let unused_bits = bits.last().unwrap().trailing_zeros() as u8;
+        Ok(Some(asn1::write_single(&asn1::BitString::new(
+            bits,
+            unused_bits,
+        ))))
     } else if oid == &*oid::AUTHORITY_INFORMATION_ACCESS_OID
         || oid == &*oid::SUBJECT_INFORMATION_ACCESS_OID
     {
