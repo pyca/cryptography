@@ -68,7 +68,7 @@ class TestOpenSSL(object):
         to be true for every OpenSSL-alike.
         """
         assert backend.openssl_version_text().startswith(
-            ("OpenSSL", "LibreSSL")
+            ("OpenSSL", "LibreSSL", "BoringSSL")
         )
 
     def test_openssl_version_number(self):
@@ -546,6 +546,10 @@ class TestRSAPEMSerialization(object):
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
+)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="Requires DH support",
 )
 class TestOpenSSLDHSerialization(object):
     @pytest.mark.parametrize(
