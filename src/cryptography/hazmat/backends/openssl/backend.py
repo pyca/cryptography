@@ -1567,6 +1567,9 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
+    def dh_supported(self):
+        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+
     def generate_dh_parameters(self, generator, key_size):
         if key_size < dh._MIN_MODULUS_SIZE:
             raise ValueError(
