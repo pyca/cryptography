@@ -4603,7 +4603,10 @@ class TestECDSACertificate(object):
             x509.load_pem_x509_certificate,
             backend,
         )
-        with pytest.raises(NotImplementedError):
+        # This test can trigger three different value errors depending
+        # on OpenSSL/BoringSSL and versions. Match on the text to ensure
+        # we are getting the right error.
+        with pytest.raises(ValueError, match="explicit parameters"):
             cert.public_key()
 
 
@@ -5194,6 +5197,10 @@ class TestEd448Certificate(object):
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestSignatureRejection(object):
     """Test if signing rejects DH keys properly."""
 

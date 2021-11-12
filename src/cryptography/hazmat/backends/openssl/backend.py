@@ -1128,8 +1128,9 @@ class Backend(BackendInterface):
             errors = binding._errors_with_text(errors)
             raise ValueError(
                 "Could not deserialize key data. The data may be in an "
-                "incorrect format or it may be encrypted with an unsupported "
-                "algorithm.",
+                "incorrect format, it may be encrypted with an unsupported "
+                "algorithm, or it may be an unsupported key type (e.g. EC "
+                "curves with explicit parameters).",
                 errors,
             )
 
