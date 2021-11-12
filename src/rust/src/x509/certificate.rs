@@ -673,7 +673,8 @@ pub(crate) fn encode_distribution_point_reasons(
     if bits[1] == 0 {
         bits.truncate(1);
     }
-    Ok(asn1::OwnedBitString::new(bits, 0).unwrap())
+    let unused_bits = bits.last().unwrap().trailing_zeros() as u8;
+    Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
