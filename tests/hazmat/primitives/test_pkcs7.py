@@ -10,6 +10,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import _Reasons
+from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives.serialization import pkcs7
@@ -17,6 +18,10 @@ from cryptography.hazmat.primitives.serialization import pkcs7
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
+@pytest.mark.supported(
+    only_if=backend.pkcs7_supported(),
+    skip_message="Requires OpenSSL with PKCS7 support",
+)
 class TestPKCS7Loading(object):
     def test_load_invalid_der_pkcs7(self):
         with pytest.raises(ValueError):
@@ -147,6 +152,10 @@ def _load_cert_key():
     return cert, key
 
 
+@pytest.mark.supported(
+    only_if=backend.pkcs7_supported(),
+    skip_message="Requires OpenSSL with PKCS7 support",
+)
 class TestPKCS7Builder(object):
     def test_invalid_data(self):
         builder = pkcs7.PKCS7SignatureBuilder()

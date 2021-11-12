@@ -2152,6 +2152,9 @@ class Backend(BackendInterface):
 
         return _Poly1305Context(self, key)
 
+    def pkcs7_supported(self):
+        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+
     def load_pem_pkcs7_certificates(self, data):
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
