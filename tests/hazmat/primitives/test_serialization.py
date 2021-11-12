@@ -1745,6 +1745,10 @@ class TestEd448Serialization(object):
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestDHSerialization(object):
     """Test all options with least-supported key type."""
 
