@@ -1078,19 +1078,69 @@ class TestKeyUsage(object):
         assert hash(ku) == hash(ku2)
         assert hash(ku) != hash(ku3)
 
-    def test_public_bytes(self):
-        ext = x509.KeyUsage(
-            digital_signature=False,
-            content_commitment=True,
-            key_encipherment=False,
-            data_encipherment=False,
-            key_agreement=False,
-            key_cert_sign=False,
-            crl_sign=False,
-            encipher_only=False,
-            decipher_only=False,
-        )
-        assert ext.public_bytes() == b"\x03\x02\x00@"
+    @pytest.mark.parametrize(
+        ("ext", "serialized"),
+        [
+            (
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=True,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                b"\x03\x02\x06@",
+            ),
+            (
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=True,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=True,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=True,
+                ),
+                b"\x03\x03\x07H\x80",
+            ),
+            (
+                x509.KeyUsage(
+                    digital_signature=True,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=True,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=True,
+                    decipher_only=False,
+                ),
+                b"\x03\x02\x00\x89",
+            ),
+            (
+                x509.KeyUsage(
+                    digital_signature=True,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=True,
+                    key_agreement=False,
+                    key_cert_sign=True,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                b"\x03\x02\x02\x94",
+            ),
+        ],
+    )
+    def test_public_bytes(self, ext, serialized):
+        assert ext.public_bytes() == serialized
 
 
 class TestSubjectKeyIdentifier(object):
