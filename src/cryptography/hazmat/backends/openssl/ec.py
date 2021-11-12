@@ -41,8 +41,8 @@ def _ec_key_curve_sn(backend, ec_key):
     # The following check is to find EC keys with unnamed curves and raise
     # an error for now.
     if nid == backend._lib.NID_undef:
-        raise NotImplementedError(
-            "ECDSA keys with unnamed curves are unsupported at this time"
+        raise ValueError(
+            "ECDSA keys with explicit parameters are unsupported at this time"
         )
 
     # This is like the above check, but it also catches the case where you
@@ -52,8 +52,8 @@ def _ec_key_curve_sn(backend, ec_key):
         not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
         and backend._lib.EC_GROUP_get_asn1_flag(group) == 0
     ):
-        raise NotImplementedError(
-            "ECDSA keys with unnamed curves are unsupported at this time"
+        raise ValueError(
+            "ECDSA keys with explicit parameters are unsupported at this time"
         )
 
     curve_name = backend._lib.OBJ_nid2sn(nid)
