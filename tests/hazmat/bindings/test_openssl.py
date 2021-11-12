@@ -29,7 +29,9 @@ class TestOpenSSL(object):
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
-        assert b.lib.SSL_OP_ALL > 0
+        # SSL_OP_ALL is 0 on BoringSSL
+        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
@@ -42,7 +44,9 @@ class TestOpenSSL(object):
     def test_ssl_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
-        assert b.lib.SSL_OP_ALL > 0
+        # SSL_OP_ALL is 0 on BoringSSL
+        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
@@ -57,7 +61,9 @@ class TestOpenSSL(object):
     def test_ssl_mode(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
-        assert b.lib.SSL_OP_ALL > 0
+        # SSL_OP_ALL is 0 on BoringSSL
+        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
@@ -91,12 +97,17 @@ class TestOpenSSL(object):
             _openssl_assert(b.lib, False)
 
         error = exc_info.value.err_code[0]
-        # As of 3.0.0 OpenSSL no longer sets func codes (which we now also
-        # ignore), so the combined code is a different value
-        assert error.code in (101183626, 50331786)
-        assert error.lib == b.lib.ERR_LIB_EVP
-        assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-        assert b"data not multiple of block length" in error.reason_text
+        # BoringSSL has completely different error codes, so we just skip
+        # these assertinos.
+        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            # As of 3.0.0 OpenSSL no longer sets func codes (which we now also
+            # ignore), so the combined code is a different value.
+            assert error.code in (101183626, 50331786)
+            assert error.lib == b.lib.ERR_LIB_EVP
+            assert (
+                error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+            )
+            assert b"data not multiple of block length" in error.reason_text
 
     def test_check_startup_errors_are_allowed(self):
         b = Binding()
