@@ -1593,6 +1593,14 @@ X.509 Extensions
 
         Returns the OID associated with the given extension type.
 
+    .. method:: public_bytes()
+
+        .. versionadded:: 36.0
+
+        :return bytes:
+
+            A bytes string representing the extension's DER encoded value.
+
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
 
     .. versionadded:: 0.9
