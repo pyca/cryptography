@@ -42,7 +42,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.1"}}
           - {VERSION: "3.10", TOXENV: "py310"}
           # Latest commit on the main-with-bazel branch, as of November 8, 2021
-          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--ignore=tests/hazmat/bindings/test_openssl.py --ignore=tests/hazmat/primitives/test_pkcs7.py", OPENSSL: {TYPE: "boringssl", VERSION: "4fb158925f7753d80fb858cb0239dff893ef9f15"}}
+          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--ignore=tests/hazmat/bindings/test_openssl.py", OPENSSL: {TYPE: "boringssl", VERSION: "4fb158925f7753d80fb858cb0239dff893ef9f15"}}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
