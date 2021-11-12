@@ -10,6 +10,7 @@ bcrypt
 Bleichenbacher
 Blowfish
 boolean
+BoringSSL
 Botan
 Brainpool
 Bullseye

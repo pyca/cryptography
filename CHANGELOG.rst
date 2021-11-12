@@ -44,6 +44,10 @@ Changelog
   not support signing.
 * Extension values can now be serialized to a DER byte string by calling
   :func:`~cryptography.x509.ExtensionType.public_bytes`.
+* Added experimental support for compiling against BoringSSL. As BoringSSL
+  does not commit to a stable API, ``cryptography`` tests against the
+  latest commit only. Please note that several features are not available
+  when building against BoringSSL.
 
 .. _v35-0-0:
 
