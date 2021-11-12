@@ -4403,7 +4403,7 @@ class TestFreshestCRL(object):
         )
         assert (
             ext.public_bytes()
-            == b"0\x180\x16\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x00@"
+            == b"0\x180\x16\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x06@"
         )
 
 
@@ -4681,7 +4681,7 @@ class TestCRLDistributionPoints(object):
         )
         assert (
             ext.public_bytes()
-            == b"0'0%\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x00`\xa2\r"
+            == b"0'0%\xa0\x10\xa0\x0e\x86\x0cftp://domain\x81\x02\x05`\xa2\r"
             b"\x86\x0buri://thing"
         )
 
@@ -5053,6 +5053,7 @@ class TestFreshestCRLExtension(object):
                         [
                             x509.ReasonFlags.ca_compromise,
                             x509.ReasonFlags.key_compromise,
+                            x509.ReasonFlags.aa_compromise,
                         ]
                     ),
                     crl_issuer=[
@@ -5074,10 +5075,10 @@ class TestFreshestCRLExtension(object):
         )
         assert (
             ext.public_bytes()
-            == b"0v0t\xa0A\xa0?\x86\x1ahttp://myhost.com/myca.crl\x86!http://"
-            b"backup.myhost.com/myca.crl\x81\x02\x00`\xa2+\xa4)0'1\x0b0\t\x06"
-            b"\x03U\x04\x06\x13\x02US1\x180\x16\x06\x03U\x04\x03\x0c\x0fcrypt"
-            b"ography CA"
+            == b"0w0u\xa0A\xa0?\x86\x1ahttp://myhost.com/myca.crl\x86!http://"
+            b"backup.myhost.com/myca.crl\x81\x03\x07`\x80\xa2+\xa4)0'1\x0b0\t"
+            b"\x06\x03U\x04\x06\x13\x02US1\x180\x16\x06\x03U\x04\x03\x0c\x0fc"
+            b"ryptography CA"
         )
 
 
