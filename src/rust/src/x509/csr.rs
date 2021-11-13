@@ -49,15 +49,26 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
     }
 }
 
+// CsrExtension has same layout as Extension, but doesn't use `#[default]` for
+// `critical` so we can avoid erroring on explicitly-encoded defaults.
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+pub(crate) struct CsrExtension<'a> {
+    pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) critical: Option<bool>,
+    pub(crate) extn_value: &'a [u8],
+}
+
 impl CertificationRequestInfo<'_> {
-    fn get_extension_attribute<'a>(&'a self) -> Result<Option<x509::Extensions<'a>>, PyAsn1Error> {
+    fn get_extension_attribute(
+        &self,
+    ) -> Result<Option<asn1::SequenceOf<'_, CsrExtension<'_>>>, PyAsn1Error> {
         for attribute in self.attributes.unwrap_read().clone() {
             if attribute.type_id == *oid::EXTENSION_REQUEST
                 || attribute.type_id == *oid::MS_EXTENSION_REQUEST
             {
                 check_attribute_length(attribute.values.unwrap_read().clone())?;
                 let val = attribute.values.unwrap_read().clone().next().unwrap();
-                let exts = asn1::parse_single::<x509::Extensions<'a>>(val.full_data())?;
+                let exts = asn1::parse_single(val.full_data())?;
                 return Ok(Some(exts));
             }
         }
@@ -242,7 +253,26 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let exts = self.raw.borrow_value().csr_info.get_extension_attribute()?;
+        let csr_exts = self.raw.borrow_value().csr_info.get_extension_attribute()?;
+        let data;
+        // This is all very inefficient, to temporarily allow accepting
+        // extensions with `critical` having an explicit default encoding.
+        let exts = if let Some(v) = csr_exts {
+            let x509_exts: Vec<x509::common::Extension<'_>> = v
+                .map(|e| x509::common::Extension {
+                    extn_id: e.extn_id,
+                    critical: e.critical.unwrap_or_default(),
+                    extn_value: e.extn_value,
+                })
+                .collect();
+            data = asn1::write_single(&asn1::SequenceOfWriter::new(x509_exts));
+            Some(x509::Asn1ReadableOrWritable::new_read(
+                asn1::parse_single(&data).unwrap(),
+            ))
+        } else {
+            None
+        };
+
         x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &exts, |oid, ext_data| {
             certificate::parse_cert_ext(py, oid.clone(), ext_data)
         })

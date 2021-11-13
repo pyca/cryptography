@@ -1533,6 +1533,24 @@ class TestRSACertificateRequest(object):
             x509.DNSName("sub.cryptography.io"),
         ]
 
+    def test_freeipa_bad_critical(self, backend):
+        csr = _load_cert(
+            os.path.join("x509", "requests", "freeipa-bad-critical.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        subject_alternative_name = csr.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert subject_alternative_name.critical is False
+        assert len(subject_alternative_name.value) == 3
+
+        san1 = subject_alternative_name.value[1]
+        assert san1.type_id.dotted_string == "1.3.6.1.4.1.311.20.2.3"
+
+        san2 = subject_alternative_name.value[2]
+        assert san2.type_id.dotted_string == "1.3.6.1.5.2.2"
+
     def test_public_bytes_pem(self, backend):
         # Load an existing CSR.
         request = _load_cert(
