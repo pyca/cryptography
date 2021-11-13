@@ -509,6 +509,12 @@ uint32_t SSL_SESSION_get_max_early_data(const SSL_SESSION *);
 int SSL_write_early_data(SSL *, const void *, size_t, size_t *);
 int SSL_read_early_data(SSL *, void *, size_t, size_t *);
 int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
+
+/*
+  Added as an advanced user escape hatch. This symbol is tied to
+  engine support but is declared in ssl.h
+*/
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 """
 
 CUSTOMIZATIONS = """
@@ -516,6 +522,10 @@ CUSTOMIZATIONS = """
 // pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
 // users have upgraded. PersistentlyDeprecated2020
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
+
+#ifdef OPENSSL_NO_ENGINE
+int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
+#endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;

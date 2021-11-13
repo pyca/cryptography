@@ -204,6 +204,7 @@ def cryptography_has_engine():
         "ENGINE_load_builtin_engines",
         "ENGINE_load_private_key",
         "ENGINE_load_public_key",
+        "SSL_CTX_set_client_cert_engine",
     ]
 
 
