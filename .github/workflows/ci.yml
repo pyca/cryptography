@@ -457,6 +457,7 @@ jobs:
       fail-fast: false
       matrix:
         DOWNSTREAM:
+          - twisted
           - paramiko
           - pyopenssl
           - pyopenssl-release
