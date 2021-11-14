@@ -4059,19 +4059,21 @@ class TestCertificateSigningRequestBuilder(object):
         )
 
         assert (
-            request.get_attribute_for_oid(
+            request.attributes.get_attribute_for_oid(
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
+            ).value
             == challenge_password
         )
         assert (
-            request.get_attribute_for_oid(
+            request.attributes.get_attribute_for_oid(
                 x509.oid.AttributeOID.UNSTRUCTURED_NAME
-            )
+            ).value
             == unstructured_name
         )
         assert (
-            request.get_attribute_for_oid(x509.oid.NameOID.LOCALITY_NAME)
+            request.attributes.get_attribute_for_oid(
+                x509.oid.NameOID.LOCALITY_NAME
+            ).value
             == locality
         )
         assert len(request.attributes) == 4
