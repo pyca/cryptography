@@ -16,6 +16,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`).
 * :ref:`Deprecated the backend argument<faq-missing-backend>` for all
   functions.
+* Added support for iterating over arbitrary request
+  :attr:`~cryptography.x509.CertificateSigningRequest.attributes`.
+* Deprecated the ``get_attribute_for_oid`` method on
+  :class:`~cryptography.x509.CertificateSigningRequest` in favor of
+  :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` on the new
+  :class:`~cryptography.x509.Attributes` object.
 * Fixed handling of PEM files to allow loading when certificate and key are
   in the same file.
 * Fixed parsing of :class:`~cryptography.x509.CertificatePolicies` extensions
@@ -326,7 +332,7 @@ Changelog
 * Added support for parsing
   :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
 * Added support for parsing attributes in certificate signing requests via
-  :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
+  ``CertificateSigningRequest.get_attribute_for_oid``.
 * Added support for encoding attributes in certificate signing requests via
   :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
 * On OpenSSL 1.1.1d and higher ``cryptography`` now uses OpenSSL's

@@ -855,17 +855,13 @@ X.509 CSR (Certificate Signing Request) Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
-    .. method:: get_attribute_for_oid(oid)
+    .. attribute:: attributes
 
-        .. versionadded:: 3.0
+        .. versionadded:: 36.0
 
-        :param oid: An :class:`ObjectIdentifier` instance.
+        :type: :class:`Attributes`
 
-        :returns: The bytes value of the attribute or an exception if not
-            found.
-
-        :raises cryptography.x509.AttributeNotFound: If the request does
-            not have the attribute requested.
+        The attributes encoded in the certificate signing request.
 
     .. method:: public_bytes(encoding)
 
@@ -2758,6 +2754,47 @@ OCSP Extensions
 
         :type: bytes
 
+X.509 Request Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: Attributes
+
+    .. versionadded:: 36.0
+
+    An Attributes instance is an ordered list of attributes.  The object
+    is iterable to get every attribute. Each returned element is an
+    :class:`Attribute`.
+
+    .. method:: get_attribute_for_oid(oid)
+
+        .. versionadded:: 36.0
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: The :class:`Attribute` or an exception if not found.
+
+        :raises cryptography.x509.AttributeNotFound: If the request does
+            not have the attribute requested.
+
+
+.. class:: Attribute
+
+    .. versionadded:: 36.0
+
+    An attribute associated with an X.509 request.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the object identifier for the attribute.
+
+    .. attribute:: value
+
+        :type: bytes
+
+        Returns the value of the attribute.
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
@@ -3338,7 +3375,7 @@ Exceptions
 .. class:: AttributeNotFound
 
     This is raised when calling
-    :meth:`CertificateSigningRequest.get_attribute_for_oid` with
+    :meth:`Attributes.get_attribute_for_oid` with
     an attribute OID that is not present in the request.
 
     .. attribute:: oid

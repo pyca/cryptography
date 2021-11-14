@@ -25,8 +25,13 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     PRIVATE_KEY_TYPES as PRIVATE_KEY_TYPES,
     PUBLIC_KEY_TYPES as PUBLIC_KEY_TYPES,
 )
-from cryptography.x509.extensions import Extension, ExtensionType, Extensions
-from cryptography.x509.name import Name
+from cryptography.x509.extensions import (
+    Extension,
+    ExtensionType,
+    Extensions,
+    _make_sequence_methods,
+)
+from cryptography.x509.name import Name, _ASN1Type
 from cryptography.x509.oid import ObjectIdentifier
 
 
@@ -71,6 +76,65 @@ def _convert_to_naive_utc_time(time: datetime.datetime) -> datetime.datetime:
         return time.replace(tzinfo=None) - offset
     else:
         return time
+
+
+class Attribute:
+    def __init__(
+        self,
+        oid: ObjectIdentifier,
+        value: bytes,
+        _type: int = _ASN1Type.UTF8String.value,
+    ) -> None:
+        self._oid = oid
+        self._value = value
+        self._type = _type
+
+    @property
+    def oid(self) -> ObjectIdentifier:
+        return self._oid
+
+    @property
+    def value(self) -> bytes:
+        return self._value
+
+    def __repr__(self):
+        return "<Attribute(oid={}, value={!r})>".format(self.oid, self.value)
+
+    def __eq__(self, other: typing.Any) -> bool:
+        if not isinstance(other, Attribute):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid
+            and self.value == other.value
+            and self._type == other._type
+        )
+
+    def __ne__(self, other: typing.Any) -> bool:
+        return not self == other
+
+    def __hash__(self) -> int:
+        return hash((self.oid, self.value, self._type))
+
+
+class Attributes:
+    def __init__(
+        self,
+        attributes: typing.Iterable[Attribute],
+    ) -> None:
+        self._attributes = list(attributes)
+
+    __len__, __iter__, __getitem__ = _make_sequence_methods("_attributes")
+
+    def __repr__(self):
+        return "<Attributes({})>".format(self._attributes)
+
+    def get_attribute_for_oid(self, oid: ObjectIdentifier) -> Attribute:
+        for attr in self:
+            if attr.oid == oid:
+                return attr
+
+        raise AttributeNotFound("No {} attribute was found".format(oid), oid)
 
 
 class Version(utils.Enum):
@@ -416,6 +480,12 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
     def extensions(self) -> Extensions:
         """
         Returns the extensions in the signing request.
+        """
+
+    @abc.abstractproperty
+    def attributes(self) -> Attributes:
+        """
+        Returns an Attributes object.
         """
 
     @abc.abstractmethod

@@ -1369,79 +1369,6 @@ class TestRSACertificateRequest(object):
         with pytest.raises(ValueError, match="Valid PEM but no"):
             x509.load_pem_x509_csr(crl, backend)
 
-    def test_get_attribute_for_oid_challenge(self, backend):
-        request = _load_cert(
-            os.path.join("x509", "requests", "challenge.pem"),
-            x509.load_pem_x509_csr,
-            backend,
-        )
-        assert (
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
-            == b"challenge me!"
-        )
-
-    def test_get_attribute_for_oid_multiple(self, backend):
-        request = _load_cert(
-            os.path.join("x509", "requests", "challenge-unstructured.pem"),
-            x509.load_pem_x509_csr,
-            backend,
-        )
-        assert (
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
-            == b"beauty"
-        )
-        assert (
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.UNSTRUCTURED_NAME
-            )
-            == b"an unstructured field"
-        )
-
-    def test_invalid_attribute_for_oid(self, backend):
-        """
-        We only support a few string types at the moment. This can
-        be expanded if we find use cases.
-        """
-        request = _load_cert(
-            os.path.join("x509", "requests", "challenge-invalid.der"),
-            x509.load_der_x509_csr,
-            backend,
-        )
-        with pytest.raises(ValueError):
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
-
-    def test_challenge_multivalued(self, backend):
-        """
-        We only support single-valued SETs in our X509 request attributes
-        """
-        request = _load_cert(
-            os.path.join("x509", "requests", "challenge-multi-valued.der"),
-            x509.load_der_x509_csr,
-            backend,
-        )
-        with pytest.raises(ValueError, match="Only single-valued"):
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
-
-    def test_no_challenge_password(self, backend):
-        request = _load_cert(
-            os.path.join("x509", "requests", "rsa_sha256.pem"),
-            x509.load_pem_x509_csr,
-            backend,
-        )
-        with pytest.raises(x509.AttributeNotFound) as exc:
-            request.get_attribute_for_oid(
-                x509.oid.AttributeOID.CHALLENGE_PASSWORD
-            )
-        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
-
     @pytest.mark.parametrize(
         "loader_func", [x509.load_pem_x509_csr, x509.load_der_x509_csr]
     )
@@ -4118,6 +4045,16 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.oid.AttributeOID.UNSTRUCTURED_NAME, unstructured_name
             )
             .add_attribute(x509.oid.NameOID.LOCALITY_NAME, locality)
+            .add_extension(
+                x509.ExtendedKeyUsage(
+                    [
+                        ExtendedKeyUsageOID.CLIENT_AUTH,
+                        ExtendedKeyUsageOID.SERVER_AUTH,
+                        ExtendedKeyUsageOID.CODE_SIGNING,
+                    ]
+                ),
+                False,
+            )
             .sign(private_key, hashes.SHA256(), backend)
         )
 
@@ -4137,6 +4074,7 @@ class TestCertificateSigningRequestBuilder(object):
             request.get_attribute_for_oid(x509.oid.NameOID.LOCALITY_NAME)
             == locality
         )
+        assert len(request.attributes) == 4
 
     def test_add_attributes_non_utf8(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -5293,3 +5231,266 @@ def test_random_serial_number(monkeypatch):
 
     assert serial_number == int.from_bytes(sample_data, "big") >> 1
     assert serial_number.bit_length() < 160
+
+
+class TestAttribute:
+    def test_eq(self):
+        attr1 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+        )
+        attr2 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+        )
+        assert attr1 == attr2
+
+    def test_ne(self):
+        attr1 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+        )
+        attr2 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+            _ASN1Type.IA5String.value,
+        )
+        attr3 = x509.Attribute(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME,
+            b"value",
+        )
+        attr4 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"other value",
+        )
+        assert attr1 != attr2
+        assert attr1 != attr3
+        assert attr1 != attr4
+        assert attr1 != object()
+
+    def test_repr(self):
+        attr1 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+        )
+        assert repr(attr1) == (
+            "<Attribute(oid=<ObjectIdentifier(oid=1.2.840.113549.1.9.7, name="
+            "challengePassword)>, value=b'value')>"
+        )
+
+    def test_hash(self):
+        attr1 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+            _ASN1Type.UTF8String.value,
+        )
+        attr2 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+            _ASN1Type.UTF8String.value,
+        )
+        attr3 = x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"value",
+            _ASN1Type.IA5String.value,
+        )
+        assert hash(attr1) == hash(attr2)
+        assert hash(attr1) != hash(attr3)
+
+
+class TestAttributes:
+    def test_no_attributes(self):
+        attrs = x509.Attributes([])
+        assert len(attrs) == 0
+
+    def test_get_attribute_for_oid(self):
+        attr_list = [
+            x509.Attribute(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+                b"nonsense",
+            ),
+            x509.Attribute(
+                x509.oid.AttributeOID.UNSTRUCTURED_NAME,
+                b"montessori",
+                _ASN1Type.PrintableString.value,
+            ),
+        ]
+        attrs = x509.Attributes(attr_list)
+        attr = attrs.get_attribute_for_oid(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME
+        )
+        assert attr.oid == x509.oid.AttributeOID.UNSTRUCTURED_NAME
+        assert attr.value == b"montessori"
+        assert attr._type == _ASN1Type.PrintableString.value
+
+    def test_indexing(self):
+        attr_list = [
+            x509.Attribute(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+                b"nonsense",
+            ),
+            x509.Attribute(
+                x509.oid.AttributeOID.UNSTRUCTURED_NAME,
+                b"montessori",
+            ),
+            x509.Attribute(
+                x509.ObjectIdentifier("2.999.2"),
+                b"meaningless",
+            ),
+            x509.Attribute(
+                x509.ObjectIdentifier("2.999.1"),
+                b"meaningless",
+            ),
+        ]
+        attrs = x509.Attributes(attr_list)
+        assert len(attrs) == 4
+        assert list(attrs) == attr_list
+        assert attrs[-1] == attrs[3]
+        assert attrs[0:3:2] == [attrs[0], attrs[2]]
+
+    def test_get_attribute_not_found(self):
+        attrs = x509.Attributes([])
+        with pytest.raises(x509.AttributeNotFound) as exc:
+            attrs.get_attribute_for_oid(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD
+            )
+        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
+
+    def test_repr(self):
+        attrs = x509.Attributes(
+            [
+                x509.Attribute(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+                    b"nonsense",
+                ),
+            ]
+        )
+        assert repr(attrs) == (
+            "<Attributes([<Attribute(oid=<ObjectIdentifier(oid=1.2.840.11354"
+            "9.1.9.7, name=challengePassword)>, value=b'nonsense')>])>"
+        )
+
+
+class TestRequestAttributes:
+    def test_get_attribute_for_oid_challenge(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.warns(utils.DeprecatedIn36):
+            assert (
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
+                )
+                == b"challenge me!"
+            )
+
+        assert request.attributes.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        ) == x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"challenge me!",
+        )
+
+    def test_get_attribute_for_oid_multiple(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-unstructured.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.warns(utils.DeprecatedIn36):
+            assert (
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
+                )
+                == b"beauty"
+            )
+
+        with pytest.warns(utils.DeprecatedIn36):
+            assert (
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.UNSTRUCTURED_NAME
+                )
+                == b"an unstructured field"
+            )
+
+        assert request.attributes.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        ) == x509.Attribute(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD,
+            b"beauty",
+        )
+
+        assert request.attributes.get_attribute_for_oid(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME
+        ) == x509.Attribute(
+            x509.oid.AttributeOID.UNSTRUCTURED_NAME,
+            b"an unstructured field",
+        )
+
+    def test_unsupported_asn1_type_in_attribute(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-invalid.der"),
+            x509.load_der_x509_csr,
+            backend,
+        )
+
+        # Unsupported in the legacy path
+        with pytest.raises(ValueError):
+            with pytest.warns(utils.DeprecatedIn36):
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
+                )
+
+        # supported in the new path where we just store the type and
+        # return raw bytes
+        attr = request.attributes.get_attribute_for_oid(
+            x509.oid.AttributeOID.CHALLENGE_PASSWORD
+        )
+        assert attr._type == 2
+
+    def test_challenge_multivalued(self, backend):
+        """
+        We only support single-valued SETs in our X509 request attributes
+        """
+        request = _load_cert(
+            os.path.join("x509", "requests", "challenge-multi-valued.der"),
+            x509.load_der_x509_csr,
+            backend,
+        )
+        with pytest.raises(ValueError, match="Only single-valued"):
+            with pytest.warns(utils.DeprecatedIn36):
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
+                )
+
+        with pytest.raises(ValueError, match="Only single-valued"):
+            request.attributes
+
+    def test_no_challenge_password(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.raises(x509.AttributeNotFound) as exc:
+            with pytest.warns(utils.DeprecatedIn36):
+                request.get_attribute_for_oid(
+                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
+                )
+        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
+
+        with pytest.raises(x509.AttributeNotFound) as exc:
+            request.attributes.get_attribute_for_oid(
+                x509.oid.AttributeOID.CHALLENGE_PASSWORD
+            )
+        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
+
+    def test_no_attributes(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        assert len(request.attributes) == 0
