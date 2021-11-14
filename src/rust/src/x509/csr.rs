@@ -215,6 +215,15 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
+        let warnings = py.import("warnings")?;
+        warnings.call_method1(
+            "warn",
+            (
+                "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.",
+                cryptography_warning,
+            ),
+        )?;
         let oid_str = oid.getattr("dotted_string")?.extract::<&str>()?;
         let rust_oid = asn1::ObjectIdentifier::from_string(oid_str).unwrap();
         for attribute in self
@@ -249,6 +258,32 @@ impl CertificateSigningRequest {
                 (format!("No {} attribute was found", oid_str), oid),
             )?,
         ))
+    }
+
+    #[getter]
+    fn attributes<'p>(&mut self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let pyattrs = pyo3::types::PyList::empty(py);
+        for attribute in self
+            .raw
+            .borrow_value()
+            .csr_info
+            .attributes
+            .unwrap_read()
+            .clone()
+        {
+            check_attribute_length(attribute.values.unwrap_read().clone())?;
+            let oid = py
+                .import("cryptography.x509")?
+                .call_method1("ObjectIdentifier", (attribute.type_id.to_string(),))?;
+            let val = attribute.values.unwrap_read().clone().next().unwrap();
+            let serialized = pyo3::types::PyBytes::new(py, val.data());
+            let pyattr = py
+                .import("cryptography.x509")?
+                .call_method1("Attribute", (oid, serialized, val.tag()))?;
+            pyattrs.append(pyattr)?;
+        }
+        py.import("cryptography.x509")?
+            .call_method1("Attributes", (pyattrs,))
     }
 
     #[getter]

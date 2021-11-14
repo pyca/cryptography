@@ -5,7 +5,9 @@
 
 from cryptography.x509 import certificate_transparency
 from cryptography.x509.base import (
+    Attribute,
     AttributeNotFound,
+    Attributes,
     Certificate,
     CertificateBuilder,
     CertificateRevocationList,
@@ -173,7 +175,9 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "Attribute",
     "AttributeNotFound",
+    "Attributes",
     "InvalidVersion",
     "DeltaCRLIndicator",
     "DuplicateExtension",
