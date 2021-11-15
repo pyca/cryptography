@@ -12,6 +12,7 @@ from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
+    AESOCB3,
     ChaCha20Poly1305,
 )
 
@@ -465,4 +466,135 @@ class TestAESGCM(object):
         ct2 = aesgcm2.encrypt(bytearray(nonce), pt, ad)
         assert ct2 == ct
         computed_pt2 = aesgcm2.decrypt(bytearray(nonce), ct2, ad)
+        assert computed_pt2 == pt
+
+
+@pytest.mark.skipif(
+    _aead_supported(AESOCB3),
+    reason="Requires OpenSSL without AESOCB3 support",
+)
+def test_aesocb3_unsupported_on_older_openssl(backend):
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        AESOCB3(AESOCB3.generate_key(128))
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESOCB3),
+    reason="Does not support AESOCB3",
+)
+class TestAESOCB3(object):
+    def test_data_too_large(self):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = b"0" * 12
+
+        with pytest.raises(OverflowError):
+            aesocb3.encrypt(nonce, FakeData(), b"")
+
+        with pytest.raises(OverflowError):
+            aesocb3.encrypt(nonce, b"", FakeData())
+
+    def test_vectors(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("ciphers", "AES", "OCB3", "rfc7253.txt"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                nonce = binascii.unhexlify(vector["nonce"])
+                key = binascii.unhexlify(vector["key"])
+                aad = binascii.unhexlify(vector["aad"])
+                ct = binascii.unhexlify(vector["ciphertext"])
+                pt = binascii.unhexlify(vector.get("plaintext", b""))
+                aesocb3 = AESOCB3(key)
+                computed_ct = aesocb3.encrypt(nonce, pt, aad)
+                assert computed_ct == ct
+                computed_pt = aesocb3.decrypt(nonce, ct, aad)
+                assert computed_pt == pt
+
+    def test_vectors_invalid(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("ciphers", "AES", "OCB3", "rfc7253.txt"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                nonce = binascii.unhexlify(vector["nonce"])
+                key = binascii.unhexlify(vector["key"])
+                aad = binascii.unhexlify(vector["aad"])
+                ct = binascii.unhexlify(vector["ciphertext"])
+                aesocb3 = AESOCB3(key)
+                with pytest.raises(InvalidTag):
+                    badkey = AESOCB3(AESOCB3.generate_key(128))
+                    badkey.decrypt(nonce, ct, aad)
+                with pytest.raises(InvalidTag):
+                    aesocb3.decrypt(nonce, b"nonsense", aad)
+                with pytest.raises(InvalidTag):
+                    aesocb3.decrypt(b"\x00" * 12, ct, aad)
+                with pytest.raises(InvalidTag):
+                    aesocb3.decrypt(nonce, ct, b"nonsense")
+
+    @pytest.mark.parametrize(
+        ("nonce", "data", "associated_data"),
+        [
+            [object(), b"data", b""],
+            [b"0" * 12, object(), b""],
+            [b"0" * 12, b"data", object()],
+        ],
+    )
+    def test_params_not_bytes(self, nonce, data, associated_data, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        with pytest.raises(TypeError):
+            aesocb3.encrypt(nonce, data, associated_data)
+
+        with pytest.raises(TypeError):
+            aesocb3.decrypt(nonce, data, associated_data)
+
+    def test_invalid_nonce_length(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        with pytest.raises(ValueError):
+            aesocb3.encrypt(b"\x00" * 11, b"hi", None)
+        with pytest.raises(ValueError):
+            aesocb3.encrypt(b"\x00" * 13, b"hi", None)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESOCB3(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESOCB3(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESOCB3.generate_key(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESOCB3.generate_key(129)
+
+    def test_associated_data_none_equal_to_empty_bytestring(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        ct1 = aesocb3.encrypt(nonce, b"some_data", None)
+        ct2 = aesocb3.encrypt(nonce, b"some_data", b"")
+        assert ct1 == ct2
+        pt1 = aesocb3.decrypt(nonce, ct1, None)
+        pt2 = aesocb3.decrypt(nonce, ct2, b"")
+        assert pt1 == pt2
+
+    def test_buffer_protocol(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        pt = b"encrypt me"
+        ad = b"additional"
+        nonce = os.urandom(12)
+        ct = aesocb3.encrypt(nonce, pt, ad)
+        computed_pt = aesocb3.decrypt(nonce, ct, ad)
+        assert computed_pt == pt
+        aesocb3_ = AESOCB3(bytearray(key))
+        ct2 = aesocb3_.encrypt(bytearray(nonce), pt, ad)
+        assert ct2 == ct
+        computed_pt2 = aesocb3_.decrypt(bytearray(nonce), ct2, ad)
         assert computed_pt2 == pt
