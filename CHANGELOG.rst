@@ -16,6 +16,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`).
 * :ref:`Deprecated the backend argument<faq-missing-backend>` for all
   functions.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`.
 * Added support for iterating over arbitrary request
   :attr:`~cryptography.x509.CertificateSigningRequest.attributes`.
 * Deprecated the ``get_attribute_for_oid`` method on
