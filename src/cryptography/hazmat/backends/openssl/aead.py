@@ -116,7 +116,9 @@ def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")
-    # OCB can return up to 15 bytes (16 byte block - 1) in finalization
+    # All AEADs we support besides OCB are streaming so they return nothing
+    # in finalization. OCB can return up to (16 byte block - 1) bytes so
+    # we need a buffer here too.
     buf = backend._ffi.new("unsigned char[]", 16)
     res = backend._lib.EVP_CipherFinal_ex(ctx, buf, outlen)
     backend.openssl_assert(res != 0)
