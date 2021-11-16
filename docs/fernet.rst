@@ -280,5 +280,5 @@ unsuitable for very large files at this time.
 
 
 .. _`Fernet`: https://github.com/fernet/spec/
-.. _`Django recommends as of January 2021`: https://github.com/django/django/blob/main/django/contrib/auth/hashers.py
+.. _`Django recommends as of November 2021`: https://github.com/django/django/blob/main/django/contrib/auth/hashers.py
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
