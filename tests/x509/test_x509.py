@@ -1466,9 +1466,10 @@ class TestRSACertificateRequest(object):
             x509.load_pem_x509_csr,
             backend,
         )
-        subject_alternative_name = csr.extensions.get_extension_for_oid(
-            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
-        )
+        with pytest.warns(utils.DeprecatedIn36):
+            subject_alternative_name = csr.extensions.get_extension_for_oid(
+                ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            )
         assert subject_alternative_name.critical is False
         assert len(subject_alternative_name.value) == 3
 
