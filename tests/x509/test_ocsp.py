@@ -12,7 +12,7 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448
+from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.x509 import ocsp
 
@@ -1009,7 +1009,9 @@ class TestOCSPResponse(object):
             b"mMEfd265tE5t6ZFZe/zqOyhAhIDHHh6fckClQB7xfIiCztSevCAABgPMjAxODA4"
             b"MzAxMTAwMDBaoBEYDzIwMTgwOTA2MTEwMDAwWg=="
         )
-        issuer.public_key().verify(
+        public_key = issuer.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        public_key.verify(
             resp.signature,
             resp.tbs_response_bytes,
             PKCS1v15(),

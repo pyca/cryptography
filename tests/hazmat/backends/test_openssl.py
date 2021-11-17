@@ -632,7 +632,7 @@ def test_pyopenssl_cert_fallback():
     )
     x509_ossl = None
     with pytest.warns(utils.CryptographyDeprecationWarning):
-        x509_ossl = cert._x509
+        x509_ossl = cert._x509  # type:ignore[attr-defined]
     assert x509_ossl is not None
 
     from cryptography.hazmat.backends.openssl.x509 import _Certificate
@@ -648,7 +648,7 @@ def test_pyopenssl_csr_fallback():
     )
     req_ossl = None
     with pytest.warns(utils.CryptographyDeprecationWarning):
-        req_ossl = cert._x509_req
+        req_ossl = cert._x509_req  # type:ignore[attr-defined]
     assert req_ossl is not None
 
     from cryptography.hazmat.backends.openssl.x509 import (
@@ -666,7 +666,7 @@ def test_pyopenssl_crl_fallback():
     )
     req_crl = None
     with pytest.warns(utils.CryptographyDeprecationWarning):
-        req_crl = cert._x509_crl
+        req_crl = cert._x509_crl  # type:ignore[attr-defined]
     assert req_crl is not None
 
     from cryptography.hazmat.backends.openssl.x509 import (
