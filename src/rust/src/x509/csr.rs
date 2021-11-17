@@ -293,6 +293,21 @@ impl CertificateSigningRequest {
         // This is all very inefficient, to temporarily allow accepting
         // extensions with `critical` having an explicit default encoding.
         let exts = if let Some(v) = csr_exts {
+            // Raise a warning if there's an explicitly encoded false
+            for e in v.clone() {
+                if e.critical == Some(false) {
+                    let cryptography_warning =
+                        py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
+                    let warnings = py.import("warnings")?;
+                    warnings.call_method1(
+                        "warn",
+                        (
+                            "This CSR contains an improperly encoded default value. Support for this will be removed in an upcoming cryptography release.",
+                            cryptography_warning,
+                        ),
+                    )?;
+                }
+            }
             let x509_exts: Vec<x509::common::Extension<'_>> = v
                 .map(|e| x509::common::Extension {
                     extn_id: e.extn_id,
