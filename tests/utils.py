@@ -38,7 +38,12 @@ def raises_unsupported_algorithm(reason):
     assert exc_info.value._reason is reason
 
 
-def load_vectors_from_file(filename, loader, mode="r"):
+T = typing.TypeVar("T")
+
+
+def load_vectors_from_file(
+    filename, loader: typing.Callable[..., T], mode="r"
+) -> T:
     with cryptography_vectors.open_vector_file(filename, mode) as vector_file:
         return loader(vector_file)
 
