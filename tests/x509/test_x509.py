@@ -62,7 +62,10 @@ class FakeGeneralName(object):
     value = utils.read_only_property("_value")
 
 
-def _load_cert(filename, loader, backend=None):
+T = typing.TypeVar("T")
+
+
+def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
     cert = load_vectors_from_file(
         filename=filename,
         loader=lambda pemfile: loader(pemfile.read(), backend),
@@ -200,7 +203,7 @@ class TestCertificateRevocationList(object):
             backend,
         )
         with pytest.raises(TypeError):
-            crl1 < crl1
+            crl1 < crl1  # type: ignore[operator]
 
     def test_update_dates(self, backend):
         crl = _load_cert(
@@ -263,6 +266,7 @@ class TestCertificateRevocationList(object):
         )
         serial_number = 725064303890588110203033396814564464046290047507
         revoked = crl.get_revoked_certificate_by_serial_number(serial_number)
+        assert isinstance(revoked, x509.RevokedCertificate)
         assert revoked.serial_number == serial_number
         assert crl.get_revoked_certificate_by_serial_number(500) is None
 
@@ -363,7 +367,10 @@ class TestCertificateRevocationList(object):
             backend,
         )
 
-        ca_cert.public_key().verify(
+        public_key = ca_cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert crl.signature_hash_algorithm is not None
+        public_key.verify(
             crl.signature,
             crl.tbs_certlist_bytes,
             padding.PKCS1v15(),
@@ -441,7 +448,7 @@ class TestCertificateRevocationList(object):
         )
 
         with pytest.raises(TypeError):
-            crl.public_bytes("NotAnEncoding")
+            crl.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
 
     def test_verify_bad(self, backend):
         crl = _load_cert(
@@ -455,7 +462,9 @@ class TestCertificateRevocationList(object):
             backend,
         )
 
-        assert not crl.is_signature_valid(crt.public_key())
+        public_key = crt.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert not crl.is_signature_valid(public_key)
 
     def test_verify_good(self, backend):
         crl = _load_cert(
@@ -469,7 +478,9 @@ class TestCertificateRevocationList(object):
             backend,
         )
 
-        assert crl.is_signature_valid(crt.public_key())
+        public_key = crt.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert crl.is_signature_valid(public_key)
 
     def test_verify_argument_must_be_a_public_key(self, backend):
         crl = _load_cert(
@@ -479,10 +490,12 @@ class TestCertificateRevocationList(object):
         )
 
         with pytest.raises(TypeError):
-            crl.is_signature_valid("not a public key")
+            crl.is_signature_valid(
+                "not a public key"  # type: ignore[arg-type]
+            )
 
         with pytest.raises(TypeError):
-            crl.is_signature_valid(object)
+            crl.is_signature_valid(object)  # type: ignore[arg-type]
 
 
 class TestRevokedCertificate(object):
@@ -595,6 +608,7 @@ class TestRevokedCertificate(object):
         ext = crl[0].extensions.get_extension_for_oid(
             x509.ObjectIdentifier("1.2.3.4")
         )
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
         assert ext.value.value == b"\n\x01\x00"
 
     def test_unsupported_reason(self, backend):
@@ -783,7 +797,9 @@ class TestRSACertificate(object):
             b"53dc5e505e2a10fbba4f9e93a0d3b53b7fa34b05d7ba6eef869bfc34b8e514f"
             b"d5419f75"
         )
-        assert len(cert.signature) == cert.public_key().key_size // 8
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert len(cert.signature) == public_key.key_size // 8
 
     def test_tbs_certificate_bytes(self, backend):
         cert = _load_cert(
@@ -817,7 +833,10 @@ class TestRSACertificate(object):
             b"03550403130848656c6c6f204341820900a06cb4b955f7f4db300c0603551d1"
             b"3040530030101ff"
         )
-        cert.public_key().verify(
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert cert.signature_hash_algorithm is not None
+        public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
             padding.PKCS1v15(),
@@ -1141,7 +1160,7 @@ class TestRSACertificate(object):
             backend,
         )
         with pytest.raises(TypeError, match="cannot be ordered"):
-            cert > cert2
+            cert > cert2  # type: ignore[operator]
 
     def test_hash(self, backend):
         cert1 = _load_cert(
@@ -1261,7 +1280,7 @@ class TestRSACertificate(object):
         )
 
         with pytest.raises(TypeError):
-            cert.public_bytes("NotAnEncoding")
+            cert.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         ("cert_path", "loader_func", "encoding"),
@@ -1407,6 +1426,7 @@ class TestRSACertificateRequest(object):
         ext = request.extensions.get_extension_for_oid(
             x509.ObjectIdentifier("1.2.3.4")
         )
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
         assert ext.value.value == b"value"
 
     def test_unsupported_extension(self, backend):
@@ -1452,8 +1472,8 @@ class TestRSACertificateRequest(object):
             x509.load_pem_x509_csr,
             backend,
         )
-        ext = request.extensions.get_extension_for_oid(
-            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        ext = request.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
         )
         assert list(ext.value) == [
             x509.DNSName("cryptography.io"),
@@ -1467,8 +1487,8 @@ class TestRSACertificateRequest(object):
             backend,
         )
         with pytest.warns(utils.DeprecatedIn36):
-            subject_alternative_name = csr.extensions.get_extension_for_oid(
-                ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            subject_alternative_name = csr.extensions.get_extension_for_class(
+                x509.SubjectAlternativeName
             )
         assert subject_alternative_name.critical is False
         assert len(subject_alternative_name.value) == 3
@@ -1577,7 +1597,10 @@ class TestRSACertificateRequest(object):
             b"db048d51921e50766a37b1b130ee6b11f507d20a834001e8de16a92c14f2e964"
             b"a30203010001a000"
         )
-        request.public_key().verify(
+        assert request.signature_hash_algorithm is not None
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        public_key.verify(
             request.signature,
             request.tbs_certrequest_bytes,
             padding.PKCS1v15(),
@@ -1592,7 +1615,7 @@ class TestRSACertificateRequest(object):
         )
 
         with pytest.raises(TypeError):
-            request.public_bytes("NotAnEncoding")
+            request.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
 
     def test_signature_invalid(self, backend):
         request = _load_cert(
@@ -1676,7 +1699,7 @@ class TestRSACertificateRequest(object):
             backend,
         )
         with pytest.raises(TypeError, match="cannot be ordered"):
-            csr > csr2
+            csr > csr2  # type: ignore[operator]
 
     def test_hash(self, backend):
         request1 = _load_cert(
@@ -4384,7 +4407,10 @@ class TestDSACertificate(object):
             b"4c7464311430120603550403130b5079434120445341204341820900a37352e"
             b"0b2142f86300c0603551d13040530030101ff"
         )
-        cert.public_key().verify(
+        assert cert.signature_hash_algorithm is not None
+        public_key = cert.public_key()
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
             cert.signature_hash_algorithm,
@@ -4456,7 +4482,10 @@ class TestDSACertificateRequest(object):
             b"04a697bc8fd965b952f9f7e850edf13c8acdb5d753b6d10e59e0b5732e3c82ba"
             b"fa140342bc4a3bba16bd0681c8a6a2dbbb7efe6ce2b8463b170ba000"
         )
-        request.public_key().verify(
+        assert request.signature_hash_algorithm is not None
+        public_key = request.public_key()
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        public_key.verify(
             request.signature,
             request.tbs_certrequest_bytes,
             request.signature_hash_algorithm,
@@ -4549,7 +4578,10 @@ class TestECDSACertificate(object):
             b"f300e0603551d0f0101ff040403020186301d0603551d0e04160414b3db48a4"
             b"f9a1c5d8ae3641cc1163696229bc4bc6"
         )
-        cert.public_key().verify(
+        assert cert.signature_hash_algorithm is not None
+        public_key = cert.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
             ec.ECDSA(cert.signature_hash_algorithm),
@@ -4629,7 +4661,10 @@ class TestECDSACertificateRequest(object):
             b"04d8b32a551038d09086803a6d3fb91a1a1167ec02158b00efad39c9396462f"
             b"accff0ffaf7155812909d3726bd59fde001cff4bb9b2f5af8cbaa000"
         )
-        request.public_key().verify(
+        assert request.signature_hash_algorithm is not None
+        public_key = request.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        public_key.verify(
             request.signature,
             request.tbs_certrequest_bytes,
             ec.ECDSA(request.signature_hash_algorithm),
@@ -5122,7 +5157,9 @@ class TestEd25519Certificate(object):
             backend,
         )
         # self-signed, so this will work
-        cert.public_key().verify(cert.signature, cert.tbs_certificate_bytes)
+        public_key = cert.public_key()
+        assert isinstance(public_key, ed25519.Ed25519PublicKey)
+        public_key.verify(cert.signature, cert.tbs_certificate_bytes)
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 9579446940964433301
         assert cert.signature_hash_algorithm is None
@@ -5149,7 +5186,9 @@ class TestEd448Certificate(object):
             backend,
         )
         # self-signed, so this will work
-        cert.public_key().verify(cert.signature, cert.tbs_certificate_bytes)
+        public_key = cert.public_key()
+        assert isinstance(public_key, ed448.Ed448PublicKey)
+        public_key.verify(cert.signature, cert.tbs_certificate_bytes)
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 448
         assert cert.signature_hash_algorithm is None
