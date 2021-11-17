@@ -371,6 +371,7 @@ class TestDSA(object):
             ),
             mode="rb",
         )
+        assert isinstance(key, dsa.DSAPrivateKey)
         pn = key.private_numbers()
         assert pn.public_numbers.parameter_numbers.p.bit_length() == 4096
         # Turn it back into a key to confirm that values this large pass
@@ -867,7 +868,7 @@ class TestDSASerialization(object):
         )
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",
+                "notencoding",  # type: ignore[arg-type]
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -882,7 +883,7 @@ class TestDSASerialization(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",
+                "invalidformat",  # type: ignore[arg-type]
                 serialization.NoEncryption(),
             )
 
@@ -897,7 +898,7 @@ class TestDSASerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",
+                "notanencalg",  # type: ignore[arg-type]
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):

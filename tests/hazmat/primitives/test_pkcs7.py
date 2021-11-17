@@ -11,7 +11,7 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519
+from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
@@ -586,6 +586,7 @@ class TestPKCS7Builder(object):
             ),
             mode="rb",
         )
+        assert isinstance(rsa_key, rsa.RSAPrivateKey)
         rsa_cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
             loader=lambda pemfile: x509.load_pem_x509_certificate(
@@ -629,6 +630,7 @@ class TestPKCS7Builder(object):
             ),
             mode="rb",
         )
+        assert isinstance(rsa_key, rsa.RSAPrivateKey)
         builder = (
             pkcs7.PKCS7SignatureBuilder()
             .set_data(data)

@@ -44,6 +44,7 @@ class TestPKCS12Loading(object):
             ),
             mode="rb",
         )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", filename),
             lambda derfile: load_key_and_certificates(
@@ -51,6 +52,7 @@ class TestPKCS12Loading(object):
             ),
             mode="rb",
         )
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_cert == cert
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
@@ -106,6 +108,7 @@ class TestPKCS12Loading(object):
             ),
             mode="rb",
         )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "no-cert-key-aes256cbc.p12"),
             lambda data: load_key_and_certificates(
@@ -113,6 +116,7 @@ class TestPKCS12Loading(object):
             ),
             mode="rb",
         )
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_cert is None
         assert parsed_more_certs == []
@@ -199,7 +203,7 @@ class TestPKCS12Loading(object):
         assert pkcs12.cert is not None
         assert pkcs12.cert.certificate == cert
         assert pkcs12.cert.friendly_name == name
-        assert pkcs12.key is not None
+        assert isinstance(pkcs12.key, ec.EllipticCurvePrivateKey)
         assert pkcs12.key.private_numbers() == key.private_numbers()
         assert len(pkcs12.additional_certs) == 2
         assert pkcs12.additional_certs[0].certificate == cert2

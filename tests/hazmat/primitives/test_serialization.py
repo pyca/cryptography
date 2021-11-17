@@ -536,7 +536,7 @@ class TestPEMSerialization(object):
                 pemfile.read().encode(), b"123456", backend
             ),
         )
-        assert pkey
+        assert isinstance(pkey, rsa.RSAPrivateKey)
 
         numbers = pkey.private_numbers()
         assert numbers.p == int(
@@ -835,7 +835,7 @@ class TestPEMSerialization(object):
                 pemfile.read().encode(), b"foobar", backend
             ),
         )
-        assert pkey
+        assert isinstance(pkey, rsa.RSAPrivateKey)
 
         numbers = pkey.private_numbers()
 
