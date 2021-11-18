@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   linux-arm64:
+    if: github.repository_owner == 'pyca'
     runs-on: [self-hosted, linux, ARM64]
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
