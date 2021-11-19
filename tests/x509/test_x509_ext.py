@@ -6121,7 +6121,7 @@ class TestOCSPNonce(object):
 
     def test_public_bytes(self):
         ext = x509.OCSPNonce(b"0" * 5)
-        assert ext.public_bytes() == b"00000"
+        assert ext.public_bytes() == b"\x04\x0500000"
 
 
 def test_all_extension_oid_members_have_names_defined():
