@@ -367,7 +367,7 @@ pub(crate) fn encode_extension(
         Ok(Some(asn1::write_single(&idp)))
     } else if oid == &*oid::NONCE_OID {
         let nonce = ext.getattr("nonce")?.extract::<&[u8]>()?;
-        Ok(Some(nonce.to_vec()))
+        Ok(Some(asn1::write_single(&nonce)))
     } else {
         Ok(None)
     }

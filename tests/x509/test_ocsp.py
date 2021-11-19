@@ -103,7 +103,7 @@ class TestOCSPRequest(object):
         ext = req.extensions[0]
         assert ext.critical is False
         assert ext.value == x509.OCSPNonce(
-            b"\x04\x10{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd"
+            b"{\x80Z\x1d7&\xb8\xb8OH\xd2\xf8\xbf\xd7-\xfd"
         )
 
     def test_load_request_with_unknown_extension(self):
@@ -1159,7 +1159,7 @@ class TestOCSPResponse(object):
         ext = resp.extensions[0]
         assert ext.critical is False
         assert ext.value == x509.OCSPNonce(
-            b'\x04\x105\x957\x9fa\x03\x83\x87\x89rW\x8f\xae\x99\xf7"'
+            b'5\x957\x9fa\x03\x83\x87\x89rW\x8f\xae\x99\xf7"'
         )
 
     def test_response_unknown_extension(self):

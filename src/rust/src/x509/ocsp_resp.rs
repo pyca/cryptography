@@ -351,9 +351,10 @@ impl OCSPResponse {
                     // just the raw extension value. This is nonsense, since they're always
                     // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
                     // nonce is an OCTET STRING, and so you should unwrap the TLV to get
-                    // the nonce. For now we just implement the old behavior, even though
-                    // it's deranged.
-                    Ok(Some(x509_module.call_method1("OCSPNonce", (ext_data,))?))
+                    // the nonce. So we try parsing as a TLV and fall back to just using
+                    // the raw value.
+                    let nonce = asn1::parse_single::<&[u8]>(ext_data).unwrap_or(ext_data);
+                    Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
                 } else {
                     Ok(None)
                 }
