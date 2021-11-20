@@ -75,8 +75,6 @@ class Hash(HashContext):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
         self._algorithm = algorithm
 
-        self._backend = backend
-
         if ctx is None:
             from cryptography.hazmat.backends.openssl.backend import (
                 backend as ossl,
