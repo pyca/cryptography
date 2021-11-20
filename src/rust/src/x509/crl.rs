@@ -2,7 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{
+    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+};
 use crate::x509;
 use crate::x509::{certificate, extensions, oid};
 use pyo3::ToPyObject;
@@ -262,11 +264,11 @@ impl CertificateRevocationList {
             |oid, ext_data| {
                 if oid == &*oid::CRL_NUMBER_OID {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
-                    let pynum = big_asn1_uint_to_py(py, bignum)?;
+                    let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(x509_module.getattr("CRLNumber")?.call1((pynum,))?))
                 } else if oid == &*oid::DELTA_CRL_INDICATOR_OID {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
-                    let pynum = big_asn1_uint_to_py(py, bignum)?;
+                    let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module.getattr("DeltaCRLIndicator")?.call1((pynum,))?,
                     ))
@@ -530,7 +532,7 @@ struct RevokedCertificate {
 impl RevokedCertificate {
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        big_asn1_uint_to_py(py, self.raw.borrow_value().user_certificate)
+        big_byte_slice_to_py_int(py, self.raw.borrow_value().user_certificate.as_bytes())
     }
 
     #[getter]

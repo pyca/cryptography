@@ -33,7 +33,7 @@ pub(crate) struct CertID<'a> {
     pub(crate) hash_algorithm: x509::AlgorithmIdentifier<'a>,
     pub(crate) issuer_name_hash: &'a [u8],
     pub(crate) issuer_key_hash: &'a [u8],
-    pub(crate) serial_number: asn1::BigUint<'a>,
+    pub(crate) serial_number: asn1::BigInt<'a>,
 }
 
 impl CertID<'_> {

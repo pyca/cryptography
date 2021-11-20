@@ -4,6 +4,7 @@
 
 use crate::x509::Name;
 use pyo3::basic::CompareOp;
+use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
 pub enum PyAsn1Error {
@@ -77,12 +78,13 @@ struct DssSignature<'a> {
     s: asn1::BigUint<'a>,
 }
 
-pub(crate) fn big_asn1_uint_to_py<'p>(
+pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
-    v: asn1::BigUint<'_>,
+    v: &'_ [u8],
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let int_type = py.get_type::<pyo3::types::PyLong>();
-    int_type.call_method1("from_bytes", (v.as_bytes(), "big"))
+    let kwargs = [("signed", true)].into_py_dict(py);
+    int_type.call_method("from_bytes", (v, "big"), Some(kwargs))
 }
 
 #[pyo3::prelude::pyfunction]
@@ -90,8 +92,8 @@ fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObj
     let sig = asn1::parse_single::<DssSignature<'_>>(data)?;
 
     Ok((
-        big_asn1_uint_to_py(py, sig.r)?,
-        big_asn1_uint_to_py(py, sig.s)?,
+        big_byte_slice_to_py_int(py, sig.r.as_bytes())?,
+        big_byte_slice_to_py_int(py, sig.s.as_bytes())?,
     )
         .to_object(py))
 }

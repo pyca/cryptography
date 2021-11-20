@@ -735,12 +735,17 @@ class TestRSACertificate(object):
         assert cert == cert2
 
     def test_negative_serial_number(self, backend):
-        with pytest.raises(ValueError, match="TbsCertificate::serial"):
-            _load_cert(
+        # We load certificates with negative serial numbers but on load
+        # and on access of the attribute we raise a warning
+        with pytest.warns(utils.DeprecatedIn36):
+            cert = _load_cert(
                 os.path.join("x509", "custom", "negative_serial.pem"),
                 x509.load_pem_x509_certificate,
                 backend,
             )
+
+        with pytest.warns(utils.DeprecatedIn36):
+            assert cert.serial_number == -18008675309
 
     def test_alternate_rsa_with_sha1_oid(self, backend):
         cert = _load_cert(
