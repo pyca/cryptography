@@ -126,20 +126,17 @@ impl Certificate {
             py,
             &asn1::write_single(&self.raw.borrow_value().tbs_cert.spki),
         );
-        if self.raw.borrow_value().signature_alg.oid == *x509::oid::RSASSA_PSS_OID {
-            let backend = py.import("cryptography.hazmat.backends.openssl.backend")?;
-            let lib = backend.getattr("backend")?.getattr("_lib")?;
-            let has_pss = lib
-                .getattr("Cryptography_HAS_EVP_PKEY_RSA_PSS")?
-                .extract::<u8>()?;
-            if has_pss == 0 {
-                return Err(pyo3::PyErr::from_instance(
-                    py.import("cryptography.exceptions")?.call_method1(
-                        "UnsupportedAlgorithm",
-                        ("RSASSA-PSS keys are only supported in OpenSSL 1.1.1k or greater.",),
-                    )?,
-                ));
-            }
+        let backend = py.import("cryptography.hazmat.backends.openssl.backend")?;
+        let lib = backend.getattr("backend")?.getattr("_lib")?;
+        let has_pss = lib
+            .getattr("Cryptography_HAS_EVP_PKEY_RSA_PSS")?
+            .extract::<u8>()?;
+        if self.raw.borrow_value().signature_alg.oid == *x509::oid::RSASSA_PSS_OID && has_pss == 0 {
+            let err = py.import("cryptography.exceptions")?.call_method1(
+                "UnsupportedAlgorithm",
+                ("RSASSA-PSS keys are only supported in OpenSSL 1.1.1k or greater.",),
+            )?;
+            return Err(pyo3::PyErr::from_instance(err));
         }
         py.import("cryptography.hazmat.primitives.serialization")?
             .getattr("load_der_public_key")?
