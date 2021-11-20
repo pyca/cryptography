@@ -60,6 +60,17 @@ Changelog
   does not commit to a stable API, ``cryptography`` tests against the
   latest commit only. Please note that several features are not available
   when building against BoringSSL.
+* Parsing ``CertificateSigningRequest`` from DER and PEM now, for a limited
+  time period, allows the ``Extension`` ``critical`` field to be incorrectly
+  encoded. See `the issue <https://github.com/pyca/cryptography/issues/6368>`_
+  for complete details. This will be reverted in a future ``cryptography``
+  release.
+* When :class:`~cryptography.x509.OCSPNonce` are parsed and generated their
+  value is now correctly wrapped in an ASN.1 ``OCTET STRING``. This conforms
+  to :rfc:`6960` but conflicts with the original behavior specified in
+  :rfc:`2560`. For a temporary period for backwards compatibility, we will
+  also parse values that are encoded as specified in :rfc:`2560` but this
+  behavior will be removed in a future release.
 
 .. _v35-0-0:
 
