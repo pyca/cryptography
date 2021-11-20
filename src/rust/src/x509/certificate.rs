@@ -3,8 +3,7 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, warn_if_negative, PyAsn1Error,
-    PyAsn1Result,
+    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct};
@@ -181,10 +180,9 @@ impl Certificate {
 
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        Ok(big_byte_slice_to_py_int(
-            py,
-            self.raw.borrow_value().tbs_cert.serial.as_bytes(),
-        )?)
+        let bytes = self.raw.borrow_value().tbs_cert.serial.as_bytes();
+        warn_if_negative_serial(py, bytes)?;
+        Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
 
     #[getter]
@@ -355,12 +353,27 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
     // for this sort of invalid encoding eventually.
-    warn_if_negative(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
+    warn_if_negative_serial(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
 
     Ok(Certificate {
         raw,
         cached_extensions: None,
     })
+}
+
+fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
+    if bytes[0] & 0x80 != 0 {
+        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
+        let warnings = py.import("warnings")?;
+        warnings.call_method1(
+            "warn",
+            (
+                "Parsed a negative serial number, which is disallowed by RFC 5280.",
+                cryptography_warning,
+            ),
+        )?;
+    }
+    Ok(())
 }
 
 // Needed due to clippy type complexity warning.

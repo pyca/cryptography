@@ -82,25 +82,9 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
     v: &'_ [u8],
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    warn_if_negative(py, v)?;
     let int_type = py.get_type::<pyo3::types::PyLong>();
     let kwargs = [("signed", true)].into_py_dict(py);
     int_type.call_method("from_bytes", (v, "big"), Some(kwargs))
-}
-
-pub(crate) fn warn_if_negative(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
-    if bytes[0] & 0x80 != 0 {
-        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "Parsed a negative serial number, which is disallowed by RFC 5280.",
-                cryptography_warning,
-            ),
-        )?;
-    }
-    Ok(())
 }
 
 #[pyo3::prelude::pyfunction]
