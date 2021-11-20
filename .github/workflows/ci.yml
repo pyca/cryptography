@@ -395,7 +395,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
-        JOB_NUMBER: [0, 1, 2, 3]
+        JOB_NUMBER: [0, 1, 2]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
@@ -442,7 +442,7 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
+      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
