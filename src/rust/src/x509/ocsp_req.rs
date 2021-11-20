@@ -95,10 +95,8 @@ impl OCSPRequest {
 
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        Ok(big_byte_slice_to_py_int(
-            py,
-            self.cert_id()?.serial_number.as_bytes(),
-        )?)
+        let bytes = self.cert_id()?.serial_number.as_bytes();
+        Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
 
     #[getter]
