@@ -107,9 +107,9 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
 
     if params.get("pt") is not None:
-        plaintext = params["pt"]
-    ciphertext = params["ct"]
-    aad = params["aad"]
+        plaintext = binascii.unhexlify(params["pt"])
+    ciphertext = binascii.unhexlify(params["ct"])
+    aad = binascii.unhexlify(params["aad"])
     if params.get("fail") is True:
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
@@ -121,8 +121,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
-        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+        decryptor.authenticate_additional_data(aad)
+        actual_plaintext = decryptor.update(ciphertext)
         with pytest.raises(InvalidTag):
             decryptor.finalize()
     else:
@@ -132,8 +132,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         encryptor = cipher.encryptor()
-        encryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+        encryptor.authenticate_additional_data(aad)
+        actual_ciphertext = encryptor.update(plaintext)
         actual_ciphertext += encryptor.finalize()
         tag_len = len(binascii.unhexlify(params["tag"]))
         assert binascii.hexlify(encryptor.tag[:tag_len]) == params["tag"]
@@ -147,10 +147,10 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
-        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+        decryptor.authenticate_additional_data(aad)
+        actual_plaintext = decryptor.update(ciphertext)
         actual_plaintext += decryptor.finalize()
-        assert actual_plaintext == binascii.unhexlify(plaintext)
+        assert actual_plaintext == plaintext
 
 
 def generate_stream_encryption_test(
