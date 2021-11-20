@@ -108,17 +108,22 @@ pub(crate) fn encode_name_entry<'p>(
 
     let attr_type = py_name_entry.getattr("_type")?;
     let tag = attr_type.getattr("value")?.extract::<u8>()?;
-    let encoding = if attr_type == asn1_type.getattr("BMPString")? {
-        "utf_16_be"
-    } else if attr_type == asn1_type.getattr("UniversalString")? {
-        "utf_32_be"
+    let value: &[u8];
+    if attr_type != asn1_type.getattr("BitString")? {
+        let encoding = if attr_type == asn1_type.getattr("BMPString")? {
+            "utf_16_be"
+        } else if attr_type == asn1_type.getattr("UniversalString")? {
+            "utf_32_be"
+        } else {
+            "utf8"
+        };
+        value = py_name_entry
+            .getattr("value")?
+            .call_method1("encode", (encoding,))?
+            .extract()?;
     } else {
-        "utf8"
-    };
-    let value = py_name_entry
-        .getattr("value")?
-        .call_method1("encode", (encoding,))?
-        .extract()?;
+        value = py_name_entry.getattr("value")?.extract()?;
+    }
     let oid = asn1::ObjectIdentifier::from_string(
         py_name_entry
             .getattr("oid")?
@@ -366,22 +371,23 @@ fn parse_name_attribute(
         .getattr("_ASN1_TYPE_TO_ENUM")?;
     let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
     let py_data = match attribute.value.tag() {
+        // BitString tag value
+        3 => pyo3::types::PyBytes::new(py, attribute.value.data()),
         // BMPString tag value
         30 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes
-                .call_method1("decode", ("utf_16_be",))?
-                .extract::<&str>()?
+            py_bytes.call_method1("decode", ("utf_16_be",))?
         }
         // UniversalString
         28 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes
-                .call_method1("decode", ("utf_32_be",))?
-                .extract::<&str>()?
+            py_bytes.call_method1("decode", ("utf_32_be",))?
         }
-        _ => std::str::from_utf8(attribute.value.data())
-            .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?,
+        _ => {
+            let parsed = std::str::from_utf8(attribute.value.data())
+                .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
+            pyo3::types::PyString::new(py, parsed)
+        }
     };
     let kwargs = [("_validate", false)].into_py_dict(py);
     Ok(x509_module
