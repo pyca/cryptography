@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{big_byte_slice_to_py_int, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
@@ -238,7 +238,7 @@ impl OCSPResponse {
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
         let single_resp = resp.single_response();
-        big_asn1_uint_to_py(py, single_resp.cert_id.serial_number)
+        big_byte_slice_to_py_int(py, single_resp.cert_id.serial_number.as_bytes())
     }
 
     #[getter]

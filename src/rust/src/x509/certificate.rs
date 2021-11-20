@@ -2,7 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_asn1_uint_to_py, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{
+    big_byte_slice_is_negative, big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error,
+    PyAsn1Result,
+};
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct};
 use chrono::Datelike;
@@ -23,7 +26,7 @@ pub(crate) struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
     version: u8,
-    pub(crate) serial: asn1::BigUint<'a>,
+    pub(crate) serial: asn1::BigInt<'a>,
     signature_alg: x509::AlgorithmIdentifier<'a>,
 
     pub(crate) issuer: x509::Name<'a>,
@@ -178,9 +181,9 @@ impl Certificate {
 
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        Ok(big_asn1_uint_to_py(
+        Ok(big_byte_slice_to_py_int(
             py,
-            self.raw.borrow_value().tbs_cert.serial,
+            self.raw.borrow_value().tbs_cert.serial.as_bytes(),
         )?)
     }
 
@@ -350,6 +353,10 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
     let raw = OwnedRawCertificate::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
+    // determine if the serial is negative and raise a warning if it is. We want to drop support
+    // for this sort of invalid encoding eventually.
+    big_byte_slice_is_negative(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
+
     Ok(Certificate {
         raw,
         cached_extensions: None,
@@ -441,7 +448,7 @@ fn parse_user_notice(
             let org = parse_display_text(py, data.organization)?;
             let numbers = pyo3::types::PyList::empty(py);
             for num in data.notice_numbers.unwrap_read().clone() {
-                numbers.append(big_asn1_uint_to_py(py, num)?.to_object(py))?;
+                numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?.to_object(py))?;
             }
             x509_module
                 .call_method1("NoticeReference", (org, numbers))?
@@ -699,7 +706,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
     let x509_module = py.import("cryptography.x509")?;
     let aki = asn1::parse_single::<AuthorityKeyIdentifier<'_>>(ext_data)?;
     let serial = match aki.authority_cert_serial_number {
-        Some(biguint) => big_asn1_uint_to_py(py, biguint)?.to_object(py),
+        Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.to_object(py),
         None => py.None(),
     };
     let issuer = match aki.authority_cert_issuer {
@@ -836,7 +843,7 @@ pub fn parse_cert_ext<'p>(
         Ok(Some(x509_module.getattr("OCSPNoCheck")?.call0()?))
     } else if oid == *oid::INHIBIT_ANY_POLICY_OID {
         let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
-        let pynum = big_asn1_uint_to_py(py, bignum)?;
+        let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
         Ok(Some(
             x509_module.getattr("InhibitAnyPolicy")?.call1((pynum,))?,
         ))
@@ -909,7 +916,7 @@ fn create_x509_certificate(
 
     let tbs_cert = TbsCertificate {
         version: builder.getattr("_version")?.getattr("value")?.extract()?,
-        serial: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
+        serial: asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
         signature_alg: sigalg.clone(),
         issuer: x509::common::encode_name(py, builder.getattr("_issuer_name")?)?,
         validity: Validity {
