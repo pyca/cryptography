@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_is_negative, big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error,
+    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, warn_if_negative, PyAsn1Error,
     PyAsn1Result,
 };
 use crate::x509;
@@ -355,7 +355,7 @@ fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
     // for this sort of invalid encoding eventually.
-    big_byte_slice_is_negative(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
+    warn_if_negative(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
 
     Ok(Certificate {
         raw,

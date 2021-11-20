@@ -82,16 +82,13 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
     v: &'_ [u8],
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let signed = big_byte_slice_is_negative(py, v)?;
+    warn_if_negative(py, v)?;
     let int_type = py.get_type::<pyo3::types::PyLong>();
-    let kwargs = [("signed", signed)].into_py_dict(py);
+    let kwargs = [("signed", true)].into_py_dict(py);
     int_type.call_method("from_bytes", (v, "big"), Some(kwargs))
 }
 
-pub(crate) fn big_byte_slice_is_negative(
-    py: pyo3::Python<'_>,
-    bytes: &'_ [u8],
-) -> pyo3::PyResult<bool> {
+pub(crate) fn warn_if_negative(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
         let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
         let warnings = py.import("warnings")?;
@@ -102,9 +99,8 @@ pub(crate) fn big_byte_slice_is_negative(
                 cryptography_warning,
             ),
         )?;
-        return Ok(true);
     }
-    Ok(false)
+    Ok(())
 }
 
 #[pyo3::prelude::pyfunction]
