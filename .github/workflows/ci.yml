@@ -497,7 +497,6 @@ jobs:
           default: true
       - run: python -m pip install -U pip wheel
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
-      - run: pip uninstall -y enum34
       - run: pip install .
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
