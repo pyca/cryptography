@@ -16,6 +16,7 @@ typedef ... EVP_MD_CTX;
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
+static const int EVP_PKEY_RSA_PSS;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
@@ -38,6 +39,7 @@ static const long Cryptography_HAS_RAW_KEY;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 static const long Cryptography_HAS_300_FIPS;
 static const long Cryptography_HAS_EVP_PKEY_DH;
+static const long Cryptography_HAS_EVP_PKEY_RSA_PSS;
 """
 
 FUNCTIONS = """
@@ -287,5 +289,17 @@ static const long Cryptography_HAS_EVP_PKEY_DH = 0;
 int (*EVP_PKEY_set1_DH)(EVP_PKEY *, DH *) = NULL;
 #else
 static const long Cryptography_HAS_EVP_PKEY_DH = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_111K_OR_GREATER
+/* Just having the symbol doesn't mean it works. Limit support
+   to OpenSSL 1.1.1k or greater, where we've verified it does
+   work. */
+static const long Cryptography_HAS_EVP_PKEY_RSA_PSS = 1;
+#else
+static const long Cryptography_HAS_EVP_PKEY_RSA_PSS = 0;
+#ifndef EVP_PKEY_RSA_PSS
+#define EVP_PKEY_RSA_PSS 0
+#endif
 #endif
 """

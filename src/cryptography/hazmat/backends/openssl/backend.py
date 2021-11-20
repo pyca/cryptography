@@ -183,6 +183,12 @@ class Backend(BackendInterface):
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
+        self._supported_rsa_key_types = [self._lib.EVP_PKEY_RSA]
+        if self.x509_pss_supported():
+            # Only OpenSSL 1.1.1k+ understands how to deserialize RSASSA-PSS
+            # public keys with the EVP APIs we use.
+            self._supported_rsa_key_types.append(self._lib.EVP_PKEY_RSA_PSS)
+
     def __repr__(self):
         return "<OpenSSLBackend(version: {}, FIPS: {})>".format(
             self.openssl_version_text(), self._fips_enabled
@@ -633,7 +639,7 @@ class Backend(BackendInterface):
 
         key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
-        if key_type == self._lib.EVP_PKEY_RSA:
+        if key_type in self._supported_rsa_key_types:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             self.openssl_assert(rsa_cdata != self._ffi.NULL)
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
@@ -944,6 +950,9 @@ class Backend(BackendInterface):
                 return _DHParameters(self, dh_cdata)
 
         self._handle_key_loading_error()
+
+    def x509_pss_supported(self):
+        return self._lib.Cryptography_HAS_EVP_PKEY_RSA_PSS == 1
 
     def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)

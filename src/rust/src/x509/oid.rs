@@ -48,6 +48,7 @@ lazy_static::lazy_static! {
     pub(crate) static ref RSA_WITH_SHA256_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.11").unwrap();
     pub(crate) static ref RSA_WITH_SHA384_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.12").unwrap();
     pub(crate) static ref RSA_WITH_SHA512_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.13").unwrap();
+    pub(crate) static ref RSASSA_PSS_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.113549.1.1.10").unwrap();
 
     pub(crate) static ref DSA_WITH_SHA1_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.2.840.10040.4.3").unwrap();
     pub(crate) static ref DSA_WITH_SHA224_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.3.1").unwrap();

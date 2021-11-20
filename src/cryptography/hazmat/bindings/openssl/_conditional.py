@@ -295,6 +295,12 @@ def cryptography_has_evp_pkey_dh():
     ]
 
 
+def cryptography_has_evp_pkey_rsa_pss():
+    return [
+        "EVP_PKEY_RSA_PSS",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -351,4 +357,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
     "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
+    "Cryptography_HAS_EVP_PKEY_RSA_PSS": cryptography_has_evp_pkey_rsa_pss,
 }

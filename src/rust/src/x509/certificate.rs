@@ -126,6 +126,21 @@ impl Certificate {
             py,
             &asn1::write_single(&self.raw.borrow_value().tbs_cert.spki),
         );
+        if self.raw.borrow_value().signature_alg.oid == *x509::oid::RSASSA_PSS_OID {
+            let backend = py.import("cryptography.hazmat.backends.openssl.backend")?;
+            let lib = backend.getattr("backend")?.getattr("_lib")?;
+            let has_pss = lib
+                .getattr("Cryptography_HAS_EVP_PKEY_RSA_PSS")?
+                .extract::<u8>()?;
+            if has_pss == 0 {
+                return Err(pyo3::PyErr::from_instance(
+                    py.import("cryptography.exceptions")?.call_method1(
+                        "UnsupportedAlgorithm",
+                        ("RSASSA-PSS keys are only supported in OpenSSL 1.1.1k or greater.",),
+                    )?,
+                ));
+            }
+        }
         py.import("cryptography.hazmat.primitives.serialization")?
             .getattr("load_der_public_key")?
             .call1((serialized,))
@@ -246,14 +261,14 @@ impl Certificate {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let sig_oids_to_hash = py
             .import("cryptography.hazmat._oid")?
             .getattr("_SIG_OIDS_TO_HASH")?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
-            Err(_) => Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            Err(_) => Err(pyo3::PyErr::from_instance(
                 py.import("cryptography.exceptions")?.call_method1(
                     "UnsupportedAlgorithm",
                     (format!(
@@ -261,7 +276,7 @@ impl Certificate {
                         self.raw.borrow_value().signature_alg.oid
                     ),),
                 )?,
-            ))),
+            )),
         }
     }
 

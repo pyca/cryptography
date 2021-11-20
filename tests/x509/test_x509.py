@@ -734,6 +734,35 @@ class TestRSACertificate(object):
         )
         assert cert == cert2
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.x509_pss_supported(),
+        skip_message="Requires OpenSSL with X.509 PSS RSA support (1.1.1+)",
+    )
+    def test_load_pss_cert(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.RSASSA_PSS
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        with pytest.raises(UnsupportedAlgorithm):
+            cert.signature_hash_algorithm
+
+    @pytest.mark.supported(
+        only_if=lambda backend: not backend.x509_pss_supported(),
+        skip_message="Requires OpenSSL without X.509 PSS RSA support",
+    )
+    def test_load_pss_cert_unsupported(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cert.public_key()
+
     def test_negative_serial_number(self, backend):
         # We load certificates with negative serial numbers but on load
         # and on access of the attribute we raise a warning

@@ -71,6 +71,10 @@ Changelog
   :rfc:`2560`. For a temporary period for backwards compatibility, we will
   also parse values that are encoded as specified in :rfc:`2560` but this
   behavior will be removed in a future release.
+* Improve parsing of RSASSA-PSS X.509 certificates to support obtaining the
+  :meth:`~cryptography.x509.Certificate.public_key` on OpenSSL 1.1.1k or
+  greater. At this time there is no support for parsing key parameters or
+  information about the signature hash algorithm.
 
 .. _v35-0-0:
 
