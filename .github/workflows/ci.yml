@@ -327,7 +327,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
-        JOB_NUMBER: [1, 2]
+        JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on macOS (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
