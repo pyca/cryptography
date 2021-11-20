@@ -327,7 +327,8 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
-    name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+        JOB_NUMBER: [1, 2]
+    name: "${{ matrix.PYTHON.TOXENV }} on macOS (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.3.4
@@ -372,7 +373,7 @@ jobs:
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-x86-64/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
-            tox -r --  --color=yes --wycheproof-root=wycheproof
+            tox -r --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
@@ -380,7 +381,7 @@ jobs:
 
       - uses: ./.github/actions/upload-coverage
         with:
-          name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+          name: "${{ matrix.PYTHON.TOXENV }} on macOS (part ${{ matrix.JOB_NUMBER }})"
 
   windows:
     runs-on: windows-latest
@@ -395,7 +396,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
-        JOB_NUMBER: [0, 1, 2, 3]
+        JOB_NUMBER: [0, 1, 2]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
@@ -442,7 +443,7 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=4 --shard-id=${{ matrix.JOB_NUMBER }}
+      - run: tox -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
