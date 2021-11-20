@@ -31,7 +31,7 @@ Changelog
 * Allow parsing of negative serial numbers in certificates. Negative serial
   numbers are prohibited by :rfc:`5280` so a deprecation warning will be
   raised whenever they are encountered. A future version of ``cryptography``
-  will drop support.
+  will drop support for parsing them.
 * Added support for parsing PKCS12 files with friendly names for all
   certificates with
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,
