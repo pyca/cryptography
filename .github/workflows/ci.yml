@@ -41,6 +41,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.5"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.1"}}
           - {VERSION: "3.10", TOXENV: "py310"}
+          - {VERSION: "3.10", TOXENV: "py310-randomorder"}
           # Latest commit on the main-with-bazel branch, as of November 8, 2021
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "4fb158925f7753d80fb858cb0239dff893ef9f15"}}
         RUST:
@@ -137,7 +138,6 @@ jobs:
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py39-randomorder"}
           - {IMAGE: "fedora", TOXENV: "py310"}
           - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
