@@ -4,8 +4,8 @@
 
 use crate::x509::Name;
 use pyo3::basic::CompareOp;
-use pyo3::ToPyObject;
 use pyo3::types::IntoPyDict;
+use pyo3::ToPyObject;
 
 pub enum PyAsn1Error {
     Asn1(asn1::ParseError),
