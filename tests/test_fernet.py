@@ -16,7 +16,6 @@ import pretend
 import pytest
 
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 import cryptography_vectors
@@ -31,11 +30,6 @@ def json_parametrize(keys, filename):
         return pytest.mark.parametrize(
             keys, [tuple([entry[k] for k in keys]) for entry in data]
         )
-
-
-def test_default_backend():
-    f = Fernet(Fernet.generate_key())
-    assert f._backend is default_backend()
 
 
 @pytest.mark.supported(

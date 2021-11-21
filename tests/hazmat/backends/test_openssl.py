@@ -13,6 +13,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -57,6 +58,9 @@ class DummyMGF(object):
 class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
+
+    def test_is_default_backend(self):
+        assert backend is default_backend()
 
     def test_openssl_version_text(self):
         """
