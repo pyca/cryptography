@@ -3,11 +3,8 @@ Changelog
 
 .. _v36-0-0:
 
-36.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
- .. note:: This version is not yet released and is under active development.
-
+36.0.0 - 2021-11-21
+~~~~~~~~~~~~~~~~~~~
 
 * **FINAL DEPRECATION** Support for ``verifier`` and ``signer`` on our
   asymmetric key classes was deprecated in version 2.1. These functions had an
