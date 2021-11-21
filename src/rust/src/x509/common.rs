@@ -5,6 +5,7 @@
 use crate::asn1::PyAsn1Error;
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
+use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::HashSet;
 use std::convert::TryInto;
@@ -382,8 +383,9 @@ fn parse_name_attribute(
         _ => std::str::from_utf8(attribute.value.data())
             .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?,
     };
+    let kwargs = [("_validate", false)].into_py_dict(py);
     Ok(x509_module
-        .call_method1("NameAttribute", (oid, py_data, py_tag))?
+        .call_method("NameAttribute", (oid, py_data, py_tag), Some(kwargs))?
         .to_object(py))
 }
 

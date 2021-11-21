@@ -747,6 +747,28 @@ class TestRSACertificate(object):
         with pytest.warns(utils.DeprecatedIn36):
             assert cert.serial_number == -18008675309
 
+    def test_country_jurisdiction_country_too_long(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "bad_country.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.warns(UserWarning):
+            assert (
+                cert.subject.get_attributes_for_oid(x509.NameOID.COUNTRY_NAME)[
+                    0
+                ].value
+                == "too long"
+            )
+
+        with pytest.warns(UserWarning):
+            assert (
+                cert.subject.get_attributes_for_oid(
+                    x509.NameOID.JURISDICTION_COUNTRY_NAME
+                )[0].value
+                == "also too long"
+            )
+
     def test_alternate_rsa_with_sha1_oid(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "alternate-rsa-sha1-oid.der"),
