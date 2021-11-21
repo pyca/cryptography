@@ -3,6 +3,7 @@
 # for complete details.
 
 import typing
+import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import (
@@ -79,7 +80,12 @@ def _escape_dn_value(val: str) -> str:
 
 class NameAttribute(object):
     def __init__(
-        self, oid: ObjectIdentifier, value: str, _type=_SENTINEL
+        self,
+        oid: ObjectIdentifier,
+        value: str,
+        _type=_SENTINEL,
+        *,
+        _validate=True,
     ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -93,9 +99,16 @@ class NameAttribute(object):
             oid == NameOID.COUNTRY_NAME
             or oid == NameOID.JURISDICTION_COUNTRY_NAME
         ):
-            if len(value.encode("utf8")) != 2:
+            c_len = len(value.encode("utf8"))
+            if c_len != 2 and _validate is True:
                 raise ValueError(
                     "Country name must be a 2 character country code"
+                )
+            elif c_len != 2:
+                warnings.warn(
+                    "Country names should be two characters, but the "
+                    "attribute is {} characters in length.".format(c_len),
+                    stacklevel=2,
                 )
 
         # The appropriate ASN1 string type varies by OID and is defined across

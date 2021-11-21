@@ -444,6 +444,9 @@ Custom X.509 Vectors
   version.
 * ``invalid-sct-length.der`` - A certificate with an SCT with an internal
   length greater than the amount of data.
+* ``bad_country.pem`` - A certificate with country name and jurisdiction
+  country name values in its subject and issuer distinguished names which
+  are longer than 2 characters.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
