@@ -5,7 +5,6 @@
 
 import typing
 
-from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature,
     UnsupportedAlgorithm,
@@ -14,12 +13,9 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.openssl.utils import (
     _calculate_digest_and_algorithm,
     _check_not_prehashed,
-    _warn_sign_verify_deprecated,
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext,
-    AsymmetricVerificationContext,
     utils as asym_utils,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
@@ -316,74 +312,6 @@ def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
     return resbuf
 
 
-class _RSASignatureContext(AsymmetricSignatureContext):
-    def __init__(
-        self,
-        backend,
-        private_key: RSAPrivateKey,
-        padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm,
-    ):
-        self._backend = backend
-        self._private_key = private_key
-
-        # We now call _rsa_sig_determine_padding in _rsa_sig_setup. However
-        # we need to make a pointless call to it here so we maintain the
-        # API of erroring on init with this context if the values are invalid.
-        _rsa_sig_determine_padding(backend, private_key, padding, algorithm)
-        self._padding = padding
-        self._algorithm = algorithm
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-
-    def update(self, data: bytes) -> None:
-        self._hash_ctx.update(data)
-
-    def finalize(self) -> bytes:
-        return _rsa_sig_sign(
-            self._backend,
-            self._padding,
-            self._algorithm,
-            self._private_key,
-            self._hash_ctx.finalize(),
-        )
-
-
-class _RSAVerificationContext(AsymmetricVerificationContext):
-    def __init__(
-        self,
-        backend,
-        public_key: RSAPublicKey,
-        signature: bytes,
-        padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm,
-    ):
-        self._backend = backend
-        self._public_key = public_key
-        self._signature = signature
-        self._padding = padding
-        # We now call _rsa_sig_determine_padding in _rsa_sig_setup. However
-        # we need to make a pointless call to it here so we maintain the
-        # API of erroring on init with this context if the values are invalid.
-        _rsa_sig_determine_padding(backend, public_key, padding, algorithm)
-
-        padding = padding
-        self._algorithm = algorithm
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-
-    def update(self, data: bytes) -> None:
-        self._hash_ctx.update(data)
-
-    def verify(self) -> None:
-        return _rsa_sig_verify(
-            self._backend,
-            self._padding,
-            self._algorithm,
-            self._public_key,
-            self._signature,
-            self._hash_ctx.finalize(),
-        )
-
-
 class _RSAPrivateKey(RSAPrivateKey):
     def __init__(self, backend, rsa_cdata, evp_pkey, _skip_check_key):
         # RSA_check_key is slower in OpenSSL 3.0.0 due to improved
@@ -419,13 +347,6 @@ class _RSAPrivateKey(RSAPrivateKey):
     @property
     def key_size(self) -> int:
         return self._key_size
-
-    def signer(
-        self, padding: AsymmetricPadding, algorithm: hashes.HashAlgorithm
-    ) -> AsymmetricSignatureContext:
-        _warn_sign_verify_deprecated()
-        _check_not_prehashed(algorithm)
-        return _RSASignatureContext(self._backend, self, padding, algorithm)
 
     def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
         key_size_bytes = (self.key_size + 7) // 8
@@ -522,20 +443,6 @@ class _RSAPublicKey(RSAPublicKey):
     @property
     def key_size(self) -> int:
         return self._key_size
-
-    def verifier(
-        self,
-        signature: bytes,
-        padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm,
-    ) -> AsymmetricVerificationContext:
-        _warn_sign_verify_deprecated()
-        utils._check_bytes("signature", signature)
-
-        _check_not_prehashed(algorithm)
-        return _RSAVerificationContext(
-            self._backend, self, signature, padding, algorithm
-        )
 
     def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
         return _enc_dec_rsa(self._backend, self, plaintext, padding)

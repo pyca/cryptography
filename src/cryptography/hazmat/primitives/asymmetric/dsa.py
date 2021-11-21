@@ -8,8 +8,6 @@ import typing
 
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext,
-    AsymmetricVerificationContext,
     utils as asym_utils,
 )
 
@@ -48,15 +46,6 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
     def parameters(self) -> DSAParameters:
         """
         The DSAParameters object associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def signer(
-        self,
-        signature_algorithm: hashes.HashAlgorithm,
-    ) -> AsymmetricSignatureContext:
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
         """
 
     @abc.abstractmethod
@@ -101,16 +90,6 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
     def parameters(self) -> DSAParameters:
         """
         The DSAParameters object associated with this public key.
-        """
-
-    @abc.abstractmethod
-    def verifier(
-        self,
-        signature: bytes,
-        signature_algorithm: hashes.HashAlgorithm,
-    ) -> AsymmetricVerificationContext:
-        """
-        Returns an AsymmetricVerificationContext used for signing data.
         """
 
     @abc.abstractmethod

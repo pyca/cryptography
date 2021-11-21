@@ -5,17 +5,12 @@
 
 import typing
 
-from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import (
     _calculate_digest_and_algorithm,
-    _check_not_prehashed,
-    _warn_sign_verify_deprecated,
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext,
-    AsymmetricVerificationContext,
     dsa,
     utils as asym_utils,
 )
@@ -47,46 +42,6 @@ def _dsa_sig_verify(backend, public_key, signature, data):
     if res != 1:
         backend._consume_errors()
         raise InvalidSignature
-
-
-class _DSAVerificationContext(AsymmetricVerificationContext):
-    def __init__(self, backend, public_key, signature, algorithm):
-        self._backend = backend
-        self._public_key = public_key
-        self._signature = signature
-        self._algorithm = algorithm
-
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-
-    def update(self, data: bytes):
-        self._hash_ctx.update(data)
-
-    def verify(self) -> None:
-        data_to_verify = self._hash_ctx.finalize()
-
-        _dsa_sig_verify(
-            self._backend, self._public_key, self._signature, data_to_verify
-        )
-
-
-class _DSASignatureContext(AsymmetricSignatureContext):
-    def __init__(
-        self,
-        backend,
-        private_key: dsa.DSAPrivateKey,
-        algorithm: hashes.HashAlgorithm,
-    ):
-        self._backend = backend
-        self._private_key = private_key
-        self._algorithm = algorithm
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-
-    def update(self, data: bytes) -> None:
-        self._hash_ctx.update(data)
-
-    def finalize(self) -> bytes:
-        data_to_sign = self._hash_ctx.finalize()
-        return _dsa_sig_sign(self._backend, self._private_key, data_to_sign)
 
 
 class _DSAParameters(dsa.DSAParameters):
@@ -128,13 +83,6 @@ class _DSAPrivateKey(dsa.DSAPrivateKey):
     @property
     def key_size(self) -> int:
         return self._key_size
-
-    def signer(
-        self, signature_algorithm: hashes.HashAlgorithm
-    ) -> AsymmetricSignatureContext:
-        _warn_sign_verify_deprecated()
-        _check_not_prehashed(signature_algorithm)
-        return _DSASignatureContext(self._backend, self, signature_algorithm)
 
     def private_numbers(self) -> dsa.DSAPrivateNumbers:
         p = self._backend._ffi.new("BIGNUM **")
@@ -229,19 +177,6 @@ class _DSAPublicKey(dsa.DSAPublicKey):
     @property
     def key_size(self) -> int:
         return self._key_size
-
-    def verifier(
-        self,
-        signature: bytes,
-        signature_algorithm: hashes.HashAlgorithm,
-    ) -> AsymmetricVerificationContext:
-        _warn_sign_verify_deprecated()
-        utils._check_bytes("signature", signature)
-
-        _check_not_prehashed(signature_algorithm)
-        return _DSAVerificationContext(
-            self._backend, self, signature, signature_algorithm
-        )
 
     def public_numbers(self) -> dsa.DSAPublicNumbers:
         p = self._backend._ffi.new("BIGNUM **")
