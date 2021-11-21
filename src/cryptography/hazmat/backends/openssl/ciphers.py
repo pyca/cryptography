@@ -3,17 +3,19 @@
 # for complete details.
 
 
-from cryptography import utils
-from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import (
+    AlreadyFinalized,
+    AlreadyUpdated,
+    InvalidTag,
+    NotYetFinalized,
+    UnsupportedAlgorithm,
+    _Reasons,
+)
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 
 
-@utils.register_interface(ciphers.CipherContext)
-@utils.register_interface(ciphers.AEADCipherContext)
-@utils.register_interface(ciphers.AEADEncryptionContext)
-@utils.register_interface(ciphers.AEADDecryptionContext)
-class _CipherContext(object):
+class _CipherContext(ciphers.CipherContext):
     _ENCRYPT = 1
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2 ** 30 - 1
@@ -23,7 +25,11 @@ class _CipherContext(object):
         self._cipher = cipher
         self._mode = mode
         self._operation = operation
+        self._bytes_processed = 0
+        self._aad_bytes_processed = 0
         self._tag = None
+        self._updated = False
+        self._is_aead = isinstance(self._mode, modes.ModeWithAuthenticationTag)
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size_bytes = self._cipher.block_size // 8
@@ -146,6 +152,19 @@ class _CipherContext(object):
 
     def update_into(self, data: bytes, buf) -> int:
         total_data_len = len(data)
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+        self._updated = True
+        self._bytes_processed += total_data_len
+        if (
+            self._is_aead
+            and self._bytes_processed > self._mode._MAX_ENCRYPTED_BYTES
+        ):
+            raise ValueError(
+                "{} has a maximum encrypted byte limit of {}".format(
+                    self._mode.name, self._mode._MAX_ENCRYPTED_BYTES
+                )
+            )
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
                 "buffer must be at least {} bytes for this "
@@ -180,10 +199,13 @@ class _CipherContext(object):
         return total_out
 
     def finalize(self) -> bytes:
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+
         if (
             self._operation == self._DECRYPT
             and isinstance(self._mode, modes.ModeWithAuthenticationTag)
-            and self.tag is None
+            and self._tag is None
         ):
             raise ValueError(
                 "Authentication tag must be provided when decrypting."
@@ -240,10 +262,20 @@ class _CipherContext(object):
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
 
         res = self._backend._lib.EVP_CIPHER_CTX_reset(self._ctx)
+        self._ctx = None
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
     def finalize_with_tag(self, tag: bytes) -> bytes:
+        if not self._is_aead:
+            # This raises an attribute error to be consistent with our
+            # previous API, which returned different objects for different
+            # modes, so this would have been an AttributeError if called.
+            raise AttributeError("Not available on non-AEAD ciphers")
+
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+
         tag_len = len(tag)
         if tag_len < self._mode._min_tag_length:
             raise ValueError(
@@ -265,6 +297,25 @@ class _CipherContext(object):
         return self.finalize()
 
     def authenticate_additional_data(self, data: bytes) -> None:
+        if not self._is_aead:
+            # This raises an attribute error to be consistent with our
+            # previous API, which returned different objects for different
+            # modes, so this would have been an AttributeError if called.
+            raise AttributeError("Not available on non-AEAD ciphers")
+
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+        if self._updated:
+            raise AlreadyUpdated("Update has been called on this context.")
+
+        self._aad_bytes_processed += len(data)
+        if self._aad_bytes_processed > self._mode._MAX_AAD_BYTES:
+            raise ValueError(
+                "{} has a maximum AAD byte limit of {}".format(
+                    self._mode.name, self._mode._MAX_AAD_BYTES
+                )
+            )
+
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx,
@@ -275,4 +326,23 @@ class _CipherContext(object):
         )
         self._backend.openssl_assert(res != 0)
 
-    tag = utils.read_only_property("_tag")
+    @property
+    def tag(self) -> bytes:
+        # TODO: call tag on non-AEAD
+        if self._operation == 0 or (
+            self._operation == 1 and not self._is_aead
+        ):
+            # This raises an attribute error to be consistent with our
+            # previous API, which returned different objects for different
+            # modes, so this would have been an AttributeError if called.
+            raise AttributeError(
+                "Tag is only accessible with AEAD modes after finalizing "
+                "during encryption"
+            )
+
+        if self._ctx is not None:
+            raise NotYetFinalized(
+                "You must finalize encryption before getting the tag."
+            )
+        assert self._tag is not None
+        return self._tag

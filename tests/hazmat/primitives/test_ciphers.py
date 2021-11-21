@@ -325,14 +325,14 @@ class TestCipherUpdateInto(object):
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
         # Lower max chunk size so we can test chunking
-        monkeypatch.setattr(encryptor._ctx, "_MAX_CHUNK_SIZE", 40)
+        monkeypatch.setattr(encryptor, "_MAX_CHUNK_SIZE", 40)
         buf = bytearray(527)
         pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
         processed = encryptor.update_into(pt, buf)
         assert processed == 512
         decryptor = c.decryptor()
         # Change max chunk size to verify alternate boundaries don't matter
-        monkeypatch.setattr(decryptor._ctx, "_MAX_CHUNK_SIZE", 73)
+        monkeypatch.setattr(decryptor, "_MAX_CHUNK_SIZE", 73)
         decbuf = bytearray(527)
         decprocessed = decryptor.update_into(buf[:processed], decbuf)
         assert decbuf[:decprocessed] == pt
@@ -344,4 +344,6 @@ class TestCipherUpdateInto(object):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
-        backend._ffi.new("int *", encryptor._ctx._MAX_CHUNK_SIZE)
+        backend._ffi.new(
+            "int *", encryptor._MAX_CHUNK_SIZE  # type: ignore[attr-defined]
+        )
