@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v37-0-0:
+
+37.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v36-0-0:
 
 36.0.0 - 2021-11-21
