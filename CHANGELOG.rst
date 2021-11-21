@@ -9,6 +9,11 @@ Changelog
  .. note:: This version is not yet released and is under active development.
 
 
+* **FINAL DEPRECATION** Support for ``verifier`` and ``signer`` on our
+  asymmetric key classes was deprecated in version 2.1. These functions had an
+  extended deprecation due to usage, however the next version of
+  ``cryptography`` will drop support. Users should migrate to ``sign`` and
+  ``verify``.
 * The entire :doc:`/x509/index` layer is now written in Rust. This allows
   alternate asymmetric key implementations that can support cloud key
   management services or hardware security modules provided they implement
