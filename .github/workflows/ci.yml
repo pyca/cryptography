@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
@@ -92,7 +92,7 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: ossl-cache
         with:
           path: ${{ github.workspace }}/osslcache
@@ -147,7 +147,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
@@ -193,7 +193,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
@@ -243,7 +243,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         id: cargo-cache
         with:
           path: |
@@ -334,7 +334,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
@@ -409,7 +409,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
@@ -476,7 +476,7 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: |
             ~/.cargo/bin/
