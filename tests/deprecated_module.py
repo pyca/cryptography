@@ -2,11 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import cryptography
+from cryptography import utils
 
 # This module exists to test `cryptography.utils.deprecated`
 
-DEPRECATED = cryptography.utils.deprecated(
+DEPRECATED = utils.deprecated(
     3, __name__, "Test Deprecated Object", DeprecationWarning
 )
 
