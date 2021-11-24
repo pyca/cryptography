@@ -18,6 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 import cryptography_vectors
 
+from . import deprecated_module
 from .utils import (
     check_backend_support,
     load_cryptrec_vectors,
@@ -4448,11 +4449,18 @@ def test_raises_unsupported_algorithm():
     assert exc_info.type is UnsupportedAlgorithm
 
 
-def test_inspect_deprecated_module():
-    # Check if inspection is supported by _ModuleWithDeprecations.
-    assert isinstance(
-        cryptography.utils, cryptography.utils._ModuleWithDeprecations
-    )
-    source_file = inspect.getsourcefile(cryptography.utils)
-    assert isinstance(source_file, str)
-    assert source_file.endswith("utils.py")
+class TestDeprecated(object):
+    def test_getattr(self):
+        with pytest.warns(DeprecationWarning):
+            assert deprecated_module.DEPRECATED == 3
+
+        assert deprecated_module.NOT_DEPRECATED == 12
+
+    def test_inspect_deprecated_module(self):
+        # Check if inspection is supported by _ModuleWithDeprecations.
+        assert isinstance(
+            deprecated_module, cryptography.utils._ModuleWithDeprecations
+        )
+        source_file = inspect.getsourcefile(deprecated_module)
+        assert isinstance(source_file, str)
+        assert source_file.endswith("deprecated_module.py")
