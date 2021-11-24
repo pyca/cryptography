@@ -38,7 +38,8 @@ void *OPENSSL_malloc(size_t);
 void OPENSSL_free(void *);
 
 
-/* Signature changed significantly in 1.1.0, only expose there for sanity */
+/* Signature is significantly different in LibreSSL, so expose via different
+   symbol name */
 int Cryptography_CRYPTO_set_mem_functions(
     void *(*)(size_t, const char *, int),
     void *(*)(void *, size_t, const char *, int),
