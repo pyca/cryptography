@@ -23,7 +23,6 @@ class CryptographyDeprecationWarning(UserWarning):
 # cycle ends.
 PersistentlyDeprecated2017 = CryptographyDeprecationWarning
 PersistentlyDeprecated2019 = CryptographyDeprecationWarning
-DeprecatedIn34 = CryptographyDeprecationWarning
 DeprecatedIn35 = CryptographyDeprecationWarning
 DeprecatedIn36 = CryptographyDeprecationWarning
 
@@ -163,14 +162,6 @@ def cached_property(func):
         return result
 
     return property(inner)
-
-
-int_from_bytes = deprecated(
-    int.from_bytes,
-    __name__,
-    "int_from_bytes is deprecated, use int.from_bytes instead",
-    DeprecatedIn34,
-)
 
 
 # Python 3.10 changed representation of enums. We use well-defined object
