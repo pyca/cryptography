@@ -47,7 +47,7 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
-#if !CRYPTOGRAPHY_IS_LIBRESSL
+#if !CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_LIBRESSL_310_OR_GREATER
 static const long Cryptography_HAS_RSA_OAEP_MD = 1;
 static const long Cryptography_HAS_RSA_OAEP_LABEL = 1;
 #else
