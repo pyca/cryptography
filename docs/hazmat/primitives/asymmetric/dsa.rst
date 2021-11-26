@@ -49,7 +49,7 @@ Generation
 
     Generate DSA parameters.
 
-    :param int key_size: The length of :attr:`~DSAParameterNumbers.q`. It
+    :param int key_size: The length of :attr:`~DSAParameterNumbers.p`. It
         should be either 1024, 2048, 3072, or 4096. For keys generated in 2015
         this should be `at least 2048`_ (See page 41).
 
