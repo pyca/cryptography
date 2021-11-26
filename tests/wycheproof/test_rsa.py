@@ -206,14 +206,6 @@ def test_rsa_oaep_encryption(backend, wycheproof):
         label=binascii.unhexlify(wycheproof.testcase["label"]),
     )
 
-    if not backend.rsa_padding_supported(padding_algo):
-        pytest.skip(
-            "OAEP with digest={} and MGF digest={} not supported".format(
-                wycheproof.testgroup["sha"],
-                wycheproof.testgroup["mgfSha"],
-            )
-        )
-
     if wycheproof.valid or wycheproof.acceptable:
         pt = key.decrypt(
             binascii.unhexlify(wycheproof.testcase["ct"]), padding_algo
