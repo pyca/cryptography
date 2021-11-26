@@ -362,28 +362,6 @@ class TestRSA(object):
                 ),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: not backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=b"label",
-            )
-        ),
-        skip_message="Requires backend without RSA OAEP label support",
-    )
-    def test_unsupported_oaep_label_decrypt(self, backend):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=b"label",
-                ),
-            )
-
 
 class TestRSASignature(object):
     @pytest.mark.supported(
