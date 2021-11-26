@@ -382,10 +382,6 @@ class TestOpenSSLRSA(object):
             is True
         )
 
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 0,
-        reason="Requires OpenSSL with rsa_oaep_md (1.0.2+)",
-    )
     def test_rsa_padding_supported_oaep_sha2_combinations(self):
         hashalgs = [
             hashes.SHA1(),
@@ -424,38 +420,6 @@ class TestOpenSSLRSA(object):
             )
             is False
         )
-
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
-    )
-    def test_unsupported_mgf1_hash_algorithm_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA1(),
-                    label=None,
-                ),
-            )
-
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
-    )
-    def test_unsupported_oaep_hash_algorithm_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA256(),
-                    label=None,
-                ),
-            )
 
     def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)

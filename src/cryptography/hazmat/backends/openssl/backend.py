@@ -669,19 +669,16 @@ class Backend(BackendInterface):
             raise UnsupportedAlgorithm("Unsupported key type.")
 
     def _oaep_hash_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_RSA_OAEP_MD:
-            return isinstance(
-                algorithm,
-                (
-                    hashes.SHA1,
-                    hashes.SHA224,
-                    hashes.SHA256,
-                    hashes.SHA384,
-                    hashes.SHA512,
-                ),
-            )
-        else:
-            return isinstance(algorithm, hashes.SHA1)
+        return isinstance(
+            algorithm,
+            (
+                hashes.SHA1,
+                hashes.SHA224,
+                hashes.SHA256,
+                hashes.SHA384,
+                hashes.SHA512,
+            ),
+        )
 
     def rsa_padding_supported(self, padding):
         if isinstance(padding, PKCS1v15):
@@ -695,14 +692,9 @@ class Backend(BackendInterface):
             else:
                 return self.hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
-            return (
-                self._oaep_hash_supported(padding._mgf._algorithm)
-                and self._oaep_hash_supported(padding._algorithm)
-                and (
-                    (padding._label is None or len(padding._label) == 0)
-                    or self._lib.Cryptography_HAS_RSA_OAEP_LABEL == 1
-                )
-            )
+            return self._oaep_hash_supported(
+                padding._mgf._algorithm
+            ) and self._oaep_hash_supported(padding._algorithm)
         else:
             return False
 
