@@ -8,7 +8,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Support for LibreSSL 2.9.x and 3.0.x. The new
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x. The new
   minimum LibreSSL version is 3.1+.
 
 .. _v36-0-0:
