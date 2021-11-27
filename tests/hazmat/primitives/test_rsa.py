@@ -442,8 +442,8 @@ class TestRSASignature(object):
                 )
                 assert len(signature) == (private_key.key_size + 7) // 8
                 # PSS signatures contain randomness so we can't do an exact
-                # signature check. Instead we'll verify that the signature created
-                # successfully verifies.
+                # signature check. Instead we'll verify that the signature
+                # created successfully verifies.
                 public_key.verify(
                     signature,
                     binascii.unhexlify(example["message"]),
