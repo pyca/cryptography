@@ -110,7 +110,7 @@ def _enc_dec_rsa_pkey_ctx(
     backend.openssl_assert(res > 0)
     buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
     backend.openssl_assert(buf_size > 0)
-    if isinstance(padding, OAEP) and backend._lib.Cryptography_HAS_RSA_OAEP_MD:
+    if isinstance(padding, OAEP):
         mgf1_md = backend._evp_md_non_null_from_algorithm(
             padding._mgf._algorithm
         )
@@ -201,7 +201,10 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
     pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
     res = init_func(pkey_ctx)
-    backend.openssl_assert(res == 1)
+    if res != 1:
+        errors = backend._consume_errors()
+        raise ValueError("Unable to sign/verify with this key", errors)
+
     if algorithm is not None:
         evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
         res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
@@ -382,11 +385,17 @@ class _RSAVerificationContext(AsymmetricVerificationContext):
 
 
 class _RSAPrivateKey(RSAPrivateKey):
-    def __init__(self, backend, rsa_cdata, evp_pkey):
-        res = backend._lib.RSA_check_key(rsa_cdata)
-        if res != 1:
-            errors = backend._consume_errors_with_text()
-            raise ValueError("Invalid private key", errors)
+    def __init__(self, backend, rsa_cdata, evp_pkey, _skip_check_key):
+        # RSA_check_key is slower in OpenSSL 3.0.0 due to improved
+        # primality checking. In normal use this is unlikely to be a problem
+        # since users don't load new keys constantly, but for TESTING we've
+        # added an init arg that allows skipping the checks. You should not
+        # use this in production code unless you understand the consequences.
+        if not _skip_check_key:
+            res = backend._lib.RSA_check_key(rsa_cdata)
+            if res != 1:
+                errors = backend._consume_errors_with_text()
+                raise ValueError("Invalid private key", errors)
 
         # Blinding is on by default in many versions of OpenSSL, but let's
         # just be conservative here.

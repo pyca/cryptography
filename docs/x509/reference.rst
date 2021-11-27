@@ -149,7 +149,7 @@ X.509 Reference
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_certificate(data, backend=None)
+.. function:: load_pem_x509_certificate(data)
 
     .. versionadded:: 0.7
 
@@ -158,10 +158,6 @@ Loading Certificates
     ``-----BEGIN CERTIFICATE-----``.
 
     :param bytes data: The PEM encoded certificate data.
-
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
@@ -172,7 +168,7 @@ Loading Certificates
         >>> cert.serial_number
         2
 
-.. function:: load_der_x509_certificate(data, backend=None)
+.. function:: load_der_x509_certificate(data)
 
     .. versionadded:: 0.7
 
@@ -182,16 +178,12 @@ Loading Certificates
 
     :param bytes data: The DER encoded certificate data.
 
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
-
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_crl(data, backend=None)
+.. function:: load_pem_x509_crl(data)
 
     .. versionadded:: 1.1
 
@@ -200,10 +192,6 @@ Loading Certificate Revocation Lists
     ``-----BEGIN X509 CRL-----``.
 
     :param bytes data: The PEM encoded request data.
-
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
@@ -216,7 +204,7 @@ Loading Certificate Revocation Lists
         >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_crl(data, backend=None)
+.. function:: load_der_x509_crl(data)
 
     .. versionadded:: 1.1
 
@@ -225,17 +213,13 @@ Loading Certificate Revocation Lists
 
     :param bytes data: The DER encoded request data.
 
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
-
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
 
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: load_pem_x509_csr(data, backend=None)
+.. function:: load_pem_x509_csr(data)
 
     .. versionadded:: 0.9
 
@@ -245,10 +229,6 @@ Loading Certificate Signing Requests
     PKCS#10.
 
     :param bytes data: The PEM encoded request data.
-
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
@@ -261,7 +241,7 @@ Loading Certificate Signing Requests
         >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
         True
 
-.. function:: load_der_x509_csr(data, backend=None)
+.. function:: load_der_x509_csr(data)
 
     .. versionadded:: 0.9
 
@@ -269,10 +249,6 @@ Loading Certificate Signing Requests
     is a binary format and is not commonly used with CSRs.
 
     :param bytes data: The DER encoded request data.
-
-    :param backend: An optional backend supporting the
-        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-        interface.
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
@@ -334,8 +310,10 @@ X.509 Certificate Object
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`
 
         .. doctest::
 
@@ -513,7 +491,7 @@ X.509 CRL (Certificate Revocation List) Object
             1
             >>> revoked_certificate = crl[0]
             >>> type(revoked_certificate)
-            <class 'cryptography.hazmat.backends.openssl.x509._RevokedCertificate'>
+            <class '...RevokedCertificate'>
             >>> for r in crl:
             ...     print(r.serial_number)
             0
@@ -726,8 +704,10 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
 
     .. method:: serial_number(serial_number)
 
@@ -774,7 +754,7 @@ X.509 Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
 
-    .. method:: sign(private_key, algorithm, backend=None)
+    .. method:: sign(private_key, algorithm)
 
         Sign the certificate using the CA's private key.
 
@@ -796,11 +776,6 @@ X.509 Certificate Builder
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
-
-        :param backend: An optional backend used to build the certificate.
-            Must support the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
 
         :returns: :class:`~cryptography.x509.Certificate`
 
@@ -880,17 +855,13 @@ X.509 CSR (Certificate Signing Request) Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
-    .. method:: get_attribute_for_oid(oid)
+    .. attribute:: attributes
 
-        .. versionadded:: 3.0
+        .. versionadded:: 36.0
 
-        :param oid: An :class:`ObjectIdentifier` instance.
+        :type: :class:`Attributes`
 
-        :returns: The bytes value of the attribute or an exception if not
-            found.
-
-        :raises cryptography.x509.AttributeNotFound: If the request does
-            not have the attribute requested.
+        The attributes encoded in the certificate signing request.
 
     .. method:: public_bytes(encoding)
 
@@ -1012,7 +983,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend=None)
+    .. method:: sign(private_key, algorithm)
 
         Sign this CRL using the CA's private key.
 
@@ -1034,11 +1005,6 @@ X.509 Certificate Revocation List Builder
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
-
-        :param backend: An optional backend used to build the CRL.
-            Must support the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
 
         :returns: :class:`~cryptography.x509.CertificateRevocationList`
 
@@ -1130,14 +1096,9 @@ X.509 Revoked Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled.
 
-    .. method:: build(backend=None)
+    .. method:: build()
 
-        Create a revoked certificate object using the provided backend.
-
-        :param backend: An optional backend used to build the revoked
-            certificate.  Must support the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
+        Create a revoked certificate object.
 
         :returns: :class:`~cryptography.x509.RevokedCertificate`
 
@@ -1200,12 +1161,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, backend=None)
-
-        :param backend: An optional backend used to sign the request.
-            Must support the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
+    .. method:: sign(private_key, algorithm)
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -1282,22 +1238,48 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
             [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='Good CA')>]
 
-    .. method:: public_bytes(backend=None)
+    .. method:: public_bytes()
 
         .. versionadded:: 1.6
 
-        :param backend: An optional backend supporting the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
-
         :return bytes: The DER encoded name.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
 
-        :return str: Format the given name as a :rfc:`4514` Distinguished Name
-            string, for example ``CN=mydomain.com,O=My Org,C=US``.
+            Added ``attr_name_overrides`` parameter.
+
+        Format the given name as a :rfc:`4514` Distinguished Name
+        string, for example ``CN=mydomain.com,O=My Org,C=US``.
+
+        By default, attributes ``CN``, ``L``, ``ST``, ``O``, ``OU``, ``C``,
+        ``STREET``, ``DC``, ``UID`` are represented by their short name.
+        Unrecognized attributes are formatted as dotted OID strings.
+
+        Example:
+
+        .. doctest::
+
+            >>> name = x509.Name([
+            ...     x509.NameAttribute(NameOID.EMAIL_ADDRESS, "santa@north.pole"),
+            ...     x509.NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
+            ... ])
+            >>> name.rfc4514_string()
+            'CN=Santa Claus,1.2.840.113549.1.9.1=santa@north.pole'
+            >>> name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"})
+            'CN=Santa Claus,E=santa@north.pole'
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions. See
+            :class:`~cryptography.x509.oid.NameOID` for common attribute
+            OIDs.
+
+        :rtype: str
 
 
 .. class:: Version
@@ -1342,12 +1324,21 @@ X.509 CSR (Certificate Signing Request) Builder Object
         The :rfc:`4514` short attribute name (for example "CN"),
         or the OID dotted string if a short name is unavailable.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
+
+            Added ``attr_name_overrides`` parameter.
 
         :return str: Format the given attribute as a :rfc:`4514` Distinguished
             Name string.
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions.
 
 
 .. class:: RelativeDistinguishedName(attributes)
@@ -1365,12 +1356,21 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A list of :class:`NameAttribute` instances that match the OID
             provided.  The list should contain zero or one values.
 
-    .. method:: rfc4514_string()
+    .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
+        .. versionchanged:: 36.0
+
+            Added ``attr_name_overrides`` parameter.
 
         :return str: Format the given RDN set as a :rfc:`4514` Distinguished
             Name string.
+
+        :type attr_name_overrides:
+            Dict-like mapping from :class:`~cryptography.x509.ObjectIdentifier`
+            to ``str``
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions.
 
 
 .. class:: ObjectIdentifier
@@ -1588,6 +1588,14 @@ X.509 Extensions
         :type: :class:`ObjectIdentifier`
 
         Returns the OID associated with the given extension type.
+
+    .. method:: public_bytes()
+
+        .. versionadded:: 36.0
+
+        :return bytes:
+
+            A bytes string representing the extension's DER encoded value.
 
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
 
@@ -2746,6 +2754,47 @@ OCSP Extensions
 
         :type: bytes
 
+X.509 Request Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: Attributes
+
+    .. versionadded:: 36.0
+
+    An Attributes instance is an ordered list of attributes.  The object
+    is iterable to get every attribute. Each returned element is an
+    :class:`Attribute`.
+
+    .. method:: get_attribute_for_oid(oid)
+
+        .. versionadded:: 36.0
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: The :class:`Attribute` or an exception if not found.
+
+        :raises cryptography.x509.AttributeNotFound: If the request does
+            not have the attribute requested.
+
+
+.. class:: Attribute
+
+    .. versionadded:: 36.0
+
+    An attribute associated with an X.509 request.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the object identifier for the attribute.
+
+    .. attribute:: value
+
+        :type: bytes
+
+        Returns the value of the attribute.
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
@@ -2964,6 +3013,20 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.2"``. This is
         a SHA256 digest signed by a DSA key.
 
+    .. attribute:: DSA_WITH_SHA384
+
+        .. versionadded:: 36.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.3"``. This is
+        a SHA384 digest signed by a DSA key.
+
+    .. attribute:: DSA_WITH_SHA512
+
+        .. versionadded:: 36.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.4"``. This is
+        a SHA512 digest signed by a DSA key.
+
     .. attribute:: ED25519
 
         .. versionadded:: 2.8
@@ -3026,6 +3089,23 @@ instances. The following common OIDs are available as constants.
         the ``anyExtendedKeyUsage`` OID but not the particular OID expected for
         the application. Therefore, the presence of this OID does not mean a
         given application will accept the certificate for all purposes.
+
+    .. attribute:: SMARTCARD_LOGON
+
+        .. versionadded:: 35.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.20.2.2"``. This
+        is used to denote that a certificate may be used for ``PKINIT`` access
+        on Windows.
+
+    .. attribute:: KERBEROS_PKINIT_KDC
+
+        .. versionadded:: 35.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.2.3.5"``. This
+        is used to denote that a certificate may be used as a Kerberos
+        domain controller certificate authorizing ``PKINIT`` access. For
+        more information see :rfc:`4556`.
 
 
 .. class:: AuthorityInformationAccessOID
@@ -3295,7 +3375,7 @@ Exceptions
 .. class:: AttributeNotFound
 
     This is raised when calling
-    :meth:`CertificateSigningRequest.get_attribute_for_oid` with
+    :meth:`Attributes.get_attribute_for_oid` with
     an attribute OID that is not present in the request.
 
     .. attribute:: oid

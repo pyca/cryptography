@@ -19,15 +19,6 @@ from cryptography.x509.base import (
 )
 
 
-_OIDS_TO_HASH = {
-    "1.3.14.3.2.26": hashes.SHA1(),
-    "2.16.840.1.101.3.4.2.4": hashes.SHA224(),
-    "2.16.840.1.101.3.4.2.1": hashes.SHA256(),
-    "2.16.840.1.101.3.4.2.2": hashes.SHA384(),
-    "2.16.840.1.101.3.4.2.3": hashes.SHA512(),
-}
-
-
 class OCSPResponderEncoding(utils.Enum):
     HASH = "By Hash"
     NAME = "By Name"
@@ -42,7 +33,6 @@ class OCSPResponseStatus(utils.Enum):
     UNAUTHORIZED = 6
 
 
-_RESPONSE_STATUS_TO_ENUM = {x.value: x for x in OCSPResponseStatus}
 _ALLOWED_HASHES = (
     hashes.SHA1,
     hashes.SHA224,
@@ -63,9 +53,6 @@ class OCSPCertStatus(utils.Enum):
     GOOD = 0
     REVOKED = 1
     UNKNOWN = 2
-
-
-_CERT_STATUS_TO_ENUM = {x.value: x for x in OCSPCertStatus}
 
 
 class _SingleResponse(object):
@@ -356,12 +343,10 @@ class OCSPRequestBuilder(object):
         )
 
     def build(self) -> OCSPRequest:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if self._request is None:
             raise ValueError("You must add a certificate before building")
 
-        return backend.create_ocsp_request(self)
+        return ocsp.create_ocsp_request(self)
 
 
 class OCSPResponseBuilder(object):
@@ -467,14 +452,12 @@ class OCSPResponseBuilder(object):
         private_key: PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if self._response is None:
             raise ValueError("You must add a response before signing")
         if self._responder_id is None:
             raise ValueError("You must add a responder_id before signing")
 
-        return backend.create_ocsp_response(
+        return ocsp.create_ocsp_response(
             OCSPResponseStatus.SUCCESSFUL, self, private_key, algorithm
         )
 
@@ -482,8 +465,6 @@ class OCSPResponseBuilder(object):
     def build_unsuccessful(
         cls, response_status: OCSPResponseStatus
     ) -> OCSPResponse:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         if not isinstance(response_status, OCSPResponseStatus):
             raise TypeError(
                 "response_status must be an item from OCSPResponseStatus"
@@ -491,7 +472,7 @@ class OCSPResponseBuilder(object):
         if response_status is OCSPResponseStatus.SUCCESSFUL:
             raise ValueError("response_status cannot be SUCCESSFUL")
 
-        return backend.create_ocsp_response(response_status, None, None, None)
+        return ocsp.create_ocsp_response(response_status, None, None, None)
 
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest:
@@ -499,6 +480,4 @@ def load_der_ocsp_request(data: bytes) -> OCSPRequest:
 
 
 def load_der_ocsp_response(data: bytes) -> OCSPResponse:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_der_ocsp_response(data)
+    return ocsp.load_der_ocsp_response(data)

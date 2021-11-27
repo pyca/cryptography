@@ -176,7 +176,7 @@ class TestRSA(object):
         ("public_exponent", "key_size"),
         itertools.product(
             (3, 65537),
-            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048),
+            (1024, 1536, 2048),
         ),
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
@@ -362,37 +362,6 @@ class TestRSA(object):
                 ),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: not backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=b"label",
-            )
-        ),
-        skip_message="Requires backend without RSA OAEP label support",
-    )
-    def test_unsupported_oaep_label_decrypt(self, backend):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=b"label",
-                ),
-            )
-
-
-def test_rsa_generate_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        rsa.generate_private_key(
-            65537, 2048, pretend_backend  # type:ignore[arg-type]
-        )
-
 
 class TestRSASignature(object):
     @pytest.mark.supported(
@@ -402,7 +371,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5.",
     )
     @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
-    def test_pkcs1v15_signing(self, backend, subtests):
+    def test_pkcs1v15_signing(self, backend, disable_rsa_checks, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
@@ -1527,7 +1496,9 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_pkcs1v15_vectors(self, backend, subtests):
+    def test_decrypt_pkcs1v15_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
@@ -1650,7 +1621,9 @@ class TestRSADecryption(object):
             "Does not support OAEP using SHA224 MGF1 and SHA224 hash."
         ),
     )
-    def test_decrypt_oaep_sha2_vectors(self, backend, subtests):
+    def test_decrypt_oaep_sha2_vectors(
+        self, backend, disable_rsa_checks, subtests
+    ):
         vectors = _build_oaep_sha2_vectors()
         for private, public, example, mgf1_alg, hash_alg in vectors:
             with subtests.test():
@@ -1926,6 +1899,15 @@ class TestRSAEncryption(object):
         # Larger than the key size.
         with pytest.raises(ValueError):
             public_key.encrypt(b"\x00" * (private_key.key_size // 8 + 5), pad)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend._fips_enabled,
+        skip_message="Requires FIPS",
+    )
+    def test_rsa_fips_small_key(self, backend):
+        key = RSA_KEY_512.private_key(backend)
+        with pytest.raises(ValueError):
+            key.sign(b"somedata", padding.PKCS1v15(), hashes.SHA512())
 
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)

@@ -8,7 +8,7 @@ import os
 import platform
 import sys
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 try:
     from setuptools_rust import RustExtension
@@ -34,99 +34,9 @@ src_dir = os.path.join(base_dir, "src")
 # means that we need to add the src/ directory to the sys.path.
 sys.path.insert(0, src_dir)
 
-about = {}
-with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
-
-
-# `install_requirements` and `setup_requirements` must be kept in sync with
-# `pyproject.toml`
-setuptools_rust = "setuptools-rust>=0.11.4"
-install_requirements = ["cffi>=1.12"]
-setup_requirements = install_requirements + [setuptools_rust]
-
-with open(os.path.join(base_dir, "README.rst")) as f:
-    long_description = f.read()
-
-
 try:
+    # See setup.cfg for most of the config metadata.
     setup(
-        name=about["__title__"],
-        version=about["__version__"],
-        description=about["__summary__"],
-        long_description=long_description,
-        long_description_content_type="text/x-rst",
-        license=about["__license__"],
-        url=about["__uri__"],
-        author=about["__author__"],
-        author_email=about["__email__"],
-        classifiers=[
-            "Development Status :: 5 - Production/Stable",
-            "Intended Audience :: Developers",
-            "License :: OSI Approved :: Apache Software License",
-            "License :: OSI Approved :: BSD License",
-            "Natural Language :: English",
-            "Operating System :: MacOS :: MacOS X",
-            "Operating System :: POSIX",
-            "Operating System :: POSIX :: BSD",
-            "Operating System :: POSIX :: Linux",
-            "Operating System :: Microsoft :: Windows",
-            "Programming Language :: Python",
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3 :: Only",
-            "Programming Language :: Python :: 3.6",
-            "Programming Language :: Python :: 3.7",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
-            "Programming Language :: Python :: Implementation :: CPython",
-            "Programming Language :: Python :: Implementation :: PyPy",
-            "Topic :: Security :: Cryptography",
-        ],
-        package_dir={"": "src"},
-        packages=find_packages(
-            where="src", exclude=["_cffi_src", "_cffi_src.*"]
-        ),
-        include_package_data=True,
-        python_requires=">=3.6",
-        install_requires=install_requirements,
-        setup_requires=setup_requirements,
-        extras_require={
-            "test": [
-                "pytest>=6.2.0",
-                "pytest-cov",
-                "pytest-subtests",
-                "pytest-xdist",
-                "pretend",
-                "iso8601",
-                "pytz",
-                "hypothesis>=1.11.4,!=3.79.2",
-            ],
-            "docs": [
-                "sphinx >= 1.6.5,!=1.8.0,!=3.1.0,!=3.1.1",
-                "sphinx_rtd_theme",
-            ],
-            "docstest": [
-                "doc8",
-                "pyenchant >= 1.6.11",
-                "twine >= 1.12.0",
-                "sphinxcontrib-spelling >= 4.0.1",
-            ],
-            "sdist": [
-                setuptools_rust,
-            ],
-            "pep8test": [
-                "black",
-                "flake8",
-                "flake8-import-order",
-                "pep8-naming",
-            ],
-            # This extra is for OpenSSH private keys that use bcrypt KDF
-            # Versions: v3.1.3 - ignore_few_rounds, v3.1.5 - abi3
-            "ssh": ["bcrypt >= 3.1.5"],
-        },
-        # for cffi
-        zip_safe=False,
-        ext_package="cryptography.hazmat.bindings",
         cffi_modules=[
             "src/_cffi_src/build_openssl.py:ffi",
         ],
@@ -153,6 +63,9 @@ except:  # noqa: E722
     # during PEP517 building and prints this text. setuptools raises SystemExit
     # when compilation fails right now, but it's possible this isn't stable
     # or a public API commitment so we'll remain ultra conservative.
+
+    import pkg_resources
+
     print(
         """
     =============================DEBUG ASSISTANCE=============================
@@ -160,12 +73,24 @@ except:  # noqa: E722
     successfully install cryptography:
     1) Upgrade to the latest pip and try again. This will fix errors for most
        users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
-    2) Read https://cryptography.io/en/latest/installation.html for specific
+    2) Read https://cryptography.io/en/latest/installation/ for specific
        instructions for your platform.
     3) Check our frequently asked questions for more information:
-       https://cryptography.io/en/latest/faq.html
+       https://cryptography.io/en/latest/faq/
     4) Ensure you have a recent Rust toolchain installed:
-       https://cryptography.io/en/latest/installation.html#rust
+       https://cryptography.io/en/latest/installation/#rust
+    """
+    )
+    print(f"    Python: {'.'.join(str(v) for v in sys.version_info[:3])}")
+    print(f"    platform: {platform.platform()}")
+    for dist in ["pip", "setuptools", "setuptools_rust"]:
+        try:
+            version = pkg_resources.get_distribution(dist).version
+        except pkg_resources.DistributionNotFound:
+            version = "n/a"
+        print(f"    {dist}: {version}")
+    print(
+        """\
     =============================DEBUG ASSISTANCE=============================
     """
     )

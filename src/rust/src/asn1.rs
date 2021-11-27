@@ -3,8 +3,9 @@
 // for complete details.
 
 use crate::x509::Name;
-use pyo3::class::basic::CompareOp;
-use pyo3::conversion::ToPyObject;
+use pyo3::basic::CompareOp;
+use pyo3::types::IntoPyDict;
+use pyo3::ToPyObject;
 
 pub enum PyAsn1Error {
     Asn1(asn1::ParseError),
@@ -49,27 +50,6 @@ impl From<PyAsn1Error> for pyo3::PyErr {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
-#[pyo3::prelude::pyfunction]
-fn encode_tls_feature(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
-    // Ideally we'd skip building up a vec and just write directly into the
-    // writer. This isn't possible at the moment because the callback to write
-    // an asn1::Sequence can't return an error, and we need to handle errors
-    // from Python.
-    let mut els = vec![];
-    for el in ext.iter()? {
-        els.push(el?.getattr("value")?.extract::<u64>()?);
-    }
-
-    let result = asn1::write_single(&asn1::SequenceOfWriter::new(&els));
-    Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
-}
-
-#[pyo3::prelude::pyfunction]
-fn encode_precert_poison(py: pyo3::Python<'_>, _ext: &pyo3::PyAny) -> pyo3::PyObject {
-    let result = asn1::write_single(&());
-    pyo3::types::PyBytes::new(py, &result).to_object(py)
-}
-
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
     _oid: asn1::ObjectIdentifier<'a>,
@@ -98,12 +78,13 @@ struct DssSignature<'a> {
     s: asn1::BigUint<'a>,
 }
 
-pub(crate) fn big_asn1_uint_to_py<'p>(
+pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
-    v: asn1::BigUint<'_>,
+    v: &'_ [u8],
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let int_type = py.get_type::<pyo3::types::PyLong>();
-    int_type.call_method1("from_bytes", (v.as_bytes(), "big"))
+    let kwargs = [("signed", true)].into_py_dict(py);
+    int_type.call_method("from_bytes", (v, "big"), Some(kwargs))
 }
 
 #[pyo3::prelude::pyfunction]
@@ -111,13 +92,13 @@ fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObj
     let sig = asn1::parse_single::<DssSignature<'_>>(data)?;
 
     Ok((
-        big_asn1_uint_to_py(py, sig.r)?,
-        big_asn1_uint_to_py(py, sig.s)?,
+        big_byte_slice_to_py_int(py, sig.r.as_bytes())?,
+        big_byte_slice_to_py_int(py, sig.s.as_bytes())?,
     )
         .to_object(py))
 }
 
-fn py_uint_to_big_endian_bytes<'p>(
+pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: &'p pyo3::types::PyLong,
 ) -> pyo3::PyResult<&'p [u8]> {
@@ -196,7 +177,7 @@ struct Validity<'a> {
 
 fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
     let mut tags = vec![];
-    for rdn in rdns {
+    for rdn in rdns.unwrap_read().clone() {
         let mut attributes = rdn.collect::<Vec<_>>();
         assert_eq!(attributes.len(), 1);
 
@@ -219,8 +200,6 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_tls_feature))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_precert_poison))?;
     submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
 
     submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;

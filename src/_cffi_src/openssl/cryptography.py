@@ -18,6 +18,12 @@ INCLUDES = """
 #define CRYPTOGRAPHY_IS_LIBRESSL 0
 #endif
 
+#if defined(OPENSSL_IS_BORINGSSL)
+#define CRYPTOGRAPHY_IS_BORINGSSL 1
+#else
+#define CRYPTOGRAPHY_IS_BORINGSSL 0
+#endif
+
 /*
     LibreSSL removed e_os2.h from the public headers so we'll only include it
     if we're using vanilla OpenSSL.
@@ -33,10 +39,21 @@ INCLUDES = """
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
+#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_322 \
+    (LIBRESSL_VERSION_NUMBER < 0x3020200f)
 #define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332 \
     (LIBRESSL_VERSION_NUMBER < 0x3030200f)
+#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 \
+    (LIBRESSL_VERSION_NUMBER < 0x3040000f)
+
 #else
+#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_322 (0)
 #define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332 (0)
+#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 (0)
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    #error "pyca/cryptography MUST be linked with Openssl 1.1.0 or later"
 #endif
 
 #define CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER \
@@ -72,6 +89,7 @@ static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B;
 static const int CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE;
 
 static const int CRYPTOGRAPHY_IS_LIBRESSL;
+static const int CRYPTOGRAPHY_IS_BORINGSSL;
 """
 
 FUNCTIONS = """

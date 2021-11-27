@@ -8,9 +8,6 @@ import struct
 import typing
 from urllib.parse import quote, urlencode
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -55,16 +52,9 @@ class HOTP(object):
         key: bytes,
         length: int,
         algorithm: _ALLOWED_HASH_TYPES,
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
         enforce_key_length: bool = True,
     ) -> None:
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         if len(key) < 16 and enforce_key_length is True:
             raise ValueError("Key length has to be at least 128 bits.")
 
@@ -80,7 +70,6 @@ class HOTP(object):
         self._key = key
         self._length = length
         self._algorithm = algorithm
-        self._backend = backend
 
     def generate(self, counter: int) -> bytes:
         truncated_value = self._dynamic_truncate(counter)
@@ -92,7 +81,7 @@ class HOTP(object):
             raise InvalidToken("Supplied HOTP value does not match.")
 
     def _dynamic_truncate(self, counter: int) -> int:
-        ctx = hmac.HMAC(self._key, self._algorithm, self._backend)
+        ctx = hmac.HMAC(self._key, self._algorithm)
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 

@@ -16,15 +16,16 @@ static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3;
+static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
-static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
+static const long Cryptography_HAS_SSL_COOKIE;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -185,9 +186,6 @@ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
 X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
 
-int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
-                    unsigned char *);
-
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
@@ -272,8 +270,6 @@ void SSL_CTX_set_keylog_callback(SSL_CTX *,
                                  void (*)(const SSL *, const char *));
 void (*SSL_CTX_get_keylog_callback(SSL_CTX *))(const SSL *, const char *);
 
-long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
-
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
 
@@ -300,14 +296,6 @@ const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 /* These became macros in 1.1.0 */
 int SSL_library_init(void);
 void SSL_load_error_strings(void);
-
-/* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
-int SSL_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                         CRYPTO_EX_free *);
-int SSL_set_ex_data(SSL *, int, void *);
-int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                             CRYPTO_EX_free *);
-int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
 
 SSL_SESSION *SSL_get_session(const SSL *);
 const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
@@ -521,6 +509,12 @@ uint32_t SSL_SESSION_get_max_early_data(const SSL_SESSION *);
 int SSL_write_early_data(SSL *, const void *, size_t, size_t *);
 int SSL_read_early_data(SSL *, void *, size_t, size_t *);
 int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
+
+/*
+  Added as an advanced user escape hatch. This symbol is tied to
+  engine support but is declared in ssl.h
+*/
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 """
 
 CUSTOMIZATIONS = """
@@ -529,7 +523,11 @@ CUSTOMIZATIONS = """
 // users have upgraded. PersistentlyDeprecated2020
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#ifdef OPENSSL_NO_ENGINE
+int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
+#endif
+
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 #else
@@ -589,7 +587,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_SSL_ST = 1;
 #else
 static const long Cryptography_HAS_SSL_ST = 0;
@@ -606,7 +604,7 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 #if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332
 static const long SSL_OP_NO_DTLSv1 = 0;
 static const long SSL_OP_NO_DTLSv1_2 = 0;
@@ -615,7 +613,7 @@ long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 #else
@@ -642,15 +640,6 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
     return r;
 }
 
-#if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_SIGALGS = 0;
-const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
-                             unsigned char *) = NULL;
-const long (*SSL_CTX_set1_sigalgs_list)(SSL_CTX *, const char *) = NULL;
-#else
-static const long Cryptography_HAS_SIGALGS = 1;
-#endif
-
 #if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_PSK)
 static const long Cryptography_HAS_PSK = 0;
 int (*SSL_CTX_use_psk_identity_hint)(SSL_CTX *, const char *) = NULL;
@@ -674,7 +663,7 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
 static const long Cryptography_HAS_PSK = 1;
 #endif
 
-#if !CRYPTOGRAPHY_IS_LIBRESSL
+#if !CRYPTOGRAPHY_IS_LIBRESSL && !CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_CUSTOM_EXT = 1;
 #else
 static const long Cryptography_HAS_CUSTOM_EXT = 0;
@@ -711,10 +700,20 @@ int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
 SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
+    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL)
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long TLS1_3_VERSION = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
+#else
+static const long Cryptography_HAS_TLSv1_3 = 1;
+#endif
+
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
+    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL) || \
+    CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 0;
+
 static const long SSL_VERIFY_POST_HANDSHAKE = 0;
 int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
 int (*SSL_verify_client_post_handshake)(SSL *) = NULL;
@@ -725,7 +724,7 @@ int (*SSL_write_early_data)(SSL *, const void *, size_t, size_t *) = NULL;
 int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
-static const long Cryptography_HAS_TLSv1_3 = 1;
+static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 1;
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL
@@ -737,5 +736,26 @@ long (*SSL_get_min_proto_version)(SSL *) = NULL;
 long (*SSL_get_max_proto_version)(SSL *) = NULL;
 #else
 static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_SSL_COOKIE = 0;
+
+static const long SSL_OP_COOKIE_EXCHANGE = 0;
+int (*DTLSv1_listen)(SSL *, BIO_ADDR *) = NULL;
+void (*SSL_CTX_set_cookie_generate_cb)(SSL_CTX *,
+                                       int (*)(
+                                           SSL *,
+                                           unsigned char *,
+                                           unsigned int *
+                                       )) = NULL;
+void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
+                                       int (*)(
+                                           SSL *,
+                                           const unsigned char *,
+                                           unsigned int
+                                       )) = NULL;
+#else
+static const long Cryptography_HAS_SSL_COOKIE = 1;
 #endif
 """

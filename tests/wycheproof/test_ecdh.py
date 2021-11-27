@@ -65,9 +65,6 @@ def test_ecdh(backend, wycheproof):
             binascii.unhexlify(wycheproof.testcase["public"]), backend
         )
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
-    except NotImplementedError:
-        assert wycheproof.has_flag("UnnamedCurve")
-        return
     except ValueError:
         assert wycheproof.invalid or wycheproof.acceptable
         return

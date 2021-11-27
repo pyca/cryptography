@@ -135,6 +135,10 @@ def test_dh_public_numbers_equality():
     assert public != object()
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestDH(object):
     def test_small_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
@@ -457,6 +461,10 @@ class TestDH(object):
         assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestDHPrivateKeySerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
@@ -644,6 +652,10 @@ class TestDHPrivateKeySerialization(object):
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestDHPublicKeySerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
@@ -663,6 +675,7 @@ class TestDHPublicKeySerialization(object):
         pub_num = key.public_numbers()
         assert loaded_pub_num == pub_num
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "is_dhx"),
         [
@@ -706,6 +719,7 @@ class TestDHPublicKeySerialization(object):
         )
         assert serialized == key_bytes
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "vec_path", "is_dhx"),
         [
@@ -771,6 +785,10 @@ class TestDHPublicKeySerialization(object):
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
 class TestDHParameterSerialization(object):
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),

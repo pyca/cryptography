@@ -129,6 +129,15 @@ def test_derive_private_key_errors(backend):
         ec.derive_private_key(-7, curve, backend)
 
 
+def test_derive_point_at_infinity(backend):
+    curve = ec.SECP256R1()
+    _skip_curve_unsupported(backend, curve)
+    # order of the curve
+    q = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+    with pytest.raises(ValueError, match="Unable to derive"):
+        ec.derive_private_key(q, ec.SECP256R1())
+
+
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
         1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
@@ -843,7 +852,7 @@ class TestECSerialization(object):
         )
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",
+                "notencoding",  # type: ignore[arg-type]
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -859,7 +868,7 @@ class TestECSerialization(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",
+                "invalidformat",  # type: ignore[arg-type]
                 serialization.NoEncryption(),
             )
 
@@ -875,7 +884,7 @@ class TestECSerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",
+                "notanencalg",  # type: ignore[arg-type]
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
@@ -985,7 +994,8 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         )
         with pytest.raises(TypeError):
             key.public_bytes(
-                "notencoding", serialization.PublicFormat.SubjectPublicKeyInfo
+                "notencoding",  # type: ignore[arg-type]
+                serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
     @pytest.mark.parametrize(
@@ -1030,7 +1040,10 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             ),
         )
         with pytest.raises(TypeError):
-            key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+            key.public_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",  # type: ignore[arg-type]
+            )
 
     def test_public_bytes_pkcs1_unsupported(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -1271,11 +1284,12 @@ class TestECDH(object):
                 pemfile.read().encode(), None, backend
             ),
         )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
 
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
         ):
-            key.exchange(None, key.public_key())
+            key.exchange(None, key.public_key())  # type: ignore[arg-type]
 
     def test_exchange_non_matching_curve(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -1287,6 +1301,7 @@ class TestECDH(object):
                 pemfile.read().encode(), None, backend
             ),
         )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         public_key = EC_KEY_SECP384R1.public_numbers.public_key(backend)
 
         with pytest.raises(ValueError):

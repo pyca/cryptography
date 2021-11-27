@@ -13,8 +13,8 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl import decode_asn1, encode_asn1
-from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dh, dsa, padding
@@ -59,6 +59,9 @@ class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
 
+    def test_is_default_backend(self):
+        assert backend is default_backend()
+
     def test_openssl_version_text(self):
         """
         This test checks the value of OPENSSL_VERSION_TEXT.
@@ -69,8 +72,8 @@ class TestOpenSSL(object):
         to be true for every OpenSSL-alike.
         """
         assert backend.openssl_version_text().startswith(
-            "OpenSSL"
-        ) or backend.openssl_version_text().startswith("LibreSSL")
+            ("OpenSSL", "LibreSSL", "BoringSSL")
+        )
 
     def test_openssl_version_number(self):
         assert backend.openssl_version_number() > 0
@@ -83,17 +86,17 @@ class TestOpenSSL(object):
             backend.register_cipher_adapter(AES, CBC, None)
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
-    def test_nonexistent_cipher(self, mode):
-        b = Backend()
-        b.register_cipher_adapter(
-            DummyCipherAlgorithm,
-            type(mode),
+    def test_nonexistent_cipher(self, mode, backend, monkeypatch):
+        # We can't use register_cipher_adapter because backend is a
+        # global singleton and we want to revert the change after the test
+        monkeypatch.setitem(
+            backend._cipher_registry,
+            (DummyCipherAlgorithm, type(mode)),
             lambda backend, cipher, mode: backend._ffi.NULL,
         )
         cipher = Cipher(
             DummyCipherAlgorithm(),
             mode,
-            backend=b,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
@@ -164,16 +167,6 @@ class TestOpenSSL(object):
     def test_bn_to_int(self):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
-
-    def test_obj2txt_buffer_sizing(self):
-        # This test exercises a branch for larger than default buffer sizing
-        # in _obj2txt
-        oid_str = (
-            "1.2.3.182382138123818.1293813123.12381238123.3434834834888"
-            ".383488234284.2348234.234819299576434.23482434203"
-        )
-        obj = encode_asn1._txt2obj_gc(backend, oid_str)
-        assert decode_asn1._obj2txt(backend, obj) == oid_str
 
 
 @pytest.mark.skipif(
@@ -389,10 +382,6 @@ class TestOpenSSLRSA(object):
             is True
         )
 
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 0,
-        reason="Requires OpenSSL with rsa_oaep_md (1.0.2+)",
-    )
     def test_rsa_padding_supported_oaep_sha2_combinations(self):
         hashalgs = [
             hashes.SHA1(),
@@ -432,38 +421,6 @@ class TestOpenSSLRSA(object):
             is False
         )
 
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
-    )
-    def test_unsupported_mgf1_hash_algorithm_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA1(),
-                    label=None,
-                ),
-            )
-
-    @pytest.mark.skipif(
-        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
-        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)",
-    )
-    def test_unsupported_oaep_hash_algorithm_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
-                b"0" * 64,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA256(),
-                    label=None,
-                ),
-            )
-
     def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
@@ -481,61 +438,6 @@ class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(DummyCipherAlgorithm())
-
-
-class TestOpenSSLSignX509Certificate(object):
-    def test_requires_certificate_builder(self):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_certificate(
-                object(),  # type: ignore[arg-type]
-                private_key,
-                DummyHashAlgorithm(),
-            )
-
-    def test_builder_requires_public_key(self):
-        builder = x509.CertificateBuilder()
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_certificate(
-                builder,
-                private_key,
-                DummyHashAlgorithm(),
-            )
-
-
-class TestOpenSSLSignX509CSR(object):
-    def test_requires_csr_builder(self):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_csr(
-                object(),  # type: ignore[arg-type]
-                private_key,
-                DummyHashAlgorithm(),
-            )
-
-
-class TestOpenSSLSignX509CertificateRevocationList(object):
-    def test_invalid_builder(self):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(TypeError):
-            backend.create_x509_crl(
-                object(),  # type: ignore[arg-type]
-                private_key,
-                hashes.SHA256(),
-            )
-
-
-class TestOpenSSLCreateRevokedCertificate(object):
-    def test_invalid_builder(self):
-        with pytest.raises(TypeError):
-            backend.create_x509_revoked_certificate(
-                object()  # type: ignore[arg-type]
-            )
 
 
 class TestOpenSSLSerializationWithOpenSSL(object):
@@ -612,6 +514,10 @@ class TestRSAPEMSerialization(object):
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
     reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
+)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="Requires DH support",
 )
 class TestOpenSSLDHSerialization(object):
     @pytest.mark.parametrize(
@@ -694,10 +600,46 @@ def test_pyopenssl_cert_fallback():
     )
     x509_ossl = None
     with pytest.warns(utils.CryptographyDeprecationWarning):
-        x509_ossl = cert._x509
+        x509_ossl = cert._x509  # type:ignore[attr-defined]
     assert x509_ossl is not None
 
     from cryptography.hazmat.backends.openssl.x509 import _Certificate
 
     with pytest.warns(utils.CryptographyDeprecationWarning):
         _Certificate(backend, x509_ossl)
+
+
+def test_pyopenssl_csr_fallback():
+    cert = _load_cert(
+        os.path.join("x509", "requests", "rsa_sha256.pem"),
+        x509.load_pem_x509_csr,
+    )
+    req_ossl = None
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        req_ossl = cert._x509_req  # type:ignore[attr-defined]
+    assert req_ossl is not None
+
+    from cryptography.hazmat.backends.openssl.x509 import (
+        _CertificateSigningRequest,
+    )
+
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        _CertificateSigningRequest(backend, req_ossl)
+
+
+def test_pyopenssl_crl_fallback():
+    cert = _load_cert(
+        os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+        x509.load_der_x509_crl,
+    )
+    req_crl = None
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        req_crl = cert._x509_crl  # type:ignore[attr-defined]
+    assert req_crl is not None
+
+    from cryptography.hazmat.backends.openssl.x509 import (
+        _CertificateRevocationList,
+    )
+
+    with pytest.warns(utils.CryptographyDeprecationWarning):
+        _CertificateRevocationList(backend, req_crl)

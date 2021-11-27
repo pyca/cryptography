@@ -5,7 +5,6 @@
 import getpass
 import glob
 import io
-import json
 import os
 import subprocess
 import time
@@ -79,27 +78,13 @@ def download_artifacts_github_actions(session, token, run_url):
     return paths
 
 
-def build_github_actions_wheels(token, version):
+def fetch_github_actions_wheels(token, version):
     session = requests.Session()
 
-    response = session.post(
-        "https://api.github.com/repos/pyca/cryptography/actions/workflows/"
-        "wheel-builder.yml/dispatches",
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/vnd.github.v3+json",
-            "Authorization": "token {}".format(token),
-        },
-        data=json.dumps({"ref": "main", "inputs": {"version": version}}),
-    )
-    response.raise_for_status()
-
-    # Give it a few seconds for the run to kick off.
-    time.sleep(5)
     response = session.get(
         (
             "https://api.github.com/repos/pyca/cryptography/actions/workflows/"
-            "wheel-builder.yml/runs?event=workflow_dispatch"
+            "wheel-builder.yml/runs?event=push"
         ),
         headers={
             "Content-Type": "application/json",
@@ -120,20 +105,28 @@ def release(version):
     """
     github_token = getpass.getpass("Github person access token: ")
 
+    # Tag and push the tag (this will trigger the wheel builder in Actions)
     run("git", "tag", "-s", version, "-m", "{0} release".format(version))
     run("git", "push", "--tags")
 
-    run("python", "setup.py", "sdist")
+    # Generate and upload vector packages
     run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
-
-    packages = glob.glob("dist/cryptography-{0}*".format(version)) + glob.glob(
+    packages = glob.glob(
         "vectors/dist/cryptography_vectors-{0}*".format(version)
     )
     run("twine", "upload", "-s", *packages)
 
-    github_actions_wheel_paths = build_github_actions_wheels(
+    # Generate sdist for upload
+    run("python", "setup.py", "sdist")
+    sdist = glob.glob("dist/cryptography-{0}*".format(version))
+
+    # Wait for Actions to complete and download the wheels
+    github_actions_wheel_paths = fetch_github_actions_wheels(
         github_token, version
     )
+
+    # Upload sdist and wheels
+    run("twine", "upload", "-s", *sdist)
     run("twine", "upload", *github_actions_wheel_paths)
 
 

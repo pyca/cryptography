@@ -5,7 +5,9 @@
 
 from cryptography.x509 import certificate_transparency
 from cryptography.x509.base import (
+    Attribute,
     AttributeNotFound,
+    Attributes,
     Certificate,
     CertificateBuilder,
     CertificateRevocationList,
@@ -77,7 +79,6 @@ from cryptography.x509.general_name import (
     RegisteredID,
     UniformResourceIdentifier,
     UnsupportedGeneralNameType,
-    _GENERAL_NAMES,
 )
 from cryptography.x509.name import (
     Name,
@@ -93,7 +94,6 @@ from cryptography.x509.oid import (
     NameOID,
     ObjectIdentifier,
     SignatureAlgorithmOID,
-    _SIG_OIDS_TO_HASH,
 )
 
 
@@ -175,7 +175,9 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "Attribute",
     "AttributeNotFound",
+    "Attributes",
     "InvalidVersion",
     "DeltaCRLIndicator",
     "DuplicateExtension",
@@ -231,10 +233,8 @@ __all__ = [
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
     "Version",
-    "_SIG_OIDS_TO_HASH",
     "OID_CA_ISSUERS",
     "OID_OCSP",
-    "_GENERAL_NAMES",
     "CertificateIssuer",
     "CRLReason",
     "InvalidityDate",
@@ -244,4 +244,6 @@ __all__ = [
     "PrecertPoison",
     "OCSPNonce",
     "SignedCertificateTimestamps",
+    "SignatureAlgorithmOID",
+    "NameOID",
 ]

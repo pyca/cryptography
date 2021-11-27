@@ -87,11 +87,6 @@ EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-X509_ATTRIBUTE *X509_REQ_get_attr(const X509_REQ *, int);
-int X509_REQ_get_attr_by_OBJ(const X509_REQ *, const ASN1_OBJECT *, int);
-void *X509_ATTRIBUTE_get0_data(X509_ATTRIBUTE *, int, int, void *);
-ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *, int);
-int X509_ATTRIBUTE_count(const X509_ATTRIBUTE *);
 int X509_REQ_add1_attr_by_OBJ(X509_REQ *, const ASN1_OBJECT *,
                               int, const unsigned char *, int);
 
@@ -179,32 +174,16 @@ int X509_EXTENSION_get_critical(X509_EXTENSION *);
 int X509_REVOKED_get_ext_count(X509_REVOKED *);
 X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 
-/* This became const X509_CRL * in 1.1.0 */
-X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
-int X509_CRL_get_ext_count(X509_CRL *);
-
-int X509_CRL_get0_by_serial(X509_CRL *, X509_REVOKED **, ASN1_INTEGER *);
-
 X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
-
-/* new in 1.0.2 */
-int i2d_re_X509_tbs(X509 *, unsigned char **);
-int X509_get_signature_nid(const X509 *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
-void X509_get0_signature(const ASN1_BIT_STRING **,
-                         const X509_ALGOR **, const X509 *);
-
 long X509_get_version(X509 *);
 
-ASN1_TIME *X509_get_notBefore(X509 *);
-ASN1_TIME *X509_get_notAfter(X509 *);
 ASN1_TIME *X509_getm_notBefore(const X509 *);
 ASN1_TIME *X509_getm_notAfter(const X509 *);
-const ASN1_TIME *X509_get0_notBefore(const X509 *);
-const ASN1_TIME *X509_get0_notAfter(const X509 *);
 
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
@@ -227,12 +206,6 @@ void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
-Cryptography_STACK_OF_X509_CRL *sk_X509_CRL_new_null(void);
-void sk_X509_CRL_free(Cryptography_STACK_OF_X509_CRL *);
-int sk_X509_CRL_num(Cryptography_STACK_OF_X509_CRL *);
-int sk_X509_CRL_push(Cryptography_STACK_OF_X509_CRL *, X509_CRL *);
-X509_CRL *sk_X509_CRL_value(Cryptography_STACK_OF_X509_CRL *, int);
-
 long X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
@@ -241,68 +214,27 @@ const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
-/* These aren't macros these arguments are all const X on openssl > 1.0.x */
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
+/* This function is no longer used by pyOpenSSL >= 21.1 */
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
-int X509_set_notBefore(X509 *, ASN1_TIME *);
-int X509_set_notAfter(X509 *, ASN1_TIME *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_set1_notBefore(X509 *, const ASN1_TIME *);
-int X509_set1_notAfter(X509 *, const ASN1_TIME *);
 
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
-// declared in safestack
-int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
-ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
-void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
-Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
-int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
-
 /* these functions were added in 1.1.0 */
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
 const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
-void X509_CRL_get0_signature(const X509_CRL *, const ASN1_BIT_STRING **,
-                             const X509_ALGOR **);
-int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
-int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
-void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
-                             const X509_ALGOR **);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
-int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
-{
-    /* in 1.0.2+ this function also sets x->cert_info->enc.modified = 1
-       but older OpenSSLs don't have the enc ASN1_ENCODING member in the
-       X509 struct.  Setting modified to 1 marks the encoding
-       (x->cert_info->enc.enc) as invalid, but since the entire struct isn't
-       present we don't care. */
-    return i2d_X509_CINF(x->cert_info, pp);
-}
-#endif
-
 /* Being kept around for pyOpenSSL */
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
     return X509_REVOKED_dup(rev);
 }
-/* Added in 1.1.0 but we need it in all versions now due to the great
-   opaquing. */
-#if CRYPTOGRAPHY_IS_LIBRESSL
-int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
-{
-    req->req_info->enc.modified = 1;
-    return i2d_X509_REQ_INFO(req->req_info, pp);
-}
-int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
-    crl->crl->enc.modified = 1;
-    return i2d_X509_CRL_INFO(crl->crl, pp);
-}
-#endif
 """

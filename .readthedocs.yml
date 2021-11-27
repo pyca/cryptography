@@ -1,3 +1,5 @@
+# https://docs.readthedocs.io/en/stable/config-file/v2.html#supported-settings
+
 version: 2
 
 sphinx:
@@ -6,6 +8,15 @@ sphinx:
   builder: dirhtml
 
 build:
-  # First RTD build env which includes a rust toolchain
-  image: "7.0"
+  # readdocs master now includes a rust toolchain
+  os: "ubuntu-20.04"
+  tools:
+    python: "3.9"
+    rust: "1.55"
 
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

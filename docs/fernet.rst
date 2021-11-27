@@ -237,7 +237,7 @@ password through a key derivation function such as
     ...     algorithm=hashes.SHA256(),
     ...     length=32,
     ...     salt=salt,
-    ...     iterations=100000,
+    ...     iterations=390000,
     ... )
     >>> key = base64.urlsafe_b64encode(kdf.derive(password))
     >>> f = Fernet(key)
@@ -251,8 +251,8 @@ In this scheme, the salt has to be stored in a retrievable location in order
 to derive the same key from the password in the future.
 
 The iteration count used should be adjusted to be as high as your server can
-tolerate. A good default is at least 100,000 iterations which is what Django
-recommended in 2014.
+tolerate. A good default is at least 390,000 iterations, which is what `Django
+recommends as of November 2021`_.
 
 Implementation
 --------------
@@ -280,4 +280,5 @@ unsuitable for very large files at this time.
 
 
 .. _`Fernet`: https://github.com/fernet/spec/
+.. _`Django recommends as of November 2021`: https://github.com/django/django/blob/main/django/contrib/auth/hashers.py
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md

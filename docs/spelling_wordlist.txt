@@ -10,6 +10,7 @@ bcrypt
 Bleichenbacher
 Blowfish
 boolean
+BoringSSL
 Botan
 Brainpool
 Bullseye
@@ -27,6 +28,7 @@ Cryptanalysis
 crypto
 cryptographic
 cryptographically
+de
 Debian
 deallocated
 decrypt
@@ -49,6 +51,7 @@ El
 Encodings
 endian
 extendable
+facto
 fallback
 Fernet
 fernet
@@ -66,6 +69,7 @@ introspectability
 invariants
 iOS
 iterable
+Kerberos
 Koblitz
 Lange
 logins
@@ -83,6 +87,8 @@ paddings
 Parallelization
 personalization
 RHEL
+parsers
+Parsers
 pickleable
 plaintext
 Poly

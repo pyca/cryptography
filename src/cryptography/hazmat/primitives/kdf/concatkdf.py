@@ -10,14 +10,6 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
     InvalidKey,
-    UnsupportedAlgorithm,
-    _Reasons,
-)
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import (
-    Backend,
-    HMACBackend,
-    HashBackend,
 )
 from cryptography.hazmat.primitives import constant_time, hashes, hmac
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
@@ -70,25 +62,17 @@ class ConcatKDFHash(KeyDerivationFunction):
         algorithm: hashes.HashAlgorithm,
         length: int,
         otherinfo: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm
         self._length = length
         self._otherinfo: bytes = otherinfo if otherinfo is not None else b""
 
-        if not isinstance(backend, HashBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HashBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-        self._backend = backend
         self._used = False
 
     def _hash(self) -> hashes.Hash:
-        return hashes.Hash(self._algorithm, self._backend)
+        return hashes.Hash(self._algorithm)
 
     def derive(self, key_material: bytes) -> bytes:
         if self._used:
@@ -110,10 +94,8 @@ class ConcatKDFHMAC(KeyDerivationFunction):
         length: int,
         salt: typing.Optional[bytes],
         otherinfo: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
     ):
-        backend = _get_backend(backend)
-
         _common_args_checks(algorithm, length, otherinfo)
         self._algorithm = algorithm
         self._length = length
@@ -131,16 +113,10 @@ class ConcatKDFHMAC(KeyDerivationFunction):
 
         self._salt = salt
 
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-        self._backend = backend
         self._used = False
 
     def _hmac(self) -> hmac.HMAC:
-        return hmac.HMAC(self._salt, self._algorithm, self._backend)
+        return hmac.HMAC(self._salt, self._algorithm)
 
     def derive(self, key_material: bytes) -> bytes:
         if self._used:

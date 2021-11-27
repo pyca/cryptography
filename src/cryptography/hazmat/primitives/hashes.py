@@ -8,11 +8,7 @@ import typing
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
-    UnsupportedAlgorithm,
-    _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HashBackend
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
@@ -72,24 +68,19 @@ class Hash(HashContext):
     def __init__(
         self,
         algorithm: HashAlgorithm,
-        backend: typing.Optional[Backend] = None,
+        backend: typing.Any = None,
         ctx: typing.Optional["HashContext"] = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HashBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HashBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
         if not isinstance(algorithm, HashAlgorithm):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
         self._algorithm = algorithm
 
-        self._backend = backend
-
         if ctx is None:
-            self._ctx = self._backend.create_hash_ctx(self.algorithm)
+            from cryptography.hazmat.backends.openssl.backend import (
+                backend as ossl,
+            )
+
+            self._ctx = ossl.create_hash_ctx(self.algorithm)
         else:
             self._ctx = ctx
 
@@ -106,9 +97,7 @@ class Hash(HashContext):
     def copy(self) -> "Hash":
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        return Hash(
-            self.algorithm, backend=self._backend, ctx=self._ctx.copy()
-        )
+        return Hash(self.algorithm, ctx=self._ctx.copy())
 
     def finalize(self) -> bytes:
         if self._ctx is None:

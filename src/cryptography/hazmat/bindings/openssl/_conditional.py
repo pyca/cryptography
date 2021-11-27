@@ -9,18 +9,6 @@ def cryptography_has_ec2m():
     ]
 
 
-def cryptography_has_rsa_oaep_md():
-    return [
-        "EVP_PKEY_CTX_set_rsa_oaep_md",
-    ]
-
-
-def cryptography_has_rsa_oaep_label():
-    return [
-        "EVP_PKEY_CTX_set0_rsa_oaep_label",
-    ]
-
-
 def cryptography_has_ssl3_method():
     return [
         "SSLv3_method",
@@ -129,13 +117,6 @@ def cryptography_has_fips():
     ]
 
 
-def cryptography_has_ssl_sigalgs():
-    return [
-        "SSL_CTX_set1_sigalgs_list",
-        "SSL_get_sigalgs",
-    ]
-
-
 def cryptography_has_psk():
     return [
         "SSL_CTX_use_psk_identity_hint",
@@ -162,6 +143,11 @@ def cryptography_has_tlsv13():
     return [
         "TLS1_3_VERSION",
         "SSL_OP_NO_TLSv1_3",
+    ]
+
+
+def cryptography_has_tlsv13_functions():
+    return [
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
         "SSL_verify_client_post_handshake",
@@ -206,6 +192,7 @@ def cryptography_has_engine():
         "ENGINE_load_builtin_engines",
         "ENGINE_load_private_key",
         "ENGINE_load_public_key",
+        "SSL_CTX_set_client_cert_engine",
     ]
 
 
@@ -254,6 +241,48 @@ def cryptography_has_dtls_get_data_mtu():
     ]
 
 
+def cryptography_has_300_fips():
+    return [
+        "EVP_default_properties_is_fips_enabled",
+        "EVP_default_properties_enable_fips",
+    ]
+
+
+def cryptography_has_ssl_cookie():
+    return [
+        "SSL_OP_COOKIE_EXCHANGE",
+        "DTLSv1_listen",
+        "SSL_CTX_set_cookie_generate_cb",
+        "SSL_CTX_set_cookie_verify_cb",
+    ]
+
+
+def cryptography_has_pkcs7_funcs():
+    return [
+        "SMIME_write_PKCS7",
+        "PEM_write_bio_PKCS7_stream",
+        "PKCS7_sign_add_signer",
+        "PKCS7_final",
+        "PKCS7_verify",
+        "SMIME_read_PKCS7",
+        "PKCS7_get0_signers",
+    ]
+
+
+def cryptography_has_bn_flags():
+    return [
+        "BN_FLG_CONSTTIME",
+        "BN_set_flags",
+        "BN_prime_checks_for_size",
+    ]
+
+
+def cryptography_has_evp_pkey_dh():
+    return [
+        "EVP_PKEY_set1_DH",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -261,8 +290,6 @@ def cryptography_has_dtls_get_data_mtu():
 # lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC2M": cryptography_has_ec2m,
-    "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
-    "Cryptography_HAS_RSA_OAEP_LABEL": cryptography_has_rsa_oaep_label,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
     "Cryptography_HAS_110_VERIFICATION_PARAMS": (
         cryptography_has_110_verification_params
@@ -286,11 +313,11 @@ CONDITIONAL_NAMES = {
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
-    "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
+    "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
     "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
@@ -305,4 +332,9 @@ CONDITIONAL_NAMES = {
         cryptography_has_op_no_renegotiation
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
+    "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
+    "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
+    "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
+    "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
+    "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
 }

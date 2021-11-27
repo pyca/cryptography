@@ -12,17 +12,6 @@ from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
 
-_GENERAL_NAMES = {
-    0: "otherName",
-    1: "rfc822Name",
-    2: "dNSName",
-    3: "x400Address",
-    4: "directoryName",
-    5: "ediPartyName",
-    6: "uniformResourceIdentifier",
-    7: "iPAddress",
-    8: "registeredID",
-}
 _IPADDRESS_TYPES = typing.Union[
     ipaddress.IPv4Address,
     ipaddress.IPv6Address,
@@ -253,6 +242,16 @@ class IPAddress(GeneralName):
     @property
     def value(self) -> _IPADDRESS_TYPES:
         return self._value
+
+    def _packed(self) -> bytes:
+        if isinstance(
+            self.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        ):
+            return self.value.packed
+        else:
+            return (
+                self.value.network_address.packed + self.value.netmask.packed
+            )
 
     def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)

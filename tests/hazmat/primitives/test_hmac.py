@@ -88,12 +88,3 @@ class TestHMAC(object):
         assert h.finalize() == binascii.unhexlify(
             b"a1bf7169c56a501c6585190ff4f07cad6e492a3ee187c0372614fb444b9fc3f0"
         )
-
-
-def test_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        hmac.HMAC(
-            b"key", hashes.SHA1(), pretend_backend  # type:ignore[arg-type]
-        )

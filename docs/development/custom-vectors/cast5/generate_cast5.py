@@ -4,7 +4,6 @@
 
 import binascii
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 
@@ -12,7 +11,6 @@ def encrypt(mode, key, iv, plaintext):
     cipher = base.Cipher(
         algorithms.CAST5(binascii.unhexlify(key)),
         mode(binascii.unhexlify(iv)),
-        default_backend(),
     )
     encryptor = cipher.encryptor()
     ct = encryptor.update(binascii.unhexlify(plaintext))

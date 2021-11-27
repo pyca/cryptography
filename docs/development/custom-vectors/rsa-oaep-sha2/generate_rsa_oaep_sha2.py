@@ -6,7 +6,6 @@ import binascii
 import itertools
 import os
 
-from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
@@ -24,32 +23,32 @@ def build_vectors(mgf1alg, hashalg, filename):
         # small. Instead we parse the vectors for the test cases, then
         # generate our own 2048-bit keys for each.
         private, _ = vector
-        skey = rsa.generate_private_key(65537, 2048, backend)
+        skey = rsa.generate_private_key(65537, 2048)
         pn = skey.private_numbers()
         examples = private["examples"]
-        output.append(b"# =============================================")
-        output.append(b"# Example")
-        output.append(b"# Public key")
-        output.append(b"# Modulus:")
+        output.append("# =============================================")
+        output.append("# Example")
+        output.append("# Public key")
+        output.append("# Modulus:")
         output.append(format(pn.public_numbers.n, "x"))
-        output.append(b"# Exponent:")
+        output.append("# Exponent:")
         output.append(format(pn.public_numbers.e, "x"))
-        output.append(b"# Private key")
-        output.append(b"# Modulus:")
+        output.append("# Private key")
+        output.append("# Modulus:")
         output.append(format(pn.public_numbers.n, "x"))
-        output.append(b"# Public exponent:")
+        output.append("# Public exponent:")
         output.append(format(pn.public_numbers.e, "x"))
-        output.append(b"# Exponent:")
+        output.append("# Exponent:")
         output.append(format(pn.d, "x"))
-        output.append(b"# Prime 1:")
+        output.append("# Prime 1:")
         output.append(format(pn.p, "x"))
-        output.append(b"# Prime 2:")
+        output.append("# Prime 2:")
         output.append(format(pn.q, "x"))
-        output.append(b"# Prime exponent 1:")
+        output.append("# Prime exponent 1:")
         output.append(format(pn.dmp1, "x"))
-        output.append(b"# Prime exponent 2:")
+        output.append("# Prime exponent 2:")
         output.append(format(pn.dmq1, "x"))
-        output.append(b"# Coefficient:")
+        output.append("# Coefficient:")
         output.append(format(pn.iqmp, "x"))
         pkey = skey.public_key()
         vectorkey = rsa.RSAPrivateNumbers(
@@ -62,7 +61,7 @@ def build_vectors(mgf1alg, hashalg, filename):
             public_numbers=rsa.RSAPublicNumbers(
                 e=private["public_exponent"], n=private["modulus"]
             ),
-        ).private_key(backend)
+        ).private_key()
         count = 1
 
         for example in examples:
@@ -84,17 +83,17 @@ def build_vectors(mgf1alg, hashalg, filename):
                 ),
             )
             output.append(
-                b"# OAEP Example {0} alg={1} mgf1={2}".format(
+                "# OAEP Example {0} alg={1} mgf1={2}".format(
                     count, hashalg.name, mgf1alg.name
                 )
             )
             count += 1
-            output.append(b"# Message:")
-            output.append(example["message"])
-            output.append(b"# Encryption:")
-            output.append(binascii.hexlify(ct))
+            output.append("# Message:")
+            output.append(example["message"].decode("utf-8"))
+            output.append("# Encryption:")
+            output.append(binascii.hexlify(ct).decode("utf-8"))
 
-    return b"\n".join(output)
+    return "\n".join(output)
 
 
 def write_file(data, filename):

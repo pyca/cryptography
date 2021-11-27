@@ -1,32 +1,133 @@
 Changelog
 =========
 
-.. _v35-0-0:
+.. _v37-0-0:
 
-35.0.0 - `main`_
+37.0.0 - `main`_
 ~~~~~~~~~~~~~~~~
 
- .. note:: This version is not yet released and is under active development.
+.. note:: This version is not yet released and is under active development.
+
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x. The new
+  minimum LibreSSL version is 3.1+.
+
+.. _v36-0-0:
+
+36.0.0 - 2021-11-21
+~~~~~~~~~~~~~~~~~~~
+
+* **FINAL DEPRECATION** Support for ``verifier`` and ``signer`` on our
+  asymmetric key classes was deprecated in version 2.1. These functions had an
+  extended deprecation due to usage, however the next version of
+  ``cryptography`` will drop support. Users should migrate to ``sign`` and
+  ``verify``.
+* The entire :doc:`/x509/index` layer is now written in Rust. This allows
+  alternate asymmetric key implementations that can support cloud key
+  management services or hardware security modules provided they implement
+  the necessary interface (for example:
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`).
+* :ref:`Deprecated the backend argument<faq-missing-backend>` for all
+  functions.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`.
+* Added support for iterating over arbitrary request
+  :attr:`~cryptography.x509.CertificateSigningRequest.attributes`.
+* Deprecated the ``get_attribute_for_oid`` method on
+  :class:`~cryptography.x509.CertificateSigningRequest` in favor of
+  :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` on the new
+  :class:`~cryptography.x509.Attributes` object.
+* Fixed handling of PEM files to allow loading when certificate and key are
+  in the same file.
+* Fixed parsing of :class:`~cryptography.x509.CertificatePolicies` extensions
+  containing legacy ``BMPString`` values in their ``explicitText``.
+* Allow parsing of negative serial numbers in certificates. Negative serial
+  numbers are prohibited by :rfc:`5280` so a deprecation warning will be
+  raised whenever they are encountered. A future version of ``cryptography``
+  will drop support for parsing them.
+* Added support for parsing PKCS12 files with friendly names for all
+  certificates with
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`,
+  which will return an object of type
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`.
+* :meth:`~cryptography.x509.Name.rfc4514_string` and related methods now have
+  an optional ``attr_name_overrides`` parameter to supply custom OID to name
+  mappings, which can be used to match vendor-specific extensions.
+* **BACKWARDS INCOMPATIBLE:** Reverted the nonstandard formatting of
+  email address fields as ``E`` in
+  :meth:`~cryptography.x509.Name.rfc4514_string` methods from version 35.0.
+
+  The previous behavior can be restored with:
+  ``name.rfc4514_string({NameOID.EMAIL_ADDRESS: "E"})``
+* Allow
+  :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey` to
+  be used as public keys when parsing certificates or creating them with
+  :class:`~cryptography.x509.CertificateBuilder`. These key types must be
+  signed with a different signing algorithm as ``X25519`` and ``X448`` do
+  not support signing.
+* Extension values can now be serialized to a DER byte string by calling
+  :func:`~cryptography.x509.ExtensionType.public_bytes`.
+* Added experimental support for compiling against BoringSSL. As BoringSSL
+  does not commit to a stable API, ``cryptography`` tests against the
+  latest commit only. Please note that several features are not available
+  when building against BoringSSL.
+* Parsing ``CertificateSigningRequest`` from DER and PEM now, for a limited
+  time period, allows the ``Extension`` ``critical`` field to be incorrectly
+  encoded. See `the issue <https://github.com/pyca/cryptography/issues/6368>`_
+  for complete details. This will be reverted in a future ``cryptography``
+  release.
+* When :class:`~cryptography.x509.OCSPNonce` are parsed and generated their
+  value is now correctly wrapped in an ASN.1 ``OCTET STRING``. This conforms
+  to :rfc:`6960` but conflicts with the original behavior specified in
+  :rfc:`2560`. For a temporary period for backwards compatibility, we will
+  also parse values that are encoded as specified in :rfc:`2560` but this
+  behavior will be removed in a future release.
+
+.. _v35-0-0:
+
+35.0.0 - 2021-09-29
+~~~~~~~~~~~~~~~~~~~
 
 * Changed the :ref:`version scheme <api-stability:versioning>`. This will
   result in us incrementing the major version more frequently, but does not
   change our existing backwards compatibility policy.
+* **BACKWARDS INCOMPATIBLE:** The :doc:`/x509/index` PEM parsers now require
+  that the PEM string passed have PEM delimiters of the correct type. For
+  example, parsing a private key PEM concatenated with a certificate PEM will
+  no longer be accepted by the PEM certificate parser.
 * **BACKWARDS INCOMPATIBLE:** The X.509 certificate parser no longer allows
   negative serial numbers. :rfc:`5280` has always prohibited these.
-* **BACKWARDS INCOMPATIBLE:** Invalid ASN.1 found during certificate parsing
-  will raise an error on initial parse rather than when the invalid field is
-  accessed.
-* **BACKWARDS INCOMPATIBLE:** Values passed to the X.509 PEM parser must be
-  a single PEM payload and will error on extraneous data.
+* **BACKWARDS INCOMPATIBLE:** Additional forms of invalid ASN.1 found during
+  :doc:`/x509/index` parsing will raise an error on initial parse rather than
+  when the malformed field is accessed.
+* Rust is now required for building ``cryptography``, the
+  ``CRYPTOGRAPHY_DONT_BUILD_RUST`` environment variable is no longer
+  respected.
+* Parsers for :doc:`/x509/index` no longer use OpenSSL and have been
+  rewritten in Rust. This should be backwards compatible (modulo the items
+  listed above) and improve both security and performance.
+* Added support for OpenSSL 3.0.0 as a compilation target.
 * Added support for
   :class:`~cryptography.hazmat.primitives.hashes.SM3` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`,
   when using OpenSSL 1.1.1. These algorithms are provided for compatibility
   in regions where they may be required, and are not generally recommended.
-* We now ship ``manylinux_2_24`` wheels, in addition to our ``manylinux2010``
-  and ``manylinux2014`` wheels.
-* Added ``rfc4514_attribute_name`` attribute to
-  :attr:`x509.NameAttribute <cryptography.x509.NameAttribute.rfc4514_attribute_name>`,
+* We now ship ``manylinux_2_24`` and ``musllinux_1_1`` wheels, in addition to
+  our ``manylinux2010`` and ``manylinux2014`` wheels. Users on distributions
+  like Alpine Linux should ensure they upgrade to the latest ``pip`` to
+  correctly receive wheels.
+* Added ``rfc4514_attribute_name`` attribute to :attr:`x509.NameAttribute
+  <cryptography.x509.NameAttribute.rfc4514_attribute_name>`.
+* Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`.
+
+.. _v3-4-8:
+
+3.4.8 - 2021-08-24
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and ``manylinux`` wheels to be compiled with
+  OpenSSL 1.1.1l.
 
 .. _v3-4-7:
 
@@ -260,7 +361,7 @@ Changelog
 * Added support for parsing
   :class:`~cryptography.x509.SignedCertificateTimestamps` in OCSP responses.
 * Added support for parsing attributes in certificate signing requests via
-  :meth:`~cryptography.x509.CertificateSigningRequest.get_attribute_for_oid`.
+  ``CertificateSigningRequest.get_attribute_for_oid``.
 * Added support for encoding attributes in certificate signing requests via
   :meth:`~cryptography.x509.CertificateSigningRequestBuilder.add_attribute`.
 * On OpenSSL 1.1.1d and higher ``cryptography`` now uses OpenSSL's
@@ -1547,8 +1648,7 @@ Changelog
 * Deprecated ``elliptic_curve_private_key_from_numbers`` and
   ``elliptic_curve_public_key_from_numbers`` in favor of
   ``load_elliptic_curve_private_numbers`` and
-  ``load_elliptic_curve_public_numbers`` on
-  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+  ``load_elliptic_curve_public_numbers`` on ``EllipticCurveBackend``.
 * Added ``EllipticCurvePrivateKeyWithNumbers`` and
   ``EllipticCurvePublicKeyWithNumbers`` support.
 * Work around three GCM related bugs in CommonCrypto and OpenSSL.
@@ -1618,17 +1718,15 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and ``openssl``.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
 * Added ``PKCS8SerializationBackend`` and
-  ``TraditionalOpenSSLSerializationBackend`` support to the
-  :doc:`/hazmat/backends/openssl`.
-* Added :doc:`/hazmat/primitives/asymmetric/ec` and
-  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+  ``TraditionalOpenSSLSerializationBackend`` support to ``openssl``.
+* Added :doc:`/hazmat/primitives/asymmetric/ec` and ``EllipticCurveBackend``.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
-  ``commoncrypto`` and :doc:`/hazmat/backends/openssl`.
+  ``commoncrypto`` and ``openssl``.
 * Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
   specific providers of the
   :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -1650,10 +1748,9 @@ Changelog
   :class:`cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
   interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
-  ``create_rsa_verification_ctx`` on
-  :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+  ``create_rsa_verification_ctx`` on ``RSABackend``.
 * Deprecated ``create_dsa_signature_ctx`` and ``create_dsa_verification_ctx``
-  on :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
+  on ``DSABackend``.
 
 
 .. _v0-4:
@@ -1720,8 +1817,7 @@ Changelog
 
 * Added ``commoncrypto``.
 * Added initial ``commoncrypto``.
-* Removed ``register_cipher_adapter`` method from
-  :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
+* Removed ``register_cipher_adapter`` method from ``CipherBackend``.
 * Added support for the OpenSSL backend under Windows.
 * Improved thread-safety for the OpenSSL backend.
 * Fixed compilation on systems where OpenSSL's ``ec.h`` header is not
@@ -1729,8 +1825,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Added ``multibackend``.
-* Set default random for the :doc:`/hazmat/backends/openssl` to the OS
-  random engine.
+* Set default random for ``openssl`` to the OS random engine.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
   (CAST-128) support.
 

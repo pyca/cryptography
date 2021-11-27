@@ -124,6 +124,20 @@ static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
 static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
 static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
 static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
+
+/* Included due to external consumer, see
+   https://github.com/pyca/pyopenssl/issues/1031 */
+static const long X509_PURPOSE_SSL_CLIENT;
+static const long X509_PURPOSE_SSL_SERVER;
+static const long X509_PURPOSE_NS_SSL_SERVER;
+static const long X509_PURPOSE_SMIME_SIGN;
+static const long X509_PURPOSE_SMIME_ENCRYPT;
+static const long X509_PURPOSE_CRL_SIGN;
+static const long X509_PURPOSE_ANY;
+static const long X509_PURPOSE_OCSP_HELPER;
+static const long X509_PURPOSE_TIMESTAMP_SIGN;
+static const long X509_PURPOSE_MIN;
+static const long X509_PURPOSE_MAX;
 """
 
 FUNCTIONS = """
@@ -137,6 +151,9 @@ int X509_STORE_load_locations(X509_STORE *, const char *, const char *);
 int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
 int X509_STORE_set_flags(X509_STORE *, unsigned long);
+/* Included due to external consumer, see
+   https://github.com/pyca/pyopenssl/issues/1031 */
+int X509_STORE_set_purpose(X509_STORE *, int);
 void X509_STORE_free(X509_STORE *);
 
 /* X509_STORE_CTX */
@@ -147,12 +164,8 @@ int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
                         Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
                                   Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_set0_trusted_stack(X509_STORE_CTX *,
-                                  Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
 void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_set0_untrusted(X509_STORE_CTX *,
-                                  Cryptography_STACK_OF_X509 *);
 X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
 void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
 int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
@@ -182,9 +195,6 @@ int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
 void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
 int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
-/* this CRYPTO_EX_DATA function became a macro in 1.1.0 */
-int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
-                                    CRYPTO_EX_dup *, CRYPTO_EX_free *);
 
 /* X509_STORE_CTX */
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
@@ -214,7 +224,7 @@ void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_LIBRESSL_LESS_THAN_322
 static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 0;
 #ifndef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
 static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
@@ -231,5 +241,9 @@ void (*X509_STORE_set_get_issuer)(X509_STORE *,
                                   X509_STORE_CTX_get_issuer_fn) = NULL;
 #else
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long X509_V_FLAG_NO_CHECK_TIME = 0;
 #endif
 """

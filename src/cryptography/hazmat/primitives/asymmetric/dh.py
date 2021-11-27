@@ -6,8 +6,6 @@
 import abc
 import typing
 
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import serialization
 
 
@@ -15,10 +13,11 @@ _MIN_MODULUS_SIZE = 512
 
 
 def generate_parameters(
-    generator: int, key_size: int, backend: typing.Optional[Backend] = None
+    generator: int, key_size: int, backend: typing.Any = None
 ) -> "DHParameters":
-    backend = _get_backend(backend)
-    return backend.generate_dh_parameters(generator, key_size)
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
+    return ossl.generate_dh_parameters(generator, key_size)
 
 
 class DHParameterNumbers(object):
@@ -51,11 +50,12 @@ class DHParameterNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def parameters(
-        self, backend: typing.Optional[Backend] = None
-    ) -> "DHParameters":
-        backend = _get_backend(backend)
-        return backend.load_dh_parameter_numbers(self)
+    def parameters(self, backend: typing.Any = None) -> "DHParameters":
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_dh_parameter_numbers(self)
 
     p = property(lambda self: self._p)
     g = property(lambda self: self._g)
@@ -87,11 +87,12 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def public_key(
-        self, backend: typing.Optional[Backend] = None
-    ) -> "DHPublicKey":
-        backend = _get_backend(backend)
-        return backend.load_dh_public_numbers(self)
+    def public_key(self, backend: typing.Any = None) -> "DHPublicKey":
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_dh_public_numbers(self)
 
     y = property(lambda self: self._y)
     parameter_numbers = property(lambda self: self._parameter_numbers)
@@ -122,11 +123,12 @@ class DHPrivateNumbers(object):
     def __ne__(self, other):
         return not self == other
 
-    def private_key(
-        self, backend: typing.Optional[Backend] = None
-    ) -> "DHPrivateKey":
-        backend = _get_backend(backend)
-        return backend.load_dh_private_numbers(self)
+    def private_key(self, backend: typing.Any = None) -> "DHPrivateKey":
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        return ossl.load_dh_private_numbers(self)
 
     public_numbers = property(lambda self: self._public_numbers)
     x = property(lambda self: self._x)

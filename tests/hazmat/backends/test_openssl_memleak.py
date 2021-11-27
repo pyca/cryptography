@@ -86,27 +86,29 @@ def main(argv):
 
     start_heap = set(heap)
 
-    func(*argv[1:])
-    gc.collect()
-    gc.collect()
-    gc.collect()
+    try:
+        func(*argv[1:])
+    finally:
+        gc.collect()
+        gc.collect()
+        gc.collect()
 
-    if lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-        lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
-        lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
+        if lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
+            lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
 
-    if lib.Cryptography_HAS_OPENSSL_CLEANUP:
-        lib.OPENSSL_cleanup()
+        if lib.Cryptography_HAS_OPENSSL_CLEANUP:
+            lib.OPENSSL_cleanup()
 
-    # Swap back to the original functions so that if OpenSSL tries to free
-    # something from its atexit handle it won't be going through a Python
-    # function, which will be deallocated when this function returns
-    result = lib.Cryptography_CRYPTO_set_mem_functions(
-        ffi.addressof(lib, "Cryptography_malloc_wrapper"),
-        ffi.addressof(lib, "Cryptography_realloc_wrapper"),
-        ffi.addressof(lib, "Cryptography_free_wrapper"),
-    )
-    assert result == 1
+        # Swap back to the original functions so that if OpenSSL tries to free
+        # something from its atexit handle it won't be going through a Python
+        # function, which will be deallocated when this function returns
+        result = lib.Cryptography_CRYPTO_set_mem_functions(
+            ffi.addressof(lib, "Cryptography_malloc_wrapper"),
+            ffi.addressof(lib, "Cryptography_realloc_wrapper"),
+            ffi.addressof(lib, "Cryptography_free_wrapper"),
+        )
+        assert result == 1
 
     remaining = set(heap) - start_heap
 
@@ -230,7 +232,7 @@ class TestAssertNoMemoryLeaks(object):
             )
 
     def test_errors(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="ZeroDivisionError"):
             assert_no_memory_leaks(
                 textwrap.dedent(
                     """

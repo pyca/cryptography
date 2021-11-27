@@ -198,14 +198,11 @@ class TestSEED(object):
             SEED("0" * 16)  # type: ignore[arg-type]
 
 
-def test_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+def test_invalid_gcm_algorithm():
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
         ciphers.Cipher(
-            AES(b"AAAAAAAAAAAAAAAA"),
-            modes.ECB(),
-            pretend_backend,  # type: ignore[arg-type]
+            ARC4(b"\x00" * 16),
+            modes.GCM(b"\x00" * 12),
         )
 
 

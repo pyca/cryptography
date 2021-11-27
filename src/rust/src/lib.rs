@@ -5,7 +5,6 @@
 #![deny(rust_2018_idioms)]
 
 mod asn1;
-mod ocsp;
 mod x509;
 
 use std::convert::TryInto;
@@ -77,8 +76,20 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_function(pyo3::wrap_pyfunction!(check_ansix923_padding, m)?)?;
 
     m.add_submodule(asn1::create_submodule(py)?)?;
-    m.add_submodule(ocsp::create_submodule(py)?)?;
-    m.add_submodule(x509::create_submodule(py)?)?;
+
+    let x509_mod = pyo3::prelude::PyModule::new(py, "x509")?;
+    crate::x509::certificate::add_to_module(x509_mod)?;
+    crate::x509::common::add_to_module(x509_mod)?;
+    crate::x509::crl::add_to_module(x509_mod)?;
+    crate::x509::csr::add_to_module(x509_mod)?;
+    crate::x509::extensions::add_to_module(x509_mod)?;
+    crate::x509::sct::add_to_module(x509_mod)?;
+    m.add_submodule(x509_mod)?;
+
+    let ocsp_mod = pyo3::prelude::PyModule::new(py, "ocsp")?;
+    crate::x509::ocsp_req::add_to_module(ocsp_mod)?;
+    crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
+    m.add_submodule(ocsp_mod)?;
 
     Ok(())
 }

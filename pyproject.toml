@@ -1,10 +1,10 @@
 [build-system]
 requires = [
     # The minimum setuptools version is specific to the PEP 517 backend,
-    # and may be stricter than the version required in `setup.py`
+    # and may be stricter than the version required in `setup.cfg`
     "setuptools>=40.6.0",
     "wheel",
-    # Must be kept in sync with the `setup_requirements` in `setup.py`
+    # Must be kept in sync with the `install_requirements` in `setup.cfg`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
     "setuptools-rust>=0.11.4",
 ]
@@ -15,7 +15,7 @@ line-length = 79
 target-version = ["py36"]
 
 [tool.pytest.ini_options]
-addopts = "-r s"
+addopts = "-r s --capture=no --strict-markers"
 markers = [
     "skip_fips: this test is not executed in FIPS mode",
     "supported: parametrized test requiring only_if and skip_message",
@@ -24,11 +24,11 @@ markers = [
 [tool.mypy]
 show_error_codes = true
 check_untyped_defs = true
+no_implicit_reexport = true
 
 [[tool.mypy.overrides]]
 module = [
     "cryptography.hazmat.bindings._openssl",
-    "iso8601",
     "pretend"
 ]
 ignore_missing_imports = true

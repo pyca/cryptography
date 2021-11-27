@@ -11,10 +11,14 @@ import typing
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import asn1
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-from cryptography.hazmat.primitives.asymmetric.types import PUBLIC_KEY_TYPES
+from cryptography.hazmat.primitives.asymmetric.types import (
+    CERTIFICATE_PUBLIC_KEY_TYPES,
+    PUBLIC_KEY_TYPES,
+)
 from cryptography.x509.certificate_transparency import (
     SignedCertificateTimestamp,
 )
@@ -40,7 +44,9 @@ from cryptography.x509.oid import (
 ExtensionTypeVar = typing.TypeVar("ExtensionTypeVar", bound="ExtensionType")
 
 
-def _key_identifier_from_public_key(public_key: PUBLIC_KEY_TYPES) -> bytes:
+def _key_identifier_from_public_key(
+    public_key: CERTIFICATE_PUBLIC_KEY_TYPES,
+) -> bytes:
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
             serialization.Encoding.DER,
@@ -89,6 +95,16 @@ class ExtensionNotFound(Exception):
 
 class ExtensionType(metaclass=abc.ABCMeta):
     oid: typing.ClassVar[ObjectIdentifier]
+
+    def public_bytes(self) -> bytes:
+        """
+        Serializes the extension type to DER.
+        """
+        raise NotImplementedError(
+            "public_bytes is not implemented for extension type {0!r}".format(
+                self
+            )
+        )
 
 
 class Extensions(object):
@@ -158,6 +174,9 @@ class CRLNumber(ExtensionType):
     def crl_number(self) -> int:
         return self._crl_number
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class AuthorityKeyIdentifier(ExtensionType):
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -195,6 +214,11 @@ class AuthorityKeyIdentifier(ExtensionType):
         self._authority_cert_issuer = authority_cert_issuer
         self._authority_cert_serial_number = authority_cert_serial_number
 
+    # This takes PUBLIC_KEY_TYPES and not CERTIFICATE_PUBLIC_KEY_TYPES
+    # because an issuer cannot have an X25519/X448 key. This introduces
+    # some unfortunate asymmetry that requires typing users to explicitly
+    # narrow their type, but we should make this accurate and not just
+    # convenient.
     @classmethod
     def from_issuer_public_key(
         cls, public_key: PUBLIC_KEY_TYPES
@@ -261,6 +285,9 @@ class AuthorityKeyIdentifier(ExtensionType):
     def authority_cert_serial_number(self) -> typing.Optional[int]:
         return self._authority_cert_serial_number
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class SubjectKeyIdentifier(ExtensionType):
     oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
@@ -270,7 +297,7 @@ class SubjectKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_public_key(
-        cls, public_key: PUBLIC_KEY_TYPES
+        cls, public_key: CERTIFICATE_PUBLIC_KEY_TYPES
     ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 
@@ -296,6 +323,9 @@ class SubjectKeyIdentifier(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(self.digest)
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class AuthorityInformationAccess(ExtensionType):
@@ -330,6 +360,9 @@ class AuthorityInformationAccess(ExtensionType):
     def __hash__(self) -> int:
         return hash(tuple(self._descriptions))
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
@@ -362,6 +395,9 @@ class SubjectInformationAccess(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(tuple(self._descriptions))
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class AccessDescription(object):
@@ -452,6 +488,9 @@ class BasicConstraints(ExtensionType):
     def __hash__(self) -> int:
         return hash((self.ca, self.path_length))
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class DeltaCRLIndicator(ExtensionType):
     oid = ExtensionOID.DELTA_CRL_INDICATOR
@@ -480,6 +519,9 @@ class DeltaCRLIndicator(ExtensionType):
 
     def __repr__(self) -> str:
         return "<DeltaCRLIndicator(crl_number={0.crl_number})>".format(self)
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class CRLDistributionPoints(ExtensionType):
@@ -518,6 +560,9 @@ class CRLDistributionPoints(ExtensionType):
     def __hash__(self) -> int:
         return hash(tuple(self._distribution_points))
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class FreshestCRL(ExtensionType):
     oid = ExtensionOID.FRESHEST_CRL
@@ -554,6 +599,9 @@ class FreshestCRL(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(tuple(self._distribution_points))
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class DistributionPoint(object):
@@ -772,6 +820,9 @@ class PolicyConstraints(ExtensionType):
     def inhibit_policy_mapping(self) -> typing.Optional[int]:
         return self._inhibit_policy_mapping
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
@@ -802,6 +853,9 @@ class CertificatePolicies(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(tuple(self._policies))
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class PolicyInformation(object):
@@ -986,6 +1040,9 @@ class ExtendedKeyUsage(ExtensionType):
     def __hash__(self) -> int:
         return hash(tuple(self._usages))
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class OCSPNoCheck(ExtensionType):
     oid = ExtensionOID.OCSP_NO_CHECK
@@ -1005,6 +1062,9 @@ class OCSPNoCheck(ExtensionType):
     def __repr__(self) -> str:
         return "<OCSPNoCheck()>"
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class PrecertPoison(ExtensionType):
     oid = ExtensionOID.PRECERT_POISON
@@ -1023,6 +1083,9 @@ class PrecertPoison(ExtensionType):
 
     def __repr__(self) -> str:
         return "<PrecertPoison()>"
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class TLSFeature(ExtensionType):
@@ -1057,6 +1120,9 @@ class TLSFeature(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(tuple(self._features))
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class TLSFeatureType(utils.Enum):
@@ -1103,6 +1169,9 @@ class InhibitAnyPolicy(ExtensionType):
     @property
     def skip_certs(self) -> int:
         return self._skip_certs
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class KeyUsage(ExtensionType):
@@ -1237,6 +1306,9 @@ class KeyUsage(ExtensionType):
             )
         )
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class NameConstraints(ExtensionType):
     oid = ExtensionOID.NAME_CONSTRAINTS
@@ -1334,6 +1406,9 @@ class NameConstraints(ExtensionType):
         self,
     ) -> typing.Optional[typing.List[GeneralName]]:
         return self._excluded_subtrees
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class Extension(typing.Generic[ExtensionTypeVar]):
@@ -1559,6 +1634,9 @@ class SubjectAlternativeName(ExtensionType):
     def __hash__(self) -> int:
         return hash(self._general_names)
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
@@ -1639,6 +1717,9 @@ class IssuerAlternativeName(ExtensionType):
 
     def __hash__(self) -> int:
         return hash(self._general_names)
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class CertificateIssuer(ExtensionType):
@@ -1721,6 +1802,9 @@ class CertificateIssuer(ExtensionType):
     def __hash__(self) -> int:
         return hash(self._general_names)
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class CRLReason(ExtensionType):
     oid = CRLEntryExtensionOID.CRL_REASON
@@ -1749,6 +1833,9 @@ class CRLReason(ExtensionType):
     @property
     def reason(self) -> ReasonFlags:
         return self._reason
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class InvalidityDate(ExtensionType):
@@ -1780,6 +1867,9 @@ class InvalidityDate(ExtensionType):
     @property
     def invalidity_date(self) -> datetime.datetime:
         return self._invalidity_date
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class PrecertificateSignedCertificateTimestamps(ExtensionType):
@@ -1826,6 +1916,9 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
     def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class SignedCertificateTimestamps(ExtensionType):
     oid = ExtensionOID.SIGNED_CERTIFICATE_TIMESTAMPS
@@ -1869,6 +1962,9 @@ class SignedCertificateTimestamps(ExtensionType):
     def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class OCSPNonce(ExtensionType):
     oid = OCSPExtensionOID.NONCE
@@ -1897,6 +1993,9 @@ class OCSPNonce(ExtensionType):
     @property
     def nonce(self) -> bytes:
         return self._nonce
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
 
 
 class IssuingDistributionPoint(ExtensionType):
@@ -2058,6 +2157,9 @@ class IssuingDistributionPoint(ExtensionType):
     def only_contains_attribute_certs(self) -> bool:
         return self._only_contains_attribute_certs
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
@@ -2091,3 +2193,6 @@ class UnrecognizedExtension(ExtensionType):
 
     def __hash__(self) -> int:
         return hash((self.oid, self.value))
+
+    def public_bytes(self) -> bytes:
+        return self.value

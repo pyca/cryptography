@@ -13,16 +13,16 @@ single most common cause of installation problems.
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.1 on these
+Currently we test ``cryptography`` on Python 3.6+ and PyPy3 on these
 operating systems.
 
-* x86-64 & AArch64 CentOS 8.x
+* x86-64 CentOS 8.x
 * x86-64 Fedora (latest)
 * x86-64 macOS 10.15 Catalina
-* x86-64 & AArch64 Ubuntu 18.04, 20.04
-* x86-64 Ubuntu rolling
-* x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), and Sid
-  (unstable)
+* x86-64 Ubuntu 18.04, 20.04, rolling
+* AArch64 Ubuntu 20.04
+* x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), Bookworm (12.x)
+  and Sid (unstable)
 * x86-64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2019
 
@@ -31,6 +31,10 @@ OpenSSL releases:
 
 * ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
+* ``OpenSSL 3.0-latest``
+
+In addition we test against several versions of LibreSSL and the latest commit
+in BoringSSL.
 
 
 Building cryptography on Windows
@@ -58,12 +62,6 @@ the proper locations. For example:
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
     C:\> pip install cryptography
 
-As of OpenSSL 1.1.0 the library names have changed from ``libeay32`` and
-``ssleay32`` to ``libcrypto`` and ``libssl`` (matching their names on all other
-platforms). ``cryptography`` links against the new 1.1.0 names by default. If
-you need to compile ``cryptography`` against an older version then you **must**
-set ``CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL`` or else installation will fail.
-
 You will also need to have :ref:`Rust installed and
 available<installation:Rust>`.
 
@@ -85,17 +83,16 @@ Building cryptography on Linux
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
 are included. For users on **pip 19.0** or above running on a ``manylinux2010``
-(or greater) compatible distribution (almost everything **except Alpine**) all
+(or greater) compatible distribution (or **pip 21.2.4** for ``musllinux``) all
 you should need to do is:
 
 .. code-block:: console
 
     $ pip install cryptography
 
-If you are on Alpine or just want to compile it yourself then
-``cryptography`` requires a C compiler, a Rust compiler, headers for Python (if
-you're not using ``pypy``), and headers for the OpenSSL and ``libffi`` libraries
-available on your system.
+If you want to compile ``cryptography`` yourself you'll need a C compiler, a
+Rust compiler, headers for Python (if you're not using ``pypy``), and headers
+for the OpenSSL and ``libffi`` libraries available on your system.
 
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
@@ -146,20 +143,6 @@ Fedora/RHEL 8/CentOS 8
     $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
         openssl-devel cargo
 
-RHEL 7/CentOS 7
-~~~~~~~~~~~~~~~
-
-.. warning::
-
-    You must install Rust using the :ref:`Rust installation instructions
-    <installation:Rust>`. ``cryptography`` requires a Rust version newer than
-    what is provided in the distribution packages.
-
-.. code-block:: console
-
-    $ sudo yum install redhat-rpm-config gcc libffi-devel python-devel \
-        openssl-devel
-
 
 Building
 ~~~~~~~~
@@ -196,15 +179,15 @@ Static Wheels
 ~~~~~~~~~~~~~
 
 Cryptography ships statically-linked wheels for macOS, Windows, and Linux (via
-``manylinux``). This allows compatible environments to use the most recent
-OpenSSL, regardless of what is shipped by default on those platforms. Some
-Linux distributions (most notably Alpine) are not ``manylinux`` compatible so
-we cannot distribute wheels for them.
+``manylinux`` and ``musllinux``). This allows compatible environments to use
+the most recent OpenSSL, regardless of what is shipped by default on those
+platforms.
 
-However, you can build your own statically-linked wheels that will work on your
-own systems. This will allow you to continue to use relatively old Linux
-distributions (such as LTS releases), while making sure you have the most
-recent OpenSSL available to your Python programs.
+If you are using a platform not covered by our wheels, you can build your own
+statically-linked wheels that will work on your own systems. This will allow
+you to continue to use relatively old Linux distributions (such as LTS
+releases), while making sure you have the most recent OpenSSL available to
+your Python programs.
 
 To do so, you should find yourself a machine that is as similar as possible to
 your target environment (e.g. your production environment): for example, spin
@@ -320,15 +303,15 @@ Rust
 
 .. note::
 
-    If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
-    derived from the preceding list, then you should **upgrade pip** (in
-    a virtual environment!) and attempt to install ``cryptography`` again
-    before trying to install the Rust toolchain. These platforms will receive
-    a binary wheel and require no compiler if you have an updated ``pip``!
+    If you are using Linux, then you should **upgrade pip** (in
+    a virtual environment!) and attempt to install ``cryptography`` again before
+    trying to install the Rust toolchain. On most Linux distributions, the latest
+    version of ``pip`` will be able to install a binary wheel, so you won't need
+    a Rust toolchain.
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.41.0. **This is newer than the Rust most
-package managers ship**, so users will likely need to install with the
+minimum supported Rust version is 1.41.0. **This is newer than the Rust some
+package managers ship**, so users may need to install with the
 instructions below.
 
 Instructions for installing Rust can be found on `the Rust Project's website`_.

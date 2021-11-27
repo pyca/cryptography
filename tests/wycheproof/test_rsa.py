@@ -102,6 +102,13 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     assert digest is not None
+    if backend._fips_enabled:
+        if key.key_size < 2048 or isinstance(digest, hashes.SHA1):
+            pytest.skip(
+                "Invalid params for FIPS. key: {} bits, digest: {}".format(
+                    key.key_size, digest.name
+                )
+            )
 
     sig = key.sign(
         binascii.unhexlify(wycheproof.testcase["msg"]),
@@ -198,14 +205,6 @@ def test_rsa_oaep_encryption(backend, wycheproof):
         algorithm=digest,
         label=binascii.unhexlify(wycheproof.testcase["label"]),
     )
-
-    if not backend.rsa_padding_supported(padding_algo):
-        pytest.skip(
-            "OAEP with digest={} and MGF digest={} not supported".format(
-                wycheproof.testgroup["sha"],
-                wycheproof.testgroup["mgfSha"],
-            )
-        )
 
     if wycheproof.valid or wycheproof.acceptable:
         pt = key.decrypt(

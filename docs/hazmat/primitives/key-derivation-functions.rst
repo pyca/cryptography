@@ -36,7 +36,7 @@ PBKDF2
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.pbkdf2
 
-.. class:: PBKDF2HMAC(algorithm, length, salt, iterations, backend=None)
+.. class:: PBKDF2HMAC(algorithm, length, salt, iterations)
 
     .. versionadded:: 0.2
 
@@ -85,12 +85,6 @@ PBKDF2
         takes. Higher numbers help mitigate brute force attacks against derived
         keys. A `more detailed description`_ can be consulted for additional
         information.
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
 
     :raises TypeError: This exception is raised if ``salt`` is not ``bytes``.
 
@@ -139,7 +133,7 @@ Scrypt
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.scrypt
 
-.. class:: Scrypt(salt, length, n, r, p, backend=None)
+.. class:: Scrypt(salt, length, n, r, p)
 
     .. versionadded:: 1.6
 
@@ -181,8 +175,6 @@ Scrypt
         power of 2.
     :param int r: Block size parameter.
     :param int p: Parallelization parameter.
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`.
 
     The computational and memory cost of Scrypt can be adjusted by manipulating
     the 3 parameters: ``n``, ``r``, and ``p``. In general, the memory cost of
@@ -196,9 +188,8 @@ Scrypt
     minimum value of ``n=2**14`` for interactive logins (t < 100ms), or
     ``n=2**20`` for more sensitive files (t < 5s).
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.ScryptBackend`
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If Scrypt is not
+        supported by the OpenSSL version ``cryptography`` is using.
 
     :raises TypeError: This exception is raised if ``salt`` is not ``bytes``.
     :raises ValueError: This exception is raised if ``n`` is less than 2, if
@@ -251,7 +242,7 @@ ConcatKDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.concatkdf
 
-.. class:: ConcatKDFHash(algorithm, length, otherinfo, backend=None)
+.. class:: ConcatKDFHash(algorithm, length, otherinfo)
 
     .. versionadded:: 1.0
 
@@ -290,13 +281,6 @@ ConcatKDF
 
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
-        if the provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
 
     :raises TypeError: This exception is raised if ``otherinfo`` is not
         ``bytes``.
@@ -337,7 +321,7 @@ ConcatKDF
         raises an exception if they do not match.
 
 
-.. class:: ConcatKDFHMAC(algorithm, length, salt, otherinfo, backend=None)
+.. class:: ConcatKDFHMAC(algorithm, length, salt, otherinfo)
 
     .. versionadded:: 1.0
 
@@ -386,13 +370,6 @@ ConcatKDF
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-
     :raises TypeError: This exception is raised if ``salt`` or ``otherinfo``
         is not ``bytes``.
 
@@ -436,7 +413,7 @@ HKDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.hkdf
 
-.. class:: HKDF(algorithm, length, salt, info, backend=None)
+.. class:: HKDF(algorithm, length, salt, info)
 
     .. versionadded:: 0.2
 
@@ -488,13 +465,6 @@ HKDF
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-
     :raises TypeError: This exception is raised if ``salt`` or ``info`` is not
                        ``bytes``.
 
@@ -535,7 +505,7 @@ HKDF
         raises an exception if they do not match.
 
 
-.. class:: HKDFExpand(algorithm, length, info, backend=None)
+.. class:: HKDFExpand(algorithm, length, info)
 
     .. versionadded:: 0.5
 
@@ -579,12 +549,6 @@ HKDF
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
     :raises TypeError: This exception is raised if ``info`` is not ``bytes``.
 
     .. method:: derive(key_material)
@@ -632,7 +596,7 @@ KBKDF
 .. currentmodule:: cryptography.hazmat.primitives.kdf.kbkdf
 
 .. class:: KBKDFHMAC(algorithm, mode, length, rlen, llen, location,\
-           label, context, fixed, backend=None)
+           label, context, fixed)
 
     .. versionadded:: 1.4
 
@@ -706,13 +670,6 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
-        if the provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-
     :raises TypeError: This exception is raised if ``label`` or ``context``
         is not ``bytes``. Also raised if ``rlen`` or ``llen`` is not ``int``.
 
@@ -755,6 +712,132 @@ KBKDF
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
 
+.. class:: KBKDFCMAC(algorithm, mode, length, rlen, llen, location,\
+           label, context, fixed)
+
+    .. versionadded:: 35.0
+
+    KBKDF (Key Based Key Derivation Function) is defined by the
+    `NIST SP 800-108`_ document, to be used to derive additional
+    keys from a key that has been established through an automated
+    key-establishment scheme.
+
+    .. warning::
+
+        KBKDFCMAC should not be used for password storage.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import algorithms
+        >>> from cryptography.hazmat.primitives.kdf.kbkdf import (
+        ...    CounterLocation, KBKDFCMAC, Mode
+        ... )
+        >>> label = b"KBKDF CMAC Label"
+        >>> context = b"KBKDF CMAC Context"
+        >>> kdf = KBKDFCMAC(
+        ...     algorithm=algorithms.AES,
+        ...     mode=Mode.CounterMode,
+        ...     length=32,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ... )
+        >>> key = kdf.derive(b"32 bytes long input key material")
+        >>> kdf = KBKDFCMAC(
+        ...     algorithm=algorithms.AES,
+        ...     mode=Mode.CounterMode,
+        ...     length=32,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ... )
+        >>> kdf.verify(b"32 bytes long input key material", key)
+
+    :param algorithm: A class implementing a block cipher algorithm being a
+        subclass of
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm` and
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
+
+    :param mode: The desired mode of the PRF. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` enum.
+
+    :param int length: The desired length of the derived key in bytes.
+
+    :param int rlen: An integer that indicates the length of the binary
+        representation of the counter in bytes.
+
+    :param int llen: An integer that indicates the binary
+        representation of the ``length`` in bytes.
+
+    :param location: The desired location of the counter. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation` enum.
+
+    :param bytes label: Application specific label information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes context: Application specific context information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes fixed: Instead of specifying ``label`` and ``context`` you
+        may supply your own fixed data. If ``fixed`` is specified, ``label``
+        and ``context`` is ignored.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if ``algorithm`` is not a subclass of
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm` and
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
+
+    :raises TypeError: This exception is raised if ``label`` or ``context``
+        is not ``bytes``, ``rlen`` or ``llen`` is not ``int``, ``mode`` is not
+        :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` or ``location``
+        is not
+        :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation`.
+
+    :raises ValueError: This exception is raised if ``rlen`` or ``llen``
+        is greater than 4 or less than 1. This exception is also raised if
+        you specify a ``label`` or ``context`` and ``fixed``.
+
+    .. method:: derive(key_material)
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+        :raises ValueError: This exception is raised if ``key_material`` is
+                            not a valid key for ``algorithm`` passed to
+                            :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
+                            constructor.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        Derives a new key from the input key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises: Exceptions raised by :meth:`derive`.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
 .. class:: Mode
 
     An enumeration for the key based key derivative modes.
@@ -784,7 +867,7 @@ X963KDF
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.x963kdf
 
-.. class:: X963KDF(algorithm, length, otherinfo, backend=None)
+.. class:: X963KDF(algorithm, length, otherinfo)
 
     .. versionadded:: 1.1
 
@@ -829,13 +912,6 @@ X963KDF
 
     :param bytes sharedinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
-
-    :param backend: An optional instance of
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`.
-
-    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
-        if the provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
 
     :raises TypeError: This exception is raised if ``sharedinfo`` is not
         ``bytes``.

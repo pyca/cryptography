@@ -3,10 +3,12 @@
 # for complete details.
 
 import typing
+import warnings
 
 from cryptography import utils
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend
+from cryptography.hazmat.bindings._rust import (
+    x509 as rust_x509,
+)
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
@@ -34,9 +36,12 @@ _NAMEOID_DEFAULT_TYPE = {
     NameOID.DOMAIN_COMPONENT: _ASN1Type.IA5String,
 }
 
+# Type alias
+_OidNameMap = typing.Mapping[ObjectIdentifier, str]
+
 #: Short attribute names from RFC 4514:
 #: https://tools.ietf.org/html/rfc4514#page-7
-_NAMEOID_TO_NAME = {
+_NAMEOID_TO_NAME: _OidNameMap = {
     NameOID.COMMON_NAME: "CN",
     NameOID.LOCALITY_NAME: "L",
     NameOID.STATE_OR_PROVINCE_NAME: "ST",
@@ -75,7 +80,12 @@ def _escape_dn_value(val: str) -> str:
 
 class NameAttribute(object):
     def __init__(
-        self, oid: ObjectIdentifier, value: str, _type=_SENTINEL
+        self,
+        oid: ObjectIdentifier,
+        value: str,
+        _type=_SENTINEL,
+        *,
+        _validate=True,
     ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -89,9 +99,16 @@ class NameAttribute(object):
             oid == NameOID.COUNTRY_NAME
             or oid == NameOID.JURISDICTION_COUNTRY_NAME
         ):
-            if len(value.encode("utf8")) != 2:
+            c_len = len(value.encode("utf8"))
+            if c_len != 2 and _validate is True:
                 raise ValueError(
                     "Country name must be a 2 character country code"
+                )
+            elif c_len != 2:
+                warnings.warn(
+                    "Country names should be two characters, but the "
+                    "attribute is {} characters in length.".format(c_len),
+                    stacklevel=2,
                 )
 
         # The appropriate ASN1 string type varies by OID and is defined across
@@ -126,17 +143,22 @@ class NameAttribute(object):
         """
         return _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
 
-    def rfc4514_string(self) -> str:
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
         Use short attribute name if available, otherwise fall back to OID
         dotted string.
         """
-        return "%s=%s" % (
-            self.rfc4514_attribute_name,
-            _escape_dn_value(self.value),
+        attr_name = (
+            attr_name_overrides.get(self.oid) if attr_name_overrides else None
         )
+        if attr_name is None:
+            attr_name = self.rfc4514_attribute_name
+
+        return "%s=%s" % (attr_name, _escape_dn_value(self.value))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
@@ -174,14 +196,19 @@ class RelativeDistinguishedName(object):
     ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
-    def rfc4514_string(self) -> str:
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
         Within each RDN, attributes are joined by '+', although that is rarely
         used in certificates.
         """
-        return "+".join(attr.rfc4514_string() for attr in self._attributes)
+        return "+".join(
+            attr.rfc4514_string(attr_name_overrides)
+            for attr in self._attributes
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RelativeDistinguishedName):
@@ -238,7 +265,9 @@ class Name(object):
                 " or a list RelativeDistinguishedName"
             )
 
-    def rfc4514_string(self) -> str:
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
         For example 'CN=foobar.com,O=Foo Corp,C=US'
@@ -250,7 +279,8 @@ class Name(object):
         RDNSequence must be reversed when converting to string representation.
         """
         return ",".join(
-            attr.rfc4514_string() for attr in reversed(self._attributes)
+            attr.rfc4514_string(attr_name_overrides)
+            for attr in reversed(self._attributes)
         )
 
     def get_attributes_for_oid(
@@ -262,9 +292,8 @@ class Name(object):
     def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend: typing.Optional[Backend] = None) -> bytes:
-        backend = _get_backend(backend)
-        return backend.x509_name_bytes(self)
+    def public_bytes(self, backend: typing.Any = None) -> bytes:
+        return rust_x509.encode_name_bytes(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Name):

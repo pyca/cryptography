@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-
 import typing
 
 from cryptography import utils
@@ -12,9 +11,13 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
-from cryptography.hazmat.backends import _get_backend
-from cryptography.hazmat.backends.interfaces import Backend, HMACBackend
-from cryptography.hazmat.primitives import constant_time, hashes, hmac
+from cryptography.hazmat.primitives import (
+    ciphers,
+    cmac,
+    constant_time,
+    hashes,
+    hmac,
+)
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
@@ -27,10 +30,10 @@ class CounterLocation(utils.Enum):
     AfterFixed = "after_fixed"
 
 
-class KBKDFHMAC(KeyDerivationFunction):
+class _KBKDFDeriver:
     def __init__(
         self,
-        algorithm: hashes.HashAlgorithm,
+        prf: typing.Callable,
         mode: Mode,
         length: int,
         rlen: int,
@@ -39,26 +42,8 @@ class KBKDFHMAC(KeyDerivationFunction):
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
-        backend: typing.Optional[Backend] = None,
     ):
-        backend = _get_backend(backend)
-        if not isinstance(backend, HMACBackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE,
-            )
-
-        if not isinstance(algorithm, hashes.HashAlgorithm):
-            raise UnsupportedAlgorithm(
-                "Algorithm supplied is not a supported hash algorithm.",
-                _Reasons.UNSUPPORTED_HASH,
-            )
-
-        if not backend.hmac_supported(algorithm):
-            raise UnsupportedAlgorithm(
-                "Algorithm supplied is not a supported hmac algorithm.",
-                _Reasons.UNSUPPORTED_HASH,
-            )
+        assert callable(prf)
 
         if not isinstance(mode, Mode):
             raise TypeError("mode must be of type Mode")
@@ -88,7 +73,7 @@ class KBKDFHMAC(KeyDerivationFunction):
 
         utils._check_bytes("label", label)
         utils._check_bytes("context", context)
-        self._algorithm = algorithm
+        self._prf = prf
         self._mode = mode
         self._length = length
         self._rlen = rlen
@@ -96,11 +81,11 @@ class KBKDFHMAC(KeyDerivationFunction):
         self._location = location
         self._label = label
         self._context = context
-        self._backend = backend
         self._used = False
         self._fixed_data = fixed
 
-    def _valid_byte_length(self, value: int) -> bool:
+    @staticmethod
+    def _valid_byte_length(value: int) -> bool:
         if not isinstance(value, int):
             raise TypeError("value must be of type int")
 
@@ -109,7 +94,7 @@ class KBKDFHMAC(KeyDerivationFunction):
             return False
         return True
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: bytes, prf_output_size: int) -> bytes:
         if self._used:
             raise AlreadyFinalized
 
@@ -117,7 +102,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         self._used = True
 
         # inverse floor division (equivalent to ceiling)
-        rounds = -(-self._length // self._algorithm.digest_size)
+        rounds = -(-self._length // prf_output_size)
 
         output = [b""]
 
@@ -130,7 +115,7 @@ class KBKDFHMAC(KeyDerivationFunction):
             raise ValueError("There are too many iterations.")
 
         for i in range(1, rounds + 1):
-            h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
+            h = self._prf(key_material)
 
             counter = utils.int_to_bytes(i, self._rlen)
             if self._location == CounterLocation.BeforeFixed:
@@ -152,6 +137,121 @@ class KBKDFHMAC(KeyDerivationFunction):
         l_val = utils.int_to_bytes(self._length * 8, self._llen)
 
         return b"".join([self._label, b"\x00", self._context, l_val])
+
+
+class KBKDFHMAC(KeyDerivationFunction):
+    def __init__(
+        self,
+        algorithm: hashes.HashAlgorithm,
+        mode: Mode,
+        length: int,
+        rlen: int,
+        llen: typing.Optional[int],
+        location: CounterLocation,
+        label: typing.Optional[bytes],
+        context: typing.Optional[bytes],
+        fixed: typing.Optional[bytes],
+        backend: typing.Any = None,
+    ):
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise UnsupportedAlgorithm(
+                "Algorithm supplied is not a supported hash algorithm.",
+                _Reasons.UNSUPPORTED_HASH,
+            )
+
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.hmac_supported(algorithm):
+            raise UnsupportedAlgorithm(
+                "Algorithm supplied is not a supported hmac algorithm.",
+                _Reasons.UNSUPPORTED_HASH,
+            )
+
+        self._algorithm = algorithm
+
+        self._deriver = _KBKDFDeriver(
+            self._prf,
+            mode,
+            length,
+            rlen,
+            llen,
+            location,
+            label,
+            context,
+            fixed,
+        )
+
+    def _prf(self, key_material: bytes):
+        return hmac.HMAC(key_material, self._algorithm)
+
+    def derive(self, key_material) -> bytes:
+        return self._deriver.derive(key_material, self._algorithm.digest_size)
+
+    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+        if not constant_time.bytes_eq(self.derive(key_material), expected_key):
+            raise InvalidKey
+
+
+class KBKDFCMAC(KeyDerivationFunction):
+    def __init__(
+        self,
+        algorithm,
+        mode: Mode,
+        length: int,
+        rlen: int,
+        llen: typing.Optional[int],
+        location: CounterLocation,
+        label: typing.Optional[bytes],
+        context: typing.Optional[bytes],
+        fixed: typing.Optional[bytes],
+        backend: typing.Any = None,
+    ):
+        if not issubclass(
+            algorithm, ciphers.BlockCipherAlgorithm
+        ) or not issubclass(algorithm, ciphers.CipherAlgorithm):
+            raise UnsupportedAlgorithm(
+                "Algorithm supplied is not a supported cipher algorithm.",
+                _Reasons.UNSUPPORTED_CIPHER,
+            )
+
+        self._algorithm = algorithm
+        self._cipher: typing.Optional[ciphers.BlockCipherAlgorithm] = None
+
+        self._deriver = _KBKDFDeriver(
+            self._prf,
+            mode,
+            length,
+            rlen,
+            llen,
+            location,
+            label,
+            context,
+            fixed,
+        )
+
+    def _prf(self, _: bytes):
+        assert self._cipher is not None
+
+        return cmac.CMAC(self._cipher)
+
+    def derive(self, key_material: bytes) -> bytes:
+        self._cipher = self._algorithm(key_material)
+
+        assert self._cipher is not None
+
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.cmac_algorithm_supported(self._cipher):
+            raise UnsupportedAlgorithm(
+                "Algorithm supplied is not a supported cipher algorithm.",
+                _Reasons.UNSUPPORTED_CIPHER,
+            )
+
+        return self._deriver.derive(key_material, self._cipher.block_size // 8)
 
     def verify(self, key_material: bytes, expected_key: bytes) -> None:
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):

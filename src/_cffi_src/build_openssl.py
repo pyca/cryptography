@@ -9,11 +9,7 @@ from distutils import dist
 from distutils.ccompiler import get_default_compiler
 from distutils.command.config import config
 
-from _cffi_src.utils import (
-    build_ffi_for_binding,
-    compiler_type,
-    extra_link_args,
-)
+from _cffi_src.utils import build_ffi_for_binding, compiler_type
 
 
 def _get_openssl_libraries(platform):
@@ -79,7 +75,8 @@ ffi = build_ffi_for_binding(
     modules=[
         # This goes first so we can define some cryptography-wide symbols.
         "cryptography",
-        "aes",
+        # Provider comes early as well so we define OSSL_LIB_CTX
+        "provider",
         "asn1",
         "bignum",
         "bio",
@@ -98,12 +95,10 @@ ffi = build_ffi_for_binding(
         "hmac",
         "nid",
         "objects",
-        "ocsp",
         "opensslv",
         "osrandom_engine",
         "pem",
         "pkcs12",
-        "provider",
         "rand",
         "rsa",
         "ssl",
@@ -116,5 +111,4 @@ ffi = build_ffi_for_binding(
     ],
     libraries=_get_openssl_libraries(sys.platform),
     extra_compile_args=_extra_compile_args(sys.platform),
-    extra_link_args=extra_link_args(compiler_type()),
 )

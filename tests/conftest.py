@@ -10,6 +10,11 @@ from cryptography.hazmat.backends.openssl import backend as openssl_backend
 from .utils import check_backend_support
 
 
+def pytest_configure(config):
+    if config.getoption("--enable-fips"):
+        openssl_backend._enable_fips()
+
+
 def pytest_report_header(config):
     return "\n".join(
         [
@@ -21,6 +26,7 @@ def pytest_report_header(config):
 
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
+    parser.addoption("--enable-fips", default=False)
 
 
 def pytest_runtest_setup(item):
@@ -32,4 +38,20 @@ def pytest_runtest_setup(item):
 @pytest.fixture()
 def backend(request):
     check_backend_support(openssl_backend, request)
-    return openssl_backend
+
+    # Ensure the error stack is clear before the test
+    errors = openssl_backend._consume_errors_with_text()
+    assert not errors
+    yield openssl_backend
+    # Ensure the error stack is clear after the test
+    errors = openssl_backend._consume_errors_with_text()
+    assert not errors
+
+
+@pytest.fixture
+def disable_rsa_checks(backend):
+    # Use this fixture to skip RSA key checks in tests that need the
+    # performance.
+    backend._rsa_skip_check_key = True
+    yield
+    backend._rsa_skip_check_key = False

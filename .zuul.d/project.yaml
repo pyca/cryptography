@@ -1,10 +1,12 @@
 - project:
     check:
       jobs:
-        - pyca-cryptography-build-wheel-arm64
-        - pyca-cryptography-build-wheel-x86_64
+        - pyca-cryptography-build-wheel-arm64-manylinux2014
+        - pyca-cryptography-build-wheel-arm64-manylinux224
+        - pyca-cryptography-build-wheel-arm64-musllinux11
         - pyca-cryptography-ubuntu-focal-py38-arm64
     release:
       jobs:
-        - pyca-cryptography-build-wheel-arm64
-        - pyca-cryptography-build-wheel-x86_64
+        - pyca-cryptography-build-wheel-arm64-manylinux2014
+        - pyca-cryptography-build-wheel-arm64-manylinux224
+        - pyca-cryptography-build-wheel-arm64-musllinux11

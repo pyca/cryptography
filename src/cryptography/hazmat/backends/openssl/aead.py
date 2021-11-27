@@ -14,6 +14,7 @@ def _aead_cipher_name(cipher):
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
+        AESOCB3,
         ChaCha20Poly1305,
     )
 
@@ -21,6 +22,8 @@ def _aead_cipher_name(cipher):
         return b"chacha20-poly1305"
     elif isinstance(cipher, AESCCM):
         return "aes-{}-ccm".format(len(cipher._key) * 8).encode("ascii")
+    elif isinstance(cipher, AESOCB3):
+        return "aes-{}-ocb".format(len(cipher._key) * 8).encode("ascii")
     else:
         assert isinstance(cipher, AESGCM)
         return "aes-{}-gcm".format(len(cipher._key) * 8).encode("ascii")
@@ -113,9 +116,13 @@ def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
     _process_aad(backend, ctx, associated_data)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")
-    res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
+    # All AEADs we support besides OCB are streaming so they return nothing
+    # in finalization. OCB can return up to (16 byte block - 1) bytes so
+    # we need a buffer here too.
+    buf = backend._ffi.new("unsigned char[]", 16)
+    res = backend._lib.EVP_CipherFinal_ex(ctx, buf, outlen)
     backend.openssl_assert(res != 0)
-    backend.openssl_assert(outlen[0] == 0)
+    processed_data += backend._ffi.buffer(buf, outlen[0])[:]
     tag_buf = backend._ffi.new("unsigned char[]", tag_length)
     res = backend._lib.EVP_CIPHER_CTX_ctrl(
         ctx, backend._lib.EVP_CTRL_AEAD_GET_TAG, tag_length, tag_buf
@@ -157,7 +164,10 @@ def _decrypt(backend, cipher, nonce, data, associated_data, tag_length):
     else:
         processed_data = _process_data(backend, ctx, data)
         outlen = backend._ffi.new("int *")
-        res = backend._lib.EVP_CipherFinal_ex(ctx, backend._ffi.NULL, outlen)
+        # OCB can return up to 15 bytes (16 byte block - 1) in finalization
+        buf = backend._ffi.new("unsigned char[]", 16)
+        res = backend._lib.EVP_CipherFinal_ex(ctx, buf, outlen)
+        processed_data += backend._ffi.buffer(buf, outlen[0])[:]
         if res == 0:
             backend._consume_errors()
             raise InvalidTag

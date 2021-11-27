@@ -18,11 +18,16 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm,
+    Cipher,
+    algorithms,
+)
 from cryptography.hazmat.primitives.ciphers.modes import GCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.kbkdf import (
     CounterLocation,
+    KBKDFCMAC,
     KBKDFHMAC,
     Mode,
 )
@@ -102,9 +107,9 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
 
     if params.get("pt") is not None:
-        plaintext = params["pt"]
-    ciphertext = params["ct"]
-    aad = params["aad"]
+        plaintext = binascii.unhexlify(params["pt"])
+    ciphertext = binascii.unhexlify(params["ct"])
+    aad = binascii.unhexlify(params["aad"])
     if params.get("fail") is True:
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
@@ -116,8 +121,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
-        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+        decryptor.authenticate_additional_data(aad)
+        actual_plaintext = decryptor.update(ciphertext)
         with pytest.raises(InvalidTag):
             decryptor.finalize()
     else:
@@ -127,8 +132,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         encryptor = cipher.encryptor()
-        encryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+        encryptor.authenticate_additional_data(aad)
+        actual_ciphertext = encryptor.update(plaintext)
         actual_ciphertext += encryptor.finalize()
         tag_len = len(binascii.unhexlify(params["tag"]))
         assert binascii.hexlify(encryptor.tag[:tag_len]) == params["tag"]
@@ -142,10 +147,10 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
-        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
-        actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+        decryptor.authenticate_additional_data(aad)
+        actual_plaintext = decryptor.update(ciphertext)
         actual_plaintext += decryptor.finalize()
-        assert actual_plaintext == binascii.unhexlify(plaintext)
+        assert actual_plaintext == plaintext
 
 
 def generate_stream_encryption_test(
@@ -333,6 +338,13 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")
 
     with pytest.raises(ValueError):
+        Cipher(
+            cipher_factory(binascii.unhexlify(b"0" * 32)),
+            mode_factory(binascii.unhexlify(b"0" * 24), b"toolong" * 12),
+            backend,
+        )
+
+    with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000000", 2)
 
     cipher = Cipher(
@@ -411,8 +423,8 @@ def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
     return test_kbkdf
 
 
-def kbkdf_counter_mode_test(backend, params):
-    supported_algorithms: typing.Dict[
+def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, params):
+    supported_hash_algorithms: typing.Dict[
         str, typing.Type[hashes.HashAlgorithm]
     ] = {
         "hmac_sha1": hashes.SHA1,
@@ -422,24 +434,9 @@ def kbkdf_counter_mode_test(backend, params):
         "hmac_sha512": hashes.SHA512,
     }
 
-    supported_counter_locations = {
-        "before_fixed": CounterLocation.BeforeFixed,
-        "after_fixed": CounterLocation.AfterFixed,
-    }
-
-    algorithm = supported_algorithms.get(params.get("prf"))
-    if algorithm is None or not backend.hmac_supported(algorithm()):
-        pytest.skip(
-            "KBKDF does not support algorithm: {}".format(params.get("prf"))
-        )
-
-    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
-    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
-        pytest.skip(
-            "Does not support counter location: {}".format(
-                params.get("ctrlocation")
-            )
-        )
+    algorithm = supported_hash_algorithms.get(prf)
+    assert algorithm is not None
+    assert backend.hmac_supported(algorithm())
 
     ctrkdf = KBKDFHMAC(
         algorithm(),
@@ -456,6 +453,63 @@ def kbkdf_counter_mode_test(backend, params):
 
     ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
     assert binascii.hexlify(ko) == params["ko"]
+
+
+def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, params):
+    supported_cipher_algorithms: typing.Dict[
+        str, typing.Type[BlockCipherAlgorithm]
+    ] = {
+        "cmac_aes128": algorithms.AES,
+        "cmac_aes192": algorithms.AES,
+        "cmac_aes256": algorithms.AES,
+        "cmac_tdes2": algorithms.TripleDES,
+        "cmac_tdes3": algorithms.TripleDES,
+    }
+
+    algorithm = supported_cipher_algorithms.get(prf)
+    assert algorithm is not None
+
+    ctrkdf = KBKDFCMAC(
+        algorithm,
+        Mode.CounterMode,
+        params["l"] // 8,
+        params["rlen"] // 8,
+        None,
+        ctr_loc,
+        None,
+        None,
+        binascii.unhexlify(params["fixedinputdata"]),
+        backend=backend,
+    )
+
+    ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
+    assert binascii.hexlify(ko) == params["ko"]
+
+
+def kbkdf_counter_mode_test(backend, params):
+    supported_counter_locations = {
+        "before_fixed": CounterLocation.BeforeFixed,
+        "after_fixed": CounterLocation.AfterFixed,
+    }
+
+    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
+    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
+        pytest.skip(
+            "Does not support counter location: {}".format(
+                params.get("ctrlocation")
+            )
+        )
+    del params["ctrlocation"]
+
+    prf = params.get("prf")
+    assert prf is not None
+    assert isinstance(prf, str)
+    del params["prf"]
+    if prf.startswith("hmac"):
+        _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, params)
+    else:
+        assert prf.startswith("cmac")
+        _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, params)
 
 
 def generate_rsa_verification_test(

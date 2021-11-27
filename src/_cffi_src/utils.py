@@ -24,7 +24,6 @@ def build_ffi_for_binding(
     modules,
     libraries=[],
     extra_compile_args=[],
-    extra_link_args=[],
 ):
     """
     Modules listed in ``modules`` should have the following attributes:
@@ -56,7 +55,6 @@ def build_ffi_for_binding(
         verify_source=verify_source,
         libraries=libraries,
         extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
     )
 
     return ffi
@@ -68,7 +66,6 @@ def build_ffi(
     verify_source,
     libraries=[],
     extra_compile_args=[],
-    extra_link_args=[],
 ):
     ffi = FFI()
     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
@@ -82,18 +79,8 @@ def build_ffi(
         verify_source,
         libraries=libraries,
         extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
     )
     return ffi
-
-
-def extra_link_args(compiler_type):
-    if compiler_type == "msvc":
-        # Enable NX and ASLR for Windows builds on MSVC. These are enabled by
-        # default on Python 3.3+ but not on 2.x.
-        return ["/NXCOMPAT", "/DYNAMICBASE"]
-    else:
-        return []
 
 
 def compiler_type():

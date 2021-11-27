@@ -4,6 +4,8 @@
 cd /io
 
 mkdir -p wheelhouse.final
+rm -rf build
+rm -rf dist
 
 for P in ${PYTHONS}; do
 
