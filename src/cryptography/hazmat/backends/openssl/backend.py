@@ -1791,7 +1791,7 @@ class Backend(BackendInterface):
     def x25519_supported(self):
         if self._fips_enabled:
             return False
-        return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        return True
 
     def x448_load_public_bytes(self, data):
         if len(data) != 56:
