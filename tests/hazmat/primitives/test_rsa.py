@@ -407,55 +407,52 @@ class TestRSASignature(object):
         ),
         skip_message="Does not support PSS.",
     )
-    @pytest.mark.parametrize(
-        "pkcs1_example",
-        _flatten_pkcs1_examples(
+    @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
+    def test_pss_signing(self, subtests, backend):
+        for private, public, example in _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"
                 ),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
-    def test_pss_signing(self, pkcs1_example, backend):
-        private, public, example = pkcs1_example
-        private_key = rsa.RSAPrivateNumbers(
-            p=private["p"],
-            q=private["q"],
-            d=private["private_exponent"],
-            dmp1=private["dmp1"],
-            dmq1=private["dmq1"],
-            iqmp=private["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"], n=private["modulus"]
-            ),
-        ).private_key(backend)
-        public_key = rsa.RSAPublicNumbers(
-            e=public["public_exponent"], n=public["modulus"]
-        ).public_key(backend)
-        signature = private_key.sign(
-            binascii.unhexlify(example["message"]),
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH,
-            ),
-            hashes.SHA1(),
-        )
-        assert len(signature) == (private_key.key_size + 7) // 8
-        # PSS signatures contain randomness so we can't do an exact
-        # signature check. Instead we'll verify that the signature created
-        # successfully verifies.
-        public_key.verify(
-            signature,
-            binascii.unhexlify(example["message"]),
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH,
-            ),
-            hashes.SHA1(),
-        )
+        ):
+            with subtests.test():
+                private_key = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend)
+                public_key = rsa.RSAPublicNumbers(
+                    e=public["public_exponent"], n=public["modulus"]
+                ).public_key(backend)
+                signature = private_key.sign(
+                    binascii.unhexlify(example["message"]),
+                    padding.PSS(
+                        mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                        salt_length=padding.PSS.MAX_LENGTH,
+                    ),
+                    hashes.SHA1(),
+                )
+                assert len(signature) == (private_key.key_size + 7) // 8
+                # PSS signatures contain randomness so we can't do an exact
+                # signature check. Instead we'll verify that the signature
+                # created successfully verifies.
+                public_key.verify(
+                    signature,
+                    binascii.unhexlify(example["message"]),
+                    padding.PSS(
+                        mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                        salt_length=padding.PSS.MAX_LENGTH,
+                    ),
+                    hashes.SHA1(),
+                )
 
     @pytest.mark.parametrize(
         "hash_alg",
@@ -865,30 +862,28 @@ class TestRSAVerification(object):
         ),
         skip_message="Does not support PSS.",
     )
-    @pytest.mark.parametrize(
-        "pkcs1_example",
-        _flatten_pkcs1_examples(
+    def test_pss_verification(self, subtests, backend):
+        for private, public, example in _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"
                 ),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_pss_verification(self, pkcs1_example, backend):
-        private, public, example = pkcs1_example
-        public_key = rsa.RSAPublicNumbers(
-            e=public["public_exponent"], n=public["modulus"]
-        ).public_key(backend)
-        public_key.verify(
-            binascii.unhexlify(example["signature"]),
-            binascii.unhexlify(example["message"]),
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()), salt_length=20
-            ),
-            hashes.SHA1(),
-        )
+        ):
+            with subtests.test():
+                public_key = rsa.RSAPublicNumbers(
+                    e=public["public_exponent"], n=public["modulus"]
+                ).public_key(backend)
+                public_key.verify(
+                    binascii.unhexlify(example["signature"]),
+                    binascii.unhexlify(example["message"]),
+                    padding.PSS(
+                        mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                        salt_length=20,
+                    ),
+                    hashes.SHA1(),
+                )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1575,39 +1570,36 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support OAEP.",
     )
-    @pytest.mark.parametrize(
-        "vector",
-        _flatten_pkcs1_examples(
+    def test_decrypt_oaep_vectors(self, subtests, backend):
+        for private, public, example in _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "oaep-vect.txt"
                 ),
                 load_pkcs1_vectors,
             )
-        ),
-    )
-    def test_decrypt_oaep_vectors(self, vector, backend):
-        private, public, example = vector
-        skey = rsa.RSAPrivateNumbers(
-            p=private["p"],
-            q=private["q"],
-            d=private["private_exponent"],
-            dmp1=private["dmp1"],
-            dmq1=private["dmq1"],
-            iqmp=private["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                e=private["public_exponent"], n=private["modulus"]
-            ),
-        ).private_key(backend)
-        message = skey.decrypt(
-            binascii.unhexlify(example["encryption"]),
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                algorithm=hashes.SHA1(),
-                label=None,
-            ),
-        )
-        assert message == binascii.unhexlify(example["message"])
+        ):
+            with subtests.test():
+                skey = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend)
+                message = skey.decrypt(
+                    binascii.unhexlify(example["encryption"]),
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                        algorithm=hashes.SHA1(),
+                        label=None,
+                    ),
+                )
+                assert message == binascii.unhexlify(example["message"])
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
