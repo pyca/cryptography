@@ -59,7 +59,9 @@ class FakeGeneralName(object):
     def __init__(self, value):
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self):
+        return self._value
 
 
 T = typing.TypeVar("T")

@@ -3,7 +3,6 @@
 # for complete details.
 
 
-from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature,
     UnsupportedAlgorithm,
@@ -48,8 +47,6 @@ class _CMACContext(object):
             self._backend.openssl_assert(res == 1)
 
         self._ctx = ctx
-
-    algorithm = utils.read_only_property("_algorithm")
 
     def update(self, data: bytes) -> None:
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))

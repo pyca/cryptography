@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
@@ -275,4 +276,6 @@ class _CipherContext(object):
         )
         self._backend.openssl_assert(res != 0)
 
-    tag = utils.read_only_property("_tag")
+    @property
+    def tag(self) -> typing.Optional[bytes]:
+        return self._tag
