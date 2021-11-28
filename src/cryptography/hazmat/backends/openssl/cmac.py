@@ -3,7 +3,6 @@
 # for complete details.
 
 
-from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature,
     UnsupportedAlgorithm,
