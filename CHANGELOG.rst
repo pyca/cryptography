@@ -13,6 +13,7 @@ Changelog
 * Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
   the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
   removed in a future release.
+* Added limited support for distinguished names containing a bit string.
 
 .. _v36-0-0:
 

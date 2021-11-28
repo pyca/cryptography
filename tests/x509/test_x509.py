@@ -4555,6 +4555,29 @@ class TestECDSACertificate(object):
         )
         assert isinstance(num.curve, ec.SECP384R1)
 
+    def test_load_bitstring_dn(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "scottishpower-bitstring-dn.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert cert.subject == x509.Name(
+            [
+                x509.NameAttribute(x509.NameOID.COMMON_NAME, "ScottishPower"),
+                x509.NameAttribute(
+                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME, "02"
+                ),
+                x509.NameAttribute(
+                    NameOID.X500_UNIQUE_IDENTIFIER,
+                    b"\x00\x70\xb3\xd5\x1f\x30\x5f\x00\x01",
+                    _ASN1Type.BitString,
+                ),
+            ]
+        )
+        assert repr(cert.subject) == (
+            "<Name(CN=ScottishPower,OU=02,2.5.4.45=#0070b3d51f305f0001)>"
+        )
+
     def test_signature(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
@@ -4771,6 +4794,19 @@ class TestNameAttribute(object):
                 b"bytes",  # type:ignore[arg-type]
             )
 
+    def test_init_bitstring_not_bytes(self):
+        with pytest.raises(TypeError):
+            x509.NameAttribute(
+                x509.ObjectIdentifier("2.5.4.45"), "str", _ASN1Type.BitString
+            )
+
+    def test_init_bitstring_not_allowed_random_oid(self):
+        # We only allow BitString type with X500_UNIQUE_IDENTIFIER
+        with pytest.raises(TypeError):
+            x509.NameAttribute(
+                x509.NameOID.COMMON_NAME, b"ok", _ASN1Type.BitString
+            )
+
     def test_init_none_value(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(
@@ -4823,6 +4859,14 @@ class TestNameAttribute(object):
         # Nonstandard attribute OID
         na = x509.NameAttribute(NameOID.BUSINESS_CATEGORY, "banking")
         assert na.rfc4514_string() == "2.5.4.15=banking"
+
+        # non-utf8 attribute (bitstring with raw bytes)
+        na = x509.NameAttribute(
+            x509.ObjectIdentifier("2.5.4.45"),
+            b"\x01\x02\x03\x04",
+            _ASN1Type.BitString,
+        )
+        assert na.rfc4514_string() == "2.5.4.45=#01020304"
 
     def test_distinguished_name_custom_attrs(self):
         name = x509.Name(
@@ -5130,6 +5174,22 @@ class TestName(object):
         assert name.public_bytes(backend) == binascii.unhexlify(
             b"30293118301606035504030c0f63727970746f6772617068792e696f310d300"
             b"b060355040a0c0450794341"
+        )
+
+    def test_bitstring_encoding(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier("2.5.4.45"),
+                    b"\x01\x02",
+                    _ASN1Type.BitString,
+                ),
+            ]
+        )
+        assert name.public_bytes() == binascii.unhexlify(
+            b"30273118301606035504030c0f63727970746f6772617068792e696f310b3"
+            b"009060355042d03020102"
         )
 
     def test_bmpstring_bytes(self, backend):

@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import binascii
 import typing
 import warnings
 
@@ -13,6 +14,7 @@ from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
 class _ASN1Type(utils.Enum):
+    BitString = 3
     UTF8String = 12
     NumericString = 18
     PrintableString = 19
@@ -54,11 +56,16 @@ _NAMEOID_TO_NAME: _OidNameMap = {
 }
 
 
-def _escape_dn_value(val: str) -> str:
+def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
         return ""
+
+    # RFC 4514 Section 2.4 defines the value as being the # (U+0023) character
+    # followed by the hexadecimal encoding of the octets.
+    if isinstance(val, bytes):
+        return "#" + binascii.hexlify(val).decode("utf8")
 
     # See https://tools.ietf.org/html/rfc4514#section-2.4
     val = val.replace("\\", "\\\\")
@@ -82,7 +89,7 @@ class NameAttribute(object):
     def __init__(
         self,
         oid: ObjectIdentifier,
-        value: str,
+        value: typing.Union[str, bytes],
         _type=_SENTINEL,
         *,
         _validate=True,
@@ -91,14 +98,22 @@ class NameAttribute(object):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
             )
-
-        if not isinstance(value, str):
-            raise TypeError("value argument must be a str.")
+        if _type == _ASN1Type.BitString:
+            if oid != NameOID.X500_UNIQUE_IDENTIFIER:
+                raise TypeError(
+                    "oid must be X500_UNIQUE_IDENTIFIER for BitString type."
+                )
+            if not isinstance(value, bytes):
+                raise TypeError("value must be bytes for BitString")
+        else:
+            if not isinstance(value, str):
+                raise TypeError("value argument must be a str")
 
         if (
             oid == NameOID.COUNTRY_NAME
             or oid == NameOID.JURISDICTION_COUNTRY_NAME
         ):
+            assert isinstance(value, str)
             c_len = len(value.encode("utf8"))
             if c_len != 2 and _validate is True:
                 raise ValueError(
@@ -132,7 +147,7 @@ class NameAttribute(object):
         return self._oid
 
     @property
-    def value(self) -> str:
+    def value(self) -> typing.Union[str, bytes]:
         return self._value
 
     @property

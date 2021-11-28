@@ -260,6 +260,8 @@ X.509
   (`server-ed448-cert.pem`_)
 * ``accvraiz1.pem`` - An RSA root certificate that contains an
   ``explicitText`` entry with a ``BMPString`` type.
+* ``scottishpower-bitstring-dn.pem`` - An ECDSA certificate that contains
+  a subject DN with a bit string type.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
