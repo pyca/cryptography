@@ -1935,12 +1935,8 @@ class TestRSACertificateRequest(object):
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert parsed.issuer_value_tags[0] == 0x13
         assert parsed.subject_value_tags[0] == 0x13
-        if (
-            # This only works correctly in OpenSSL 1.1.0f+
-            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER
-        ):
-            assert parsed.issuer_value_tags[1] == 0x13
-            assert parsed.subject_value_tags[1] == 0x13
+        assert parsed.issuer_value_tags[1] == 0x13
+        assert parsed.subject_value_tags[1] == 0x13
 
 
 class TestCertificateBuilder(object):
