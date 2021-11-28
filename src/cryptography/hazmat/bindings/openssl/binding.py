@@ -7,6 +7,7 @@ import collections
 import threading
 import types
 import typing
+import warnings
 
 import cryptography
 from cryptography import utils
@@ -179,6 +180,20 @@ class Binding(object):
         cls._ensure_ffi_initialized()
 
 
+def _verify_openssl_version(lib):
+    if (
+        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+        and not lib.CRYPTOGRAPHY_IS_LIBRESSL
+        and not lib.CRYPTOGRAPHY_IS_BORINGSSL
+    ):
+        warnings.warn(
+            "OpenSSL version 1.1.0 is no longer supported by the OpenSSL "
+            "project, please upgrade. A future version of cryptography will "
+            "drop support for it.",
+            utils.DeprecatedIn37,
+        )
+
+
 def _verify_package_version(version):
     # Occasionally we run into situations where the version of the Python
     # package does not match the version of the shared object that is loaded.
@@ -203,3 +218,5 @@ def _verify_package_version(version):
 _verify_package_version(cryptography.__version__)
 
 Binding.init_static_locks()
+
+_verify_openssl_version(Binding.lib)
