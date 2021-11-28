@@ -125,7 +125,9 @@ class _DSAPrivateKey(dsa.DSAPrivateKey):
         self._backend.openssl_assert(p[0] != backend._ffi.NULL)
         self._key_size = self._backend._lib.BN_num_bits(p[0])
 
-    key_size = utils.read_only_property("_key_size")
+    @property
+    def key_size(self) -> int:
+        return self._key_size
 
     def signer(
         self, signature_algorithm: hashes.HashAlgorithm
@@ -224,7 +226,9 @@ class _DSAPublicKey(dsa.DSAPublicKey):
         self._backend.openssl_assert(p[0] != backend._ffi.NULL)
         self._key_size = self._backend._lib.BN_num_bits(p[0])
 
-    key_size = utils.read_only_property("_key_size")
+    @property
+    def key_size(self) -> int:
+        return self._key_size
 
     def verifier(
         self,

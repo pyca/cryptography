@@ -416,7 +416,9 @@ class _RSAPrivateKey(RSAPrivateKey):
         self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
         self._key_size = self._backend._lib.BN_num_bits(n[0])
 
-    key_size = utils.read_only_property("_key_size")
+    @property
+    def key_size(self) -> int:
+        return self._key_size
 
     def signer(
         self, padding: AsymmetricPadding, algorithm: hashes.HashAlgorithm
@@ -517,7 +519,9 @@ class _RSAPublicKey(RSAPublicKey):
         self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
         self._key_size = self._backend._lib.BN_num_bits(n[0])
 
-    key_size = utils.read_only_property("_key_size")
+    @property
+    def key_size(self) -> int:
+        return self._key_size
 
     def verifier(
         self,

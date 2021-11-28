@@ -40,10 +40,6 @@ def _check_byteslike(name: str, value: bytes) -> None:
         raise TypeError("{} must be bytes-like".format(name))
 
 
-def read_only_property(name: str):
-    return property(lambda self: getattr(self, name))
-
-
 if typing.TYPE_CHECKING:
     from typing_extensions import Protocol
 

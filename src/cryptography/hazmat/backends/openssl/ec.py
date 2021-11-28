@@ -160,7 +160,9 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
 
-    curve = utils.read_only_property("_curve")
+    @property
+    def curve(self) -> ec.EllipticCurve:
+        return self._curve
 
     @property
     def key_size(self) -> int:
@@ -262,7 +264,9 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
 
-    curve = utils.read_only_property("_curve")
+    @property
+    def curve(self) -> ec.EllipticCurve:
+        return self._curve
 
     @property
     def key_size(self) -> int:

@@ -29,9 +29,17 @@ class _OpenSSLError(object):
     def _lib_reason_match(self, lib, reason):
         return lib == self.lib and reason == self.reason
 
-    code = utils.read_only_property("_code")
-    lib = utils.read_only_property("_lib")
-    reason = utils.read_only_property("_reason")
+    @property
+    def code(self) -> int:
+        return self._code
+
+    @property
+    def lib(self) -> int:
+        return self._lib
+
+    @property
+    def reason(self) -> int:
+        return self._reason
 
 
 def _consume_errors(lib):
