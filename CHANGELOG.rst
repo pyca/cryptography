@@ -8,8 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x. The new
-  minimum LibreSSL version is 3.1+.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x.
+  The new minimum LibreSSL version is 3.1+.
+* Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
+  the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
+  removed in a future release.
 
 .. _v36-0-0:
 

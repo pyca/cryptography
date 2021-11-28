@@ -36,6 +36,10 @@ OpenSSL releases:
 In addition we test against several versions of LibreSSL and the latest commit
 in BoringSSL.
 
+.. warning::
+
+    Cryptography 37.0.0 has deprecated support for OpenSSL 1.1.0.
+
 
 Building cryptography on Windows
 --------------------------------
