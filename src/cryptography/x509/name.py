@@ -99,7 +99,7 @@ class NameAttribute(object):
                 "oid argument must be an ObjectIdentifier instance."
             )
         if _type == _ASN1Type.BitString:
-            if not oid == NameOID.X500_UNIQUE_IDENTIFIER:
+            if oid != NameOID.X500_UNIQUE_IDENTIFIER:
                 raise TypeError(
                     "oid must be X500_UNIQUE_IDENTIFIER for BitString type."
                 )
