@@ -8,7 +8,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
-from cryptography.hazmat.primitives import ciphers, constant_time
+from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
@@ -47,10 +47,6 @@ class _CMACContext(object):
             self._backend.openssl_assert(res == 1)
 
         self._ctx = ctx
-
-    @property
-    def algorithm(self) -> ciphers.BlockCipherAlgorithm:
-        return self._algorithm
 
     def update(self, data: bytes) -> None:
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
