@@ -288,6 +288,6 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         data, algorithm = _calculate_digest_and_algorithm(
             self._backend,
             data,
-            signature_algorithm._algorithm,  # type: ignore[attr-defined]
+            signature_algorithm.algorithm,
         )
         _ecdsa_sig_verify(self._backend, self, signature, data)
