@@ -517,7 +517,8 @@ Interfaces
         The status of the certificate being checked.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: revocation_time
 
@@ -527,7 +528,8 @@ Interfaces
         or ``None`` if the certificate has not been revoked.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: revocation_reason
 
@@ -537,7 +539,8 @@ Interfaces
         not revoked.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: this_update
 
@@ -547,7 +550,8 @@ Interfaces
         being indicated is known by the responder to have been correct.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: next_update
 
@@ -557,7 +561,8 @@ Interfaces
         be available.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: issuer_key_hash
 
@@ -567,7 +572,8 @@ Interfaces
         is defined by the ``hash_algorithm`` property.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: issuer_name_hash
 
@@ -577,7 +583,8 @@ Interfaces
         is defined by the ``hash_algorithm`` property.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: hash_algorithm
 
@@ -587,7 +594,8 @@ Interfaces
         ``issuer_name_hash``.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: serial_number
 
@@ -596,7 +604,8 @@ Interfaces
         The serial number of the certificate that was checked.
 
         :raises ValueError: If ``response_status`` is not
-            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
 
     .. attribute:: extensions
 
@@ -611,6 +620,14 @@ Interfaces
         :type: :class:`~cryptography.x509.Extensions`
 
         The single extensions encoded in the response.
+
+    .. attribute:: response_iter
+
+        .. versionadded:: 37.0.0
+
+        :type: :class:`~cryptography.x509.ocsp.OCSPResponseIterator`
+
+        An iterator to access individual SINGLERESP structures.
 
     .. method:: public_bytes(encoding)
 
@@ -690,3 +707,71 @@ Interfaces
 
         Encode the X.509 ``Name`` of the certificate whose private key signed
         the response.
+
+.. class OCSPResponseIterator
+
+    ..versionadded:: 37.0.0
+
+    An iterator working through each SINGLERESP structure attached
+    to an OCSP response.
+
+        .. attribute:: certificate_status
+
+        :type: :class:`~cryptography.x509.ocsp.OCSPCertStatus`
+
+        The status of the certificate being checked.
+
+    .. attribute:: revocation_time
+
+        :type: :class:`datetime.datetime` or None
+
+        A naïve datetime representing the time when the certificate was revoked
+        or ``None`` if the certificate has not been revoked.
+
+    .. attribute:: revocation_reason
+
+        :type: :class:`~cryptography.x509.ReasonFlags` or None
+
+        The reason the certificate was revoked or ``None`` if not specified or
+        not revoked.
+
+    .. attribute:: this_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the most recent time at which the status
+        being indicated is known by the responder to have been correct.
+
+    .. attribute:: next_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the time when newer information will
+        be available.
+
+    .. attribute:: issuer_key_hash
+
+        :type: bytes
+
+        The hash of the certificate issuer's key. The hash algorithm used
+        is defined by the ``hash_algorithm`` property.
+
+    .. attribute:: issuer_name_hash
+
+        :type: bytes
+
+        The hash of the certificate issuer's name. The hash algorithm used
+        is defined by the ``hash_algorithm`` property.
+
+    .. attribute:: hash_algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        The algorithm used to generate the ``issuer_key_hash`` and
+        ``issuer_name_hash``.
+
+    .. attribute:: serial_number
+
+        :type: int
+
+        The serial number of the certificate that was checked.
