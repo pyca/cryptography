@@ -11,9 +11,11 @@ import warnings
 import cryptography
 from cryptography import utils
 from cryptography.exceptions import InternalError
-from cryptography.hazmat.bindings._openssl import ffi, lib
+from cryptography.hazmat.bindings._rust import _openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
+ffi = _openssl.ffi
+lib = _openssl.lib
 _OpenSSLErrorWithText = typing.NamedTuple(
     "_OpenSSLErrorWithText",
     [("code", int), ("lib", int), ("reason", int), ("reason_text", bytes)],

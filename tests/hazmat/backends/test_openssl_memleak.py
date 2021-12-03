@@ -24,7 +24,10 @@ def main(argv):
 
     import cffi
 
-    from cryptography.hazmat.bindings._openssl import ffi, lib
+    from cryptography.hazmat.bindings._rust import _openssl
+
+    ffi = _openssl.ffi
+    lib = _openssl.lib
 
     heap = {}
 
