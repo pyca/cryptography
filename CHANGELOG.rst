@@ -14,6 +14,10 @@ Changelog
   the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
   removed in a future release.
 * Added limited support for distinguished names containing a bit string.
+* We now ship ``universal2`` wheels on macOS, which contain both ``arm64``
+  and ``x86_64`` architectures. Users on macOS should upgrade to the latest
+  ``pip`` to ensure they can use this wheel, although we will continue to
+  ship ``x86_64`` specific wheels for now to ease the transition.
 
 .. _v36-0-0:
 
