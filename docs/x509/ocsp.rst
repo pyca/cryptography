@@ -621,7 +621,7 @@ Interfaces
 
         The single extensions encoded in the response.
 
-    .. attribute:: response_iter
+    .. attribute:: responses
 
         .. versionadded:: 37.0.0
 
@@ -708,7 +708,7 @@ Interfaces
         Encode the X.509 ``Name`` of the certificate whose private key signed
         the response.
 
-.. class OCSPResponseIterator
+.. class:: OCSPResponseIterator
 
     ..versionadded:: 37.0.0
 

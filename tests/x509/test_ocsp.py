@@ -1045,7 +1045,7 @@ class TestOCSPResponse(object):
         with pytest.raises(ValueError):
             resp.serial_number
 
-        assert len(list(resp.response_iter)) == 20
+        assert len(list(resp.responses)) == 20
 
     def test_multi_valued_responses(self):
         req_valid = _load_data(
@@ -1068,7 +1068,7 @@ class TestOCSPResponse(object):
             ocsp.load_der_ocsp_response,
         )
 
-        for elem in resp.response_iter:
+        for elem in resp.responses:
             serial = elem.serial_number
 
             assert req_irrelevant.serial_number != serial

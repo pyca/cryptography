@@ -91,7 +91,7 @@ const UNAUTHORIZED_RESPONSE: u32 = 6;
 #[pyo3::prelude::pymethods]
 impl OCSPResponse {
     #[getter]
-    fn response_iter(&self) -> Result<OCSPResponseIterator, PyAsn1Error> {
+    fn responses(&self) -> Result<OCSPResponseIterator, PyAsn1Error> {
         let new_owned = OwnedRawOCSPResponseBuilder {
             data: self.raw.borrow_data().clone(),
             value_builder: |data| asn1::parse_single(data).unwrap(),
