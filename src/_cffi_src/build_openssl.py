@@ -112,3 +112,21 @@ ffi = build_ffi_for_binding(
     libraries=_get_openssl_libraries(sys.platform),
     extra_compile_args=_extra_compile_args(sys.platform),
 )
+
+if __name__ == "__main__":
+    import sysconfig
+    from cffi import recompiler
+
+    module_name, source, source_extension, kwds = ffi._assigned_source
+    c_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "rust", module_name + source_extension)
+    recompiler.make_c_source(ffi, module_name, source, c_file)
+
+    libraries = _get_openssl_libraries(sys.platform)
+    for lib in libraries:
+        print(f"cargo:rustc-link-lib={lib}")
+    extra_compile_args = _extra_compile_args(sys.platform)
+    for arg in extra_compile_args:
+        print(f"cargo:rustc-link-arg={arg}")
+
+    include_path = sysconfig.get_path('include')
+    print(f'include:{include_path}')

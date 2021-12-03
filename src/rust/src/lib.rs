@@ -7,7 +7,12 @@
 mod asn1;
 mod x509;
 
+use pyo3::FromPyPointer;
 use std::convert::TryInto;
+
+extern "C" {
+    fn PyInit__openssl() -> *mut pyo3::ffi::PyObject;
+}
 
 /// Returns the value of the input with the most-significant-bit copied to all
 /// of the bits.
@@ -91,6 +96,11 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
     m.add_submodule(ocsp_mod)?;
 
+    let openssl_mod = unsafe {
+        let ptr = PyInit__openssl();
+        pyo3::types::PyModule::from_owned_ptr(py, ptr)
+    };
+    m.add_submodule(openssl_mod)?;
     Ok(())
 }
 
