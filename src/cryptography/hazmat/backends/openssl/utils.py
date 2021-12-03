@@ -3,9 +3,6 @@
 # for complete details.
 
 
-import warnings
-
-from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
@@ -55,13 +52,3 @@ def _check_not_prehashed(signature_algorithm):
             "It cannot be used with signer, verifier or "
             "recover_data_from_signature."
         )
-
-
-def _warn_sign_verify_deprecated():
-    warnings.warn(
-        "signer and verifier have been deprecated since 2.1. Please use sign "
-        "and verify instead. Support for these functions will be dropped"
-        " in the next release of cryptography (37.0).",
-        utils.PersistentlyDeprecated2017,
-        stacklevel=3,
-    )

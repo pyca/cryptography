@@ -10,6 +10,10 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x.
   The new minimum LibreSSL version is 3.1+.
+* **BACKWARDS INCOMPATIBLE:** Removed ``signer`` and ``verifier`` methods
+  from the public key and private key classes. These methods were originally
+  deprecated in version 2.0, but had an extended deprecation timeline due
+  to usage. Any remaining users should transition to ``sign`` and ``verify``.
 * Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
   the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
   removed in a future release.
@@ -25,7 +29,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~~
 
 * **FINAL DEPRECATION** Support for ``verifier`` and ``signer`` on our
-  asymmetric key classes was deprecated in version 2.1. These functions had an
+  asymmetric key classes was deprecated in version 2.0. These functions had an
   extended deprecation due to usage, however the next version of
   ``cryptography`` will drop support. Users should migrate to ``sign`` and
   ``verify``.

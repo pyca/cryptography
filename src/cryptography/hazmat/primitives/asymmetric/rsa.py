@@ -10,21 +10,11 @@ from math import gcd
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext,
-    AsymmetricVerificationContext,
     utils as asym_utils,
 )
 
 
 class RSAPrivateKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def signer(
-        self, padding: AsymmetricPadding, algorithm: hashes.HashAlgorithm
-    ) -> AsymmetricSignatureContext:
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
     @abc.abstractmethod
     def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
         """
@@ -76,17 +66,6 @@ RSAPrivateKeyWithSerialization = RSAPrivateKey
 
 
 class RSAPublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def verifier(
-        self,
-        signature: bytes,
-        padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm,
-    ) -> AsymmetricVerificationContext:
-        """
-        Returns an AsymmetricVerificationContext used for verifying signatures.
-        """
-
     @abc.abstractmethod
     def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
         """

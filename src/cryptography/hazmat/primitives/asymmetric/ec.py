@@ -11,8 +11,6 @@ from cryptography import utils
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    AsymmetricSignatureContext,
-    AsymmetricVerificationContext,
     utils as asym_utils,
 )
 
@@ -64,15 +62,6 @@ class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
 
 
 class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def signer(
-        self,
-        signature_algorithm: EllipticCurveSignatureAlgorithm,
-    ) -> AsymmetricSignatureContext:
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
     @abc.abstractmethod
     def exchange(
         self, algorithm: "ECDH", peer_public_key: "EllipticCurvePublicKey"
@@ -132,16 +121,6 @@ EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
 
 
 class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def verifier(
-        self,
-        signature: bytes,
-        signature_algorithm: EllipticCurveSignatureAlgorithm,
-    ) -> AsymmetricVerificationContext:
-        """
-        Returns an AsymmetricVerificationContext used for signing data.
-        """
-
     @abc.abstractproperty
     def curve(self) -> EllipticCurve:
         """

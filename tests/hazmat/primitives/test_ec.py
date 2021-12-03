@@ -336,15 +336,13 @@ class TestECDSAVectors(object):
                 pkey = key.public_key()
                 assert pkey
 
-                with pytest.warns(CryptographyDeprecationWarning):
-                    signer = key.signer(ec.ECDSA(hash_type()))
-                signer.update(b"YELLOW SUBMARINE")
-                signature = signer.finalize()
+                signature = key.sign(
+                    b"YELLOW SUBMARINE", ec.ECDSA(hash_type())
+                )
 
-                with pytest.warns(CryptographyDeprecationWarning):
-                    verifier = pkey.verifier(signature, ec.ECDSA(hash_type()))
-                verifier.update(b"YELLOW SUBMARINE")
-                verifier.verify()
+                pkey.verify(
+                    signature, b"YELLOW SUBMARINE", ec.ECDSA(hash_type())
+                )
 
     @pytest.mark.parametrize("curve", ec._CURVE_TYPES.values())
     def test_generate_vector_curves(self, backend, curve):
@@ -380,18 +378,8 @@ class TestECDSAVectors(object):
 
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ), pytest.warns(CryptographyDeprecationWarning):
-            key.signer(DummySignatureAlgorithm())
-
-        with raises_unsupported_algorithm(
-            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             key.sign(b"somedata", DummySignatureAlgorithm())
-
-        with raises_unsupported_algorithm(
-            exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ), pytest.warns(CryptographyDeprecationWarning):
-            key.public_key().verifier(b"", DummySignatureAlgorithm())
 
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -607,23 +595,6 @@ class TestECDSAVectors(object):
             public_key.verify(
                 b"\x00" * 32, data, ec.ECDSA(Prehashed(hashes.SHA256()))
             )
-
-    def test_prehashed_unsupported_in_signer_ctx(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            private_key.signer(ec.ECDSA(Prehashed(hashes.SHA1())))
-
-    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        public_key = private_key.public_key()
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(b"0" * 64, ec.ECDSA(Prehashed(hashes.SHA1())))
 
 
 class TestECNumbersEquality(object):
@@ -1173,19 +1144,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
             == point
         )
-
-
-class TestECDSAVerification(object):
-    def test_signature_not_bytes(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        key = ec.generate_private_key(ec.SECP256R1(), backend)
-        public_key = key.public_key()
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(
-                1234, ec.ECDSA(hashes.SHA256())  # type: ignore[arg-type]
-            )
 
 
 class TestECDH(object):

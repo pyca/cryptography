@@ -10,7 +10,6 @@ import os
 import pytest
 
 from cryptography.exceptions import (
-    AlreadyFinalized,
     InvalidSignature,
     _Reasons,
 )
@@ -24,7 +23,6 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers,
     RSAPublicNumbers,
 )
-from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_rsa import (
     RSA_KEY_1024,
@@ -539,23 +537,6 @@ class TestRSASignature(object):
                 hashes.SHA256(),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_use_after_finalize(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            signer = private_key.signer(padding.PKCS1v15(), hashes.SHA256())
-        signer.update(b"sign me")
-        signer.finalize()
-        with pytest.raises(AlreadyFinalized):
-            signer.finalize()
-        with pytest.raises(AlreadyFinalized):
-            signer.update(b"more data")
-
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
@@ -675,39 +656,6 @@ class TestRSASignature(object):
         prehashed_alg = asym_utils.Prehashed(hashes.SHA1())
         with pytest.raises(ValueError):
             private_key.sign(digest, pss, prehashed_alg)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_prehashed_unsupported_in_signer_ctx(self, backend):
-        private_key = RSA_KEY_512.private_key(backend)
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            private_key.signer(
-                padding.PKCS1v15(),
-                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
-            )
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
-        public_key = RSA_KEY_512.private_key(backend).public_key()
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(
-                b"0" * 64,
-                padding.PKCS1v15(),
-                asym_utils.Prehashed(hashes.SHA1()),  # type: ignore[arg-type]
-            )
 
     def test_prehashed_unsupported_in_signature_recover(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
@@ -1013,30 +961,6 @@ class TestRSAVerification(object):
                 signature, pss_padding, hashes.SHA256()
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_use_after_finalize(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
-        public_key = private_key.public_key()
-        signature = private_key.sign(
-            b"sign me", padding.PKCS1v15(), hashes.SHA256()
-        )
-
-        with pytest.warns(CryptographyDeprecationWarning):
-            verifier = public_key.verifier(
-                signature, padding.PKCS1v15(), hashes.SHA256()
-            )
-        verifier.update(b"sign me")
-        verifier.verify()
-        with pytest.raises(AlreadyFinalized):
-            verifier.verify()
-        with pytest.raises(AlreadyFinalized):
-            verifier.update(b"more data")
-
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         public_key = private_key.public_key()
@@ -1044,21 +968,6 @@ class TestRSAVerification(object):
             public_key.verify(
                 b"sig", b"msg", DummyAsymmetricPadding(), hashes.SHA1()
             )
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_signature_not_bytes(self, backend):
-        public_key = RSA_KEY_2048.public_numbers.public_key(backend)
-        signature = 1234
-
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(signature, padding.PKCS1v15(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)

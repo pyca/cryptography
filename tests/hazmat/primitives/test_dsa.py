@@ -9,7 +9,7 @@ import typing
 
 import pytest
 
-from cryptography.exceptions import AlreadyFinalized, InvalidSignature
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
@@ -17,7 +17,6 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed,
     encode_dss_signature,
 )
-from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 from .utils import skip_fips_traditional_openssl
@@ -423,25 +422,6 @@ class TestDSAVerification(object):
         with pytest.raises(InvalidSignature):
             public_key.verify(b"fakesig", b"fakemsg", hashes.SHA1())
 
-    def test_signature_not_bytes(self, backend):
-        public_key = DSA_KEY_1024.public_numbers.public_key(backend)
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(1234, hashes.SHA1())
-
-    def test_use_after_finalize(self, backend):
-        public_key = DSA_KEY_1024.public_numbers.public_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            verifier = public_key.verifier(b"fakesig", hashes.SHA1())
-        verifier.update(b"irrelevant")
-        with pytest.raises(InvalidSignature):
-            verifier.verify()
-        with pytest.raises(AlreadyFinalized):
-            verifier.verify()
-        with pytest.raises(AlreadyFinalized):
-            verifier.update(b"more data")
-
     def test_verify(self, backend):
         message = b"one little message"
         algorithm = hashes.SHA1()
@@ -471,24 +451,6 @@ class TestDSAVerification(object):
         prehashed_alg = Prehashed(hashes.SHA224())
         with pytest.raises(ValueError):
             public_key.verify(b"\x00" * 128, digest, prehashed_alg)
-
-    def test_prehashed_unsupported_in_signer_ctx(self, backend):
-        private_key = DSA_KEY_1024.private_key(backend)
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            private_key.signer(
-                Prehashed(hashes.SHA1())  # type: ignore[arg-type]
-            )
-
-    def test_prehashed_unsupported_in_verifier_ctx(self, backend):
-        public_key = DSA_KEY_1024.private_key(backend).public_key()
-        with pytest.raises(TypeError), pytest.warns(
-            CryptographyDeprecationWarning
-        ):
-            public_key.verifier(
-                b"0" * 64, Prehashed(hashes.SHA1())  # type: ignore[arg-type]
-            )
 
 
 class TestDSASignature(object):
@@ -521,17 +483,6 @@ class TestDSASignature(object):
                 private_key.public_key().verify(
                     signature, vector["msg"], algorithm
                 )
-
-    def test_use_after_finalize(self, backend):
-        private_key = DSA_KEY_1024.private_key(backend)
-        with pytest.warns(CryptographyDeprecationWarning):
-            signer = private_key.signer(hashes.SHA1())
-        signer.update(b"data")
-        signer.finalize()
-        with pytest.raises(AlreadyFinalized):
-            signer.finalize()
-        with pytest.raises(AlreadyFinalized):
-            signer.update(b"more data")
 
     def test_sign(self, backend):
         private_key = DSA_KEY_1024.private_key(backend)
