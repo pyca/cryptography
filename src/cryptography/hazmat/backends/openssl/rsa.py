@@ -12,7 +12,6 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.openssl.utils import (
     _calculate_digest_and_algorithm,
-    _check_not_prehashed,
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -489,7 +488,11 @@ class _RSAPublicKey(RSAPublicKey):
         padding: AsymmetricPadding,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> bytes:
-        _check_not_prehashed(algorithm)
+        if isinstance(algorithm, asym_utils.Prehashed):
+            raise TypeError(
+                "Prehashed is only supported in the sign and verify methods. "
+                "It cannot be used with recover_data_from_signature."
+            )
         return _rsa_sig_recover(
             self._backend, padding, algorithm, self, signature
         )
