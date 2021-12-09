@@ -773,6 +773,9 @@ impl pyo3::PyIterProtocol<'_> for OCSPResponseIterator {
 
 impl OCSPResponseIterator {
     fn single_response(&self) -> SingleResponse<'_> {
+        // This is O(N^2), and ideally should be O(N).
+        // The number of certificates handled in a single response should never be
+        // so large that this is a show-stopper, but it's definitely not ideal.
         self.contents
             .borrow_basic_response()
             .as_ref()

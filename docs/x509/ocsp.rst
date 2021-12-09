@@ -715,7 +715,12 @@ Interfaces
     An iterator working through each SINGLERESP structure attached
     to an OCSP response.
 
-        .. attribute:: certificate_status
+    .. method:: __next__()
+
+        Advances the iterator to the next certificate status in the OCSP
+        response.
+
+    .. attribute:: certificate_status
 
         :type: :class:`~cryptography.x509.ocsp.OCSPCertStatus`
 

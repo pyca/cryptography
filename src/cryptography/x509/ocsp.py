@@ -4,6 +4,7 @@
 
 
 import abc
+import collections
 import datetime
 import typing
 
@@ -165,7 +166,7 @@ class OCSPRequest(metaclass=abc.ABCMeta):
         """
 
 
-class OCSPResponseIterator(metaclass=abc.ABCMeta):
+class OCSPResponseIterator(metaclass=collections.abc.Iterable):
     @abc.abstractproperty
     def certificate_status(self) -> OCSPCertStatus:
         """
@@ -226,7 +227,7 @@ class OCSPResponseIterator(metaclass=abc.ABCMeta):
 
 class OCSPResponse(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def response_iter(self) -> OCSPResponseIterator:
+    def responses(self) -> OCSPResponseIterator:
         """
         An iterator over the individual SINGLERESP structures in the
         response
