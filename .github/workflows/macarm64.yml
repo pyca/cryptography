@@ -34,10 +34,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.PYTHON.TOXENV }}-cargo-macarm64-${{ hashFiles('**/Cargo.lock') }}
 
