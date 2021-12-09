@@ -27,7 +27,7 @@ impl From<pyo3::PyErr> for PyAsn1Error {
 impl From<pem::PemError> for PyAsn1Error {
     fn from(e: pem::PemError) -> PyAsn1Error {
         PyAsn1Error::Py(pyo3::exceptions::PyValueError::new_err(format!(
-            "Unable to load PEM file. See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details. {:?}",
+            "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. {:?}",
             e
         )))
     }
