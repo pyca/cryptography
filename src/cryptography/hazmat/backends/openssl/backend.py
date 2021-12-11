@@ -800,9 +800,6 @@ class Backend(BackendInterface):
     def dsa_hash_supported(self, algorithm):
         return self.hash_supported(algorithm)
 
-    def dsa_parameters_supported(self, p, q, g):
-        return True
-
     def cmac_algorithm_supported(self, algorithm):
         return self.cipher_supported(
             algorithm, CBC(b"\x00" * algorithm.block_size)

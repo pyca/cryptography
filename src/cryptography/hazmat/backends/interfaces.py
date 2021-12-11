@@ -147,12 +147,6 @@ class DSABackend(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def dsa_parameters_supported(self, p, q, g):
-        """
-        Return True if the parameters are supported by the backend for DSA.
-        """
-
-    @abc.abstractmethod
     def load_dsa_private_numbers(self, numbers):
         """
         Returns a DSAPrivateKey provider.
