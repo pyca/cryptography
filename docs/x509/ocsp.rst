@@ -717,8 +717,17 @@ Interfaces
 
     .. method:: __next__()
 
+        :returns: :class:`~cryptography.x509.ocsp.OCSPSingleResponse`
+
         Advances the iterator to the next certificate status in the OCSP
         response.
+
+.. class:: OCSPSingleResponse
+
+    ..versionadded:: 37.0.0
+
+    A class representing a single certificate response bundled into a
+    larger OCSPResponse.  Accessed via OCSPResponseIterator.
 
     .. attribute:: certificate_status
 

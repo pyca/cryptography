@@ -758,20 +758,47 @@ impl pyo3::PyIterProtocol<'_> for OCSPResponseIterator {
         slf
     }
 
-    fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<pyo3::PyRefMut<'p, Self>> {
+    fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<OCSPSingleResponse> {
         if slf.cur_pos == std::usize::MAX {
             slf.cur_pos = 0;
-            Some(slf)
         } else if slf.cur_pos < slf.len - 1 {
             slf.cur_pos += 1;
-            Some(slf)
         } else {
-            None
+            return None;
         }
+
+        let new_owned = OwnedRawOCSPResponseBuilder {
+            data: slf.contents.borrow_data().clone(),
+            value_builder: |data| asn1::parse_single(data).unwrap(),
+            basic_response_builder: |_data, response| {
+                Some(
+                    asn1::parse_single(response.response_bytes.as_ref().unwrap().response).unwrap(),
+                )
+            },
+        }
+        .build();
+
+        Some(OCSPSingleResponse {
+            contents: new_owned,
+            cur_pos: slf.cur_pos,
+        })
     }
 }
 
-impl OCSPResponseIterator {
+#[pyo3::prelude::pyproto]
+impl pyo3::PySequenceProtocol<'_> for OCSPResponseIterator {
+    fn __len__(&self) -> usize {
+        self.len
+    }
+}
+
+#[pyo3::prelude::pyclass]
+struct OCSPSingleResponse {
+    contents: OwnedRawOCSPResponse,
+    cur_pos: usize,
+}
+
+impl OCSPSingleResponse {
     fn single_response(&self) -> SingleResponse<'_> {
         // This is O(N^2), and ideally should be O(N).
         // The number of certificates handled in a single response should never be
@@ -789,15 +816,8 @@ impl OCSPResponseIterator {
     }
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PySequenceProtocol<'_> for OCSPResponseIterator {
-    fn __len__(&self) -> usize {
-        self.len
-    }
-}
-
 #[pyo3::prelude::pymethods]
-impl OCSPResponseIterator {
+impl OCSPSingleResponse {
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         self.single_response().py_serial_number(py)

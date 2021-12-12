@@ -166,7 +166,7 @@ class OCSPRequest(metaclass=abc.ABCMeta):
         """
 
 
-class OCSPResponseIterator(metaclass=collections.abc.Iterable):
+class OCSPSingleResponse(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def certificate_status(self) -> OCSPCertStatus:
         """
@@ -222,6 +222,14 @@ class OCSPResponseIterator(metaclass=collections.abc.Iterable):
     def serial_number(self) -> int:
         """
         The serial number of the cert whose status is being checked
+        """
+
+
+class OCSPResponseIterator(collections.abc.Iterable):
+    @abc.abstractmethod
+    def __next__(self) -> OCSPSingleResponse:
+        """
+        Get the next response.
         """
 
 
