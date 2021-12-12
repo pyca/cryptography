@@ -88,7 +88,7 @@ Building cryptography on Linux
     require no compiler if you have an updated ``pip``!
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
-are included. For users on **pip 19.0** or above running on a ``manylinux2010``
+are included. For users on **pip 19.3** or above running on a ``manylinux2014``
 (or greater) compatible distribution (or **pip 21.2.4** for ``musllinux``) all
 you should need to do is:
 

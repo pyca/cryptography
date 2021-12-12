@@ -10,7 +10,9 @@ Changelog
 
 * Final deprecation of OpenSSL 1.1.0. The next release of ``cryptography``
   will drop support.
-
+* We no longer ship ``manylinux2010`` wheels. Users should upgrade to the
+  latest ``pip`` to ensure this doesn't cause issues downloading wheels on
+  their platform.
 
 .. _v37-0-0:
 

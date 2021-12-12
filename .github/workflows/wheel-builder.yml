@@ -24,18 +24,10 @@ jobs:
           - { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
           - { VERSION: "pypy3.9", PATH: "/opt/pypy3.9/bin/pypy" }
         MANYLINUX:
-          - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
           - { name: "manylinux_2_24_x86_64", CONTAINER: "cryptography-manylinux_2_24:x86_64"}
           - { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
         exclude:
-          # Latest PyPy binaries do not support manylinux2010
-          - PYTHON: { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
-            MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
-          - PYTHON: { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
-            MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
-          - PYTHON: { VERSION: "pypy3.9", PATH: "/opt/pypy3.9/bin/pypy" }
-            MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           # There are no readily available musllinux PyPy distributions
           - PYTHON: { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
             MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64" }
@@ -45,7 +37,7 @@ jobs:
             MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - uses: actions/checkout@v1 # Need v1 because manylinux2010 can't run node from v2
+      - uses: actions/checkout@v2.4.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
