@@ -710,7 +710,7 @@ Interfaces
 
 .. class:: OCSPResponseIterator
 
-    ..versionadded:: 37.0.0
+    .. versionadded:: 37.0.0
 
     An iterator working through each SINGLERESP structure attached
     to an OCSP response.
@@ -724,7 +724,7 @@ Interfaces
 
 .. class:: OCSPSingleResponse
 
-    ..versionadded:: 37.0.0
+    .. versionadded:: 37.0.0
 
     A class representing a single certificate response bundled into a
     larger OCSPResponse.  Accessed via OCSPResponseIterator.
