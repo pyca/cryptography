@@ -121,9 +121,6 @@ if __name__ == "__main__":
     c_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "rust", module_name + source_extension)
     recompiler.make_c_source(ffi, module_name, source, c_file)
 
-    libraries = _get_openssl_libraries(sys.platform)
-    for lib in libraries:
-        print(f"cargo:rustc-link-lib={lib}")
     extra_compile_args = _extra_compile_args(sys.platform)
     for arg in extra_compile_args:
         print(f"cargo:rustc-link-arg={arg}")

@@ -18,10 +18,11 @@ fn main() {
             include = line.replace("include:", "");
         }
     }
+    let openssl_include =
+        std::env::var_os("DEP_OPENSSL_INCLUDE").expect("unable to find openssl include path");
     cc::Build::new()
         .file("_openssl.c")
         .include(include)
-        // FIXME: should not hardcode this
-        .include("/opt/homebrew/opt/openssl/include")
+        .include(openssl_include)
         .compile("_openssl.a");
 }

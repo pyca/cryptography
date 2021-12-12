@@ -86,6 +86,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "openssl",
+ "openssl-sys",
  "ouroboros",
  "pem",
  "pyo3",
@@ -200,9 +201,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.71"
+version = "0.9.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7df13d165e607909b363a4757a6f133f8a818a74e9d3a98d09c6128e15fa4c73"
+checksum = "7e46109c383602735fa0a2e48dd2b7c892b048e1bf69e5c3b1d804b7d9c203cb"
 dependencies = [
  "autocfg",
  "cc",
