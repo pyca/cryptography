@@ -117,8 +117,11 @@ if __name__ == "__main__":
     import sysconfig
     from cffi import recompiler
 
+    out_dir = os.getenv("OUT_DIR")
+    if not out_dir:
+        out_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "rust")
     module_name, source, source_extension, kwds = ffi._assigned_source
-    c_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "rust", module_name + source_extension)
+    c_file = os.path.join(out_dir, module_name + source_extension)
     recompiler.make_c_source(ffi, module_name, source, c_file)
 
     extra_compile_args = _extra_compile_args(sys.platform)
