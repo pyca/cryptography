@@ -120,7 +120,3 @@ if __name__ == "__main__":
     module_name, source, source_extension, kwds = ffi._assigned_source
     c_file = os.path.join(out_dir, module_name + source_extension)
     recompiler.make_c_source(ffi, module_name, source, c_file)
-
-    extra_compile_args = _extra_compile_args(sys.platform)
-    for arg in extra_compile_args:
-        print(f"cargo:rustc-link-arg={arg}")

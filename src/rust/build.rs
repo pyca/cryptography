@@ -34,12 +34,6 @@ fn main() {
         );
     }
 
-    let stdout = String::from_utf8(output.stdout).unwrap();
-    for line in stdout.lines() {
-        if line.starts_with("cargo:") {
-            println!("{}", line);
-        }
-    }
     let python_include = run_python_script(
         &python,
         "import sysconfig; print(sysconfig.get_path('include'), end='')",
@@ -52,6 +46,8 @@ fn main() {
         .file(openssl_c)
         .include(python_include)
         .include(openssl_include)
+        .flag_if_supported("-Wconversion")
+        .flag_if_supported("-Wno-error=sign-conversion")
         .compile("_openssl.a");
 }
 
