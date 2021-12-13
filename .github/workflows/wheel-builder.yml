@@ -1,4 +1,6 @@
 name: Wheel Builder
+permissions:
+  contents: read
 on:
   workflow_dispatch:
     inputs:
