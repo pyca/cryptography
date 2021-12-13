@@ -21,7 +21,13 @@ fn main() {
         .arg("../_cffi_src/build_openssl.py")
         .output()
         .expect("failed to execute build_openssl.py");
-    assert!(output.status.success());
+    if !output.status.success() {
+        panic!(
+            "failed to run build_openssl.py, stdout: \n{}\nstderr: \n{}\n",
+            String::from_utf8(output.stdout).unwrap(),
+            String::from_utf8(output.stderr).unwrap()
+        );
+    }
 
     let stdout = String::from_utf8(output.stdout).unwrap();
     for line in stdout.lines() {
