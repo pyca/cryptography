@@ -285,7 +285,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage
+      - run: python -m pip install tox coverage cffi
       - name: Tests
         run: |
             tox -r --  --color=yes --wycheproof-root=wycheproof
