@@ -1,4 +1,7 @@
 name: Bump BoringSSL version
+permissions:
+  issues: write
+  contents: read
 
 on:
   workflow_dispatch:
