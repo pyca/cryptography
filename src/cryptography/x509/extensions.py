@@ -183,9 +183,9 @@ class AuthorityKeyIdentifier(ExtensionType):
 
     def __init__(
         self,
-        key_identifier: typing.Optional[bytes],
-        authority_cert_issuer: typing.Optional[typing.Iterable[GeneralName]],
-        authority_cert_serial_number: typing.Optional[int],
+        key_identifier: typing.Optional[bytes] = None,
+        authority_cert_issuer: typing.Optional[typing.Iterable[GeneralName]] = None,
+        authority_cert_serial_number: typing.Optional[int] = None,
     ) -> None:
         if (authority_cert_issuer is None) != (
             authority_cert_serial_number is None
@@ -446,7 +446,7 @@ class AccessDescription(object):
 class BasicConstraints(ExtensionType):
     oid = ExtensionOID.BASIC_CONSTRAINTS
 
-    def __init__(self, ca: bool, path_length: typing.Optional[int]) -> None:
+    def __init__(self, ca: bool, path_length: typing.Optional[int] = None) -> None:
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
@@ -1179,15 +1179,15 @@ class KeyUsage(ExtensionType):
 
     def __init__(
         self,
-        digital_signature: bool,
-        content_commitment: bool,
-        key_encipherment: bool,
-        data_encipherment: bool,
-        key_agreement: bool,
-        key_cert_sign: bool,
-        crl_sign: bool,
-        encipher_only: bool,
-        decipher_only: bool,
+        digital_signature: bool = False,
+        content_commitment: bool = False,
+        key_encipherment: bool = False,
+        data_encipherment: bool = False,
+        key_agreement: bool = False,
+        key_cert_sign: bool = False,
+        crl_sign: bool = False,
+        encipher_only: bool = False,
+        decipher_only: bool = False,
     ) -> None:
         if not key_agreement and (encipher_only or decipher_only):
             raise ValueError(
@@ -2003,13 +2003,13 @@ class IssuingDistributionPoint(ExtensionType):
 
     def __init__(
         self,
-        full_name: typing.Optional[typing.Iterable[GeneralName]],
-        relative_name: typing.Optional[RelativeDistinguishedName],
-        only_contains_user_certs: bool,
-        only_contains_ca_certs: bool,
-        only_some_reasons: typing.Optional[typing.FrozenSet[ReasonFlags]],
-        indirect_crl: bool,
-        only_contains_attribute_certs: bool,
+        full_name: typing.Optional[typing.Iterable[GeneralName]] = None,
+        relative_name: typing.Optional[RelativeDistinguishedName] = None,
+        only_contains_user_certs: bool = False,
+        only_contains_ca_certs: bool = False,
+        only_some_reasons: typing.Optional[typing.FrozenSet[ReasonFlags]] = None,
+        indirect_crl: bool = False,
+        only_contains_attribute_certs: bool = False,
     ) -> None:
         if full_name is not None:
             full_name = list(full_name)

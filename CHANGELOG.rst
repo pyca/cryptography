@@ -22,6 +22,7 @@ Changelog
   and ``x86_64`` architectures. Users on macOS should upgrade to the latest
   ``pip`` to ensure they can use this wheel, although we will continue to
   ship ``x86_64`` specific wheels for now to ease the transition.
+* Added defaults to several class __init__ to make code more succinct.
 
 .. _v36-0-0:
 
