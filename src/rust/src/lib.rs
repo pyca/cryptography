@@ -4,6 +4,10 @@
 
 #![deny(rust_2018_idioms)]
 
+// Force linking of OpenSSL since we're not using it in Rust side yet
+#[allow(unused_extern_crates)]
+extern crate openssl_sys;
+
 mod asn1;
 mod x509;
 
