@@ -1,6 +1,6 @@
 use std::env;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, MAIN_SEPARATOR};
 use std::process::{Command, Stdio};
 
 fn main() {
@@ -10,10 +10,15 @@ fn main() {
     println!("cargo:rerun-if-changed=../_cffi_src/");
     let python_path = match env::var("PYTHONPATH") {
         Ok(mut val) => {
-            val.push_str(":../");
+            if cfg!(target_os = "windows") {
+                val.push(';');
+            } else {
+                val.push(':');
+            }
+            val.push_str(&format!("..{}", MAIN_SEPARATOR));
             val
         }
-        Err(_) => "../".to_string(),
+        Err(_) => format!("..{}", MAIN_SEPARATOR),
     };
     let output = Command::new(&python)
         .env("PYTHONPATH", python_path)
