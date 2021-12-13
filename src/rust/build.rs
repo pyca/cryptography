@@ -5,7 +5,7 @@ use std::process::Command;
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
-    let python = env::var("PYO3_PYTHON").unwrap_or("python3".to_string());
+    let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-changed=../_cffi_src/");
     let python_path = match env::var("PYTHONPATH") {
         Ok(mut val) => {
