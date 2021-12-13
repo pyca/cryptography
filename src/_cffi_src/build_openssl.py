@@ -114,7 +114,6 @@ ffi = build_ffi_for_binding(
 )
 
 if __name__ == "__main__":
-    import sysconfig
     from cffi import recompiler
 
     out_dir = os.getenv("OUT_DIR")
@@ -125,6 +124,3 @@ if __name__ == "__main__":
     extra_compile_args = _extra_compile_args(sys.platform)
     for arg in extra_compile_args:
         print(f"cargo:rustc-link-arg={arg}")
-
-    include_path = sysconfig.get_path('include')
-    print(f'include:{include_path}')

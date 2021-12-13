@@ -1,6 +1,7 @@
 use std::env;
+use std::io::Write;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -23,20 +24,56 @@ fn main() {
     assert!(output.status.success());
 
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let mut include = String::new();
     for line in stdout.lines() {
         if line.starts_with("cargo:") {
             println!("{}", line);
-        } else if line.starts_with("include:") {
-            include = line.replace("include:", "");
         }
     }
+    let python_include = run_python_script(
+        &python,
+        "import sysconfig; print(sysconfig.get_path('include'), end='')",
+    )
+    .unwrap();
     let openssl_include =
         std::env::var_os("DEP_OPENSSL_INCLUDE").expect("unable to find openssl include path");
     let openssl_c = Path::new(&out_dir).join("_openssl.c");
     cc::Build::new()
         .file(openssl_c)
-        .include(include)
+        .include(python_include)
         .include(openssl_include)
         .compile("_openssl.a");
+}
+
+/// Run a python script using the specified interpreter binary.
+fn run_python_script(interpreter: impl AsRef<Path>, script: &str) -> Result<String, String> {
+    let interpreter = interpreter.as_ref();
+    let out = Command::new(interpreter)
+        .env("PYTHONIOENCODING", "utf-8")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .and_then(|mut child| {
+            child
+                .stdin
+                .as_mut()
+                .expect("piped stdin")
+                .write_all(script.as_bytes())?;
+            child.wait_with_output()
+        });
+
+    match out {
+        Err(err) => Err(format!(
+            "failed to run the Python interpreter at {}: {}",
+            interpreter.display(),
+            err
+        )),
+        Ok(ok) if !ok.status.success() => Err(format!(
+            "Python script failed: {}",
+            String::from_utf8(ok.stderr).expect("failed to parse Python script output as utf-8")
+        )),
+        Ok(ok) => Ok(
+            String::from_utf8(ok.stdout).expect("failed to parse Python script output as utf-8")
+        ),
+    }
 }
