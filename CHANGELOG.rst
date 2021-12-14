@@ -23,6 +23,13 @@ Changelog
   ``pip`` to ensure they can use this wheel, although we will continue to
   ship ``x86_64`` specific wheels for now to ease the transition.
 
+.. _v36-0-1:
+
+36.0.1 - 2021-12-14
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 1.1.1m.
+
 .. _v36-0-0:
 
 36.0.0 - 2021-11-21
