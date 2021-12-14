@@ -189,8 +189,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39"}
         RUST:
           # Cover MSRV (and likely next MSRV) and in-dev versions
-          - 1.41.0
-          - 1.45.0
+          - 1.48.0
           - beta
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
