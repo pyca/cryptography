@@ -20,8 +20,8 @@ for P in ${PYTHONS}; do
         PY_LIMITED_API="--py-limited-api=cp3${BASH_REMATCH[1]}"
     fi
 
-    LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
-           CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
+    OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
+           RUSTFLAGS="-Clink-arg=-Wl,--exclude-libs,ALL" \
            .venv/bin/python setup.py bdist_wheel $PY_LIMITED_API
 
     auditwheel repair --plat ${PLAT} -w wheelhouse/ dist/cryptography*.whl
