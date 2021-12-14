@@ -24,7 +24,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
   make install_sw install_ssldirs
   # For OpenSSL 3.0.0 set up the FIPS config. This does not activate it by
   # default, but allows programmatic activation at runtime
-  if [[ "${VERSION}" =~ 3.0.0 && "${CONFIG_FLAGS}" =~ enable-fips ]]; then
+  if [[ "${VERSION}" =~ ^3. && "${CONFIG_FLAGS}" =~ enable-fips ]]; then
       # As of alpha16 we have to install it separately and enable it in the config flags
       make -j"$(nproc)" install_fips
       pushd "${OSSL_PATH}"
