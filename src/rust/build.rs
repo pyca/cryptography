@@ -49,6 +49,11 @@ fn main() {
         );
     }
 
+    let python_impl = run_python_script(
+        &python,
+        "import platform; print(platform.python_implementation(), end='')",
+    )
+    .unwrap();
     let python_include = run_python_script(
         &python,
         "import sysconfig; print(sysconfig.get_path('include'), end='')",
@@ -57,13 +62,22 @@ fn main() {
     let openssl_include =
         std::env::var_os("DEP_OPENSSL_INCLUDE").expect("unable to find openssl include path");
     let openssl_c = Path::new(&out_dir).join("_openssl.c");
-    cc::Build::new()
+
+    let mut build = cc::Build::new();
+    build
         .file(openssl_c)
         .include(python_include)
         .include(openssl_include)
         .flag_if_supported("-Wconversion")
-        .flag_if_supported("-Wno-error=sign-conversion")
-        .compile("_openssl.a");
+        .flag_if_supported("-Wno-error=sign-conversion");
+
+    // Enable abi3 mode if we're not using PyPy.
+    if python_impl != "PyPy" {
+        // cp36
+        build.define("Py_LIMITED_API", "0x030600f0");
+    }
+
+    build.compile("_openssl.a");
 }
 
 /// Run a python script using the specified interpreter binary.
