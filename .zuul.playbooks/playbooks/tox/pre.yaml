@@ -17,6 +17,7 @@
           - libssl-dev
           - libffi-dev
           - python3-dev
+          - pkg-config
       become: yes
       when: ansible_distribution in ['Debian', 'Ubuntu']
 
