@@ -11,7 +11,7 @@ pyo3 = { version = "0.15.1" }
 asn1 = { version = "0.8.7", default-features = false, features = ["derive"] }
 pem = "1.0"
 chrono = { version = "0.4", default-features = false, features = ["alloc", "clock"] }
-ouroboros = "0.13"
+ouroboros = "0.14"
 
 [features]
 extension-module = ["pyo3/extension-module"]
