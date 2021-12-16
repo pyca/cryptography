@@ -14,6 +14,8 @@ Changelog
   from the public key and private key classes. These methods were originally
   deprecated in version 2.0, but had an extended deprecation timeline due
   to usage. Any remaining users should transition to ``sign`` and ``verify``.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.10, macOS users must
+  upgrade to 10.11 or newer.
 * Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
   the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
   removed in a future release.
