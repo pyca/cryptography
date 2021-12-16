@@ -498,7 +498,7 @@ def load_fips_ecdsa_signing_vectors(vector_data):
         r"\[(?P<curve>[PKB]-[0-9]{3}),SHA-(?P<sha>1|224|256|384|512)\]"
     )
 
-    data = None
+    data: typing.Optional[typing.Dict[str, object]] = None
     for line in vector_data:
         line = line.strip()
 
