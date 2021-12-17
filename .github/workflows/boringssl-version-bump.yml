@@ -1,0 +1,32 @@
+name: Bump BoringSSL version
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily
+    - cron: "0 0 * * *"
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - run: git clone https://boringssl.googlesource.com/boringssl --branch=main-with-bazel
+      - id: check-sha
+        run: |
+          SHA=$(git -C boringssl/ rev-parse HEAD)
+          if ! grep -q "$SHA" .github/workflows/ci.yml; then
+            echo "::set-output name=BORING_SHA::$SHA"
+          fi
+      - uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "BoringSSL in ci.yml needs to be updated",
+              body: `The latest version of BoringSSL is \`${process.env.BORING_SHA}\``,
+            })
+        env:
+          BORING_SHA: ${{ steps.check-sha.outputs.BORING_SHA }}
+        if: steps.check-sha.outputs.BORING_SHA
