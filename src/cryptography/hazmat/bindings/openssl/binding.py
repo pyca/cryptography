@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import collections
 import threading
 import types
 import typing
@@ -15,8 +14,9 @@ from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
-_OpenSSLErrorWithText = collections.namedtuple(
-    "_OpenSSLErrorWithText", ["code", "lib", "reason", "reason_text"]
+_OpenSSLErrorWithText = typing.NamedTuple(
+    "_OpenSSLErrorWithText",
+    [("code", int), ("lib", int), ("reason", int), ("reason_text", bytes)],
 )
 
 

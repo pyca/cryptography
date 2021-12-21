@@ -3,7 +3,14 @@
 # for complete details.
 
 
+import typing
+
 from cryptography import utils
+
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.bindings.openssl.binding import (
+        _OpenSSLErrorWithText,
+    )
 
 
 class _Reasons(utils.Enum):
@@ -22,7 +29,9 @@ class _Reasons(utils.Enum):
 
 
 class UnsupportedAlgorithm(Exception):
-    def __init__(self, message, reason=None):
+    def __init__(
+        self, message: str, reason: typing.Optional[_Reasons] = None
+    ) -> None:
         super(UnsupportedAlgorithm, self).__init__(message)
         self._reason = reason
 
@@ -48,7 +57,9 @@ class InvalidSignature(Exception):
 
 
 class InternalError(Exception):
-    def __init__(self, msg, err_code):
+    def __init__(
+        self, msg: str, err_code: typing.List["_OpenSSLErrorWithText"]
+    ) -> None:
         super(InternalError, self).__init__(msg)
         self.err_code = err_code
 
