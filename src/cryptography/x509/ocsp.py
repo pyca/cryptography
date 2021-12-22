@@ -42,7 +42,7 @@ _ALLOWED_HASHES = (
 )
 
 
-def _verify_algorithm(algorithm):
+def _verify_algorithm(algorithm: hashes.HashAlgorithm) -> None:
     if not isinstance(algorithm, _ALLOWED_HASHES):
         raise ValueError(
             "Algorithm must be SHA1, SHA224, SHA256, SHA384, or SHA512"
@@ -58,14 +58,14 @@ class OCSPCertStatus(utils.Enum):
 class _SingleResponse(object):
     def __init__(
         self,
-        cert,
-        issuer,
-        algorithm,
-        cert_status,
-        this_update,
-        next_update,
-        revocation_time,
-        revocation_reason,
+        cert: x509.Certificate,
+        issuer: x509.Certificate,
+        algorithm: hashes.HashAlgorithm,
+        cert_status: OCSPCertStatus,
+        this_update: datetime.datetime,
+        next_update: typing.Optional[datetime.datetime],
+        revocation_time: typing.Optional[datetime.datetime],
+        revocation_reason: typing.Optional[x509.ReasonFlags],
     ):
         if not isinstance(cert, x509.Certificate) or not isinstance(
             issuer, x509.Certificate
