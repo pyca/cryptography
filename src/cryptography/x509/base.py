@@ -97,7 +97,7 @@ class Attribute:
     def value(self) -> bytes:
         return self._value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Attribute(oid={}, value={!r})>".format(self.oid, self.value)
 
     def __eq__(self, other: typing.Any) -> bool:
@@ -126,7 +126,7 @@ class Attributes:
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_attributes")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Attributes({})>".format(self._attributes)
 
     def get_attribute_for_oid(self, oid: ObjectIdentifier) -> Attribute:
