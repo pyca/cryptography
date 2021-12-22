@@ -477,7 +477,9 @@ class Backend(BackendInterface):
         self.openssl_assert(bn_ptr != self._ffi.NULL)
         return bn_ptr
 
-    def generate_rsa_private_key(self, public_exponent: int, key_size: int):
+    def generate_rsa_private_key(
+        self, public_exponent: int, key_size: int
+    ) -> rsa.RSAPrivateKey:
         rsa._verify_rsa_parameters(public_exponent, key_size)
 
         rsa_cdata = self._lib.RSA_new()
@@ -506,7 +508,9 @@ class Backend(BackendInterface):
             and key_size >= 512
         )
 
-    def load_rsa_private_numbers(self, numbers):
+    def load_rsa_private_numbers(
+        self, numbers: rsa.RSAPrivateNumbers
+    ) -> rsa.RSAPrivateKey:
         rsa._check_private_key_components(
             numbers.p,
             numbers.q,
@@ -540,7 +544,9 @@ class Backend(BackendInterface):
             self, rsa_cdata, evp_pkey, self._rsa_skip_check_key
         )
 
-    def load_rsa_public_numbers(self, numbers):
+    def load_rsa_public_numbers(
+        self, numbers: rsa.RSAPublicNumbers
+    ) -> rsa.RSAPublicKey:
         rsa._check_public_key_components(numbers.e, numbers.n)
         rsa_cdata = self._lib.RSA_new()
         self.openssl_assert(rsa_cdata != self._ffi.NULL)
@@ -565,7 +571,7 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return evp_pkey
 
-    def _bytes_to_bio(self, data):
+    def _bytes_to_bio(self, data: bytes):
         """
         Return a _MemoryBIO namedtuple of (BIO, char*).
 
@@ -718,7 +724,7 @@ class Backend(BackendInterface):
         else:
             return False
 
-    def generate_dsa_parameters(self, key_size):
+    def generate_dsa_parameters(self, key_size: int) -> dsa.DSAParameters:
         if key_size not in (1024, 2048, 3072, 4096):
             raise ValueError(
                 "Key size must be 1024, 2048, 3072, or 4096 bits."
@@ -742,8 +748,12 @@ class Backend(BackendInterface):
 
         return _DSAParameters(self, ctx)
 
-    def generate_dsa_private_key(self, parameters):
-        ctx = self._lib.DSAparams_dup(parameters._dsa_cdata)
+    def generate_dsa_private_key(
+        self, parameters: dsa.DSAParameters
+    ) -> dsa.DSAPrivateKey:
+        ctx = self._lib.DSAparams_dup(
+            parameters._dsa_cdata  # type: ignore[attr-defined]
+        )
         self.openssl_assert(ctx != self._ffi.NULL)
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         self._lib.DSA_generate_key(ctx)
@@ -751,7 +761,9 @@ class Backend(BackendInterface):
 
         return _DSAPrivateKey(self, ctx, evp_pkey)
 
-    def generate_dsa_private_key_and_parameters(self, key_size):
+    def generate_dsa_private_key_and_parameters(
+        self, key_size: int
+    ) -> dsa.DSAPrivateKey:
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
@@ -761,7 +773,9 @@ class Backend(BackendInterface):
         res = self._lib.DSA_set0_key(dsa_cdata, pub_key, priv_key)
         self.openssl_assert(res == 1)
 
-    def load_dsa_private_numbers(self, numbers):
+    def load_dsa_private_numbers(
+        self, numbers: dsa.DSAPrivateNumbers
+    ) -> dsa.DSAPrivateKey:
         dsa._check_dsa_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
 
@@ -780,7 +794,9 @@ class Backend(BackendInterface):
 
         return _DSAPrivateKey(self, dsa_cdata, evp_pkey)
 
-    def load_dsa_public_numbers(self, numbers):
+    def load_dsa_public_numbers(
+        self, numbers: dsa.DSAPublicNumbers
+    ) -> dsa.DSAPublicKey:
         dsa._check_dsa_parameters(numbers.parameter_numbers)
         dsa_cdata = self._lib.DSA_new()
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
@@ -797,7 +813,9 @@ class Backend(BackendInterface):
 
         return _DSAPublicKey(self, dsa_cdata, evp_pkey)
 
-    def load_dsa_parameter_numbers(self, numbers):
+    def load_dsa_parameter_numbers(
+        self, numbers: dsa.DSAParameterNumbers
+    ) -> dsa.DSAParameters:
         dsa._check_dsa_parameters(numbers)
         dsa_cdata = self._lib.DSA_new()
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
@@ -1096,7 +1114,7 @@ class Backend(BackendInterface):
 
         return convert_func(evp_pkey)
 
-    def _handle_key_loading_error(self):
+    def _handle_key_loading_error(self) -> typing.NoReturn:
         errors = self._consume_errors()
 
         if not errors:
