@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.exceptions import (
     InvalidSignature,
@@ -11,9 +12,12 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
 
 class _CMACContext(object):
-    def __init__(self, backend, algorithm, ctx=None):
+    def __init__(self, backend: "Backend", algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "This backend does not support CMAC.",

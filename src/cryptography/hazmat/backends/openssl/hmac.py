@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.exceptions import (
     InvalidSignature,
@@ -11,9 +12,17 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import constant_time, hashes
 
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
+
 class _HMACContext(hashes.HashContext):
     def __init__(
-        self, backend, key: bytes, algorithm: hashes.HashAlgorithm, ctx=None
+        self,
+        backend: "Backend",
+        key: bytes,
+        algorithm: hashes.HashAlgorithm,
+        ctx=None,
     ):
         self._algorithm = algorithm
         self._backend = backend

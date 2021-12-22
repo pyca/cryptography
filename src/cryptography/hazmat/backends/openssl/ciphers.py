@@ -10,6 +10,10 @@ from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
+
 @utils.register_interface(ciphers.CipherContext)
 @utils.register_interface(ciphers.AEADCipherContext)
 @utils.register_interface(ciphers.AEADEncryptionContext)
@@ -19,7 +23,7 @@ class _CipherContext(object):
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2 ** 30 - 1
 
-    def __init__(self, backend, cipher, mode, operation):
+    def __init__(self, backend: "Backend", cipher, mode, operation):
         self._backend = backend
         self._cipher = cipher
         self._mode = mode
