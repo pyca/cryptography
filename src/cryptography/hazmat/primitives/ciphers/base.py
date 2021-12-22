@@ -25,7 +25,7 @@ class CipherContext(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def update_into(self, data: bytes, buf) -> int:
+    def update_into(self, data: bytes, buf: bytes) -> int:
         """
         Processes the provided bytes and writes the resulting data into the
         provided buffer. Returns the number of bytes written.
@@ -122,7 +122,7 @@ class _CipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
-    def update_into(self, data: bytes, buf) -> int:
+    def update_into(self, data: bytes, buf: bytes) -> int:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update_into(data, buf)
@@ -162,7 +162,7 @@ class _AEADCipherContext(object):
         self._check_limit(len(data))
         return self._ctx.update(data)
 
-    def update_into(self, data: bytes, buf) -> int:
+    def update_into(self, data: bytes, buf: bytes) -> int:
         self._check_limit(len(data))
         return self._ctx.update_into(data, buf)
 

@@ -149,7 +149,7 @@ class _CipherContext(object):
         n = self.update_into(data, buf)
         return bytes(buf[:n])
 
-    def update_into(self, data: bytes, buf) -> int:
+    def update_into(self, data: bytes, buf: bytes) -> int:
         total_data_len = len(data)
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
