@@ -1574,31 +1574,6 @@ class Backend(BackendInterface):
         # like Raw, CompressedPoint, UncompressedPoint
         raise ValueError("format is invalid with this key")
 
-    def _parameter_bytes(self, encoding, format, cdata):
-        if encoding is serialization.Encoding.OpenSSH:
-            raise TypeError("OpenSSH encoding is not supported")
-
-        # Only DH is supported here currently.
-        q = self._ffi.new("BIGNUM **")
-        self._lib.DH_get0_pqg(cdata, self._ffi.NULL, q, self._ffi.NULL)
-        if encoding is serialization.Encoding.PEM:
-            if q[0] != self._ffi.NULL:
-                write_bio = self._lib.PEM_write_bio_DHxparams
-            else:
-                write_bio = self._lib.PEM_write_bio_DHparams
-        elif encoding is serialization.Encoding.DER:
-            if q[0] != self._ffi.NULL:
-                write_bio = self._lib.Cryptography_i2d_DHxparams_bio
-            else:
-                write_bio = self._lib.i2d_DHparams_bio
-        else:
-            raise TypeError("encoding must be an item from the Encoding enum")
-
-        bio = self._create_mem_bio_gc()
-        res = write_bio(bio, cdata)
-        self.openssl_assert(res == 1)
-        return self._read_mem_bio(bio)
-
     def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
