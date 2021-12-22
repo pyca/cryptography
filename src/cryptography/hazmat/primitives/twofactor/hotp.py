@@ -39,8 +39,7 @@ def _generate_uri(
         if issuer
         else quote(account_name)
     )
-    parameters = urlencode(parameters)
-    return f"otpauth://{type_name}/{label}?{parameters}"
+    return f"otpauth://{type_name}/{label}?{urlencode(parameters)}"
 
 
 class HOTP(object):
