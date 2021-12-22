@@ -2,15 +2,27 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.exceptions import InvalidTag
 
+
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+    from cryptography.hazmat.primitives.ciphers.aead import (
+        AESCCM,
+        AESGCM,
+        AESOCB3,
+        ChaCha20Poly1305,
+    )
+
+    _AEAD_TYPES = typing.Union[AESCCM, AESGCM, AESOCB3, ChaCha20Poly1305]
 
 _ENCRYPT = 1
 _DECRYPT = 0
 
 
-def _aead_cipher_name(cipher):
+def _aead_cipher_name(cipher: "_AEAD_TYPES") -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
@@ -29,7 +41,15 @@ def _aead_cipher_name(cipher):
         return "aes-{}-gcm".format(len(cipher._key) * 8).encode("ascii")
 
 
-def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
+def _aead_setup(
+    backend: "Backend",
+    cipher_name: bytes,
+    key: bytes,
+    nonce: bytes,
+    tag: typing.Optional[bytes],
+    tag_len: int,
+    operation: int,
+):
     evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
     backend.openssl_assert(evp_cipher != backend._ffi.NULL)
     ctx = backend._lib.EVP_CIPHER_CTX_new()
@@ -53,6 +73,7 @@ def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
     )
     backend.openssl_assert(res != 0)
     if operation == _DECRYPT:
+        assert tag is not None
         res = backend._lib.EVP_CIPHER_CTX_ctrl(
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
         )
@@ -77,7 +98,7 @@ def _aead_setup(backend, cipher_name, key, nonce, tag, tag_len, operation):
     return ctx
 
 
-def _set_length(backend, ctx, data_len):
+def _set_length(backend: "Backend", ctx, data_len: int) -> None:
     intptr = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherUpdate(
         ctx, backend._ffi.NULL, intptr, backend._ffi.NULL, data_len
@@ -85,7 +106,7 @@ def _set_length(backend, ctx, data_len):
     backend.openssl_assert(res != 0)
 
 
-def _process_aad(backend, ctx, associated_data):
+def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
     outlen = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherUpdate(
         ctx, backend._ffi.NULL, outlen, associated_data, len(associated_data)
@@ -93,7 +114,7 @@ def _process_aad(backend, ctx, associated_data):
     backend.openssl_assert(res != 0)
 
 
-def _process_data(backend, ctx, data):
+def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
     outlen = backend._ffi.new("int *")
     buf = backend._ffi.new("unsigned char[]", len(data))
     res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
@@ -101,7 +122,14 @@ def _process_data(backend, ctx, data):
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
-def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
+def _encrypt(
+    backend: "Backend",
+    cipher: "_AEAD_TYPES",
+    nonce: bytes,
+    data: bytes,
+    associated_data: bytes,
+    tag_length: int,
+) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
     cipher_name = _aead_cipher_name(cipher)
@@ -133,7 +161,14 @@ def _encrypt(backend, cipher, nonce, data, associated_data, tag_length):
     return processed_data + tag
 
 
-def _decrypt(backend, cipher, nonce, data, associated_data, tag_length):
+def _decrypt(
+    backend: "Backend",
+    cipher: "_AEAD_TYPES",
+    nonce: bytes,
+    data: bytes,
+    associated_data: bytes,
+    tag_length: int,
+) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
     if len(data) < tag_length:
