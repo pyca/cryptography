@@ -184,10 +184,9 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
         signature_algorithm: ec.EllipticCurveSignatureAlgorithm,
     ) -> bytes:
         _check_signature_algorithm(signature_algorithm)
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend,
+        data, _ = _calculate_digest_and_algorithm(
             data,
-            signature_algorithm._algorithm,  # type: ignore[attr-defined]
+            signature_algorithm.algorithm,
         )
         return _ecdsa_sig_sign(self._backend, self, data)
 
@@ -285,8 +284,7 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         signature_algorithm: ec.EllipticCurveSignatureAlgorithm,
     ) -> None:
         _check_signature_algorithm(signature_algorithm)
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend,
+        data, _ = _calculate_digest_and_algorithm(
             data,
             signature_algorithm.algorithm,
         )

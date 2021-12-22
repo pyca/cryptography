@@ -2,12 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
 
-def _evp_pkey_derive(backend, evp_pkey, peer_public_key):
+def _evp_pkey_derive(backend, evp_pkey, peer_public_key) -> bytes:
     ctx = backend._lib.EVP_PKEY_CTX_new(evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(ctx != backend._ffi.NULL)
     ctx = backend._ffi.gc(ctx, backend._lib.EVP_PKEY_CTX_free)
@@ -28,9 +29,12 @@ def _evp_pkey_derive(backend, evp_pkey, peer_public_key):
     return backend._ffi.buffer(buf, keylen[0])[:]
 
 
-def _calculate_digest_and_algorithm(backend, data, algorithm):
+def _calculate_digest_and_algorithm(
+    data: bytes,
+    algorithm: typing.Union[Prehashed, hashes.HashAlgorithm],
+) -> typing.Tuple[bytes, hashes.HashAlgorithm]:
     if not isinstance(algorithm, Prehashed):
-        hash_ctx = hashes.Hash(algorithm, backend)
+        hash_ctx = hashes.Hash(algorithm)
         hash_ctx.update(data)
         data = hash_ctx.finalize()
     else:

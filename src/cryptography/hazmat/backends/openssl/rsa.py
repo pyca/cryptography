@@ -417,9 +417,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         padding: AsymmetricPadding,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> bytes:
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend, data, algorithm
-        )
+        data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
         return _rsa_sig_sign(self._backend, padding, algorithm, self, data)
 
 
@@ -475,9 +473,7 @@ class _RSAPublicKey(RSAPublicKey):
         padding: AsymmetricPadding,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> None:
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend, data, algorithm
-        )
+        data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
         return _rsa_sig_verify(
             self._backend, padding, algorithm, self, signature, data
         )
