@@ -407,9 +407,17 @@ class EllipticCurvePublicNumbers(object):
         else:
             raise ValueError("Unsupported elliptic curve point type")
 
-    curve = property(lambda self: self._curve)
-    x = property(lambda self: self._x)
-    y = property(lambda self: self._y)
+    @property
+    def curve(self) -> EllipticCurve:
+        return self._curve
+
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def y(self) -> int:
+        return self._y
 
     def __eq__(self, other):
         if not isinstance(other, EllipticCurvePublicNumbers):
@@ -460,8 +468,13 @@ class EllipticCurvePrivateNumbers(object):
 
         return ossl.load_elliptic_curve_private_numbers(self)
 
-    private_value = property(lambda self: self._private_value)
-    public_numbers = property(lambda self: self._public_numbers)
+    @property
+    def private_value(self) -> int:
+        return self._private_value
+
+    @property
+    def public_numbers(self) -> EllipticCurvePublicNumbers:
+        return self._public_numbers
 
     def __eq__(self, other):
         if not isinstance(other, EllipticCurvePrivateNumbers):

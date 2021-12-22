@@ -138,9 +138,17 @@ class DSAParameterNumbers(object):
         self._q = q
         self._g = g
 
-    p = property(lambda self: self._p)
-    q = property(lambda self: self._q)
-    g = property(lambda self: self._g)
+    @property
+    def p(self) -> int:
+        return self._p
+
+    @property
+    def q(self) -> int:
+        return self._q
+
+    @property
+    def g(self) -> int:
+        return self._g
 
     def parameters(self, backend: typing.Any = None) -> DSAParameters:
         from cryptography.hazmat.backends.openssl.backend import (
@@ -178,8 +186,13 @@ class DSAPublicNumbers(object):
         self._y = y
         self._parameter_numbers = parameter_numbers
 
-    y = property(lambda self: self._y)
-    parameter_numbers = property(lambda self: self._parameter_numbers)
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def parameter_numbers(self) -> DSAParameterNumbers:
+        return self._parameter_numbers
 
     def public_key(self, backend: typing.Any = None) -> DSAPublicKey:
         from cryptography.hazmat.backends.openssl.backend import (
@@ -219,8 +232,13 @@ class DSAPrivateNumbers(object):
         self._public_numbers = public_numbers
         self._x = x
 
-    x = property(lambda self: self._x)
-    public_numbers = property(lambda self: self._public_numbers)
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def public_numbers(self) -> DSAPublicNumbers:
+        return self._public_numbers
 
     def private_key(self, backend: typing.Any = None) -> DSAPrivateKey:
         from cryptography.hazmat.backends.openssl.backend import (
