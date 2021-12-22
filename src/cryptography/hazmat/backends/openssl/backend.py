@@ -63,6 +63,7 @@ from cryptography.hazmat.bindings._rust import (
 )
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
     dsa,
@@ -76,6 +77,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
     PSS,
 )
+from cryptography.hazmat.primitives.ciphers import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -95,6 +97,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CTR,
     ECB,
     GCM,
+    Mode,
     OFB,
     XTS,
 )
@@ -183,15 +186,19 @@ class Backend(BackendInterface):
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<OpenSSLBackend(version: {}, FIPS: {})>".format(
             self.openssl_version_text(), self._fips_enabled
         )
 
-    def openssl_assert(self, ok, errors=None):
+    def openssl_assert(
+        self,
+        ok: bool,
+        errors: typing.Optional[typing.List[binding._OpenSSLError]] = None,
+    ) -> None:
         return binding._openssl_assert(self._lib, ok, errors=errors)
 
-    def _is_fips_enabled(self):
+    def _is_fips_enabled(self) -> bool:
         if self._lib.Cryptography_HAS_300_FIPS:
             mode = self._lib.EVP_default_properties_is_fips_enabled(
                 self._ffi.NULL
@@ -204,14 +211,14 @@ class Backend(BackendInterface):
             self._lib.ERR_clear_error()
         return bool(mode)
 
-    def _enable_fips(self):
+    def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
         self._binding._enable_fips()
         assert self._is_fips_enabled()
         self._fips_enabled = self._is_fips_enabled()
 
-    def activate_builtin_random(self):
+    def activate_builtin_random(self) -> None:
         if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             # Obtain a new structural reference.
             e = self._lib.ENGINE_get_default_RAND()
@@ -244,7 +251,7 @@ class Backend(BackendInterface):
             res = self._lib.ENGINE_finish(e)
             self.openssl_assert(res == 1)
 
-    def activate_osrandom_engine(self):
+    def activate_osrandom_engine(self) -> None:
         if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             # Unregister and free the current engine.
             self.activate_builtin_random()
@@ -256,7 +263,7 @@ class Backend(BackendInterface):
             res = self._lib.RAND_set_rand_method(self._ffi.NULL)
             self.openssl_assert(res == 1)
 
-    def osrandom_engine_implementation(self):
+    def osrandom_engine_implementation(self) -> str:
         buf = self._ffi.new("char[]", 64)
         with self._get_osurandom_engine() as e:
             res = self._lib.ENGINE_ctrl_cmd(
@@ -265,7 +272,7 @@ class Backend(BackendInterface):
             self.openssl_assert(res > 0)
         return self._ffi.string(buf).decode("ascii")
 
-    def openssl_version_text(self):
+    def openssl_version_text(self) -> str:
         """
         Friendly string name of the loaded OpenSSL library. This is not
         necessarily the same version as it was compiled against.
@@ -276,10 +283,12 @@ class Backend(BackendInterface):
             self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
         ).decode("ascii")
 
-    def openssl_version_number(self):
+    def openssl_version_number(self) -> int:
         return self._lib.OpenSSL_version_num()
 
-    def create_hmac_ctx(self, key, algorithm):
+    def create_hmac_ctx(
+        self, key: bytes, algorithm: hashes.HashAlgorithm
+    ) -> _HMACContext:
         return _HMACContext(self, key, algorithm)
 
     def _evp_md_from_algorithm(self, algorithm):
@@ -298,30 +307,32 @@ class Backend(BackendInterface):
         self.openssl_assert(evp_md != self._ffi.NULL)
         return evp_md
 
-    def hash_supported(self, algorithm):
+    def hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and not isinstance(algorithm, self._fips_hashes):
             return False
 
         evp_md = self._evp_md_from_algorithm(algorithm)
         return evp_md != self._ffi.NULL
 
-    def scrypt_supported(self):
+    def scrypt_supported(self) -> bool:
         if self._fips_enabled:
             return False
         else:
             return self._lib.Cryptography_HAS_SCRYPT == 1
 
-    def hmac_supported(self, algorithm):
+    def hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         # FIPS mode still allows SHA1 for HMAC
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return True
 
         return self.hash_supported(algorithm)
 
-    def create_hash_ctx(self, algorithm):
+    def create_hash_ctx(
+        self, algorithm: hashes.HashAlgorithm
+    ) -> hashes.HashContext:
         return _HashContext(self, algorithm)
 
-    def cipher_supported(self, cipher, mode):
+    def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
         if self._fips_enabled:
             # FIPS mode requires AES or TripleDES, but only CBC/ECB allowed
             # in TripleDES mode.
@@ -402,7 +413,7 @@ class Backend(BackendInterface):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def pbkdf2_hmac_supported(self, algorithm):
+    def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hmac_supported(algorithm)
 
     def derive_pbkdf2_hmac(
@@ -479,7 +490,9 @@ class Backend(BackendInterface):
             self, rsa_cdata, evp_pkey, self._rsa_skip_check_key
         )
 
-    def generate_rsa_parameters_supported(self, public_exponent, key_size):
+    def generate_rsa_parameters_supported(
+        self, public_exponent: int, key_size: int
+    ) -> bool:
         return (
             public_exponent >= 3
             and public_exponent & 1 != 0
@@ -668,7 +681,7 @@ class Backend(BackendInterface):
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
-    def _oaep_hash_supported(self, algorithm):
+    def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return isinstance(
             algorithm,
             (
@@ -680,7 +693,7 @@ class Backend(BackendInterface):
             ),
         )
 
-    def rsa_padding_supported(self, padding):
+    def rsa_padding_supported(self, padding: AsymmetricPadding) -> bool:
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
@@ -797,10 +810,10 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return evp_pkey
 
-    def dsa_hash_supported(self, algorithm):
+    def dsa_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hash_supported(algorithm)
 
-    def cmac_algorithm_supported(self, algorithm):
+    def cmac_algorithm_supported(self, algorithm) -> bool:
         return self.cipher_supported(
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )
@@ -1123,7 +1136,7 @@ class Backend(BackendInterface):
                 errors,
             )
 
-    def elliptic_curve_supported(self, curve):
+    def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
         try:
             curve_nid = self._elliptic_curve_to_nid(curve)
         except UnsupportedAlgorithm:
@@ -1140,8 +1153,10 @@ class Backend(BackendInterface):
             return True
 
     def elliptic_curve_signature_algorithm_supported(
-        self, signature_algorithm, curve
-    ):
+        self,
+        signature_algorithm: ec.EllipticCurveSignatureAlgorithm,
+        curve: ec.EllipticCurve,
+    ) -> bool:
         # We only support ECDSA right now.
         if not isinstance(signature_algorithm, ec.ECDSA):
             return False
@@ -1264,7 +1279,9 @@ class Backend(BackendInterface):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+    def elliptic_curve_exchange_algorithm_supported(
+        self, algorithm: ec.ECDH, curve: ec.EllipticCurve
+    ) -> bool:
         if self._fips_enabled and not isinstance(
             curve, self._fips_ecdh_curves
         ):
@@ -1557,7 +1574,7 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
-    def dh_supported(self):
+    def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
     def generate_dh_parameters(self, generator, key_size):
@@ -1694,7 +1711,9 @@ class Backend(BackendInterface):
 
         return _DHParameters(self, dh_cdata)
 
-    def dh_parameters_supported(self, p, g, q=None):
+    def dh_parameters_supported(
+        self, p: int, g: int, q: typing.Optional[int] = None
+    ) -> bool:
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1716,7 +1735,7 @@ class Backend(BackendInterface):
 
         return codes[0] == 0
 
-    def dh_x942_serialization_supported(self):
+    def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_load_public_bytes(self, data):
@@ -1785,7 +1804,7 @@ class Backend(BackendInterface):
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X25519)
         return _X25519PrivateKey(self, evp_pkey)
 
-    def x25519_supported(self):
+    def x25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
@@ -1817,7 +1836,7 @@ class Backend(BackendInterface):
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X448)
         return _X448PrivateKey(self, evp_pkey)
 
-    def x448_supported(self):
+    def x448_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return (
@@ -1825,7 +1844,7 @@ class Backend(BackendInterface):
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
-    def ed25519_supported(self):
+    def ed25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
@@ -1862,7 +1881,7 @@ class Backend(BackendInterface):
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED25519)
         return _Ed25519PrivateKey(self, evp_pkey)
 
-    def ed448_supported(self):
+    def ed448_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return (
@@ -1928,7 +1947,7 @@ class Backend(BackendInterface):
             )
         return self._ffi.buffer(buf)[:]
 
-    def aead_cipher_supported(self, cipher):
+    def aead_cipher_supported(self, cipher) -> bool:
         cipher_name = aead._aead_cipher_name(cipher)
         if self._fips_enabled and cipher_name not in self._fips_aead:
             return False
@@ -2141,7 +2160,7 @@ class Backend(BackendInterface):
 
         return _Poly1305Context(self, key)
 
-    def pkcs7_supported(self):
+    def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
     def load_pem_pkcs7_certificates(self, data):

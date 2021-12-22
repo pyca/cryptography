@@ -9,10 +9,13 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized,
 )
+from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.primitives import hashes
 
 
 class HMAC(hashes.HashContext):
+    _ctx: typing.Optional[_HMACContext]
+
     def __init__(
         self,
         key: bytes,
