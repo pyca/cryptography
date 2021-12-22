@@ -3588,6 +3588,31 @@ class TestCertificateBuilder(object):
 
         assert ext.value == unrecognized
 
+    def test_extension_with_too_large_oid(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
+            .public_key(private_key.public_key())
+            .serial_number(123)
+            .add_extension(
+                x509.UnrecognizedExtension(
+                    x509.ObjectIdentifier(f"2.25.{2**128 - 1}"), b""
+                ),
+                critical=False,
+            )
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
 
 class TestCertificateSigningRequestBuilder(object):
     def test_sign_invalid_hash_algorithm(self, backend):

@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_uint_to_big_endian_bytes, PyAsn1Error};
+use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes, PyAsn1Error};
 use crate::x509;
 use crate::x509::{certificate, crl, oid, sct};
 
@@ -149,10 +149,7 @@ pub(crate) fn encode_extension(
     } else if oid == &*oid::EXTENDED_KEY_USAGE_OID {
         let mut oids = vec![];
         for el in ext.iter()? {
-            let oid = asn1::ObjectIdentifier::from_string(
-                el?.getattr("dotted_string")?.extract::<&str>()?,
-            )
-            .unwrap();
+            let oid = py_oid_to_oid(el?)?;
             oids.push(oid);
         }
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(oids))))
@@ -229,13 +226,7 @@ pub(crate) fn encode_extension(
                 None
             };
             policy_informations.push(certificate::PolicyInformation {
-                policy_identifier: asn1::ObjectIdentifier::from_string(
-                    py_policy_info
-                        .getattr("policy_identifier")?
-                        .getattr("dotted_string")?
-                        .extract()?,
-                )
-                .unwrap(),
+                policy_identifier: py_oid_to_oid(py_policy_info.getattr("policy_identifier")?)?,
                 policy_qualifiers: qualifiers,
             });
         }
