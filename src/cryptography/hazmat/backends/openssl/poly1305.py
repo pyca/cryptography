@@ -42,14 +42,14 @@ class _Poly1305Context(object):
         )
         self._backend.openssl_assert(res == 1)
 
-    def update(self, data):
+    def update(self, data: bytes) -> None:
         data_ptr = self._backend._ffi.from_buffer(data)
         res = self._backend._lib.EVP_DigestSignUpdate(
             self._ctx, data_ptr, len(data)
         )
         self._backend.openssl_assert(res != 0)
 
-    def finalize(self):
+    def finalize(self) -> bytes:
         buf = self._backend._ffi.new("unsigned char[]", _POLY1305_TAG_SIZE)
         outlen = self._backend._ffi.new("size_t *", _POLY1305_TAG_SIZE)
         res = self._backend._lib.EVP_DigestSignFinal(self._ctx, buf, outlen)
@@ -57,7 +57,7 @@ class _Poly1305Context(object):
         self._backend.openssl_assert(outlen[0] == _POLY1305_TAG_SIZE)
         return self._backend._ffi.buffer(buf)[: outlen[0]]
 
-    def verify(self, tag):
+    def verify(self, tag: bytes) -> None:
         mac = self.finalize()
         if not constant_time.bytes_eq(mac, tag):
             raise InvalidSignature("Value did not match computed tag.")

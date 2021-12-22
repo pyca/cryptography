@@ -2129,12 +2129,12 @@ class Backend(BackendInterface):
         self.openssl_assert(res > 0)
         return self._read_mem_bio(bio)
 
-    def poly1305_supported(self):
+    def poly1305_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return self._lib.Cryptography_HAS_POLY1305 == 1
 
-    def create_poly1305_ctx(self, key):
+    def create_poly1305_ctx(self, key) -> _Poly1305Context:
         utils._check_byteslike("key", key)
         if len(key) != _POLY1305_KEY_SIZE:
             raise ValueError("A poly1305 key is 32 bytes long")
