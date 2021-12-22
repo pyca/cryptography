@@ -326,13 +326,33 @@ class RSAPrivateNumbers(object):
         self._iqmp = iqmp
         self._public_numbers = public_numbers
 
-    p = property(lambda self: self._p)
-    q = property(lambda self: self._q)
-    d = property(lambda self: self._d)
-    dmp1 = property(lambda self: self._dmp1)
-    dmq1 = property(lambda self: self._dmq1)
-    iqmp = property(lambda self: self._iqmp)
-    public_numbers = property(lambda self: self._public_numbers)
+    @property
+    def p(self) -> int:
+        return self._p
+
+    @property
+    def q(self) -> int:
+        return self._q
+
+    @property
+    def d(self) -> int:
+        return self._d
+
+    @property
+    def dmp1(self) -> int:
+        return self._dmp1
+
+    @property
+    def dmq1(self) -> int:
+        return self._dmq1
+
+    @property
+    def iqmp(self) -> int:
+        return self._iqmp
+
+    @property
+    def public_numbers(self) -> "RSAPublicNumbers":
+        return self._public_numbers
 
     def private_key(self, backend: typing.Any = None) -> RSAPrivateKey:
         from cryptography.hazmat.backends.openssl.backend import (
@@ -380,8 +400,13 @@ class RSAPublicNumbers(object):
         self._e = e
         self._n = n
 
-    e = property(lambda self: self._e)
-    n = property(lambda self: self._n)
+    @property
+    def e(self) -> int:
+        return self._e
+
+    @property
+    def n(self) -> int:
+        return self._n
 
     def public_key(self, backend: typing.Any = None) -> RSAPublicKey:
         from cryptography.hazmat.backends.openssl.backend import (
