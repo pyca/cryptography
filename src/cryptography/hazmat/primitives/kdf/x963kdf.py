@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives import constant_time, hashes
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-def _int_to_u32be(n):
+def _int_to_u32be(n: int) -> bytes:
     return struct.pack(">I", n)
 
 
