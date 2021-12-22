@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 class _HMACContext(hashes.HashContext):
     def __init__(
         self,
-        backend: Backend,
+        backend: "Backend",
         key: bytes,
         algorithm: hashes.HashAlgorithm,
         ctx=None,

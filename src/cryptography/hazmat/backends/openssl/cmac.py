@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
 
 
 class _CMACContext(object):
-    def __init__(self, backend: Backend, algorithm, ctx=None):
+    def __init__(self, backend: "Backend", algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "This backend does not support CMAC.",
