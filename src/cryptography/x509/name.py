@@ -28,8 +28,7 @@ class _ASN1Type(utils.Enum):
 
 
 _ASN1_TYPE_TO_ENUM = {i.value: i for i in _ASN1Type}
-_SENTINEL = object()
-_NAMEOID_DEFAULT_TYPE = {
+_NAMEOID_DEFAULT_TYPE: typing.Dict[ObjectIdentifier, _ASN1Type] = {
     NameOID.COUNTRY_NAME: _ASN1Type.PrintableString,
     NameOID.JURISDICTION_COUNTRY_NAME: _ASN1Type.PrintableString,
     NameOID.SERIAL_NUMBER: _ASN1Type.PrintableString,
@@ -90,9 +89,9 @@ class NameAttribute(object):
         self,
         oid: ObjectIdentifier,
         value: typing.Union[str, bytes],
-        _type=_SENTINEL,
+        _type: typing.Optional[_ASN1Type] = None,
         *,
-        _validate=True,
+        _validate: bool = True,
     ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
@@ -132,7 +131,7 @@ class NameAttribute(object):
         # alternate types. This means when we see the sentinel value we need
         # to look up whether the OID has a non-UTF8 type. If it does, set it
         # to that. Otherwise, UTF8!
-        if _type == _SENTINEL:
+        if _type is None:
             _type = _NAMEOID_DEFAULT_TYPE.get(oid, _ASN1Type.UTF8String)
 
         if not isinstance(_type, _ASN1Type):
