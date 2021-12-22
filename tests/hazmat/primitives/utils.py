@@ -106,6 +106,12 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         # hex encoded.
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
 
+    mode = mode_factory(
+        binascii.unhexlify(params["iv"]),
+        binascii.unhexlify(params["tag"]),
+        len(binascii.unhexlify(params["tag"])),
+    )
+    assert isinstance(mode, GCM)
     if params.get("pt") is not None:
         plaintext = binascii.unhexlify(params["pt"])
     ciphertext = binascii.unhexlify(params["ct"])
@@ -113,11 +119,7 @@ def aead_test(backend, cipher_factory, mode_factory, params):
     if params.get("fail") is True:
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
-            mode_factory(
-                binascii.unhexlify(params["iv"]),
-                binascii.unhexlify(params["tag"]),
-                len(binascii.unhexlify(params["tag"])),
-            ),
+            mode,
             backend,
         )
         decryptor = cipher.decryptor()
@@ -291,9 +293,11 @@ def generate_aead_exception_test(cipher_factory, mode_factory):
 
 
 def aead_exception_test(backend, cipher_factory, mode_factory):
+    mode = mode_factory(binascii.unhexlify(b"0" * 24))
+    assert isinstance(mode, GCM)
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24)),
+        mode,
         backend,
     )
     encryptor = cipher.encryptor()
@@ -309,15 +313,18 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
         encryptor.update(b"b" * 16)
     with pytest.raises(AlreadyFinalized):
         encryptor.finalize()
+
+    mode2 = mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16)
+    assert isinstance(mode2, GCM)
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
+        mode2,
         backend,
     )
     decryptor = cipher.decryptor()
     decryptor.update(b"a" * 16)
     with pytest.raises(AttributeError):
-        decryptor.tag
+        decryptor.tag  # type: ignore[attr-defined]
 
 
 def generate_aead_tag_exception_test(cipher_factory, mode_factory):

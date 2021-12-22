@@ -8,7 +8,6 @@ from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
 )
-from cryptography.hazmat.primitives.ciphers.modes import ModeWithNonce
 
 
 def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
@@ -133,7 +132,7 @@ class SEED(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class ChaCha20(CipherAlgorithm, ModeWithNonce):
+class ChaCha20(CipherAlgorithm):
     name = "ChaCha20"
     key_sizes = frozenset([256])
 

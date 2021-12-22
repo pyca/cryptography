@@ -29,7 +29,7 @@ class Mode(metaclass=abc.ABCMeta):
         """
 
 
-class ModeWithInitializationVector(metaclass=abc.ABCMeta):
+class ModeWithInitializationVector(Mode, metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def initialization_vector(self) -> bytes:
         """
@@ -37,7 +37,7 @@ class ModeWithInitializationVector(metaclass=abc.ABCMeta):
         """
 
 
-class ModeWithTweak(metaclass=abc.ABCMeta):
+class ModeWithTweak(Mode, metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tweak(self) -> bytes:
         """
@@ -45,7 +45,7 @@ class ModeWithTweak(metaclass=abc.ABCMeta):
         """
 
 
-class ModeWithNonce(metaclass=abc.ABCMeta):
+class ModeWithNonce(Mode, metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def nonce(self) -> bytes:
         """
@@ -53,7 +53,7 @@ class ModeWithNonce(metaclass=abc.ABCMeta):
         """
 
 
-class ModeWithAuthenticationTag(metaclass=abc.ABCMeta):
+class ModeWithAuthenticationTag(Mode, metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tag(self) -> typing.Optional[bytes]:
         """
@@ -89,7 +89,7 @@ def _check_iv_and_key_length(self, algorithm):
     _check_iv_length(self, algorithm)
 
 
-class CBC(Mode, ModeWithInitializationVector):
+class CBC(ModeWithInitializationVector):
     name = "CBC"
 
     def __init__(self, initialization_vector: bytes):
@@ -103,7 +103,7 @@ class CBC(Mode, ModeWithInitializationVector):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-class XTS(Mode, ModeWithTweak):
+class XTS(ModeWithTweak):
     name = "XTS"
 
     def __init__(self, tweak: bytes):
@@ -132,7 +132,7 @@ class ECB(Mode):
     validate_for_algorithm = _check_aes_key_length
 
 
-class OFB(Mode, ModeWithInitializationVector):
+class OFB(ModeWithInitializationVector):
     name = "OFB"
 
     def __init__(self, initialization_vector: bytes):
@@ -146,7 +146,7 @@ class OFB(Mode, ModeWithInitializationVector):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-class CFB(Mode, ModeWithInitializationVector):
+class CFB(ModeWithInitializationVector):
     name = "CFB"
 
     def __init__(self, initialization_vector: bytes):
@@ -160,7 +160,7 @@ class CFB(Mode, ModeWithInitializationVector):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-class CFB8(Mode, ModeWithInitializationVector):
+class CFB8(ModeWithInitializationVector):
     name = "CFB8"
 
     def __init__(self, initialization_vector: bytes):
@@ -174,7 +174,7 @@ class CFB8(Mode, ModeWithInitializationVector):
     validate_for_algorithm = _check_iv_and_key_length
 
 
-class CTR(Mode, ModeWithNonce):
+class CTR(ModeWithNonce):
     name = "CTR"
 
     def __init__(self, nonce: bytes):
@@ -190,7 +190,7 @@ class CTR(Mode, ModeWithNonce):
         _check_nonce_length(self.nonce, self.name, algorithm)
 
 
-class GCM(Mode, ModeWithInitializationVector, ModeWithAuthenticationTag):
+class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
     name = "GCM"
     _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
     _MAX_AAD_BYTES = (2 ** 64) // 8

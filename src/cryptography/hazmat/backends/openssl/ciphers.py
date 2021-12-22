@@ -7,7 +7,7 @@ import typing
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import ciphers
-from cryptography.hazmat.primitives.ciphers import modes
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 
 if typing.TYPE_CHECKING:
@@ -71,7 +71,7 @@ class _CipherContext(object):
             iv_nonce = self._backend._ffi.from_buffer(mode.tweak)
         elif isinstance(mode, modes.ModeWithNonce):
             iv_nonce = self._backend._ffi.from_buffer(mode.nonce)
-        elif isinstance(cipher, modes.ModeWithNonce):
+        elif isinstance(cipher, algorithms.ChaCha20):
             iv_nonce = self._backend._ffi.from_buffer(cipher.nonce)
         else:
             iv_nonce = self._backend._ffi.NULL
