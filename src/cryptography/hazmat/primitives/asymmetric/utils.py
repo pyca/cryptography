@@ -19,4 +19,6 @@ class Prehashed(object):
         self._algorithm = algorithm
         self._digest_size = algorithm.digest_size
 
-    digest_size = property(lambda self: self._digest_size)
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
