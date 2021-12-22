@@ -156,9 +156,7 @@ class _DSAPrivateKey(dsa.DSAPrivateKey):
         data: bytes,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> bytes:
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend, data, algorithm
-        )
+        data, _ = _calculate_digest_and_algorithm(data, algorithm)
         return _dsa_sig_sign(self._backend, self, data)
 
 
@@ -222,7 +220,5 @@ class _DSAPublicKey(dsa.DSAPublicKey):
         data: bytes,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> None:
-        data, algorithm = _calculate_digest_and_algorithm(
-            self._backend, data, algorithm
-        )
+        data, _ = _calculate_digest_and_algorithm(data, algorithm)
         return _dsa_sig_verify(self._backend, self, signature, data)
