@@ -244,6 +244,7 @@ class TestCipherUpdateInto(object):
         pt = binascii.unhexlify(b"28286a321293253c3e0aa2704a278032")
         c = ciphers.Cipher(AES(key), modes.GCM(iv), backend)
         encryptor = c.encryptor()
+        assert isinstance(encryptor, ciphers.AEADEncryptionContext)
         buf = bytearray(len(pt) + 15)
         res = encryptor.update_into(pt, buf)
         assert res == len(pt)
@@ -251,6 +252,7 @@ class TestCipherUpdateInto(object):
         encryptor.finalize()
         c = ciphers.Cipher(AES(key), modes.GCM(iv, encryptor.tag), backend)
         decryptor = c.decryptor()
+        assert isinstance(decryptor, ciphers.AEADDecryptionContext)
         res = decryptor.update_into(ct, buf)
         decryptor.finalize()
         assert res == len(pt)
@@ -268,11 +270,13 @@ class TestCipherUpdateInto(object):
         encryptor = ciphers.Cipher(
             AES(key), modes.GCM(iv), backend
         ).encryptor()
+        assert isinstance(encryptor, ciphers.AEADEncryptionContext)
         ciphertext = encryptor.update(b"abc") + encryptor.finalize()
 
         decryptor = ciphers.Cipher(
             AES(key), modes.GCM(iv, tag=encryptor.tag), backend
         ).decryptor()
+        assert isinstance(decryptor, ciphers.AEADDecryptionContext)
         decryptor.update(ciphertext)
         decryptor.finalize()
         with pytest.raises(AlreadyFinalized):
@@ -325,14 +329,18 @@ class TestCipherUpdateInto(object):
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
         # Lower max chunk size so we can test chunking
-        monkeypatch.setattr(encryptor._ctx, "_MAX_CHUNK_SIZE", 40)
+        monkeypatch.setattr(
+            encryptor._ctx, "_MAX_CHUNK_SIZE", 40  # type: ignore[union-attr]
+        )
         buf = bytearray(527)
         pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
         processed = encryptor.update_into(pt, buf)
         assert processed == 512
         decryptor = c.decryptor()
         # Change max chunk size to verify alternate boundaries don't matter
-        monkeypatch.setattr(decryptor._ctx, "_MAX_CHUNK_SIZE", 73)
+        monkeypatch.setattr(
+            decryptor._ctx, "_MAX_CHUNK_SIZE", 73  # type: ignore[union-attr]
+        )
         decbuf = bytearray(527)
         decprocessed = decryptor.update_into(buf[:processed], decbuf)
         assert decbuf[:decprocessed] == pt
@@ -344,4 +352,8 @@ class TestCipherUpdateInto(object):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
-        backend._ffi.new("int *", encryptor._ctx._MAX_CHUNK_SIZE)
+        assert isinstance(encryptor, ciphers.CipherContext)
+        backend._ffi.new(
+            "int *",
+            encryptor._ctx._MAX_CHUNK_SIZE,  # type: ignore[attr-defined]
+        )

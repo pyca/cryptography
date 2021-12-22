@@ -46,6 +46,7 @@ class TestAESModeGCM(object):
             algorithms.AES(key), modes.GCM(iv), backend=backend
         )
         encryptor = cipher.encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         assert encryptor.tag == tag
@@ -61,6 +62,7 @@ class TestAESModeGCM(object):
             algorithms.AES(key), modes.GCM(iv), backend=backend
         )
         encryptor = cipher.encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert computed_ct == ct
         assert encryptor.tag == tag
@@ -71,9 +73,12 @@ class TestAESModeGCM(object):
             modes.GCM(b"\x01" * 16),
             backend=backend,
         ).encryptor()
-        encryptor._bytes_processed = modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        assert isinstance(encryptor, base.AEADEncryptionContext)
+        new_max = modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        encryptor._bytes_processed = new_max  # type: ignore[attr-defined]
         encryptor.update(b"0" * 16)
-        assert encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
+        max = modes.GCM._MAX_ENCRYPTED_BYTES
+        assert encryptor._bytes_processed == max  # type: ignore[attr-defined]
         with pytest.raises(ValueError):
             encryptor.update(b"0")
 
@@ -83,9 +88,14 @@ class TestAESModeGCM(object):
             modes.GCM(b"\x01" * 16),
             backend=backend,
         ).encryptor()
-        encryptor._aad_bytes_processed = modes.GCM._MAX_AAD_BYTES - 16
+        assert isinstance(encryptor, base.AEADEncryptionContext)
+        new_max = modes.GCM._MAX_AAD_BYTES - 16
+        encryptor._aad_bytes_processed = new_max  # type: ignore[attr-defined]
         encryptor.authenticate_additional_data(b"0" * 16)
-        assert encryptor._aad_bytes_processed == modes.GCM._MAX_AAD_BYTES
+        max = modes.GCM._MAX_AAD_BYTES
+        assert (
+            encryptor._aad_bytes_processed == max  # type: ignore[attr-defined]
+        )
         with pytest.raises(ValueError):
             encryptor.authenticate_additional_data(b"0")
 
@@ -95,12 +105,13 @@ class TestAESModeGCM(object):
             modes.GCM(b"\x01" * 16),
             backend=backend,
         ).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.update(b"0" * 8)
-        assert encryptor._bytes_processed == 8
+        assert encryptor._bytes_processed == 8  # type: ignore[attr-defined]
         encryptor.update(b"0" * 7)
-        assert encryptor._bytes_processed == 15
+        assert encryptor._bytes_processed == 15  # type: ignore[attr-defined]
         encryptor.update(b"0" * 18)
-        assert encryptor._bytes_processed == 33
+        assert encryptor._bytes_processed == 33  # type: ignore[attr-defined]
 
     def test_gcm_aad_increments(self, backend):
         encryptor = base.Cipher(
@@ -108,10 +119,15 @@ class TestAESModeGCM(object):
             modes.GCM(b"\x01" * 16),
             backend=backend,
         ).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.authenticate_additional_data(b"0" * 8)
-        assert encryptor._aad_bytes_processed == 8
+        assert (
+            encryptor._aad_bytes_processed == 8  # type: ignore[attr-defined]
+        )
         encryptor.authenticate_additional_data(b"0" * 18)
-        assert encryptor._aad_bytes_processed == 26
+        assert (
+            encryptor._aad_bytes_processed == 26  # type: ignore[attr-defined]
+        )
 
     def test_gcm_tag_decrypt_none(self, backend):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
@@ -121,12 +137,14 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
 
         decryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv), backend=backend
         ).decryptor()
+        assert isinstance(decryptor, base.AEADDecryptionContext)
         decryptor.authenticate_additional_data(aad)
         with pytest.raises(ValueError):
             decryptor.finalize()
@@ -139,6 +157,7 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
@@ -146,6 +165,7 @@ class TestAESModeGCM(object):
         decryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv, tag), backend=backend
         ).decryptor()
+        assert isinstance(decryptor, base.AEADDecryptionContext)
         decryptor.authenticate_additional_data(aad)
         decryptor.finalize()
 
@@ -157,6 +177,7 @@ class TestAESModeGCM(object):
         encryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv), backend=backend
         ).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
@@ -164,6 +185,7 @@ class TestAESModeGCM(object):
         decryptor = base.Cipher(
             algorithms.AES(key), modes.GCM(iv), backend=backend
         ).decryptor()
+        assert isinstance(decryptor, base.AEADDecryptionContext)
         decryptor.authenticate_additional_data(aad)
 
         decryptor.finalize_with_tag(tag)
@@ -173,6 +195,7 @@ class TestAESModeGCM(object):
         decryptor = base.Cipher(
             algorithms.AES(b"0" * 16), modes.GCM(b"0" * 12), backend=backend
         ).decryptor()
+        assert isinstance(decryptor, base.AEADDecryptionContext)
         with pytest.raises(ValueError):
             decryptor.finalize_with_tag(tag)
 
@@ -183,6 +206,7 @@ class TestAESModeGCM(object):
             modes.GCM(bytearray(b"\x00" * 12)),
             backend,
         ).encryptor()
+        assert isinstance(enc, base.AEADEncryptionContext)
         enc.authenticate_additional_data(bytearray(b"foo"))
         ct = enc.update(data) + enc.finalize()
         dec = base.Cipher(
@@ -190,6 +214,7 @@ class TestAESModeGCM(object):
             modes.GCM(bytearray(b"\x00" * 12), enc.tag),
             backend,
         ).decryptor()
+        assert isinstance(dec, base.AEADDecryptionContext)
         dec.authenticate_additional_data(bytearray(b"foo"))
         pt = dec.update(ct) + dec.finalize()
         assert pt == data
@@ -206,11 +231,13 @@ class TestAESModeGCM(object):
 
         payload = b"data"
         encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
+        assert isinstance(encryptor, base.AEADEncryptionContext)
         ct = encryptor.update(payload)
         encryptor.finalize()
         tag = encryptor.tag
 
         decryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).decryptor()
+        assert isinstance(decryptor, base.AEADDecryptionContext)
         pt = decryptor.update(ct)
 
         decryptor.finalize_with_tag(tag)

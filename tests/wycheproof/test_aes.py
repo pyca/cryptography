@@ -9,7 +9,13 @@ import pytest
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import (
+    AEADDecryptionContext,
+    AEADEncryptionContext,
+    Cipher,
+    algorithms,
+    modes,
+)
 from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
 
 from .utils import wycheproof_tests
@@ -62,6 +68,7 @@ def test_aes_gcm(backend, wycheproof):
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
     if wycheproof.valid or wycheproof.acceptable:
         enc = Cipher(algorithms.AES(key), modes.GCM(iv), backend).encryptor()
+        assert isinstance(enc, AEADEncryptionContext)
         enc.authenticate_additional_data(aad)
         computed_ct = enc.update(msg) + enc.finalize()
         computed_tag = enc.tag
@@ -72,6 +79,7 @@ def test_aes_gcm(backend, wycheproof):
             modes.GCM(iv, tag, min_tag_length=len(tag)),
             backend,
         ).decryptor()
+        assert isinstance(dec, AEADDecryptionContext)
         dec.authenticate_additional_data(aad)
         computed_msg = dec.update(ct) + dec.finalize()
         assert computed_msg == msg
@@ -81,6 +89,7 @@ def test_aes_gcm(backend, wycheproof):
             modes.GCM(iv, tag, min_tag_length=len(tag)),
             backend,
         ).decryptor()
+        assert isinstance(dec, AEADDecryptionContext)
         dec.authenticate_additional_data(aad)
         dec.update(ct)
         with pytest.raises(InvalidTag):

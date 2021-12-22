@@ -19,6 +19,8 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import (
+    AEADDecryptionContext,
+    AEADEncryptionContext,
     BlockCipherAlgorithm,
     Cipher,
     algorithms,
@@ -121,6 +123,7 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
+        assert isinstance(decryptor, AEADDecryptionContext)
         decryptor.authenticate_additional_data(aad)
         actual_plaintext = decryptor.update(ciphertext)
         with pytest.raises(InvalidTag):
@@ -132,6 +135,7 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         encryptor = cipher.encryptor()
+        assert isinstance(encryptor, AEADEncryptionContext)
         encryptor.authenticate_additional_data(aad)
         actual_ciphertext = encryptor.update(plaintext)
         actual_ciphertext += encryptor.finalize()
@@ -147,6 +151,7 @@ def aead_test(backend, cipher_factory, mode_factory, params):
             backend,
         )
         decryptor = cipher.decryptor()
+        assert isinstance(decryptor, AEADDecryptionContext)
         decryptor.authenticate_additional_data(aad)
         actual_plaintext = decryptor.update(ciphertext)
         actual_plaintext += decryptor.finalize()
@@ -297,6 +302,7 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
         backend,
     )
     encryptor = cipher.encryptor()
+    assert isinstance(encryptor, AEADEncryptionContext)
     encryptor.update(b"a" * 16)
     with pytest.raises(NotYetFinalized):
         encryptor.tag
@@ -315,9 +321,10 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
         backend,
     )
     decryptor = cipher.decryptor()
+    assert isinstance(decryptor, AEADDecryptionContext)
     decryptor.update(b"a" * 16)
     with pytest.raises(AttributeError):
-        decryptor.tag
+        decryptor.tag  # type: ignore[attr-defined]
 
 
 def generate_aead_tag_exception_test(cipher_factory, mode_factory):

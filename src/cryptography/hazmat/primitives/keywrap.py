@@ -120,10 +120,10 @@ def aes_key_unwrap_with_padding(
     if len(wrapped_key) == 16:
         # RFC 5649 - 4.2 - exactly two 64-bit blocks
         decryptor = Cipher(AES(wrapping_key), ECB()).decryptor()
-        b = decryptor.update(wrapped_key)
+        out = decryptor.update(wrapped_key)
         assert decryptor.finalize() == b""
-        a = b[:8]
-        data = b[8:]
+        a = out[:8]
+        data = out[8:]
         n = 1
     else:
         r = [wrapped_key[i : i + 8] for i in range(0, len(wrapped_key), 8)]
