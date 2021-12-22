@@ -19,6 +19,7 @@ class PKCS1v15(AsymmetricPadding):
 class PSS(AsymmetricPadding):
     MAX_LENGTH = object()
     name = "EMSA-PSS"
+    _salt_length: int
 
     def __init__(self, mgf, salt_length):
         self._mgf = mgf

@@ -1413,8 +1413,14 @@ class Backend(BackendInterface):
         return ctx
 
     def _private_key_bytes(
-        self, encoding, format, encryption_algorithm, key, evp_pkey, cdata
-    ):
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PrivateFormat,
+        encryption_algorithm: serialization.KeySerializationEncryption,
+        key,
+        evp_pkey,
+        cdata,
+    ) -> bytes:
         # validate argument types
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
@@ -1540,7 +1546,14 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
-    def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
+    def _public_key_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PublicFormat,
+        key,
+        evp_pkey,
+        cdata,
+    ) -> bytes:
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
         if not isinstance(format, serialization.PublicFormat):
