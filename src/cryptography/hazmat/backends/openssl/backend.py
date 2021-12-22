@@ -1153,7 +1153,9 @@ class Backend(BackendInterface):
             return True
 
     def elliptic_curve_signature_algorithm_supported(
-        self, signature_algorithm: ec.EllipticCurveSignatureAlgorithm, curve: ec.EllipticCurve
+        self,
+        signature_algorithm: ec.EllipticCurveSignatureAlgorithm,
+        curve: ec.EllipticCurve,
     ) -> bool:
         # We only support ECDSA right now.
         if not isinstance(signature_algorithm, ec.ECDSA):
@@ -1709,7 +1711,9 @@ class Backend(BackendInterface):
 
         return _DHParameters(self, dh_cdata)
 
-    def dh_parameters_supported(self, p: int, g: int, q: typing.Optional[int]=None) -> bool:
+    def dh_parameters_supported(
+        self, p: int, g: int, q: typing.Optional[int] = None
+    ) -> bool:
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
