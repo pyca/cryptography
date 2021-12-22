@@ -21,12 +21,12 @@ _OpenSSLErrorWithText = typing.NamedTuple(
 
 
 class _OpenSSLError(object):
-    def __init__(self, code, lib, reason):
+    def __init__(self, code: int, lib: int, reason: int):
         self._code = code
         self._lib = lib
         self._reason = reason
 
-    def _lib_reason_match(self, lib, reason):
+    def _lib_reason_match(self, lib: int, reason: int) -> bool:
         return lib == self.lib and reason == self.reason
 
     @property
@@ -42,15 +42,15 @@ class _OpenSSLError(object):
         return self._reason
 
 
-def _consume_errors(lib):
+def _consume_errors(lib) -> typing.List[_OpenSSLError]:
     errors = []
     while True:
-        code = lib.ERR_get_error()
+        code: int = lib.ERR_get_error()
         if code == 0:
             break
 
-        err_lib = lib.ERR_GET_LIB(code)
-        err_reason = lib.ERR_GET_REASON(code)
+        err_lib: int = lib.ERR_GET_LIB(code)
+        err_reason: int = lib.ERR_GET_REASON(code)
 
         errors.append(_OpenSSLError(code, err_lib, err_reason))
 
@@ -64,7 +64,7 @@ def _errors_with_text(
     for err in errors:
         buf = ffi.new("char[]", 256)
         lib.ERR_error_string_n(err.code, buf, len(buf))
-        err_text_reason = ffi.string(buf)
+        err_text_reason: bytes = ffi.string(buf)
 
         errors_with_text.append(
             _OpenSSLErrorWithText(
