@@ -4823,7 +4823,11 @@ class TestNameAttribute(object):
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(NameOID.COMMON_NAME, "common", "notanenum")
+            x509.NameAttribute(
+                NameOID.COMMON_NAME,
+                "common",
+                "notanenum",  # type:ignore[arg-type]
+            )
 
     def test_eq(self):
         assert x509.NameAttribute(
