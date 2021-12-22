@@ -79,10 +79,10 @@ class TestOpenSSL(object):
         assert backend.openssl_version_number() > 0
 
     def test_supports_cipher(self):
-        assert backend.cipher_supported(
-            DummyCipherAlgorithm(),
-            DummyMode()
-        ) is False
+        assert (
+            backend.cipher_supported(DummyCipherAlgorithm(), DummyMode())
+            is False
+        )
 
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
