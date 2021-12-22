@@ -20,7 +20,7 @@ class DummyCipherAlgorithm(CipherAlgorithm):
 
 
 class DummyBlockCipherAlgorithm(DummyCipherAlgorithm, BlockCipherAlgorithm):
-    def __init__(self, _):
+    def __init__(self, _: object):
         pass
 
     name = "dummy-block-cipher"
