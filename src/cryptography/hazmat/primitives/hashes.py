@@ -65,6 +65,8 @@ class ExtendableOutputFunction(metaclass=abc.ABCMeta):
 
 
 class Hash(HashContext):
+    _ctx: typing.Optional[HashContext]
+
     def __init__(
         self,
         algorithm: HashAlgorithm,

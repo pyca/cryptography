@@ -57,7 +57,9 @@ def _consume_errors(lib):
     return errors
 
 
-def _errors_with_text(errors):
+def _errors_with_text(
+    errors: typing.List[_OpenSSLError],
+) -> typing.List[_OpenSSLErrorWithText]:
     errors_with_text = []
     for err in errors:
         buf = ffi.new("char[]", 256)
@@ -77,7 +79,9 @@ def _consume_errors_with_text(lib):
     return _errors_with_text(_consume_errors(lib))
 
 
-def _openssl_assert(lib, ok, errors=None):
+def _openssl_assert(
+    lib, ok: bool, errors: typing.Optional[typing.List[_OpenSSLError]] = None
+) -> None:
     if not ok:
         if errors is None:
             errors = _consume_errors(lib)
