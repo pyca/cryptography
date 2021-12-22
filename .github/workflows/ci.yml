@@ -63,6 +63,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
+        id: setup-python
         uses: actions/setup-python@v2.3.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
@@ -97,7 +98,7 @@ jobs:
           path: ${{ github.workspace }}/osslcache
           # When altering the openssl build process you may need to increment the value on the end of this cache key
           # so that you can prevent it from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-2
+          key: ${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-2
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/workflows/build_openssl.sh
