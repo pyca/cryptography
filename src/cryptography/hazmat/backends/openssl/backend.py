@@ -291,7 +291,7 @@ class Backend(BackendInterface):
     ) -> _HMACContext:
         return _HMACContext(self, key, algorithm)
 
-    def _evp_md_from_algorithm(self, algorithm):
+    def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":
             alg = "{}{}".format(
                 algorithm.name, algorithm.digest_size * 8
@@ -302,7 +302,7 @@ class Backend(BackendInterface):
         evp_md = self._lib.EVP_get_digestbyname(alg)
         return evp_md
 
-    def _evp_md_non_null_from_algorithm(self, algorithm):
+    def _evp_md_non_null_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         evp_md = self._evp_md_from_algorithm(algorithm)
         self.openssl_assert(evp_md != self._ffi.NULL)
         return evp_md
@@ -358,7 +358,7 @@ class Backend(BackendInterface):
             )
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
-    def _register_default_ciphers(self):
+    def _register_default_ciphers(self) -> None:
         for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8, GCM]:
             self.register_cipher_adapter(
                 AES,
@@ -417,8 +417,13 @@ class Backend(BackendInterface):
         return self.hmac_supported(algorithm)
 
     def derive_pbkdf2_hmac(
-        self, algorithm, length, salt, iterations, key_material
-    ):
+        self,
+        algorithm: hashes.HashAlgorithm,
+        length: int,
+        salt: bytes,
+        iterations: int,
+        key_material: bytes,
+    ) -> bytes:
         buf = self._ffi.new("unsigned char[]", length)
         evp_md = self._evp_md_non_null_from_algorithm(algorithm)
         key_material_ptr = self._ffi.from_buffer(key_material)
@@ -435,13 +440,15 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def _consume_errors(self):
+    def _consume_errors(self) -> typing.List[binding._OpenSSLError]:
         return binding._consume_errors(self._lib)
 
-    def _consume_errors_with_text(self):
+    def _consume_errors_with_text(
+        self,
+    ) -> typing.List[binding._OpenSSLErrorWithText]:
         return binding._consume_errors_with_text(self._lib)
 
-    def _bn_to_int(self, bn):
+    def _bn_to_int(self, bn) -> int:
         assert bn != self._ffi.NULL
         self.openssl_assert(not self._lib.BN_is_negative(bn))
 
@@ -453,7 +460,7 @@ class Backend(BackendInterface):
         val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
         return val
 
-    def _int_to_bn(self, num, bn=None):
+    def _int_to_bn(self, num: int, bn=None):
         """
         Converts a python integer to a BIGNUM. The returned BIGNUM will not
         be garbage collected (to support adding them to structs that take
@@ -470,7 +477,7 @@ class Backend(BackendInterface):
         self.openssl_assert(bn_ptr != self._ffi.NULL)
         return bn_ptr
 
-    def generate_rsa_private_key(self, public_exponent, key_size):
+    def generate_rsa_private_key(self, public_exponent: int, key_size: int):
         rsa._verify_rsa_parameters(public_exponent, key_size)
 
         rsa_cdata = self._lib.RSA_new()
@@ -1127,13 +1134,13 @@ class Backend(BackendInterface):
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            errors = binding._errors_with_text(errors)
+            errors_with_text = binding._errors_with_text(errors)
             raise ValueError(
                 "Could not deserialize key data. The data may be in an "
                 "incorrect format, it may be encrypted with an unsupported "
                 "algorithm, or it may be an unsupported key type (e.g. EC "
                 "curves with explicit parameters).",
-                errors,
+                errors_with_text,
             )
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
