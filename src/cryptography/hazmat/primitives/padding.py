@@ -109,10 +109,10 @@ class PKCS7(object):
         _byte_padding_check(block_size)
         self.block_size = block_size
 
-    def padder(self):
+    def padder(self) -> PaddingContext:
         return _PKCS7PaddingContext(self.block_size)
 
-    def unpadder(self):
+    def unpadder(self) -> PaddingContext:
         return _PKCS7UnpaddingContext(self.block_size)
 
 
