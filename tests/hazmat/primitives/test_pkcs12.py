@@ -300,7 +300,7 @@ class TestPKCS12Creation(object):
             p12, password, backend
         )
         assert parsed_cert == cert
-        assert parsed_key is not None
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
@@ -319,7 +319,7 @@ class TestPKCS12Creation(object):
             p12, None, backend
         )
         assert parsed_cert == cert
-        assert parsed_key is not None
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == [cert2, cert3]
 
@@ -363,7 +363,7 @@ class TestPKCS12Creation(object):
             p12, None, backend
         )
         assert parsed_cert is None
-        assert parsed_key is not None
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 

@@ -69,13 +69,21 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
+    ed448,
     rsa,
+    x25519,
+    x448,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
     OAEP,
     PKCS1v15,
     PSS,
+)
+from cryptography.hazmat.primitives.asymmetric.types import (
+    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
+    PRIVATE_KEY_TYPES,
+    PUBLIC_KEY_TYPES,
 )
 from cryptography.hazmat.primitives.ciphers import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -106,8 +114,8 @@ from cryptography.hazmat.primitives.serialization import pkcs7, ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
+    _ALLOWED_PKCS12_TYPES,
 )
-from cryptography.x509.base import PUBLIC_KEY_TYPES
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -606,7 +614,7 @@ class Backend(BackendInterface):
         bio_data = self._ffi.buffer(buf[0], buf_len)[:]
         return bio_data
 
-    def _evp_pkey_to_private_key(self, evp_pkey):
+    def _evp_pkey_to_private_key(self, evp_pkey) -> PRIVATE_KEY_TYPES:
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata
         pointer.
@@ -651,7 +659,7 @@ class Backend(BackendInterface):
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
-    def _evp_pkey_to_public_key(self, evp_pkey):
+    def _evp_pkey_to_public_key(self, evp_pkey) -> PUBLIC_KEY_TYPES:
         """
         Return the appropriate type of PublicKey given an evp_pkey cdata
         pointer.
@@ -846,7 +854,9 @@ class Backend(BackendInterface):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def load_pem_private_key(self, data, password):
+    def load_pem_private_key(
+        self, data: bytes, password: typing.Optional[bytes]
+    ) -> PRIVATE_KEY_TYPES:
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
             self._evp_pkey_to_private_key,
@@ -854,7 +864,7 @@ class Backend(BackendInterface):
             password,
         )
 
-    def load_pem_public_key(self, data):
+    def load_pem_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
         evp_pkey = self._lib.PEM_read_bio_PUBKEY(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
@@ -879,7 +889,7 @@ class Backend(BackendInterface):
             else:
                 self._handle_key_loading_error()
 
-    def load_pem_parameters(self, data):
+    def load_pem_parameters(self, data: bytes) -> dh.DHParameters:
         mem_bio = self._bytes_to_bio(data)
         # only DH is supported currently
         dh_cdata = self._lib.PEM_read_bio_DHparams(
@@ -891,7 +901,9 @@ class Backend(BackendInterface):
         else:
             self._handle_key_loading_error()
 
-    def load_der_private_key(self, data, password):
+    def load_der_private_key(
+        self, data: bytes, password: typing.Optional[bytes]
+    ) -> PRIVATE_KEY_TYPES:
         # OpenSSL has a function called d2i_AutoPrivateKey that in theory
         # handles this automatically, however it doesn't handle encrypted
         # private keys. Instead we try to load the key two different ways.
@@ -929,7 +941,7 @@ class Backend(BackendInterface):
             self._consume_errors()
             return None
 
-    def load_der_public_key(self, data):
+    def load_der_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
         evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
         if evp_pkey != self._ffi.NULL:
@@ -952,7 +964,7 @@ class Backend(BackendInterface):
             else:
                 self._handle_key_loading_error()
 
-    def load_der_parameters(self, data):
+    def load_der_parameters(self, data: bytes) -> dh.DHParameters:
         mem_bio = self._bytes_to_bio(data)
         dh_cdata = self._lib.d2i_DHparams_bio(mem_bio.bio, self._ffi.NULL)
         if dh_cdata != self._ffi.NULL:
@@ -1019,7 +1031,9 @@ class Backend(BackendInterface):
         return rust_x509.load_der_x509_crl(self._read_mem_bio(bio))
 
     def _crl_is_signature_valid(
-        self, crl: x509.CertificateRevocationList, public_key: PUBLIC_KEY_TYPES
+        self,
+        crl: x509.CertificateRevocationList,
+        public_key: CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
     ) -> bool:
         if not isinstance(
             public_key,
@@ -1577,7 +1591,9 @@ class Backend(BackendInterface):
     def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
-    def generate_dh_parameters(self, generator, key_size):
+    def generate_dh_parameters(
+        self, generator: int, key_size: int
+    ) -> dh.DHParameters:
         if key_size < dh._MIN_MODULUS_SIZE:
             raise ValueError(
                 "DH key_size must be at least {} bits".format(
@@ -1605,8 +1621,12 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return evp_pkey
 
-    def generate_dh_private_key(self, parameters):
-        dh_key_cdata = _dh_params_dup(parameters._dh_cdata, self)
+    def generate_dh_private_key(
+        self, parameters: dh.DHParameters
+    ) -> dh.DHPrivateKey:
+        dh_key_cdata = _dh_params_dup(
+            parameters._dh_cdata, self  # type: ignore[attr-defined]
+        )
 
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)
@@ -1615,12 +1635,16 @@ class Backend(BackendInterface):
 
         return _DHPrivateKey(self, dh_key_cdata, evp_pkey)
 
-    def generate_dh_private_key_and_parameters(self, generator, key_size):
+    def generate_dh_private_key_and_parameters(
+        self, generator: int, key_size: int
+    ) -> dh.DHPrivateKey:
         return self.generate_dh_private_key(
             self.generate_dh_parameters(generator, key_size)
         )
 
-    def load_dh_private_numbers(self, numbers):
+    def load_dh_private_numbers(
+        self, numbers: dh.DHPrivateNumbers
+    ) -> dh.DHPrivateKey:
         parameter_numbers = numbers.public_numbers.parameter_numbers
 
         dh_cdata = self._lib.DH_new()
@@ -1666,7 +1690,9 @@ class Backend(BackendInterface):
 
         return _DHPrivateKey(self, dh_cdata, evp_pkey)
 
-    def load_dh_public_numbers(self, numbers):
+    def load_dh_public_numbers(
+        self, numbers: dh.DHPublicNumbers
+    ) -> dh.DHPublicKey:
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1693,7 +1719,9 @@ class Backend(BackendInterface):
 
         return _DHPublicKey(self, dh_cdata, evp_pkey)
 
-    def load_dh_parameter_numbers(self, numbers):
+    def load_dh_parameter_numbers(
+        self, numbers: dh.DHParameterNumbers
+    ) -> dh.DHParameters:
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1753,7 +1781,9 @@ class Backend(BackendInterface):
         self.openssl_assert(res == 1)
         return _X25519PublicKey(self, evp_pkey)
 
-    def x25519_load_private_bytes(self, data):
+    def x25519_load_private_bytes(
+        self, data: bytes
+    ) -> x25519.X25519PrivateKey:
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
         # switch this to EVP_PKEY_new_raw_private_key and drop the
         # zeroed_bytearray garbage.
@@ -1800,7 +1830,7 @@ class Backend(BackendInterface):
         evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
         return evp_pkey
 
-    def x25519_generate_key(self):
+    def x25519_generate_key(self) -> x25519.X25519PrivateKey:
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X25519)
         return _X25519PrivateKey(self, evp_pkey)
 
@@ -1809,7 +1839,7 @@ class Backend(BackendInterface):
             return False
         return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
 
-    def x448_load_public_bytes(self, data):
+    def x448_load_public_bytes(self, data: bytes) -> x448.X448PublicKey:
         if len(data) != 56:
             raise ValueError("An X448 public key is 56 bytes long")
 
@@ -1820,7 +1850,7 @@ class Backend(BackendInterface):
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
         return _X448PublicKey(self, evp_pkey)
 
-    def x448_load_private_bytes(self, data):
+    def x448_load_private_bytes(self, data: bytes) -> x448.X448PrivateKey:
         if len(data) != 56:
             raise ValueError("An X448 private key is 56 bytes long")
 
@@ -1832,7 +1862,7 @@ class Backend(BackendInterface):
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
         return _X448PrivateKey(self, evp_pkey)
 
-    def x448_generate_key(self):
+    def x448_generate_key(self) -> x448.X448PrivateKey:
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X448)
         return _X448PrivateKey(self, evp_pkey)
 
@@ -1849,7 +1879,9 @@ class Backend(BackendInterface):
             return False
         return not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
 
-    def ed25519_load_public_bytes(self, data):
+    def ed25519_load_public_bytes(
+        self, data: bytes
+    ) -> ed25519.Ed25519PublicKey:
         utils._check_bytes("data", data)
 
         if len(data) != ed25519._ED25519_KEY_SIZE:
@@ -1863,7 +1895,9 @@ class Backend(BackendInterface):
 
         return _Ed25519PublicKey(self, evp_pkey)
 
-    def ed25519_load_private_bytes(self, data):
+    def ed25519_load_private_bytes(
+        self, data: bytes
+    ) -> ed25519.Ed25519PrivateKey:
         if len(data) != ed25519._ED25519_KEY_SIZE:
             raise ValueError("An Ed25519 private key is 32 bytes long")
 
@@ -1877,7 +1911,7 @@ class Backend(BackendInterface):
 
         return _Ed25519PrivateKey(self, evp_pkey)
 
-    def ed25519_generate_key(self):
+    def ed25519_generate_key(self) -> ed25519.Ed25519PrivateKey:
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED25519)
         return _Ed25519PrivateKey(self, evp_pkey)
 
@@ -1889,7 +1923,7 @@ class Backend(BackendInterface):
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
-    def ed448_load_public_bytes(self, data):
+    def ed448_load_public_bytes(self, data: bytes) -> ed448.Ed448PublicKey:
         utils._check_bytes("data", data)
         if len(data) != _ED448_KEY_SIZE:
             raise ValueError("An Ed448 public key is 57 bytes long")
@@ -1902,7 +1936,7 @@ class Backend(BackendInterface):
 
         return _Ed448PublicKey(self, evp_pkey)
 
-    def ed448_load_private_bytes(self, data):
+    def ed448_load_private_bytes(self, data: bytes) -> ed448.Ed448PrivateKey:
         utils._check_byteslike("data", data)
         if len(data) != _ED448_KEY_SIZE:
             raise ValueError("An Ed448 private key is 57 bytes long")
@@ -1916,11 +1950,19 @@ class Backend(BackendInterface):
 
         return _Ed448PrivateKey(self, evp_pkey)
 
-    def ed448_generate_key(self):
+    def ed448_generate_key(self) -> ed448.Ed448PrivateKey:
         evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED448)
         return _Ed448PrivateKey(self, evp_pkey)
 
-    def derive_scrypt(self, key_material, salt, length, n, r, p):
+    def derive_scrypt(
+        self,
+        key_material: bytes,
+        salt: bytes,
+        length: int,
+        n: int,
+        r: int,
+        p: int,
+    ) -> bytes:
         buf = self._ffi.new("unsigned char[]", length)
         key_material_ptr = self._ffi.from_buffer(key_material)
         res = self._lib.EVP_PBE_scrypt(
@@ -1996,7 +2038,13 @@ class Backend(BackendInterface):
                 # Cast to a uint8_t * so we can assign by integer
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
-    def load_key_and_certificates_from_pkcs12(self, data, password):
+    def load_key_and_certificates_from_pkcs12(
+        self, data: bytes, password: typing.Optional[bytes]
+    ) -> typing.Tuple[
+        typing.Optional[PRIVATE_KEY_TYPES],
+        typing.Optional[x509.Certificate],
+        typing.List[x509.Certificate],
+    ]:
         pkcs12 = self.load_pkcs12(data, password)
         return (
             pkcs12.key,
@@ -2004,7 +2052,9 @@ class Backend(BackendInterface):
             [cert.certificate for cert in pkcs12.additional_certs],
         )
 
-    def load_pkcs12(self, data, password):
+    def load_pkcs12(
+        self, data: bytes, password: typing.Optional[bytes]
+    ) -> PKCS12KeyAndCertificates:
         if password is not None:
             utils._check_byteslike("password", password)
 
@@ -2081,8 +2131,13 @@ class Backend(BackendInterface):
         return PKCS12KeyAndCertificates(key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(
-        self, name, key, cert, cas, encryption_algorithm
-    ):
+        self,
+        name: typing.Optional[bytes],
+        key: typing.Optional[_ALLOWED_PKCS12_TYPES],
+        cert: typing.Optional[x509.Certificate],
+        cas: typing.Optional[typing.List[x509.Certificate]],
+        encryption_algorithm: serialization.KeySerializationEncryption,
+    ) -> bytes:
         password = None
         if name is not None:
             utils._check_bytes("name", name)
@@ -2126,7 +2181,11 @@ class Backend(BackendInterface):
         with self._zeroed_null_terminated_buf(password) as password_buf:
             with self._zeroed_null_terminated_buf(name) as name_buf:
                 ossl_cert = self._cert2ossl(cert) if cert else self._ffi.NULL
-                evp_pkey = key._evp_pkey if key else self._ffi.NULL
+                if key is not None:
+                    evp_pkey = key._evp_pkey  # type: ignore[union-attr]
+                else:
+                    evp_pkey = self._ffi.NULL
+
                 p12 = self._lib.PKCS12_create(
                     password_buf,
                     name_buf,
@@ -2153,7 +2212,7 @@ class Backend(BackendInterface):
             return False
         return self._lib.Cryptography_HAS_POLY1305 == 1
 
-    def create_poly1305_ctx(self, key) -> _Poly1305Context:
+    def create_poly1305_ctx(self, key: bytes) -> _Poly1305Context:
         utils._check_byteslike("key", key)
         if len(key) != _POLY1305_KEY_SIZE:
             raise ValueError("A poly1305 key is 32 bytes long")
@@ -2163,7 +2222,9 @@ class Backend(BackendInterface):
     def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
-    def load_pem_pkcs7_certificates(self, data):
+    def load_pem_pkcs7_certificates(
+        self, data: bytes
+    ) -> typing.List[x509.Certificate]:
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.PEM_read_bio_PKCS7(
@@ -2176,7 +2237,9 @@ class Backend(BackendInterface):
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
         return self._load_pkcs7_certificates(p7)
 
-    def load_der_pkcs7_certificates(self, data):
+    def load_der_pkcs7_certificates(
+        self, data: bytes
+    ) -> typing.List[x509.Certificate]:
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.d2i_PKCS7_bio(bio.bio, self._ffi.NULL)
@@ -2213,7 +2276,13 @@ class Backend(BackendInterface):
 
         return certs
 
-    def pkcs7_sign(self, builder, encoding, options):
+    def pkcs7_sign(
+        self,
+        builder: pkcs7.PKCS7SignatureBuilder,
+        encoding: serialization.Encoding,
+        options: typing.List[pkcs7.PKCS7Options],
+    ) -> bytes:
+        assert builder._data is not None
         bio = self._bytes_to_bio(builder._data)
         init_flags = self._lib.PKCS7_PARTIAL
         final_flags = 0
@@ -2263,7 +2332,11 @@ class Backend(BackendInterface):
             ossl_cert = self._cert2ossl(certificate)
             md = self._evp_md_non_null_from_algorithm(hash_algorithm)
             p7signerinfo = self._lib.PKCS7_sign_add_signer(
-                p7, ossl_cert, private_key._evp_pkey, md, signer_flags
+                p7,
+                ossl_cert,
+                private_key._evp_pkey,  # type: ignore[union-attr]
+                md,
+                signer_flags,
             )
             self.openssl_assert(p7signerinfo != self._ffi.NULL)
 
@@ -2303,15 +2376,15 @@ class Backend(BackendInterface):
 
 
 class GetCipherByName(object):
-    def __init__(self, fmt):
+    def __init__(self, fmt: str):
         self._fmt = fmt
 
-    def __call__(self, backend, cipher, mode):
+    def __call__(self, backend: Backend, cipher: CipherAlgorithm, mode: Mode):
         cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
         return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
-def _get_xts_cipher(backend, cipher, mode):
+def _get_xts_cipher(backend: Backend, cipher: AES, mode):
     cipher_name = "aes-{}-xts".format(cipher.key_size // 2)
     return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 

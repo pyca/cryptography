@@ -21,9 +21,9 @@ from cryptography.hazmat.primitives.asymmetric import (
     x448,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
+    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
+    CERTIFICATE_PRIVATE_KEY_TYPES,
     CERTIFICATE_PUBLIC_KEY_TYPES,
-    PRIVATE_KEY_TYPES as PRIVATE_KEY_TYPES,
-    PUBLIC_KEY_TYPES as PUBLIC_KEY_TYPES,
 )
 from cryptography.x509.extensions import (
     Extension,
@@ -421,7 +421,9 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def is_signature_valid(self, public_key: PUBLIC_KEY_TYPES) -> bool:
+    def is_signature_valid(
+        self, public_key: CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES
+    ) -> bool:
         """
         Verifies signature of revocation list against given public key.
         """
@@ -450,7 +452,7 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> PUBLIC_KEY_TYPES:
+    def public_key(self) -> CERTIFICATE_PUBLIC_KEY_TYPES:
         """
         Returns the public key
         """
@@ -632,7 +634,7 @@ class CertificateSigningRequestBuilder(object):
 
     def sign(
         self,
-        private_key: PRIVATE_KEY_TYPES,
+        private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Any = None,
     ) -> CertificateSigningRequest:
@@ -853,7 +855,7 @@ class CertificateBuilder(object):
 
     def sign(
         self,
-        private_key: PRIVATE_KEY_TYPES,
+        private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Any = None,
     ) -> Certificate:
@@ -1000,7 +1002,7 @@ class CertificateRevocationListBuilder(object):
 
     def sign(
         self,
-        private_key: PRIVATE_KEY_TYPES,
+        private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
         algorithm: typing.Optional[hashes.HashAlgorithm],
         backend: typing.Any = None,
     ) -> CertificateRevocationList:
