@@ -34,16 +34,13 @@ def _generate_uri(
 
     parameters.extend(extra_parameters)
 
-    uriparts = {
-        "type": type_name,
-        "label": (
-            "%s:%s" % (quote(issuer), quote(account_name))
-            if issuer
-            else quote(account_name)
-        ),
-        "parameters": urlencode(parameters),
-    }
-    return "otpauth://{type}/{label}?{parameters}".format(**uriparts)
+    label = (
+        "%s:%s" % (quote(issuer), quote(account_name))
+        if issuer
+        else quote(account_name)
+    )
+    parameters = urlencode(parameters)
+    return f"otpauth://{type_name}/{label}?{parameters}"
 
 
 class HOTP(object):
