@@ -20,7 +20,9 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-def _dsa_sig_sign(backend: "Backend", private_key, data: bytes) -> bytes:
+def _dsa_sig_sign(
+    backend: "Backend", private_key: "_DSAPrivateKey", data: bytes
+) -> bytes:
     sig_buf_len = backend._lib.DSA_size(private_key._dsa_cdata)
     sig_buf = backend._ffi.new("unsigned char[]", sig_buf_len)
     buflen = backend._ffi.new("unsigned int *")
