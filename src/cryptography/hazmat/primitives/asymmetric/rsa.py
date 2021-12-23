@@ -361,7 +361,7 @@ class RSAPrivateNumbers(object):
 
         return ossl.load_rsa_private_numbers(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         if not isinstance(other, RSAPrivateNumbers):
             return NotImplemented
 
@@ -375,10 +375,10 @@ class RSAPrivateNumbers(object):
             and self.public_numbers == other.public_numbers
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             (
                 self.p,
@@ -415,17 +415,17 @@ class RSAPublicNumbers(object):
 
         return ossl.load_rsa_public_numbers(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<RSAPublicNumbers(e={0.e}, n={0.n})>".format(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         if not isinstance(other, RSAPublicNumbers):
             return NotImplemented
 
         return self.e == other.e and self.n == other.n
 
-    def __ne__(self, other):
+    def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.e, self.n))
