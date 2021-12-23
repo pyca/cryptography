@@ -1205,7 +1205,9 @@ class Backend:
 
         return self.elliptic_curve_supported(curve)
 
-    def generate_elliptic_curve_private_key(self, curve):
+    def generate_elliptic_curve_private_key(
+        self, curve: ec.EllipticCurve
+    ) -> ec.EllipticCurvePrivateKey:
         """
         Generate a new private key on the named curve.
         """
@@ -1225,7 +1227,9 @@ class Backend:
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
             )
 
-    def load_elliptic_curve_private_numbers(self, numbers):
+    def load_elliptic_curve_private_numbers(
+        self, numbers: ec.EllipticCurvePrivateNumbers
+    ) -> ec.EllipticCurvePrivateKey:
         public = numbers.public_numbers
 
         ec_cdata = self._ec_key_new_by_curve(public.curve)
@@ -1246,7 +1250,9 @@ class Backend:
 
         return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
 
-    def load_elliptic_curve_public_numbers(self, numbers):
+    def load_elliptic_curve_public_numbers(
+        self, numbers: ec.EllipticCurvePublicNumbers
+    ) -> ec.EllipticCurvePublicKey:
         ec_cdata = self._ec_key_new_by_curve(numbers.curve)
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, numbers.x, numbers.y
@@ -1255,7 +1261,9 @@ class Backend:
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def load_elliptic_curve_public_bytes(self, curve, point_bytes):
+    def load_elliptic_curve_public_bytes(
+        self, curve: ec.EllipticCurve, point_bytes: bytes
+    ) -> ec.EllipticCurvePublicKey:
         ec_cdata = self._ec_key_new_by_curve(curve)
         group = self._lib.EC_KEY_get0_group(ec_cdata)
         self.openssl_assert(group != self._ffi.NULL)
@@ -1275,7 +1283,9 @@ class Backend:
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def derive_elliptic_curve_private_key(self, private_value, curve):
+    def derive_elliptic_curve_private_key(
+        self, private_value: int, curve: ec.EllipticCurve
+    ) -> ec.EllipticCurvePrivateKey:
         ec_cdata = self._ec_key_new_by_curve(curve)
 
         get_func, group = self._ec_key_determine_group_get_func(ec_cdata)

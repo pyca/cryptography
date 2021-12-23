@@ -57,9 +57,17 @@ class DHParameterNumbers(object):
 
         return ossl.load_dh_parameter_numbers(self)
 
-    p = property(lambda self: self._p)
-    g = property(lambda self: self._g)
-    q = property(lambda self: self._q)
+    @property
+    def p(self) -> int:
+        return self._p
+
+    @property
+    def g(self) -> int:
+        return self._g
+
+    @property
+    def q(self) -> typing.Optional[int]:
+        return self._q
 
 
 class DHPublicNumbers(object):
@@ -94,8 +102,13 @@ class DHPublicNumbers(object):
 
         return ossl.load_dh_public_numbers(self)
 
-    y = property(lambda self: self._y)
-    parameter_numbers = property(lambda self: self._parameter_numbers)
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def parameter_numbers(self) -> DHParameterNumbers:
+        return self._parameter_numbers
 
 
 class DHPrivateNumbers(object):
@@ -130,8 +143,13 @@ class DHPrivateNumbers(object):
 
         return ossl.load_dh_private_numbers(self)
 
-    public_numbers = property(lambda self: self._public_numbers)
-    x = property(lambda self: self._x)
+    @property
+    def public_numbers(self) -> DHPublicNumbers:
+        return self._public_numbers
+
+    @property
+    def x(self) -> int:
+        return self._x
 
 
 class DHParameters(metaclass=abc.ABCMeta):
