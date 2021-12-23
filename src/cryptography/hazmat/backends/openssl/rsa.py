@@ -33,6 +33,10 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
 )
 
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
+
 def _get_rsa_pss_salt_length(
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
@@ -47,7 +51,7 @@ def _get_rsa_pss_salt_length(
 
 
 def _enc_dec_rsa(
-    backend,
+    backend: "Backend",
     key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
     data: bytes,
     padding: AsymmetricPadding,
@@ -83,12 +87,14 @@ def _enc_dec_rsa(
 
 
 def _enc_dec_rsa_pkey_ctx(
-    backend,
+    backend: "Backend",
     key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
     data: bytes,
     padding_enum: int,
     padding: AsymmetricPadding,
 ) -> bytes:
+    init: typing.Callable[[typing.Any], int]
+    crypt: typing.Callable[[typing.Any, typing.Any, int, bytes, int], int]
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
         crypt = backend._lib.EVP_PKEY_encrypt
@@ -147,7 +153,12 @@ def _enc_dec_rsa_pkey_ctx(
     return resbuf
 
 
-def _rsa_sig_determine_padding(backend, key, padding, algorithm):
+def _rsa_sig_determine_padding(
+    backend: "Backend",
+    key: typing.Union["_RSAPrivateKey", "_RSAPublicKey"],
+    padding: AsymmetricPadding,
+    algorithm: typing.Optional[hashes.HashAlgorithm],
+) -> int:
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Expected provider of AsymmetricPadding.")
 
@@ -190,7 +201,13 @@ def _rsa_sig_determine_padding(backend, key, padding, algorithm):
 # any message digest algorithm. This is currently only valid for the PKCS1v15
 # padding type, where it means that the signature data is encoded/decoded
 # as provided, without being wrapped in a DigestInfo structure.
-def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
+def _rsa_sig_setup(
+    backend: "Backend",
+    padding: AsymmetricPadding,
+    algorithm: typing.Optional[hashes.HashAlgorithm],
+    key: typing.Union["_RSAPublicKey", "_RSAPrivateKey"],
+    init_func: typing.Callable[[typing.Any], int],
+):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(key._evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(pkey_ctx != backend._ffi.NULL)
@@ -221,6 +238,7 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
             _Reasons.UNSUPPORTED_PADDING,
         )
     if isinstance(padding, PSS):
+        assert isinstance(algorithm, hashes.HashAlgorithm)
         res = backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
             pkey_ctx, _get_rsa_pss_salt_length(padding, key, algorithm)
         )
@@ -235,7 +253,13 @@ def _rsa_sig_setup(backend, padding, algorithm, key, init_func):
     return pkey_ctx
 
 
-def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
+def _rsa_sig_sign(
+    backend: "Backend",
+    padding: AsymmetricPadding,
+    algorithm: hashes.HashAlgorithm,
+    private_key: "_RSAPrivateKey",
+    data: bytes,
+) -> bytes:
     pkey_ctx = _rsa_sig_setup(
         backend,
         padding,
@@ -261,7 +285,14 @@ def _rsa_sig_sign(backend, padding, algorithm, private_key, data):
     return backend._ffi.buffer(buf)[:]
 
 
-def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
+def _rsa_sig_verify(
+    backend: "Backend",
+    padding: AsymmetricPadding,
+    algorithm: hashes.HashAlgorithm,
+    public_key: "_RSAPublicKey",
+    signature: bytes,
+    data: bytes,
+) -> None:
     pkey_ctx = _rsa_sig_setup(
         backend,
         padding,
@@ -281,7 +312,13 @@ def _rsa_sig_verify(backend, padding, algorithm, public_key, signature, data):
         raise InvalidSignature
 
 
-def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
+def _rsa_sig_recover(
+    backend: "Backend",
+    padding: AsymmetricPadding,
+    algorithm: typing.Optional[hashes.HashAlgorithm],
+    public_key: "_RSAPublicKey",
+    signature: bytes,
+) -> bytes:
     pkey_ctx = _rsa_sig_setup(
         backend,
         padding,
@@ -312,7 +349,14 @@ def _rsa_sig_recover(backend, padding, algorithm, public_key, signature):
 
 
 class _RSAPrivateKey(RSAPrivateKey):
-    def __init__(self, backend, rsa_cdata, evp_pkey, _skip_check_key):
+    _evp_pkey: object
+    _rsa_cdata: object
+    _key_size: int
+
+    def __init__(
+        self, backend: "Backend", rsa_cdata, evp_pkey, _skip_check_key: bool
+    ):
+        res: int
         # RSA_check_key is slower in OpenSSL 3.0.0 due to improved
         # primality checking. In normal use this is unlikely to be a problem
         # since users don't load new keys constantly, but for TESTING we've
@@ -422,7 +466,11 @@ class _RSAPrivateKey(RSAPrivateKey):
 
 
 class _RSAPublicKey(RSAPublicKey):
-    def __init__(self, backend, rsa_cdata, evp_pkey):
+    _evp_pkey: object
+    _rsa_cdata: object
+    _key_size: int
+
+    def __init__(self, backend: "Backend", rsa_cdata, evp_pkey):
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
@@ -474,7 +522,7 @@ class _RSAPublicKey(RSAPublicKey):
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> None:
         data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
-        return _rsa_sig_verify(
+        _rsa_sig_verify(
             self._backend, padding, algorithm, self, signature, data
         )
 
