@@ -186,7 +186,7 @@ class KBKDFHMAC(KeyDerivationFunction):
     def _prf(self, key_material: bytes):
         return hmac.HMAC(key_material, self._algorithm)
 
-    def derive(self, key_material) -> bytes:
+    def derive(self, key_material: bytes) -> bytes:
         return self._deriver.derive(key_material, self._algorithm.digest_size)
 
     def verify(self, key_material: bytes, expected_key: bytes) -> None:

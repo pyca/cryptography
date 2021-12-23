@@ -541,7 +541,7 @@ class TestKBKDFCMAC(object):
     def test_unsupported_algorithm(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             KBKDFCMAC(
-                object,  # type: ignore[arg-type]
+                object,
                 Mode.CounterMode,
                 32,
                 4,
@@ -657,7 +657,7 @@ class TestKBKDFCMAC(object):
             backend=backend,
         )
         with pytest.raises(ValueError):
-            kdf.derive(b"material")  # type: ignore[arg-type]
+            kdf.derive(b"material")
 
     def test_buffer_protocol(self, backend):
         kdf = KBKDFCMAC(

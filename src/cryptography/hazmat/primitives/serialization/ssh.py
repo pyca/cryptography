@@ -624,10 +624,7 @@ def serialize_ssh_private_key(
         ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
 
     txt = _ssh_pem_encode(buf[:mlen])
-    # Ignore the following type because mypy wants
-    # Sequence[bytes] but what we're passing is fine.
-    # https://github.com/python/mypy/issues/9999
-    buf[ofs:mlen] = bytearray(slen)  # type: ignore
+    buf[ofs:mlen] = bytearray(slen)
     return txt
 
 
