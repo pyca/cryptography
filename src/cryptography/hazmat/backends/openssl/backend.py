@@ -415,10 +415,14 @@ class Backend(BackendInterface):
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
             )
 
-    def create_symmetric_encryption_ctx(self, cipher, mode):
+    def create_symmetric_encryption_ctx(
+        self, cipher: CipherAlgorithm, mode: Mode
+    ) -> _CipherContext:
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
-    def create_symmetric_decryption_ctx(self, cipher, mode):
+    def create_symmetric_decryption_ctx(
+        self, cipher: CipherAlgorithm, mode: Mode
+    ) -> _CipherContext:
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
