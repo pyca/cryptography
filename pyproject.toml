@@ -25,6 +25,8 @@ markers = [
 show_error_codes = true
 check_untyped_defs = true
 no_implicit_reexport = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [

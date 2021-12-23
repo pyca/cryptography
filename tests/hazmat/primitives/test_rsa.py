@@ -563,7 +563,7 @@ class TestRSASignature(object):
             private_key.sign(
                 b"msg",
                 padding.PSS(
-                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    mgf=DummyMGF(),
                     salt_length=padding.PSS.MAX_LENGTH,
                 ),
                 hashes.SHA1(),
@@ -952,7 +952,7 @@ class TestRSAVerification(object):
         # Hash algorithm cannot be absent for PSS padding
         with pytest.raises(TypeError):
             public_key.recover_data_from_signature(
-                signature, pss_padding, None  # type: ignore[arg-type]
+                signature, pss_padding, None
             )
 
         # Signature data recovery not supported with PSS

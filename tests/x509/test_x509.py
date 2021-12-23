@@ -4816,7 +4816,7 @@ class TestNameAttribute(object):
         with pytest.raises(TypeError):
             x509.NameAttribute(
                 x509.ObjectIdentifier("2.999.1"),
-                b"bytes",  # type:ignore[arg-type]
+                b"bytes",
             )
 
     def test_init_bitstring_not_bytes(self):
