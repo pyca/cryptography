@@ -2,10 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from cryptography.hazmat.backends.interfaces import Backend
 
-
-def default_backend() -> Backend:
+def default_backend():
     from cryptography.hazmat.backends.openssl.backend import backend
 
     return backend
