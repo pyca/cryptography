@@ -50,6 +50,15 @@ impl From<PyAsn1Error> for pyo3::PyErr {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
+pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier<'_>> {
+    match asn1::ObjectIdentifier::from_string(py_oid.getattr("dotted_string")?.extract::<&str>()?) {
+        Some(oid) => Ok(oid),
+        None => Err(pyo3::exceptions::PyValueError::new_err(
+            "ObjectIdentifier was not valid (perhaps its arcs were too large)",
+        )),
+    }
+}
+
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
     _oid: asn1::ObjectIdentifier<'a>,
