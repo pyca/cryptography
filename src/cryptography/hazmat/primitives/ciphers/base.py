@@ -15,6 +15,12 @@ from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
 
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.ciphers import (
+        _CipherContext as _BackendCipherContext,
+    )
+
+
 class CipherContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def update(self, data: bytes) -> bytes:
@@ -133,7 +139,11 @@ class Cipher(typing.Generic[Mode]):
         )
         return self._wrap_ctx(ctx, encrypt=False)
 
-    def _wrap_ctx(self, ctx, encrypt):
+    def _wrap_ctx(
+        self, ctx: "_BackendCipherContext", encrypt: bool
+    ) -> typing.Union[
+        AEADEncryptionContext, AEADDecryptionContext, CipherContext
+    ]:
         if isinstance(self.mode, modes.ModeWithAuthenticationTag):
             if encrypt:
                 return _AEADEncryptionContext(ctx)
@@ -155,7 +165,9 @@ _CIPHER_TYPE = Cipher[
 
 
 class _CipherContext(CipherContext):
-    def __init__(self, ctx):
+    _ctx: typing.Optional["_BackendCipherContext"]
+
+    def __init__(self, ctx: "_BackendCipherContext") -> None:
         self._ctx = ctx
 
     def update(self, data: bytes) -> bytes:
@@ -177,7 +189,10 @@ class _CipherContext(CipherContext):
 
 
 class _AEADCipherContext(AEADCipherContext):
-    def __init__(self, ctx):
+    _ctx: typing.Optional["_BackendCipherContext"]
+    _tag: typing.Optional[bytes]
+
+    def __init__(self, ctx: "_BackendCipherContext") -> None:
         self._ctx = ctx
         self._bytes_processed = 0
         self._aad_bytes_processed = 0
@@ -198,10 +213,14 @@ class _AEADCipherContext(AEADCipherContext):
 
     def update(self, data: bytes) -> bytes:
         self._check_limit(len(data))
+        # mypy needs this assert even though _check_limit already checked
+        assert self._ctx is not None
         return self._ctx.update(data)
 
     def update_into(self, data: bytes, buf: bytes) -> int:
         self._check_limit(len(data))
+        # mypy needs this assert even though _check_limit already checked
+        assert self._ctx is not None
         return self._ctx.update_into(data, buf)
 
     def finalize(self) -> bytes:
