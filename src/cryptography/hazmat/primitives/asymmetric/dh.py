@@ -6,7 +6,7 @@
 import abc
 import typing
 
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import _serialization
 
 
 _MIN_MODULUS_SIZE = 512
@@ -144,8 +144,8 @@ class DHParameters(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def parameter_bytes(
         self,
-        encoding: "serialization.Encoding",
-        format: "serialization.ParameterFormat",
+        encoding: _serialization.Encoding,
+        format: _serialization.ParameterFormat,
     ) -> bytes:
         """
         Returns the parameters serialized as bytes.
@@ -183,8 +183,8 @@ class DHPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_bytes(
         self,
-        encoding: "serialization.Encoding",
-        format: "serialization.PublicFormat",
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
     ) -> bytes:
         """
         Returns the key serialized as bytes.
@@ -229,9 +229,9 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def private_bytes(
         self,
-        encoding: "serialization.Encoding",
-        format: "serialization.PrivateFormat",
-        encryption_algorithm: "serialization.KeySerializationEncryption",
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
     ) -> bytes:
         """
         Returns the key serialized as bytes.

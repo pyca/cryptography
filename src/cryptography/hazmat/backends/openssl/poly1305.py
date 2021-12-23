@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import constant_time
@@ -11,8 +12,12 @@ _POLY1305_TAG_SIZE = 16
 _POLY1305_KEY_SIZE = 32
 
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
+
 class _Poly1305Context(object):
-    def __init__(self, backend, key):
+    def __init__(self, backend: "Backend", key: bytes) -> None:
         self._backend = backend
 
         key_ptr = self._backend._ffi.from_buffer(key)

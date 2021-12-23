@@ -16,8 +16,8 @@ from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.asymmetric.types import (
+    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
     CERTIFICATE_PUBLIC_KEY_TYPES,
-    PUBLIC_KEY_TYPES,
 )
 from cryptography.x509.certificate_transparency import (
     SignedCertificateTimestamp,
@@ -214,14 +214,14 @@ class AuthorityKeyIdentifier(ExtensionType):
         self._authority_cert_issuer = authority_cert_issuer
         self._authority_cert_serial_number = authority_cert_serial_number
 
-    # This takes PUBLIC_KEY_TYPES and not CERTIFICATE_PUBLIC_KEY_TYPES
-    # because an issuer cannot have an X25519/X448 key. This introduces
-    # some unfortunate asymmetry that requires typing users to explicitly
+    # This takes a subset of CERTIFICATE_PUBLIC_KEY_TYPES because an issuer
+    # cannot have an X25519/X448 key. This introduces some unfortunate
+    # asymmetry that requires typing users to explicitly
     # narrow their type, but we should make this accurate and not just
     # convenient.
     @classmethod
     def from_issuer_public_key(
-        cls, public_key: PUBLIC_KEY_TYPES
+        cls, public_key: CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES
     ) -> "AuthorityKeyIdentifier":
         digest = _key_identifier_from_public_key(public_key)
         return cls(

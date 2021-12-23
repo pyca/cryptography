@@ -142,7 +142,7 @@ def load_key_and_certificates(
     password: typing.Optional[bytes],
     backend: typing.Any = None,
 ) -> typing.Tuple[
-    typing.Optional[_ALLOWED_PKCS12_TYPES],
+    typing.Optional[PRIVATE_KEY_TYPES],
     typing.Optional[x509.Certificate],
     typing.List[x509.Certificate],
 ]:
