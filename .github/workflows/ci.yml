@@ -40,7 +40,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.5"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.2"}}
           - {VERSION: "3.10", TOXENV: "py310"}
-          - {VERSION: "3.11-dev", TOXENV: "py311"}
+          - {VERSION: "3.11-dev", TOXENV: "py311-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
           # Latest commit on the main-with-bazel branch, as of November 24, 2021
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "b9232f9e27e5668bc0414879dcdedb2a59ea75f2"}}
