@@ -100,10 +100,6 @@ class TestX25519Exchange(object):
             key.public_bytes(
                 None, serialization.PublicFormat.Raw  # type: ignore[arg-type]
             )
-        with pytest.raises(TypeError):
-            key.public_bytes(
-                serialization.Encoding.Raw  # type: ignore[call-arg]
-            )
 
     # These vectors are also from RFC 7748
     # https://tools.ietf.org/html/rfc7748#section-6.1
