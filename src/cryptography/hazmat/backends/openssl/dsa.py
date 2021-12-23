@@ -16,7 +16,11 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 
 
-def _dsa_sig_sign(backend, private_key, data):
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
+
+def _dsa_sig_sign(backend: "Backend", private_key, data: bytes) -> bytes:
     sig_buf_len = backend._lib.DSA_size(private_key._dsa_cdata)
     sig_buf = backend._ffi.new("unsigned char[]", sig_buf_len)
     buflen = backend._ffi.new("unsigned int *")
@@ -32,7 +36,12 @@ def _dsa_sig_sign(backend, private_key, data):
     return backend._ffi.buffer(sig_buf)[: buflen[0]]
 
 
-def _dsa_sig_verify(backend, public_key, signature, data):
+def _dsa_sig_verify(
+    backend: "Backend",
+    public_key: "_DSAPublicKey",
+    signature: bytes,
+    data: bytes,
+) -> None:
     # The first parameter passed to DSA_verify is unused by OpenSSL but
     # must be an integer.
     res = backend._lib.DSA_verify(
@@ -45,7 +54,7 @@ def _dsa_sig_verify(backend, public_key, signature, data):
 
 
 class _DSAParameters(dsa.DSAParameters):
-    def __init__(self, backend, dsa_cdata):
+    def __init__(self, backend: "Backend", dsa_cdata):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
 
@@ -68,7 +77,9 @@ class _DSAParameters(dsa.DSAParameters):
 
 
 class _DSAPrivateKey(dsa.DSAPrivateKey):
-    def __init__(self, backend, dsa_cdata, evp_pkey):
+    _key_size: int
+
+    def __init__(self, backend: "Backend", dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
         self._evp_pkey = evp_pkey
@@ -161,7 +172,9 @@ class _DSAPrivateKey(dsa.DSAPrivateKey):
 
 
 class _DSAPublicKey(dsa.DSAPublicKey):
-    def __init__(self, backend, dsa_cdata, evp_pkey):
+    _key_size: int
+
+    def __init__(self, backend: "Backend", dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
         self._evp_pkey = evp_pkey
