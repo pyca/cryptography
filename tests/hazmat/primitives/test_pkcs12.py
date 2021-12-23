@@ -367,6 +367,49 @@ class TestPKCS12Creation(object):
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
+    @pytest.mark.parametrize(
+        ("encryption_algorithm", "password"),
+        [
+            (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (serialization.NoEncryption(), None),
+        ],
+    )
+    def test_generate_cas_only(self, encryption_algorithm, password, backend):
+        cert, _ = _load_ca(backend)
+        p12 = serialize_key_and_certificates(
+            None, None, None, [cert], encryption_algorithm
+        )
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12, password, backend
+        )
+        assert parsed_cert is None
+        assert parsed_key is None
+        assert parsed_more_certs == [cert]
+
+    @pytest.mark.parametrize(
+        ("encryption_algorithm", "password"),
+        [
+            (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (serialization.NoEncryption(), None),
+        ],
+    )
+    def test_generate_cert_only(self, encryption_algorithm, password, backend):
+        # This test is a bit weird, but when passing *just* a cert
+        # with no corresponding key it will be encoded in the cas
+        # list. We have external consumers relying on this behavior
+        # (and the underlying structure makes no real distinction
+        # anyway) so this test ensures we don't break them.
+        cert, _ = _load_ca(backend)
+        p12 = serialize_key_and_certificates(
+            None, None, cert, [], encryption_algorithm
+        )
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12, password, backend
+        )
+        assert parsed_cert is None
+        assert parsed_key is None
+        assert parsed_more_certs == [cert]
+
     def test_must_supply_something(self):
         with pytest.raises(ValueError) as exc:
             serialize_key_and_certificates(
