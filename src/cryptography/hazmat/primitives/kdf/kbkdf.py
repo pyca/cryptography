@@ -183,7 +183,7 @@ class KBKDFHMAC(KeyDerivationFunction):
             fixed,
         )
 
-    def _prf(self, key_material: bytes):
+    def _prf(self, key_material: bytes) -> hmac.HMAC:
         return hmac.HMAC(key_material, self._algorithm)
 
     def derive(self, key_material: bytes) -> bytes:
@@ -231,7 +231,7 @@ class KBKDFCMAC(KeyDerivationFunction):
             fixed,
         )
 
-    def _prf(self, _: bytes):
+    def _prf(self, _: bytes) -> cmac.CMAC:
         assert self._cipher is not None
 
         return cmac.CMAC(self._cipher)

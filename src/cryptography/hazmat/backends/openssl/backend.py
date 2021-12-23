@@ -1782,7 +1782,7 @@ class Backend:
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
-    def x25519_load_public_bytes(self, data):
+    def x25519_load_public_bytes(self, data: bytes) -> x25519.X25519PublicKey:
         # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
         # switch this to EVP_PKEY_new_raw_public_key
         if len(data) != 32:
