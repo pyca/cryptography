@@ -12,7 +12,6 @@ from contextlib import contextmanager
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.backends.interfaces import Backend as BackendInterface
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
@@ -126,7 +125,7 @@ class _RC2(object):
     pass
 
 
-class Backend(BackendInterface):
+class Backend:
     """
     OpenSSL API binding interfaces.
     """

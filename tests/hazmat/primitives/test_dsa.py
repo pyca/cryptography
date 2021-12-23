@@ -10,7 +10,6 @@ import typing
 import pytest
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends.interfaces import Backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -37,7 +36,7 @@ _ALGORITHMS_DICT: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
 
 
 def _skip_if_dsa_not_supported(
-    backend: Backend,
+    backend: typing.Any,
     algorithm: hashes.HashAlgorithm,
     p: int,
     q: int,
