@@ -187,10 +187,6 @@ class Binding(object):
                         cls.lib, cls._default_provider != cls.ffi.NULL
                     )
 
-    @classmethod
-    def init_static_locks(cls):
-        cls._ensure_ffi_initialized()
-
 
 def _verify_openssl_version(lib):
     if (
@@ -229,6 +225,6 @@ def _verify_package_version(version):
 
 _verify_package_version(cryptography.__version__)
 
-Binding.init_static_locks()
+Binding._ensure_ffi_initialized()
 
 _verify_openssl_version(Binding.lib)
