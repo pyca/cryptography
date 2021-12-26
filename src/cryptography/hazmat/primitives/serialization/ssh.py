@@ -63,7 +63,15 @@ _PEM_RC = re.compile(_SK_START + b"(.*?)" + _SK_END, re.DOTALL)
 _PADDING = memoryview(bytearray(range(1, 1 + 16)))
 
 # ciphers that are actually used in key wrapping
-_SSH_CIPHERS = {
+_SSH_CIPHERS: typing.Dict[
+    bytes,
+    typing.Tuple[
+        typing.Type[algorithms.AES],
+        int,
+        typing.Union[typing.Type[modes.CTR], typing.Type[modes.CBC]],
+        int,
+    ],
+] = {
     b"aes256-ctr": (algorithms.AES, 32, modes.CTR, 16),
     b"aes256-cbc": (algorithms.AES, 32, modes.CBC, 16),
 }
@@ -79,7 +87,7 @@ _U32 = struct.Struct(b">I")
 _U64 = struct.Struct(b">Q")
 
 
-def _ecdsa_key_type(public_key):
+def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
     """Return SSH key_type and curve_name for private key."""
     curve = public_key.curve
     if curve.name not in _ECDSA_KEY_TYPE:
@@ -89,23 +97,32 @@ def _ecdsa_key_type(public_key):
     return _ECDSA_KEY_TYPE[curve.name]
 
 
-def _ssh_pem_encode(data, prefix=_SK_START + b"\n", suffix=_SK_END + b"\n"):
+def _ssh_pem_encode(
+    data: bytes,
+    prefix: bytes = _SK_START + b"\n",
+    suffix: bytes = _SK_END + b"\n",
+) -> bytes:
     return b"".join([prefix, _base64_encode(data), suffix])
 
 
-def _check_block_size(data, block_len):
+def _check_block_size(data: bytes, block_len: int) -> None:
     """Require data to be full blocks"""
     if not data or len(data) % block_len != 0:
         raise ValueError("Corrupt data: missing padding")
 
 
-def _check_empty(data):
+def _check_empty(data: bytes) -> None:
     """All data should have been parsed."""
     if data:
         raise ValueError("Corrupt data: unparsed data")
 
 
-def _init_cipher(ciphername, password, salt, rounds):
+def _init_cipher(
+    ciphername: bytes,
+    password: typing.Optional[bytes],
+    salt: bytes,
+    rounds: int,
+) -> Cipher[typing.Union[modes.CBC, modes.CTR]]:
     """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
