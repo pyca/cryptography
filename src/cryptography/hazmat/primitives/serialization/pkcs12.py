@@ -46,7 +46,7 @@ class PKCS12Certificate:
     def certificate(self) -> x509.Certificate:
         return self._cert
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, PKCS12Certificate):
             return NotImplemented
 
@@ -55,7 +55,7 @@ class PKCS12Certificate:
             and self.friendly_name == other.friendly_name
         )
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __hash__(self) -> int:
@@ -114,7 +114,7 @@ class PKCS12KeyAndCertificates:
     def additional_certs(self) -> typing.List[PKCS12Certificate]:
         return self._additional_certs
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, PKCS12KeyAndCertificates):
             return NotImplemented
 
@@ -124,7 +124,7 @@ class PKCS12KeyAndCertificates:
             and self.additional_certs == other.additional_certs
         )
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __hash__(self) -> int:

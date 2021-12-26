@@ -50,13 +50,13 @@ class ObjectIdentifier(object):
                 % (self._dotted_string)
             )
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
         return self.dotted_string == other.dotted_string
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __repr__(self) -> str:

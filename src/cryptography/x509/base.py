@@ -100,7 +100,7 @@ class Attribute:
     def __repr__(self) -> str:
         return "<Attribute(oid={}, value={!r})>".format(self.oid, self.value)
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Attribute):
             return NotImplemented
 
@@ -110,7 +110,7 @@ class Attribute:
             and self._type == other._type
         )
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __hash__(self) -> int:
