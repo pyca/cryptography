@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...doubles import (
     DummyAsymmetricPadding,
+    DummyBlockCipherAlgorithm,
     DummyCipherAlgorithm,
     DummyHashAlgorithm,
     DummyMode,
@@ -440,7 +441,7 @@ class TestOpenSSLRSA(object):
 class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            backend.create_cmac_ctx(DummyCipherAlgorithm())
+            backend.create_cmac_ctx(DummyBlockCipherAlgorithm(b"bad"))
 
 
 class TestOpenSSLSerializationWithOpenSSL(object):

@@ -84,7 +84,10 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     PRIVATE_KEY_TYPES,
     PUBLIC_KEY_TYPES,
 )
-from cryptography.hazmat.primitives.ciphers import CipherAlgorithm
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm,
+    CipherAlgorithm,
+)
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -854,7 +857,7 @@ class Backend:
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )
 
-    def create_cmac_ctx(self, algorithm):
+    def create_cmac_ctx(self, algorithm: BlockCipherAlgorithm) -> _CMACContext:
         return _CMACContext(self, algorithm)
 
     def load_pem_private_key(

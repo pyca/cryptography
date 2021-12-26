@@ -11,13 +11,19 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import ciphers
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+
 
 class CMAC(object):
+    _ctx: typing.Optional["_CMACContext"]
+    _algorithm: ciphers.BlockCipherAlgorithm
+
     def __init__(
         self,
         algorithm: ciphers.BlockCipherAlgorithm,
         backend: typing.Any = None,
-        ctx=None,
+        ctx: typing.Optional["_CMACContext"] = None,
     ):
         if not isinstance(algorithm, ciphers.BlockCipherAlgorithm):
             raise TypeError("Expected instance of BlockCipherAlgorithm.")
