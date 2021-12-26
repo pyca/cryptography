@@ -69,7 +69,8 @@ class _X448PrivateKey(X448PrivateKey):
         )
         self._backend.openssl_assert(res == 1)
         self._backend.openssl_assert(buflen[0] == _X448_KEY_SIZE)
-        return self._backend.x448_load_public_bytes(buf)
+        public_bytes = self._backend._ffi.buffer(buf)[:]
+        return self._backend.x448_load_public_bytes(public_bytes)
 
     def exchange(self, peer_public_key: X448PublicKey) -> bytes:
         if not isinstance(peer_public_key, X448PublicKey):
