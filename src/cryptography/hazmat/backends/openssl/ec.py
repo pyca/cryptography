@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.exceptions import (
     InvalidSignature,
@@ -15,10 +16,13 @@ from cryptography.hazmat.backends.openssl.utils import (
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
 
 def _check_signature_algorithm(
     signature_algorithm: ec.EllipticCurveSignatureAlgorithm,
-):
+) -> None:
     if not isinstance(signature_algorithm, ec.ECDSA):
         raise UnsupportedAlgorithm(
             "Unsupported elliptic curve signature algorithm.",
@@ -26,7 +30,7 @@ def _check_signature_algorithm(
         )
 
 
-def _ec_key_curve_sn(backend, ec_key):
+def _ec_key_curve_sn(backend: "Backend", ec_key):
     group = backend._lib.EC_KEY_get0_group(ec_key)
     backend.openssl_assert(group != backend._ffi.NULL)
 
@@ -56,7 +60,7 @@ def _ec_key_curve_sn(backend, ec_key):
     return sn
 
 
-def _mark_asn1_named_ec_curve(backend, ec_cdata):
+def _mark_asn1_named_ec_curve(backend: "Backend", ec_cdata):
     """
     Set the named curve flag on the EC_KEY. This causes OpenSSL to
     serialize EC keys along with their curve OID which makes
@@ -68,7 +72,7 @@ def _mark_asn1_named_ec_curve(backend, ec_cdata):
     )
 
 
-def _sn_to_elliptic_curve(backend, sn):
+def _sn_to_elliptic_curve(backend: "Backend", sn):
     try:
         return ec._CURVE_TYPES[sn]()
     except KeyError:
@@ -78,7 +82,9 @@ def _sn_to_elliptic_curve(backend, sn):
         )
 
 
-def _ecdsa_sig_sign(backend, private_key, data):
+def _ecdsa_sig_sign(
+    backend: "Backend", private_key: "_EllipticCurvePrivateKey", data: bytes
+) -> bytes:
     max_size = backend._lib.ECDSA_size(private_key._ec_key)
     backend.openssl_assert(max_size > 0)
 
@@ -91,7 +97,12 @@ def _ecdsa_sig_sign(backend, private_key, data):
     return backend._ffi.buffer(sigbuf)[: siglen_ptr[0]]
 
 
-def _ecdsa_sig_verify(backend, public_key, signature, data):
+def _ecdsa_sig_verify(
+    backend: "Backend",
+    public_key: "_EllipticCurvePublicKey",
+    signature: bytes,
+    data: bytes,
+) -> None:
     res = backend._lib.ECDSA_verify(
         0, data, len(data), signature, len(signature), public_key._ec_key
     )
@@ -101,7 +112,7 @@ def _ecdsa_sig_verify(backend, public_key, signature, data):
 
 
 class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
-    def __init__(self, backend, ec_key_cdata, evp_pkey):
+    def __init__(self, backend: "Backend", ec_key_cdata, evp_pkey):
         self._backend = backend
         self._ec_key = ec_key_cdata
         self._evp_pkey = evp_pkey
@@ -192,7 +203,7 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
 
 
 class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
-    def __init__(self, backend, ec_key_cdata, evp_pkey):
+    def __init__(self, backend: "Backend", ec_key_cdata, evp_pkey):
         self._backend = backend
         self._ec_key = ec_key_cdata
         self._evp_pkey = evp_pkey

@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
 from cryptography.hazmat.primitives import serialization
@@ -10,12 +11,15 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PublicKey,
 )
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
 
 _X25519_KEY_SIZE = 32
 
 
 class _X25519PublicKey(X25519PublicKey):
-    def __init__(self, backend, evp_pkey):
+    def __init__(self, backend: "Backend", evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
@@ -56,7 +60,7 @@ class _X25519PublicKey(X25519PublicKey):
 
 
 class _X25519PrivateKey(X25519PrivateKey):
-    def __init__(self, backend, evp_pkey):
+    def __init__(self, backend: "Backend", evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
