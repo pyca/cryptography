@@ -606,7 +606,7 @@ class Backend:
         bio = self._ffi.gc(bio, self._lib.BIO_free)
         return bio
 
-    def _read_mem_bio(self, bio):
+    def _read_mem_bio(self, bio) -> bytes:
         """
         Reads a memory BIO. This only works on memory BIOs.
         """

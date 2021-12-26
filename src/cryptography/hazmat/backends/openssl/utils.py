@@ -7,8 +7,11 @@ import typing
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
 
-def _evp_pkey_derive(backend, evp_pkey, peer_public_key) -> bytes:
+
+def _evp_pkey_derive(backend: "Backend", evp_pkey, peer_public_key) -> bytes:
     ctx = backend._lib.EVP_PKEY_CTX_new(evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(ctx != backend._ffi.NULL)
     ctx = backend._ffi.gc(ctx, backend._lib.EVP_PKEY_CTX_free)

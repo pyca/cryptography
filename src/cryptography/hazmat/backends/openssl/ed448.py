@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography import exceptions
 from cryptography.hazmat.primitives import serialization
@@ -10,12 +11,15 @@ from cryptography.hazmat.primitives.asymmetric.ed448 import (
     Ed448PublicKey,
 )
 
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.backend import Backend
+
 _ED448_KEY_SIZE = 57
 _ED448_SIG_SIZE = 114
 
 
 class _Ed448PublicKey(Ed448PublicKey):
-    def __init__(self, backend, evp_pkey):
+    def __init__(self, backend: "Backend", evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
@@ -75,7 +79,7 @@ class _Ed448PublicKey(Ed448PublicKey):
 
 
 class _Ed448PrivateKey(Ed448PrivateKey):
-    def __init__(self, backend, evp_pkey):
+    def __init__(self, backend: "Backend", evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
