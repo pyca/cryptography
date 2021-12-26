@@ -419,7 +419,7 @@ class EllipticCurvePublicNumbers(object):
     def y(self) -> int:
         return self._y
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, EllipticCurvePublicNumbers):
             return NotImplemented
 
@@ -430,7 +430,7 @@ class EllipticCurvePublicNumbers(object):
             and self.curve.key_size == other.curve.key_size
         )
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __hash__(self) -> int:
@@ -476,7 +476,7 @@ class EllipticCurvePrivateNumbers(object):
     def public_numbers(self) -> EllipticCurvePublicNumbers:
         return self._public_numbers
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, EllipticCurvePrivateNumbers):
             return NotImplemented
 
@@ -485,7 +485,7 @@ class EllipticCurvePrivateNumbers(object):
             and self.public_numbers == other.public_numbers
         )
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __hash__(self) -> int:
