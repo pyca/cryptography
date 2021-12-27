@@ -23,3 +23,5 @@ exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt
 
 recursive-exclude .zuul.d *
 recursive-exclude .zuul.playbooks *
+
+recursive-exclude .circleci *
