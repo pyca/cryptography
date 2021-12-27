@@ -50,6 +50,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
@@ -74,6 +75,7 @@ jobs:
           override: true
           default: true
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -145,6 +147,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
@@ -158,6 +161,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -191,6 +195,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
@@ -214,6 +219,7 @@ jobs:
           override: true
           default: true
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -241,6 +247,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
@@ -272,6 +279,7 @@ jobs:
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -332,6 +340,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
@@ -358,6 +367,7 @@ jobs:
       - run: python -m pip install tox requests coverage
 
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -401,6 +411,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
@@ -438,6 +449,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
@@ -474,6 +486,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
