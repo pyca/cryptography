@@ -35,7 +35,7 @@ class Fernet(object):
         except binascii.Error as exc:
             raise ValueError(
                 f"Fernet key must be 32 url-safe base64-encoded bytes."
-                ) from exc
+            ) from exc
         if len(key) != 32:
             raise ValueError(
                 "Fernet key must be 32 url-safe base64-encoded bytes."
