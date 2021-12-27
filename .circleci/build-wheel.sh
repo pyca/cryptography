@@ -4,7 +4,7 @@ cd /test
 
 echo "Building for ${PLATFORM}"
 
-PYBIN=/opt/python/cp36-cp36m/bin
+PYBIN="/opt/python/${PYTHON}/bin"
 
 mkdir -p /test/wheelhouse.final
 

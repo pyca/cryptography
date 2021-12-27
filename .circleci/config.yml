@@ -14,7 +14,7 @@ commands:
       command:
         type: string
     steps:
-      - run: docker run -e PLATFORM -v $(pwd):/test <<parameters.image>>  /bin/bash -c 'cd /test;<<parameters.command>>'
+      - run: docker run -e PLATFORM -e PYTHON -v $(pwd):/test <<parameters.image>>  /bin/bash -c 'cd /test;<<parameters.command>>'
 
 jobs:
   linux-arm64:
@@ -44,6 +44,7 @@ jobs:
         type: string
     environment:
         PLATFORM: <<parameters.platform>>
+        PYTHON: <<parameters.python>>
     steps:
       - checkout
       - docker-pull:
@@ -71,6 +72,7 @@ workflows:
       - linux-arm64-wheel:
           name: manylinux2014_aarch64-wheel
           image: ghcr.io/pyca/cryptography-manylinux2014_aarch64:latest
+          python: cp36-cp36m
           platform: manylinux2014_aarch64
           filters:
             tags:
@@ -78,6 +80,7 @@ workflows:
       - linux-arm64-wheel:
           name: manylinux_2_24_aarch64-wheel
           image: ghcr.io/pyca/cryptography-manylinux_2_24:aarch64
+          python: cp36-cp36m
           platform: manylinux_2_24_aarch64
           filters:
             tags:
@@ -85,6 +88,7 @@ workflows:
       - linux-arm64-wheel:
           name: musllinux_1_1_aarch64-wheel
           image: ghcr.io/pyca/cryptography-musllinux_1_1:aarch64
+          python: cp36-cp36m
           platform: musllinux_1_1_aarch64
           filters:
             tags:
