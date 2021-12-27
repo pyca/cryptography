@@ -130,9 +130,10 @@ class TestFernet(object):
         f = Fernet(Fernet.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
 
-    def test_bad_key(self, backend):
+    @pytest.mark.parametrize("key", [base64.urlsafe_b64encode(b"abc"), b"abc"])
+    def test_bad_key(self, backend, key):
         with pytest.raises(ValueError):
-            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+            Fernet(key, backend=backend)
 
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
