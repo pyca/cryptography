@@ -32,7 +32,9 @@ INCLUDES = """
 #include <openssl/e_os2.h>
 #endif
 #if defined(_WIN32)
+#if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #include <Wincrypt.h>
 #include <Winsock2.h>

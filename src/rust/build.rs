@@ -77,6 +77,10 @@ fn main() {
         // build.define("Py_LIMITED_API", "0x030600f0");
     }
 
+    if cfg!(windows) {
+        build.define("WIN32_LEAN_AND_MEAN", None);
+    }
+
     build.compile("_openssl.a");
 }
 
