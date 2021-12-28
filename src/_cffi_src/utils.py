@@ -73,6 +73,12 @@ def build_ffi(
     verify_source += '\n#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"'.format(
         about["__version__"]
     )
+    verify_source += r"""
+
+int make_cryptography_openssl_module(void) {
+    return cffi_start_python();
+}
+"""
     ffi.cdef(cdef_source)
     ffi.set_source(
         module_name,

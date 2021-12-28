@@ -74,7 +74,7 @@ fn main() {
     // Enable abi3 mode if we're not using PyPy.
     if python_impl != "PyPy" {
         // cp36
-        build.define("Py_LIMITED_API", "0x030600f0");
+        // build.define("Py_LIMITED_API", "0x030600f0");
     }
 
     build.compile("_openssl.a");

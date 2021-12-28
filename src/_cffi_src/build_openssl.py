@@ -114,9 +114,13 @@ ffi = build_ffi_for_binding(
 )
 
 if __name__ == "__main__":
-    from cffi import recompiler
-
     out_dir = os.getenv("OUT_DIR")
     module_name, source, source_extension, kwds = ffi._assigned_source
     c_file = os.path.join(out_dir, module_name + source_extension)
-    recompiler.make_c_source(ffi, module_name, source, c_file)
+    ffi.embedding_api(
+        """
+        extern "Python" void _this_is_not_used(void);
+    """
+    )
+    ffi.embedding_init_code("")
+    ffi.emit_c_code(c_file)
