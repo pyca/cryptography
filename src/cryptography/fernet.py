@@ -30,7 +30,12 @@ class Fernet(object):
         key: typing.Union[bytes, str],
         backend: typing.Any = None,
     ):
-        key = base64.urlsafe_b64decode(key)
+        try:
+            key = base64.urlsafe_b64decode(key)
+        except binascii.Error as exc:
+            raise ValueError(
+                "Fernet key must be 32 url-safe base64-encoded bytes."
+            ) from exc
         if len(key) != 32:
             raise ValueError(
                 "Fernet key must be 32 url-safe base64-encoded bytes."
