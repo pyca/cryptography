@@ -132,21 +132,21 @@ def _init_cipher(
     return Cipher(algo(seed[:key_len]), mode(seed[key_len:]))
 
 
-def _get_u32(data):
+def _get_u32(data: memoryview) -> typing.Tuple[int, memoryview]:
     """Uint32"""
     if len(data) < 4:
         raise ValueError("Invalid data")
     return _U32.unpack(data[:4])[0], data[4:]
 
 
-def _get_u64(data):
+def _get_u64(data: memoryview) -> typing.Tuple[int, memoryview]:
     """Uint64"""
     if len(data) < 8:
         raise ValueError("Invalid data")
     return _U64.unpack(data[:8])[0], data[8:]
 
 
-def _get_sshstr(data):
+def _get_sshstr(data: memoryview) -> typing.Tuple[memoryview, memoryview]:
     """Bytes with u32 length prefix"""
     n, data = _get_u32(data)
     if n > len(data):
@@ -154,7 +154,7 @@ def _get_sshstr(data):
     return data[:n], data[n:]
 
 
-def _get_mpint(data):
+def _get_mpint(data: memoryview) -> typing.Tuple[int, memoryview]:
     """Big integer."""
     val, data = _get_sshstr(data)
     if val and val[0] > 0x7F:
@@ -162,7 +162,7 @@ def _get_mpint(data):
     return int.from_bytes(val, "big"), data
 
 
-def _to_mpint(val):
+def _to_mpint(val: int) -> bytes:
     """Storage format for signed bigint."""
     if val < 0:
         raise ValueError("negative mpint not allowed")
@@ -175,20 +175,22 @@ def _to_mpint(val):
 class _FragList(object):
     """Build recursive structure without data copy."""
 
-    def __init__(self, init=None):
+    flist: typing.List[bytes]
+
+    def __init__(self, init: typing.List[bytes] = None) -> None:
         self.flist = []
         if init:
             self.flist.extend(init)
 
-    def put_raw(self, val):
+    def put_raw(self, val: bytes) -> None:
         """Add plain bytes"""
         self.flist.append(val)
 
-    def put_u32(self, val):
+    def put_u32(self, val: int) -> None:
         """Big-endian uint32"""
         self.flist.append(_U32.pack(val))
 
-    def put_sshstr(self, val):
+    def put_sshstr(self, val: typing.Union[bytes, "_FragList"]) -> None:
         """Bytes prefixed with u32 length"""
         if isinstance(val, (bytes, memoryview, bytearray)):
             self.put_u32(len(val))
@@ -197,11 +199,11 @@ class _FragList(object):
             self.put_u32(val.size())
             self.flist.extend(val.flist)
 
-    def put_mpint(self, val):
+    def put_mpint(self, val: int) -> None:
         """Big-endian bigint prefixed with u32 length"""
         self.put_sshstr(_to_mpint(val))
 
-    def size(self):
+    def size(self) -> int:
         """Current number of bytes"""
         return sum(map(len, self.flist))
 
@@ -213,7 +215,7 @@ class _FragList(object):
             dstbuf[start:pos] = frag
         return pos
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """Return as bytes"""
         buf = memoryview(bytearray(self.size()))
         self.render(buf)
@@ -529,17 +531,19 @@ def load_ssh_private_key(
     _check_empty(data)
 
     if (ciphername, kdfname) != (_NONE, _NONE):
-        ciphername = ciphername.tobytes()
-        if ciphername not in _SSH_CIPHERS:
-            raise UnsupportedAlgorithm("Unsupported cipher: %r" % ciphername)
+        ciphername_bytes = ciphername.tobytes()
+        if ciphername_bytes not in _SSH_CIPHERS:
+            raise UnsupportedAlgorithm(
+                "Unsupported cipher: %r" % ciphername_bytes
+            )
         if kdfname != _BCRYPT:
             raise UnsupportedAlgorithm("Unsupported KDF: %r" % kdfname)
-        blklen = _SSH_CIPHERS[ciphername][3]
+        blklen = _SSH_CIPHERS[ciphername_bytes][3]
         _check_block_size(edata, blklen)
         salt, kbuf = _get_sshstr(kdfoptions)
         rounds, kbuf = _get_u32(kbuf)
         _check_empty(kbuf)
-        ciph = _init_cipher(ciphername, password, salt.tobytes(), rounds)
+        ciph = _init_cipher(ciphername_bytes, password, salt.tobytes(), rounds)
         edata = memoryview(ciph.decryptor().update(edata))
     else:
         blklen = 8
@@ -671,29 +675,29 @@ def load_ssh_public_key(
     kformat = _lookup_kformat(key_type)
 
     try:
-        data = memoryview(binascii.a2b_base64(key_body))
+        rest = memoryview(binascii.a2b_base64(key_body))
     except (TypeError, binascii.Error):
         raise ValueError("Invalid key format")
 
-    inner_key_type, data = _get_sshstr(data)
+    inner_key_type, rest = _get_sshstr(rest)
     if inner_key_type != orig_key_type:
         raise ValueError("Invalid key format")
     if with_cert:
-        nonce, data = _get_sshstr(data)
-    public_key, data = kformat.load_public(key_type, data)
+        nonce, rest = _get_sshstr(rest)
+    public_key, rest = kformat.load_public(key_type, rest)
     if with_cert:
-        serial, data = _get_u64(data)
-        cctype, data = _get_u32(data)
-        key_id, data = _get_sshstr(data)
-        principals, data = _get_sshstr(data)
-        valid_after, data = _get_u64(data)
-        valid_before, data = _get_u64(data)
-        crit_options, data = _get_sshstr(data)
-        extensions, data = _get_sshstr(data)
-        reserved, data = _get_sshstr(data)
-        sig_key, data = _get_sshstr(data)
-        signature, data = _get_sshstr(data)
-    _check_empty(data)
+        serial, rest = _get_u64(rest)
+        cctype, rest = _get_u32(rest)
+        key_id, rest = _get_sshstr(rest)
+        principals, rest = _get_sshstr(rest)
+        valid_after, rest = _get_u64(rest)
+        valid_before, rest = _get_u64(rest)
+        crit_options, rest = _get_sshstr(rest)
+        extensions, rest = _get_sshstr(rest)
+        reserved, rest = _get_sshstr(rest)
+        sig_key, rest = _get_sshstr(rest)
+        signature, rest = _get_sshstr(rest)
+    _check_empty(rest)
     return public_key
 
 
