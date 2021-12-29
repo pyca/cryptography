@@ -190,7 +190,7 @@ class _FragList(object):
         """Big-endian uint32"""
         self.flist.append(_U32.pack(val))
 
-    def put_sshstr(self, val: typing.Union[bytes, _FragList]) -> None:
+    def put_sshstr(self, val: typing.Union[bytes, "_FragList"]) -> None:
         """Bytes prefixed with u32 length"""
         if isinstance(val, (bytes, memoryview, bytearray)):
             self.put_u32(len(val))
