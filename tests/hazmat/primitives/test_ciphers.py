@@ -198,11 +198,23 @@ class TestSEED(object):
             SEED("0" * 16)  # type: ignore[arg-type]
 
 
-def test_invalid_gcm_algorithm():
+def test_invalid_mode_algorithm():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
         ciphers.Cipher(
             ARC4(b"\x00" * 16),
             modes.GCM(b"\x00" * 12),
+        )
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        ciphers.Cipher(
+            ARC4(b"\x00" * 16),
+            modes.CBC(b"\x00" * 12),
+        )
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        ciphers.Cipher(
+            ARC4(b"\x00" * 16),
+            modes.CTR(b"\x00" * 12),
         )
 
 

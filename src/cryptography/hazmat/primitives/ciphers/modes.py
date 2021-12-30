@@ -61,14 +61,16 @@ class ModeWithAuthenticationTag(Mode, metaclass=abc.ABCMeta):
         """
 
 
-def _check_aes_key_length(self, algorithm):
+def _check_aes_key_length(self: Mode, algorithm: CipherAlgorithm) -> None:
     if algorithm.key_size > 256 and algorithm.name == "AES":
         raise ValueError(
             "Only 128, 192, and 256 bit keys are allowed for this AES mode"
         )
 
 
-def _check_iv_length(self, algorithm):
+def _check_iv_length(
+    self: ModeWithInitializationVector, algorithm: BlockCipherAlgorithm
+) -> None:
     if len(self.initialization_vector) * 8 != algorithm.block_size:
         raise ValueError(
             "Invalid IV size ({}) for {}.".format(
@@ -77,14 +79,28 @@ def _check_iv_length(self, algorithm):
         )
 
 
-def _check_nonce_length(nonce: bytes, name: str, algorithm) -> None:
+def _check_nonce_length(
+    nonce: bytes, name: str, algorithm: CipherAlgorithm
+) -> None:
+    if not isinstance(algorithm, BlockCipherAlgorithm):
+        raise UnsupportedAlgorithm(
+            f"{name} requires a block cipher algorithm",
+            _Reasons.UNSUPPORTED_CIPHER,
+        )
     if len(nonce) * 8 != algorithm.block_size:
         raise ValueError(
             "Invalid nonce size ({}) for {}.".format(len(nonce), name)
         )
 
 
-def _check_iv_and_key_length(self, algorithm):
+def _check_iv_and_key_length(
+    self: ModeWithInitializationVector, algorithm: CipherAlgorithm
+) -> None:
+    if not isinstance(algorithm, BlockCipherAlgorithm):
+        raise UnsupportedAlgorithm(
+            f"{self} requires a block cipher algorithm",
+            _Reasons.UNSUPPORTED_CIPHER,
+        )
     _check_aes_key_length(self, algorithm)
     _check_iv_length(self, algorithm)
 
