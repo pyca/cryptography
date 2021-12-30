@@ -106,7 +106,7 @@ class ARC4(CipherAlgorithm):
         return len(self.key) * 8
 
 
-class IDEA(CipherAlgorithm):
+class IDEA(CipherAlgorithm, BlockCipherAlgorithm):
     name = "IDEA"
     block_size = 64
     key_sizes = frozenset([128])
