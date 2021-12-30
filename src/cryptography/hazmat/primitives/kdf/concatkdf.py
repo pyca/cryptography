@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import struct
 import typing
 
 from cryptography import utils
@@ -16,7 +15,7 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
 def _int_to_u32be(n: int) -> bytes:
-    return struct.pack(">I", n)
+    return n.to_bytes(length=4, byteorder="big")
 
 
 def _common_args_checks(
