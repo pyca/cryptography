@@ -6,7 +6,6 @@
 import binascii
 import os
 import re
-import struct
 import typing
 from base64 import encodebytes as _base64_encode
 
@@ -83,9 +82,6 @@ _ECDSA_KEY_TYPE = {
     "secp521r1": _ECDSA_NISTP521,
 }
 
-_U32 = struct.Struct(b">I")
-_U64 = struct.Struct(b">Q")
-
 
 def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
     """Return SSH key_type and curve_name for private key."""
@@ -136,14 +132,14 @@ def _get_u32(data: memoryview) -> typing.Tuple[int, memoryview]:
     """Uint32"""
     if len(data) < 4:
         raise ValueError("Invalid data")
-    return _U32.unpack(data[:4])[0], data[4:]
+    return int.from_bytes(data[:4], byteorder="big"), data[4:]
 
 
 def _get_u64(data: memoryview) -> typing.Tuple[int, memoryview]:
     """Uint64"""
     if len(data) < 8:
         raise ValueError("Invalid data")
-    return _U64.unpack(data[:8])[0], data[8:]
+    return int.from_bytes(data[:8], byteorder="big"), data[8:]
 
 
 def _get_sshstr(data: memoryview) -> typing.Tuple[memoryview, memoryview]:
@@ -188,7 +184,7 @@ class _FragList(object):
 
     def put_u32(self, val: int) -> None:
         """Big-endian uint32"""
-        self.flist.append(_U32.pack(val))
+        self.flist.append(val.to_bytes(length=4, byteorder="big"))
 
     def put_sshstr(self, val: typing.Union[bytes, "_FragList"]) -> None:
         """Bytes prefixed with u32 length"""
