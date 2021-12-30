@@ -157,13 +157,13 @@ class DSAParameterNumbers(object):
 
         return ossl.load_dsa_parameter_numbers(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAParameterNumbers):
             return NotImplemented
 
         return self.p == other.p and self.q == other.q and self.g == other.g
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __repr__(self) -> str:
@@ -201,7 +201,7 @@ class DSAPublicNumbers(object):
 
         return ossl.load_dsa_public_numbers(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAPublicNumbers):
             return NotImplemented
 
@@ -210,7 +210,7 @@ class DSAPublicNumbers(object):
             and self.parameter_numbers == other.parameter_numbers
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __repr__(self) -> str:
@@ -247,7 +247,7 @@ class DSAPrivateNumbers(object):
 
         return ossl.load_dsa_private_numbers(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAPrivateNumbers):
             return NotImplemented
 
@@ -255,7 +255,7 @@ class DSAPrivateNumbers(object):
             self.x == other.x and self.public_numbers == other.public_numbers
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
 

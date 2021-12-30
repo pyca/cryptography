@@ -39,7 +39,7 @@ class DHParameterNumbers(object):
         self._g = g
         self._q = q
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DHParameterNumbers):
             return NotImplemented
 
@@ -47,7 +47,7 @@ class DHParameterNumbers(object):
             self._p == other._p and self._g == other._g and self._q == other._q
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def parameters(self, backend: typing.Any = None) -> "DHParameters":
@@ -83,7 +83,7 @@ class DHPublicNumbers(object):
         self._y = y
         self._parameter_numbers = parameter_numbers
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DHPublicNumbers):
             return NotImplemented
 
@@ -92,7 +92,7 @@ class DHPublicNumbers(object):
             and self._parameter_numbers == other._parameter_numbers
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def public_key(self, backend: typing.Any = None) -> "DHPublicKey":
@@ -124,7 +124,7 @@ class DHPrivateNumbers(object):
         self._x = x
         self._public_numbers = public_numbers
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DHPrivateNumbers):
             return NotImplemented
 
@@ -133,7 +133,7 @@ class DHPrivateNumbers(object):
             and self._public_numbers == other._public_numbers
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def private_key(self, backend: typing.Any = None) -> "DHPrivateKey":
