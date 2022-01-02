@@ -21,7 +21,4 @@ recursive-exclude .github *
 
 exclude release.py .coveragerc codecov.yml .readthedocs.yml dev-requirements.txt tox.ini mypy.ini
 
-recursive-exclude .zuul.d *
-recursive-exclude .zuul.playbooks *
-
 recursive-exclude .circleci *
