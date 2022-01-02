@@ -13,11 +13,17 @@ from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 if typing.TYPE_CHECKING:
+    from cryptography.hazmat.primitives import ciphers
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
 class _CMACContext(object):
-    def __init__(self, backend: "Backend", algorithm, ctx=None):
+    def __init__(
+        self,
+        backend: "Backend",
+        algorithm: "ciphers.BlockCipherAlgorithm",
+        ctx=None,
+    ) -> None:
         if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "This backend does not support CMAC.",
