@@ -18,12 +18,14 @@ class _CipherContext(object):
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2 ** 30 - 1
 
-    def __init__(self, backend: "Backend", cipher, mode, operation):
+    def __init__(
+        self, backend: "Backend", cipher, mode, operation: int
+    ) -> None:
         self._backend = backend
         self._cipher = cipher
         self._mode = mode
         self._operation = operation
-        self._tag = None
+        self._tag: typing.Optional[bytes] = None
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size_bytes = self._cipher.block_size // 8

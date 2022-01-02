@@ -31,6 +31,8 @@ class CipherAlgorithm(metaclass=abc.ABCMeta):
 
 
 class BlockCipherAlgorithm(metaclass=abc.ABCMeta):
+    key: bytes
+
     @abc.abstractproperty
     def block_size(self) -> int:
         """

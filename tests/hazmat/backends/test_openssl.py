@@ -500,7 +500,7 @@ class TestOpenSSLSerializationWithOpenSSL(object):
 class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
-            _sn_to_elliptic_curve(backend, b"fake")
+            _sn_to_elliptic_curve(backend, "fake")
 
 
 class TestRSAPEMSerialization(object):

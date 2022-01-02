@@ -30,7 +30,7 @@ def _check_signature_algorithm(
         )
 
 
-def _ec_key_curve_sn(backend: "Backend", ec_key):
+def _ec_key_curve_sn(backend: "Backend", ec_key) -> str:
     group = backend._lib.EC_KEY_get0_group(ec_key)
     backend.openssl_assert(group != backend._ffi.NULL)
 
@@ -72,7 +72,7 @@ def _mark_asn1_named_ec_curve(backend: "Backend", ec_cdata):
     )
 
 
-def _sn_to_elliptic_curve(backend: "Backend", sn):
+def _sn_to_elliptic_curve(backend: "Backend", sn: str) -> ec.EllipticCurve:
     try:
         return ec._CURVE_TYPES[sn]()
     except KeyError:
