@@ -1245,7 +1245,7 @@ class Backend:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
 
-        ec_cdata = self._ec_key_set_public_key_affine_coordinates(
+        self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, public.x, public.y
         )
 
@@ -1257,7 +1257,7 @@ class Backend:
         self, numbers: ec.EllipticCurvePublicNumbers
     ) -> ec.EllipticCurvePublicKey:
         ec_cdata = self._ec_key_new_by_curve(numbers.curve)
-        ec_cdata = self._ec_key_set_public_key_affine_coordinates(
+        self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, numbers.x, numbers.y
         )
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
@@ -1325,11 +1325,11 @@ class Backend:
 
         return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
 
-    def _ec_key_new_by_curve(self, curve):
+    def _ec_key_new_by_curve(self, curve: ec.EllipticCurve):
         curve_nid = self._elliptic_curve_to_nid(curve)
         return self._ec_key_new_by_curve_nid(curve_nid)
 
-    def _ec_key_new_by_curve_nid(self, curve_nid):
+    def _ec_key_new_by_curve_nid(self, curve_nid: int):
         ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         return self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
@@ -1352,7 +1352,7 @@ class Backend:
         self.openssl_assert(res == 1)
         return evp_pkey
 
-    def _elliptic_curve_to_nid(self, curve):
+    def _elliptic_curve_to_nid(self, curve: ec.EllipticCurve) -> int:
         """
         Get the NID for a curve name.
         """
@@ -1408,7 +1408,7 @@ class Backend:
 
         return get_func, group
 
-    def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
+    def _ec_key_set_public_key_affine_coordinates(self, ctx, x: int, y: int):
         """
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
@@ -1425,8 +1425,6 @@ class Backend:
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
-
-        return ctx
 
     def _private_key_bytes(
         self,
