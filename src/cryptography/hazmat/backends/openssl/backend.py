@@ -2035,7 +2035,7 @@ class Backend:
         finally:
             self._zero_data(ba, length)
 
-    def _zero_data(self, data: bytearray, length: int) -> None:
+    def _zero_data(self, data, length: int) -> None:
         # We clear things this way because at the moment we're not
         # sure of a better way that can guarantee it overwrites the
         # memory of a bytearray and doesn't just replace the underlying char *.
