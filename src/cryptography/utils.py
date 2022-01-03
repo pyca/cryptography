@@ -124,7 +124,7 @@ class _ModuleWithDeprecations(types.ModuleType):
             obj = obj.value
         return obj
 
-    def __setattr__(self, attr: str, value) -> None:
+    def __setattr__(self, attr: str, value: object) -> None:
         setattr(self._module, attr, value)
 
     def __delattr__(self, attr: str) -> None:
@@ -134,12 +134,12 @@ class _ModuleWithDeprecations(types.ModuleType):
 
         delattr(self._module, attr)
 
-    def __dir__(self) -> typing.Sequence:
+    def __dir__(self) -> typing.Sequence[str]:
         return ["_module"] + dir(self._module)
 
 
 def deprecated(
-    value, module_name: str, message, warning_class
+    value: object, module_name: str, message: str, warning_class: typing.Type[Warning]
 ) -> _DeprecatedValue:
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):
