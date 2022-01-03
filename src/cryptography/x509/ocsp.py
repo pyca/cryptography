@@ -165,7 +165,73 @@ class OCSPRequest(metaclass=abc.ABCMeta):
         """
 
 
+class OCSPSingleResponse(metaclass=abc.ABCMeta):
+    @abc.abstractproperty
+    def certificate_status(self) -> OCSPCertStatus:
+        """
+        The status of the certificate (an element from the OCSPCertStatus enum)
+        """
+
+    @abc.abstractproperty
+    def revocation_time(self) -> typing.Optional[datetime.datetime]:
+        """
+        The date of when the certificate was revoked or None if not
+        revoked.
+        """
+
+    @abc.abstractproperty
+    def revocation_reason(self) -> typing.Optional[x509.ReasonFlags]:
+        """
+        The reason the certificate was revoked or None if not specified or
+        not revoked.
+        """
+
+    @abc.abstractproperty
+    def this_update(self) -> datetime.datetime:
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct
+        """
+
+    @abc.abstractproperty
+    def next_update(self) -> typing.Optional[datetime.datetime]:
+        """
+        The time when newer information will be available
+        """
+
+    @abc.abstractproperty
+    def issuer_key_hash(self) -> bytes:
+        """
+        The hash of the issuer public key
+        """
+
+    @abc.abstractproperty
+    def issuer_name_hash(self) -> bytes:
+        """
+        The hash of the issuer name
+        """
+
+    @abc.abstractproperty
+    def hash_algorithm(self) -> hashes.HashAlgorithm:
+        """
+        The hash algorithm used in the issuer name and key hashes
+        """
+
+    @abc.abstractproperty
+    def serial_number(self) -> int:
+        """
+        The serial number of the cert whose status is being checked
+        """
+
+
 class OCSPResponse(metaclass=abc.ABCMeta):
+    @abc.abstractproperty
+    def responses(self) -> typing.Iterator[OCSPSingleResponse]:
+        """
+        An iterator over the individual SINGLERESP structures in the
+        response
+        """
+
     @abc.abstractproperty
     def response_status(self) -> OCSPResponseStatus:
         """

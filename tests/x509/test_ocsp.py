@@ -1037,11 +1037,62 @@ class TestOCSPResponse(object):
         assert len(resp.extensions) == 0
 
     def test_load_multi_valued_response(self):
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+            ocsp.load_der_ocsp_response,
+        )
+
         with pytest.raises(ValueError):
-            _load_data(
-                os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
-                ocsp.load_der_ocsp_response,
-            )
+            resp.serial_number
+
+        assert len(list(resp.responses)) == 20
+
+    def test_multi_valued_responses(self):
+        req_valid = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.valid-req.der"),
+            ocsp.load_der_ocsp_request,
+        )
+
+        req_revoked = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.revoked-req.der"),
+            ocsp.load_der_ocsp_request,
+        )
+
+        req_irrelevant = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.inapplicable-req.der"),
+            ocsp.load_der_ocsp_request,
+        )
+
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "ocsp-army.deps.mil-resp.der"),
+            ocsp.load_der_ocsp_response,
+        )
+
+        for elem in resp.responses:
+            serial = elem.serial_number
+
+            assert req_irrelevant.serial_number != serial
+            if req_valid.serial_number == serial:
+                assert elem.issuer_key_hash == req_valid.issuer_key_hash
+                assert elem.issuer_name_hash == req_valid.issuer_name_hash
+                assert (
+                    elem.hash_algorithm.name == req_valid.hash_algorithm.name
+                )
+
+                assert elem.certificate_status == ocsp.OCSPCertStatus.GOOD
+
+                assert elem.this_update == datetime.datetime(2020, 2, 22, 0, 0)
+                assert elem.next_update == datetime.datetime(2020, 2, 29, 1, 0)
+            elif req_revoked.serial_number == serial:
+                assert elem.certificate_status == ocsp.OCSPCertStatus.REVOKED
+
+                assert (
+                    elem.revocation_reason
+                    == x509.ReasonFlags.cessation_of_operation
+                )
+                assert elem.revocation_time == datetime.datetime(
+                    2018, 5, 30, 14, 1, 39
+                )
 
     def test_load_unauthorized(self):
         resp = _load_data(
