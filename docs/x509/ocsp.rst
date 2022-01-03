@@ -625,7 +625,7 @@ Interfaces
 
         .. versionadded:: 37.0.0
 
-        :type: :class:`~cryptography.x509.ocsp.OCSPResponseIterator`
+        :type: an iterator over :class:`~cryptography.x509.ocsp.OCSPSingleResponse`
 
         An iterator to access individual SINGLERESP structures.
 
@@ -708,26 +708,12 @@ Interfaces
         Encode the X.509 ``Name`` of the certificate whose private key signed
         the response.
 
-.. class:: OCSPResponseIterator
-
-    .. versionadded:: 37.0.0
-
-    An iterator working through each SINGLERESP structure attached
-    to an OCSP response.
-
-    .. method:: __next__()
-
-        :returns: :class:`~cryptography.x509.ocsp.OCSPSingleResponse`
-
-        Advances the iterator to the next certificate status in the OCSP
-        response.
-
 .. class:: OCSPSingleResponse
 
     .. versionadded:: 37.0.0
 
     A class representing a single certificate response bundled into a
-    larger OCSPResponse.  Accessed via OCSPResponseIterator.
+    larger OCSPResponse.  Accessed via OCSPResponse.responses.
 
     .. attribute:: certificate_status
 

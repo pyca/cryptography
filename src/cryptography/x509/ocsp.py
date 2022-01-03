@@ -4,7 +4,6 @@
 
 
 import abc
-import collections
 import datetime
 import typing
 
@@ -225,17 +224,9 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
         """
 
 
-class OCSPResponseIterator(collections.abc.Iterable):
-    @abc.abstractmethod
-    def __next__(self) -> OCSPSingleResponse:
-        """
-        Get the next response.
-        """
-
-
 class OCSPResponse(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def responses(self) -> OCSPResponseIterator:
+    def responses(self) -> typing.Iterator[OCSPSingleResponse]:
         """
         An iterator over the individual SINGLERESP structures in the
         response
