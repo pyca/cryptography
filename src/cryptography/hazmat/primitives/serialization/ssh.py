@@ -203,7 +203,7 @@ class _FragList(object):
         """Current number of bytes"""
         return sum(map(len, self.flist))
 
-    def render(self, dstbuf, pos=0):
+    def render(self, dstbuf: memoryview, pos: int = 0) -> int:
         """Write into bytearray"""
         for frag in self.flist:
             flen = len(frag)
@@ -227,20 +227,24 @@ class _SSHFormatRSA(object):
         mpint n, e, d, iqmp, p, q
     """
 
-    def get_public(self, data):
+    def get_public(self, data: memoryview):
         """RSA public fields"""
         e, data = _get_mpint(data)
         n, data = _get_mpint(data)
         return (e, n), data
 
-    def load_public(self, key_type, data):
+    def load_public(
+        self, data: memoryview
+    ) -> typing.Tuple[rsa.RSAPublicKey, memoryview]:
         """Make RSA public key from data."""
         (e, n), data = self.get_public(data)
         public_numbers = rsa.RSAPublicNumbers(e, n)
         public_key = public_numbers.public_key()
         return public_key, data
 
-    def load_private(self, data, pubfields):
+    def load_private(
+        self, data: memoryview, pubfields
+    ) -> typing.Tuple[rsa.RSAPrivateKey, memoryview]:
         """Make RSA private key from data."""
         n, data = _get_mpint(data)
         e, data = _get_mpint(data)
@@ -260,13 +264,17 @@ class _SSHFormatRSA(object):
         private_key = private_numbers.private_key()
         return private_key, data
 
-    def encode_public(self, public_key, f_pub):
+    def encode_public(
+        self, public_key: rsa.RSAPublicKey, f_pub: _FragList
+    ) -> None:
         """Write RSA public key"""
         pubn = public_key.public_numbers()
         f_pub.put_mpint(pubn.e)
         f_pub.put_mpint(pubn.n)
 
-    def encode_private(self, private_key, f_priv):
+    def encode_private(
+        self, private_key: rsa.RSAPrivateKey, f_priv: _FragList
+    ) -> None:
         """Write RSA private key"""
         private_numbers = private_key.private_numbers()
         public_numbers = private_numbers.public_numbers
@@ -289,7 +297,9 @@ class _SSHFormatDSA(object):
         mpint p, q, g, y, x
     """
 
-    def get_public(self, data):
+    def get_public(
+        self, data: memoryview
+    ) -> typing.Tuple[typing.Tuple, memoryview]:
         """DSA public fields"""
         p, data = _get_mpint(data)
         q, data = _get_mpint(data)
@@ -297,7 +307,9 @@ class _SSHFormatDSA(object):
         y, data = _get_mpint(data)
         return (p, q, g, y), data
 
-    def load_public(self, key_type, data):
+    def load_public(
+        self, data: memoryview
+    ) -> typing.Tuple[dsa.DSAPublicKey, memoryview]:
         """Make DSA public key from data."""
         (p, q, g, y), data = self.get_public(data)
         parameter_numbers = dsa.DSAParameterNumbers(p, q, g)
@@ -306,7 +318,9 @@ class _SSHFormatDSA(object):
         public_key = public_numbers.public_key()
         return public_key, data
 
-    def load_private(self, data, pubfields):
+    def load_private(
+        self, data: memoryview, pubfields
+    ) -> typing.Tuple[dsa.DSAPrivateKey, memoryview]:
         """Make DSA private key from data."""
         (p, q, g, y), data = self.get_public(data)
         x, data = _get_mpint(data)
@@ -320,7 +334,9 @@ class _SSHFormatDSA(object):
         private_key = private_numbers.private_key()
         return private_key, data
 
-    def encode_public(self, public_key, f_pub):
+    def encode_public(
+        self, public_key: dsa.DSAPublicKey, f_pub: _FragList
+    ) -> None:
         """Write DSA public key"""
         public_numbers = public_key.public_numbers()
         parameter_numbers = public_numbers.parameter_numbers
@@ -331,12 +347,14 @@ class _SSHFormatDSA(object):
         f_pub.put_mpint(parameter_numbers.g)
         f_pub.put_mpint(public_numbers.y)
 
-    def encode_private(self, private_key, f_priv):
+    def encode_private(
+        self, private_key: dsa.DSAPrivateKey, f_priv: _FragList
+    ) -> None:
         """Write DSA private key"""
         self.encode_public(private_key.public_key(), f_priv)
         f_priv.put_mpint(private_key.private_numbers().x)
 
-    def _validate(self, public_numbers):
+    def _validate(self, public_numbers: dsa.DSAPublicNumbers) -> None:
         parameter_numbers = public_numbers.parameter_numbers
         if parameter_numbers.p.bit_length() != 1024:
             raise ValueError("SSH supports only 1024 bit DSA keys")
@@ -354,11 +372,13 @@ class _SSHFormatECDSA(object):
         mpint secret
     """
 
-    def __init__(self, ssh_curve_name, curve):
+    def __init__(self, ssh_curve_name: bytes, curve: ec.EllipticCurve):
         self.ssh_curve_name = ssh_curve_name
         self.curve = curve
 
-    def get_public(self, data):
+    def get_public(
+        self, data: memoryview
+    ) -> typing.Tuple[typing.Tuple, memoryview]:
         """ECDSA public fields"""
         curve, data = _get_sshstr(data)
         point, data = _get_sshstr(data)
@@ -368,7 +388,9 @@ class _SSHFormatECDSA(object):
             raise NotImplementedError("Need uncompressed point")
         return (curve, point), data
 
-    def load_public(self, key_type, data):
+    def load_public(
+        self, data: memoryview
+    ) -> typing.Tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make ECDSA public key from data."""
         (curve_name, point), data = self.get_public(data)
         public_key = ec.EllipticCurvePublicKey.from_encoded_point(
@@ -376,7 +398,9 @@ class _SSHFormatECDSA(object):
         )
         return public_key, data
 
-    def load_private(self, data, pubfields):
+    def load_private(
+        self, data: memoryview, pubfields
+    ) -> typing.Tuple[ec.EllipticCurvePrivateKey, memoryview]:
         """Make ECDSA private key from data."""
         (curve_name, point), data = self.get_public(data)
         secret, data = _get_mpint(data)
@@ -386,7 +410,9 @@ class _SSHFormatECDSA(object):
         private_key = ec.derive_private_key(secret, self.curve)
         return private_key, data
 
-    def encode_public(self, public_key, f_pub):
+    def encode_public(
+        self, public_key: ec.EllipticCurvePublicKey, f_pub: _FragList
+    ) -> None:
         """Write ECDSA public key"""
         point = public_key.public_bytes(
             Encoding.X962, PublicFormat.UncompressedPoint
@@ -394,7 +420,9 @@ class _SSHFormatECDSA(object):
         f_pub.put_sshstr(self.ssh_curve_name)
         f_pub.put_sshstr(point)
 
-    def encode_private(self, private_key, f_priv):
+    def encode_private(
+        self, private_key: ec.EllipticCurvePrivateKey, f_priv: _FragList
+    ) -> None:
         """Write ECDSA private key"""
         public_key = private_key.public_key()
         private_numbers = private_key.private_numbers()
@@ -413,12 +441,16 @@ class _SSHFormatEd25519(object):
         bytes secret_and_point
     """
 
-    def get_public(self, data):
+    def get_public(
+        self, data: memoryview
+    ) -> typing.Tuple[typing.Tuple, memoryview]:
         """Ed25519 public fields"""
         point, data = _get_sshstr(data)
         return (point,), data
 
-    def load_public(self, key_type, data):
+    def load_public(
+        self, data: memoryview
+    ) -> typing.Tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
         (point,), data = self.get_public(data)
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(
@@ -426,7 +458,9 @@ class _SSHFormatEd25519(object):
         )
         return public_key, data
 
-    def load_private(self, data, pubfields):
+    def load_private(
+        self, data: memoryview, pubfields
+    ) -> typing.Tuple[ed25519.Ed25519PrivateKey, memoryview]:
         """Make Ed25519 private key from data."""
         (point,), data = self.get_public(data)
         keypair, data = _get_sshstr(data)
@@ -438,14 +472,18 @@ class _SSHFormatEd25519(object):
         private_key = ed25519.Ed25519PrivateKey.from_private_bytes(secret)
         return private_key, data
 
-    def encode_public(self, public_key, f_pub):
+    def encode_public(
+        self, public_key: ed25519.Ed25519PublicKey, f_pub: _FragList
+    ) -> None:
         """Write Ed25519 public key"""
         raw_public_key = public_key.public_bytes(
             Encoding.Raw, PublicFormat.Raw
         )
         f_pub.put_sshstr(raw_public_key)
 
-    def encode_private(self, private_key, f_priv):
+    def encode_private(
+        self, private_key: ed25519.Ed25519PrivateKey, f_priv: _FragList
+    ) -> None:
         """Write Ed25519 private key"""
         public_key = private_key.public_key()
         raw_private_key = private_key.private_bytes(
@@ -470,7 +508,7 @@ _KEY_FORMATS = {
 }
 
 
-def _lookup_kformat(key_type):
+def _lookup_kformat(key_type: bytes):
     """Return valid format or throw error"""
     if not isinstance(key_type, bytes):
         key_type = memoryview(key_type).tobytes()
@@ -680,7 +718,7 @@ def load_ssh_public_key(
         raise ValueError("Invalid key format")
     if with_cert:
         nonce, rest = _get_sshstr(rest)
-    public_key, rest = kformat.load_public(key_type, rest)
+    public_key, rest = kformat.load_public(rest)
     if with_cert:
         serial, rest = _get_u64(rest)
         cctype, rest = _get_u32(rest)
