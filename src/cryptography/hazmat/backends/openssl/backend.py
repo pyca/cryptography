@@ -2023,7 +2023,7 @@ class Backend:
         return self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
 
     @contextlib.contextmanager
-    def _zeroed_bytearray(self, length):
+    def _zeroed_bytearray(self, length: int) -> typing.Iterator[bytearray]:
         """
         This method creates a bytearray, which we copy data into (hopefully
         also from a mutable buffer that can be dynamically erased!), and then
@@ -2035,7 +2035,7 @@ class Backend:
         finally:
             self._zero_data(ba, length)
 
-    def _zero_data(self, data, length):
+    def _zero_data(self, data: bytearray, length: int) -> None:
         # We clear things this way because at the moment we're not
         # sure of a better way that can guarantee it overwrites the
         # memory of a bytearray and doesn't just replace the underlying char *.
