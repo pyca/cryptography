@@ -43,7 +43,7 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
     )?;
 
     Ok(OCSPResponse {
-        raw,
+        raw: Arc::new(raw),
         cached_extensions: None,
         cached_single_extensions: None,
     })
@@ -63,7 +63,7 @@ struct OwnedRawOCSPResponse {
 
 #[pyo3::prelude::pyclass]
 struct OCSPResponse {
-    raw: OwnedRawOCSPResponse,
+    raw: Arc<OwnedRawOCSPResponse>,
 
     cached_extensions: Option<pyo3::PyObject>,
     cached_single_extensions: Option<pyo3::PyObject>,
@@ -92,30 +92,20 @@ const UNAUTHORIZED_RESPONSE: u32 = 6;
 impl OCSPResponse {
     #[getter]
     fn responses(&self) -> Result<OCSPResponseIterator, PyAsn1Error> {
-        let new_owned = OwnedRawOCSPResponseBuilder {
-            data: self.raw.borrow_data().clone(),
-            value_builder: |data| asn1::parse_single(data).unwrap(),
-            basic_response_builder: |_data, response| {
-                Some(
-                    asn1::parse_single(response.response_bytes.as_ref().unwrap().response).unwrap(),
-                )
-            },
-        }
-        .build();
-
-        let length = new_owned
-            .borrow_basic_response()
-            .as_ref()
-            .unwrap()
-            .tbs_response_data
-            .responses
-            .unwrap_read()
-            .len();
-
+        self.requires_successful_response()?;
         Ok(OCSPResponseIterator {
-            contents: new_owned,
-            cur_pos: std::usize::MAX,
-            len: length,
+            contents: OwnedOCSPResponseIteratorData::try_new(Arc::clone(&self.raw), |v| {
+                Ok::<_, ()>(
+                    v.borrow_basic_response()
+                        .as_ref()
+                        .unwrap()
+                        .tbs_response_data
+                        .responses
+                        .unwrap_read()
+                        .clone(),
+                )
+            })
+            .unwrap(),
         })
     }
 
@@ -407,6 +397,17 @@ fn map_arc_data_ocsp_response(
                 unsafe { std::mem::transmute(value.basic_response) },
             )
         })
+    })
+}
+fn try_map_arc_data_mut_ocsp_response_iterator<E>(
+    it: &mut OwnedOCSPResponseIteratorData,
+    f: impl for<'this> FnOnce(
+        &'this OwnedRawOCSPResponse,
+        &mut asn1::SequenceOf<'this, SingleResponse<'this>>,
+    ) -> Result<SingleResponse<'this>, E>,
+) -> Result<OwnedSingleResponse, E> {
+    OwnedSingleResponse::try_new(Arc::clone(it.borrow_data()), |inner_it| {
+        it.with_value_mut(|value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }
 
@@ -745,11 +746,17 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     Ok(())
 }
 
+#[ouroboros::self_referencing]
+struct OwnedOCSPResponseIteratorData {
+    data: Arc<OwnedRawOCSPResponse>,
+    #[borrows(data)]
+    #[covariant]
+    value: asn1::SequenceOf<'this, SingleResponse<'this>>,
+}
+
 #[pyo3::prelude::pyclass]
 struct OCSPResponseIterator {
-    contents: OwnedRawOCSPResponse,
-    cur_pos: usize,
-    len: usize,
+    contents: OwnedOCSPResponseIteratorData,
 }
 
 #[pyo3::prelude::pyproto]
@@ -759,60 +766,34 @@ impl pyo3::PyIterProtocol<'_> for OCSPResponseIterator {
     }
 
     fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<OCSPSingleResponse> {
-        if slf.cur_pos == std::usize::MAX {
-            slf.cur_pos = 0;
-        } else if slf.cur_pos < slf.len - 1 {
-            slf.cur_pos += 1;
-        } else {
-            return None;
-        }
-
-        let new_owned = OwnedRawOCSPResponseBuilder {
-            data: slf.contents.borrow_data().clone(),
-            value_builder: |data| asn1::parse_single(data).unwrap(),
-            basic_response_builder: |_data, response| {
-                Some(
-                    asn1::parse_single(response.response_bytes.as_ref().unwrap().response).unwrap(),
-                )
-            },
-        }
-        .build();
-
-        Some(OCSPSingleResponse {
-            contents: new_owned,
-            cur_pos: slf.cur_pos,
-        })
+        let single_resp =
+            try_map_arc_data_mut_ocsp_response_iterator(&mut slf.contents, |_data, v| {
+                match v.next() {
+                    Some(single_resp) => Ok(single_resp),
+                    None => Err(()),
+                }
+            })
+            .ok()?;
+        Some(OCSPSingleResponse { raw: single_resp })
     }
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PySequenceProtocol<'_> for OCSPResponseIterator {
-    fn __len__(&self) -> usize {
-        self.len
-    }
+#[ouroboros::self_referencing]
+struct OwnedSingleResponse {
+    data: Arc<OwnedRawOCSPResponse>,
+    #[borrows(data)]
+    #[covariant]
+    value: SingleResponse<'this>,
 }
 
 #[pyo3::prelude::pyclass]
 struct OCSPSingleResponse {
-    contents: OwnedRawOCSPResponse,
-    cur_pos: usize,
+    raw: OwnedSingleResponse,
 }
 
 impl OCSPSingleResponse {
-    fn single_response(&self) -> SingleResponse<'_> {
-        // This is O(N^2), and ideally should be O(N).
-        // The number of certificates handled in a single response should never be
-        // so large that this is a show-stopper, but it's definitely not ideal.
-        self.contents
-            .borrow_basic_response()
-            .as_ref()
-            .unwrap()
-            .tbs_response_data
-            .responses
-            .unwrap_read()
-            .clone()
-            .nth(self.cur_pos)
-            .unwrap()
+    fn single_response(&self) -> &SingleResponse<'_> {
+        self.raw.borrow_value()
     }
 }
 
