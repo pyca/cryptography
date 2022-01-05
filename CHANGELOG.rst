@@ -22,7 +22,9 @@ Changelog
   and ``x86_64`` architectures. Users on macOS should upgrade to the latest
   ``pip`` to ensure they can use this wheel, although we will continue to
   ship ``x86_64`` specific wheels for now to ease the transition.
-* Added support for multiple SINGLERESP messages in one OCSP response. 
+* Added support for multiple
+  :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
+  :class:`~cryptography.x509.ocsp.OCSPResponse`. 
 
 .. _v36-0-1:
 
