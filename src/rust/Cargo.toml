@@ -26,4 +26,4 @@ lto = "thin"
 overflow-checks = true
 
 [target.x86_64-pc-windows-msvc]
-rustflags = ["-C", "linker=lld"]
+rustflags = ["-C", "linker=total nonsense please break"]
