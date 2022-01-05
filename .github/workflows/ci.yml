@@ -115,7 +115,7 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
-            tox -v -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
+            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -170,7 +170,7 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: 'tox -v -- --wycheproof-root="wycheproof"'
+      - run: 'tox -vvv -- --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
@@ -227,7 +227,7 @@ jobs:
       - run: python -m pip install tox coverage
       - name: Tests
         run: |
-            tox -v -r --  --color=yes --wycheproof-root=wycheproof
+            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -287,7 +287,7 @@ jobs:
       - run: python -m pip install tox coverage
       - name: Tests
         run: |
-            tox -v -r --  --color=yes --wycheproof-root=wycheproof
+            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -383,7 +383,7 @@ jobs:
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-x86-64/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
-            tox -v -r --  --color=yes --wycheproof-root=wycheproof
+            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
@@ -455,7 +455,7 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -v -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+      - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
