@@ -61,7 +61,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -154,7 +153,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -203,7 +201,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -257,7 +254,6 @@ jobs:
         id: cargo-cache
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -350,7 +346,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -428,7 +423,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
@@ -498,7 +492,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
