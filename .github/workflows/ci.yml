@@ -408,7 +408,6 @@ jobs:
           - stable
         JOB_NUMBER: [0, 1, 2]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2.4.0
         timeout-minutes: 3
@@ -454,6 +453,9 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
