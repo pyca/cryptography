@@ -181,6 +181,8 @@ int SSL_peek(SSL *, void *, int);
 X509 *SSL_get_certificate(const SSL *);
 X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
+void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
+int SSL_get_verify_mode(const SSL *);
 
 /* Added in 1.0.2 */
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
