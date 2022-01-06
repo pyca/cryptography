@@ -91,11 +91,6 @@ enum {
 /* engine ctrl */
 #define CRYPTOGRAPHY_OSRANDOM_GET_IMPLEMENTATION ENGINE_CMD_BASE
 
-/* error reporting */
-static void ERR_load_Cryptography_OSRandom_strings(void);
-static void ERR_Cryptography_OSRandom_error(int function, int reason,
-                                            char *file, int line);
-
 #define CRYPTOGRAPHY_OSRANDOM_F_INIT 100
 #define CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES 101
 #define CRYPTOGRAPHY_OSRANDOM_F_FINISH 102
