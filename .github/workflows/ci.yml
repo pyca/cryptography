@@ -456,6 +456,8 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
 
       - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
