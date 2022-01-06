@@ -168,6 +168,10 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
+      # When run in a docker container the home directory doesn't have the same owner as the
+      # apparent user so pip refuses to create a cache dir
+      - name: create pip cache dir
+        run: mkdir -p "${HOME}/.cache/pip"
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
