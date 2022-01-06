@@ -61,6 +61,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/.cache/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -154,6 +155,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/.cache/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -207,6 +209,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/.cache/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -261,6 +264,7 @@ jobs:
         id: cargo-cache
         with:
           path: |
+            ~/.cache/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -354,6 +358,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/Library/Caches/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -432,6 +437,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/AppData/Local/pip/Cache/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -502,6 +508,7 @@ jobs:
       - uses: actions/cache@v2.1.7
         with:
           path: |
+            ~/.cache/pip/
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
