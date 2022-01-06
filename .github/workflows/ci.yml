@@ -81,7 +81,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox requests coverage
+      - run: python -m pip install --pre tox requests coverage
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -116,7 +116,7 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
+            tox4 -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -176,7 +176,7 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: 'tox -vvv -- --wycheproof-root="wycheproof"'
+      - run: 'tox4 -vvv -- --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
@@ -231,10 +231,10 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage
+      - run: python -m pip install --pre tox coverage
       - name: Tests
         run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+            tox4 -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -292,10 +292,10 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage
+      - run: python -m pip install --pre tox coverage
       - name: Tests
         run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+            tox4 -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -373,7 +373,7 @@ jobs:
           override: true
           default: true
 
-      - run: python -m pip install tox requests coverage
+      - run: python -m pip install --pre tox requests coverage
 
       - uses: actions/checkout@v2.4.0
         timeout-minutes: 3
@@ -392,7 +392,7 @@ jobs:
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-x86-64/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+            tox4 -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
@@ -448,7 +448,7 @@ jobs:
           default: true
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - run: python -m pip install tox requests coverage
+      - run: python -m pip install --pre tox requests coverage
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
@@ -465,7 +465,7 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+      - run: tox4 -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
