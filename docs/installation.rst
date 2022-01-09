@@ -160,6 +160,18 @@ use ``--no-binary``.
 
     $ pip install cryptography --no-binary cryptography
 
+Cross Compiling
+~~~~~~~~~~~~~~~
+
+If you are cross compiling for a target system that has the same target triple
+as the build host you should add these variables in your environment to prevent
+cargo from linking host build-scripts against the target libraries.
+
+.. code-block:: console
+
+    __CARGO_TEST_CHANNEL_OVERRIDE_DO_NOT_USE_THIS="nightly"
+    CARGO_UNSTABLE_TARGET_APPLIES_TO_HOST="true"
+    CARGO_TARGET_APPLIES_TO_HOST="false"
 
 Using your own OpenSSL on Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
