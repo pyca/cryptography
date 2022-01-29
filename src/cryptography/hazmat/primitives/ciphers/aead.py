@@ -12,7 +12,7 @@ from cryptography.hazmat.backends.openssl.backend import backend
 
 
 class ChaCha20Poly1305(object):
-    _MAX_SIZE = 2 ** 32
+    _MAX_SIZE = 2**32
 
     def __init__(self, key: bytes):
         if not backend.aead_cipher_supported(self):
@@ -75,7 +75,7 @@ class ChaCha20Poly1305(object):
 
 
 class AESCCM(object):
-    _MAX_SIZE = 2 ** 32
+    _MAX_SIZE = 2**32
 
     def __init__(self, key: bytes, tag_length: int = 16):
         utils._check_byteslike("key", key)
@@ -160,7 +160,7 @@ class AESCCM(object):
 
 
 class AESGCM(object):
-    _MAX_SIZE = 2 ** 32
+    _MAX_SIZE = 2**32
 
     def __init__(self, key: bytes):
         utils._check_byteslike("key", key)
@@ -223,7 +223,7 @@ class AESGCM(object):
 
 
 class AESOCB3(object):
-    _MAX_SIZE = 2 ** 32
+    _MAX_SIZE = 2**32
 
     def __init__(self, key: bytes):
         utils._check_byteslike("key", key)
