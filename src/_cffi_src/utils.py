@@ -22,8 +22,8 @@ def build_ffi_for_binding(
     module_name,
     module_prefix,
     modules,
-    libraries=[],
-    extra_compile_args=[],
+    libraries,
+    extra_compile_args,
 ):
     """
     Modules listed in ``modules`` should have the following attributes:
@@ -49,7 +49,7 @@ def build_ffi_for_binding(
         customizations.append(module.CUSTOMIZATIONS)
 
     verify_source = "\n".join(includes + customizations)
-    ffi = build_ffi(
+    return build_ffi(
         module_name,
         cdef_source="\n".join(types + functions),
         verify_source=verify_source,
@@ -57,15 +57,13 @@ def build_ffi_for_binding(
         extra_compile_args=extra_compile_args,
     )
 
-    return ffi
-
 
 def build_ffi(
     module_name,
     cdef_source,
     verify_source,
-    libraries=[],
-    extra_compile_args=[],
+    libraries,
+    extra_compile_args,
 ):
     ffi = FFI()
     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
