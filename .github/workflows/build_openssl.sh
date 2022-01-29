@@ -54,10 +54,10 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   mkdir -p "${OSSL_PATH}/lib/"
   mkdir -p "${OSSL_PATH}/include/"
   mkdir -p "${OSSL_PATH}/bin/"
-  cp -r ../src/include/openssl "${OSSL_PATH}/include/"
-  cp libssl.a "${OSSL_PATH}/lib/"
-  cp libcrypto.a "${OSSL_PATH}/lib/"
-  cp bssl "${OSSL_PATH}/bin/openssl"
+  cp -r ../include/openssl "${OSSL_PATH}/include/"
+  cp ssl/libssl.a "${OSSL_PATH}/lib/"
+  cp crypto/libcrypto.a "${OSSL_PATH}/lib/"
+  cp tool/bssl "${OSSL_PATH}/bin/openssl"
   popd
   popd
 fi
