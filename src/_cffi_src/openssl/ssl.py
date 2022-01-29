@@ -24,7 +24,6 @@ static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
-static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 static const long Cryptography_HAS_SSL_COOKIE;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
@@ -520,11 +519,6 @@ int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 """
 
 CUSTOMIZATIONS = """
-// This symbol is being preserved because removing it will break users with
-// pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
-// users have upgraded. PersistentlyDeprecated2020
-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
-
 #ifdef OPENSSL_NO_ENGINE
 int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 #endif

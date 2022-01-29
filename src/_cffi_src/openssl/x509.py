@@ -175,8 +175,6 @@ int X509_REVOKED_get_ext_count(X509_REVOKED *);
 X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 
 X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
@@ -213,11 +211,6 @@ const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
 const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
-
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
