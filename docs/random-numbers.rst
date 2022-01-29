@@ -29,9 +29,9 @@ If you need your random number as an integer (for example, for
 
     >>> serial = int.from_bytes(os.urandom(20), byteorder="big")
 
-Starting with Python 3.6 the `standard library includes`_ the ``secrets``
-module, which can be used for generating cryptographically secure random
-numbers, with specific helpers for text-based formats.
+In addition, the `Python standard library`_ includes the ``secrets`` module,
+which can be used for generating cryptographically secure random numbers, with
+specific helpers for text-based formats.
 
 .. _`always use your operating system's provided random number generator`: https://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
-.. _`standard library includes`: https://docs.python.org/3/library/secrets.html
+.. _`Python standard library`: https://docs.python.org/3/library/secrets.html
