@@ -208,8 +208,8 @@ class CTR(ModeWithNonce):
 
 class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
     name = "GCM"
-    _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
-    _MAX_AAD_BYTES = (2 ** 64) // 8
+    _MAX_ENCRYPTED_BYTES = (2**39 - 256) // 8
+    _MAX_AAD_BYTES = (2**64) // 8
 
     def __init__(
         self,
