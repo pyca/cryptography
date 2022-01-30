@@ -41,7 +41,7 @@ def _generate_uri(
     return f"otpauth://{type_name}/{label}?{urlencode(parameters)}"
 
 
-class HOTP(object):
+class HOTP:
     def __init__(
         self,
         key: bytes,

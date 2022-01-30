@@ -58,7 +58,7 @@ def test_unsupported_backend(backend):
     only_if=lambda backend: backend.scrypt_supported(),
     skip_message="Does not support Scrypt",
 )
-class TestScrypt(object):
+class TestScrypt:
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)

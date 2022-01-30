@@ -20,7 +20,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support SEED ECB",
 )
-class TestSEEDModeECB(object):
+class TestSEEDModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
@@ -36,7 +36,7 @@ class TestSEEDModeECB(object):
     ),
     skip_message="Does not support SEED CBC",
 )
-class TestSEEDModeCBC(object):
+class TestSEEDModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
@@ -52,7 +52,7 @@ class TestSEEDModeCBC(object):
     ),
     skip_message="Does not support SEED OFB",
 )
-class TestSEEDModeOFB(object):
+class TestSEEDModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),
@@ -68,7 +68,7 @@ class TestSEEDModeOFB(object):
     ),
     skip_message="Does not support SEED CFB",
 )
-class TestSEEDModeCFB(object):
+class TestSEEDModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SEED"),

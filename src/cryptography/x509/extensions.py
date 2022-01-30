@@ -107,7 +107,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
         )
 
 
-class Extensions(object):
+class Extensions:
     def __init__(
         self, extensions: typing.Iterable["Extension[ExtensionType]"]
     ) -> None:
@@ -400,7 +400,7 @@ class SubjectInformationAccess(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
-class AccessDescription(object):
+class AccessDescription:
     def __init__(
         self, access_method: ObjectIdentifier, access_location: GeneralName
     ) -> None:
@@ -604,7 +604,7 @@ class FreshestCRL(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
-class DistributionPoint(object):
+class DistributionPoint:
     def __init__(
         self,
         full_name: typing.Optional[typing.Iterable[GeneralName]],
@@ -858,7 +858,7 @@ class CertificatePolicies(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
-class PolicyInformation(object):
+class PolicyInformation:
     def __init__(
         self,
         policy_identifier: ObjectIdentifier,
@@ -922,7 +922,7 @@ class PolicyInformation(object):
         return self._policy_qualifiers
 
 
-class UserNotice(object):
+class UserNotice:
     def __init__(
         self,
         notice_reference: typing.Optional["NoticeReference"],
@@ -968,7 +968,7 @@ class UserNotice(object):
         return self._explicit_text
 
 
-class NoticeReference(object):
+class NoticeReference:
     def __init__(
         self,
         organization: typing.Optional[str],
@@ -1462,7 +1462,7 @@ class Extension(typing.Generic[ExtensionTypeVar]):
         return hash((self.oid, self.critical, self.value))
 
 
-class GeneralNames(object):
+class GeneralNames:
     def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):

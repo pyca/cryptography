@@ -41,7 +41,7 @@ def test_x448_unsupported(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-class TestX448Exchange(object):
+class TestX448Exchange:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

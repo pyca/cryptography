@@ -9,7 +9,7 @@ from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
 
-class TestPKCS7(object):
+class TestPKCS7:
     @pytest.mark.parametrize("size", [127, 4096, -2])
     def test_invalid_block_size(self, size):
         with pytest.raises(ValueError):
@@ -131,7 +131,7 @@ class TestPKCS7(object):
         assert final == unpadded + unpadded
 
 
-class TestANSIX923(object):
+class TestANSIX923:
     @pytest.mark.parametrize("size", [127, 4096, -2])
     def test_invalid_block_size(self, size):
         with pytest.raises(ValueError):

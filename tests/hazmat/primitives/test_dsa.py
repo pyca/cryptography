@@ -55,7 +55,7 @@ def test_skip_if_dsa_not_supported(backend):
         _skip_if_dsa_not_supported(backend, DummyHashAlgorithm(), 1, 1, 1)
 
 
-class TestDSA(object):
+class TestDSA:
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(2048, backend)
         assert isinstance(parameters, dsa.DSAParameters)
@@ -385,7 +385,7 @@ class TestDSA(object):
         ).private_key(backend)
 
 
-class TestDSAVerification(object):
+class TestDSAVerification:
     def test_dsa_verification(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigVer.rsp"),
@@ -450,7 +450,7 @@ class TestDSAVerification(object):
             public_key.verify(b"\x00" * 128, digest, prehashed_alg)
 
 
-class TestDSASignature(object):
+class TestDSASignature:
     def test_dsa_signing(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "DSA", "FIPS_186-3", "SigGen.txt"),
@@ -511,7 +511,7 @@ class TestDSASignature(object):
             private_key.sign(digest, prehashed_alg)
 
 
-class TestDSANumbers(object):
+class TestDSANumbers:
     def test_dsa_parameter_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
         assert parameter_numbers.p == 1
@@ -591,7 +591,7 @@ class TestDSANumbers(object):
         )
 
 
-class TestDSANumberEquality(object):
+class TestDSANumberEquality:
     def test_parameter_numbers_eq(self):
         param = dsa.DSAParameterNumbers(1, 2, 3)
         assert param == dsa.DSAParameterNumbers(1, 2, 3)
@@ -643,7 +643,7 @@ class TestDSANumberEquality(object):
         assert priv != object()
 
 
-class TestDSASerialization(object):
+class TestDSASerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -864,7 +864,7 @@ class TestDSASerialization(object):
             )
 
 
-class TestDSAPEMPublicKeySerialization(object):
+class TestDSAPEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [

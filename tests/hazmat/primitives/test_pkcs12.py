@@ -28,7 +28,7 @@ from ...utils import load_vectors_from_file
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
-class TestPKCS12Loading(object):
+class TestPKCS12Loading:
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
         cert = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "ca.pem"),
@@ -281,7 +281,7 @@ def _load_ca(backend):
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
-class TestPKCS12Creation(object):
+class TestPKCS12Creation:
     @pytest.mark.parametrize("name", [None, b"name"])
     @pytest.mark.parametrize(
         ("encryption_algorithm", "password"),
@@ -489,7 +489,7 @@ def test_pkcs12_ordering():
     assert a_idx < b_idx < c_idx
 
 
-class TestPKCS12Objects(object):
+class TestPKCS12Objects:
     def test_certificate_constructor(self, backend):
         with pytest.raises(TypeError):
             PKCS12Certificate(None, None)  # type:ignore[arg-type]

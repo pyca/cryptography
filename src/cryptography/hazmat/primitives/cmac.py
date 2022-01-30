@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 
 
-class CMAC(object):
+class CMAC:
     _ctx: typing.Optional["_CMACContext"]
     _algorithm: ciphers.BlockCipherAlgorithm
 

@@ -124,7 +124,7 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
 # Not actually supported, just used as a marker for some serialization tests.
-class _RC2(object):
+class _RC2:
     pass
 
 
@@ -2402,7 +2402,7 @@ class Backend:
         return self._read_mem_bio(bio_out)
 
 
-class GetCipherByName(object):
+class GetCipherByName:
     def __init__(self, fmt: str):
         self._fmt = fmt
 

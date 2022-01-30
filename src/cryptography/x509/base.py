@@ -568,7 +568,7 @@ def load_der_x509_crl(
     return rust_x509.load_der_x509_crl(data)
 
 
-class CertificateSigningRequestBuilder(object):
+class CertificateSigningRequestBuilder:
     def __init__(
         self,
         subject_name: typing.Optional[Name] = None,
@@ -646,7 +646,7 @@ class CertificateSigningRequestBuilder(object):
         return rust_x509.create_x509_csr(self, private_key, algorithm)
 
 
-class CertificateBuilder(object):
+class CertificateBuilder:
     _extensions: typing.List[Extension[ExtensionType]]
 
     def __init__(
@@ -883,7 +883,7 @@ class CertificateBuilder(object):
         return rust_x509.create_x509_certificate(self, private_key, algorithm)
 
 
-class CertificateRevocationListBuilder(object):
+class CertificateRevocationListBuilder:
     _extensions: typing.List[Extension[ExtensionType]]
     _revoked_certificates: typing.List[RevokedCertificate]
 
@@ -1018,7 +1018,7 @@ class CertificateRevocationListBuilder(object):
         return rust_x509.create_x509_crl(self, private_key, algorithm)
 
 
-class RevokedCertificateBuilder(object):
+class RevokedCertificateBuilder:
     def __init__(
         self,
         serial_number: typing.Optional[int] = None,

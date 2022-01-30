@@ -12,7 +12,7 @@ import pytz
 from cryptography import x509
 
 
-class TestRevokedCertificateBuilder(object):
+class TestRevokedCertificateBuilder:
     def test_serial_number_must_be_integer(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().serial_number(

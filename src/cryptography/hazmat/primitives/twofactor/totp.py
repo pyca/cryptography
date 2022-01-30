@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.twofactor.hotp import (
 )
 
 
-class TOTP(object):
+class TOTP:
     def __init__(
         self,
         key: bytes,

@@ -20,7 +20,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support AES GCM",
 )
-class TestAESModeGCM(object):
+class TestAESModeGCM:
     test_gcm = generate_aead_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "GCM"),

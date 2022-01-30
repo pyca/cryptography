@@ -55,7 +55,7 @@ class DummyExtension(x509.ExtensionType):
 
 
 @utils.register_interface(x509.GeneralName)
-class FakeGeneralName(object):
+class FakeGeneralName:
     def __init__(self, value):
         self._value = value
 
@@ -76,7 +76,7 @@ def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
     return cert
 
 
-class TestCertificateRevocationList(object):
+class TestCertificateRevocationList:
     def test_load_pem_crl(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -500,7 +500,7 @@ class TestCertificateRevocationList(object):
             crl.is_signature_valid(object)  # type: ignore[arg-type]
 
 
-class TestRevokedCertificate(object):
+class TestRevokedCertificate:
     def test_revoked_basics(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -688,7 +688,7 @@ class TestRevokedCertificate(object):
         assert crl[2].serial_number == 3
 
 
-class TestRSACertificate(object):
+class TestRSACertificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
@@ -1361,7 +1361,7 @@ class TestRSACertificate(object):
         )
 
 
-class TestRSACertificateRequest(object):
+class TestRSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -1941,7 +1941,7 @@ class TestRSACertificateRequest(object):
         assert parsed.subject_value_tags[1] == 0x13
 
 
-class TestCertificateBuilder(object):
+class TestCertificateBuilder:
     def test_checks_for_unsupported_extensions(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = (
@@ -3614,7 +3614,7 @@ class TestCertificateBuilder(object):
             builder.sign(private_key, hashes.SHA256(), backend)
 
 
-class TestCertificateSigningRequestBuilder(object):
+class TestCertificateSigningRequestBuilder:
     def test_sign_invalid_hash_algorithm(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -4342,7 +4342,7 @@ class TestCertificateSigningRequestBuilder(object):
             builder.sign(private_key, hashes.SHA512(), backend)
 
 
-class TestDSACertificate(object):
+class TestDSACertificate:
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
@@ -4467,7 +4467,7 @@ class TestDSACertificate(object):
         )
 
 
-class TestDSACertificateRequest(object):
+class TestDSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -4542,7 +4542,7 @@ class TestDSACertificateRequest(object):
         )
 
 
-class TestGOSTCertificate(object):
+class TestGOSTCertificate:
     def test_numeric_string_x509_name_entry(self):
         cert = _load_cert(
             os.path.join("x509", "e-trust.ru.der"),
@@ -4556,7 +4556,7 @@ class TestGOSTCertificate(object):
         )
 
 
-class TestECDSACertificate(object):
+class TestECDSACertificate:
     def test_load_ecdsa_cert(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
@@ -4674,7 +4674,7 @@ class TestECDSACertificate(object):
             cert.public_key()
 
 
-class TestECDSACertificateRequest(object):
+class TestECDSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -4744,7 +4744,7 @@ class TestECDSACertificateRequest(object):
         )
 
 
-class TestOtherCertificate(object):
+class TestOtherCertificate:
     def test_unsupported_subject_public_key_info(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -4766,7 +4766,7 @@ class TestOtherCertificate(object):
             )
 
 
-class TestNameAttribute(object):
+class TestNameAttribute:
     EXPECTED_TYPES = [
         (NameOID.COMMON_NAME, _ASN1Type.UTF8String),
         (NameOID.COUNTRY_NAME, _ASN1Type.PrintableString),
@@ -4919,7 +4919,7 @@ class TestNameAttribute(object):
         assert na.rfc4514_string() == r"ST="
 
 
-class TestRelativeDistinguishedName(object):
+class TestRelativeDistinguishedName:
     def test_init_empty(self):
         with pytest.raises(ValueError):
             x509.RelativeDistinguishedName([])
@@ -5015,7 +5015,7 @@ class TestRelativeDistinguishedName(object):
         assert rdn.get_attributes_for_oid(x509.ObjectIdentifier("1.2.3")) == []
 
 
-class TestObjectIdentifier(object):
+class TestObjectIdentifier:
     def test_eq(self):
         oid1 = x509.ObjectIdentifier("2.999.1")
         oid2 = x509.ObjectIdentifier("2.999.1")
@@ -5062,7 +5062,7 @@ class TestObjectIdentifier(object):
         x509.ObjectIdentifier("2.25.305821105408246119474742976030998643995")
 
 
-class TestName(object):
+class TestName:
     def test_eq(self):
         ava1 = x509.NameAttribute(x509.ObjectIdentifier("2.999.1"), "value1")
         ava2 = x509.NameAttribute(x509.ObjectIdentifier("2.999.2"), "value2")
@@ -5263,7 +5263,7 @@ class TestName(object):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-class TestEd25519Certificate(object):
+class TestEd25519Certificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
@@ -5292,7 +5292,7 @@ class TestEd25519Certificate(object):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-class TestEd448Certificate(object):
+class TestEd448Certificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ed448", "root-ed448.pem"),
@@ -5313,7 +5313,7 @@ class TestEd448Certificate(object):
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
 )
-class TestSignatureRejection(object):
+class TestSignatureRejection:
     """Test if signing rejects DH keys properly."""
 
     def load_key(self, backend):

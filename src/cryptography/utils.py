@@ -105,7 +105,7 @@ def verify_interface(
             )
 
 
-class _DeprecatedValue(object):
+class _DeprecatedValue:
     def __init__(self, value: object, message: str, warning_class):
         self.value = value
         self.message = message

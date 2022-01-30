@@ -35,7 +35,7 @@ def test_poly1305_unsupported(backend):
     only_if=lambda backend: backend.poly1305_supported(),
     skip_message="Requires OpenSSL with poly1305 support",
 )
-class TestPoly1305(object):
+class TestPoly1305:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

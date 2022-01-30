@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
 
-class TestX963KDF(object):
+class TestX963KDF:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
 

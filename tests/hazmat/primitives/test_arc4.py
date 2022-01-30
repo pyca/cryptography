@@ -20,7 +20,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support ARC4",
 )
-class TestARC4(object):
+class TestARC4:
     test_rfc = generate_stream_encryption_test(
         load_nist_vectors,
         os.path.join("ciphers", "ARC4"),

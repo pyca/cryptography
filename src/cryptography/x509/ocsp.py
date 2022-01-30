@@ -57,7 +57,7 @@ class OCSPCertStatus(utils.Enum):
     UNKNOWN = 2
 
 
-class _SingleResponse(object):
+class _SingleResponse:
     def __init__(
         self,
         cert: x509.Certificate,
@@ -367,7 +367,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         """
 
 
-class OCSPRequestBuilder(object):
+class OCSPRequestBuilder:
     def __init__(
         self,
         request: typing.Optional[
@@ -417,7 +417,7 @@ class OCSPRequestBuilder(object):
         return ocsp.create_ocsp_request(self)
 
 
-class OCSPResponseBuilder(object):
+class OCSPResponseBuilder:
     def __init__(
         self,
         response: typing.Optional[_SingleResponse] = None,

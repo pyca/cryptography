@@ -45,7 +45,7 @@ class PKCS7Options(utils.Enum):
     NoCerts = "Don't embed signer certificate"
 
 
-class PKCS7SignatureBuilder(object):
+class PKCS7SignatureBuilder:
     def __init__(
         self,
         data: typing.Optional[bytes] = None,

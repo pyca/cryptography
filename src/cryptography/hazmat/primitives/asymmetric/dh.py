@@ -20,7 +20,7 @@ def generate_parameters(
     return ossl.generate_dh_parameters(generator, key_size)
 
 
-class DHParameterNumbers(object):
+class DHParameterNumbers:
     def __init__(self, p: int, g: int, q: typing.Optional[int] = None) -> None:
         if not isinstance(p, int) or not isinstance(g, int):
             raise TypeError("p and g must be integers")
@@ -70,7 +70,7 @@ class DHParameterNumbers(object):
         return self._q
 
 
-class DHPublicNumbers(object):
+class DHPublicNumbers:
     def __init__(self, y: int, parameter_numbers: DHParameterNumbers) -> None:
         if not isinstance(y, int):
             raise TypeError("y must be an integer.")
@@ -111,7 +111,7 @@ class DHPublicNumbers(object):
         return self._parameter_numbers
 
 
-class DHPrivateNumbers(object):
+class DHPrivateNumbers:
     def __init__(self, x: int, public_numbers: DHPublicNumbers) -> None:
         if not isinstance(x, int):
             raise TypeError("x must be an integer.")

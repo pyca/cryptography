@@ -274,7 +274,7 @@ def test_ec_key_key_size(backend):
     assert key.public_key().key_size == 256
 
 
-class TestECWithNumbers(object):
+class TestECWithNumbers:
     def test_with_numbers(self, backend, subtests):
         vectors = itertools.product(
             load_vectors_from_file(
@@ -308,7 +308,7 @@ class TestECWithNumbers(object):
                 assert curve_type().name == priv_num.public_numbers.curve.name
 
 
-class TestECDSAVectors(object):
+class TestECDSAVectors:
     def test_signing_with_example_keys(self, backend, subtests):
         vectors = itertools.product(
             load_vectors_from_file(
@@ -597,7 +597,7 @@ class TestECDSAVectors(object):
             )
 
 
-class TestECNumbersEquality(object):
+class TestECNumbersEquality:
     def test_public_numbers_eq(self):
         pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
         assert pub == ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
@@ -634,7 +634,7 @@ class TestECNumbersEquality(object):
         assert priv != object()
 
 
-class TestECSerialization(object):
+class TestECSerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -890,7 +890,7 @@ class TestECSerialization(object):
         assert parsed_public
 
 
-class TestEllipticCurvePEMPublicKeySerialization(object):
+class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
         [
@@ -1146,7 +1146,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         )
 
 
-class TestECDH(object):
+class TestECDH:
     def test_key_exchange_with_vectors(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join(

@@ -168,7 +168,7 @@ def _to_mpint(val: int) -> bytes:
     return utils.int_to_bytes(val, nbytes)
 
 
-class _FragList(object):
+class _FragList:
     """Build recursive structure without data copy."""
 
     flist: typing.List[bytes]
@@ -218,7 +218,7 @@ class _FragList(object):
         return buf.tobytes()
 
 
-class _SSHFormatRSA(object):
+class _SSHFormatRSA:
     """Format for RSA keys.
 
     Public:
@@ -288,7 +288,7 @@ class _SSHFormatRSA(object):
         f_priv.put_mpint(private_numbers.q)
 
 
-class _SSHFormatDSA(object):
+class _SSHFormatDSA:
     """Format for DSA keys.
 
     Public:
@@ -360,7 +360,7 @@ class _SSHFormatDSA(object):
             raise ValueError("SSH supports only 1024 bit DSA keys")
 
 
-class _SSHFormatECDSA(object):
+class _SSHFormatECDSA:
     """Format for ECDSA keys.
 
     Public:
@@ -431,7 +431,7 @@ class _SSHFormatECDSA(object):
         f_priv.put_mpint(private_numbers.private_value)
 
 
-class _SSHFormatEd25519(object):
+class _SSHFormatEd25519:
     """Format for Ed25519 keys.
 
     Public:

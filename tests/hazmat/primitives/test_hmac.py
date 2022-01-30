@@ -23,13 +23,13 @@ from ...utils import raises_unsupported_algorithm
     only_if=lambda backend: backend.hmac_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
-class TestHMACCopy(object):
+class TestHMACCopy:
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
     )
 
 
-class TestHMAC(object):
+class TestHMAC:
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):

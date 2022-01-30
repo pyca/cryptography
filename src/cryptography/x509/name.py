@@ -84,7 +84,7 @@ def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
     return val
 
 
-class NameAttribute(object):
+class NameAttribute:
     def __init__(
         self,
         oid: ObjectIdentifier,
@@ -190,7 +190,7 @@ class NameAttribute(object):
         return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
 
-class RelativeDistinguishedName(object):
+class RelativeDistinguishedName:
     def __init__(self, attributes: typing.Iterable[NameAttribute]):
         attributes = list(attributes)
         if not attributes:
@@ -246,7 +246,7 @@ class RelativeDistinguishedName(object):
         return "<RelativeDistinguishedName({})>".format(self.rfc4514_string())
 
 
-class Name(object):
+class Name:
     @typing.overload
     def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None:
         ...

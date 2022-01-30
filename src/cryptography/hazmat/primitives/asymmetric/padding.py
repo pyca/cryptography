@@ -53,7 +53,7 @@ class OAEP(AsymmetricPadding):
         self._label = label
 
 
-class MGF1(object):
+class MGF1:
     MAX_LENGTH = object()
 
     def __init__(self, algorithm: hashes.HashAlgorithm):

@@ -288,7 +288,7 @@ def rsa_recover_prime_factors(
     return (p, q)
 
 
-class RSAPrivateNumbers(object):
+class RSAPrivateNumbers:
     def __init__(
         self,
         p: int,
@@ -392,7 +392,7 @@ class RSAPrivateNumbers(object):
         )
 
 
-class RSAPublicNumbers(object):
+class RSAPublicNumbers:
     def __init__(self, e: int, n: int):
         if not isinstance(e, int) or not isinstance(n, int):
             raise TypeError("RSAPublicNumbers arguments must be integers.")

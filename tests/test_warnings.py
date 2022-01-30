@@ -13,7 +13,7 @@ import pytest
 from cryptography.utils import deprecated
 
 
-class TestDeprecated(object):
+class TestDeprecated:
     @typing.no_type_check
     def test_deprecated(self, monkeypatch):
         mod = types.ModuleType("TestDeprecated/test_deprecated")

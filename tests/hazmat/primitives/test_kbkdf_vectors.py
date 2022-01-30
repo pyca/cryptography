@@ -9,7 +9,7 @@ from .utils import generate_kbkdf_counter_mode_test
 from ...utils import load_nist_kbkdf_vectors
 
 
-class TestCounterKDFCounterMode(object):
+class TestCounterKDFCounterMode:
     test_kbkdfctr = generate_kbkdf_counter_mode_test(
         load_nist_kbkdf_vectors,
         os.path.join("KDF"),
