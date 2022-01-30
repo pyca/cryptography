@@ -22,6 +22,10 @@ Changelog
   and ``x86_64`` architectures. Users on macOS should upgrade to the latest
   ``pip`` to ensure they can use this wheel, although we will continue to
   ship ``x86_64`` specific wheels for now to ease the transition.
+* This will be the final release for which we ship ``manylinux2010`` wheels.
+  Going forward the minimum supported ``manylinux`` ABI for our wheels will
+  be ``manylinux2014``. The vast majority of users will continue to receive
+  ``manylinux`` wheels provided they have an up to date ``pip``.
 * Added support for multiple
   :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
   :class:`~cryptography.x509.ocsp.OCSPResponse`. 
