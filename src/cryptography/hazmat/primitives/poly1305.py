@@ -13,7 +13,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.openssl.poly1305 import _Poly1305Context
 
 
-class Poly1305(object):
+class Poly1305:
     _ctx: typing.Optional[_Poly1305Context]
 
     def __init__(self, key: bytes):

@@ -20,7 +20,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support IDEA ECB",
 )
-class TestIDEAModeECB(object):
+class TestIDEAModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
@@ -36,7 +36,7 @@ class TestIDEAModeECB(object):
     ),
     skip_message="Does not support IDEA CBC",
 )
-class TestIDEAModeCBC(object):
+class TestIDEAModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
@@ -52,7 +52,7 @@ class TestIDEAModeCBC(object):
     ),
     skip_message="Does not support IDEA OFB",
 )
-class TestIDEAModeOFB(object):
+class TestIDEAModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
@@ -68,7 +68,7 @@ class TestIDEAModeOFB(object):
     ),
     skip_message="Does not support IDEA CFB",
 )
-class TestIDEAModeCFB(object):
+class TestIDEAModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),

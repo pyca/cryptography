@@ -15,7 +15,7 @@ from ...utils import load_nist_vectors
     only_if=lambda backend: backend.pbkdf2_hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1 for PBKDF2HMAC",
 )
-class TestPBKDF2HMACSHA1(object):
+class TestPBKDF2HMACSHA1:
     test_pbkdf2_sha1 = generate_pbkdf2_test(
         load_nist_vectors,
         "KDF",

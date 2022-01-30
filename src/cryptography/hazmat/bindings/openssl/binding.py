@@ -20,7 +20,7 @@ _OpenSSLErrorWithText = typing.NamedTuple(
 )
 
 
-class _OpenSSLError(object):
+class _OpenSSLError:
     def __init__(self, code: int, lib: int, reason: int):
         self._code = code
         self._lib = lib
@@ -114,7 +114,7 @@ def build_conditional_library(lib, conditional_names):
     return conditional_lib
 
 
-class Binding(object):
+class Binding:
     """
     OpenSSL API wrapper.
     """

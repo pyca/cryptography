@@ -179,7 +179,7 @@ def skip_if_memtesting_not_supported():
 
 @pytest.mark.skip_fips(reason="FIPS self-test sets allow_customize = 0")
 @skip_if_memtesting_not_supported()
-class TestAssertNoMemoryLeaks(object):
+class TestAssertNoMemoryLeaks:
     def test_no_leak_no_malloc(self):
         assert_no_memory_leaks(
             textwrap.dedent(
@@ -245,7 +245,7 @@ class TestAssertNoMemoryLeaks(object):
 
 @pytest.mark.skip_fips(reason="FIPS self-test sets allow_customize = 0")
 @skip_if_memtesting_not_supported()
-class TestOpenSSLMemoryLeaks(object):
+class TestOpenSSLMemoryLeaks:
     @pytest.mark.parametrize(
         "path", ["x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt"]
     )

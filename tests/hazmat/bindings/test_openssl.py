@@ -14,7 +14,7 @@ from cryptography.hazmat.bindings.openssl.binding import (
 )
 
 
-class TestOpenSSL(object):
+class TestOpenSSL:
     def test_binding_loads(self):
         binding = Binding()
         assert binding

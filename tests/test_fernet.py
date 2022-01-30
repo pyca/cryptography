@@ -38,7 +38,7 @@ def json_parametrize(keys, filename):
     ),
     skip_message="Does not support AES CBC",
 )
-class TestFernet(object):
+class TestFernet:
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"),
         "generate.json",
@@ -150,7 +150,7 @@ class TestFernet(object):
     ),
     skip_message="Does not support AES CBC",
 )
-class TestMultiFernet(object):
+class TestMultiFernet:
     def test_encrypt(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)

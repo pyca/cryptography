@@ -19,7 +19,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support SM4 ECB",
 )
-class TestSM4ModeECB(object):
+class TestSM4ModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
@@ -35,7 +35,7 @@ class TestSM4ModeECB(object):
     ),
     skip_message="Does not support SM4 CBC",
 )
-class TestSM4ModeCBC(object):
+class TestSM4ModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
@@ -51,7 +51,7 @@ class TestSM4ModeCBC(object):
     ),
     skip_message="Does not support SM4 OFB",
 )
-class TestSM4ModeOFB(object):
+class TestSM4ModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
@@ -67,7 +67,7 @@ class TestSM4ModeOFB(object):
     ),
     skip_message="Does not support SM4 CFB",
 )
-class TestSM4ModeCFB(object):
+class TestSM4ModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
@@ -83,7 +83,7 @@ class TestSM4ModeCFB(object):
     ),
     skip_message="Does not support SM4 CTR",
 )
-class TestSM4ModeCTR(object):
+class TestSM4ModeCTR:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),

@@ -139,7 +139,7 @@ def test_dh_public_numbers_equality():
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
 )
-class TestDH(object):
+class TestDH:
     def test_small_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 511, backend)
@@ -465,7 +465,7 @@ class TestDH(object):
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
 )
-class TestDHPrivateKeySerialization(object):
+class TestDHPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [
@@ -656,7 +656,7 @@ class TestDHPrivateKeySerialization(object):
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
 )
-class TestDHPublicKeySerialization(object):
+class TestDHPublicKeySerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [
@@ -789,7 +789,7 @@ class TestDHPublicKeySerialization(object):
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
 )
-class TestDHParameterSerialization(object):
+class TestDHParameterSerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [

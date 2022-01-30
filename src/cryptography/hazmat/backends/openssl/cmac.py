@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-class _CMACContext(object):
+class _CMACContext:
     def __init__(
         self,
         backend: "Backend",

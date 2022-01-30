@@ -21,7 +21,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support AES XTS",
 )
-class TestAESModeXTS(object):
+class TestAESModeXTS:
     def test_xts_vectors(self, backend, subtests):
         # This list comprehension excludes any vector that does not have a
         # data unit length that is divisible by 8. The NIST vectors include
@@ -80,7 +80,7 @@ class TestAESModeXTS(object):
     ),
     skip_message="Does not support AES CBC",
 )
-class TestAESModeCBC(object):
+class TestAESModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
@@ -112,7 +112,7 @@ class TestAESModeCBC(object):
     ),
     skip_message="Does not support AES ECB",
 )
-class TestAESModeECB(object):
+class TestAESModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
@@ -144,7 +144,7 @@ class TestAESModeECB(object):
     ),
     skip_message="Does not support AES OFB",
 )
-class TestAESModeOFB(object):
+class TestAESModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
@@ -176,7 +176,7 @@ class TestAESModeOFB(object):
     ),
     skip_message="Does not support AES CFB",
 )
-class TestAESModeCFB(object):
+class TestAESModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -208,7 +208,7 @@ class TestAESModeCFB(object):
     ),
     skip_message="Does not support AES CFB8",
 )
-class TestAESModeCFB8(object):
+class TestAESModeCFB8:
     test_cfb8 = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -240,7 +240,7 @@ class TestAESModeCFB8(object):
     ),
     skip_message="Does not support AES CTR",
 )
-class TestAESModeCTR(object):
+class TestAESModeCTR:
     test_ctr = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CTR"),

@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-class _Poly1305Context(object):
+class _Poly1305Context:
     def __init__(self, backend: "Backend", key: bytes) -> None:
         self._backend = backend
 

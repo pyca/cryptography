@@ -21,7 +21,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support ChaCha20",
 )
-class TestChaCha20(object):
+class TestChaCha20:
     @pytest.mark.parametrize(
         "vector",
         _load_all_params(

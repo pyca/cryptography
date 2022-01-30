@@ -8,7 +8,7 @@ import pytest
 from cryptography.hazmat.primitives import constant_time
 
 
-class TestConstantTimeBytesEq(object):
+class TestConstantTimeBytesEq:
     def test_reject_unicode(self):
         with pytest.raises(TypeError):
             constant_time.bytes_eq(b"foo", "foo")  # type: ignore[arg-type]

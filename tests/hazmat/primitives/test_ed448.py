@@ -47,7 +47,7 @@ def test_ed448_unsupported(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-class TestEd448Signing(object):
+class TestEd448Signing:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

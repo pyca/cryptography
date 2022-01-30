@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 
 
-class EllipticCurveOID(object):
+class EllipticCurveOID:
     SECP192R1 = ObjectIdentifier("1.2.840.10045.3.1.1")
     SECP224R1 = ObjectIdentifier("1.3.132.0.33")
     SECP256K1 = ObjectIdentifier("1.3.132.0.10")
@@ -344,7 +344,7 @@ def derive_private_key(
     return ossl.derive_elliptic_curve_private_key(private_value, curve)
 
 
-class EllipticCurvePublicNumbers(object):
+class EllipticCurvePublicNumbers:
     def __init__(self, x: int, y: int, curve: EllipticCurve):
         if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError("x and y must be integers.")
@@ -443,7 +443,7 @@ class EllipticCurvePublicNumbers(object):
         )
 
 
-class EllipticCurvePrivateNumbers(object):
+class EllipticCurvePrivateNumbers:
     def __init__(
         self, private_value: int, public_numbers: EllipticCurvePublicNumbers
     ):
@@ -492,7 +492,7 @@ class EllipticCurvePrivateNumbers(object):
         return hash((self.private_value, self.public_numbers))
 
 
-class ECDH(object):
+class ECDH:
     pass
 
 

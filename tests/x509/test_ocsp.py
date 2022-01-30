@@ -72,7 +72,7 @@ def _generate_root(private_key=None, algorithm=hashes.SHA256()):
     return cert, private_key
 
 
-class TestOCSPRequest(object):
+class TestOCSPRequest:
     def test_bad_request(self):
         with pytest.raises(ValueError):
             ocsp.load_der_ocsp_request(b"invalid")
@@ -162,7 +162,7 @@ class TestOCSPRequest(object):
             req.public_bytes(serialization.Encoding.PEM)
 
 
-class TestOCSPRequestBuilder(object):
+class TestOCSPRequestBuilder:
     def test_add_two_certs(self):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
@@ -253,7 +253,7 @@ class TestOCSPRequestBuilder(object):
         assert req.extensions[0].critical is critical
 
 
-class TestOCSPResponseBuilder(object):
+class TestOCSPResponseBuilder:
     def test_add_response_twice(self):
         cert, issuer = _cert_and_issuer()
         time = datetime.datetime.now()
@@ -879,7 +879,7 @@ class TestOCSPResponseBuilder(object):
             builder.sign(private_key, None)
 
 
-class TestSignedCertificateTimestampsExtension(object):
+class TestSignedCertificateTimestampsExtension:
     def test_init(self):
         with pytest.raises(TypeError):
             x509.SignedCertificateTimestamps(
@@ -971,7 +971,7 @@ class TestSignedCertificateTimestampsExtension(object):
         )
 
 
-class TestOCSPResponse(object):
+class TestOCSPResponse:
     def test_bad_response(self):
         with pytest.raises(ValueError):
             ocsp.load_der_ocsp_response(b"invalid")
@@ -1300,7 +1300,7 @@ class TestOCSPResponse(object):
             )
 
 
-class TestOCSPEdDSA(object):
+class TestOCSPEdDSA:
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 support / OCSP",

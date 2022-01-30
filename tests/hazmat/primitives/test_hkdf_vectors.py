@@ -17,7 +17,7 @@ from ...utils import load_nist_vectors
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1.",
 )
-class TestHKDFSHA1(object):
+class TestHKDFSHA1:
     test_hkdfsha1 = generate_hkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
@@ -30,7 +30,7 @@ class TestHKDFSHA1(object):
     only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
     skip_message="Does not support SHA256.",
 )
-class TestHKDFSHA256(object):
+class TestHKDFSHA256:
     test_hkdfsha256 = generate_hkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),

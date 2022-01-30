@@ -61,7 +61,7 @@ from ...utils import (
 )
 
 
-class DummyMGF(object):
+class DummyMGF:
     _salt_length = 0
 
 
@@ -169,7 +169,7 @@ def test_modular_inverse():
     )
 
 
-class TestRSA(object):
+class TestRSA:
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
         itertools.product(
@@ -361,7 +361,7 @@ class TestRSA(object):
             )
 
 
-class TestRSASignature(object):
+class TestRSASignature:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -678,7 +678,7 @@ class TestRSASignature(object):
             )
 
 
-class TestRSAVerification(object):
+class TestRSAVerification:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -1101,7 +1101,7 @@ class TestRSAVerification(object):
             public_key.verify(b"\x00" * 64, data, pkcs, prehashed_alg)
 
 
-class TestRSAPSSMGF1Verification(object):
+class TestRSAPSSMGF1Verification:
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(
@@ -1238,7 +1238,7 @@ class TestRSAPSSMGF1Verification(object):
     )
 
 
-class TestRSAPKCS1Verification(object):
+class TestRSAPKCS1Verification:
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
             backend.hash_supported(hashes.SHA1())
@@ -1340,7 +1340,7 @@ class TestRSAPKCS1Verification(object):
     )
 
 
-class TestPSS(object):
+class TestPSS:
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
             padding.calculate_max_pss_salt_length(
@@ -1373,7 +1373,7 @@ class TestPSS(object):
         assert pss._salt_length == padding.PSS.MAX_LENGTH
 
 
-class TestMGF1(object):
+class TestMGF1:
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
             padding.MGF1(b"not_a_hash")  # type:ignore[arg-type]
@@ -1384,7 +1384,7 @@ class TestMGF1(object):
         assert mgf._algorithm == algorithm
 
 
-class TestOAEP(object):
+class TestOAEP:
     def test_invalid_algorithm(self):
         mgf = padding.MGF1(hashes.SHA1())
         with pytest.raises(TypeError):
@@ -1393,7 +1393,7 @@ class TestOAEP(object):
             )
 
 
-class TestRSADecryption(object):
+class TestRSADecryption:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
@@ -1637,7 +1637,7 @@ class TestRSADecryption(object):
             )
 
 
-class TestRSAEncryption(object):
+class TestRSAEncryption:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.OAEP(
@@ -1836,7 +1836,7 @@ class TestRSAEncryption(object):
             )
 
 
-class TestRSANumbers(object):
+class TestRSANumbers:
     def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
         assert public_numbers.e == 1
@@ -1963,7 +1963,7 @@ class TestRSANumbers(object):
         assert repr(num) == "<RSAPublicNumbers(e=1, n=1)>"
 
 
-class TestRSANumbersEquality(object):
+class TestRSANumbersEquality:
     def test_public_numbers_eq(self):
         num = RSAPublicNumbers(1, 2)
         num2 = RSAPublicNumbers(1, 2)
@@ -2028,7 +2028,7 @@ class TestRSANumbersEquality(object):
         assert hash(priv1) != hash(priv3)
 
 
-class TestRSAPrimeFactorRecovery(object):
+class TestRSAPrimeFactorRecovery:
     def test_recover_prime_factors(self, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
@@ -2057,7 +2057,7 @@ class TestRSAPrimeFactorRecovery(object):
             rsa.rsa_recover_prime_factors(34, 3, 7)
 
 
-class TestRSAPrivateKeySerialization(object):
+class TestRSAPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -2246,7 +2246,7 @@ class TestRSAPrivateKeySerialization(object):
             )
 
 
-class TestRSAPEMPublicKeySerialization(object):
+class TestRSAPEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding", "format"),
         [

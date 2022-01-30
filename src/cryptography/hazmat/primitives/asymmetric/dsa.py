@@ -123,7 +123,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
 DSAPublicKeyWithSerialization = DSAPublicKey
 
 
-class DSAParameterNumbers(object):
+class DSAParameterNumbers:
     def __init__(self, p: int, q: int, g: int):
         if (
             not isinstance(p, int)
@@ -173,7 +173,7 @@ class DSAParameterNumbers(object):
         )
 
 
-class DSAPublicNumbers(object):
+class DSAPublicNumbers:
     def __init__(self, y: int, parameter_numbers: DSAParameterNumbers):
         if not isinstance(y, int):
             raise TypeError("DSAPublicNumbers y argument must be an integer.")
@@ -220,7 +220,7 @@ class DSAPublicNumbers(object):
         )
 
 
-class DSAPrivateNumbers(object):
+class DSAPrivateNumbers:
     def __init__(self, x: int, public_numbers: DSAPublicNumbers):
         if not isinstance(x, int):
             raise TypeError("DSAPrivateNumbers x argument must be an integer.")

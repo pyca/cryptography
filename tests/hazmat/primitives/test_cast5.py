@@ -20,7 +20,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support CAST5 ECB",
 )
-class TestCAST5ModeECB(object):
+class TestCAST5ModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -36,7 +36,7 @@ class TestCAST5ModeECB(object):
     ),
     skip_message="Does not support CAST5 CBC",
 )
-class TestCAST5ModeCBC(object):
+class TestCAST5ModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -52,7 +52,7 @@ class TestCAST5ModeCBC(object):
     ),
     skip_message="Does not support CAST5 OFB",
 )
-class TestCAST5ModeOFB(object):
+class TestCAST5ModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -68,7 +68,7 @@ class TestCAST5ModeOFB(object):
     ),
     skip_message="Does not support CAST5 CFB",
 )
-class TestCAST5ModeCFB(object):
+class TestCAST5ModeCFB:
     test_cfb = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),

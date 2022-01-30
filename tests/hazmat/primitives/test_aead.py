@@ -51,7 +51,7 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
     not _aead_supported(ChaCha20Poly1305),
     reason="Does not support ChaCha20Poly1305",
 )
-class TestChaCha20Poly1305(object):
+class TestChaCha20Poly1305:
     def test_data_too_large(self):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
@@ -187,7 +187,7 @@ class TestChaCha20Poly1305(object):
     not _aead_supported(AESCCM),
     reason="Does not support AESCCM",
 )
-class TestAESCCM(object):
+class TestAESCCM:
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
@@ -360,7 +360,7 @@ def _load_gcm_vectors():
     return [x for x in vectors if len(x["tag"]) == 32 and len(x["iv"]) >= 16]
 
 
-class TestAESGCM(object):
+class TestAESGCM:
     def test_data_too_large(self):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
@@ -482,7 +482,7 @@ def test_aesocb3_unsupported_on_older_openssl(backend):
     not _aead_supported(AESOCB3),
     reason="Does not support AESOCB3",
 )
-class TestAESOCB3(object):
+class TestAESOCB3:
     def test_data_too_large(self):
         key = AESOCB3.generate_key(128)
         aesocb3 = AESOCB3(key)

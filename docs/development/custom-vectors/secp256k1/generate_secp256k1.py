@@ -19,7 +19,7 @@ HASHLIB_HASH_TYPES = {
 }
 
 
-class TruncatedHash(object):
+class TruncatedHash:
     def __init__(self, hasher):
         self.hasher = hasher
 

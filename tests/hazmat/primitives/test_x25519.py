@@ -41,7 +41,7 @@ def test_x25519_unsupported(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-class TestX25519Exchange(object):
+class TestX25519Exchange:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

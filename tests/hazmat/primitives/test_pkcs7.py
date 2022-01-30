@@ -21,7 +21,7 @@ from ...utils import load_vectors_from_file, raises_unsupported_algorithm
     only_if=lambda backend: backend.pkcs7_supported(),
     skip_message="Requires OpenSSL with PKCS7 support",
 )
-class TestPKCS7Loading(object):
+class TestPKCS7Loading:
     def test_load_invalid_der_pkcs7(self, backend):
         with pytest.raises(ValueError):
             pkcs7.load_der_pkcs7_certificates(b"nonsense")
@@ -155,7 +155,7 @@ def _load_cert_key():
     only_if=lambda backend: backend.pkcs7_supported(),
     skip_message="Requires OpenSSL with PKCS7 support",
 )
-class TestPKCS7Builder(object):
+class TestPKCS7Builder:
     def test_invalid_data(self, backend):
         builder = pkcs7.PKCS7SignatureBuilder()
         with pytest.raises(TypeError):
