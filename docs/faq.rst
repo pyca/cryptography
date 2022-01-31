@@ -67,7 +67,7 @@ legacy libraries:
 * Lack of high level APIs.
 * Lack of PyPy and Python 3 support.
 * Absence of algorithms such as
-  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
+  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.aead.AESGCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 
 Why does ``cryptography`` require Rust?
