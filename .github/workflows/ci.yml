@@ -352,7 +352,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Disable spotlight from indexing everything
-        run: sudo mdutil -ai off
+        run: |
+          sudo mdutil -ai off
+          sudo killall mdworker
       - uses: actions/checkout@v2.4.0
         timeout-minutes: 3
         with:
