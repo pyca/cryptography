@@ -354,7 +354,7 @@ jobs:
       - name: Disable spotlight from indexing everything
         run: |
           sudo mdutil -ai off
-          sudo killall mdworker
+          sudo killall mdworker || true
       - uses: actions/checkout@v2.4.0
         timeout-minutes: 3
         with:
