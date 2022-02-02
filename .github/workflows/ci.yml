@@ -351,6 +351,8 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
     timeout-minutes: 15
     steps:
+      - name: Disable spotlight from indexing everything
+        run: sudo mdutil -ai off
       - uses: actions/checkout@v2.4.0
         timeout-minutes: 3
         with:
