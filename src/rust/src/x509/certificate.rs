@@ -193,12 +193,18 @@ impl Certificate {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::parse_name(py, &self.raw.borrow_value().tbs_cert.issuer)
+        Ok(
+            x509::parse_name(py, &self.raw.borrow_value().tbs_cert.issuer)
+                .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?,
+        )
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::parse_name(py, &self.raw.borrow_value().tbs_cert.subject)
+        Ok(
+            x509::parse_name(py, &self.raw.borrow_value().tbs_cert.subject)
+                .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?,
+        )
     }
 
     #[getter]

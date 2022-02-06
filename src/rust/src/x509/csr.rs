@@ -128,7 +128,10 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::parse_name(py, &self.raw.borrow_value().csr_info.subject)
+        Ok(x509::parse_name(
+            py,
+            &self.raw.borrow_value().csr_info.subject,
+        )?)
     }
 
     #[getter]

@@ -135,7 +135,7 @@ impl OCSPResponse {
     fn responder_name<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
         match resp.tbs_response_data.responder_id {
-            ResponderId::ByName(ref name) => x509::parse_name(py, name),
+            ResponderId::ByName(ref name) => Ok(x509::parse_name(py, name)?),
             ResponderId::ByKey(_) => Ok(py.None().into_ref(py)),
         }
     }

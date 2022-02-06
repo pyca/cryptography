@@ -45,6 +45,15 @@ impl From<PyAsn1Error> for pyo3::PyErr {
     }
 }
 
+impl PyAsn1Error {
+    pub(crate) fn add_location(self, loc: asn1::ParseLocation) -> Self {
+        match self {
+            PyAsn1Error::Py(e) => PyAsn1Error::Py(e),
+            PyAsn1Error::Asn1(e) => PyAsn1Error::Asn1(e.add_location(loc)),
+        }
+    }
+}
+
 // The primary purpose of this alias is for brevity to keep function signatures
 // to a single-line as a work around for coverage issues. See
 // https://github.com/pyca/cryptography/pull/6173
@@ -217,4 +226,15 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(test_parse_certificate))?;
 
     Ok(submod)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PyAsn1Error;
+
+    #[test]
+    fn test_pyasn1error_add_location() {
+        let py_err = pyo3::PyErr::new::<pyo3::exceptions::PyValueError, _>("Error!");
+        PyAsn1Error::Py(py_err).add_location(asn1::ParseLocation::Field("meh"));
+    }
 }

@@ -328,14 +328,14 @@ pub(crate) struct Extension<'a> {
 pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
     name: &Name<'_>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.unwrap_read().clone() {
         let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
     }
-    x509_module.call_method1("Name", (py_rdns,))
+    Ok(x509_module.call_method1("Name", (py_rdns,))?)
 }
 
 fn parse_name_attribute(
@@ -714,6 +714,13 @@ impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
     }
 }
 
+pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Asn1ReadableOrWritable, RawTlv};
@@ -735,11 +742,4 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         assert!(RawTlv::can_parse(123));
     }
-}
-
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
-
-    Ok(())
 }

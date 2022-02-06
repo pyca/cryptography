@@ -981,6 +981,17 @@ class TestRSACertificate:
             x509.NameAttribute(NameOID.COMMON_NAME, "We heart UTF8!\u2122")
         ]
 
+    def test_invalid_unicode_name(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "invalid_utf8_common_name.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError, match="subject"):
+            cert.subject
+        with pytest.raises(ValueError, match="issuer"):
+            cert.issuer
+
     def test_non_ascii_dns_name(self, backend):
         cert = _load_cert(
             os.path.join("x509", "utf8-dnsname.pem"),
