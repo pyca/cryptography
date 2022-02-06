@@ -443,7 +443,6 @@ jobs:
       - uses: actions/cache@v2.1.7
         timeout-minutes: 5
         with:
-        timeout-minutes: 5
           path: |
             ~/AppData/Local/pip/Cache/
             ~/.cargo/bin/
