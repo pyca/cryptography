@@ -231,7 +231,10 @@ impl CertificateRevocationList {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::parse_name(py, &self.raw.borrow_value().tbs_cert_list.issuer)
+        Ok(x509::parse_name(
+            py,
+            &self.raw.borrow_value().tbs_cert_list.issuer,
+        )?)
     }
 
     #[getter]

@@ -282,6 +282,8 @@ Custom X.509 Vectors
 * ``utf8_common_name.pem`` - An RSA 2048 bit self-signed CA certificate
   generated using OpenSSL that contains a UTF8String common name with the value
   "We heart UTF8!™".
+* ``invalid_utf8_common_name.pem`` - A certificate that contains a
+  ``UTF8String`` common name with an invalid UTF-8 byte sequence.
 * ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
   containing two basic constraints extensions.
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
