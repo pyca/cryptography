@@ -25,6 +25,7 @@ operating systems.
 * x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), Bookworm (12.x)
   and Sid (unstable)
 * x86-64 Alpine (latest)
+* ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2019
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
