@@ -71,7 +71,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - linux-arm64-alpine:
+      - linux-arm64:
           name: linux-arm64-alpine-ci
           image: ghcr.io/pyca/cryptography-runner-alpine:aarch64
           toxenv: py38
