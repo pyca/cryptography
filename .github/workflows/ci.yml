@@ -59,6 +59,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/.cache/pip/
@@ -98,6 +99,7 @@ jobs:
       - name: Load cache
         uses: actions/cache@v2.1.7
         id: ossl-cache
+        timeout-minutes: 5
         with:
           path: ${{ github.workspace }}/osslcache
           # When altering the openssl build process you may need to increment the value on the end of this cache key
@@ -153,6 +155,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/.cache/pip/
@@ -207,6 +210,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/.cache/pip/
@@ -262,6 +266,7 @@ jobs:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
         id: cargo-cache
+        timeout-minutes: 5
         with:
           path: |
             ~/.cache/pip/
@@ -356,6 +361,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/Library/Caches/pip/
@@ -435,6 +441,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/AppData/Local/pip/Cache/
@@ -506,6 +513,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/cache@v2.1.7
+        timeout-minutes: 5
         with:
           path: |
             ~/.cache/pip/
