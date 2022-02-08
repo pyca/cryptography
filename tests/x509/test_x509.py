@@ -1769,11 +1769,15 @@ class TestRSACertificateRequest:
             (hashes.SHA256, x509.SignatureAlgorithmOID.RSA_WITH_SHA256),
             (hashes.SHA384, x509.SignatureAlgorithmOID.RSA_WITH_SHA384),
             (hashes.SHA512, x509.SignatureAlgorithmOID.RSA_WITH_SHA512),
+            (hashes.SHA3_224, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_224),
+            (hashes.SHA3_256, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_256),
+            (hashes.SHA3_384, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_384),
+            (hashes.SHA3_512, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_512),
         ],
     )
     def test_build_cert(self, hashalg, hashalg_oid, backend):
-        if backend._fips_enabled and hashalg is hashes.SHA1:
-            pytest.skip("SHA1 not supported in FIPS mode")
+        if not backend.hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} not supported in FIPS mode")
 
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -2570,7 +2574,17 @@ class TestCertificateBuilder:
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
-    def test_sign_dsa_with_md5(self, backend):
+    @pytest.mark.parametrize(
+        "hash_algorithm",
+        [
+            hashes.MD5(),
+            hashes.SHA3_224(),
+            hashes.SHA3_256(),
+            hashes.SHA3_384(),
+            hashes.SHA3_512(),
+        ],
+    )
+    def test_sign_dsa_with_unsupported_hash(self, hash_algorithm, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
         builder = (
@@ -2586,7 +2600,7 @@ class TestCertificateBuilder:
             .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
         )
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
+            builder.sign(private_key, hash_algorithm, backend)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
@@ -2685,14 +2699,18 @@ class TestCertificateBuilder:
             (hashes.SHA256, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA256),
             (hashes.SHA384, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA384),
             (hashes.SHA512, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA512),
+            (hashes.SHA3_224, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA3_224),
+            (hashes.SHA3_256, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA3_256),
+            (hashes.SHA3_384, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA3_384),
+            (hashes.SHA3_512, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA3_512),
         ],
     )
     def test_build_cert_with_ec_private_key(
         self, hashalg, hashalg_oid, backend
     ):
         _skip_curve_unsupported(backend, ec.SECP256R1())
-        if backend._fips_enabled and hashalg is hashes.SHA1:
-            pytest.skip("SHA1 not supported in FIPS mode")
+        if not backend.hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} not supported in FIPS mode")
 
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
