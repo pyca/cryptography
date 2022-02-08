@@ -29,6 +29,8 @@ Changelog
 * Added support for multiple
   :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
   :class:`~cryptography.x509.ocsp.OCSPResponse`. 
+* Restored support for signing certificates and other structures in
+  :doc:`/x509/index` with SHA3 hash algorithms.
 
 .. _v36-0-1:
 

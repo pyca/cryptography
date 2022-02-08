@@ -27,6 +27,10 @@ enum HashType {
     Sha256,
     Sha384,
     Sha512,
+    Sha3_224,
+    Sha3_256,
+    Sha3_384,
+    Sha3_512,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
@@ -93,6 +97,10 @@ fn identify_hash_type(
         "sha256" => Ok(HashType::Sha256),
         "sha384" => Ok(HashType::Sha384),
         "sha512" => Ok(HashType::Sha512),
+        "sha3-224" => Ok(HashType::Sha3_224),
+        "sha3-256" => Ok(HashType::Sha3_256),
+        "sha3-384" => Ok(HashType::Sha3_384),
+        "sha3-512" => Ok(HashType::Sha3_512),
         name => Err(pyo3::exceptions::PyValueError::new_err(format!(
             "Hash algorithm {:?} not supported for signatures",
             name
@@ -143,6 +151,22 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*oid::ECDSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
+        (KeyType::Ec, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::ECDSA_WITH_SHA3_224_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ec, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::ECDSA_WITH_SHA3_256_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ec, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::ECDSA_WITH_SHA3_384_OID).clone(),
+            params: None,
+        }),
+        (KeyType::Ec, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::ECDSA_WITH_SHA3_512_OID).clone(),
+            params: None,
+        }),
 
         (KeyType::Rsa, HashType::Md5) => Ok(x509::AlgorithmIdentifier {
             oid: (*oid::RSA_WITH_MD5_OID).clone(),
@@ -168,6 +192,22 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*oid::RSA_WITH_SHA512_OID).clone(),
             params: Some(*NULL_TLV),
         }),
+        (KeyType::Rsa, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::RSA_WITH_SHA3_224_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
+        (KeyType::Rsa, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::RSA_WITH_SHA3_256_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
+        (KeyType::Rsa, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::RSA_WITH_SHA3_384_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
+        (KeyType::Rsa, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
+            oid: (*oid::RSA_WITH_SHA3_512_OID).clone(),
+            params: Some(*NULL_TLV),
+        }),
 
         (KeyType::Dsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
             oid: (*oid::DSA_WITH_SHA1_OID).clone(),
@@ -189,6 +229,12 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (*oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
+        (KeyType::Dsa, HashType::Sha3_224)
+        | (KeyType::Dsa, HashType::Sha3_256)
+        | (KeyType::Dsa, HashType::Sha3_384)
+        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::exceptions::PyValueError::new_err(
+            "SHA3 hashes are not supported with DSA keys",
+        )),
 
         (_, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
