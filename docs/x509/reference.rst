@@ -2964,6 +2964,26 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.2.840.113549.1.1.13"``. This is
         a SHA512 digest signed by an RSA key.
 
+    .. attribute:: RSA_WITH_SHA3_224
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.13"``. This is
+        a SHA3-224 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_256
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.14"``. This is
+        a SHA3-256 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_384
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.15"``. This is
+        a SHA3-384 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_512
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.16"``. This is
+        a SHA3-512 digest signed by an RSA key.
+
     .. attribute:: RSASSA_PSS
 
         .. versionadded:: 2.3
@@ -2997,6 +3017,26 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.2.840.10045.4.3.4"``. This is
         a SHA512 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_224
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.9"``. This is
+        a SHA3-224 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_256
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.10"``. This is
+        a SHA3-256 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_384
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.11"``. This is
+        a SHA3-384 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_512
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.12"``. This is
+        a SHA3-512 digest signed by an ECDSA key.
 
     .. attribute:: DSA_WITH_SHA1
 
