@@ -281,7 +281,9 @@ pub(crate) fn encode_extension(
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))))
     } else if oid == &*oid::PRECERT_POISON_OID {
         Ok(Some(asn1::write_single(&())))
-    } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+    } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID
+        || oid == &*oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID
+    {
         let mut length = 0;
         for sct in ext.iter()? {
             let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
