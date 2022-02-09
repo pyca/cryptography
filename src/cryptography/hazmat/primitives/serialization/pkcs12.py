@@ -22,6 +22,8 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
+    ed25519.Ed25519PrivateKey,
+    ed448.Ed448PrivateKey
 ]
 
 
