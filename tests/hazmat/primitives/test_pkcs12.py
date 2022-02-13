@@ -11,7 +11,7 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat.backends.openssl.backend import _RC2
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
@@ -301,6 +301,30 @@ class TestPKCS12Creation:
         )
         assert parsed_cert == cert
         assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == []
+
+    def test_generate_rsa(self, backend):
+        cert = _load_cert(
+            backend, os.path.join("x509", "custom", "ca", "rsa_ca.pem")
+        )
+        key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        p12 = serialize_key_and_certificates(
+            None, key, cert, None, serialization.NoEncryption()
+        )
+
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12, None, backend
+        )
+        assert parsed_cert == cert
+        assert isinstance(parsed_key, rsa.RSAPrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == []
 
