@@ -420,7 +420,11 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
 
 
 def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
-    all_params = _load_all_params(path, file_names, param_loader)
+    all_params = [
+        p
+        for p in _load_all_params(path, file_names, param_loader)
+        if p["ctrlocation"] in ["before_fixed", "after_fixed"]
+    ]
 
     def test_kbkdf(self, backend, subtests):
         for params in all_params:
@@ -499,14 +503,7 @@ def kbkdf_counter_mode_test(backend, params):
         "after_fixed": CounterLocation.AfterFixed,
     }
 
-    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
-    if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
-        pytest.skip(
-            "Does not support counter location: {}".format(
-                params.get("ctrlocation")
-            )
-        )
-    del params["ctrlocation"]
+    ctr_loc = supported_counter_locations[params.pop("ctrlocation")]
 
     prf = params.get("prf")
     assert prf is not None
