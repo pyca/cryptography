@@ -2,7 +2,7 @@
 requires = [
     # The minimum setuptools version is specific to the PEP 517 backend,
     # and may be stricter than the version required in `setup.cfg`
-    "setuptools>=40.6.0",
+    "setuptools>=40.6.0,!=60.9.0",
     "wheel",
     # Must be kept in sync with the `install_requirements` in `setup.cfg`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
