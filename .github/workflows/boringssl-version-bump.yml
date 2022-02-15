@@ -21,7 +21,7 @@ jobs:
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "::set-output name=BORING_SHA::$SHA"
           fi
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v6
         with:
           script: |
             github.rest.issues.create({
