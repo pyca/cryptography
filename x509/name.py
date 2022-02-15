@@ -3,14 +3,16 @@
 # for complete details.
 
 import typing
-from enum import Enum
+import warnings
 
 from cryptography import utils
-from cryptography.hazmat.backends import _get_backend
+from cryptography.hazmat.bindings._rust import (
+    x509 as rust_x509,
+)
 from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
-class _ASN1Type(Enum):
+class _ASN1Type(utils.Enum):
     UTF8String = 12
     NumericString = 18
     PrintableString = 19
@@ -34,9 +36,12 @@ _NAMEOID_DEFAULT_TYPE = {
     NameOID.DOMAIN_COMPONENT: _ASN1Type.IA5String,
 }
 
+# Type alias
+_OidNameMap = typing.Mapping[ObjectIdentifier, str]
+
 #: Short attribute names from RFC 4514:
 #: https://tools.ietf.org/html/rfc4514#page-7
-_NAMEOID_TO_NAME = {
+_NAMEOID_TO_NAME: _OidNameMap = {
     NameOID.COMMON_NAME: "CN",
     NameOID.LOCALITY_NAME: "L",
     NameOID.STATE_OR_PROVINCE_NAME: "ST",
@@ -49,7 +54,7 @@ _NAMEOID_TO_NAME = {
 }
 
 
-def _escape_dn_value(val):
+def _escape_dn_value(val: str) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
@@ -74,22 +79,36 @@ def _escape_dn_value(val):
 
 
 class NameAttribute(object):
-    def __init__(self, oid: ObjectIdentifier, value: str, _type=_SENTINEL):
+    def __init__(
+        self,
+        oid: ObjectIdentifier,
+        value: str,
+        _type=_SENTINEL,
+        *,
+        _validate=True,
+    ) -> None:
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError(
                 "oid argument must be an ObjectIdentifier instance."
             )
 
         if not isinstance(value, str):
-            raise TypeError("value argument must be a text type.")
+            raise TypeError("value argument must be a str.")
 
         if (
             oid == NameOID.COUNTRY_NAME
             or oid == NameOID.JURISDICTION_COUNTRY_NAME
         ):
-            if len(value.encode("utf8")) != 2:
+            c_len = len(value.encode("utf8"))
+            if c_len != 2 and _validate is True:
                 raise ValueError(
                     "Country name must be a 2 character country code"
+                )
+            elif c_len != 2:
+                warnings.warn(
+                    "Country names should be two characters, but the "
+                    "attribute is {} characters in length.".format(c_len),
+                    stacklevel=2,
                 )
 
         # The appropriate ASN1 string type varies by OID and is defined across
@@ -108,18 +127,38 @@ class NameAttribute(object):
         self._value = value
         self._type = _type
 
-    oid = utils.read_only_property("_oid")
-    value = utils.read_only_property("_value")
+    @property
+    def oid(self) -> ObjectIdentifier:
+        return self._oid
 
-    def rfc4514_string(self) -> str:
+    @property
+    def value(self) -> str:
+        return self._value
+
+    @property
+    def rfc4514_attribute_name(self) -> str:
+        """
+        The short attribute name (for example "CN") if available,
+        otherwise the OID dotted string.
+        """
+        return _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
+
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
         Use short attribute name if available, otherwise fall back to OID
         dotted string.
         """
-        key = _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
-        return "%s=%s" % (key, _escape_dn_value(self.value))
+        attr_name = (
+            attr_name_overrides.get(self.oid) if attr_name_overrides else None
+        )
+        if attr_name is None:
+            attr_name = self.rfc4514_attribute_name
+
+        return "%s=%s" % (attr_name, _escape_dn_value(self.value))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
@@ -152,17 +191,24 @@ class RelativeDistinguishedName(object):
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
-    def rfc4514_string(self) -> str:
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
 
         Within each RDN, attributes are joined by '+', although that is rarely
         used in certificates.
         """
-        return "+".join(attr.rfc4514_string() for attr in self._attributes)
+        return "+".join(
+            attr.rfc4514_string(attr_name_overrides)
+            for attr in self._attributes
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RelativeDistinguishedName):
@@ -187,21 +233,41 @@ class RelativeDistinguishedName(object):
 
 
 class Name(object):
-    def __init__(self, attributes):
+    @typing.overload
+    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None:
+        ...
+
+    @typing.overload
+    def __init__(
+        self, attributes: typing.Iterable[RelativeDistinguishedName]
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        attributes: typing.Iterable[
+            typing.Union[NameAttribute, RelativeDistinguishedName]
+        ],
+    ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
             self._attributes = [
-                RelativeDistinguishedName([x]) for x in attributes
+                RelativeDistinguishedName([typing.cast(NameAttribute, x)])
+                for x in attributes
             ]
         elif all(isinstance(x, RelativeDistinguishedName) for x in attributes):
-            self._attributes = attributes
+            self._attributes = typing.cast(
+                typing.List[RelativeDistinguishedName], attributes
+            )
         else:
             raise TypeError(
                 "attributes must be a list of NameAttribute"
                 " or a list RelativeDistinguishedName"
             )
 
-    def rfc4514_string(self) -> str:
+    def rfc4514_string(
+        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+    ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
         For example 'CN=foobar.com,O=Foo Corp,C=US'
@@ -213,19 +279,21 @@ class Name(object):
         RDNSequence must be reversed when converting to string representation.
         """
         return ",".join(
-            attr.rfc4514_string() for attr in reversed(self._attributes)
+            attr.rfc4514_string(attr_name_overrides)
+            for attr in reversed(self._attributes)
         )
 
-    def get_attributes_for_oid(self, oid) -> typing.List[NameAttribute]:
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier
+    ) -> typing.List[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self) -> typing.Iterable[RelativeDistinguishedName]:
+    def rdns(self) -> typing.List[RelativeDistinguishedName]:
         return self._attributes
 
-    def public_bytes(self, backend=None) -> bytes:
-        backend = _get_backend(backend)
-        return backend.x509_name_bytes(self)
+    def public_bytes(self, backend: typing.Any = None) -> bytes:
+        return rust_x509.encode_name_bytes(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Name):

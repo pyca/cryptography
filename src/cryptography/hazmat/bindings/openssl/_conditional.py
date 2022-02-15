@@ -9,6 +9,18 @@ def cryptography_has_ec2m():
     ]
 
 
+def cryptography_has_rsa_oaep_md():
+    return [
+        "EVP_PKEY_CTX_set_rsa_oaep_md",
+    ]
+
+
+def cryptography_has_rsa_oaep_label():
+    return [
+        "EVP_PKEY_CTX_set0_rsa_oaep_label",
+    ]
+
+
 def cryptography_has_ssl3_method():
     return [
         "SSLv3_method",
@@ -290,6 +302,8 @@ def cryptography_has_evp_pkey_dh():
 # lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC2M": cryptography_has_ec2m,
+    "Cryptography_HAS_RSA_OAEP_MD": cryptography_has_rsa_oaep_md,
+    "Cryptography_HAS_RSA_OAEP_LABEL": cryptography_has_rsa_oaep_label,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
     "Cryptography_HAS_110_VERIFICATION_PARAMS": (
         cryptography_has_110_verification_params

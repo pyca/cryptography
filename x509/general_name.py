@@ -8,40 +8,32 @@ import ipaddress
 import typing
 from email.utils import parseaddr
 
-from cryptography import utils
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
 
-_GENERAL_NAMES = {
-    0: "otherName",
-    1: "rfc822Name",
-    2: "dNSName",
-    3: "x400Address",
-    4: "directoryName",
-    5: "ediPartyName",
-    6: "uniformResourceIdentifier",
-    7: "iPAddress",
-    8: "registeredID",
-}
+_IPADDRESS_TYPES = typing.Union[
+    ipaddress.IPv4Address,
+    ipaddress.IPv6Address,
+    ipaddress.IPv4Network,
+    ipaddress.IPv6Network,
+]
 
 
 class UnsupportedGeneralNameType(Exception):
-    def __init__(self, msg, type):
-        super(UnsupportedGeneralNameType, self).__init__(msg)
-        self.type = type
+    pass
 
 
 class GeneralName(metaclass=abc.ABCMeta):
     @abc.abstractproperty
-    def value(self):
+    def value(self) -> typing.Any:
         """
         Return the value of the object
         """
 
 
 class RFC822Name(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -62,10 +54,12 @@ class RFC822Name(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(cls, value: str) -> "RFC822Name":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
@@ -87,7 +81,7 @@ class RFC822Name(GeneralName):
 
 
 class DNSName(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -102,15 +96,17 @@ class DNSName(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(cls, value: str) -> "DNSName":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<DNSName(value={0!r})>".format(self.value)
 
     def __eq__(self, other: object) -> bool:
@@ -127,7 +123,7 @@ class DNSName(GeneralName):
 
 
 class UniformResourceIdentifier(GeneralName):
-    def __init__(self, value: str):
+    def __init__(self, value: str) -> None:
         if isinstance(value, str):
             try:
                 value.encode("ascii")
@@ -142,10 +138,14 @@ class UniformResourceIdentifier(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> str:
+        return self._value
 
     @classmethod
-    def _init_without_validation(cls, value):
+    def _init_without_validation(
+        cls, value: str
+    ) -> "UniformResourceIdentifier":
         instance = cls.__new__(cls)
         instance._value = value
         return instance
@@ -167,13 +167,15 @@ class UniformResourceIdentifier(GeneralName):
 
 
 class DirectoryName(GeneralName):
-    def __init__(self, value: Name):
+    def __init__(self, value: Name) -> None:
         if not isinstance(value, Name):
             raise TypeError("value must be a Name")
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> Name:
+        return self._value
 
     def __repr__(self) -> str:
         return "<DirectoryName(value={})>".format(self.value)
@@ -192,13 +194,15 @@ class DirectoryName(GeneralName):
 
 
 class RegisteredID(GeneralName):
-    def __init__(self, value: ObjectIdentifier):
+    def __init__(self, value: ObjectIdentifier) -> None:
         if not isinstance(value, ObjectIdentifier):
             raise TypeError("value must be an ObjectIdentifier")
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> ObjectIdentifier:
+        return self._value
 
     def __repr__(self) -> str:
         return "<RegisteredID(value={})>".format(self.value)
@@ -217,15 +221,7 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
-    def __init__(
-        self,
-        value: typing.Union[
-            ipaddress.IPv4Address,
-            ipaddress.IPv6Address,
-            ipaddress.IPv4Network,
-            ipaddress.IPv6Network,
-        ],
-    ):
+    def __init__(self, value: _IPADDRESS_TYPES) -> None:
         if not isinstance(
             value,
             (
@@ -243,7 +239,19 @@ class IPAddress(GeneralName):
 
         self._value = value
 
-    value = utils.read_only_property("_value")
+    @property
+    def value(self) -> _IPADDRESS_TYPES:
+        return self._value
+
+    def _packed(self) -> bytes:
+        if isinstance(
+            self.value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        ):
+            return self.value.packed
+        else:
+            return (
+                self.value.network_address.packed + self.value.netmask.packed
+            )
 
     def __repr__(self) -> str:
         return "<IPAddress(value={})>".format(self.value)
@@ -262,7 +270,7 @@ class IPAddress(GeneralName):
 
 
 class OtherName(GeneralName):
-    def __init__(self, type_id: ObjectIdentifier, value: bytes):
+    def __init__(self, type_id: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(type_id, ObjectIdentifier):
             raise TypeError("type_id must be an ObjectIdentifier")
         if not isinstance(value, bytes):
@@ -271,8 +279,13 @@ class OtherName(GeneralName):
         self._type_id = type_id
         self._value = value
 
-    type_id = utils.read_only_property("_type_id")
-    value = utils.read_only_property("_value")
+    @property
+    def type_id(self) -> ObjectIdentifier:
+        return self._type_id
+
+    @property
+    def value(self) -> bytes:
+        return self._value
 
     def __repr__(self) -> str:
         return "<OtherName(type_id={}, value={!r})>".format(

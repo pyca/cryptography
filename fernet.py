@@ -12,7 +12,6 @@ import typing
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.hmac import HMAC
@@ -26,9 +25,11 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
-    def __init__(self, key: bytes, backend=None):
-        backend = _get_backend(backend)
-
+    def __init__(
+        self,
+        key: typing.Union[bytes, str],
+        backend: typing.Any = None,
+    ):
         key = base64.urlsafe_b64decode(key)
         if len(key) != 32:
             raise ValueError(
@@ -37,7 +38,6 @@ class Fernet(object):
 
         self._signing_key = key[:16]
         self._encryption_key = key[16:]
-        self._backend = backend
 
     @classmethod
     def generate_key(cls) -> bytes:
@@ -58,7 +58,8 @@ class Fernet(object):
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
         encryptor = Cipher(
-            algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
+            algorithms.AES(self._encryption_key),
+            modes.CBC(iv),
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
@@ -66,7 +67,7 @@ class Fernet(object):
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext
         )
 
-        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
+        h = HMAC(self._signing_key, hashes.SHA256())
         h.update(basic_parts)
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
@@ -113,7 +114,7 @@ class Fernet(object):
         return timestamp, data
 
     def _verify_signature(self, data: bytes) -> None:
-        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
+        h = HMAC(self._signing_key, hashes.SHA256())
         h.update(data[:-32])
         try:
             h.verify(data[-32:])
@@ -139,7 +140,7 @@ class Fernet(object):
         iv = data[9:25]
         ciphertext = data[25:-32]
         decryptor = Cipher(
-            algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
+            algorithms.AES(self._encryption_key), modes.CBC(iv)
         ).decryptor()
         plaintext_padded = decryptor.update(ciphertext)
         try:

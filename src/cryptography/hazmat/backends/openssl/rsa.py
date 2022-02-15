@@ -110,7 +110,7 @@ def _enc_dec_rsa_pkey_ctx(
     backend.openssl_assert(res > 0)
     buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
     backend.openssl_assert(buf_size > 0)
-    if isinstance(padding, OAEP):
+    if isinstance(padding, OAEP) and backend._lib.Cryptography_HAS_RSA_OAEP_MD:
         mgf1_md = backend._evp_md_non_null_from_algorithm(
             padding._mgf._algorithm
         )

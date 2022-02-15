@@ -4,8 +4,10 @@
 
 
 import abc
+import enum
 import inspect
 import sys
+import types
 import typing
 import warnings
 
@@ -22,14 +24,16 @@ class CryptographyDeprecationWarning(UserWarning):
 PersistentlyDeprecated2017 = CryptographyDeprecationWarning
 PersistentlyDeprecated2019 = CryptographyDeprecationWarning
 DeprecatedIn34 = CryptographyDeprecationWarning
+DeprecatedIn35 = CryptographyDeprecationWarning
+DeprecatedIn36 = CryptographyDeprecationWarning
 
 
-def _check_bytes(name: str, value: bytes):
+def _check_bytes(name: str, value: bytes) -> None:
     if not isinstance(value, bytes):
         raise TypeError("{} must be bytes".format(name))
 
 
-def _check_byteslike(name: str, value: bytes):
+def _check_byteslike(name: str, value: bytes) -> None:
     try:
         memoryview(value)
     except TypeError:
@@ -40,20 +44,24 @@ def read_only_property(name: str):
     return property(lambda self: getattr(self, name))
 
 
-def register_interface(iface):
-    def register_decorator(klass, *, check_annotations=False):
+if typing.TYPE_CHECKING:
+    from typing_extensions import Protocol
+
+    _T_class = typing.TypeVar("_T_class", bound=type)
+
+    class _RegisterDecoratorType(Protocol):
+        def __call__(
+            self, klass: _T_class, *, check_annotations: bool = False
+        ) -> _T_class:
+            ...
+
+
+def register_interface(iface: abc.ABCMeta) -> "_RegisterDecoratorType":
+    def register_decorator(
+        klass: "_T_class", *, check_annotations: bool = False
+    ) -> "_T_class":
         verify_interface(iface, klass, check_annotations=check_annotations)
         iface.register(klass)
-        return klass
-
-    return register_decorator
-
-
-def register_interface_if(predicate, iface):
-    def register_decorator(klass, *, check_annotations=False):
-        if predicate:
-            verify_interface(iface, klass, check_annotations=check_annotations)
-            iface.register(klass)
         return klass
 
     return register_decorator
@@ -107,8 +115,9 @@ class _DeprecatedValue(object):
         self.warning_class = warning_class
 
 
-class _ModuleWithDeprecations(object):
+class _ModuleWithDeprecations(types.ModuleType):
     def __init__(self, module):
+        super().__init__(module.__name__)
         self.__dict__["_module"] = module
 
     def __getattr__(self, attr):
@@ -162,3 +171,13 @@ int_from_bytes = deprecated(
     "int_from_bytes is deprecated, use int.from_bytes instead",
     DeprecatedIn34,
 )
+
+
+# Python 3.10 changed representation of enums. We use well-defined object
+# representation and string representation from Python 3.9.
+class Enum(enum.Enum):
+    def __repr__(self):
+        return f"<{self.__class__.__name__}.{self._name_}: {self._value_!r}>"
+
+    def __str__(self):
+        return f"{self.__class__.__name__}.{self._name_}"
