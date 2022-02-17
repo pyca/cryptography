@@ -482,9 +482,7 @@ def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, params):
 
     # TripleDES is disallowed in FIPS mode.
     if backend._fips_enabled and algorithm is algorithms.TripleDES:
-        pytest.skip(
-            f"TripleDES is not supported in FIPS mode."
-        )
+        pytest.skip("TripleDES is not supported in FIPS mode.")
 
     ctrkdf = KBKDFCMAC(
         algorithm,
