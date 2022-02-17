@@ -147,7 +147,9 @@ class Backend:
         b"aes-192-gcm",
         b"aes-256-gcm",
     }
-    _fips_ciphers = (AES, TripleDES)
+    # TripleDES encryption is disallowed/deprecated throughout 2023 in
+    # FIPS 140-3. To keep it simple we denylist any use of TripleDES (TDEA).
+    _fips_ciphers = (AES,)
     # Sometimes SHA1 is still permissible. That logic is contained
     # within the various *_supported methods.
     _fips_hashes = (
@@ -344,12 +346,9 @@ class Backend:
 
     def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
         if self._fips_enabled:
-            # FIPS mode requires AES or TripleDES, but only CBC/ECB allowed
-            # in TripleDES mode.
-            if not isinstance(cipher, self._fips_ciphers) or (
-                isinstance(cipher, TripleDES)
-                and not isinstance(mode, (CBC, ECB))
-            ):
+            # FIPS mode requires AES. TripleDES is disallowed/deprecated in
+            # FIPS 140-3.
+            if not isinstance(cipher, self._fips_ciphers):
                 return False
 
         try:
