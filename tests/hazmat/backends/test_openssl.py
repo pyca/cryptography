@@ -52,8 +52,9 @@ class TestLibreSkip:
             skip_if_libre_ssl("LibreSSL 2.1.6")
 
 
-class DummyMGF:
+class DummyMGF(padding.MGF):
     _salt_length = 0
+    _algorithm = hashes.SHA1()
 
 
 class TestOpenSSL:
@@ -410,7 +411,7 @@ class TestOpenSSLRSA:
         assert (
             backend.rsa_padding_supported(
                 padding.OAEP(
-                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    mgf=DummyMGF(),
                     algorithm=hashes.SHA1(),
                     label=None,
                 ),

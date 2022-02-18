@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     OAEP,
     PKCS1v15,
     PSS,
+    _MaxLength,
     calculate_max_pss_salt_length,
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
@@ -41,10 +42,10 @@ def _get_rsa_pss_salt_length(
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
-) -> int:
+) -> typing.Union[int, _MaxLength]:
     salt = pss._salt_length
 
-    if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
+    if isinstance(salt, _MaxLength):
         return calculate_max_pss_salt_length(key, hash_algorithm)
     else:
         return salt

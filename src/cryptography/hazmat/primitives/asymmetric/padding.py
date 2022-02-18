@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import abc
 import typing
 
 from cryptography.hazmat.primitives import hashes
@@ -16,21 +17,24 @@ class PKCS1v15(AsymmetricPadding):
     name = "EMSA-PKCS1-v1_5"
 
 
-class PSS(AsymmetricPadding):
-    MAX_LENGTH = object()
-    name = "EMSA-PSS"
-    _salt_length: int
+class _MaxLength:
+    "Sentinel value for `MAX_LENGTH`."
 
-    def __init__(self, mgf, salt_length):
+
+class PSS(AsymmetricPadding):
+    MAX_LENGTH = _MaxLength()
+    name = "EMSA-PSS"
+    _salt_length: typing.Union[int, _MaxLength]
+
+    def __init__(
+        self, mgf: "MGF", salt_length: typing.Union[int, _MaxLength]
+    ) -> None:
         self._mgf = mgf
 
-        if (
-            not isinstance(salt_length, int)
-            and salt_length is not self.MAX_LENGTH
-        ):
+        if not isinstance(salt_length, (int, _MaxLength)):
             raise TypeError("salt_length must be an integer.")
 
-        if salt_length is not self.MAX_LENGTH and salt_length < 0:
+        if not isinstance(salt_length, _MaxLength) and salt_length < 0:
             raise ValueError("salt_length must be zero or greater.")
 
         self._salt_length = salt_length
@@ -41,7 +45,7 @@ class OAEP(AsymmetricPadding):
 
     def __init__(
         self,
-        mgf: "MGF1",
+        mgf: "MGF",
         algorithm: hashes.HashAlgorithm,
         label: typing.Optional[bytes],
     ):
@@ -53,8 +57,12 @@ class OAEP(AsymmetricPadding):
         self._label = label
 
 
-class MGF1:
-    MAX_LENGTH = object()
+class MGF(metaclass=abc.ABCMeta):
+    _algorithm: hashes.HashAlgorithm
+
+
+class MGF1(MGF):
+    MAX_LENGTH = _MaxLength()
 
     def __init__(self, algorithm: hashes.HashAlgorithm):
         if not isinstance(algorithm, hashes.HashAlgorithm):
