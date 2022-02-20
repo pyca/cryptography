@@ -70,7 +70,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1.0.7
         with:
