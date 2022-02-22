@@ -61,8 +61,9 @@ from ...utils import (
 )
 
 
-class DummyMGF:
+class DummyMGF(padding.MGF):
     _salt_length = 0
+    _algorithm = hashes.SHA1()
 
 
 def _check_fips_key_length(backend, private_key):
@@ -1350,7 +1351,8 @@ class TestPSS:
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
             padding.PSS(
-                mgf=padding.MGF1(hashes.SHA1()), salt_length=b"not_a_length"
+                mgf=padding.MGF1(hashes.SHA1()),
+                salt_length=b"not_a_length",  # type:ignore[arg-type]
             )
 
     def test_invalid_salt_length_negative_integer(self):
@@ -1630,7 +1632,7 @@ class TestRSADecryption:
             private_key.decrypt(
                 b"0" * 256,
                 padding.OAEP(
-                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    mgf=DummyMGF(),
                     algorithm=hashes.SHA1(),
                     label=None,
                 ),
@@ -1829,7 +1831,7 @@ class TestRSAEncryption:
             public_key.encrypt(
                 b"ciphertext",
                 padding.OAEP(
-                    mgf=DummyMGF(),  # type: ignore[arg-type]
+                    mgf=DummyMGF(),
                     algorithm=hashes.SHA1(),
                     label=None,
                 ),
