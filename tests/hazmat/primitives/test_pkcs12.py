@@ -11,8 +11,18 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat.backends.openssl.backend import _RC2
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    ed25519,
+    ed448,
+    rsa,
+)
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    PublicFormat,
+    load_pem_private_key,
+)
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
@@ -282,51 +292,88 @@ def _load_ca(backend):
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
 class TestPKCS12Creation:
+    @pytest.mark.parametrize(
+        ("kgenerator", "ktype", "kparam"),
+        [
+            pytest.param(
+                ed448.Ed448PrivateKey.generate,
+                ed448.Ed448PrivateKey,
+                [],
+                marks=pytest.mark.supported(
+                    only_if=lambda backend: backend.ed448_supported(),
+                    skip_message="Requires OpenSSL with Ed448 support",
+                ),
+            ),
+            pytest.param(
+                ed25519.Ed25519PrivateKey.generate,
+                ed25519.Ed25519PrivateKey,
+                [],
+                marks=pytest.mark.supported(
+                    only_if=lambda backend: backend.ed25519_supported(),
+                    skip_message="Requires OpenSSL with Ed25519 support",
+                ),
+            ),
+            (rsa.generate_private_key, rsa.RSAPrivateKey, [65537, 1024]),
+            (dsa.generate_private_key, dsa.DSAPrivateKey, [1024]),
+        ]
+        + [
+            pytest.param(
+                ec.generate_private_key,
+                ec.EllipticCurvePrivateKey,
+                [curve],
+                marks=pytest.mark.supported(
+                    only_if=lambda backend: backend.elliptic_curve_supported(
+                        curve
+                    ),
+                    skip_message=(
+                        "Requires OpenSSL with " + curve.name + " support"
+                    ),
+                ),
+            )
+            for curve in [ec._CURVE_TYPES[i]() for i in ec._CURVE_TYPES]
+        ],
+    )
     @pytest.mark.parametrize("name", [None, b"name"])
     @pytest.mark.parametrize(
-        ("encryption_algorithm", "password"),
+        ("algorithm", "password"),
         [
             (serialization.BestAvailableEncryption(b"password"), b"password"),
             (serialization.NoEncryption(), None),
         ],
     )
-    def test_generate(self, backend, name, encryption_algorithm, password):
-        cert, key = _load_ca(backend)
-        p12 = serialize_key_and_certificates(
-            name, key, cert, None, encryption_algorithm
-        )
+    def test_generate_each_supported_keytype(
+        self, backend, kgenerator, ktype, kparam, name, algorithm, password
+    ):
+        key = kgenerator(*kparam)
 
+        assert isinstance(key, ktype)
+        cacert, cakey = _load_ca(backend)
+        now = datetime.utcnow()
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(cacert.subject)
+            .issuer_name(cacert.subject)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now)
+            .sign(cakey, hashes.SHA256())
+        )
+        assert isinstance(cert, x509.Certificate)
+        p12 = serialize_key_and_certificates(
+            name, key, cert, [cacert], algorithm
+        )
         parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
             p12, password, backend
         )
         assert parsed_cert == cert
-        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
-        assert parsed_key.private_numbers() == key.private_numbers()
-        assert parsed_more_certs == []
-
-    def test_generate_rsa(self, backend):
-        cert = _load_cert(
-            backend, os.path.join("x509", "custom", "ca", "rsa_ca.pem")
+        assert isinstance(parsed_key, ktype)
+        assert parsed_key.public_key().public_bytes(
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+        ) == key.public_key().public_bytes(
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
         )
-        key = load_vectors_from_file(
-            os.path.join("x509", "custom", "ca", "rsa_key.pem"),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ),
-            mode="rb",
-        )
-        assert isinstance(key, rsa.RSAPrivateKey)
-        p12 = serialize_key_and_certificates(
-            None, key, cert, None, serialization.NoEncryption()
-        )
-
-        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
-            p12, None, backend
-        )
-        assert parsed_cert == cert
-        assert isinstance(parsed_key, rsa.RSAPrivateKey)
-        assert parsed_key.private_numbers() == key.private_numbers()
-        assert parsed_more_certs == []
+        assert parsed_more_certs == [cacert]
 
     def test_generate_with_cert_key_ca(self, backend):
         cert, key = _load_ca(backend)
@@ -355,11 +402,10 @@ class TestPKCS12Creation:
             serialize_key_and_certificates(
                 b"name", cert, cert, None, encryption
             )
-        assert (
-            str(exc.value)
-            == "Key must be RSA, DSA, or EllipticCurve private key or None."
+        assert str(exc.value) == (
+            "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
+            " private key, or None."
         )
-
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, key, None, encryption)
         assert str(exc.value) == "cert must be a certificate or None"

@@ -22,6 +22,8 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
+    ed25519.Ed25519PrivateKey,
+    ed448.Ed448PrivateKey,
 ]
 
 
@@ -174,10 +176,13 @@ def serialize_key_and_certificates(
             rsa.RSAPrivateKey,
             dsa.DSAPrivateKey,
             ec.EllipticCurvePrivateKey,
+            ed25519.Ed25519PrivateKey,
+            ed448.Ed448PrivateKey,
         ),
     ):
         raise TypeError(
-            "Key must be RSA, DSA, or EllipticCurve private key or None."
+            "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
+            " private key, or None."
         )
     if cert is not None and not isinstance(cert, x509.Certificate):
         raise TypeError("cert must be a certificate or None")
