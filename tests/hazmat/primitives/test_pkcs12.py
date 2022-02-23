@@ -35,6 +35,15 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file
 
 
+def _skip_curve_unsupported(backend, curve):
+    if not backend.elliptic_curve_supported(curve):
+        pytest.skip(
+            "Curve {} is not supported by this backend {}".format(
+                curve.name, backend
+            )
+        )
+
+
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
@@ -293,7 +302,11 @@ def _load_ca(backend):
 )
 class TestPKCS12Creation:
     @pytest.mark.parametrize(
-        ("kgenerator", "ktype", "kparam"),
+        (
+            "kgenerator",
+            "ktype",
+            "kparam",
+        ),
         [
             pytest.param(
                 ed448.Ed448PrivateKey.generate,
@@ -318,19 +331,9 @@ class TestPKCS12Creation:
         ]
         + [
             pytest.param(
-                ec.generate_private_key,
-                ec.EllipticCurvePrivateKey,
-                [curve],
-                marks=pytest.mark.supported(
-                    only_if=lambda backend: backend.elliptic_curve_supported(
-                        curve
-                    ),
-                    skip_message=(
-                        "Requires OpenSSL with " + curve.name + " support"
-                    ),
-                ),
+                ec.generate_private_key, ec.EllipticCurvePrivateKey, [curve]
             )
-            for curve in [ec._CURVE_TYPES[i]() for i in ec._CURVE_TYPES]
+            for curve in ec._CURVE_TYPES.values()
         ],
     )
     @pytest.mark.parametrize("name", [None, b"name"])
@@ -344,6 +347,9 @@ class TestPKCS12Creation:
     def test_generate_each_supported_keytype(
         self, backend, kgenerator, ktype, kparam, name, algorithm, password
     ):
+        if ktype == ec.EllipticCurvePrivateKey:
+            _skip_curve_unsupported(backend, *kparam)
+
         key = kgenerator(*kparam)
 
         assert isinstance(key, ktype)
