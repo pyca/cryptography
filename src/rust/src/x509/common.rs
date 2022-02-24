@@ -108,8 +108,7 @@ pub(crate) fn encode_name_entry<'p>(
 
     let attr_type = py_name_entry.getattr("_type")?;
     let tag = attr_type.getattr("value")?.extract::<u8>()?;
-    let value: &[u8];
-    if attr_type != asn1_type.getattr("BitString")? {
+    let value: &[u8] = if attr_type != asn1_type.getattr("BitString")? {
         let encoding = if attr_type == asn1_type.getattr("BMPString")? {
             "utf_16_be"
         } else if attr_type == asn1_type.getattr("UniversalString")? {
@@ -117,13 +116,13 @@ pub(crate) fn encode_name_entry<'p>(
         } else {
             "utf8"
         };
-        value = py_name_entry
+        py_name_entry
             .getattr("value")?
             .call_method1("encode", (encoding,))?
-            .extract()?;
+            .extract()?
     } else {
-        value = py_name_entry.getattr("value")?.extract()?;
-    }
+        py_name_entry.getattr("value")?.extract()?
+    };
     let oid = py_oid_to_oid(py_name_entry.getattr("oid")?)?;
 
     Ok(AttributeTypeValue {
