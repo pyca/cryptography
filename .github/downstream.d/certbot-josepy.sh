@@ -2,14 +2,15 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/certbot/josepy
+        git clone --depth=1 https://github.com/adferrand/josepy --branch josepy
         cd josepy
         git rev-parse HEAD
-        pip install -e ".[tests]" -c constraints.txt
+        pip install poetry
+        poetry install -v
         ;;
     run)
         cd josepy
-        pytest src
+        pytest
         ;;
     *)
         exit 1
