@@ -2,7 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/adferrand/josepy --branch josepy
+        git clone --depth=1 https://github.com/adferrand/josepy --branch poetry
         cd josepy
         git rev-parse HEAD
         pip install poetry
