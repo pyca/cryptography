@@ -55,9 +55,6 @@ class PKCS12Certificate:
             and self.friendly_name == other.friendly_name
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.certificate, self.friendly_name))
 
@@ -123,9 +120,6 @@ class PKCS12KeyAndCertificates:
             and self.cert == other.cert
             and self.additional_certs == other.additional_certs
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.key, self.cert, tuple(self.additional_certs)))

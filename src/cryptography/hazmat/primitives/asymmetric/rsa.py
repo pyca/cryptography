@@ -375,9 +375,6 @@ class RSAPrivateNumbers:
             and self.public_numbers == other.public_numbers
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(
             (
@@ -423,9 +420,6 @@ class RSAPublicNumbers:
             return NotImplemented
 
         return self.e == other.e and self.n == other.n
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.e, self.n))

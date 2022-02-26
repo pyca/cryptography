@@ -163,9 +163,6 @@ class DSAParameterNumbers:
 
         return self.p == other.p and self.q == other.q and self.g == other.g
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __repr__(self) -> str:
         return (
             "<DSAParameterNumbers(p={self.p}, q={self.q}, "
@@ -210,9 +207,6 @@ class DSAPublicNumbers:
             and self.parameter_numbers == other.parameter_numbers
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __repr__(self) -> str:
         return (
             "<DSAPublicNumbers(y={self.y}, "
@@ -254,9 +248,6 @@ class DSAPrivateNumbers:
         return (
             self.x == other.x and self.public_numbers == other.public_numbers
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
 
 def generate_parameters(

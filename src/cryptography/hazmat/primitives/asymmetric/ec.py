@@ -430,9 +430,6 @@ class EllipticCurvePublicNumbers:
             and self.curve.key_size == other.curve.key_size
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.x, self.y, self.curve.name, self.curve.key_size))
 
@@ -484,9 +481,6 @@ class EllipticCurvePrivateNumbers:
             self.private_value == other.private_value
             and self.public_numbers == other.public_numbers
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.private_value, self.public_numbers))

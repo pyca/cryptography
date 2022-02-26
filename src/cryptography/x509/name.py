@@ -180,9 +180,6 @@ class NameAttribute:
 
         return self.oid == other.oid and self.value == other.value
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.oid, self.value))
 
@@ -229,9 +226,6 @@ class RelativeDistinguishedName:
             return NotImplemented
 
         return self._attribute_set == other._attribute_set
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self._attribute_set)
@@ -314,9 +308,6 @@ class Name:
             return NotImplemented
 
         return self._attributes == other._attributes
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         # TODO: this is relatively expensive, if this looks like a bottleneck

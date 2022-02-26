@@ -161,9 +161,6 @@ class CRLNumber(ExtensionType):
 
         return self.crl_number == other.crl_number
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.crl_number)
 
@@ -259,9 +256,6 @@ class AuthorityKeyIdentifier(ExtensionType):
             == other.authority_cert_serial_number
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         if self.authority_cert_issuer is None:
             aci = None
@@ -318,9 +312,6 @@ class SubjectKeyIdentifier(ExtensionType):
 
         return constant_time.bytes_eq(self.digest, other.digest)
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.digest)
 
@@ -354,9 +345,6 @@ class AuthorityInformationAccess(ExtensionType):
 
         return self._descriptions == other._descriptions
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(tuple(self._descriptions))
 
@@ -389,9 +377,6 @@ class SubjectInformationAccess(ExtensionType):
             return NotImplemented
 
         return self._descriptions == other._descriptions
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(tuple(self._descriptions))
@@ -427,9 +412,6 @@ class AccessDescription:
             self.access_method == other.access_method
             and self.access_location == other.access_location
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.access_method, self.access_location))
@@ -482,9 +464,6 @@ class BasicConstraints(ExtensionType):
 
         return self.ca == other.ca and self.path_length == other.path_length
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.ca, self.path_length))
 
@@ -510,9 +489,6 @@ class DeltaCRLIndicator(ExtensionType):
             return NotImplemented
 
         return self.crl_number == other.crl_number
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.crl_number)
@@ -554,9 +530,6 @@ class CRLDistributionPoints(ExtensionType):
 
         return self._distribution_points == other._distribution_points
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(tuple(self._distribution_points))
 
@@ -593,9 +566,6 @@ class FreshestCRL(ExtensionType):
             return NotImplemented
 
         return self._distribution_points == other._distribution_points
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(tuple(self._distribution_points))
@@ -681,9 +651,6 @@ class DistributionPoint:
             and self.reasons == other.reasons
             and self.crl_issuer == other.crl_issuer
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         if self.full_name is not None:
@@ -804,9 +771,6 @@ class PolicyConstraints(ExtensionType):
             and self.inhibit_policy_mapping == other.inhibit_policy_mapping
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(
             (self.require_explicit_policy, self.inhibit_policy_mapping)
@@ -847,9 +811,6 @@ class CertificatePolicies(ExtensionType):
             return NotImplemented
 
         return self._policies == other._policies
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(tuple(self._policies))
@@ -897,9 +858,6 @@ class PolicyInformation:
             self.policy_identifier == other.policy_identifier
             and self.policy_qualifiers == other.policy_qualifiers
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         if self.policy_qualifiers is not None:
@@ -953,9 +911,6 @@ class UserNotice:
             and self.explicit_text == other.explicit_text
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.notice_reference, self.explicit_text))
 
@@ -996,9 +951,6 @@ class NoticeReference:
             and self.notice_numbers == other.notice_numbers
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.organization, tuple(self.notice_numbers)))
 
@@ -1034,9 +986,6 @@ class ExtendedKeyUsage(ExtensionType):
 
         return self._usages == other._usages
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(tuple(self._usages))
 
@@ -1052,9 +1001,6 @@ class OCSPNoCheck(ExtensionType):
             return NotImplemented
 
         return True
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(OCSPNoCheck)
@@ -1074,9 +1020,6 @@ class PrecertPoison(ExtensionType):
             return NotImplemented
 
         return True
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(PrecertPoison)
@@ -1114,9 +1057,6 @@ class TLSFeature(ExtensionType):
             return NotImplemented
 
         return self._features == other._features
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(tuple(self._features))
@@ -1159,9 +1099,6 @@ class InhibitAnyPolicy(ExtensionType):
             return NotImplemented
 
         return self.skip_certs == other.skip_certs
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.skip_certs)
@@ -1288,9 +1225,6 @@ class KeyUsage(ExtensionType):
             and self._decipher_only == other._decipher_only
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(
             (
@@ -1355,9 +1289,6 @@ class NameConstraints(ExtensionType):
             self.excluded_subtrees == other.excluded_subtrees
             and self.permitted_subtrees == other.permitted_subtrees
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def _validate_ip_name(self, tree: typing.Iterable[GeneralName]) -> None:
         if any(
@@ -1455,9 +1386,6 @@ class Extension(typing.Generic[ExtensionTypeVar]):
             and self.value == other.value
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.oid, self.critical, self.value))
 
@@ -1547,9 +1475,6 @@ class GeneralNames:
 
         return self._general_names == other._general_names
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(tuple(self._general_names))
 
@@ -1627,9 +1552,6 @@ class SubjectAlternativeName(ExtensionType):
             return NotImplemented
 
         return self._general_names == other._general_names
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self._general_names)
@@ -1712,9 +1634,6 @@ class IssuerAlternativeName(ExtensionType):
 
         return self._general_names == other._general_names
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self._general_names)
 
@@ -1796,9 +1715,6 @@ class CertificateIssuer(ExtensionType):
 
         return self._general_names == other._general_names
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self._general_names)
 
@@ -1823,9 +1739,6 @@ class CRLReason(ExtensionType):
             return NotImplemented
 
         return self.reason == other.reason
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.reason)
@@ -1857,9 +1770,6 @@ class InvalidityDate(ExtensionType):
             return NotImplemented
 
         return self.invalidity_date == other.invalidity_date
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.invalidity_date)
@@ -1913,9 +1823,6 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
             == other._signed_certificate_timestamps
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def public_bytes(self) -> bytes:
         return rust_x509.encode_extension_value(self)
 
@@ -1959,9 +1866,6 @@ class SignedCertificateTimestamps(ExtensionType):
             == other._signed_certificate_timestamps
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def public_bytes(self) -> bytes:
         return rust_x509.encode_extension_value(self)
 
@@ -1980,9 +1884,6 @@ class OCSPNonce(ExtensionType):
             return NotImplemented
 
         return self.nonce == other.nonce
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.nonce)
@@ -2111,9 +2012,6 @@ class IssuingDistributionPoint(ExtensionType):
             == other.only_contains_attribute_certs
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(
             (
@@ -2187,9 +2085,6 @@ class UnrecognizedExtension(ExtensionType):
             return NotImplemented
 
         return self.oid == other.oid and self.value == other.value
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.oid, self.value))

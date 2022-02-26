@@ -47,9 +47,6 @@ class DHParameterNumbers:
             self._p == other._p and self._g == other._g and self._q == other._q
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def parameters(self, backend: typing.Any = None) -> "DHParameters":
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
@@ -92,9 +89,6 @@ class DHPublicNumbers:
             and self._parameter_numbers == other._parameter_numbers
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def public_key(self, backend: typing.Any = None) -> "DHPublicKey":
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
@@ -132,9 +126,6 @@ class DHPrivateNumbers:
             self._x == other._x
             and self._public_numbers == other._public_numbers
         )
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def private_key(self, backend: typing.Any = None) -> "DHPrivateKey":
         from cryptography.hazmat.backends.openssl.backend import (
