@@ -2175,7 +2175,7 @@ class Backend:
         name: typing.Optional[bytes],
         key: typing.Optional[_ALLOWED_PKCS12_TYPES],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[x509.Certificate]],
+        cas: typing.Optional[typing.List[typing.Union[x509.Certificate, PKCS12Certificate]]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None
@@ -2213,7 +2213,17 @@ class Backend:
             # This list is to keep the x509 values alive until end of function
             ossl_cas = []
             for ca in cas:
-                ossl_ca = self._cert2ossl(ca)
+                if isinstance(ca, PKCS12Certificate):
+                    # Copied from Felix's gist https://gist.github.com/felixfontein/f750763fd5773fbf0ab22af87239aab0
+                    ca_alias = ca.friendly_name
+                    ossl_ca = self._cert2ossl(ca.certificate)
+                    if ca_alias is not None:
+                        with self._zeroed_null_terminated_buf(ca_alias) as ca_name_buf:
+                            self._lib.X509_alias_set1(
+                                    ossl_ca, ca_name_buf, len(ca_alias)
+                            )
+                else:
+                    ossl_ca = self._cert2ossl(ca)
                 ossl_cas.append(ossl_ca)
                 res = self._lib.sk_X509_push(sk_x509, ossl_ca)
                 backend.openssl_assert(res >= 1)
