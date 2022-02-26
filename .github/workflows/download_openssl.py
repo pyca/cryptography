@@ -16,7 +16,10 @@ def get_response(session, url, token):
             response = session.get(
                 url, headers={"Authorization": "token " + token}
             )
-        except requests.exceptions.ChunkedEncodingError as e:
+        except (
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ConnectTimeout,
+        ) as e:
             print("Exception ({}) fetching {}, retrying".format(e, url))
             time.sleep(2)
             continue
