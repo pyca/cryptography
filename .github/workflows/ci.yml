@@ -277,7 +277,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-nightly-coverage
+          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ matrix.RUST }}-coverage
 
       - name: Setup python
         uses: actions/setup-python@v2.3.2
