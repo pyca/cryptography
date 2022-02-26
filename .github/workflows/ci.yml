@@ -198,10 +198,10 @@ jobs:
         PYTHON:
           - {VERSION: "3.9", TOXENV: "py39"}
         RUST:
-          # Cover MSRV (and likely next MSRV) and in-dev versions
+          # Cover MSRV (and likely next MSRV). In-dev versions are below in
+          # the linux-rust-coverage section.
           - 1.41.0
           - 1.45.0
-          - beta
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
@@ -256,6 +256,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.10", TOXENV: "py310"}
         RUST:
+          - beta
           - nightly
     name: "Rust Coverage"
     timeout-minutes: 15
