@@ -110,9 +110,6 @@ class Attribute:
             and self._type == other._type
         )
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash((self.oid, self.value, self._type))
 
@@ -234,12 +231,6 @@ class Certificate(metaclass=abc.ABCMeta):
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
-        """
-
-    @abc.abstractmethod
-    def __ne__(self, other: object) -> bool:
-        """
-        Checks not equal.
         """
 
     @abc.abstractmethod
@@ -387,12 +378,6 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __ne__(self, other: object) -> bool:
-        """
-        Checks not equal.
-        """
-
-    @abc.abstractmethod
     def __len__(self) -> int:
         """
         Number of revoked certificates in the CRL.
@@ -437,12 +422,6 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
-        """
-
-    @abc.abstractmethod
-    def __ne__(self, other: object) -> bool:
-        """
-        Checks not equal.
         """
 
     @abc.abstractmethod

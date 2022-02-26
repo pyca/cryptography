@@ -73,9 +73,6 @@ class RFC822Name(GeneralName):
 
         return self.value == other.value
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.value)
 
@@ -114,9 +111,6 @@ class DNSName(GeneralName):
             return NotImplemented
 
         return self.value == other.value
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -159,9 +153,6 @@ class UniformResourceIdentifier(GeneralName):
 
         return self.value == other.value
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.value)
 
@@ -186,9 +177,6 @@ class DirectoryName(GeneralName):
 
         return self.value == other.value
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.value)
 
@@ -212,9 +200,6 @@ class RegisteredID(GeneralName):
             return NotImplemented
 
         return self.value == other.value
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -262,9 +247,6 @@ class IPAddress(GeneralName):
 
         return self.value == other.value
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __hash__(self) -> int:
         return hash(self.value)
 
@@ -297,9 +279,6 @@ class OtherName(GeneralName):
             return NotImplemented
 
         return self.type_id == other.type_id and self.value == other.value
-
-    def __ne__(self, other: object) -> bool:
-        return not self == other
 
     def __hash__(self) -> int:
         return hash((self.type_id, self.value))

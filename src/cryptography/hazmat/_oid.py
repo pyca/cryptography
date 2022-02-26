@@ -56,9 +56,6 @@ class ObjectIdentifier:
 
         return self.dotted_string == other.dotted_string
 
-    def __ne__(self, other: object) -> bool:
-        return not self == other
-
     def __repr__(self) -> str:
         return "<ObjectIdentifier(oid={}, name={})>".format(
             self.dotted_string, self._name
