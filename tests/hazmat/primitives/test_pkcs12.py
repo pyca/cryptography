@@ -297,6 +297,16 @@ def _load_ca(backend):
     return cert, key
 
 
+def _read_friendly_name(cert, backend):
+    x509 = backend._cert2ossl(cert)
+    maybe_name = backend._lib.X509_alias_get0(x509, backend._ffi.NULL)
+    if maybe_name != backend._ffi.NULL:
+        name = backend._ffi.string(maybe_name)
+    else:
+        name = None
+    return  name
+
+
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
@@ -399,6 +409,29 @@ class TestPKCS12Creation:
         assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_more_certs == [cert2, cert3]
+
+    def test_generate_with_cert_key_pkcs12_ca(self, backend):
+        cert, key = _load_ca(backend)
+        cert2 = _load_cert(
+                backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_key_and_certificates(
+                b'test', key, cert, [PKCS12Certificate(cert2, b'cert2'), PKCS12Certificate(cert3, b'cert3')], encryption
+        )
+
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+                p12, None, backend
+        )
+        assert parsed_cert == cert
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
+        assert parsed_key.private_numbers() == key.private_numbers()
+        assert parsed_more_certs == [cert2, cert3]
+        assert _read_friendly_name(parsed_more_certs, backend) == b'test'
+        # How to validate friendly names?
+        # If I save p12 above I can see the friendly names,
+        # but I cannot write a test to confirm they are there...
 
     def test_generate_wrong_types(self, backend):
         cert, key = _load_ca(backend)
