@@ -298,12 +298,12 @@ def _load_ca(backend):
 
 
 @pytest.mark.skip_fips(
-        reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
+    reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
 class TestPKCS12Creation:
     @pytest.mark.parametrize(
-            (
-                    "kgenerator",
+        (
+            "kgenerator",
             "ktype",
             "kparam",
         ),
