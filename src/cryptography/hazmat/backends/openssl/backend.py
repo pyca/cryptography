@@ -2223,11 +2223,7 @@ class Backend:
                         res = self._lib.X509_alias_set1(
                             ossl_ca, ca_name_buf, -1
                         )
-                        if not res:
-                            raise RuntimeError(
-                                'Could not set alias "{}" for additional cert'
-                                "{}".format(ca, ca.friendly_name)
-                            )
+                        self.openssl_assert(res == 1)
                 else:
                     ossl_ca = self._cert2ossl(ca)
                 ossl_cas.append(ossl_ca)
