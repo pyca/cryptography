@@ -2215,17 +2215,19 @@ class Backend:
             ossl_cas = []
             for ca in cas:
                 if isinstance(ca, PKCS12Certificate):
-                    # Copied from Felix's gist
-                    # https://gist.github.com/
-                    # felixfontein/f750763fd5773fbf0ab22af87239aab0
                     ca_alias = ca.friendly_name
                     ossl_ca = self._cert2ossl(ca.certificate)
-                    if ca_alias is not None:
-                        with self._zeroed_null_terminated_buf(
-                            ca_alias
-                        ) as ca_name_buf:
-                            self._lib.X509_alias_set1(
-                                ossl_ca, ca_name_buf, len(ca_alias)
+                    with self._zeroed_null_terminated_buf(
+                        ca_alias
+                    ) as ca_name_buf:
+                        res = self._lib.X509_alias_set1(
+                            ossl_ca, ca_name_buf, -1
+                        )
+                        print(self._ffi.string(ca_name_buf))
+                        if not res:
+                            raise RuntimeError(
+                                'Could not set alias "{}" for additional cert'
+                                "{}".format(ca, ca.friendly_name)
                             )
                 else:
                     ossl_ca = self._cert2ossl(ca)
