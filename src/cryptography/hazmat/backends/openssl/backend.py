@@ -117,6 +117,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     _ALLOWED_PKCS12_TYPES,
+    _PKCS12_CAS_TYPES,
 )
 
 
@@ -2175,7 +2176,7 @@ class Backend:
         name: typing.Optional[bytes],
         key: typing.Optional[_ALLOWED_PKCS12_TYPES],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[typing.Union[x509.Certificate, PKCS12Certificate]]],
+        cas: typing.Optional[typing.List[_PKCS12_CAS_TYPES]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None
@@ -2214,13 +2215,17 @@ class Backend:
             ossl_cas = []
             for ca in cas:
                 if isinstance(ca, PKCS12Certificate):
-                    # Copied from Felix's gist https://gist.github.com/felixfontein/f750763fd5773fbf0ab22af87239aab0
+                    # Copied from Felix's gist
+                    # https://gist.github.com/
+                    # felixfontein/f750763fd5773fbf0ab22af87239aab0
                     ca_alias = ca.friendly_name
                     ossl_ca = self._cert2ossl(ca.certificate)
                     if ca_alias is not None:
-                        with self._zeroed_null_terminated_buf(ca_alias) as ca_name_buf:
+                        with self._zeroed_null_terminated_buf(
+                            ca_alias
+                        ) as ca_name_buf:
                             self._lib.X509_alias_set1(
-                                    ossl_ca, ca_name_buf, len(ca_alias)
+                                ossl_ca, ca_name_buf, len(ca_alias)
                             )
                 else:
                     ossl_ca = self._cert2ossl(ca)

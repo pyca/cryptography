@@ -157,11 +157,17 @@ def load_pkcs12(
     return ossl.load_pkcs12(data, password)
 
 
+_PKCS12_CAS_TYPES = typing.Union[
+    x509.Certificate,
+    PKCS12Certificate,
+]
+
+
 def serialize_key_and_certificates(
     name: typing.Optional[bytes],
     key: typing.Optional[_ALLOWED_PKCS12_TYPES],
     cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[typing.Iterable[typing.Union[x509.Certificate, PKCS12Certificate]]],
+    cas: typing.Optional[typing.Iterable[_PKCS12_CAS_TYPES]],
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
     if key is not None and not isinstance(
@@ -183,7 +189,13 @@ def serialize_key_and_certificates(
 
     if cas is not None:
         cas = list(cas)
-        if not all(isinstance(val, (x509.Certificate, PKCS12Certificate)) for val in cas):
+        if not all(isinstance(
+            val,
+            (
+                x509.Certificate,
+                PKCS12Certificate,
+            )
+        ) for val in cas):
             raise TypeError("all values in cas must be certificates")
 
     if not isinstance(
