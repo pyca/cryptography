@@ -2223,7 +2223,6 @@ class Backend:
                         res = self._lib.X509_alias_set1(
                             ossl_ca, ca_name_buf, -1
                         )
-                        print(self._ffi.string(ca_name_buf))
                         if not res:
                             raise RuntimeError(
                                 'Could not set alias "{}" for additional cert'
