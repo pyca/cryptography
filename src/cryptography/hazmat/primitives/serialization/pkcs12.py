@@ -189,13 +189,16 @@ def serialize_key_and_certificates(
 
     if cas is not None:
         cas = list(cas)
-        if not all(isinstance(
-            val,
-            (
-                x509.Certificate,
-                PKCS12Certificate,
+        if not all(
+            isinstance(
+                val,
+                (
+                    x509.Certificate,
+                    PKCS12Certificate,
+                ),
             )
-        ) for val in cas):
+            for val in cas
+        ):
             raise TypeError("all values in cas must be certificates")
 
     if not isinstance(
