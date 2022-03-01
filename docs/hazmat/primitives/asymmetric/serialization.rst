@@ -521,7 +521,14 @@ file suffix.
     :type cert: :class:`~cryptography.x509.Certificate` or ``None``
 
     :param cas: An optional set of certificates to also include in the structure.
-    :type cas: list of :class:`~cryptography.x509.Certificate` or ``None``
+        If a :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        is given, its friendly name will be serialized.
+    :type cas: list of
+        :class:`~cryptography.x509.Certificate`
+        ,
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        , or
+        ``None``
 
     :param encryption_algorithm: The encryption algorithm that should be used
         for the key and certificate. An instance of an object conforming to the
