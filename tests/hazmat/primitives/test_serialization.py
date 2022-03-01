@@ -141,6 +141,10 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         ("key_path", "password"),
         [
@@ -341,6 +345,10 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_der_public_key(b"invalid data", backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         "key_file",
         [
@@ -422,6 +430,10 @@ class TestPEMSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         ("key_path", "password"),
         [
@@ -490,6 +502,10 @@ class TestPEMSerialization:
         numbers = key.public_numbers()
         assert numbers.e == 65537
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         ("key_file"),
         [
@@ -894,6 +910,10 @@ class TestPEMSerialization:
             16,
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     def test_load_pem_dsa_private_key(self, backend):
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
@@ -2313,6 +2333,10 @@ class TestOpenSSHSerialization:
                 DummyKeySerializationEncryption(),
             )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         ("key_path", "supported"),
         [

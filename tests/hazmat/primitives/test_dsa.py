@@ -55,6 +55,10 @@ def test_skip_if_dsa_not_supported(backend):
         _skip_if_dsa_not_supported(backend, DummyHashAlgorithm(), 1, 1, 1)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSA:
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(2048, backend)
@@ -385,6 +389,10 @@ class TestDSA:
         ).private_key(backend)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSAVerification:
     def test_dsa_verification(self, backend, subtests):
         vectors = load_vectors_from_file(
@@ -450,6 +458,10 @@ class TestDSAVerification:
             public_key.verify(b"\x00" * 128, digest, prehashed_alg)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSASignature:
     def test_dsa_signing(self, backend, subtests):
         vectors = load_vectors_from_file(
@@ -511,6 +523,10 @@ class TestDSASignature:
             private_key.sign(digest, prehashed_alg)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSANumbers:
     def test_dsa_parameter_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -591,6 +607,10 @@ class TestDSANumbers:
         )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSANumberEquality:
     def test_parameter_numbers_eq(self):
         param = dsa.DSAParameterNumbers(1, 2, 3)
@@ -643,6 +663,10 @@ class TestDSANumberEquality:
         assert priv != object()
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSASerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
@@ -864,6 +888,10 @@ class TestDSASerialization:
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSAPEMPublicKeySerialization:
     @pytest.mark.parametrize(
         ("key_path", "loader_func", "encoding"),
