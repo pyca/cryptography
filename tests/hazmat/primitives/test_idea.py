@@ -16,7 +16,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA(b"\x00" * 16), modes.ECB()
+        algorithms._IDEAInternal(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support IDEA ECB",
 )
@@ -25,14 +25,16 @@ class TestIDEAModeECB:
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ecb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms._IDEAInternal(
+            binascii.unhexlify((key))
+        ),
         lambda **kwargs: modes.ECB(),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA(b"\x00" * 16), modes.CBC(b"\x00" * 8)
+        algorithms._IDEAInternal(b"\x00" * 16), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA CBC",
 )
@@ -41,14 +43,16 @@ class TestIDEAModeCBC:
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cbc.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms._IDEAInternal(
+            binascii.unhexlify((key))
+        ),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA(b"\x00" * 16), modes.OFB(b"\x00" * 8)
+        algorithms._IDEAInternal(b"\x00" * 16), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA OFB",
 )
@@ -57,14 +61,16 @@ class TestIDEAModeOFB:
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-ofb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms._IDEAInternal(
+            binascii.unhexlify((key))
+        ),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA(b"\x00" * 16), modes.CFB(b"\x00" * 8)
+        algorithms._IDEAInternal(b"\x00" * 16), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA CFB",
 )
@@ -73,6 +79,8 @@ class TestIDEAModeCFB:
         load_nist_vectors,
         os.path.join("ciphers", "IDEA"),
         ["idea-cfb.txt"],
-        lambda key, **kwargs: algorithms.IDEA(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms._IDEAInternal(
+            binascii.unhexlify((key))
+        ),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

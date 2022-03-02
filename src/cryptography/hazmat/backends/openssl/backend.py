@@ -91,14 +91,14 @@ from cryptography.hazmat.primitives.ciphers import (
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
-    Blowfish,
-    CAST5,
     Camellia,
     ChaCha20,
-    IDEA,
-    SEED,
     SM4,
     TripleDES,
+    _BlowfishInternal,
+    _CAST5Internal,
+    _IDEAInternal,
+    _SEEDInternal,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,
@@ -389,14 +389,14 @@ class Backend:
         )
         for mode_cls in [CBC, CFB, OFB, ECB]:
             self.register_cipher_adapter(
-                Blowfish, mode_cls, GetCipherByName("bf-{mode.name}")
+                _BlowfishInternal, mode_cls, GetCipherByName("bf-{mode.name}")
             )
         for mode_cls in [CBC, CFB, OFB, ECB]:
             self.register_cipher_adapter(
-                SEED, mode_cls, GetCipherByName("seed-{mode.name}")
+                _SEEDInternal, mode_cls, GetCipherByName("seed-{mode.name}")
             )
         for cipher_cls, mode_cls in itertools.product(
-            [CAST5, IDEA],
+            [_CAST5Internal, _IDEAInternal],
             [CBC, OFB, CFB, ECB],
         ):
             self.register_cipher_adapter(

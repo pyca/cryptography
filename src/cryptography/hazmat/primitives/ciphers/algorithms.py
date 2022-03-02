@@ -81,6 +81,16 @@ class Blowfish(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
+_BlowfishInternal = Blowfish
+utils.deprecated(
+    Blowfish,
+    __name__,
+    "Blowfish has been deprecated",
+    utils.DeprecatedIn37,
+    name="Blowfish",
+)
+
+
 class CAST5(CipherAlgorithm, BlockCipherAlgorithm):
     name = "CAST5"
     block_size = 64
@@ -92,6 +102,16 @@ class CAST5(CipherAlgorithm, BlockCipherAlgorithm):
     @property
     def key_size(self) -> int:
         return len(self.key) * 8
+
+
+_CAST5Internal = CAST5
+utils.deprecated(
+    CAST5,
+    __name__,
+    "CAST5 has been deprecated",
+    utils.DeprecatedIn37,
+    name="CAST5",
+)
 
 
 class ARC4(CipherAlgorithm):
@@ -119,6 +139,16 @@ class IDEA(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
+_IDEAInternal = IDEA
+utils.deprecated(
+    IDEA,
+    __name__,
+    "IDEA has been deprecated",
+    utils.DeprecatedIn37,
+    name="IDEA",
+)
+
+
 class SEED(CipherAlgorithm, BlockCipherAlgorithm):
     name = "SEED"
     block_size = 128
@@ -130,6 +160,16 @@ class SEED(CipherAlgorithm, BlockCipherAlgorithm):
     @property
     def key_size(self) -> int:
         return len(self.key) * 8
+
+
+_SEEDInternal = SEED
+utils.deprecated(
+    SEED,
+    __name__,
+    "SEED has been deprecated",
+    utils.DeprecatedIn37,
+    name="SEED",
+)
 
 
 class ChaCha20(CipherAlgorithm):

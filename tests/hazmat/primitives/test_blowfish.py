@@ -16,7 +16,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish(b"\x00" * 56), modes.ECB()
+        algorithms._BlowfishInternal(b"\x00" * 56), modes.ECB()
     ),
     skip_message="Does not support Blowfish ECB",
 )
@@ -25,14 +25,16 @@ class TestBlowfishModeECB:
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ecb.txt"],
-        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda key, **kwargs: algorithms._BlowfishInternal(
+            binascii.unhexlify(key)
+        ),
         lambda **kwargs: modes.ECB(),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish(b"\x00" * 56), modes.CBC(b"\x00" * 8)
+        algorithms._BlowfishInternal(b"\x00" * 56), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish CBC",
 )
@@ -41,14 +43,16 @@ class TestBlowfishModeCBC:
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cbc.txt"],
-        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda key, **kwargs: algorithms._BlowfishInternal(
+            binascii.unhexlify(key)
+        ),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish(b"\x00" * 56), modes.OFB(b"\x00" * 8)
+        algorithms._BlowfishInternal(b"\x00" * 56), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish OFB",
 )
@@ -57,14 +61,16 @@ class TestBlowfishModeOFB:
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ofb.txt"],
-        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda key, **kwargs: algorithms._BlowfishInternal(
+            binascii.unhexlify(key)
+        ),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish(b"\x00" * 56), modes.CFB(b"\x00" * 8)
+        algorithms._BlowfishInternal(b"\x00" * 56), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish CFB",
 )
@@ -73,6 +79,8 @@ class TestBlowfishModeCFB:
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cfb.txt"],
-        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda key, **kwargs: algorithms._BlowfishInternal(
+            binascii.unhexlify(key)
+        ),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
