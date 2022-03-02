@@ -2574,6 +2574,10 @@ class TestCertificateBuilder:
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         "hash_algorithm",
         [
@@ -2625,6 +2629,10 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.MD5(), backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     @pytest.mark.parametrize(
         ("hashalg", "hashalg_oid"),
         [
@@ -2638,9 +2646,6 @@ class TestCertificateBuilder:
     def test_build_cert_with_dsa_private_key(
         self, hashalg, hashalg_oid, backend
     ):
-        if backend._fips_enabled and hashalg is hashes.SHA1:
-            pytest.skip("SHA1 not supported in FIPS mode")
-
         issuer_private_key = DSA_KEY_2048.private_key(backend)
         subject_private_key = DSA_KEY_2048.private_key(backend)
 
@@ -3698,6 +3703,10 @@ class TestCertificateSigningRequestBuilder:
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     def test_sign_dsa_with_md5(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder().subject_name(
@@ -4021,6 +4030,10 @@ class TestCertificateSigningRequestBuilder:
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
     def test_build_ca_request_with_dsa(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
 
@@ -4371,6 +4384,10 @@ class TestCertificateSigningRequestBuilder:
             builder.sign(private_key, hashes.SHA512(), backend)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSACertificate:
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
@@ -4496,6 +4513,10 @@ class TestDSACertificate:
         )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
 class TestDSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
