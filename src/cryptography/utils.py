@@ -143,11 +143,16 @@ def deprecated(
     module_name: str,
     message: str,
     warning_class: typing.Type[Warning],
+    name: typing.Optional[str] = None,
 ) -> _DeprecatedValue:
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):
-        sys.modules[module_name] = _ModuleWithDeprecations(module)
-    return _DeprecatedValue(value, message, warning_class)
+        sys.modules[module_name] = module = _ModuleWithDeprecations(module)
+    dv = _DeprecatedValue(value, message, warning_class)
+    # Maintain backwards compatibility with `name is None` for pyOpenSSL.
+    if name is not None:
+        setattr(module, name, dv)
+    return dv
 
 
 def cached_property(func: typing.Callable) -> property:

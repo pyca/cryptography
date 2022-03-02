@@ -18,7 +18,8 @@ class TestDeprecated:
     def test_deprecated(self, monkeypatch):
         mod = types.ModuleType("TestDeprecated/test_deprecated")
         monkeypatch.setitem(sys.modules, mod.__name__, mod)
-        mod.X = deprecated(
+        deprecated(
+            name="X",
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
@@ -53,7 +54,8 @@ class TestDeprecated:
     def test_deleting_deprecated_members(self, monkeypatch):
         mod = types.ModuleType("TestDeprecated/test_deprecated")
         monkeypatch.setitem(sys.modules, mod.__name__, mod)
-        mod.X = deprecated(
+        deprecated(
+            name="X",
             value=1,
             module_name=mod.__name__,
             message="deprecated message text",
