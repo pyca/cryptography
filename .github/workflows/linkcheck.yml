@@ -13,7 +13,7 @@ jobs:
     name: "linkcheck"
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
       - name: Setup python
