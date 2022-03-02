@@ -36,7 +36,7 @@ int Cryptography_i2d_DHxparams_bio(BIO *, DH *);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350
 #ifndef DH_CHECK_Q_NOT_PRIME
 #define DH_CHECK_Q_NOT_PRIME            0x10
 #endif

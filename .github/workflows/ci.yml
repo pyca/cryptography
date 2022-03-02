@@ -39,6 +39,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.7"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.5"}}
           - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.2"}}
+          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.5.0"}}
           - {VERSION: "3.10", TOXENV: "py310"}
           - {VERSION: "3.11-dev", TOXENV: "py311"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
