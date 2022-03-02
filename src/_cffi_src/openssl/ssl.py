@@ -529,8 +529,7 @@ static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 #endif
 
-#if (CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350) || \
-    CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 #else
