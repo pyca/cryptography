@@ -217,6 +217,7 @@ class ExtendedKeyUsageOID:
     ANY_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37.0")
     SMARTCARD_LOGON = ObjectIdentifier("1.3.6.1.4.1.311.20.2.2")
     KERBEROS_PKINIT_KDC = ObjectIdentifier("1.3.6.1.5.2.3.5")
+    IPSEC_IKE = ObjectIdentifier("1.3.6.1.5.5.7.3.17")
 
 
 class AuthorityInformationAccessOID:
