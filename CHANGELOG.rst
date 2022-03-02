@@ -20,6 +20,13 @@ Changelog
 * Deprecated Python 3.6 support. Python 3.6 is no longer supported by the
   Python core team. Support for Python 3.6 will be removed in a future
   ``cryptography`` release.
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish` because
+  they are legacy algorithms with extremely low usage. These will be removed
+  in a future version of ``cryptography``.
 * Added limited support for distinguished names containing a bit string.
 * We now ship ``universal2`` wheels on macOS, which contain both ``arm64``
   and ``x86_64`` architectures. Users on macOS should upgrade to the latest
