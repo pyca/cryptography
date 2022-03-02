@@ -518,10 +518,6 @@ class TestDSASignature:
             private_key.sign(digest, prehashed_alg)
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.dsa_supported(),
-    skip_message="Does not support DSA.",
-)
 class TestDSANumbers:
     def test_dsa_parameter_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -602,10 +598,6 @@ class TestDSANumbers:
         )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.dsa_supported(),
-    skip_message="Does not support DSA.",
-)
 class TestDSANumberEquality:
     def test_parameter_numbers_eq(self):
         param = dsa.DSAParameterNumbers(1, 2, 3)
