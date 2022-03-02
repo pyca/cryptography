@@ -2646,7 +2646,9 @@ class TestCertificateBuilder:
     def test_build_cert_with_dsa_private_key(
         self, hashalg, hashalg_oid, backend
     ):
-        if backend._fips_enabled and hashalg is hashes.SHA1:
+        if (
+            backend._fips_enabled and hashalg is hashes.SHA1
+        ):  # pragma: no cover
             pytest.skip("SHA1 not supported in FIPS mode")
 
         issuer_private_key = DSA_KEY_2048.private_key(backend)
