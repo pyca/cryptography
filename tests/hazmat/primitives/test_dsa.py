@@ -76,11 +76,6 @@ class TestDSA:
         ),
     )
     def test_generate_dsa_keys(self, vector, backend):
-        if (
-            backend._fips_enabled
-            and vector["p"] < backend._fips_dsa_min_modulus
-        ):
-            pytest.skip("Small modulus blocked in FIPS mode")
         parameters = dsa.DSAParameterNumbers(
             p=vector["p"], q=vector["q"], g=vector["g"]
         ).parameters(backend)
