@@ -1137,6 +1137,20 @@ class TestKeyUsage:
                 ),
                 b"\x03\x02\x02\x94",
             ),
+            (
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                b"\x03\x01\x00",
+            ),
         ],
     )
     def test_public_bytes(self, ext, serialized):
