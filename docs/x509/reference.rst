@@ -3149,7 +3149,7 @@ instances. The following common OIDs are available as constants.
         
     .. attribute:: IPSEC_IKE
 
-        .. versionadded:: 37.1
+        .. versionadded:: 37.0
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.17"``. This
         is used to denote that a certificate may be assigned to an IPSEC SA,
