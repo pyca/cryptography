@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from .utils import skip_signature_hash
 
 
 @pytest.mark.supported(
@@ -346,8 +347,7 @@ class TestPKCS7Builder:
     def test_sign_alternate_digests_der(
         self, hash_alg, expected_value, backend
     ):
-        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
-            pytest.skip("SHA1 not supported in FIPS mode")
+        skip_signature_hash(backend, hash_alg)
 
         data = b"hello world"
         cert, key = _load_cert_key()
@@ -375,8 +375,7 @@ class TestPKCS7Builder:
     def test_sign_alternate_digests_detached(
         self, hash_alg, expected_value, backend
     ):
-        if isinstance(hash_alg, hashes.SHA1) and backend._fips_enabled:
-            pytest.skip("SHA1 not supported in FIPS mode")
+        skip_signature_hash(backend, hash_alg)
 
         data = b"hello world"
         cert, key = _load_cert_key()

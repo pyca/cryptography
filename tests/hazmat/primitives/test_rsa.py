@@ -369,7 +369,12 @@ class TestRSASignature:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     def test_pkcs1v15_signing(self, backend, disable_rsa_checks, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
@@ -406,7 +411,12 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    @pytest.mark.skip_fips(reason="SHA1 signing not supported in FIPS mode.")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     def test_pss_signing(self, subtests, backend):
         for private, public, example in _flatten_pkcs1_examples(
             load_vectors_from_file(
@@ -549,7 +559,7 @@ class TestRSASignature:
             private_key.sign(
                 b"msg",
                 "notpadding",  # type: ignore[arg-type]
-                hashes.SHA1(),
+                hashes.SHA256(),
             )
 
     @pytest.mark.supported(
@@ -686,6 +696,12 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     def test_pkcs1v15_verification(self, backend, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
@@ -811,6 +827,12 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PSS.",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     def test_pss_verification(self, subtests, backend):
         for private, public, example in _flatten_pkcs1_examples(
             load_vectors_from_file(
@@ -842,6 +864,12 @@ class TestRSAVerification:
             )
         ),
         skip_message="Does not support PSS.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_invalid_pss_signature_wrong_data(self, backend):
@@ -877,6 +905,12 @@ class TestRSAVerification:
             )
         ),
         skip_message="Does not support PSS.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_invalid_pss_signature_wrong_key(self, backend):
@@ -915,6 +949,12 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PSS.",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_invalid_pss_signature_data_too_large_for_modulus(self, backend):
         # 2048 bit PSS signature
@@ -941,6 +981,12 @@ class TestRSAVerification:
                 hashes.SHA1(),
             )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
     def test_invalid_pss_signature_recover(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         public_key = private_key.public_key()
@@ -967,7 +1013,7 @@ class TestRSAVerification:
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.verify(
-                b"sig", b"msg", DummyAsymmetricPadding(), hashes.SHA1()
+                b"sig", b"msg", DummyAsymmetricPadding(), hashes.SHA256()
             )
 
     def test_padding_incorrect_type(self, backend):
@@ -978,7 +1024,7 @@ class TestRSAVerification:
                 b"sig",
                 b"msg",
                 "notpadding",  # type: ignore[arg-type]
-                hashes.SHA1(),
+                hashes.SHA256(),
             )
 
     @pytest.mark.supported(
@@ -997,7 +1043,7 @@ class TestRSAVerification:
                 padding.PSS(
                     mgf=DummyMGF(), salt_length=padding.PSS.MAX_LENGTH
                 ),
-                hashes.SHA1(),
+                hashes.SHA256(),
             )
 
     @pytest.mark.supported(
@@ -1040,6 +1086,12 @@ class TestRSAVerification:
             )
         ),
         skip_message="Does not support PSS.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_verify_salt_length_too_long(self, backend):
@@ -1109,8 +1161,9 @@ class TestRSAPSSMGF1Verification:
                 mgf=padding.MGF1(hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH,
             )
-        ),
-        skip_message="Does not support PSS using MGF1 with SHA1.",
+        )
+        and backend.signature_hash_supported(hashes.SHA1()),
+        skip_message="Does not support PSS using MGF1 with SHA1 or SHA1 signature.",
     )(
         generate_rsa_verification_test(
             load_rsa_nist_vectors,
@@ -1242,7 +1295,7 @@ class TestRSAPSSMGF1Verification:
 class TestRSAPKCS1Verification:
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA1())
+            backend.signature_hash_supported(hashes.SHA1())
             and backend.rsa_padding_supported(padding.PKCS1v15())
         ),
         skip_message="Does not support SHA1 and PKCS1v1.5.",
@@ -1262,7 +1315,7 @@ class TestRSAPKCS1Verification:
 
     test_rsa_pkcs1v15_verify_sha224 = pytest.mark.supported(
         only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA224())
+            backend.signature_hash_supported(hashes.SHA224())
             and backend.rsa_padding_supported(padding.PKCS1v15())
         ),
         skip_message="Does not support SHA224 and PKCS1v1.5.",
@@ -1282,7 +1335,7 @@ class TestRSAPKCS1Verification:
 
     test_rsa_pkcs1v15_verify_sha256 = pytest.mark.supported(
         only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA256())
+            backend.signature_hash_supported(hashes.SHA256())
             and backend.rsa_padding_supported(padding.PKCS1v15())
         ),
         skip_message="Does not support SHA256 and PKCS1v1.5.",
@@ -1302,7 +1355,7 @@ class TestRSAPKCS1Verification:
 
     test_rsa_pkcs1v15_verify_sha384 = pytest.mark.supported(
         only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA384())
+            backend.signature_hash_supported(hashes.SHA384())
             and backend.rsa_padding_supported(padding.PKCS1v15())
         ),
         skip_message="Does not support SHA384 and PKCS1v1.5.",
@@ -1322,7 +1375,7 @@ class TestRSAPKCS1Verification:
 
     test_rsa_pkcs1v15_verify_sha512 = pytest.mark.supported(
         only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA512())
+            backend.signature_hash_supported(hashes.SHA512())
             and backend.rsa_padding_supported(padding.PKCS1v15())
         ),
         skip_message="Does not support SHA512 and PKCS1v1.5.",

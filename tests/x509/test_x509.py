@@ -830,6 +830,12 @@ class TestRSACertificate:
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert len(cert.signature) == public_key.key_size // 8
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA-1 signature.",
+    )
     def test_tbs_certificate_bytes(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
@@ -1616,6 +1622,12 @@ class TestRSACertificateRequest:
             b"e36181e8c4c270c354b7f52c128db1b70639823324c7ea24791b7bc3d7005f3b"
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA-1 signature.",
+    )
     def test_tbs_certrequest_bytes(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
@@ -1776,8 +1788,8 @@ class TestRSACertificateRequest:
         ],
     )
     def test_build_cert(self, hashalg, hashalg_oid, backend):
-        if not backend.hash_supported(hashalg()):
-            pytest.skip(f"{hashalg} not supported in FIPS mode")
+        if not backend.signature_hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} signature not supported")
 
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -2714,8 +2726,8 @@ class TestCertificateBuilder:
         self, hashalg, hashalg_oid, backend
     ):
         _skip_curve_unsupported(backend, ec.SECP256R1())
-        if not backend.hash_supported(hashalg()):
-            pytest.skip(f"{hashalg} not supported in FIPS mode")
+        if not backend.signature_hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} signature not supported")
 
         issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -4389,6 +4401,12 @@ class TestCertificateSigningRequestBuilder:
     skip_message="Does not support DSA.",
 )
 class TestDSACertificate:
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA-1 signature.",
+    )
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
@@ -4516,6 +4534,10 @@ class TestDSACertificate:
 @pytest.mark.supported(
     only_if=lambda backend: backend.dsa_supported(),
     skip_message="Does not support DSA.",
+)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.signature_hash_supported(hashes.SHA1()),
+    skip_message="Does not support SHA-1 signature.",
 )
 class TestDSACertificateRequest:
     @pytest.mark.parametrize(
