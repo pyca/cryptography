@@ -14,8 +14,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
-from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 from .utils import skip_signature_hash
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
 @pytest.mark.supported(

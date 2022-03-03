@@ -1163,7 +1163,9 @@ class TestRSAPSSMGF1Verification:
             )
         )
         and backend.signature_hash_supported(hashes.SHA1()),
-        skip_message="Does not support PSS using MGF1 with SHA1 or SHA1 signature.",
+        skip_message=(
+            "Does not support PSS using MGF1 with SHA1 or SHA1 signature."
+        ),
     )(
         generate_rsa_verification_test(
             load_rsa_nist_vectors,
