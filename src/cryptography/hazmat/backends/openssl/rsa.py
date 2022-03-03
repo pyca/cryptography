@@ -221,7 +221,7 @@ def _rsa_sig_setup(
     if algorithm is not None:
         evp_md = backend._evp_md_non_null_from_algorithm(algorithm)
         res = backend._lib.EVP_PKEY_CTX_set_signature_md(pkey_ctx, evp_md)
-        if res == 0:
+        if res <= 0:
             backend._consume_errors()
             raise UnsupportedAlgorithm(
                 "{} is not supported by this backend for RSA signing.".format(
