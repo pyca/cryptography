@@ -81,7 +81,7 @@ impl From<CryptographyError> for pyo3::PyErr {
                         )
                         .expect("Failed to append to list");
                 }
-                pyo3::PyErr::from_instance(
+                pyo3::PyErr::from_value(
                     internal_error
                         .call1((
                             "Unknown OpenSSL error. This error is commonly encountered
@@ -130,7 +130,7 @@ mod tests {
                 CryptographyError::Asn1Write(asn1::WriteError::AllocationError)
             ));
             let py_e: pyo3::PyErr = e.into();
-            assert!(py_e.is_instance::<pyo3::exceptions::PyMemoryError>(py));
+            assert!(py_e.is_instance_of::<pyo3::exceptions::PyMemoryError>(py));
 
             let e: CryptographyError =
                 pyo3::PyDowncastError::new(py.None().as_ref(py), "abc").into();

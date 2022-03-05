@@ -298,7 +298,7 @@ fn sign_and_serialize<'p>(
         .import("cryptography.hazmat.primitives.serialization")?
         .getattr(crate::intern!(py, "Encoding"))?;
 
-    if encoding == encoding_class.getattr(crate::intern!(py, "SMIME"))? {
+    if encoding.is(encoding_class.getattr(crate::intern!(py, "SMIME"))?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid])

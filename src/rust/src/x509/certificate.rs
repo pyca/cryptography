@@ -83,8 +83,8 @@ pub(crate) struct Certificate {
     pub(crate) cached_extensions: Option<pyo3::PyObject>,
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyObjectProtocol for Certificate {
+#[pyo3::prelude::pymethods]
+impl Certificate {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
         self.raw.borrow_value().hash(&mut hasher);
@@ -93,7 +93,7 @@ impl pyo3::PyObjectProtocol for Certificate {
 
     fn __richcmp__(
         &self,
-        other: pyo3::PyRef<Certificate>,
+        other: pyo3::PyRef<'_, Certificate>,
         op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
@@ -113,10 +113,7 @@ impl pyo3::PyObjectProtocol for Certificate {
         let subject_repr = subject.repr()?.extract::<&str>()?;
         Ok(format!("<Certificate(subject={}, ...)>", subject_repr))
     }
-}
 
-#[pyo3::prelude::pymethods]
-impl Certificate {
     fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
         slf
     }
@@ -277,7 +274,7 @@ impl Certificate {
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
-            Err(_) => Err(CryptographyError::from(pyo3::PyErr::from_instance(
+            Err(_) => Err(CryptographyError::from(pyo3::PyErr::from_value(
                 py.import("cryptography.exceptions")?.call_method1(
                     "UnsupportedAlgorithm",
                     (format!(
@@ -359,11 +356,11 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, Crypt
     match version {
         0 => Ok(x509_module
             .getattr(crate::intern!(py, "Version"))?
-            .get_item("v1")?),
+            .get_item(crate::intern!(py, "v1"))?),
         2 => Ok(x509_module
             .getattr(crate::intern!(py, "Version"))?
-            .get_item("v3")?),
-        _ => Err(CryptographyError::from(pyo3::PyErr::from_instance(
+            .get_item(crate::intern!(py, "v3"))?),
+        _ => Err(CryptographyError::from(pyo3::PyErr::from_value(
             x509_module
                 .getattr(crate::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid X509 version", version), version))?,

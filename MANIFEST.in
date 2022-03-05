@@ -16,6 +16,8 @@ prune docs/_build
 recursive-include tests *.py
 exclude vectors
 recursive-exclude vectors *
+exclude src/rust/target
+recursive-exclude src/rust/target *
 
 recursive-exclude .github *
 

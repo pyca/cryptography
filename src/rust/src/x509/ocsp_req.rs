@@ -86,7 +86,7 @@ impl OCSPRequest {
             Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
-                Err(CryptographyError::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_value(
                     exceptions
                         .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
                         .call1((format!(
@@ -141,7 +141,7 @@ impl OCSPRequest {
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
             .getattr(crate::intern!(py, "DER"))?;
-        if encoding != der {
+        if !encoding.is(der) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )

@@ -118,14 +118,14 @@ impl X25519PrivateKey {
             .getattr(crate::intern!(py, "BestAvailableEncryption"))?
             .extract()?;
 
-        if !encoding_class.is_instance(encoding)? {
+        if !encoding.is_instance(encoding_class)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "encoding must be an item from the Encoding enum",
                 ),
             ));
         }
-        if !private_format_class.is_instance(format)? {
+        if !format.is_instance(private_format_class)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "format must be an item from the PrivateFormat enum",
@@ -133,12 +133,12 @@ impl X25519PrivateKey {
             ));
         }
 
-        if encoding == encoding_class.getattr(crate::intern!(py, "Raw"))?
-            || format == private_format_class.getattr(crate::intern!(py, "Raw"))?
+        if encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
+            || format.is(private_format_class.getattr(crate::intern!(py, "Raw"))?)
         {
-            if encoding != encoding_class.getattr(crate::intern!(py, "Raw"))?
-                || format != private_format_class.getattr(crate::intern!(py, "Raw"))?
-                || !no_encryption_class.is_instance(encryption_algorithm)?
+            if !encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
+                || !format.is(private_format_class.getattr(crate::intern!(py, "Raw"))?)
+                || !encryption_algorithm.is_instance(no_encryption_class)?
             {
                 return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                     "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()"
@@ -148,9 +148,9 @@ impl X25519PrivateKey {
             return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
         }
 
-        let password = if no_encryption_class.is_instance(encryption_algorithm)? {
+        let password = if encryption_algorithm.is_instance(no_encryption_class)? {
             b""
-        } else if best_available_encryption_class.is_instance(encryption_algorithm)? {
+        } else if encryption_algorithm.is_instance(best_available_encryption_class)? {
             encryption_algorithm
                 .getattr(crate::intern!(py, "password"))?
                 .extract::<&[u8]>()?
@@ -170,8 +170,8 @@ impl X25519PrivateKey {
             ));
         }
 
-        if format == private_format_class.getattr(crate::intern!(py, "PKCS8"))? {
-            if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
+        if format.is(private_format_class.getattr(crate::intern!(py, "PKCS8"))?) {
+            if encoding.is(encoding_class.getattr(crate::intern!(py, "PEM"))?) {
                 let pem_bytes = if password.is_empty() {
                     self.pkey.private_key_to_pem_pkcs8()?
                 } else {
@@ -181,7 +181,7 @@ impl X25519PrivateKey {
                     )?
                 };
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-            } else if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
+            } else if encoding.is(encoding_class.getattr(crate::intern!(py, "DER"))?) {
                 let der_bytes = if password.is_empty() {
                     self.pkey.private_key_to_pkcs8()?
                 } else {
@@ -228,14 +228,14 @@ impl X25519PublicKey {
             .getattr(crate::intern!(py, "PublicFormat"))?
             .extract()?;
 
-        if !encoding_class.is_instance(encoding)? {
+        if !encoding.is_instance(encoding_class)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "encoding must be an item from the Encoding enum",
                 ),
             ));
         }
-        if !public_format_class.is_instance(format)? {
+        if !format.is_instance(public_format_class)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "format must be an item from the PublicFormat enum",
@@ -243,11 +243,11 @@ impl X25519PublicKey {
             ));
         }
 
-        if encoding == encoding_class.getattr(crate::intern!(py, "Raw"))?
-            || format == public_format_class.getattr(crate::intern!(py, "Raw"))?
+        if encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
+            || format.is(public_format_class.getattr(crate::intern!(py, "Raw"))?)
         {
-            if encoding != encoding_class.getattr(crate::intern!(py, "Raw"))?
-                || format != public_format_class.getattr(crate::intern!(py, "Raw"))?
+            if !encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
+                || !format.is(public_format_class.getattr(crate::intern!(py, "Raw"))?)
             {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -260,11 +260,11 @@ impl X25519PublicKey {
         }
 
         // SubjectPublicKeyInfo + PEM/DER
-        if format == public_format_class.getattr(crate::intern!(py, "SubjectPublicKeyInfo"))? {
-            if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
+        if format.is(public_format_class.getattr(crate::intern!(py, "SubjectPublicKeyInfo"))?) {
+            if encoding.is(encoding_class.getattr(crate::intern!(py, "PEM"))?) {
                 let pem_bytes = self.pkey.public_key_to_pem()?;
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-            } else if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
+            } else if encoding.is(encoding_class.getattr(crate::intern!(py, "DER"))?) {
                 let der_bytes = self.pkey.public_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             } else {

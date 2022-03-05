@@ -59,15 +59,15 @@ fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::P
         .getattr(crate::intern!(py, "Ed448PrivateKey"))?
         .extract()?;
 
-    if rsa_private_key.is_instance(private_key)? {
+    if private_key.is_instance(rsa_private_key)? {
         Ok(KeyType::Rsa)
-    } else if dsa_key_type.is_instance(private_key)? {
+    } else if private_key.is_instance(dsa_key_type)? {
         Ok(KeyType::Dsa)
-    } else if ec_key_type.is_instance(private_key)? {
+    } else if private_key.is_instance(ec_key_type)? {
         Ok(KeyType::Ec)
-    } else if ed25519_key_type.is_instance(private_key)? {
+    } else if private_key.is_instance(ed25519_key_type)? {
         Ok(KeyType::Ed25519)
-    } else if ed448_key_type.is_instance(private_key)? {
+    } else if private_key.is_instance(ed448_key_type)? {
         Ok(KeyType::Ed448)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
@@ -88,7 +88,7 @@ fn identify_hash_type(
         .import("cryptography.hazmat.primitives.hashes")?
         .getattr(crate::intern!(py, "HashAlgorithm"))?
         .extract()?;
-    if !hash_algorithm_type.is_instance(hash_algorithm)? {
+    if !hash_algorithm.is_instance(hash_algorithm_type)? {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm.",
         ));
@@ -106,7 +106,7 @@ fn identify_hash_type(
         "sha3-256" => Ok(HashType::Sha3_256),
         "sha3-384" => Ok(HashType::Sha3_384),
         "sha3-512" => Ok(HashType::Sha3_512),
-        name => Err(pyo3::PyErr::from_instance(
+        name => Err(pyo3::PyErr::from_value(
             py.import("cryptography.exceptions")?.call_method1(
                 "UnsupportedAlgorithm",
                 (format!(
@@ -226,7 +226,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
         (KeyType::Dsa, HashType::Sha3_224)
         | (KeyType::Dsa, HashType::Sha3_256)
         | (KeyType::Dsa, HashType::Sha3_384)
-        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::PyErr::from_instance(
+        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::PyErr::from_value(
             py.import("cryptography.exceptions")?.call_method1(
                 "UnsupportedAlgorithm",
                 ("SHA3 hashes are not supported with DSA keys",),
@@ -354,15 +354,15 @@ pub(crate) fn identify_public_key_type(
         .getattr(crate::intern!(py, "Ed448PublicKey"))?
         .extract()?;
 
-    if rsa_key_type.is_instance(public_key)? {
+    if public_key.is_instance(rsa_key_type)? {
         Ok(KeyType::Rsa)
-    } else if dsa_key_type.is_instance(public_key)? {
+    } else if public_key.is_instance(dsa_key_type)? {
         Ok(KeyType::Dsa)
-    } else if ec_key_type.is_instance(public_key)? {
+    } else if public_key.is_instance(ec_key_type)? {
         Ok(KeyType::Ec)
-    } else if ed25519_key_type.is_instance(public_key)? {
+    } else if public_key.is_instance(ed25519_key_type)? {
         Ok(KeyType::Ed25519)
-    } else if ed448_key_type.is_instance(public_key)? {
+    } else if public_key.is_instance(ed448_key_type)? {
         Ok(KeyType::Ed448)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
