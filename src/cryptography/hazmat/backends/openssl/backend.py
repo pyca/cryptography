@@ -732,7 +732,7 @@ class Backend:
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            # SHA1 is permissible in MGF1 in FIPS and when SHA1 is blocked
+            # SHA1 is permissible in MGF1 in FIPS even when SHA1 is blocked
             # as signature algorithm.
             if self._fips_enabled and isinstance(
                 padding._mgf._algorithm, hashes.SHA1
