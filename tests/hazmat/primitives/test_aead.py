@@ -27,7 +27,7 @@ from ...utils import (
 
 class FakeData(bytes):
     def __len__(self):
-        return 2 ** 32 + 1
+        return 2**32 + 1
 
 
 def _aead_supported(cls):
