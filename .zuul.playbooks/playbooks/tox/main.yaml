@@ -1,7 +1,0 @@
-- hosts: all
-  tasks:
-    - name: Run tox
-      include_role:
-        name: tox
-      vars:
-        tox_extra_args: "-- --wycheproof-root={{ ansible_facts.env['HOME'] }}/wycheproof/"

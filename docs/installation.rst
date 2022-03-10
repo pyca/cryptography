@@ -16,7 +16,7 @@ Supported platforms
 Currently we test ``cryptography`` on Python 3.6+ and PyPy3 on these
 operating systems.
 
-* x86-64 CentOS 8.x
+* x86-64 RHEL 8.x
 * x86-64 Fedora (latest)
 * x86-64 macOS 10.15 Catalina
 * x86-64 Ubuntu 18.04, 20.04, rolling

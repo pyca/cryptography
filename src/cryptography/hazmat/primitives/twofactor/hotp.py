@@ -73,7 +73,7 @@ class HOTP(object):
 
     def generate(self, counter: int) -> bytes:
         truncated_value = self._dynamic_truncate(counter)
-        hotp = truncated_value % (10 ** self._length)
+        hotp = truncated_value % (10**self._length)
         return "{0:0{1}}".format(hotp, self._length).encode()
 
     def verify(self, hotp: bytes, counter: int) -> None:
