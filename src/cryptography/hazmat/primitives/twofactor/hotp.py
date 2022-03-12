@@ -34,7 +34,7 @@ def _generate_uri(
     parameters.extend(extra_parameters)
 
     label = (
-        "%s:%s" % (quote(issuer), quote(account_name))
+        f"{quote(issuer)}:{quote(account_name)}"
         if issuer
         else quote(account_name)
     )

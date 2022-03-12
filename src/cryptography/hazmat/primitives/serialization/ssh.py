@@ -88,7 +88,7 @@ def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
     curve = public_key.curve
     if curve.name not in _ECDSA_KEY_TYPE:
         raise ValueError(
-            "Unsupported curve for ssh private key: %r" % curve.name
+            f"Unsupported curve for ssh private key: {curve.name!r}"
         )
     return _ECDSA_KEY_TYPE[curve.name]
 
@@ -514,7 +514,7 @@ def _lookup_kformat(key_type: bytes):
         key_type = memoryview(key_type).tobytes()
     if key_type in _KEY_FORMATS:
         return _KEY_FORMATS[key_type]
-    raise UnsupportedAlgorithm("Unsupported key type: %r" % key_type)
+    raise UnsupportedAlgorithm(f"Unsupported key type: {key_type!r}")
 
 
 _SSH_PRIVATE_KEY_TYPES = typing.Union[
@@ -568,10 +568,10 @@ def load_ssh_private_key(
         ciphername_bytes = ciphername.tobytes()
         if ciphername_bytes not in _SSH_CIPHERS:
             raise UnsupportedAlgorithm(
-                "Unsupported cipher: %r" % ciphername_bytes
+                f"Unsupported cipher: {ciphername_bytes!r}"
             )
         if kdfname != _BCRYPT:
-            raise UnsupportedAlgorithm("Unsupported KDF: %r" % kdfname)
+            raise UnsupportedAlgorithm(f"Unsupported KDF: {kdfname!r}")
         blklen = _SSH_CIPHERS[ciphername_bytes][3]
         _check_block_size(edata, blklen)
         salt, kbuf = _get_sshstr(kdfoptions)

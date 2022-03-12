@@ -22,32 +22,30 @@ class ObjectIdentifier:
                 node_value = int(node, 10)
             except ValueError:
                 raise ValueError(
-                    "Malformed OID: %s (non-integer nodes)"
-                    % (self._dotted_string)
+                    f"Malformed OID: {dotted_string} (non-integer nodes)"
                 )
             if node_value < 0:
                 raise ValueError(
-                    "Malformed OID: %s (negative-integer nodes)"
-                    % (self._dotted_string)
+                    f"Malformed OID: {dotted_string} (negative-integer nodes)"
                 )
             intnodes.append(node_value)
 
         if len(nodes) < 2:
             raise ValueError(
-                "Malformed OID: %s (insufficient number of nodes)"
-                % (self._dotted_string)
+                f"Malformed OID: {dotted_string} "
+                "(insufficient number of nodes)"
             )
 
         if intnodes[0] > 2:
             raise ValueError(
-                "Malformed OID: %s (first node outside valid range)"
-                % (self._dotted_string)
+                f"Malformed OID: {dotted_string} "
+                "(first node outside valid range)"
             )
 
         if intnodes[0] < 2 and intnodes[1] >= 40:
             raise ValueError(
-                "Malformed OID: %s (second node outside valid range)"
-                % (self._dotted_string)
+                f"Malformed OID: {dotted_string} "
+                "(second node outside valid range)"
             )
 
     def __eq__(self, other: object) -> bool:

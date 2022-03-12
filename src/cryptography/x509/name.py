@@ -172,7 +172,7 @@ class NameAttribute:
         if attr_name is None:
             attr_name = self.rfc4514_attribute_name
 
-        return "%s=%s" % (attr_name, _escape_dn_value(self.value))
+        return f"{attr_name}={_escape_dn_value(self.value)}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NameAttribute):
