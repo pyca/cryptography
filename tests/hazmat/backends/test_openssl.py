@@ -518,7 +518,7 @@ class TestRSAPEMSerialization:
 
 @pytest.mark.skipif(
     backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
-    reason="Requires OpenSSL without EVP_PKEY_DHX (< 1.0.2)",
+    reason="Requires OpenSSL without EVP_PKEY_DHX",
 )
 @pytest.mark.supported(
     only_if=lambda backend: backend.dh_supported(),
