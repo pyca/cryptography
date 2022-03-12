@@ -205,7 +205,7 @@ available from your system package manager.
 Then, paste the following into a shell script. You'll need to populate the
 ``OPENSSL_VERSION`` variable. To do that, visit `openssl.org`_ and find the
 latest non-FIPS release version number, then set the string appropriately. For
-example, for OpenSSL 1.0.2k, use ``OPENSSL_VERSION="1.0.2k"``.
+example, for OpenSSL 1.1.1k, use ``OPENSSL_VERSION="1.1.1k"``.
 
 When this shell script is complete, you'll find a collection of wheel files in
 a directory called ``wheelhouse``. These wheels can be installed by a
