@@ -138,7 +138,6 @@ int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
 
 int EVP_PKEY_bits(const EVP_PKEY *);
 
-void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 
 EC_KEY *EVP_PKEY_get1_EC_KEY(EVP_PKEY *);
