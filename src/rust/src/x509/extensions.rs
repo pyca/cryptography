@@ -32,31 +32,32 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
     py_aki: &'a pyo3::PyAny,
 ) -> pyo3::PyResult<certificate::AuthorityKeyIdentifier<'a>> {
-    let key_identifier = if py_aki.getattr("key_identifier")?.is_none() {
-        None
-    } else {
-        Some(py_aki.getattr("key_identifier")?.extract::<&[u8]>()?)
-    };
-    let authority_cert_issuer = if py_aki.getattr("authority_cert_issuer")?.is_none() {
-        None
-    } else {
-        let gns = x509::common::encode_general_names(py, py_aki.getattr("authority_cert_issuer")?)?;
+    #[derive(pyo3::prelude::FromPyObject)]
+    struct PyAuthorityKeyIdentifier<'a> {
+        key_identifier: Option<&'a [u8]>,
+        authority_cert_issuer: Option<&'a pyo3::PyAny>,
+        authority_cert_serial_number: Option<&'a pyo3::types::PyLong>,
+    }
+    let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
+    let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
+        let gns = x509::common::encode_general_names(py, authority_cert_issuer)?;
         Some(x509::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
-    };
-    let authority_cert_serial_number = if py_aki.getattr("authority_cert_serial_number")?.is_none()
-    {
-        None
     } else {
-        let py_num = py_aki.getattr("authority_cert_serial_number")?.downcast()?;
-        let serial_bytes = py_uint_to_big_endian_bytes(py, py_num)?;
-        Some(asn1::BigUint::new(serial_bytes).unwrap())
+        None
     };
+    let authority_cert_serial_number =
+        if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
+            let serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
+            Some(asn1::BigUint::new(serial_bytes).unwrap())
+        } else {
+            None
+        };
     Ok(certificate::AuthorityKeyIdentifier {
-        key_identifier,
         authority_cert_issuer,
         authority_cert_serial_number,
+        key_identifier: aki.key_identifier,
     })
 }
 
