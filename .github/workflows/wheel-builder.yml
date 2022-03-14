@@ -184,12 +184,12 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.8", MSVC_VERSION: "2019", "ABI_VERSION": "cp36"}
-          - {VERSION: "pypy-3.8", MSVC_VERSION: "2019"}
+          - {VERSION: "3.8", "ABI_VERSION": "cp36"}
+          - {VERSION: "pypy-3.8"}
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-            PYTHON: {VERSION: "pypy-3.8", MSVC_VERSION: "2019"}
+            PYTHON: {VERSION: "pypy-3.8"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - uses: actions/checkout@v2.4.0
@@ -213,9 +213,9 @@ jobs:
       - run: pip install requests
       - name: Download OpenSSL
         run: |
-            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_ENV
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_ENV
+            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/lib;$LIB" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
