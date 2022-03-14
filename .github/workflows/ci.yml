@@ -392,8 +392,8 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36", MSVC_VERSION: "2019", CL_FLAGS: ""}
-          - {VERSION: "3.10", TOXENV: "py310", MSVC_VERSION: "2019", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.6", TOXENV: "py36", CL_FLAGS: ""}
+          - {VERSION: "3.10", TOXENV: "py310", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
         JOB_NUMBER: [0, 1, 2]
@@ -430,9 +430,9 @@ jobs:
       - run: python -m pip install tox requests coverage
       - name: Download OpenSSL
         run: |
-            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/include;$INCLUDE" >> $GITHUB_ENV
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.MSVC_VERSION }}/lib;$LIB" >> $GITHUB_ENV
+            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
+            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/lib;$LIB" >> $GITHUB_ENV
             echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
