@@ -44,6 +44,13 @@ Changelog
 * :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` is
   disabled in FIPS mode.
 
+.. _v36-0-2:
+
+36.0.2 - 2022-03-15
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 1.1.1n.
+
 .. _v36-0-1:
 
 36.0.1 - 2021-12-14
