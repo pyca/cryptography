@@ -3,8 +3,10 @@ Changelog
 
 .. _v36-0-2:
 
-36.0.2 - Unreleased
+36.0.2 - 2022-03-15
 ~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 1.1.1n.
 
 .. _v36-0-1:
 
