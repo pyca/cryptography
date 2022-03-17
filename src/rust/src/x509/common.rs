@@ -238,7 +238,12 @@ pub(crate) fn encode_general_name<'a>(
     } else if gn_type == gn_module.getattr("OtherName")? {
         Ok(GeneralName::OtherName(OtherName {
             type_id: py_oid_to_oid(gn.getattr("type_id")?)?,
-            value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
+            value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "OtherName value must be valid DER: {:?}",
+                    e
+                ))
+            })?,
         }))
     } else if gn_type == gn_module.getattr("UniformResourceIdentifier")? {
         Ok(GeneralName::UniformResourceIdentifier(
