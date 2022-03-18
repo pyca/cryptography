@@ -604,7 +604,7 @@ class CertificateSigningRequestBuilder:
             raise TypeError("value must be bytes")
 
         if not isinstance(tag, int):
-            raise TypeError("value must be int")
+            raise TypeError("tag must be int")
 
         _reject_duplicate_attribute(oid, self._attributes)
 
