@@ -579,3 +579,8 @@ def skip_fips_traditional_openssl(backend, fmt):
         pytest.skip(
             "Traditional OpenSSL key format is not supported in FIPS mode."
         )
+
+
+def skip_signature_hash(backend, hash_alg: hashes.HashAlgorithm):
+    if not backend.signature_hash_supported(hash_alg):
+        pytest.skip(f"{hash_alg} is not a supported signature hash algorithm.")

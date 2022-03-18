@@ -326,6 +326,15 @@ class Backend:
         evp_md = self._evp_md_from_algorithm(algorithm)
         return evp_md != self._ffi.NULL
 
+    def signature_hash_supported(
+        self, algorithm: hashes.HashAlgorithm
+    ) -> bool:
+        # Dedicated check for hashing algorithm use in message digest for
+        # signatures, e.g. RSA PKCS#1 v1.5 SHA1 (sha1WithRSAEncryption).
+        if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
+            return False
+        return self.hash_supported(algorithm)
+
     def scrypt_supported(self) -> bool:
         if self._fips_enabled:
             return False
@@ -723,7 +732,8 @@ class Backend:
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            # SHA1 is permissible in MGF1 in FIPS
+            # SHA1 is permissible in MGF1 in FIPS even when SHA1 is blocked
+            # as signature algorithm.
             if self._fips_enabled and isinstance(
                 padding._mgf._algorithm, hashes.SHA1
             ):
@@ -854,7 +864,7 @@ class Backend:
     def dsa_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if not self.dsa_supported():
             return False
-        return self.hash_supported(algorithm)
+        return self.signature_hash_supported(algorithm)
 
     def cmac_algorithm_supported(self, algorithm) -> bool:
         return self.cipher_supported(
