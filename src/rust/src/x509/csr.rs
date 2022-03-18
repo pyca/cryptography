@@ -30,12 +30,12 @@ struct CertificationRequestInfo<'a> {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct Attribute<'a> {
+struct Attribute<'a>{
     type_id: asn1::ObjectIdentifier<'a>,
     values: x509::Asn1ReadableOrWritable<
         'a,
         asn1::SetOf<'a, asn1::Tlv<'a>>,
-        asn1::SetOfWriter<'a, x509::common::RawTlv<'a>, [x509::common::RawTlv<'a>; 1]>,
+        asn1::SetOfWriter<'a, x509::common::RawTlv<'a>, [x509::common::RawTlv<'a>; 1]>
     >,
 }
 
@@ -415,24 +415,18 @@ fn create_x509_csr(
         x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts);
-        attrs.push(Attribute {
+        let newattr = Attribute {
             type_id: (*oid::EXTENSION_REQUEST).clone(),
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),
-        })
+        };
+        attrs.push(newattr)
     }
 
     for py_attr in builder.getattr("_attributes")?.iter()? {
-        let (py_oid, value): (&pyo3::PyAny, &[u8]) = py_attr?.extract()?;
+        let (py_oid, value, tag): (&pyo3::PyAny, &[u8], u8) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
-        let tag = if std::str::from_utf8(value).is_ok() {
-            asn1::Utf8String::TAG
-        } else {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Attribute values must be valid utf-8.",
-            )));
-        };
         attrs.push(Attribute {
             type_id: oid,
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([

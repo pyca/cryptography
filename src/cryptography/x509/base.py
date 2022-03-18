@@ -552,7 +552,7 @@ class CertificateSigningRequestBuilder:
         self,
         subject_name: typing.Optional[Name] = None,
         extensions: typing.List[Extension[ExtensionType]] = [],
-        attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]] = [],
+        attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes, int]] = [],
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -592,7 +592,7 @@ class CertificateSigningRequestBuilder:
         )
 
     def add_attribute(
-        self, oid: ObjectIdentifier, value: bytes
+        self, oid: ObjectIdentifier, value: bytes, tag: int = 12
     ) -> "CertificateSigningRequestBuilder":
         """
         Adds an X.509 attribute with an OID and associated value.
@@ -603,12 +603,15 @@ class CertificateSigningRequestBuilder:
         if not isinstance(value, bytes):
             raise TypeError("value must be bytes")
 
+        if not isinstance(tag, int):
+            raise TypeError("value must be int")
+
         _reject_duplicate_attribute(oid, self._attributes)
 
         return CertificateSigningRequestBuilder(
             self._subject_name,
             self._extensions,
-            self._attributes + [(oid, value)],
+            self._attributes + [(oid, value, tag)],
         )
 
     def sign(
