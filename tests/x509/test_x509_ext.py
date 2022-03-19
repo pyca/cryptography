@@ -3689,6 +3689,12 @@ class TestNameConstraints:
         assert nc.excluded_subtrees is not None
         assert list(nc.excluded_subtrees) == subtrees
 
+    def test_empty_lists(self):
+        with pytest.raises(ValueError):
+            x509.NameConstraints(permitted_subtrees=None, excluded_subtrees=[])
+        with pytest.raises(ValueError):
+            x509.NameConstraints(permitted_subtrees=[], excluded_subtrees=None)
+
     def test_repr(self):
         permitted = [x509.DNSName("name.local"), x509.DNSName("name2.local")]
         nc = x509.NameConstraints(
@@ -3911,7 +3917,7 @@ class TestNameConstraintsExtension:
         builder = builder.add_extension(
             NameConstraints(
                 permitted_subtrees=list(map(DNSName, permitted)),
-                excluded_subtrees=[],
+                excluded_subtrees=None,
             ),
             True,
         )

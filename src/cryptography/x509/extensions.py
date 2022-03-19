@@ -1254,6 +1254,10 @@ class NameConstraints(ExtensionType):
     ) -> None:
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
+            if not permitted_subtrees:
+                raise ValueError(
+                    "permitted_subtrees must be a non-empty list or None"
+                )
             if not all(isinstance(x, GeneralName) for x in permitted_subtrees):
                 raise TypeError(
                     "permitted_subtrees must be a list of GeneralName objects "
@@ -1264,6 +1268,10 @@ class NameConstraints(ExtensionType):
 
         if excluded_subtrees is not None:
             excluded_subtrees = list(excluded_subtrees)
+            if not excluded_subtrees:
+                raise ValueError(
+                    "excluded_subtrees must be a non-empty list or None"
+                )
             if not all(isinstance(x, GeneralName) for x in excluded_subtrees):
                 raise TypeError(
                     "excluded_subtrees must be a list of GeneralName objects "
