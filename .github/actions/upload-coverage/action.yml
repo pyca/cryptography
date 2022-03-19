@@ -10,10 +10,7 @@ runs:
   using: "composite"
 
   steps:
-    - run: |
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-
-        bash codecov.sh -n "${{ inputs.name }}"
-      shell: bash
+    - uses: codecov/codecov-action@v2.1.0
+      with:
+        name: ${{ inputs.name }}
+        verbose: true
