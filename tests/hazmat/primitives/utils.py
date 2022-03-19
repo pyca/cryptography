@@ -48,10 +48,8 @@ def _load_all_params(path, file_names, param_loader):
 def generate_encrypt_test(
     param_loader, path, file_names, cipher_factory, mode_factory
 ):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_encryption(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 encrypt_test(backend, cipher_factory, mode_factory, params)
 
@@ -81,13 +79,12 @@ def encrypt_test(backend, cipher_factory, mode_factory, params):
 def generate_aead_test(
     param_loader, path, file_names, cipher_factory, mode_factory
 ):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     assert mode_factory is GCM
-    # We don't support IVs < 64-bit in GCM mode so just strip them out
-    all_params = [i for i in all_params if len(i["iv"]) >= 16]
 
     def test_aead(self, backend, subtests):
+        all_params = _load_all_params(path, file_names, param_loader)
+        # We don't support IVs < 64-bit in GCM mode so just strip them out
+        all_params = [i for i in all_params if len(i["iv"]) >= 16]
         for params in all_params:
             with subtests.test():
                 aead_test(backend, cipher_factory, mode_factory, params)
@@ -158,10 +155,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
 def generate_stream_encryption_test(
     param_loader, path, file_names, cipher_factory
 ):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_stream_encryption(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 stream_encryption_test(backend, cipher_factory, params)
 
@@ -187,10 +182,8 @@ def stream_encryption_test(backend, cipher_factory, params):
 
 
 def generate_hash_test(param_loader, path, file_names, hash_cls):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_hash(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 hash_test(backend, hash_cls, params)
 
@@ -242,10 +235,8 @@ def base_hmac_test(backend, algorithm):
 
 
 def generate_hmac_test(param_loader, path, file_names, algorithm):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_hmac(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 hmac_test(backend, algorithm, params)
 
@@ -260,10 +251,8 @@ def hmac_test(backend, algorithm, params):
 
 
 def generate_pbkdf2_test(param_loader, path, file_names, algorithm):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_pbkdf2(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 pbkdf2_test(backend, algorithm, params)
 
@@ -405,10 +394,8 @@ def hkdf_expand_test(backend, algorithm, params):
 
 
 def generate_hkdf_test(param_loader, path, file_names, algorithm):
-    all_params = _load_all_params(path, file_names, param_loader)
-
     def test_hkdf(self, backend, subtests):
-        for params in all_params:
+        for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
                 hkdf_extract_test(backend, algorithm, params)
             with subtests.test():
@@ -420,13 +407,12 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
 
 
 def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
-    all_params = [
-        p
-        for p in _load_all_params(path, file_names, param_loader)
-        if p["ctrlocation"] in ["before_fixed", "after_fixed"]
-    ]
-
     def test_kbkdf(self, backend, subtests):
+        all_params = [
+            p
+            for p in _load_all_params(path, file_names, param_loader)
+            if p["ctrlocation"] in ["before_fixed", "after_fixed"]
+        ]
         for params in all_params:
             with subtests.test():
                 kbkdf_counter_mode_test(backend, params)
@@ -523,12 +509,11 @@ def kbkdf_counter_mode_test(backend, params):
 def generate_rsa_verification_test(
     param_loader, path, file_names, hash_alg, pad_factory
 ):
-    all_params = _load_all_params(path, file_names, param_loader)
-    all_params = [
-        i for i in all_params if i["algorithm"] == hash_alg.name.upper()
-    ]
-
     def test_rsa_verification(self, backend, subtests):
+        all_params = _load_all_params(path, file_names, param_loader)
+        all_params = [
+            i for i in all_params if i["algorithm"] == hash_alg.name.upper()
+        ]
         for params in all_params:
             with subtests.test():
                 rsa_verification_test(backend, params, hash_alg, pad_factory)
