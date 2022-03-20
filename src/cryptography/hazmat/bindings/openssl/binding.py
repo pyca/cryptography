@@ -163,8 +163,6 @@ class Binding:
             if not cls._lib_loaded:
                 cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
                 cls._lib_loaded = True
-                # initialize the SSL library
-                cls.lib.SSL_library_init()
                 cls._register_osrandom_engine()
                 # As of OpenSSL 3.0.0 we must register a legacy cipher provider
                 # to get RC2 (needed for junk asymmetric private key
