@@ -133,6 +133,7 @@ def cryptography_has_psk_tlsv13() -> typing.List[str]:
         "SSL_CTX_set_psk_use_session_callback",
     ]
 
+
 def cryptography_has_custom_ext() -> typing.List[str]:
     return [
         "SSL_CTX_add_client_custom_ext",
