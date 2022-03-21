@@ -273,6 +273,7 @@ void SSL_CTX_set_psk_use_session_callback(SSL_CTX *,
 const SSL_CIPHER *SSL_CIPHER_find(SSL *, const unsigned char *);
 SSL_SESSION *SSL_SESSION_new(void);
 int SSL_SESSION_set1_master_key(SSL_SESSION *, const unsigned char *,
+                                 size_t);
 int SSL_SESSION_set_cipher(SSL_SESSION *, const SSL_CIPHER *);
 int SSL_SESSION_set_protocol_version(SSL_SESSION *, int);
 
