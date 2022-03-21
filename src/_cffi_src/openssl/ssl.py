@@ -255,6 +255,26 @@ void SSL_CTX_set_psk_client_callback(SSL_CTX *,
                                          unsigned char *,
                                          unsigned int
                                      ));
+void SSL_CTX_set_psk_find_session_callback(SSL_CTX *,
+                                           int (*)(
+                                               SSL *,
+                                               const unsigned char *,
+                                               size_t,
+                                               SSL_SESSION **
+                                           ));
+void SSL_CTX_set_psk_use_session_callback(SSL_CTX *,
+                                          int (*)(
+                                              SSL *,
+                                              const EVP_MD *,
+                                              const unsigned char **,
+                                              size_t *,
+                                              SSL_SESSION **
+                                          ));
+const SSL_CIPHER *SSL_CIPHER_find(SSL *, const unsigned char *);
+SSL_SESSION *SSL_SESSION_new(void);
+int SSL_SESSION_set1_master_key(SSL_SESSION *, const unsigned char *,
+int SSL_SESSION_set_cipher(SSL_SESSION *, const SSL_CIPHER *);
+int SSL_SESSION_set_protocol_version(SSL_SESSION *, int);
 
 int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
                                    unsigned int);
@@ -662,6 +682,21 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
                                             unsigned char *,
                                             unsigned int
                                         )) = NULL;
+void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
+                                           int (*)(
+                                               SSL *,
+                                               const unsigned char *,
+                                               size_t,
+                                               SSL_SESSION **
+                                           )) = NULL;
+void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
+                                          int (*)(
+                                              SSL *,
+                                              const EVP_MD *,
+                                              const unsigned char **,
+                                              size_t *,
+                                              SSL_SESSION **
+                                          )) = NULL;
 #else
 static const long Cryptography_HAS_PSK = 1;
 #endif
