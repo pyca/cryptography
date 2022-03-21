@@ -21,6 +21,7 @@ static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_PSK;
+static const long Cryptography_HAS_PSK_TLSv1_3;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_GET_PROTO_VERSION;
@@ -683,21 +684,6 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
                                             unsigned char *,
                                             unsigned int
                                         )) = NULL;
-void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
-                                           int (*)(
-                                               SSL *,
-                                               const unsigned char *,
-                                               size_t,
-                                               SSL_SESSION **
-                                           )) = NULL;
-void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
-                                          int (*)(
-                                              SSL *,
-                                              const EVP_MD *,
-                                              const unsigned char **,
-                                              size_t *,
-                                              SSL_SESSION **
-                                          )) = NULL;
 #else
 static const long Cryptography_HAS_PSK = 1;
 #endif
@@ -796,5 +782,33 @@ void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
                                        )) = NULL;
 #else
 static const long Cryptography_HAS_SSL_COOKIE = 1;
+#endif
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 || \
+    CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL || \
+    defined(OPENSSL_NO_PSK)
+static const long Cryptography_HAS_PSK_TLSv1_3 = 0;
+void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
+                                           int (*)(
+                                               SSL *,
+                                               const unsigned char *,
+                                               size_t,
+                                               SSL_SESSION **
+                                           )) = NULL;
+void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
+                                          int (*)(
+                                              SSL *,
+                                              const EVP_MD *,
+                                              const unsigned char **,
+                                              size_t *,
+                                              SSL_SESSION **
+                                          )) = NULL;
+const SSL_CIPHER (**SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
+SSL_SESSION (**SSL_SESSION_new)(void) = NULL;
+int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
+                                   size_t) = NULL;
+int (*SSL_SESSION_set_cipher*)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
+int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
+#else
+static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
 #endif
 """
