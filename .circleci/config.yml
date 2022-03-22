@@ -19,7 +19,7 @@ commands:
 jobs:
   linux-arm64:
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     resource_class: arm.medium
     parameters:
       image:
@@ -35,7 +35,7 @@ jobs:
           command: tox -e <<parameters.toxenv>>
   linux-arm64-wheel:
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     resource_class: arm.medium
     parameters:
       image:
