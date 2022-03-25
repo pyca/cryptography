@@ -811,9 +811,6 @@ int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
 #if !CRYPTOGRAPHY_IS_BORINGSSL
     int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
 #endif
-#if CRYPTOGRAPHY_IS_BORINGSSL
-    SSL_SESSION *(*SSL_SESSION_new)(const SSL_CTX *) = NULL;
-#endif
 #else
 static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
 #endif
