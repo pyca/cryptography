@@ -809,9 +809,7 @@ int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
 int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
 #if !CRYPTOGRAPHY_IS_BORINGSSL
     int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
-    SSL_SESSION *(*SSL_SESSION_new)(void);
-#else
-    SSL_SESSION *(*SSL_SESSION_new)(const SSL_CTX *) = NULL;
+    SSL_SESSION *(*SSL_SESSION_new)(void) = NULL;
 #endif
 #else
 static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
