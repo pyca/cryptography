@@ -809,7 +809,7 @@ int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
 int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
 #if !CRYPTOGRAPHY_IS_BORINGSSL
     int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
-    if !CRYPTOGRAPHY_IS_LIBRESSL || !CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+    #if !CRYPTOGRAPHY_IS_LIBRESSL || !CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
         SSL_SESSION *(*SSL_SESSION_new)(void) = NULL;
     #endif
 #endif
