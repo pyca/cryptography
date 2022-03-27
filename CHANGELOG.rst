@@ -38,13 +38,16 @@ Changelog
   ``manylinux`` wheels provided they have an up to date ``pip``.
 * Added support for multiple
   :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
-  :class:`~cryptography.x509.ocsp.OCSPResponse`. 
+  :class:`~cryptography.x509.ocsp.OCSPResponse`.
 * Restored support for signing certificates and other structures in
   :doc:`/x509/index` with SHA3 hash algorithms.
 * :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` is
   disabled in FIPS mode.
 * Added support for serialization of PKCS#12 CA friendly names/aliases in
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`
+* Added support for 12-15 byte (96 to 120 bit) nonces to
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`. This class
+  previously supported only 12 byte (96 bit).
 
 .. _v36-0-2:
 

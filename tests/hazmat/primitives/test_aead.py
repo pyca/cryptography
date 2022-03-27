@@ -495,10 +495,20 @@ class TestAESOCB3:
             aesocb3.encrypt(nonce, b"", FakeData())
 
     def test_vectors(self, backend, subtests):
-        vectors = load_vectors_from_file(
-            os.path.join("ciphers", "AES", "OCB3", "rfc7253.txt"),
-            load_nist_vectors,
-        )
+        vectors = []
+        for f in (
+            "rfc7253.txt",
+            "test-vector-1-nonce104.txt",
+            "test-vector-1-nonce112.txt",
+            "test-vector-1-nonce120.txt",
+        ):
+            vectors.extend(
+                load_vectors_from_file(
+                    os.path.join("ciphers", "AES", "OCB3", f),
+                    load_nist_vectors,
+                )
+            )
+
         for vector in vectors:
             with subtests.test():
                 nonce = binascii.unhexlify(vector["nonce"])
@@ -557,7 +567,7 @@ class TestAESOCB3:
         with pytest.raises(ValueError):
             aesocb3.encrypt(b"\x00" * 11, b"hi", None)
         with pytest.raises(ValueError):
-            aesocb3.encrypt(b"\x00" * 13, b"hi", None)
+            aesocb3.encrypt(b"\x00" * 16, b"hi", None)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
