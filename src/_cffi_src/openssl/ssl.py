@@ -272,7 +272,8 @@ void SSL_CTX_set_psk_use_session_callback(SSL_CTX *,
                                               SSL_SESSION **
                                           ));
 const SSL_CIPHER *SSL_CIPHER_find(SSL *, const unsigned char *);
-SSL_SESSION *SSL_SESSION_new(void);
+/* Wrap SSL_SESSION_new to avoid namespace collision. */
+SSL_SESSION *Cryptography_SSL_SESSION_new(void);
 int SSL_SESSION_set1_master_key(SSL_SESSION *, const unsigned char *,
                                  size_t);
 int SSL_SESSION_set_cipher(SSL_SESSION *, const SSL_CIPHER *);
@@ -810,11 +811,12 @@ int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
 int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
 #if !CRYPTOGRAPHY_IS_BORINGSSL
     int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
-    #if !CRYPTOGRAPHY_IS_LIBRESSL && !CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
-        SSL_SESSION *(*SSL_SESSION_new)(void) = NULL;
-    #endif
 #endif
+SSL_SESSION *(*Cryptography_SSL_SESSION_new)(void) = NULL;
 #else
 static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
+SSL_SESSION *Cryptography_SSL_SESSION_new(void) {
+    return SSL_SESSION_new();
+}
 #endif
 """
