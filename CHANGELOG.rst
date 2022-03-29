@@ -43,6 +43,8 @@ Changelog
   :doc:`/x509/index` with SHA3 hash algorithms.
 * :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` is
   disabled in FIPS mode.
+* Added support for serialization of PKCS#12 CA friendly names/aliases in
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`
 
 .. _v36-0-2:
 

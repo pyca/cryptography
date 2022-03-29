@@ -117,6 +117,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     _ALLOWED_PKCS12_TYPES,
+    _PKCS12_CAS_TYPES,
 )
 
 
@@ -2175,7 +2176,7 @@ class Backend:
         name: typing.Optional[bytes],
         key: typing.Optional[_ALLOWED_PKCS12_TYPES],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[x509.Certificate]],
+        cas: typing.Optional[typing.List[_PKCS12_CAS_TYPES]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None
@@ -2213,7 +2214,18 @@ class Backend:
             # This list is to keep the x509 values alive until end of function
             ossl_cas = []
             for ca in cas:
-                ossl_ca = self._cert2ossl(ca)
+                if isinstance(ca, PKCS12Certificate):
+                    ca_alias = ca.friendly_name
+                    ossl_ca = self._cert2ossl(ca.certificate)
+                    with self._zeroed_null_terminated_buf(
+                        ca_alias
+                    ) as ca_name_buf:
+                        res = self._lib.X509_alias_set1(
+                            ossl_ca, ca_name_buf, -1
+                        )
+                        self.openssl_assert(res == 1)
+                else:
+                    ossl_ca = self._cert2ossl(ca)
                 ossl_cas.append(ossl_ca)
                 res = self._lib.sk_X509_push(sk_x509, ossl_ca)
                 backend.openssl_assert(res >= 1)
