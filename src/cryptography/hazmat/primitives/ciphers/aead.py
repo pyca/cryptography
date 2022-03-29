@@ -287,5 +287,5 @@ class AESOCB3:
         utils._check_byteslike("nonce", nonce)
         utils._check_bytes("data", data)
         utils._check_bytes("associated_data", associated_data)
-        if len(nonce) != 12:
-            raise ValueError("Nonce must be 96-bits (12 bytes)")
+        if len(nonce) < 12 or len(nonce) > 15:
+            raise ValueError("Nonce must be between 12 and 15 bytes")

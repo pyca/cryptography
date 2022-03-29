@@ -202,7 +202,7 @@ also support providing integrity for associated data which is not encrypted.
         authenticating the ``associated_data``.  The output of this can be
         passed directly to the ``decrypt`` method.
 
-        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
+        :param nonce: A 12-15 byte value. **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
         :param bytes data: The data to encrypt.
         :param bytes associated_data: Additional data that should be
