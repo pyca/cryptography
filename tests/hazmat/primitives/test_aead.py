@@ -496,12 +496,12 @@ class TestAESOCB3:
 
     def test_vectors(self, backend, subtests):
         vectors = []
-        for f in (
+        for f in [
             "rfc7253.txt",
             "test-vector-1-nonce104.txt",
             "test-vector-1-nonce112.txt",
             "test-vector-1-nonce120.txt",
-        ):
+        ]:
             vectors.extend(
                 load_vectors_from_file(
                     os.path.join("ciphers", "AES", "OCB3", f),
