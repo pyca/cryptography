@@ -72,6 +72,17 @@ def _mark_asn1_named_ec_curve(backend: "Backend", ec_cdata):
     )
 
 
+def _check_key_infinity(backend: "Backend", ec_cdata) -> None:
+    point = backend._lib.EC_KEY_get0_public_key(ec_cdata)
+    backend.openssl_assert(point != backend._ffi.NULL)
+    group = backend._lib.EC_KEY_get0_group(ec_cdata)
+    backend.openssl_assert(group != backend._ffi.NULL)
+    if backend._lib.EC_POINT_is_at_infinity(group, point):
+        raise ValueError(
+            "Cannot load an EC public key where the point is at infinity"
+        )
+
+
 def _sn_to_elliptic_curve(backend: "Backend", sn: str) -> ec.EllipticCurve:
     try:
         return ec._CURVE_TYPES[sn]()
@@ -120,6 +131,7 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
+        _check_key_infinity(backend, ec_key_cdata)
 
     @property
     def curve(self) -> ec.EllipticCurve:
@@ -211,6 +223,7 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
+        _check_key_infinity(backend, ec_key_cdata)
 
     @property
     def curve(self) -> ec.EllipticCurve:
