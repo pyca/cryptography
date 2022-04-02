@@ -142,7 +142,7 @@ jobs:
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
           - {IMAGE: "bookworm", TOXENV: "py39"}
-          - {IMAGE: "sid", TOXENV: "py39"}
+          - {IMAGE: "sid", TOXENV: "py310"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
@@ -182,7 +182,7 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: 'tox -vvv -- --wycheproof-root="wycheproof"'
+      - run: '/venv/bin/tox -vvv -- --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup

@@ -11,6 +11,7 @@ runs:
 
   steps:
     - run: |
+        PATH="/venv/bin:${PATH}"
         curl -o codecov.sh -f https://codecov.io/bash || \
           curl -o codecov.sh -f https://codecov.io/bash || \
           curl -o codecov.sh -f https://codecov.io/bash
