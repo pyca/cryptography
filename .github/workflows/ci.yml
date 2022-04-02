@@ -544,6 +544,30 @@ jobs:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
+  docs-linkcheck:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    name: "linkcheck"
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2.4.0
+        with:
+          persist-credentials: false
+      - name: Setup python
+        uses: actions/setup-python@v3.1.0
+        with:
+          python-version: 3.9
+      - uses: actions-rs/toolchain@v1.0.7
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          default: true
+      - run: python -m pip install -U tox
+      - run: tox -r --  --color=yes
+        env:
+          TOXENV: docs-linkcheck
+
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
