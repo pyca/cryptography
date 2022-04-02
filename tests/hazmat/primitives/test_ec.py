@@ -6,6 +6,7 @@
 import binascii
 import itertools
 import os
+import textwrap
 import typing
 from binascii import hexlify
 
@@ -471,6 +472,39 @@ class TestECDSAVectors:
         )
         with pytest.raises(ValueError):
             numbers.public_key(backend)
+
+    def test_load_invalid_ec_key_from_pem(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        # BoringSSL rejects infinity points before it ever gets to us, so it
+        # uses a more generic error message.
+        match = (
+            "infinity" if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL else None
+        )
+        with pytest.raises(ValueError, match=match):
+            serialization.load_pem_public_key(
+                textwrap.dedent(
+                    """
+            -----BEGIN PUBLIC KEY-----
+            MBkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDAgAA
+            -----END PUBLIC KEY-----
+            """
+                ).encode(),
+                backend=backend,
+            )
+        with pytest.raises(ValueError, match=match):
+            serialization.load_pem_private_key(
+                textwrap.dedent(
+                    """
+            -----BEGIN PRIVATE KEY-----
+            MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCD/////AAAAAP//////
+            ////vOb6racXnoTzucrC/GMlUQ==
+            -----END PRIVATE KEY-----
+            """
+                ).encode(),
+                password=None,
+                backend=backend,
+            )
 
     def test_signatures(self, backend, subtests):
         vectors = itertools.chain(
