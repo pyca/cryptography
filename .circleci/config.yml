@@ -32,7 +32,7 @@ jobs:
           image: <<parameters.image>>
       - docker-run:
           image: <<parameters.image>>
-          command: tox -e <<parameters.toxenv>>
+          command: /venv/bin/tox -e <<parameters.toxenv>>
   linux-arm64-wheel:
     machine:
       image: ubuntu-2004:current
