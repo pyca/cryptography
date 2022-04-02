@@ -12,7 +12,7 @@ from cryptography.hazmat.backends.openssl.backend import backend
 
 
 class ChaCha20Poly1305:
-    _MAX_SIZE = 2**32
+    _MAX_SIZE = 2**31 - 1
 
     def __init__(self, key: bytes):
         if not backend.aead_cipher_supported(self):
@@ -43,7 +43,7 @@ class ChaCha20Poly1305:
         if len(data) > self._MAX_SIZE or len(associated_data) > self._MAX_SIZE:
             # This is OverflowError to match what cffi would raise
             raise OverflowError(
-                "Data or associated data too long. Max 2**32 bytes"
+                "Data or associated data too long. Max 2**31 - 1 bytes"
             )
 
         self._check_params(nonce, data, associated_data)
@@ -75,7 +75,7 @@ class ChaCha20Poly1305:
 
 
 class AESCCM:
-    _MAX_SIZE = 2**32
+    _MAX_SIZE = 2**31 - 1
 
     def __init__(self, key: bytes, tag_length: int = 16):
         utils._check_byteslike("key", key)
@@ -119,7 +119,7 @@ class AESCCM:
         if len(data) > self._MAX_SIZE or len(associated_data) > self._MAX_SIZE:
             # This is OverflowError to match what cffi would raise
             raise OverflowError(
-                "Data or associated data too long. Max 2**32 bytes"
+                "Data or associated data too long. Max 2**31 - 1 bytes"
             )
 
         self._check_params(nonce, data, associated_data)
@@ -160,7 +160,7 @@ class AESCCM:
 
 
 class AESGCM:
-    _MAX_SIZE = 2**32
+    _MAX_SIZE = 2**31 - 1
 
     def __init__(self, key: bytes):
         utils._check_byteslike("key", key)
@@ -191,7 +191,7 @@ class AESGCM:
         if len(data) > self._MAX_SIZE or len(associated_data) > self._MAX_SIZE:
             # This is OverflowError to match what cffi would raise
             raise OverflowError(
-                "Data or associated data too long. Max 2**32 bytes"
+                "Data or associated data too long. Max 2**31 - 1 bytes"
             )
 
         self._check_params(nonce, data, associated_data)
@@ -223,7 +223,7 @@ class AESGCM:
 
 
 class AESOCB3:
-    _MAX_SIZE = 2**32
+    _MAX_SIZE = 2**31 - 1
 
     def __init__(self, key: bytes):
         utils._check_byteslike("key", key)
@@ -260,7 +260,7 @@ class AESOCB3:
         if len(data) > self._MAX_SIZE or len(associated_data) > self._MAX_SIZE:
             # This is OverflowError to match what cffi would raise
             raise OverflowError(
-                "Data or associated data too long. Max 2**32 bytes"
+                "Data or associated data too long. Max 2**31 - 1 bytes"
             )
 
         self._check_params(nonce, data, associated_data)
