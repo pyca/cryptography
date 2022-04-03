@@ -127,6 +127,18 @@ def cryptography_has_psk() -> typing.List[str]:
     ]
 
 
+def cryptography_has_psk_tlsv13() -> typing.List[str]:
+    return [
+        "SSL_CTX_set_psk_find_session_callback",
+        "SSL_CTX_set_psk_use_session_callback",
+        "Cryptography_SSL_SESSION_new",
+        "SSL_CIPHER_find",
+        "SSL_SESSION_set1_master_key",
+        "SSL_SESSION_set_cipher",
+        "SSL_SESSION_set_protocol_version",
+    ]
+
+
 def cryptography_has_custom_ext() -> typing.List[str]:
     return [
         "SSL_CTX_add_client_custom_ext",
@@ -320,6 +332,7 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
     "Cryptography_HAS_PSK": cryptography_has_psk,
+    "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
