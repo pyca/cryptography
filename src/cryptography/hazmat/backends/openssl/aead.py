@@ -13,10 +13,13 @@ if typing.TYPE_CHECKING:
         AESCCM,
         AESGCM,
         AESOCB3,
+        AESSIV,
         ChaCha20Poly1305,
     )
 
-    _AEAD_TYPES = typing.Union[AESCCM, AESGCM, AESOCB3, ChaCha20Poly1305]
+    _AEAD_TYPES = typing.Union[
+        AESCCM, AESGCM, AESOCB3, AESSIV, ChaCha20Poly1305
+    ]
 
 _ENCRYPT = 1
 _DECRYPT = 0
@@ -27,6 +30,7 @@ def _aead_cipher_name(cipher: "_AEAD_TYPES") -> bytes:
         AESCCM,
         AESGCM,
         AESOCB3,
+        AESSIV,
         ChaCha20Poly1305,
     )
 
@@ -36,9 +40,27 @@ def _aead_cipher_name(cipher: "_AEAD_TYPES") -> bytes:
         return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
     elif isinstance(cipher, AESOCB3):
         return f"aes-{len(cipher._key) * 8}-ocb".encode("ascii")
+    elif isinstance(cipher, AESSIV):
+        return f"aes-{len(cipher._key) * 8 // 2}-siv".encode("ascii")
     else:
         assert isinstance(cipher, AESGCM)
         return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
+
+
+def _evp_cipher(cipher_name: bytes, backend: "Backend"):
+    if cipher_name.endswith(b"-siv"):
+        evp_cipher = backend._lib.EVP_CIPHER_fetch(
+            backend._ffi.NULL,
+            cipher_name,
+            backend._ffi.NULL,
+        )
+        backend.openssl_assert(evp_cipher != backend._ffi.NULL)
+        evp_cipher = backend._ffi.gc(evp_cipher, backend._lib.EVP_CIPHER_free)
+    else:
+        evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
+        backend.openssl_assert(evp_cipher != backend._ffi.NULL)
+
+    return evp_cipher
 
 
 def _aead_setup(
@@ -50,8 +72,7 @@ def _aead_setup(
     tag_len: int,
     operation: int,
 ):
-    evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
-    backend.openssl_assert(evp_cipher != backend._ffi.NULL)
+    evp_cipher = _evp_cipher(cipher_name, backend)
     ctx = backend._lib.EVP_CIPHER_CTX_new()
     ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
     res = backend._lib.EVP_CipherInit_ex(
@@ -118,7 +139,10 @@ def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
     outlen = backend._ffi.new("int *")
     buf = backend._ffi.new("unsigned char[]", len(data))
     res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
-    backend.openssl_assert(res != 0)
+    if res == 0:
+        # AES SIV can error here if the data is invalid on decrypt
+        backend._consume_errors()
+        raise InvalidTag
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
@@ -130,7 +154,7 @@ def _encrypt(
     associated_data: typing.List[bytes],
     tag_length: int,
 ) -> bytes:
-    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
 
     cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
@@ -159,7 +183,14 @@ def _encrypt(
     backend.openssl_assert(res != 0)
     tag = backend._ffi.buffer(tag_buf)[:]
 
-    return processed_data + tag
+    if isinstance(cipher, AESSIV):
+        # RFC 5297 defines the output as IV || C, where the tag we generate is
+        # the "IV" and C is the ciphertext. This is the opposite of our
+        # other AEADs, which are Ciphertext || Tag
+        backend.openssl_assert(len(tag) == 16)
+        return tag + processed_data
+    else:
+        return processed_data + tag
 
 
 def _decrypt(
@@ -170,12 +201,20 @@ def _decrypt(
     associated_data: typing.List[bytes],
     tag_length: int,
 ) -> bytes:
-    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
 
     if len(data) < tag_length:
         raise InvalidTag
-    tag = data[-tag_length:]
-    data = data[:-tag_length]
+
+    if isinstance(cipher, AESSIV):
+        # RFC 5297 defines the output as IV || C, where the tag we generate is
+        # the "IV" and C is the ciphertext. This is the opposite of our
+        # other AEADs, which are Ciphertext || Tag
+        tag = data[:tag_length]
+        data = data[tag_length:]
+    else:
+        tag = data[-tag_length:]
+        data = data[:-tag_length]
     cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
         backend, cipher_name, cipher._key, nonce, tag, tag_length, _DECRYPT

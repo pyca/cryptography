@@ -48,6 +48,9 @@ Changelog
 * Added support for 12-15 byte (96 to 120 bit) nonces to
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`. This class
   previously supported only 12 byte (96 bit).
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV` when using
+  OpenSSL 3.0.0+.
 
 .. _v36-0-2:
 
