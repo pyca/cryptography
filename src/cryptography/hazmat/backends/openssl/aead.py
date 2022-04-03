@@ -33,12 +33,12 @@ def _aead_cipher_name(cipher: "_AEAD_TYPES") -> bytes:
     if isinstance(cipher, ChaCha20Poly1305):
         return b"chacha20-poly1305"
     elif isinstance(cipher, AESCCM):
-        return "aes-{}-ccm".format(len(cipher._key) * 8).encode("ascii")
+        return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
     elif isinstance(cipher, AESOCB3):
-        return "aes-{}-ocb".format(len(cipher._key) * 8).encode("ascii")
+        return f"aes-{len(cipher._key) * 8}-ocb".encode("ascii")
     else:
         assert isinstance(cipher, AESGCM)
-        return "aes-{}-gcm".format(len(cipher._key) * 8).encode("ascii")
+        return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
 
 
 def _aead_setup(
@@ -127,7 +127,7 @@ def _encrypt(
     cipher: "_AEAD_TYPES",
     nonce: bytes,
     data: bytes,
-    associated_data: bytes,
+    associated_data: typing.List[bytes],
     tag_length: int,
 ) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM
@@ -141,7 +141,8 @@ def _encrypt(
     if isinstance(cipher, AESCCM):
         _set_length(backend, ctx, len(data))
 
-    _process_aad(backend, ctx, associated_data)
+    for ad in associated_data:
+        _process_aad(backend, ctx, ad)
     processed_data = _process_data(backend, ctx, data)
     outlen = backend._ffi.new("int *")
     # All AEADs we support besides OCB are streaming so they return nothing
@@ -166,7 +167,7 @@ def _decrypt(
     cipher: "_AEAD_TYPES",
     nonce: bytes,
     data: bytes,
-    associated_data: bytes,
+    associated_data: typing.List[bytes],
     tag_length: int,
 ) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM
@@ -184,7 +185,8 @@ def _decrypt(
     if isinstance(cipher, AESCCM):
         _set_length(backend, ctx, len(data))
 
-    _process_aad(backend, ctx, associated_data)
+    for ad in associated_data:
+        _process_aad(backend, ctx, ad)
     # CCM has a different error path if the tag doesn't match. Errors are
     # raised in Update and Final is irrelevant.
     if isinstance(cipher, AESCCM):

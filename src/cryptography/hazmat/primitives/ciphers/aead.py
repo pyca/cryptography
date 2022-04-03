@@ -47,7 +47,7 @@ class ChaCha20Poly1305:
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._encrypt(backend, self, nonce, data, [associated_data], 16)
 
     def decrypt(
         self,
@@ -59,7 +59,7 @@ class ChaCha20Poly1305:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._decrypt(backend, self, nonce, data, [associated_data], 16)
 
     def _check_params(
         self,
@@ -125,7 +125,7 @@ class AESCCM:
         self._check_params(nonce, data, associated_data)
         self._validate_lengths(nonce, len(data))
         return aead._encrypt(
-            backend, self, nonce, data, associated_data, self._tag_length
+            backend, self, nonce, data, [associated_data], self._tag_length
         )
 
     def decrypt(
@@ -139,7 +139,7 @@ class AESCCM:
 
         self._check_params(nonce, data, associated_data)
         return aead._decrypt(
-            backend, self, nonce, data, associated_data, self._tag_length
+            backend, self, nonce, data, [associated_data], self._tag_length
         )
 
     def _validate_lengths(self, nonce: bytes, data_len: int) -> None:
@@ -195,7 +195,7 @@ class AESGCM:
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._encrypt(backend, self, nonce, data, [associated_data], 16)
 
     def decrypt(
         self,
@@ -207,7 +207,7 @@ class AESGCM:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._decrypt(backend, self, nonce, data, [associated_data], 16)
 
     def _check_params(
         self,
@@ -264,7 +264,7 @@ class AESOCB3:
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._encrypt(backend, self, nonce, data, [associated_data], 16)
 
     def decrypt(
         self,
@@ -276,7 +276,7 @@ class AESOCB3:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, associated_data, 16)
+        return aead._decrypt(backend, self, nonce, data, [associated_data], 16)
 
     def _check_params(
         self,
