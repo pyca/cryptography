@@ -37,11 +37,15 @@ static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
 static const long Cryptography_HAS_RAW_KEY;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 static const long Cryptography_HAS_300_FIPS;
+static const long Cryptography_HAS_300_EVP_CIPHER;
 static const long Cryptography_HAS_EVP_PKEY_DH;
 """
 
 FUNCTIONS = """
 const EVP_CIPHER *EVP_get_cipherbyname(const char *);
+EVP_CIPHER *EVP_CIPHER_fetch(OSSL_LIB_CTX *, const char *, const char *);
+void EVP_CIPHER_free(EVP_CIPHER *);
+
 int EVP_CIPHER_CTX_set_padding(EVP_CIPHER_CTX *, int);
 int EVP_CipherInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
                       const unsigned char *, const unsigned char *, int);
@@ -272,10 +276,15 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 
 #if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
 static const long Cryptography_HAS_300_FIPS = 1;
+static const long Cryptography_HAS_300_EVP_CIPHER = 1;
 #else
 static const long Cryptography_HAS_300_FIPS = 0;
+static const long Cryptography_HAS_300_EVP_CIPHER = 0;
 int (*EVP_default_properties_is_fips_enabled)(OSSL_LIB_CTX *) = NULL;
 int (*EVP_default_properties_enable_fips)(OSSL_LIB_CTX *, int) = NULL;
+EVP_CIPHER * (*EVP_CIPHER_fetch)(OSSL_LIB_CTX *, const char *,
+                                 const char *) = NULL;
+void (*EVP_CIPHER_free)(EVP_CIPHER *) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_IS_BORINGSSL
