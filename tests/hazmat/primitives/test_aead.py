@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
     AESOCB3,
+    AESSIV,
     ChaCha20Poly1305,
 )
 
@@ -607,4 +608,128 @@ class TestAESOCB3:
         ct2 = aesocb3_.encrypt(bytearray(nonce), pt, ad)
         assert ct2 == ct
         computed_pt2 = aesocb3_.decrypt(bytearray(nonce), ct2, ad)
+        assert computed_pt2 == pt
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESSIV),
+    reason="Does not support AESSIV",
+)
+class TestAESSIV(object):
+    def test_data_too_large(self):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+
+        with pytest.raises(OverflowError):
+            aessiv.encrypt(FakeData(), None)
+
+        with pytest.raises(OverflowError):
+            aessiv.encrypt(b"", [FakeData()])
+
+    def test_vectors(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("ciphers", "AES", "SIV", "openssl.txt"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                aad1 = vector.get("aad", None)
+                aad2 = vector.get("aad2", None)
+                aad3 = vector.get("aad3", None)
+                aad = []
+                for a in [aad1, aad2, aad3]:
+                    if a is not None:
+                        aad.append(binascii.unhexlify(a))
+                ct = binascii.unhexlify(vector["ciphertext"])
+                tag = binascii.unhexlify(vector["tag"])
+                pt = binascii.unhexlify(vector.get("plaintext", b""))
+                aessiv = AESSIV(key)
+                computed_ct = aessiv.encrypt(pt, aad)
+                assert computed_ct[:16] == tag
+                assert computed_ct[16:] == ct
+                computed_pt = aessiv.decrypt(computed_ct, aad)
+                assert computed_pt == pt
+
+    def test_vectors_invalid(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("ciphers", "AES", "SIV", "openssl.txt"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                aad1 = vector.get("aad", None)
+                aad2 = vector.get("aad2", None)
+                aad3 = vector.get("aad3", None)
+                aad = []
+                for a in [aad1, aad2, aad3]:
+                    if a is not None:
+                        aad.append(binascii.unhexlify(a))
+
+                ct = binascii.unhexlify(vector["ciphertext"])
+                aessiv = AESSIV(key)
+                with pytest.raises(InvalidTag):
+                    badkey = AESSIV(AESSIV.generate_key(256))
+                    badkey.decrypt(ct, aad)
+                with pytest.raises(InvalidTag):
+                    aessiv.decrypt(ct, aad + [b""])
+                with pytest.raises(InvalidTag):
+                    aessiv.decrypt(ct, [b"nonsense"])
+                with pytest.raises(InvalidTag):
+                    aessiv.decrypt(b"nonsense", aad)
+
+    @pytest.mark.parametrize(
+        ("data", "associated_data"),
+        [
+            [object(), [b""]],
+            [b"data" * 5, [object()]],
+            [b"data" * 5, b""],
+        ],
+    )
+    def test_params_not_bytes(self, data, associated_data, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        with pytest.raises(TypeError):
+            aessiv.encrypt(data, associated_data)
+
+        with pytest.raises(TypeError):
+            aessiv.decrypt(data, associated_data)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESSIV(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESSIV(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESSIV.generate_key(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESSIV.generate_key(128)
+
+    def test_associated_data_none_equal_to_empty_list(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        ct1 = aessiv.encrypt(b"some_data", None)
+        ct2 = aessiv.encrypt(b"some_data", [])
+        assert ct1 == ct2
+        pt1 = aessiv.decrypt(ct1, None)
+        pt2 = aessiv.decrypt(ct2, [])
+        assert pt1 == pt2
+
+    def test_buffer_protocol(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = b"encrypt me"
+        ad = [b"additional"]
+        ct = aessiv.encrypt(pt, ad)
+        computed_pt = aessiv.decrypt(ct, ad)
+        assert computed_pt == pt
+        aessiv = AESSIV(bytearray(key))
+        ct2 = aessiv.encrypt(pt, ad)
+        assert ct2 == ct
+        computed_pt2 = aessiv.decrypt(ct2, ad)
         assert computed_pt2 == pt

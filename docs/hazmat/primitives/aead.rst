@@ -228,6 +228,92 @@ also support providing integrity for associated data which is not encrypted.
             when the ciphertext has been changed, but will also occur when the
             key, nonce, or associated data are wrong.
 
+.. class:: AESSIV(key)
+
+    .. versionadded:: 37.0
+
+    The SIV (synthetic initialization vector) construction is defined in
+    :rfc:`5297`. Depending on how it is used, SIV allows either
+    deterministic authenticated encryption or nonce-based,
+    misuse-resistant authenticated encryption.
+
+    :param key: A 256, 384, or 512-bit key (double sized from typical AES).
+        This **must** be kept secret.
+    :type key: :term:`bytes-like`
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
+        OpenSSL does not support AES-SIV.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.aead import AESSIV
+        >>> data = b"a secret message"
+        >>> nonce = os.urandom(16)
+        >>> aad = [b"authenticated but unencrypted data", nonce]
+        >>> key = AESSIV.generate_key(bit_length=512)  # AES256 requires 512-bit keys for SIV
+        >>> aessiv = AESSIV(key)
+        >>> ct = aessiv.encrypt(data, aad)
+        >>> aessiv.decrypt(ct, aad)
+        b'a secret message'
+
+    .. classmethod:: generate_key(bit_length)
+
+        Securely generates a random AES-SIV key.
+
+        :param bit_length: The bit length of the key to generate. Must be
+            256, 384, or 512. AES-SIV splits the key into an encryption and
+            MAC key, so these lengths correspond to AES 128, 192, and 256.
+
+        :returns bytes: The generated key.
+
+    .. method:: encrypt(data, associated_data)
+
+        .. note::
+
+            SIV performs nonce-based authenticated encryption when a component of
+            the associated data is a nonce. The final associated data in the
+            list is used for the nonce.
+
+            Random nonces should have at least 128-bits of entropy. If a nonce is
+            reused with SIV authenticity is retained and confidentiality is only
+            compromised to the extent that an attacker can determine that the
+            same plaintext (and same associated data) was protected with the same
+            nonce and key.
+
+            If you do not supply a nonce encryption is deterministic and the same
+            (plaintext, key) pair will always produce the same ciphertext.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output of this can be
+        passed directly to the ``decrypt`` method.
+
+        :param bytes data: The data to encrypt.
+        :param list associated_data: An optional ``list`` of ``bytes``. This
+            is additional data that should be authenticated with the key, but
+            is not encrypted. Can be ``None``.  In SIV mode the final element
+            of this list is treated as a ``nonce``.
+        :returns bytes: The ciphertext bytes with the 16 byte tag **prepended**.
+        :raises OverflowError: If ``data`` or an ``associated_data`` element
+            is larger than 2\ :sup:`31` - 1 bytes.
+
+    .. method:: decrypt(data, associated_data)
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail.
+
+        :param bytes data: The data to decrypt (with tag **prepended**).
+        :param list associated_data: An optional ``list`` of ``bytes``. This
+            is additional data that should be authenticated with the key, but
+            is not encrypted. Can be ``None`` if none was used during
+            encryption.
+        :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key or associated data are wrong.
+
 .. class:: AESCCM(key, tag_length=16)
 
     .. versionadded:: 2.0
