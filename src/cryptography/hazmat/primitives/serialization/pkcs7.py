@@ -23,6 +23,15 @@ def load_der_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
     return backend.load_der_pkcs7_certificates(data)
 
 
+def serialize_certificates(
+    certs: typing.List[x509.Certificate],
+    encoding: serialization.Encoding,
+) -> bytes:
+    from cryptography.hazmat.backends.openssl.backend import backend
+
+    return backend.pkcs7_serialize_certificates(certs, encoding)
+
+
 _ALLOWED_PKCS7_HASH_TYPES = typing.Union[
     hashes.SHA1,
     hashes.SHA224,

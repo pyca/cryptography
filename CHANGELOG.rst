@@ -51,6 +51,9 @@ Changelog
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV` when using
   OpenSSL 3.0.0+.
+* Added support for serializing PKCS7 structures from a list of
+  certificates with
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.serialize_certificates`.
 
 .. _v36-0-2:
 
