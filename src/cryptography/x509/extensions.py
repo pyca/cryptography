@@ -41,7 +41,9 @@ from cryptography.x509.oid import (
     ObjectIdentifier,
 )
 
-ExtensionTypeVar = typing.TypeVar("ExtensionTypeVar", bound="ExtensionType")
+ExtensionTypeVar = typing.TypeVar(
+    "ExtensionTypeVar", bound="ExtensionType", covariant=True
+)
 
 
 def _key_identifier_from_public_key(
