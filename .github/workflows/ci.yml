@@ -24,23 +24,22 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.9", TOXENV: "flake", COVERAGE: "false"}
-          - {VERSION: "3.9", TOXENV: "rust", COVERAGE: "false"}
-          - {VERSION: "3.9", TOXENV: "docs", COVERAGE: "false", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
+          - {VERSION: "3.10", TOXENV: "flake", COVERAGE: "false"}
+          - {VERSION: "3.10", TOXENV: "rust", COVERAGE: "false"}
+          - {VERSION: "3.10", TOXENV: "docs", COVERAGE: "false", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
-          - {VERSION: "3.9", TOXENV: "py39-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.2"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.2.7"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
-          - {VERSION: "3.9", TOXENV: "py39", OPENSSL: {TYPE: "libressl", VERSION: "3.5.1"}}
-          - {VERSION: "3.10", TOXENV: "py310"}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
+          - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
+          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.2"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.2.7"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.1"}}
           - {VERSION: "3.11-dev", TOXENV: "py311"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
           # Latest commit on the master branch, as of April 1, 2022.
