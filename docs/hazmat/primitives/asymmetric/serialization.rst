@@ -625,6 +625,17 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the PKCS7 data
         is of a type that is not supported.
 
+.. function:: serialize_certificates(certs, encoding)
+
+    .. versionadded:: 37.0
+
+    Serialize a list of certificates to a PKCS7 structure.
+
+    :param certs: A list of :class:`~cryptography.x509.Certificate`.
+    :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`
+        or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`.
+    :return bytes: The serialized PKCS7 data.
+
 .. testsetup::
 
     ca_key = b"""
