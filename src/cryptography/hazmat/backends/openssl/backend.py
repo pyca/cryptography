@@ -2380,6 +2380,7 @@ class Backend:
             assert encoding is serialization.Encoding.DER
             res = self._lib.i2d_PKCS7_bio(bio_out, p7)
 
+        self.openssl_assert(res == 1)
         return self._read_mem_bio(bio_out)
 
     def pkcs7_sign(
