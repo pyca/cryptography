@@ -424,15 +424,19 @@ fn create_x509_csr(
     }
 
     for py_attr in builder.getattr("_attributes")?.iter()? {
-        let (py_oid, value): (&pyo3::PyAny, &[u8]) = py_attr?.extract()?;
+        let (py_oid, value, tag): (&pyo3::PyAny, &[u8], Option<u8>) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
-        let tag = if std::str::from_utf8(value).is_ok() {
-            asn1::Utf8String::TAG
+        let tag = if let Some(tag) = tag {
+            tag
         } else {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Attribute values must be valid utf-8.",
-            )));
+            if std::str::from_utf8(value).is_err() {
+                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    "Attribute values must be valid utf-8.",
+                )));
+            }
+            asn1::Utf8String::TAG
         };
+
         attrs.push(Attribute {
             type_id: oid,
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([

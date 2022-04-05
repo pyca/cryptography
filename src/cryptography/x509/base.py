@@ -56,10 +56,12 @@ def _reject_duplicate_extension(
 
 def _reject_duplicate_attribute(
     oid: ObjectIdentifier,
-    attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]],
+    attributes: typing.List[
+        typing.Tuple[ObjectIdentifier, bytes, typing.Optional[int]]
+    ],
 ) -> None:
     # This is quadratic in the number of attributes
-    for attr_oid, _ in attributes:
+    for attr_oid, _, _ in attributes:
         if attr_oid == oid:
             raise ValueError("This attribute has already been set.")
 
@@ -552,7 +554,9 @@ class CertificateSigningRequestBuilder:
         self,
         subject_name: typing.Optional[Name] = None,
         extensions: typing.List[Extension[ExtensionType]] = [],
-        attributes: typing.List[typing.Tuple[ObjectIdentifier, bytes]] = [],
+        attributes: typing.List[
+            typing.Tuple[ObjectIdentifier, bytes, typing.Optional[int]]
+        ] = [],
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -592,7 +596,11 @@ class CertificateSigningRequestBuilder:
         )
 
     def add_attribute(
-        self, oid: ObjectIdentifier, value: bytes
+        self,
+        oid: ObjectIdentifier,
+        value: bytes,
+        *,
+        _tag: typing.Optional[_ASN1Type] = None,
     ) -> "CertificateSigningRequestBuilder":
         """
         Adds an X.509 attribute with an OID and associated value.
@@ -603,12 +611,20 @@ class CertificateSigningRequestBuilder:
         if not isinstance(value, bytes):
             raise TypeError("value must be bytes")
 
+        if _tag is not None and not isinstance(_tag, _ASN1Type):
+            raise TypeError("tag must be _ASN1Type")
+
         _reject_duplicate_attribute(oid, self._attributes)
+
+        if _tag is not None:
+            tag = _tag.value
+        else:
+            tag = None
 
         return CertificateSigningRequestBuilder(
             self._subject_name,
             self._extensions,
-            self._attributes + [(oid, value)],
+            self._attributes + [(oid, value, tag)],
         )
 
     def sign(
