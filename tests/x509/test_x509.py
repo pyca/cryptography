@@ -4243,6 +4243,36 @@ class TestCertificateSigningRequestBuilder:
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD, b"val2"
             )
 
+    def test_add_attribute_tag(self, backend):
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(x509.Name([]))
+            .add_attribute(
+                x509.ObjectIdentifier("1.2.3.4"),
+                b"\x00\x00",
+                _tag=_ASN1Type.GeneralizedTime,
+            )
+        )
+        request = builder.sign(private_key, hashes.SHA256(), backend)
+        attr = request.attributes.get_attribute_for_oid(
+            x509.ObjectIdentifier("1.2.3.4")
+        )
+
+        assert attr.value == b"\x00\x00"
+        assert attr._type == _ASN1Type.GeneralizedTime.value
+
+    def test_add_attribute_tag_non_int(self, backend):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([])
+        )
+        with pytest.raises(TypeError):
+            builder.add_attribute(
+                x509.ObjectIdentifier("1.2.3.4"),
+                b"",
+                _tag=object(),  # type:ignore[arg-type]
+            )
+
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
