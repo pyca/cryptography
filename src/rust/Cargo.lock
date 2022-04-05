@@ -85,24 +85,10 @@ dependencies = [
 
 [[package]]
 name = "indoc"
-version = "0.3.6"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47741a8bc60fb26eb8d6e0238bbb26d8575ff623fdc97b1a2c00c050b9684ed8"
+checksum = "e7906a9fababaeacb774f72410e497a1d18de916322e33797bb2cd29baa23c9e"
 dependencies = [
- "indoc-impl",
- "proc-macro-hack",
-]
-
-[[package]]
-name = "indoc-impl"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce046d161f000fffde5f432a0d034d0341dc152643b2598ed5bfce44c4f3a8f0"
-dependencies = [
- "proc-macro-hack",
- "proc-macro2",
- "quote",
- "syn",
  "unindent",
 ]
 
@@ -212,25 +198,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paste"
-version = "0.1.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45ca20c77d80be666aef2b45486da86238fabe33e38306bd3118fe4af33fa880"
-dependencies = [
- "paste-impl",
- "proc-macro-hack",
-]
-
-[[package]]
-name = "paste-impl"
-version = "0.1.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d95a7db200b97ef370c8e6de0088252f7e0dfff7d047a28528e47456c0fc98b6"
-dependencies = [
- "proc-macro-hack",
-]
-
-[[package]]
 name = "pem"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -264,12 +231,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc-macro-hack"
-version = "0.5.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -280,35 +241,47 @@ dependencies = [
 
 [[package]]
 name = "pyo3"
-version = "0.15.1"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cf01dbf1c05af0a14c7779ed6f3aa9deac9c3419606ac9de537a2d649005720"
+checksum = "6b3e99c4c3e790e4fc365b42b70c1f7801f42eadc4ea648fa327e6f5ca29f215"
 dependencies = [
  "cfg-if",
  "indoc",
  "libc",
  "parking_lot",
- "paste",
  "pyo3-build-config",
+ "pyo3-ffi",
  "pyo3-macros",
  "unindent",
 ]
 
 [[package]]
 name = "pyo3-build-config"
-version = "0.15.1"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbf9e4d128bfbddc898ad3409900080d8d5095c379632fbbfbb9c8cfb1fb852b"
+checksum = "2486b96281859ff0a3929ba6467b13751627b974f7137362db38e2bed14b2094"
 dependencies = [
  "once_cell",
+ "target-lexicon",
+]
+
+[[package]]
+name = "pyo3-ffi"
+version = "0.16.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd9de1d94557751599f8bd321f10e6c1ef2801067acb58c91138deef2ae83a17"
+dependencies = [
+ "libc",
+ "pyo3-build-config",
 ]
 
 [[package]]
 name = "pyo3-macros"
-version = "0.15.1"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67701eb32b1f9a9722b4bc54b548ff9d7ebfded011c12daece7b9063be1fd755"
+checksum = "0b9584049129b1cfb615243391a6345c726690271ae195ffd6aa3766177296aa"
 dependencies = [
+ "proc-macro2",
  "pyo3-macros-backend",
  "quote",
  "syn",
@@ -316,12 +289,11 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros-backend"
-version = "0.15.1"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f44f09e825ee49a105f2c7b23ebee50886a9aee0746f4dd5a704138a64b0218a"
+checksum = "b6c4717e6a55c51a9958eda1f5481ff7f62cccd21f45309c10e4731cb7198dbc"
 dependencies = [
  "proc-macro2",
- "pyo3-build-config",
  "quote",
  "syn",
 ]
@@ -372,6 +344,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "target-lexicon"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7fa7e55043acb85fca6b3c01485a2eeb6b69c5d21002e273c79e465f43b7ac1"
 
 [[package]]
 name = "unicode-xid"
