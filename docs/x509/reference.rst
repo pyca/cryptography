@@ -459,9 +459,8 @@ X.509 Certificate Object
            ...     cert_to_check.signature_hash_algorithm,
            ... )
 
-           An
-           :class:`~cryptography.exceptions.InvalidSignature`
-           exception will be raised if the signature fails to verify.
+       An :class:`~cryptography.exceptions.InvalidSignature` exception will be
+       raised if the signature fails to verify.
 
     .. method:: public_bytes(encoding)
 
