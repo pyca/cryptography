@@ -82,7 +82,10 @@ def main(argv):
     assert result == 1
 
     # Trigger a bunch of initialization stuff.
+    import hashlib
     from cryptography.hazmat.backends.openssl.backend import backend
+
+    hashlib.sha256()
 
     start_heap = set(heap)
 
