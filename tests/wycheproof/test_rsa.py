@@ -145,14 +145,23 @@ def test_rsa_pss_signature(backend, wycheproof):
             )
         )
 
+    padding_opt = padding.PSS(
+        mgf=padding.MGF1(mgf_digest),
+        salt_length=wycheproof.testgroup["sLen"],
+    )
+
+    if not backend.rsa_padding_supported(
+        padding_opt
+    ) or not backend.signature_hash_supported(digest):
+        pytest.skip(
+            f"RSA with padding={padding_opt} and digest={digest} not supported"
+        )
+
     if wycheproof.valid or wycheproof.acceptable:
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),
             binascii.unhexlify(wycheproof.testcase["msg"]),
-            padding.PSS(
-                mgf=padding.MGF1(mgf_digest),
-                salt_length=wycheproof.testgroup["sLen"],
-            ),
+            padding_opt,
             digest,
         )
     else:
@@ -160,10 +169,7 @@ def test_rsa_pss_signature(backend, wycheproof):
             key.verify(
                 binascii.unhexlify(wycheproof.testcase["sig"]),
                 binascii.unhexlify(wycheproof.testcase["msg"]),
-                padding.PSS(
-                    mgf=padding.MGF1(mgf_digest),
-                    salt_length=wycheproof.testgroup["sLen"],
-                ),
+                padding_opt,
                 digest,
             )
 
