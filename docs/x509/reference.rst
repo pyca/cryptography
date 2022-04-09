@@ -1225,6 +1225,21 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :type: list of :class:`RelativeDistinguishedName`
 
+    .. method:: from_rfc4514_string(data)
+
+        :classmethod:
+
+        :param data: An :rfc:`4514` string.
+
+        :returns: A :class:`Name` parsed from ``data``.
+
+        .. versionadded: 37.0
+
+        .. doctest::
+
+            >>> Name.from_rfc4514_string("CN=cryptography.io")
+            <Name(CN=cryptography.io)>
+
     .. method:: get_attributes_for_oid(oid)
 
         :param oid: An :class:`ObjectIdentifier` instance.

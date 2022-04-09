@@ -54,6 +54,8 @@ Changelog
 * Added support for serializing PKCS7 structures from a list of
   certificates with
   :class:`~cryptography.hazmat.primitives.serialization.pkcs7.serialize_certificates`.
+* Added support for parsing :rfc:`4514` strings with
+  :meth:`~cryptography.x509.Name.from_rfc4514_string`.
 
 .. _v36-0-2:
 
