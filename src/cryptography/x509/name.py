@@ -364,17 +364,26 @@ class _RFC4514NameParser:
     _OID_RE = re.compile(r"(\d|[1-9]\d+)(\.\d|[1-9]\d+)+")
     _DESCR_RE = re.compile(r"[a-zA-Z][a-zA-Z\d-]*")
 
-    _PAIR = r"\\(\\| |#|=|\"|\+|,|;|<|>|[\da-zA-Z]{2})"
+    _PAIR = r"\\([\\ #=\"\+,;<>]|[\da-zA-Z]{2})"
     _LUTF1 = r"[\x01-\x1f\x21\x24-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _SUTF1 = r"[\x01-\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _TUTF1 = r"[\x01-\x1F\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     # TODO
-    _UTFMB = "[\x80-]"
+    _UTFMB = r"[\x80-]"
     _LEADCHAR = rf"{_LUTF1}|{_UTFMB}"
     _STRINGCHAR = rf"{_SUTF1}|{_UTFMB}"
     _TRAILCHAR = rf"{_TUTF1}|{_UTFMB}"
     _STRING_RE = re.compile(
-        rf"(({_LEADCHAR}|{_PAIR})(({_STRINGCHAR}|{_PAIR})*({_TRAILCHAR}|{_PAIR}))?)?"
+        rf"""
+        (
+            ({_LEADCHAR}|{_PAIR})
+            (
+                ({_STRINGCHAR}|{_PAIR})*
+                ({_TRAILCHAR}|{_PAIR})
+            )?
+        )?
+        """,
+        re.VERBOSE,
     )
     _HEXSTRING_RE = re.compile(r"#([\da-zA-Z]{2})+")
 
