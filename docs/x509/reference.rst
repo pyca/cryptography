@@ -1237,7 +1237,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         .. doctest::
 
-            >>> Name.from_rfc4514_string("CN=cryptography.io")
+            >>> x509.Name.from_rfc4514_string("CN=cryptography.io")
             <Name(CN=cryptography.io)>
 
     .. method:: get_attributes_for_oid(oid)
