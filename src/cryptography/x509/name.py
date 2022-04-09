@@ -4,6 +4,7 @@
 
 import binascii
 import re
+import sys
 import typing
 import warnings
 
@@ -368,8 +369,7 @@ class _RFC4514NameParser:
     _LUTF1 = r"[\x01-\x1f\x21\x24-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _SUTF1 = r"[\x01-\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _TUTF1 = r"[\x01-\x1F\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
-    # TODO
-    _UTFMB = r"[\x80-]"
+    _UTFMB = rf"[\x80-{chr(sys.maxunicode)}]"
     _LEADCHAR = rf"{_LUTF1}|{_UTFMB}"
     _STRINGCHAR = rf"{_SUTF1}|{_UTFMB}"
     _TRAILCHAR = rf"{_TUTF1}|{_UTFMB}"

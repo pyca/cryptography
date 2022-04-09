@@ -145,6 +145,7 @@ class TestRFC4514:
                 ),
             ),
             (r"CN=#616263", Name([NameAttribute(NameOID.COMMON_NAME, "abc")])),
+            (r"CN=👍", Name([NameAttribute(NameOID.COMMON_NAME, "👍")])),
         ]:
             result = Name.from_rfc4514_string(value)
             assert result == expected
