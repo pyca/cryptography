@@ -395,7 +395,7 @@ class _RFC4514NameParser:
             raise ValueError
         self._idx += 1
 
-    def _read_re(self, pat: re.Pattern) -> str:
+    def _read_re(self, pat) -> str:
         match = pat.match(self._data, pos=self._idx)
         if match is None:
             raise ValueError
