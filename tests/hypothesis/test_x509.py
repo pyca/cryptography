@@ -12,10 +12,11 @@ from cryptography import x509
 @given(text())
 @example("CN=cryptography.io")
 def test_name_from_rfc4514(data):
-    # Check that if something parses then it round trips.
     try:
-        name = x509.Name.from_rfc4514_string(data)
+        x509.Name.from_rfc4514_string(data)
     except ValueError:
         return
 
-    assert name.rfc4514_string() == data
+    # Can't assert that it round-trips because of things like "OID=value"
+    # where OID is one of the known OIDs that serializes to a known value
+    # (e.g. CN)
