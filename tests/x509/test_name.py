@@ -6,7 +6,12 @@
 
 import pytest
 
-from cryptography.x509 import Name, NameAttribute, NameOID
+from cryptography.x509 import (
+    Name,
+    NameAttribute,
+    NameOID,
+    RelativeDistinguishedName,
+)
 
 
 class TestRFC4514:
@@ -24,7 +29,7 @@ class TestRFC4514:
     def test_valid(self):
         for value, expected in [
             (
-                r'CN=James "Jim" Smith\, III',
+                r"CN=James \"Jim\" Smith\, III",
                 Name(
                     [
                         NameAttribute(
@@ -53,16 +58,6 @@ class TestRFC4514:
                 Name(
                     [
                         RelativeDistinguishedName(
-                            [NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
-                        ),
-                        RelativeDistinguishedName(
-                            [
-                                NameAttribute(
-                                    NameOID.DOMAIN_COMPONENT, "example"
-                                )
-                            ]
-                        ),
-                        RelativeDistinguishedName(
                             [
                                 NameAttribute(
                                     NameOID.ORGANIZATIONAL_UNIT_NAME, "Sales"
@@ -72,6 +67,16 @@ class TestRFC4514:
                                 ),
                             ]
                         ),
+                        RelativeDistinguishedName(
+                            [
+                                NameAttribute(
+                                    NameOID.DOMAIN_COMPONENT, "example"
+                                )
+                            ]
+                        ),
+                        RelativeDistinguishedName(
+                            [NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
+                        ),
                     ]
                 ),
             ),
@@ -79,11 +84,11 @@ class TestRFC4514:
                 "CN=cryptography.io,O=PyCA,L=,ST=,C=US",
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
-                        NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, ""),
-                        NameAttribute(NameOID.LOCALITY_NAME, ""),
-                        NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
                         NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
+                        NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+                        NameAttribute(NameOID.LOCALITY_NAME, ""),
+                        NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, ""),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -91,9 +96,9 @@ class TestRFC4514:
                 r"C=US,CN=Joe \, Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
-                        NameAttribute(NameOID.COMMON_NAME, "Joe , Smith"),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.COMMON_NAME, "Joe , Smith"),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                     ]
                 ),
             ),
@@ -101,29 +106,31 @@ class TestRFC4514:
                 r"C=US,CN=Jane \"J\,S\" Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
-                        NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                     ]
                 ),
             ),
             (
-                'C=US,CN="Jane J,S Smith",DC=example',
+                'C=US,CN=\\"Jane J\\,S Smith\\",DC=example',
                 Name(
                     [
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
-                        NameAttribute(NameOID.COMMON_NAME, "Jane J,S Smith"),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.COMMON_NAME, '"Jane J,S Smith"'),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                     ]
                 ),
             ),
             (
-                'C=US,CN="Jane \\"J,S\\" Smith",DC=example',
+                'C=US,CN=\\"Jane \\"J\\,S\\" Smith\\",DC=example',
                 Name(
                     [
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
-                        NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(
+                            NameOID.COMMON_NAME, '"Jane "J,S" Smith"'
+                        ),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                     ]
                 ),
             ),
@@ -131,13 +138,13 @@ class TestRFC4514:
                 r"C=US,CN=Jane=Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
-                        NameAttribute(NameOID.COMMON_NAME, "Jane=Smith"),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.COMMON_NAME, "Jane=Smith"),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                     ]
                 ),
             ),
+            (r"CN=#616263", Name([NameAttribute(NameOID.COMMON_NAME, "abc")])),
         ]:
             result = Name.from_rfc4514_string(value)
             assert result == expected
-            assert result.rfc4514_string() == value
