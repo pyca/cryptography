@@ -15,7 +15,7 @@ from cryptography.x509 import (
 
 
 class TestRFC4514:
-    def test_invalid(self):
+    def test_invalid(self, subtests):
         for value in [
             "C=US,CN=Joe , Smith,DC=example",
             ",C=US,CN=Joe , Smith,DC=example",
@@ -23,10 +23,11 @@ class TestRFC4514:
             "C=US,CN,DC=example",
             "C=US,FOOBAR=example",
         ]:
-            with pytest.raises(ValueError):
-                Name.from_rfc4514_string(value)
+            with subtests.test():
+                with pytest.raises(ValueError):
+                    Name.from_rfc4514_string(value)
 
-    def test_valid(self):
+    def test_valid(self, subtests):
         for value, expected in [
             (
                 r"CN=James \"Jim\" Smith\, III",
@@ -147,5 +148,6 @@ class TestRFC4514:
             (r"CN=#616263", Name([NameAttribute(NameOID.COMMON_NAME, "abc")])),
             (r"CN=👍", Name([NameAttribute(NameOID.COMMON_NAME, "👍")])),
         ]:
-            result = Name.from_rfc4514_string(value)
-            assert result == expected
+            with subtests.test():
+                result = Name.from_rfc4514_string(value)
+                assert result == expected

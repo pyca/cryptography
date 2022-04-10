@@ -1229,7 +1229,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :classmethod:
 
-        :param data: An :rfc:`4514` string.
+        :param str data: An :rfc:`4514` string.
 
         :returns: A :class:`Name` parsed from ``data``.
 
