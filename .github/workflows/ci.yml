@@ -27,7 +27,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "flake", COVERAGE: "false"}
           - {VERSION: "3.10", TOXENV: "rust", COVERAGE: "false"}
           - {VERSION: "3.10", TOXENV: "docs", COVERAGE: "false", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
-          - {VERSION: "pypy-3.7-v7.3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
