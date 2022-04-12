@@ -55,7 +55,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions/cache@v3
@@ -224,7 +224,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1.0.7
@@ -281,7 +281,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ matrix.RUST }}-coverage
 
       - name: Setup python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1.0.7
@@ -376,7 +376,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions-rs/toolchain@v1.0.7
@@ -438,7 +438,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
@@ -528,7 +528,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON }}
       - uses: actions-rs/toolchain@v1.0.7
@@ -554,7 +554,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v3.1.1
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: 3.9
       - uses: actions-rs/toolchain@v1.0.7
