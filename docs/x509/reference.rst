@@ -1225,15 +1225,14 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :type: list of :class:`RelativeDistinguishedName`
 
-    .. method:: from_rfc4514_string(data)
+    .. classmethod:: from_rfc4514_string(data)
 
-        :classmethod:
+        .. versionadded: 37.0
 
         :param str data: An :rfc:`4514` string.
 
         :returns: A :class:`Name` parsed from ``data``.
 
-        .. versionadded: 37.0
 
         .. doctest::
 
