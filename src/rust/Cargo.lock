@@ -281,7 +281,7 @@ dependencies = [
 [[package]]
 name = "pyo3"
 version = "0.15.1"
-source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#bf3d7a07ab9602103d996e195369e9ef4e989b87"
+source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#501620252304414b89eb47202cc7081657143e95"
 dependencies = [
  "cfg-if",
  "indoc",
@@ -296,7 +296,7 @@ dependencies = [
 [[package]]
 name = "pyo3-build-config"
 version = "0.15.1"
-source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#bf3d7a07ab9602103d996e195369e9ef4e989b87"
+source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#501620252304414b89eb47202cc7081657143e95"
 dependencies = [
  "once_cell",
 ]
@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros"
 version = "0.15.1"
-source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#bf3d7a07ab9602103d996e195369e9ef4e989b87"
+source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#501620252304414b89eb47202cc7081657143e95"
 dependencies = [
  "pyo3-macros-backend",
  "quote",
@@ -314,7 +314,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros-backend"
 version = "0.15.1"
-source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#bf3d7a07ab9602103d996e195369e9ef4e989b87"
+source = "git+https://github.com/messense/pyo3?branch=pypy-0.15#501620252304414b89eb47202cc7081657143e95"
 dependencies = [
  "proc-macro2",
  "pyo3-build-config",
