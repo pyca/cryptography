@@ -22,6 +22,7 @@ jobs:
           - { VERSION: "cp36-cp36m", PATH: "/opt/python/cp36-cp36m/bin/python", ABI_VERSION: 'cp36' }
           - { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
           - { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
+          - { VERSION: "pypy3.9", PATH: "/opt/pypy3.9/bin/pypy" }
         MANYLINUX:
           - { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
@@ -33,10 +34,14 @@ jobs:
             MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - PYTHON: { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
             MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
+          - PYTHON: { VERSION: "pypy3.9", PATH: "/opt/pypy3.9/bin/pypy" }
+            MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           # There are no readily available musllinux PyPy distributions
           - PYTHON: { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
             MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64" }
           - PYTHON: { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
+            MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
+          - PYTHON: { VERSION: "pypy3.9", PATH: "/opt/pypy3.9/bin/pypy" }
             MANYLINUX: { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
@@ -110,6 +115,11 @@ jobs:
             ARCHFLAGS: '-arch x86_64'
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
           - VERSION: 'pypy-3.8'
+            BIN_PATH: 'pypy3'
+            DEPLOYMENT_TARGET: '10.10'
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
+            ARCHFLAGS: '-arch x86_64'
+          - VERSION: 'pypy-3.9'
             BIN_PATH: 'pypy3'
             DEPLOYMENT_TARGET: '10.10'
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
@@ -190,10 +200,13 @@ jobs:
         PYTHON:
           - {VERSION: "3.8", "ABI_VERSION": "cp36"}
           - {VERSION: "pypy-3.8"}
+          - {VERSION: "pypy-3.9"}
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
             PYTHON: {VERSION: "pypy-3.8"}
+          - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
+            PYTHON: {VERSION: "pypy-3.9"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - uses: actions/checkout@v2.4.0
