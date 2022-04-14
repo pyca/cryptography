@@ -6,11 +6,12 @@ case "${1}" in
         cd josepy
         git rev-parse HEAD
         curl -sSL https://install.python-poetry.org | python3 -
-        "${HOME}/.local/bin/poetry" install
+        "${HOME}/.local/bin/poetry" export -f requirements.txt --dev --without-hashes > constraints.txt
+        pip install -e . pytest -c constraints.txt
         ;;
     run)
         cd josepy
-        .venv/bin/pytest tests
+        pytest tests
         ;;
     *)
         exit 1
