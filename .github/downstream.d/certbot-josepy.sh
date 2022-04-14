@@ -2,19 +2,16 @@
 
 case "${1}" in
     install)
-        # Josepy is pinned to 1.13.0 because the project is migrating to Poetry, and
-        # this test is not compatible with it yet.
-        #
-        # TODO: Update this test with Poetry once a new release of Josepy includes
-        #       https://github.com/certbot/josepy/pull/129
-        git clone --depth=1 --branch v1.13.0 https://github.com/certbot/josepy
+        git clone --depth=1 https://github.com/certbot/josepy
         cd josepy
         git rev-parse HEAD
-        pip install -e ".[tests]" -c constraints.txt
+        curl -sSL https://install.python-poetry.org | python3 -
+        "${HOME}/.local/bin/poetry" export -f requirements.txt --dev --without-hashes > constraints.txt
+        pip install -e . pytest -c constraints.txt
         ;;
     run)
         cd josepy
-        pytest src
+        pytest tests
         ;;
     *)
         exit 1
