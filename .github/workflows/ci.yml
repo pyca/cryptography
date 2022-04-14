@@ -29,6 +29,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "docs", COVERAGE: "false", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
           - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
@@ -69,7 +70,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions-rs/toolchain@v1.0.7
         with:
