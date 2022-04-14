@@ -35,7 +35,9 @@ Changelog
 * This will be the final release for which we ship ``manylinux2010`` wheels.
   Going forward the minimum supported ``manylinux`` ABI for our wheels will
   be ``manylinux2014``. The vast majority of users will continue to receive
-  ``manylinux`` wheels provided they have an up to date ``pip``.
+  ``manylinux`` wheels provided they have an up to date ``pip``. For PyPy
+  wheels this release already requires ``manylinux2014`` for compatibility
+  with binaries distributed by upstream.
 * Added support for multiple
   :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
   :class:`~cryptography.x509.ocsp.OCSPResponse`.
