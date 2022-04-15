@@ -13,7 +13,7 @@ jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.1
       - run: git clone https://boringssl.googlesource.com/boringssl
       - id: check-sha
         run: |
