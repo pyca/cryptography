@@ -11,8 +11,8 @@ use std::collections::HashSet;
 use std::convert::TryInto;
 use std::marker::PhantomData;
 
-/// parse all sections in a PEM file and return the only matching section.
-/// If no or multiple matching sections are found, return an error.
+/// Parse all sections in a PEM file and return the first matching section.
+/// If no matching sections are found, return an error.
 pub(crate) fn find_in_pem(
     data: &[u8],
     filter_fn: fn(&pem::Pem) -> bool,
