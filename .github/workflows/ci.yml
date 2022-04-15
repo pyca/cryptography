@@ -152,7 +152,7 @@ jobs:
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -169,7 +169,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.1
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
