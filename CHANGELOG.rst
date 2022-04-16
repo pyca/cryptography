@@ -58,6 +58,13 @@ Changelog
   :class:`~cryptography.hazmat.primitives.serialization.pkcs7.serialize_certificates`.
 * Added support for parsing :rfc:`4514` strings with
   :meth:`~cryptography.x509.Name.from_rfc4514_string`.
+* Added :attr:`~cryptography.hazmat.primitives.asymmetric.padding.PSS.AUTO` to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. This can
+  be used to verify a signature where the salt length is not already known.
+* Added :attr:`~cryptography.hazmat.primitives.asymmetric.padding.PSS.DIGEST_LENGTH`
+  to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. This
+  constant will set the salt length to the same length as the ``PSS`` hash
+  algorithm.
 
 .. _v36-0-2:
 
