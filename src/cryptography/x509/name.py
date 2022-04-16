@@ -3,6 +3,8 @@
 # for complete details.
 
 import binascii
+import re
+import sys
 import typing
 import warnings
 
@@ -53,6 +55,7 @@ _NAMEOID_TO_NAME: _OidNameMap = {
     NameOID.DOMAIN_COMPONENT: "DC",
     NameOID.USER_ID: "UID",
 }
+_NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
 
 def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
@@ -82,6 +85,33 @@ def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
         val = val[:-1] + "\\ "
 
     return val
+
+
+_HEX_ESCAPE_RE = re.compile(r"\\([\da-zA-Z]{2})")
+
+
+def _unescape_dn_value(val: str) -> str:
+    if not val:
+        return ""
+
+    # See https://tools.ietf.org/html/rfc4514#section-3
+
+    # special = escaped / SPACE / SHARP / EQUALS
+    # escaped = DQUOTE / PLUS / COMMA / SEMI / LANGLE / RANGLE
+    val = (
+        val.replace("\\\\", "\\")
+        .replace('\\"', '"')
+        .replace("\\+", "+")
+        .replace("\\,", ",")
+        .replace("\\;", ";")
+        .replace("\\<", "<")
+        .replace("\\>", ">")
+        .replace("\\ ", " ")
+        .replace("\\#", "#")
+        .replace("\\=", "=")
+    )
+
+    return _HEX_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), val)
 
 
 class NameAttribute:
@@ -273,6 +303,10 @@ class Name:
                 " or a list RelativeDistinguishedName"
             )
 
+    @classmethod
+    def from_rfc4514_string(cls, data: str) -> "Name":
+        return _RFC4514NameParser(data).parse()
+
     def rfc4514_string(
         self, attr_name_overrides: typing.Optional[_OidNameMap] = None
     ) -> str:
@@ -325,3 +359,92 @@ class Name:
     def __repr__(self) -> str:
         rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
         return "<Name({})>".format(rdns)
+
+
+class _RFC4514NameParser:
+    _OID_RE = re.compile(r"(\d|[1-9]\d+)(\.\d|[1-9]\d+)+")
+    _DESCR_RE = re.compile(r"[a-zA-Z][a-zA-Z\d-]*")
+
+    _PAIR = r"\\([\\ #=\"\+,;<>]|[\da-zA-Z]{2})"
+    _LUTF1 = r"[\x01-\x1f\x21\x24-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
+    _SUTF1 = r"[\x01-\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
+    _TUTF1 = r"[\x01-\x1F\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
+    _UTFMB = rf"[\x80-{chr(sys.maxunicode)}]"
+    _LEADCHAR = rf"{_LUTF1}|{_UTFMB}"
+    _STRINGCHAR = rf"{_SUTF1}|{_UTFMB}"
+    _TRAILCHAR = rf"{_TUTF1}|{_UTFMB}"
+    _STRING_RE = re.compile(
+        rf"""
+        (
+            ({_LEADCHAR}|{_PAIR})
+            (
+                ({_STRINGCHAR}|{_PAIR})*
+                ({_TRAILCHAR}|{_PAIR})
+            )?
+        )?
+        """,
+        re.VERBOSE,
+    )
+    _HEXSTRING_RE = re.compile(r"#([\da-zA-Z]{2})+")
+
+    def __init__(self, data: str) -> None:
+        self._data = data
+        self._idx = 0
+
+    def _has_data(self) -> bool:
+        return self._idx < len(self._data)
+
+    def _peek(self) -> typing.Optional[str]:
+        if self._has_data():
+            return self._data[self._idx]
+        return None
+
+    def _read_char(self, ch: str) -> None:
+        if self._peek() != ch:
+            raise ValueError
+        self._idx += 1
+
+    def _read_re(self, pat) -> str:
+        match = pat.match(self._data, pos=self._idx)
+        if match is None:
+            raise ValueError
+        val = match.group()
+        self._idx += len(val)
+        return val
+
+    def parse(self) -> Name:
+        rdns = [self._parse_rdn()]
+
+        while self._has_data():
+            self._read_char(",")
+            rdns.append(self._parse_rdn())
+
+        return Name(rdns)
+
+    def _parse_rdn(self) -> RelativeDistinguishedName:
+        nas = [self._parse_na()]
+        while self._peek() == "+":
+            self._read_char("+")
+            nas.append(self._parse_na())
+
+        return RelativeDistinguishedName(nas)
+
+    def _parse_na(self) -> NameAttribute:
+        try:
+            oid_value = self._read_re(self._OID_RE)
+        except ValueError:
+            name = self._read_re(self._DESCR_RE)
+            oid = _NAME_TO_NAMEOID.get(name)
+            if oid is None:
+                raise ValueError
+        else:
+            oid = ObjectIdentifier(oid_value)
+
+        self._read_char("=")
+        if self._peek() == "#":
+            value = self._read_re(self._HEXSTRING_RE)
+            value = binascii.unhexlify(value[1:]).decode()
+        else:
+            value = _unescape_dn_value(self._read_re(self._STRING_RE))
+
+        return NameAttribute(oid, value)
