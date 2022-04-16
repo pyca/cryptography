@@ -45,7 +45,8 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
-// BoringSSL doesn't define this constant
+// BoringSSL doesn't define this constant, but the value is used for
+// automatic salt length computation as in OpenSSL and LibreSSL
 #if !defined(RSA_PSS_SALTLEN_AUTO)
 #define RSA_PSS_SALTLEN_AUTO -2
 #endif

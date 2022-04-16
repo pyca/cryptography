@@ -45,7 +45,7 @@ def _get_rsa_pss_salt_length(
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
-) -> typing.Union[int, _MaxLength, _Auto, _DigestLength]:
+) -> int:
     salt = pss._salt_length
 
     if isinstance(salt, _MaxLength):
@@ -57,7 +57,7 @@ def _get_rsa_pss_salt_length(
             raise ValueError(
                 "PSS salt length can only be set to AUTO when verifying"
             )
-        return backend._lib.RSA_PSS_SALTLEN_AUTO  # this is really just -2
+        return backend._lib.RSA_PSS_SALTLEN_AUTO
     else:
         return salt
 
