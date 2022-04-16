@@ -302,6 +302,13 @@ Padding
         Pass this attribute to ``salt_length`` to get the maximum salt length
         available.
 
+    .. attribute:: AUTO
+
+        .. versionadded:: 37.0
+
+        Pass this attribute to ``salt_length`` to automatically determine the
+        salt length when verifying. Raises ``ValueError`` if used when signing.
+
 .. class:: OAEP(mgf, algorithm, label)
 
     .. versionadded:: 0.4

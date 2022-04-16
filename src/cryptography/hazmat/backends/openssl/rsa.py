@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     OAEP,
     PKCS1v15,
     PSS,
+    _Auto,
     _MaxLength,
     calculate_max_pss_salt_length,
 )
@@ -42,11 +43,18 @@ def _get_rsa_pss_salt_length(
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
-) -> typing.Union[int, _MaxLength]:
+) -> typing.Union[int, _MaxLength, _Auto]:
     salt = pss._salt_length
 
     if isinstance(salt, _MaxLength):
         return calculate_max_pss_salt_length(key, hash_algorithm)
+    elif isinstance(salt, _Auto):
+        if isinstance(key, RSAPrivateKey):
+            raise ValueError(
+                "PSS salt length can only be set to AUTO when verifying"
+            )
+        # TODO: use a constant. BoringSSL doesn't declare it though
+        return -2
     else:
         return salt
 

@@ -582,6 +582,27 @@ class TestRSASignature:
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.AUTO,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_pss_sign_unsupported_auto(self, backend):
+        private_key = RSA_KEY_2048.private_key()
+        with pytest.raises(ValueError):
+            private_key.sign(
+                b"some data",
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.AUTO,
+                ),
+                hashes.SHA256(),
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
             padding.PKCS1v15()
         ),
         skip_message="Does not support PKCS1v1.5.",
@@ -855,6 +876,35 @@ class TestRSAVerification:
                     ),
                     hashes.SHA1(),
                 )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.AUTO,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_pss_verify_auto_salt_length(self, backend):
+        private_key = RSA_KEY_2048.private_key()
+        signature = private_key.sign(
+            b"some data",
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH,
+            ),
+            hashes.SHA256(),
+        )
+        private_key.public_key().verify(
+            signature,
+            b"some data",
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.AUTO,
+            ),
+            hashes.SHA256(),
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
