@@ -87,9 +87,6 @@ def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
     return val
 
 
-_HEX_ESCAPE_RE = re.compile(r"\\([\da-zA-Z]{2})")
-
-
 def _unescape_dn_value(val: str) -> str:
     if not val:
         return ""
@@ -98,20 +95,15 @@ def _unescape_dn_value(val: str) -> str:
 
     # special = escaped / SPACE / SHARP / EQUALS
     # escaped = DQUOTE / PLUS / COMMA / SEMI / LANGLE / RANGLE
-    val = (
-        val.replace("\\\\", "\\")
-        .replace('\\"', '"')
-        .replace("\\+", "+")
-        .replace("\\,", ",")
-        .replace("\\;", ";")
-        .replace("\\<", "<")
-        .replace("\\>", ">")
-        .replace("\\ ", " ")
-        .replace("\\#", "#")
-        .replace("\\=", "=")
-    )
+    def sub(m):
+        val = m.group(1)
+        # Regular escape
+        if len(val) == 1:
+            return val
+        # Hex-value scape
+        return chr(int(val, 16))
 
-    return _HEX_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), val)
+    return _RFC4514NameParser._PAIR_RE.sub(sub, val)
 
 
 class NameAttribute:
@@ -366,6 +358,7 @@ class _RFC4514NameParser:
     _DESCR_RE = re.compile(r"[a-zA-Z][a-zA-Z\d-]*")
 
     _PAIR = r"\\([\\ #=\"\+,;<>]|[\da-zA-Z]{2})"
+    _PAIR_RE = re.compile(_PAIR)
     _LUTF1 = r"[\x01-\x1f\x21\x24-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _SUTF1 = r"[\x01-\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
     _TUTF1 = r"[\x01-\x1F\x21\x23-\x2A\x2D-\x3A\x3D\x3F-\x5B\x5D-\x7F]"
@@ -445,6 +438,7 @@ class _RFC4514NameParser:
             value = self._read_re(self._HEXSTRING_RE)
             value = binascii.unhexlify(value[1:]).decode()
         else:
-            value = _unescape_dn_value(self._read_re(self._STRING_RE))
+            raw_value = self._read_re(self._STRING_RE)
+            value = _unescape_dn_value(raw_value)
 
         return NameAttribute(oid, value)
