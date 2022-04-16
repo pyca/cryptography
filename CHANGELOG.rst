@@ -20,6 +20,11 @@ Changelog
 * Deprecated Python 3.6 support. Python 3.6 is no longer supported by the
   Python core team. Support for Python 3.6 will be removed in a future
   ``cryptography`` release.
+* Deprecated the current minimum supported Rust version (MSRV) of 1.41.0.
+  In the next release we will raise MSRV to 1.48.0. Users with the latest
+  ``pip`` will typically get a wheel and not need Rust installed, but check
+  :doc:`/installation` for documentation on installing a newer ``rustc`` if
+  required.
 * Deprecated
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
