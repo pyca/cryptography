@@ -3,10 +3,8 @@ Changelog
 
 .. _v37-0-0:
 
-37.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+37.0.0 - 2022-04-26
+~~~~~~~~~~~~~~~~~~~
 
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.2.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x.
