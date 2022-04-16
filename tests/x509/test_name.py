@@ -147,6 +147,19 @@ class TestRFC4514:
             ),
             (r"CN=#616263", Name([NameAttribute(NameOID.COMMON_NAME, "abc")])),
             (r"CN=👍", Name([NameAttribute(NameOID.COMMON_NAME, "👍")])),
+            (
+                "CN=\\\\123",
+                Name([NameAttribute(NameOID.COMMON_NAME, "\\123")]),
+            ),
+            ("CN=\\\\\\;", Name([NameAttribute(NameOID.COMMON_NAME, "\\;")])),
+            (
+                "CN=\\\\#123",
+                Name([NameAttribute(NameOID.COMMON_NAME, "\\#123")]),
+            ),
+            (
+                "2.5.4.10=abc",
+                Name([NameAttribute(NameOID.ORGANIZATION_NAME, "abc")]),
+            ),
         ]:
             with subtests.test():
                 result = Name.from_rfc4514_string(value)
