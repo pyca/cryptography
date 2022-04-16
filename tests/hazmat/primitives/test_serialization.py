@@ -267,6 +267,17 @@ class TestDERSerialization:
                 key_data, b"this password will not be used", backend
             )
 
+    def test_invalid_rsa_even_q(self, backend):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "rsa-bad-1025-q-is-2.pem"
+            ),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, None)
+
     def test_corrupt_der_pkcs8(self, backend):
         # unenc-rsa-pkcs8 with a bunch of data missing.
         key_data = textwrap.dedent(

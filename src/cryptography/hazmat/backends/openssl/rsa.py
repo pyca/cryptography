@@ -368,6 +368,18 @@ class _RSAPrivateKey(RSAPrivateKey):
             if res != 1:
                 errors = backend._consume_errors_with_text()
                 raise ValueError("Invalid private key", errors)
+            # 2 is prime and passes an RSA key check, so we also check
+            # if p and q are odd just to be safe.
+            p = backend._ffi.new("BIGNUM **")
+            q = backend._ffi.new("BIGNUM **")
+            backend._lib.RSA_get0_factors(rsa_cdata, p, q)
+            backend.openssl_assert(p[0] != backend._ffi.NULL)
+            backend.openssl_assert(q[0] != backend._ffi.NULL)
+            p_odd = backend._lib.BN_is_odd(p[0])
+            q_odd = backend._lib.BN_is_odd(q[0])
+            if p_odd != 1 or q_odd != 1:
+                errors = backend._consume_errors_with_text()
+                raise ValueError("Invalid private key", errors)
 
         # Blinding is on by default in many versions of OpenSSL, but let's
         # just be conservative here.
