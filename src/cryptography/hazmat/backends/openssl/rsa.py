@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
     PSS,
     _Auto,
+    _DigestLength,
     _MaxLength,
     calculate_max_pss_salt_length,
 )
@@ -40,21 +41,23 @@ if typing.TYPE_CHECKING:
 
 
 def _get_rsa_pss_salt_length(
+    backend: "Backend",
     pss: PSS,
     key: typing.Union[RSAPrivateKey, RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
-) -> typing.Union[int, _MaxLength, _Auto]:
+) -> typing.Union[int, _MaxLength, _Auto, _DigestLength]:
     salt = pss._salt_length
 
     if isinstance(salt, _MaxLength):
         return calculate_max_pss_salt_length(key, hash_algorithm)
+    elif isinstance(salt, _DigestLength):
+        return hash_algorithm.digest_size
     elif isinstance(salt, _Auto):
         if isinstance(key, RSAPrivateKey):
             raise ValueError(
                 "PSS salt length can only be set to AUTO when verifying"
             )
-        # TODO: use a constant. BoringSSL doesn't declare it though
-        return -2
+        return backend._lib.RSA_PSS_SALTLEN_AUTO  # this is really just -2
     else:
         return salt
 
@@ -249,7 +252,8 @@ def _rsa_sig_setup(
     if isinstance(padding, PSS):
         assert isinstance(algorithm, hashes.HashAlgorithm)
         res = backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
-            pkey_ctx, _get_rsa_pss_salt_length(padding, key, algorithm)
+            pkey_ctx,
+            _get_rsa_pss_salt_length(backend, padding, key, algorithm),
         )
         backend.openssl_assert(res > 0)
 

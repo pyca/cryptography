@@ -479,6 +479,45 @@ class TestRSASignature:
         public_key.verify(signature, msg, pss, hash_alg)
 
     @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_pss_digest_length(self, backend):
+        private_key = RSA_KEY_2048.private_key()
+        signature = private_key.sign(
+            b"some data",
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            ),
+            hashes.SHA256(),
+        )
+        public = private_key.public_key()
+        public.verify(
+            signature,
+            b"some data",
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            ),
+            hashes.SHA256(),
+        )
+        public.verify(
+            signature,
+            b"some data",
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=32,
+            ),
+            hashes.SHA256(),
+        )
+
+    @pytest.mark.supported(
         only_if=lambda backend: (
             backend.hash_supported(hashes.SHA512())
             and backend.rsa_padding_supported(
@@ -648,6 +687,30 @@ class TestRSASignature:
         h.update(message)
         digest = h.finalize()
         pss = padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        prehashed_alg = asym_utils.Prehashed(hashes.SHA256())
+        signature = private_key.sign(digest, pss, prehashed_alg)
+        public_key = private_key.public_key()
+        public_key.verify(signature, message, pss, hashes.SHA256())
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_prehashed_digest_length(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        message = b"one little message"
+        h = hashes.Hash(hashes.SHA256(), backend)
+        h.update(message)
+        digest = h.finalize()
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.DIGEST_LENGTH,
+        )
         prehashed_alg = asym_utils.Prehashed(hashes.SHA256())
         signature = private_key.sign(digest, pss, prehashed_alg)
         public_key = private_key.public_key()

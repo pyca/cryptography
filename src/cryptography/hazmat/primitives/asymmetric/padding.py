@@ -25,20 +25,30 @@ class _Auto:
     "Sentinel value for `AUTO`."
 
 
+class _DigestLength:
+    "Sentinel value for `DIGEST_LENGTH`."
+
+
 class PSS(AsymmetricPadding):
     MAX_LENGTH = _MaxLength()
     AUTO = _Auto()
+    DIGEST_LENGTH = _DigestLength()
     name = "EMSA-PSS"
-    _salt_length: typing.Union[int, _MaxLength]
+    _salt_length: typing.Union[int, _MaxLength, _Auto, _DigestLength]
 
     def __init__(
-        self, mgf: "MGF", salt_length: typing.Union[int, _MaxLength, _Auto]
+        self,
+        mgf: "MGF",
+        salt_length: typing.Union[int, _MaxLength, _Auto, _DigestLength],
     ) -> None:
         self._mgf = mgf
 
-        if not isinstance(salt_length, (int, _MaxLength, _Auto)):
+        if not isinstance(
+            salt_length, (int, _MaxLength, _Auto, _DigestLength)
+        ):
             raise TypeError(
-                "salt_length must be an integer, MAX_LENGTH, or AUTO"
+                "salt_length must be an integer, MAX_LENGTH, "
+                "DIGEST_LENGTH, or AUTO"
             )
 
         if isinstance(salt_length, int) and salt_length < 0:
