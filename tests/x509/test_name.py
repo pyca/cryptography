@@ -156,6 +156,10 @@ class TestRFC4514:
                 "CN=\\\\#123",
                 Name([NameAttribute(NameOID.COMMON_NAME, "\\#123")]),
             ),
+            (
+                "2.5.4.10=abc",
+                Name([NameAttribute(NameOID.ORGANIZATION_NAME, "abc")]),
+            ),
         ]:
             with subtests.test():
                 result = Name.from_rfc4514_string(value)

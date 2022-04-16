@@ -354,7 +354,7 @@ class Name:
 
 
 class _RFC4514NameParser:
-    _OID_RE = re.compile(r"(\d|[1-9]\d+)(\.\d|[1-9]\d+)+")
+    _OID_RE = re.compile(r"(0|([1-9]\d*))(\.(0|([1-9]\d*)))+")
     _DESCR_RE = re.compile(r"[a-zA-Z][a-zA-Z\d-]*")
 
     _PAIR = r"\\([\\ #=\"\+,;<>]|[\da-zA-Z]{2})"
