@@ -141,6 +141,17 @@ Custom asymmetric vectors
   ``asymmetric/Ed448/ed448-pkcs8.der`` contain an unencrypted Ed448 key.
 * ``asymmetric/Ed448/ed448-pub.pem`` and ``asymmetric/Ed448/ed448-pub.der``
   contain an Ed448 public key.
+* ``asymmetric/PKCS8/rsa_pss_2048.pem`` - A 2048-bit RSA PSS key with no
+  explicit parameters set.
+* ``asymmetric/PKCS8/rsa_pss_2048_hash.pem`` - A 2048-bit RSA PSS key with the
+  hash algorithm PSS parameter set to SHA256.
+* ``asymmetric/PKCS8/rsa_pss_2048_hash_mask.pem`` - A 2048-bit RSA PSS key with
+  with the hash (SHA256) and mask algorithm (SHA256) PSS parameters set.
+* ``asymmetric/PKCS8/rsa_pss_2048_hash_mask_diff.pem`` - A 2048-bit RSA PSS key
+  with the hash (SHA256) and mask algorithm (SHA512) PSS parameters set.
+* ``asymmetric/PKCS8/rsa_pss_2048_hash_mask_salt.pem`` - A 2048-bit RSA PSS key
+  with the hash (SHA256), mask algorithm (SHA256), and salt length (32)
+  PSS parameters set.
 
 
 Key exchange
