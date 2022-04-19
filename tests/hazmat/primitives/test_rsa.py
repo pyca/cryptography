@@ -11,6 +11,7 @@ import pytest
 
 from cryptography.exceptions import (
     InvalidSignature,
+    UnsupportedAlgorithm,
     _Reasons,
 )
 from cryptography.hazmat.primitives import hashes, serialization
@@ -255,6 +256,64 @@ class TestRSA:
 
         assert public_num.n == public_num2.n
         assert public_num.e == public_num2.e
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ),
+        skip_message="Does not support RSA PSS loading",
+    )
+    @pytest.mark.parametrize(
+        "path",
+        [
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048.pem"),
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_hash.pem"),
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_hash_mask.pem"),
+            os.path.join(
+                "asymmetric", "PKCS8", "rsa_pss_2048_hash_mask_diff.pem"
+            ),
+            os.path.join(
+                "asymmetric", "PKCS8", "rsa_pss_2048_hash_mask_salt.pem"
+            ),
+        ],
+    )
+    def test_load_pss_keys_strips_constraints(self, path, backend):
+        key = load_vectors_from_file(
+            filename=path,
+            loader=lambda p: serialization.load_pem_private_key(
+                p.read(), None
+            ),
+            mode="rb",
+        )
+        # These keys have constraints that prohibit PKCS1v15 signing,
+        # but for now we load them without the constraint and test that
+        # it's truly removed by performing a disallowed signature.
+        assert isinstance(key, rsa.RSAPrivateKey)
+        key.sign(b"whatever", padding.PKCS1v15(), hashes.SHA224())
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            or backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            or backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ),
+        skip_message="Test requires a backend without RSA-PSS key support",
+    )
+    def test_load_pss_unsupported(self, backend):
+        # Key loading errors unfortunately have multiple paths so
+        # we need to allow ValueError and UnsupportedAlgorithm
+        with pytest.raises((UnsupportedAlgorithm, ValueError)):
+            load_vectors_from_file(
+                filename=os.path.join(
+                    "asymmetric", "PKCS8", "rsa_pss_2048.pem"
+                ),
+                loader=lambda p: serialization.load_pem_private_key(
+                    p.read(), None
+                ),
+                mode="rb",
+            )
 
     @pytest.mark.parametrize(
         "vector",

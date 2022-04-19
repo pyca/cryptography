@@ -295,8 +295,8 @@ int (*EVP_PKEY_set1_DH)(EVP_PKEY *, DH *) = NULL;
 static const long Cryptography_HAS_EVP_PKEY_DH = 1;
 #endif
 
-// OpenSSL 1.1.0 doesn't define this value. But its presence isn't
-// unsafe so we don't need to remove it if unsupported.
+// This can be removed when we drop OpenSSL 1.1.0 support
+// OPENSSL_LESS_THAN_111
 #if !defined(EVP_PKEY_RSA_PSS)
 #define EVP_PKEY_RSA_PSS 912
 #endif
