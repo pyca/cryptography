@@ -203,7 +203,7 @@ jobs:
           # Cover MSRV (and likely next MSRV). In-dev versions are below in
           # the linux-rust-coverage section.
           - 1.41.0
-          - 1.45.0
+          - 1.48.0
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
