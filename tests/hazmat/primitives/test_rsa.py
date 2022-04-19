@@ -257,6 +257,33 @@ class TestRSA:
         assert public_num.e == public_num2.e
 
     @pytest.mark.parametrize(
+        "path",
+        [
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048.pem"),
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_hash.pem"),
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_hash_mask.pem"),
+            os.path.join(
+                "asymmetric", "PKCS8", "rsa_pss_2048_hash_mask_diff.pem"
+            ),
+            os.path.join(
+                "asymmetric", "PKCS8", "rsa_pss_2048_hash_mask_salt.pem"
+            ),
+        ],
+    )
+    def test_load_rsa_pss_keys_strips_constraints(self, path):
+        key = load_vectors_from_file(
+            filename=path,
+            loader=lambda p: serialization.load_pem_private_key(
+                p.read(), None
+            ),
+            mode="rb",
+        )
+        # These keys have constraints that prohibit PKCS1v15 signing,
+        # but for now we load them without the constraint and test that
+        # it's truly removed by performing a disallowed signature.
+        key.sign(b"whatever", padding.PKCS1v15(), hashes.SHA224())
+
+    @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
             os.path.join("asymmetric", "RSA", "oaep-label.txt"),
