@@ -13,9 +13,9 @@ from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHMAC
 from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
 
 
-class TestConcatKDFHash(object):
+class TestConcatKDFHash:
     def test_length_limit(self, backend):
-        big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
+        big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
 
         with pytest.raises(ValueError):
             ConcatKDFHash(hashes.SHA256(), big_length, None, backend)
@@ -122,9 +122,9 @@ class TestConcatKDFHash(object):
             ckdf.verify(b"foo", "bar")  # type: ignore[arg-type]
 
 
-class TestConcatKDFHMAC(object):
+class TestConcatKDFHMAC:
     def test_length_limit(self, backend):
-        big_length = hashes.SHA256().digest_size * (2 ** 32 - 1) + 1
+        big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
 
         with pytest.raises(ValueError):
             ConcatKDFHMAC(hashes.SHA256(), big_length, None, None, backend)

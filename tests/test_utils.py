@@ -4449,7 +4449,7 @@ def test_raises_unsupported_algorithm():
     assert exc_info.type is UnsupportedAlgorithm
 
 
-class TestDeprecated(object):
+class TestDeprecated:
     def test_getattr(self):
         with pytest.warns(DeprecationWarning):
             assert deprecated_module.DEPRECATED == 3

@@ -25,7 +25,7 @@ def _skip_hashfn_unsupported(backend, hashfn):
         )
 
 
-class TestX963(object):
+class TestX963:
     _algorithms_dict: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
         "SHA-1": hashes.SHA1,
         "SHA-224": hashes.SHA224,

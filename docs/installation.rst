@@ -16,14 +16,16 @@ Supported platforms
 Currently we test ``cryptography`` on Python 3.6+ and PyPy3 on these
 operating systems.
 
-* x86-64 CentOS 8.x
+* x86-64 RHEL 8.x
 * x86-64 Fedora (latest)
 * x86-64 macOS 10.15 Catalina
-* x86-64 Ubuntu 18.04, 20.04, rolling
-* AArch64 Ubuntu 20.04
+* ARM64 macOS 12 Monterey
+* x86-64 Ubuntu 18.04, 20.04, 22.04, rolling
+* ARM64 Ubuntu 20.04
 * x86-64 Debian Stretch (9.x), Buster (10.x), Bullseye (11.x), Bookworm (12.x)
   and Sid (unstable)
 * x86-64 Alpine (latest)
+* ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2019
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
@@ -35,6 +37,10 @@ OpenSSL releases:
 
 In addition we test against several versions of LibreSSL and the latest commit
 in BoringSSL.
+
+.. warning::
+
+    Cryptography 37.0.0 has deprecated support for OpenSSL 1.1.0.
 
 
 Building cryptography on Windows
@@ -199,7 +205,7 @@ available from your system package manager.
 Then, paste the following into a shell script. You'll need to populate the
 ``OPENSSL_VERSION`` variable. To do that, visit `openssl.org`_ and find the
 latest non-FIPS release version number, then set the string appropriately. For
-example, for OpenSSL 1.0.2k, use ``OPENSSL_VERSION="1.0.2k"``.
+example, for OpenSSL 1.1.1k, use ``OPENSSL_VERSION="1.1.1k"``.
 
 When this shell script is complete, you'll find a collection of wheel files in
 a directory called ``wheelhouse``. These wheels can be installed by a

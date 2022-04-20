@@ -15,6 +15,7 @@ static const int RSA_NO_PADDING;
 static const int RSA_PKCS1_OAEP_PADDING;
 static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
+static const int RSA_PSS_SALTLEN_AUTO;
 """
 
 FUNCTIONS = """
@@ -44,4 +45,9 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
+// BoringSSL doesn't define this constant, but the value is used for
+// automatic salt length computation as in OpenSSL and LibreSSL
+#if !defined(RSA_PSS_SALTLEN_AUTO)
+#define RSA_PSS_SALTLEN_AUTO -2
+#endif
 """

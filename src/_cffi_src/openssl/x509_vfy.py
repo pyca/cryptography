@@ -95,7 +95,6 @@ static const int X509_V_ERR_IP_ADDRESS_MISMATCH;
 static const int X509_V_ERR_APPLICATION_VERIFICATION;
 
 /* Verification parameters */
-static const long X509_V_FLAG_CB_ISSUER_CHECK;
 static const long X509_V_FLAG_USE_CHECK_TIME;
 static const long X509_V_FLAG_CRL_CHECK;
 static const long X509_V_FLAG_CRL_CHECK_ALL;
@@ -162,16 +161,12 @@ void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
 void X509_STORE_CTX_free(X509_STORE_CTX *);
 int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
                         Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
-                                  Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
-void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
 X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
 void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
 int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
 void X509_STORE_CTX_set_verify_cb(X509_STORE_CTX *,
                                   int (*)(int, X509_STORE_CTX *));
-Cryptography_STACK_OF_X509 *X509_STORE_CTX_get_chain(X509_STORE_CTX *);
 Cryptography_STACK_OF_X509 *X509_STORE_CTX_get1_chain(X509_STORE_CTX *);
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
@@ -215,7 +210,6 @@ X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
-int X509_OBJECT_get_type(const X509_OBJECT *);
 
 /* added in 1.1.0 */
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);

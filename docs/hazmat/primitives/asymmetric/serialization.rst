@@ -506,18 +506,27 @@ file suffix.
 
     :param key: The private key to include in the structure.
     :type key: An
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
         ,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+        ,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+        ,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
         , or
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
         object.
 
     :param cert: The certificate associated with the private key.
     :type cert: :class:`~cryptography.x509.Certificate` or ``None``
 
     :param cas: An optional set of certificates to also include in the structure.
-    :type cas: list of :class:`~cryptography.x509.Certificate` or ``None``
+        If a :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        is given, its friendly name will be serialized.
+    :type cas: ``None``, or list of
+        :class:`~cryptography.x509.Certificate`
+        or
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
 
     :param encryption_algorithm: The encryption algorithm that should be used
         for the key and certificate. An instance of an object conforming to the
@@ -615,6 +624,17 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the PKCS7 data
         is of a type that is not supported.
+
+.. function:: serialize_certificates(certs, encoding)
+
+    .. versionadded:: 37.0
+
+    Serialize a list of certificates to a PKCS7 structure.
+
+    :param certs: A list of :class:`~cryptography.x509.Certificate`.
+    :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`
+        or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`.
+    :return bytes: The serialized PKCS7 data.
 
 .. testsetup::
 

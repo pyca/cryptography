@@ -295,12 +295,27 @@ Padding
         supported MGF is :class:`MGF1`.
 
     :param int salt_length: The length of the salt. It is recommended that this
-        be set to ``PSS.MAX_LENGTH``.
+        be set to ``PSS.DIGEST_LENGTH`` or ``PSS.MAX_LENGTH``.
 
     .. attribute:: MAX_LENGTH
 
         Pass this attribute to ``salt_length`` to get the maximum salt length
         available.
+
+    .. attribute:: DIGEST_LENGTH
+
+        .. versionadded:: 37.0
+
+        Pass this attribute to ``salt_length`` to set the salt length to the
+        byte length of the digest passed when calling ``sign``. Note that this
+        is **not** the length of the digest passed to ``MGF1``.
+
+    .. attribute:: AUTO
+
+        .. versionadded:: 37.0
+
+        Pass this attribute to ``salt_length`` to automatically determine the
+        salt length when verifying. Raises ``ValueError`` if used when signing.
 
 .. class:: OAEP(mgf, algorithm, label)
 

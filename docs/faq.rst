@@ -67,7 +67,7 @@ legacy libraries:
 * Lack of high level APIs.
 * Lack of PyPy and Python 3 support.
 * Absence of algorithms such as
-  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
+  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.aead.AESGCM>` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 
 Why does ``cryptography`` require Rust?
@@ -110,13 +110,6 @@ Please upgrade to a more recent version. If you are running OpenBSD 6.1 or
 earlier the default compiler is extremely old. Use ``pkg_add`` to install a
 newer ``gcc`` and then install ``cryptography`` using
 ``CC=/path/to/newer/gcc pip install cryptography``.
-
-Installing ``cryptography`` fails with ``Invalid environment marker: python_version < '3'``
--------------------------------------------------------------------------------------------
-
-Your ``pip`` and/or ``setuptools`` are outdated. Please upgrade to the latest
-versions with ``pip install -U pip setuptools`` (or on Windows
-``python -m pip install -U pip setuptools``).
 
 Installing cryptography with OpenSSL 0.9.8, 1.0.0, 1.0.1, 1.0.2 fails
 ---------------------------------------------------------------------

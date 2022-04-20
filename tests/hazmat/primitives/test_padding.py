@@ -9,7 +9,7 @@ from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
 
-class TestPKCS7(object):
+class TestPKCS7:
     @pytest.mark.parametrize("size", [127, 4096, -2])
     def test_invalid_block_size(self, size):
         with pytest.raises(ValueError):
@@ -35,10 +35,10 @@ class TestPKCS7(object):
     def test_non_bytes(self):
         padder = padding.PKCS7(128).padder()
         with pytest.raises(TypeError):
-            padder.update("abc")
+            padder.update("abc")  # type: ignore[arg-type]
         unpadder = padding.PKCS7(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update("abc")
+            unpadder.update("abc")  # type: ignore[arg-type]
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801
@@ -131,7 +131,7 @@ class TestPKCS7(object):
         assert final == unpadded + unpadded
 
 
-class TestANSIX923(object):
+class TestANSIX923:
     @pytest.mark.parametrize("size", [127, 4096, -2])
     def test_invalid_block_size(self, size):
         with pytest.raises(ValueError):

@@ -15,7 +15,7 @@ from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
 
 
-class TestHashContext(object):
+class TestHashContext:
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
@@ -47,7 +47,7 @@ class TestHashContext(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
     skip_message="Does not support SHA1",
 )
-class TestSHA1(object):
+class TestSHA1:
     test_sha1 = generate_base_hash_test(
         hashes.SHA1(),
         digest_size=20,
@@ -58,7 +58,7 @@ class TestSHA1(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
     skip_message="Does not support SHA224",
 )
-class TestSHA224(object):
+class TestSHA224:
     test_sha224 = generate_base_hash_test(
         hashes.SHA224(),
         digest_size=28,
@@ -69,7 +69,7 @@ class TestSHA224(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
     skip_message="Does not support SHA256",
 )
-class TestSHA256(object):
+class TestSHA256:
     test_sha256 = generate_base_hash_test(
         hashes.SHA256(),
         digest_size=32,
@@ -80,7 +80,7 @@ class TestSHA256(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
     skip_message="Does not support SHA384",
 )
-class TestSHA384(object):
+class TestSHA384:
     test_sha384 = generate_base_hash_test(
         hashes.SHA384(),
         digest_size=48,
@@ -91,7 +91,7 @@ class TestSHA384(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
     skip_message="Does not support SHA512",
 )
-class TestSHA512(object):
+class TestSHA512:
     test_sha512 = generate_base_hash_test(
         hashes.SHA512(),
         digest_size=64,
@@ -102,7 +102,7 @@ class TestSHA512(object):
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
-class TestMD5(object):
+class TestMD5:
     test_md5 = generate_base_hash_test(
         hashes.MD5(),
         digest_size=16,
@@ -115,7 +115,7 @@ class TestMD5(object):
     ),
     skip_message="Does not support BLAKE2b",
 )
-class TestBLAKE2b(object):
+class TestBLAKE2b:
     test_blake2b = generate_base_hash_test(
         hashes.BLAKE2b(digest_size=64),
         digest_size=64,
@@ -138,7 +138,7 @@ class TestBLAKE2b(object):
     ),
     skip_message="Does not support BLAKE2s",
 )
-class TestBLAKE2s(object):
+class TestBLAKE2s:
     test_blake2s = generate_base_hash_test(
         hashes.BLAKE2s(digest_size=32),
         digest_size=32,
@@ -164,7 +164,7 @@ def test_buffer_protocol_hash(backend):
     )
 
 
-class TestSHAKE(object):
+class TestSHAKE:
     @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_invalid_digest_type(self, xof):
         with pytest.raises(TypeError):
@@ -183,7 +183,7 @@ class TestSHAKE(object):
     only_if=lambda backend: backend.hash_supported(hashes.SM3()),
     skip_message="Does not support SM3",
 )
-class TestSM3(object):
+class TestSM3:
     test_sm3 = generate_base_hash_test(
         hashes.SM3(),
         digest_size=32,

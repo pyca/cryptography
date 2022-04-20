@@ -459,9 +459,8 @@ X.509 Certificate Object
            ...     cert_to_check.signature_hash_algorithm,
            ... )
 
-           An
-           :class:`~cryptography.exceptions.InvalidSignature`
-           exception will be raised if the signature fails to verify.
+       An :class:`~cryptography.exceptions.InvalidSignature` exception will be
+       raised if the signature fails to verify.
 
     .. method:: public_bytes(encoding)
 
@@ -1225,6 +1224,20 @@ X.509 CSR (Certificate Signing Request) Builder Object
         .. versionadded:: 1.6
 
         :type: list of :class:`RelativeDistinguishedName`
+
+    .. classmethod:: from_rfc4514_string(data)
+
+        .. versionadded: 37.0
+
+        :param str data: An :rfc:`4514` string.
+
+        :returns: A :class:`Name` parsed from ``data``.
+
+
+        .. doctest::
+
+            >>> x509.Name.from_rfc4514_string("CN=cryptography.io")
+            <Name(CN=cryptography.io)>
 
     .. method:: get_attributes_for_oid(oid)
 
@@ -2964,6 +2977,26 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.2.840.113549.1.1.13"``. This is
         a SHA512 digest signed by an RSA key.
 
+    .. attribute:: RSA_WITH_SHA3_224
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.13"``. This is
+        a SHA3-224 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_256
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.14"``. This is
+        a SHA3-256 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_384
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.15"``. This is
+        a SHA3-384 digest signed by an RSA key.
+
+    .. attribute:: RSA_WITH_SHA3_512
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.16"``. This is
+        a SHA3-512 digest signed by an RSA key.
+
     .. attribute:: RSASSA_PSS
 
         .. versionadded:: 2.3
@@ -2997,6 +3030,26 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.2.840.10045.4.3.4"``. This is
         a SHA512 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_224
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.9"``. This is
+        a SHA3-224 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_256
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.10"``. This is
+        a SHA3-256 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_384
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.11"``. This is
+        a SHA3-384 digest signed by an ECDSA key.
+
+    .. attribute:: ECDSA_WITH_SHA3_512
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.12"``. This is
+        a SHA3-512 digest signed by an ECDSA key.
 
     .. attribute:: DSA_WITH_SHA1
 
@@ -3106,6 +3159,15 @@ instances. The following common OIDs are available as constants.
         is used to denote that a certificate may be used as a Kerberos
         domain controller certificate authorizing ``PKINIT`` access. For
         more information see :rfc:`4556`.
+        
+    .. attribute:: IPSEC_IKE
+
+        .. versionadded:: 37.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.17"``. This
+        is used to denote that a certificate may be assigned to an IPSEC SA,
+        and can be used by the assignee to initiate an IPSec Internet Key
+        Exchange. For more information see :rfc:`4945`.
 
 
 .. class:: AuthorityInformationAccessOID

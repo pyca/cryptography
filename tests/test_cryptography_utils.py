@@ -10,9 +10,9 @@ import pytest
 from cryptography import utils
 
 
-class TestCachedProperty(object):
+class TestCachedProperty:
     def test_simple(self):
-        class T(object):
+        class T:
             @utils.cached_property
             def t(self):
                 accesses.append(None)
@@ -34,7 +34,7 @@ class TestCachedProperty(object):
         assert len(accesses) == 2
 
     def test_set(self):
-        class T(object):
+        class T:
             @utils.cached_property
             def t(self):
                 accesses.append(None)

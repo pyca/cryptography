@@ -27,7 +27,7 @@ impl From<pyo3::PyErr> for PyAsn1Error {
 impl From<pem::PemError> for PyAsn1Error {
     fn from(e: pem::PemError) -> PyAsn1Error {
         PyAsn1Error::Py(pyo3::exceptions::PyValueError::new_err(format!(
-            "Unable to load PEM file. See https://cryptography.io/en/latest/faq.html#why-can-t-i-import-my-pem-file for more details. {:?}",
+            "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. {:?}",
             e
         )))
     }
@@ -45,10 +45,28 @@ impl From<PyAsn1Error> for pyo3::PyErr {
     }
 }
 
+impl PyAsn1Error {
+    pub(crate) fn add_location(self, loc: asn1::ParseLocation) -> Self {
+        match self {
+            PyAsn1Error::Py(e) => PyAsn1Error::Py(e),
+            PyAsn1Error::Asn1(e) => PyAsn1Error::Asn1(e.add_location(loc)),
+        }
+    }
+}
+
 // The primary purpose of this alias is for brevity to keep function signatures
 // to a single-line as a work around for coverage issues. See
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
+
+pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier<'_>> {
+    match asn1::ObjectIdentifier::from_string(py_oid.getattr("dotted_string")?.extract::<&str>()?) {
+        Some(oid) => Ok(oid),
+        None => Err(pyo3::exceptions::PyValueError::new_err(
+            "ObjectIdentifier was not valid (perhaps its arcs were too large)",
+        )),
+    }
+}
 
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
@@ -208,4 +226,15 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
     submod.add_wrapped(pyo3::wrap_pyfunction!(test_parse_certificate))?;
 
     Ok(submod)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PyAsn1Error;
+
+    #[test]
+    fn test_pyasn1error_add_location() {
+        let py_err = pyo3::PyErr::new::<pyo3::exceptions::PyValueError, _>("Error!");
+        PyAsn1Error::Py(py_err).add_location(asn1::ParseLocation::Field("meh"));
+    }
 }

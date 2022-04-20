@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::PyAsn1Error;
+use crate::asn1::{py_oid_to_oid, PyAsn1Error};
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
@@ -11,8 +11,8 @@ use std::collections::HashSet;
 use std::convert::TryInto;
 use std::marker::PhantomData;
 
-/// parse all sections in a PEM file and return the only matching section.
-/// If no or multiple matching sections are found, return an error.
+/// Parse all sections in a PEM file and return the first matching section.
+/// If no matching sections are found, return an error.
 pub(crate) fn find_in_pem(
     data: &[u8],
     filter_fn: fn(&pem::Pem) -> bool,
@@ -108,24 +108,22 @@ pub(crate) fn encode_name_entry<'p>(
 
     let attr_type = py_name_entry.getattr("_type")?;
     let tag = attr_type.getattr("value")?.extract::<u8>()?;
-    let encoding = if attr_type == asn1_type.getattr("BMPString")? {
-        "utf_16_be"
-    } else if attr_type == asn1_type.getattr("UniversalString")? {
-        "utf_32_be"
-    } else {
-        "utf8"
-    };
-    let value = py_name_entry
-        .getattr("value")?
-        .call_method1("encode", (encoding,))?
-        .extract()?;
-    let oid = asn1::ObjectIdentifier::from_string(
+    let value: &[u8] = if attr_type != asn1_type.getattr("BitString")? {
+        let encoding = if attr_type == asn1_type.getattr("BMPString")? {
+            "utf_16_be"
+        } else if attr_type == asn1_type.getattr("UniversalString")? {
+            "utf_32_be"
+        } else {
+            "utf8"
+        };
         py_name_entry
-            .getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
+            .getattr("value")?
+            .call_method1("encode", (encoding,))?
+            .extract()?
+    } else {
+        py_name_entry.getattr("value")?.extract()?
+    };
+    let oid = py_oid_to_oid(py_name_entry.getattr("oid")?)?;
 
     Ok(AttributeTypeValue {
         type_id: oid,
@@ -239,13 +237,13 @@ pub(crate) fn encode_general_name<'a>(
         Ok(GeneralName::DirectoryName(name))
     } else if gn_type == gn_module.getattr("OtherName")? {
         Ok(GeneralName::OtherName(OtherName {
-            type_id: asn1::ObjectIdentifier::from_string(
-                gn.getattr("type_id")?
-                    .getattr("dotted_string")?
-                    .extract::<&str>()?,
-            )
-            .unwrap(),
-            value: asn1::parse_single(gn_value.extract::<&[u8]>()?)?,
+            type_id: py_oid_to_oid(gn.getattr("type_id")?)?,
+            value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "OtherName value must be valid DER: {:?}",
+                    e
+                ))
+            })?,
         }))
     } else if gn_type == gn_module.getattr("UniformResourceIdentifier")? {
         Ok(GeneralName::UniformResourceIdentifier(
@@ -256,10 +254,7 @@ pub(crate) fn encode_general_name<'a>(
             gn.call_method0("_packed")?.extract::<&[u8]>()?,
         ))
     } else if gn_type == gn_module.getattr("RegisteredID")? {
-        let oid = asn1::ObjectIdentifier::from_string(
-            gn_value.getattr("dotted_string")?.extract::<&str>()?,
-        )
-        .unwrap();
+        let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
         Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -287,13 +282,7 @@ pub(crate) fn encode_access_descriptions<'a>(
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
-        let access_method = asn1::ObjectIdentifier::from_string(
-            py_ad
-                .getattr("access_method")?
-                .getattr("dotted_string")?
-                .extract::<&str>()?,
-        )
-        .unwrap();
+        let access_method = py_oid_to_oid(py_ad.getattr("access_method")?)?;
         let access_location = encode_general_name(py, py_ad.getattr("access_location")?)?;
         ads.push(AccessDescription {
             access_method,
@@ -343,14 +332,14 @@ pub(crate) struct Extension<'a> {
 pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
     name: &Name<'_>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.unwrap_read().clone() {
         let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
     }
-    x509_module.call_method1("Name", (py_rdns,))
+    Ok(x509_module.call_method1("Name", (py_rdns,))?)
 }
 
 fn parse_name_attribute(
@@ -366,22 +355,23 @@ fn parse_name_attribute(
         .getattr("_ASN1_TYPE_TO_ENUM")?;
     let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
     let py_data = match attribute.value.tag() {
+        // BitString tag value
+        3 => pyo3::types::PyBytes::new(py, attribute.value.data()),
         // BMPString tag value
         30 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes
-                .call_method1("decode", ("utf_16_be",))?
-                .extract::<&str>()?
+            py_bytes.call_method1("decode", ("utf_16_be",))?
         }
         // UniversalString
         28 => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes
-                .call_method1("decode", ("utf_32_be",))?
-                .extract::<&str>()?
+            py_bytes.call_method1("decode", ("utf_32_be",))?
         }
-        _ => std::str::from_utf8(attribute.value.data())
-            .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?,
+        _ => {
+            let parsed = std::str::from_utf8(attribute.value.data())
+                .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
+            pyo3::types::PyString::new(py, parsed)
+        }
     };
     let kwargs = [("_validate", false)].into_py_dict(py);
     Ok(x509_module
@@ -599,13 +589,7 @@ pub(crate) fn encode_extensions<
     let mut exts = vec![];
     for py_ext in py_exts.iter()? {
         let py_ext = py_ext?;
-        let oid = asn1::ObjectIdentifier::from_string(
-            py_ext
-                .getattr("oid")?
-                .getattr("dotted_string")?
-                .extract::<&str>()?,
-        )
-        .unwrap();
+        let oid = py_oid_to_oid(py_ext.getattr("oid")?)?;
 
         let ext_val = py_ext.getattr("value")?;
         if unrecognized_extension_type.is_instance(ext_val)? {
@@ -647,13 +631,7 @@ fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
     py_ext: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
-    let oid = asn1::ObjectIdentifier::from_string(
-        py_ext
-            .getattr("oid")?
-            .getattr("dotted_string")?
-            .extract::<&str>()?,
-    )
-    .unwrap();
+    let oid = py_oid_to_oid(py_ext.getattr("oid")?)?;
 
     if let Some(data) = x509::extensions::encode_extension(&oid, py_ext)? {
         // TODO: extra copy
@@ -740,6 +718,13 @@ impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
     }
 }
 
+pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Asn1ReadableOrWritable, RawTlv};
@@ -761,11 +746,4 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         assert!(RawTlv::can_parse(123));
     }
-}
-
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
-
-    Ok(())
 }

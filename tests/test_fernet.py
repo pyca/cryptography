@@ -38,7 +38,7 @@ def json_parametrize(keys, filename):
     ),
     skip_message="Does not support AES CBC",
 )
-class TestFernet(object):
+class TestFernet:
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"),
         "generate.json",
@@ -130,9 +130,10 @@ class TestFernet(object):
         f = Fernet(Fernet.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
 
-    def test_bad_key(self, backend):
+    @pytest.mark.parametrize("key", [base64.urlsafe_b64encode(b"abc"), b"abc"])
+    def test_bad_key(self, backend, key):
         with pytest.raises(ValueError):
-            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+            Fernet(key, backend=backend)
 
     def test_extract_timestamp(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -149,7 +150,7 @@ class TestFernet(object):
     ),
     skip_message="Does not support AES CBC",
 )
-class TestMultiFernet(object):
+class TestMultiFernet:
     def test_encrypt(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)

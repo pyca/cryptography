@@ -45,7 +45,7 @@ vectors_3des = load_vectors_from_file(
 fake_key = b"\x00" * 16
 
 
-class TestCMAC(object):
+class TestCMAC:
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
             AES(fake_key)

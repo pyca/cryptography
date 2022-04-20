@@ -24,7 +24,7 @@ vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
     only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support HMAC-SHA1.",
 )
-class TestHOTP(object):
+class TestHOTP:
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
 

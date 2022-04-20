@@ -41,7 +41,7 @@ def test_x25519_unsupported(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-class TestX25519Exchange(object):
+class TestX25519Exchange:
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -99,10 +99,6 @@ class TestX25519Exchange(object):
         with pytest.raises(ValueError):
             key.public_bytes(
                 None, serialization.PublicFormat.Raw  # type: ignore[arg-type]
-            )
-        with pytest.raises(TypeError):
-            key.public_bytes(
-                serialization.Encoding.Raw  # type: ignore[call-arg]
             )
 
     # These vectors are also from RFC 7748

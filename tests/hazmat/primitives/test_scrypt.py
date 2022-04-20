@@ -40,7 +40,7 @@ def test_memory_limit_skip():
     with pytest.raises(pytest.skip.Exception):
         _skip_if_memory_limited(1000, {"p": 16, "r": 64, "n": 1024})
 
-    _skip_if_memory_limited(2 ** 31, {"p": 16, "r": 64, "n": 1024})
+    _skip_if_memory_limited(2**31, {"p": 16, "r": 64, "n": 1024})
 
 
 @pytest.mark.supported(
@@ -58,7 +58,7 @@ def test_unsupported_backend(backend):
     only_if=lambda backend: backend.scrypt_supported(),
     skip_message="Does not support Scrypt",
 )
-class TestScrypt(object):
+class TestScrypt:
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)
@@ -99,7 +99,7 @@ class TestScrypt(object):
 
     def test_scrypt_malloc_failure(self, backend):
         password = b"NaCl"
-        work_factor = 1024 ** 3
+        work_factor = 1024**3
         block_size = 589824
         parallelization_factor = 16
         length = 64

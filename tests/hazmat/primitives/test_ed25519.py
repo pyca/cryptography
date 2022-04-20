@@ -67,7 +67,7 @@ def test_ed25519_unsupported(backend):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-class TestEd25519Signing(object):
+class TestEd25519Signing:
     def test_sign_verify_input(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "Ed25519", "sign.input"),

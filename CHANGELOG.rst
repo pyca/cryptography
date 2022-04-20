@@ -8,8 +8,83 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x. The new
-  minimum LibreSSL version is 3.1+.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.2.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 2.9.x and 3.0.x.
+  The new minimum LibreSSL version is 3.1+.
+* **BACKWARDS INCOMPATIBLE:** Removed ``signer`` and ``verifier`` methods
+  from the public key and private key classes. These methods were originally
+  deprecated in version 2.0, but had an extended deprecation timeline due
+  to usage. Any remaining users should transition to ``sign`` and ``verify``.
+* Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
+  the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
+  removed in a future ``cryptography`` release.
+* Deprecated Python 3.6 support. Python 3.6 is no longer supported by the
+  Python core team. Support for Python 3.6 will be removed in a future
+  ``cryptography`` release.
+* Deprecated the current minimum supported Rust version (MSRV) of 1.41.0.
+  In the next release we will raise MSRV to 1.48.0. Users with the latest
+  ``pip`` will typically get a wheel and not need Rust installed, but check
+  :doc:`/installation` for documentation on installing a newer ``rustc`` if
+  required.
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish` because
+  they are legacy algorithms with extremely low usage. These will be removed
+  in a future version of ``cryptography``.
+* Added limited support for distinguished names containing a bit string.
+* We now ship ``universal2`` wheels on macOS, which contain both ``arm64``
+  and ``x86_64`` architectures. Users on macOS should upgrade to the latest
+  ``pip`` to ensure they can use this wheel, although we will continue to
+  ship ``x86_64`` specific wheels for now to ease the transition.
+* This will be the final release for which we ship ``manylinux2010`` wheels.
+  Going forward the minimum supported ``manylinux`` ABI for our wheels will
+  be ``manylinux2014``. The vast majority of users will continue to receive
+  ``manylinux`` wheels provided they have an up to date ``pip``. For PyPy
+  wheels this release already requires ``manylinux2014`` for compatibility
+  with binaries distributed by upstream.
+* Added support for multiple
+  :class:`~cryptography.x509.ocsp.OCSPSingleResponse` in a
+  :class:`~cryptography.x509.ocsp.OCSPResponse`.
+* Restored support for signing certificates and other structures in
+  :doc:`/x509/index` with SHA3 hash algorithms.
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` is
+  disabled in FIPS mode.
+* Added support for serialization of PKCS#12 CA friendly names/aliases in
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`
+* Added support for 12-15 byte (96 to 120 bit) nonces to
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`. This class
+  previously supported only 12 byte (96 bit).
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV` when using
+  OpenSSL 3.0.0+.
+* Added support for serializing PKCS7 structures from a list of
+  certificates with
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.serialize_certificates`.
+* Added support for parsing :rfc:`4514` strings with
+  :meth:`~cryptography.x509.Name.from_rfc4514_string`.
+* Added :attr:`~cryptography.hazmat.primitives.asymmetric.padding.PSS.AUTO` to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. This can
+  be used to verify a signature where the salt length is not already known.
+* Added :attr:`~cryptography.hazmat.primitives.asymmetric.padding.PSS.DIGEST_LENGTH`
+  to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. This
+  constant will set the salt length to the same length as the ``PSS`` hash
+  algorithm.
+
+.. _v36-0-2:
+
+36.0.2 - 2022-03-15
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 1.1.1n.
+
+.. _v36-0-1:
+
+36.0.1 - 2021-12-14
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 1.1.1m.
 
 .. _v36-0-0:
 
@@ -17,7 +92,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~~
 
 * **FINAL DEPRECATION** Support for ``verifier`` and ``signer`` on our
-  asymmetric key classes was deprecated in version 2.1. These functions had an
+  asymmetric key classes was deprecated in version 2.0. These functions had an
   extended deprecation due to usage, however the next version of
   ``cryptography`` will drop support. Users should migrate to ``sign`` and
   ``verify``.

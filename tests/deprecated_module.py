@@ -6,8 +6,13 @@ from cryptography import utils
 
 # This module exists to test `cryptography.utils.deprecated`
 
-DEPRECATED = utils.deprecated(
-    3, __name__, "Test Deprecated Object", DeprecationWarning
+DEPRECATED = 3
+utils.deprecated(
+    DEPRECATED,
+    __name__,
+    "Test Deprecated Object",
+    DeprecationWarning,
+    name="DEPRECATED",
 )
 
 NOT_DEPRECATED = 12

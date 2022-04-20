@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{PyAsn1Error, PyAsn1Result};
+use crate::asn1::{py_oid_to_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, oid};
 use asn1::SimpleAsn1Readable;
@@ -128,7 +128,10 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::parse_name(py, &self.raw.borrow_value().csr_info.subject)
+        Ok(x509::parse_name(
+            py,
+            &self.raw.borrow_value().csr_info.subject,
+        )?)
     }
 
     #[getter]
@@ -224,8 +227,7 @@ impl CertificateSigningRequest {
                 cryptography_warning,
             ),
         )?;
-        let oid_str = oid.getattr("dotted_string")?.extract::<&str>()?;
-        let rust_oid = asn1::ObjectIdentifier::from_string(oid_str).unwrap();
+        let rust_oid = py_oid_to_oid(oid)?;
         for attribute in self
             .raw
             .borrow_value()
@@ -255,7 +257,7 @@ impl CertificateSigningRequest {
         Err(pyo3::PyErr::from_instance(
             py.import("cryptography.x509")?.call_method1(
                 "AttributeNotFound",
-                (format!("No {} attribute was found", oid_str), oid),
+                (format!("No {} attribute was found", oid), oid),
             )?,
         ))
     }
@@ -422,18 +424,19 @@ fn create_x509_csr(
     }
 
     for py_attr in builder.getattr("_attributes")?.iter()? {
-        let (py_oid, value): (&pyo3::PyAny, &[u8]) = py_attr?.extract()?;
-        let oid = asn1::ObjectIdentifier::from_string(
-            py_oid.getattr("dotted_string")?.extract::<&str>()?,
-        )
-        .unwrap();
-        let tag = if std::str::from_utf8(value).is_ok() {
-            asn1::Utf8String::TAG
+        let (py_oid, value, tag): (&pyo3::PyAny, &[u8], Option<u8>) = py_attr?.extract()?;
+        let oid = py_oid_to_oid(py_oid)?;
+        let tag = if let Some(tag) = tag {
+            tag
         } else {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Attribute values must be valid utf-8.",
-            )));
+            if std::str::from_utf8(value).is_err() {
+                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    "Attribute values must be valid utf-8.",
+                )));
+            }
+            asn1::Utf8String::TAG
         };
+
         attrs.push(Attribute {
             type_id: oid,
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([

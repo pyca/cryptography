@@ -58,6 +58,7 @@ EVP_PKEY *X509_get_pubkey(X509 *);
 int X509_set_pubkey(X509 *, EVP_PKEY *);
 
 unsigned char *X509_alias_get0(X509 *, int *);
+int X509_alias_set1(X509 *, const unsigned char *, int);
 int X509_sign(X509 *, EVP_PKEY *, const EVP_MD *);
 
 int X509_digest(const X509 *, const EVP_MD *, unsigned char *, unsigned int *);
@@ -175,8 +176,6 @@ int X509_REVOKED_get_ext_count(X509_REVOKED *);
 X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 
 X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
@@ -207,17 +206,10 @@ int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
 long X509_CRL_get_version(X509_CRL *);
-ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
-ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
 const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
-
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
-/* This function is no longer used by pyOpenSSL >= 21.1 */
-int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
@@ -233,8 +225,4 @@ const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
 """
 
 CUSTOMIZATIONS = """
-/* Being kept around for pyOpenSSL */
-X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
-    return X509_REVOKED_dup(rev);
-}
 """

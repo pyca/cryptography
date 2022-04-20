@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_uint_to_big_endian_bytes, PyAsn1Error};
+use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes, PyAsn1Error};
 use crate::x509;
 use crate::x509::{certificate, crl, oid, sct};
 
@@ -32,31 +32,32 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
     py_aki: &'a pyo3::PyAny,
 ) -> pyo3::PyResult<certificate::AuthorityKeyIdentifier<'a>> {
-    let key_identifier = if py_aki.getattr("key_identifier")?.is_none() {
-        None
-    } else {
-        Some(py_aki.getattr("key_identifier")?.extract::<&[u8]>()?)
-    };
-    let authority_cert_issuer = if py_aki.getattr("authority_cert_issuer")?.is_none() {
-        None
-    } else {
-        let gns = x509::common::encode_general_names(py, py_aki.getattr("authority_cert_issuer")?)?;
+    #[derive(pyo3::prelude::FromPyObject)]
+    struct PyAuthorityKeyIdentifier<'a> {
+        key_identifier: Option<&'a [u8]>,
+        authority_cert_issuer: Option<&'a pyo3::PyAny>,
+        authority_cert_serial_number: Option<&'a pyo3::types::PyLong>,
+    }
+    let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
+    let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
+        let gns = x509::common::encode_general_names(py, authority_cert_issuer)?;
         Some(x509::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
-    };
-    let authority_cert_serial_number = if py_aki.getattr("authority_cert_serial_number")?.is_none()
-    {
-        None
     } else {
-        let py_num = py_aki.getattr("authority_cert_serial_number")?.downcast()?;
-        let serial_bytes = py_uint_to_big_endian_bytes(py, py_num)?;
-        Some(asn1::BigUint::new(serial_bytes).unwrap())
+        None
     };
+    let authority_cert_serial_number =
+        if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
+            let serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
+            Some(asn1::BigUint::new(serial_bytes).unwrap())
+        } else {
+            None
+        };
     Ok(certificate::AuthorityKeyIdentifier {
-        key_identifier,
         authority_cert_issuer,
         authority_cert_serial_number,
+        key_identifier: aki.key_identifier,
     })
 }
 
@@ -135,12 +136,17 @@ pub(crate) fn encode_extension(
             certificate::set_bit(&mut bs, 7, ext.getattr("encipher_only")?.is_true()?);
             certificate::set_bit(&mut bs, 8, ext.getattr("decipher_only")?.is_true()?);
         }
-        let bits = if bs[1] == 0 { &bs[..1] } else { &bs[..] };
-        let unused_bits = bits.last().unwrap().trailing_zeros() as u8;
-        Ok(Some(asn1::write_single(&asn1::BitString::new(
-            bits,
-            unused_bits,
-        ))))
+        let (bits, unused_bits) = if bs[1] == 0 {
+            if bs[0] == 0 {
+                (&[][..], 0)
+            } else {
+                (&bs[..1], bs[0].trailing_zeros() as u8)
+            }
+        } else {
+            (&bs[..], bs[1].trailing_zeros() as u8)
+        };
+        let v = asn1::BitString::new(bits, unused_bits).unwrap();
+        Ok(Some(asn1::write_single(&v)))
     } else if oid == &*oid::AUTHORITY_INFORMATION_ACCESS_OID
         || oid == &*oid::SUBJECT_INFORMATION_ACCESS_OID
     {
@@ -149,10 +155,7 @@ pub(crate) fn encode_extension(
     } else if oid == &*oid::EXTENDED_KEY_USAGE_OID {
         let mut oids = vec![];
         for el in ext.iter()? {
-            let oid = asn1::ObjectIdentifier::from_string(
-                el?.getattr("dotted_string")?.extract::<&str>()?,
-            )
-            .unwrap();
+            let oid = py_oid_to_oid(el?)?;
             oids.push(oid);
         }
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(oids))))
@@ -229,13 +232,7 @@ pub(crate) fn encode_extension(
                 None
             };
             policy_informations.push(certificate::PolicyInformation {
-                policy_identifier: asn1::ObjectIdentifier::from_string(
-                    py_policy_info
-                        .getattr("policy_identifier")?
-                        .getattr("dotted_string")?
-                        .extract()?,
-                )
-                .unwrap(),
+                policy_identifier: py_oid_to_oid(py_policy_info.getattr("policy_identifier")?)?,
                 policy_qualifiers: qualifiers,
             });
         }
@@ -290,7 +287,9 @@ pub(crate) fn encode_extension(
         Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))))
     } else if oid == &*oid::PRECERT_POISON_OID {
         Ok(Some(asn1::write_single(&())))
-    } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+    } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID
+        || oid == &*oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID
+    {
         let mut length = 0;
         for sct in ext.iter()? {
             let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;

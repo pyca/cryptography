@@ -17,7 +17,7 @@ from ....utils import (
 vectors = load_vectors_from_file("twofactor/rfc-6238.txt", load_nist_vectors)
 
 
-class TestTOTP(object):
+class TestTOTP:
     @pytest.mark.supported(
         only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
         skip_message="Does not support HMAC-SHA1.",

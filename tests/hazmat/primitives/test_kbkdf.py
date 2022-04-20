@@ -23,7 +23,7 @@ from ...doubles import (
 from ...utils import raises_unsupported_algorithm
 
 
-class TestKBKDFHMAC(object):
+class TestKBKDFHMAC:
     def test_invalid_key(self, backend):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
@@ -326,7 +326,7 @@ class TestKBKDFHMAC(object):
         assert key == b"\xb7\x01\x05\x98\xf5\x1a\x12L\xc7."
 
 
-class TestKBKDFCMAC(object):
+class TestKBKDFCMAC:
     _KEY_MATERIAL = bytes(32)
     _KEY_MATERIAL2 = _KEY_MATERIAL.replace(b"\x00", b"\x01", 1)
 
@@ -541,7 +541,7 @@ class TestKBKDFCMAC(object):
     def test_unsupported_algorithm(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             KBKDFCMAC(
-                object,  # type: ignore[arg-type]
+                object,
                 Mode.CounterMode,
                 32,
                 4,
@@ -657,7 +657,7 @@ class TestKBKDFCMAC(object):
             backend=backend,
         )
         with pytest.raises(ValueError):
-            kdf.derive(b"material")  # type: ignore[arg-type]
+            kdf.derive(b"material")
 
     def test_buffer_protocol(self, backend):
         kdf = KBKDFCMAC(

@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support TripleDES CBC",
 )
-class TestTripleDESModeCBC(object):
+class TestTripleDESModeCBC:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
@@ -56,7 +56,7 @@ class TestTripleDESModeCBC(object):
     ),
     skip_message="Does not support TripleDES OFB",
 )
-class TestTripleDESModeOFB(object):
+class TestTripleDESModeOFB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
@@ -88,7 +88,7 @@ class TestTripleDESModeOFB(object):
     ),
     skip_message="Does not support TripleDES CFB",
 )
-class TestTripleDESModeCFB(object):
+class TestTripleDESModeCFB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
@@ -120,7 +120,7 @@ class TestTripleDESModeCFB(object):
     ),
     skip_message="Does not support TripleDES CFB8",
 )
-class TestTripleDESModeCFB8(object):
+class TestTripleDESModeCFB8:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),
@@ -152,7 +152,7 @@ class TestTripleDESModeCFB8(object):
     ),
     skip_message="Does not support TripleDES ECB",
 )
-class TestTripleDESModeECB(object):
+class TestTripleDESModeECB:
     test_kat = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "ECB"),

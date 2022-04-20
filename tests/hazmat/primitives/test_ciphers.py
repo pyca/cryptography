@@ -14,12 +14,12 @@ from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
-    Blowfish,
-    CAST5,
     Camellia,
-    IDEA,
-    SEED,
     TripleDES,
+    _BlowfishInternal,
+    _CAST5Internal,
+    _IDEAInternal,
+    _SEEDInternal,
 )
 
 from ...utils import (
@@ -29,7 +29,7 @@ from ...utils import (
 )
 
 
-class TestAES(object):
+class TestAES:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
@@ -47,7 +47,7 @@ class TestAES(object):
             AES("0" * 32)  # type: ignore[arg-type]
 
 
-class TestAESXTS(object):
+class TestAESXTS:
     @pytest.mark.parametrize(
         "mode", (modes.CBC, modes.CTR, modes.CFB, modes.CFB8, modes.OFB)
     )
@@ -68,14 +68,14 @@ class TestAESXTS(object):
             ciphers.Cipher(AES(b"0" * 16), modes.XTS(b"0" * 16), backend)
 
 
-class TestGCM(object):
+class TestGCM:
     @pytest.mark.parametrize("size", [7, 129])
     def test_gcm_min_max(self, size):
         with pytest.raises(ValueError):
             modes.GCM(b"0" * size)
 
 
-class TestCamellia(object):
+class TestCamellia:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * 32, 128), (b"0" * 48, 192), (b"0" * 64, 256)],
@@ -93,7 +93,7 @@ class TestCamellia(object):
             Camellia("0" * 32)  # type: ignore[arg-type]
 
 
-class TestTripleDES(object):
+class TestTripleDES:
     @pytest.mark.parametrize("key", [b"0" * 16, b"0" * 32, b"0" * 48])
     def test_key_size(self, key):
         cipher = TripleDES(binascii.unhexlify(key))
@@ -108,43 +108,43 @@ class TestTripleDES(object):
             TripleDES("0" * 16)  # type: ignore[arg-type]
 
 
-class TestBlowfish(object):
+class TestBlowfish:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * (keysize // 4), keysize) for keysize in range(32, 449, 8)],
     )
     def test_key_size(self, key, keysize):
-        cipher = Blowfish(binascii.unhexlify(key))
+        cipher = _BlowfishInternal(binascii.unhexlify(key))
         assert cipher.key_size == keysize
 
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
-            Blowfish(binascii.unhexlify(b"0" * 6))
+            _BlowfishInternal(binascii.unhexlify(b"0" * 6))
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Blowfish("0" * 8)  # type: ignore[arg-type]
+            _BlowfishInternal("0" * 8)  # type: ignore[arg-type]
 
 
-class TestCAST5(object):
+class TestCAST5:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [(b"0" * (keysize // 4), keysize) for keysize in range(40, 129, 8)],
     )
     def test_key_size(self, key, keysize):
-        cipher = CAST5(binascii.unhexlify(key))
+        cipher = _CAST5Internal(binascii.unhexlify(key))
         assert cipher.key_size == keysize
 
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
-            CAST5(binascii.unhexlify(b"0" * 34))
+            _CAST5Internal(binascii.unhexlify(b"0" * 34))
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            CAST5("0" * 10)  # type: ignore[arg-type]
+            _CAST5Internal("0" * 10)  # type: ignore[arg-type]
 
 
-class TestARC4(object):
+class TestARC4:
     @pytest.mark.parametrize(
         ("key", "keysize"),
         [
@@ -170,39 +170,51 @@ class TestARC4(object):
             ARC4("0" * 10)  # type: ignore[arg-type]
 
 
-class TestIDEA(object):
+class TestIDEA:
     def test_key_size(self):
-        cipher = IDEA(b"\x00" * 16)
+        cipher = _IDEAInternal(b"\x00" * 16)
         assert cipher.key_size == 128
 
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
-            IDEA(b"\x00" * 17)
+            _IDEAInternal(b"\x00" * 17)
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            IDEA("0" * 16)  # type: ignore[arg-type]
+            _IDEAInternal("0" * 16)  # type: ignore[arg-type]
 
 
-class TestSEED(object):
+class TestSEED:
     def test_key_size(self):
-        cipher = SEED(b"\x00" * 16)
+        cipher = _SEEDInternal(b"\x00" * 16)
         assert cipher.key_size == 128
 
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
-            SEED(b"\x00" * 17)
+            _SEEDInternal(b"\x00" * 17)
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            SEED("0" * 16)  # type: ignore[arg-type]
+            _SEEDInternal("0" * 16)  # type: ignore[arg-type]
 
 
-def test_invalid_gcm_algorithm():
+def test_invalid_mode_algorithm():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
         ciphers.Cipher(
             ARC4(b"\x00" * 16),
             modes.GCM(b"\x00" * 12),
+        )
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        ciphers.Cipher(
+            ARC4(b"\x00" * 16),
+            modes.CBC(b"\x00" * 12),
+        )
+
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        ciphers.Cipher(
+            ARC4(b"\x00" * 16),
+            modes.CTR(b"\x00" * 12),
         )
 
 
@@ -212,7 +224,7 @@ def test_invalid_gcm_algorithm():
     ),
     skip_message="Does not support AES ECB",
 )
-class TestCipherUpdateInto(object):
+class TestCipherUpdateInto:
     @pytest.mark.parametrize(
         "params",
         load_vectors_from_file(
@@ -325,14 +337,18 @@ class TestCipherUpdateInto(object):
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
         # Lower max chunk size so we can test chunking
-        monkeypatch.setattr(encryptor._ctx, "_MAX_CHUNK_SIZE", 40)
+        monkeypatch.setattr(
+            encryptor._ctx, "_MAX_CHUNK_SIZE", 40  # type: ignore[attr-defined]
+        )
         buf = bytearray(527)
         pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
         processed = encryptor.update_into(pt, buf)
         assert processed == 512
         decryptor = c.decryptor()
         # Change max chunk size to verify alternate boundaries don't matter
-        monkeypatch.setattr(decryptor._ctx, "_MAX_CHUNK_SIZE", 73)
+        monkeypatch.setattr(
+            decryptor._ctx, "_MAX_CHUNK_SIZE", 73  # type: ignore[attr-defined]
+        )
         decbuf = bytearray(527)
         decprocessed = decryptor.update_into(buf[:processed], decbuf)
         assert decbuf[:decprocessed] == pt
@@ -344,4 +360,7 @@ class TestCipherUpdateInto(object):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.ECB(), backend)
         encryptor = c.encryptor()
-        backend._ffi.new("int *", encryptor._ctx._MAX_CHUNK_SIZE)
+        backend._ffi.new(
+            "int *",
+            encryptor._ctx._MAX_CHUNK_SIZE,  # type: ignore[attr-defined]
+        )
