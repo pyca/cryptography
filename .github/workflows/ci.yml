@@ -141,12 +141,12 @@ jobs:
           - {IMAGE: "rhel8-fips", TOXENV: "py36", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
-          - {IMAGE: "bookworm", TOXENV: "py39"}
+          - {IMAGE: "bookworm", TOXENV: "py310"}
           - {IMAGE: "sid", TOXENV: "py310"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py39"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
           - {IMAGE: "fedora", TOXENV: "py310"}
           - {IMAGE: "alpine", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
