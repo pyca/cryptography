@@ -16,8 +16,8 @@ Changelog
   deprecated in version 2.0, but had an extended deprecation timeline due
   to usage. Any remaining users should transition to ``sign`` and ``verify``.
 * Deprecated OpenSSL 1.1.0 support. OpenSSL 1.1.0 is no longer supported by
-  the OpenSSL project. Support for compiling with OpenSSL 1.1.0 will be
-  removed in a future ``cryptography`` release.
+  the OpenSSL project. The next release of ``cryptography`` will be the last
+  to support compiling with OpenSSL 1.1.0.
 * Deprecated Python 3.6 support. Python 3.6 is no longer supported by the
   Python core team. Support for Python 3.6 will be removed in a future
   ``cryptography`` release.
