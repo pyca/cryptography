@@ -196,8 +196,8 @@ def _verify_openssl_version(lib):
     ):
         warnings.warn(
             "OpenSSL version 1.1.0 is no longer supported by the OpenSSL "
-            "project, please upgrade. A future version of cryptography will "
-            "drop support for it.",
+            "project, please upgrade. The next release of cryptography will "
+            "be the last to support compiling with OpenSSL 1.1.0.",
             utils.DeprecatedIn37,
         )
 
