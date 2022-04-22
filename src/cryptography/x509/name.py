@@ -17,6 +17,7 @@ from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 class _ASN1Type(utils.Enum):
     BitString = 3
+    OctetString = 4
     UTF8String = 12
     NumericString = 18
     PrintableString = 19
