@@ -16,6 +16,7 @@ typedef ... EVP_MD_CTX;
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
+static const int EVP_PKEY_RSA_PSS;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
@@ -292,5 +293,11 @@ static const long Cryptography_HAS_EVP_PKEY_DH = 0;
 int (*EVP_PKEY_set1_DH)(EVP_PKEY *, DH *) = NULL;
 #else
 static const long Cryptography_HAS_EVP_PKEY_DH = 1;
+#endif
+
+// This can be removed when we drop OpenSSL 1.1.0 support
+// OPENSSL_LESS_THAN_111
+#if !defined(EVP_PKEY_RSA_PSS)
+#define EVP_PKEY_RSA_PSS 912
 #endif
 """

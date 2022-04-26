@@ -71,6 +71,12 @@ Changelog
   to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. This
   constant will set the salt length to the same length as the ``PSS`` hash
   algorithm.
+* Added support for loading RSA-PSS key types with
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`.
+  This functionality is limited to OpenSSL 1.1.1e+ and loads the key as a
+  normal RSA private key, discarding the PSS constraint information.
 
 .. _v36-0-2:
 
