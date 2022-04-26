@@ -79,7 +79,9 @@ class Fernet:
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(self, token: bytes, ttl: typing.Optional[int] = None) -> bytes:
+    def decrypt(
+        self, token: typing.Union[bytes, str], ttl: typing.Optional[int] = None
+    ) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(token)
         if ttl is None:
             time_info = None
@@ -88,7 +90,7 @@ class Fernet:
         return self._decrypt_data(data, timestamp, time_info)
 
     def decrypt_at_time(
-        self, token: bytes, ttl: int, current_time: int
+        self, token: typing.Union[bytes, str], ttl: int, current_time: int
     ) -> bytes:
         if ttl is None:
             raise ValueError(
@@ -97,15 +99,19 @@ class Fernet:
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, (ttl, current_time))
 
-    def extract_timestamp(self, token: bytes) -> int:
+    def extract_timestamp(self, token: typing.Union[bytes, str]) -> int:
         timestamp, data = Fernet._get_unverified_token_data(token)
         # Verify the token was not tampered with.
         self._verify_signature(data)
         return timestamp
 
     @staticmethod
-    def _get_unverified_token_data(token: bytes) -> typing.Tuple[int, bytes]:
-        utils._check_bytes("token", token)
+    def _get_unverified_token_data(
+        token: typing.Union[bytes, str]
+    ) -> typing.Tuple[int, bytes]:
+        if not isinstance(token, (str, bytes)):
+            raise TypeError("token must be bytes or str")
+
         try:
             data = base64.urlsafe_b64decode(token)
         except (TypeError, binascii.Error):
@@ -179,7 +185,7 @@ class MultiFernet:
     def encrypt_at_time(self, msg: bytes, current_time: int) -> bytes:
         return self._fernets[0].encrypt_at_time(msg, current_time)
 
-    def rotate(self, msg: bytes) -> bytes:
+    def rotate(self, msg: typing.Union[bytes, str]) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
@@ -193,7 +199,9 @@ class MultiFernet:
         iv = os.urandom(16)
         return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
-    def decrypt(self, msg: bytes, ttl: typing.Optional[int] = None) -> bytes:
+    def decrypt(
+        self, msg: typing.Union[bytes, str], ttl: typing.Optional[int] = None
+    ) -> bytes:
         for f in self._fernets:
             try:
                 return f.decrypt(msg, ttl)
@@ -202,7 +210,7 @@ class MultiFernet:
         raise InvalidToken
 
     def decrypt_at_time(
-        self, msg: bytes, ttl: int, current_time: int
+        self, msg: typing.Union[bytes, str], ttl: int, current_time: int
     ) -> bytes:
         for f in self._fernets:
             try:

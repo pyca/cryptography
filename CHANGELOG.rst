@@ -17,6 +17,8 @@ Changelog
   Users with the latest ``pip`` will typically get a wheel and not need Rust
   installed, but check :doc:`/installation` for documentation on installing a
   newer ``rustc`` if required.
+* :meth:`~cryptography.fernet.Fernet.decrypt` and related methods now accept
+  both ``str`` and ``bytes`` tokens.
 
 .. _v37-0-1:
 
