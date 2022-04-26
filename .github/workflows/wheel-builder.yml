@@ -29,7 +29,7 @@ jobs:
           - { name: "manylinux_2_24_x86_64", CONTAINER: "cryptography-manylinux_2_24:x86_64"}
           - { name: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
         exclude:
-          # Latest PyPy binaaries do not support manylinux2010
+          # Latest PyPy binaries do not support manylinux2010
           - PYTHON: { VERSION: "pypy3.7", PATH: "/opt/pypy3.7/bin/pypy" }
             MANYLINUX: { NAME: "manylinux2010_x86_64", CONTAINER: "cryptography-manylinux2010:x86_64" }
           - PYTHON: { VERSION: "pypy3.8", PATH: "/opt/pypy3.8/bin/pypy" }
@@ -61,7 +61,7 @@ jobs:
               PY_LIMITED_API="--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }}"
           fi
           cd cryptography*
-          LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
+          LDFLAGS="-L/opt/pyca/cryptography/openssl/lib -L/opt/pyca/cryptography/openssl/lib64" \
               CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
               ../.venv/bin/python setup.py bdist_wheel $PY_LIMITED_API && mv dist/cryptography*.whl ../tmpwheelhouse
         env:
