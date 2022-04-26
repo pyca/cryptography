@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Final deprecation of OpenSSL 1.1.0. The next release of ``cryptography``
+  will drop support.
+
 
 .. _v37-0-0:
 
