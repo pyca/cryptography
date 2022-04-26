@@ -283,7 +283,7 @@ class TestRSA:
         key = load_vectors_from_file(
             filename=path,
             loader=lambda p: serialization.load_pem_private_key(
-                p.read(), None
+                p.read(), password=None
             ),
             mode="rb",
         )
@@ -291,7 +291,10 @@ class TestRSA:
         # but for now we load them without the constraint and test that
         # it's truly removed by performing a disallowed signature.
         assert isinstance(key, rsa.RSAPrivateKey)
-        key.sign(b"whatever", padding.PKCS1v15(), hashes.SHA224())
+        signature = key.sign(b"whatever", padding.PKCS1v15(), hashes.SHA224())
+        key.public_key().verify(
+            signature, b"whatever", padding.PKCS1v15(), hashes.SHA224()
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: (
@@ -310,7 +313,7 @@ class TestRSA:
                     "asymmetric", "PKCS8", "rsa_pss_2048.pem"
                 ),
                 loader=lambda p: serialization.load_pem_private_key(
-                    p.read(), None
+                    p.read(), password=None
                 ),
                 mode="rb",
             )
