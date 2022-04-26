@@ -660,7 +660,9 @@ class Backend:
             bio = self._create_mem_bio_gc()
             res = self._lib.i2d_RSAPrivateKey_bio(bio, rsa_cdata)
             self.openssl_assert(res == 1)
-            return self.load_der_private_key(self._read_mem_bio(bio), None)
+            return self.load_der_private_key(
+                self._read_mem_bio(bio), password=None
+            )
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             self.openssl_assert(dsa_cdata != self._ffi.NULL)
