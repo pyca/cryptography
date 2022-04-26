@@ -3159,7 +3159,7 @@ instances. The following common OIDs are available as constants.
         is used to denote that a certificate may be used as a Kerberos
         domain controller certificate authorizing ``PKINIT`` access. For
         more information see :rfc:`4556`.
-        
+
     .. attribute:: IPSEC_IKE
 
         .. versionadded:: 37.0
