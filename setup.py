@@ -51,7 +51,7 @@ try:
                     if platform.python_implementation() == "PyPy"
                     else ["pyo3/abi3-py36"]
                 ),
-                rust_version=">=1.41.0",
+                rust_version=">=1.48.0",
             )
         ],
     )
