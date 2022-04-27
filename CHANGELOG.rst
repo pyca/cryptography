@@ -13,6 +13,10 @@ Changelog
 * We no longer ship ``manylinux2010`` wheels. Users should upgrade to the
   latest ``pip`` to ensure this doesn't cause issues downloading wheels on
   their platform.
+* Updated the minimum supported Rust version (MSRV) to 1.48.0, from 1.41.0.
+  Users with the latest ``pip`` will typically get a wheel and not need Rust
+  installed, but check :doc:`/installation` for documentation on installing a
+  newer ``rustc`` if required.
 
 .. _v37-0-0:
 

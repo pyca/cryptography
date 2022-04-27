@@ -108,7 +108,7 @@ Alpine
 
 .. warning::
 
-    The Rust available by default in Alpine < 3.12 is older than the minimum
+    The Rust available by default in Alpine < 3.14 is older than the minimum
     supported version. See the :ref:`Rust installation instructions
     <installation:Rust>` for information about installing a newer Rust.
 
@@ -123,11 +123,10 @@ Debian/Ubuntu
 
 .. warning::
 
-    The Rust available in current Debian stable and some Ubuntu versions is
-    older than the minimum supported version. Ubuntu 18.04 and 20.04 are
-    sufficiently new, but otherwise please see the
-    :ref:`Rust installation instructions <installation:Rust>` for information
-    about installing a newer Rust.
+    The Rust available in some Debian versions is older than the minimum
+    supported version. Debian Bullseye is sufficiently new, but otherwise
+    please see the :ref:`Rust installation instructions <installation:Rust>`
+    for information about installing a newer Rust.
 
 .. code-block:: console
 
@@ -140,7 +139,7 @@ Fedora/RHEL 8/CentOS 8
 .. warning::
 
     For RHEL and CentOS you must be on version 8.3 or newer for the command
-    below to install a sufficiently new Rust. If your Rust is less than 1.41.0
+    below to install a sufficiently new Rust. If your Rust is less than 1.48.0
     please see the :ref:`Rust installation instructions <installation:Rust>`
     for information about installing a newer Rust.
 
@@ -316,7 +315,7 @@ Rust
     a Rust toolchain.
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.41.0. **This is newer than the Rust some
+minimum supported Rust version is 1.48.0. **This is newer than the Rust some
 package managers ship**, so users may need to install with the
 instructions below.
 
