@@ -906,8 +906,20 @@ class Backend:
 
     def load_pem_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
+        # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
+        # the default password callback if you pass an encrypted private
+        # key. This is very, very, very bad as the default callback can
+        # trigger an interactive console prompt, which will hang the
+        # Python process. We therefore provide our own callback to
+        # catch this and error out properly.
+        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
         evp_pkey = self._lib.PEM_read_bio_PUBKEY(
-            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+            mem_bio.bio,
+            self._ffi.NULL,
+            self._ffi.addressof(
+                self._lib._original_lib, "Cryptography_pem_password_cb"
+            ),
+            userdata,
         )
         if evp_pkey != self._ffi.NULL:
             evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
@@ -920,7 +932,12 @@ class Backend:
             res = self._lib.BIO_reset(mem_bio.bio)
             self.openssl_assert(res == 1)
             rsa_cdata = self._lib.PEM_read_bio_RSAPublicKey(
-                mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+                mem_bio.bio,
+                self._ffi.NULL,
+                self._ffi.addressof(
+                    self._lib._original_lib, "Cryptography_pem_password_cb"
+                ),
+                userdata,
             )
             if rsa_cdata != self._ffi.NULL:
                 rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)

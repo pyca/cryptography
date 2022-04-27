@@ -39,6 +39,7 @@ from cryptography.hazmat.primitives.serialization import (
 )
 
 
+from .fixtures_rsa import RSA_KEY_2048
 from .test_ec import _skip_curve_unsupported
 from .utils import (
     _check_dsa_private_numbers,
@@ -512,6 +513,20 @@ class TestPEMSerialization:
         assert isinstance(key, rsa.RSAPublicKey)
         numbers = key.public_numbers()
         assert numbers.e == 65537
+
+    def test_load_priv_key_with_public_key_api_fails(self, backend):
+        # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
+        # the default password callback if you pass an encrypted private
+        # key. This is very, very, very bad as the default callback can
+        # trigger an interactive console prompt, which will hang the
+        # Python process. This test makes sure we don't do that.
+        priv_key_serialized = RSA_KEY_2048.private_key().private_bytes(
+            Encoding.PEM,
+            PrivateFormat.PKCS8,
+            BestAvailableEncryption(b"password"),
+        )
+        with pytest.raises(ValueError):
+            load_pem_public_key(priv_key_serialized)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
