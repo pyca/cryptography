@@ -8,7 +8,7 @@ Changelog
 
 * Fixed an issue where parsing an encrypted private key with the public
   loader functions would hang waiting for console input on OpenSSL 3.0.x rather
-  than erroring.
+  than raising an error.
 * Restored some legacy symbols for older ``pyOpenSSL`` users. These will be
   removed again in the future, so ``pyOpenSSL`` users should still upgrade
   to the latest version of that package when they upgrade ``cryptography``.
