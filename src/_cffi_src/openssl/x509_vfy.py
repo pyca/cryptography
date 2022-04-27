@@ -94,6 +94,9 @@ static const int X509_V_ERR_EMAIL_MISMATCH;
 static const int X509_V_ERR_IP_ADDRESS_MISMATCH;
 static const int X509_V_ERR_APPLICATION_VERIFICATION;
 
+/* This constant is no longer used by pyOpenSSL >= 22.0 */
+static const long X509_V_FLAG_CB_ISSUER_CHECK;
+
 /* Verification parameters */
 static const long X509_V_FLAG_USE_CHECK_TIME;
 static const long X509_V_FLAG_CRL_CHECK;
