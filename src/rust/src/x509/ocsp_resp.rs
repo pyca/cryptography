@@ -7,9 +7,7 @@ use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
 
-lazy_static::lazy_static! {
-    static ref BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.1").unwrap();
-}
+const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 
 #[pyo3::prelude::pyfunction]
 fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResponse, PyAsn1Error> {
@@ -19,7 +17,7 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
         |_data, response| match response.response_status.value() {
             SUCCESSFUL_RESPONSE => match response.response_bytes {
                 Some(ref bytes) => {
-                    if bytes.response_type == *BASIC_RESPONSE_OID {
+                    if bytes.response_type == BASIC_RESPONSE_OID {
                         Ok(asn1::parse_single(bytes.response)?)
                     } else {
                         Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -314,17 +312,18 @@ impl OCSPResponse {
                 .tbs_response_data
                 .response_extensions,
             |oid, ext_data| {
-                if oid == &*oid::NONCE_OID {
-                    // This is a disaster. RFC 2560 says that the contents of the nonce is
-                    // just the raw extension value. This is nonsense, since they're always
-                    // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
-                    // nonce is an OCTET STRING, and so you should unwrap the TLV to get
-                    // the nonce. So we try parsing as a TLV and fall back to just using
-                    // the raw value.
-                    let nonce = asn1::parse_single::<&[u8]>(ext_data).unwrap_or(ext_data);
-                    Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
-                } else {
-                    Ok(None)
+                match oid {
+                    &oid::NONCE_OID => {
+                        // This is a disaster. RFC 2560 says that the contents of the nonce is
+                        // just the raw extension value. This is nonsense, since they're always
+                        // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
+                        // nonce is an OCTET STRING, and so you should unwrap the TLV to get
+                        // the nonce. So we try parsing as a TLV and fall back to just using
+                        // the raw value.
+                        let nonce = asn1::parse_single::<&[u8]>(ext_data).unwrap_or(ext_data);
+                        Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
+                    }
+                    _ => Ok(None),
                 }
             },
         )
@@ -344,8 +343,8 @@ impl OCSPResponse {
             py,
             &mut self.cached_single_extensions,
             &single_resp.single_extensions,
-            |oid, ext_data| {
-                if oid == &*oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+            |oid, ext_data| match oid {
+                &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(
@@ -353,9 +352,8 @@ impl OCSPResponse {
                             .getattr("SignedCertificateTimestamps")?
                             .call1((scts,))?,
                     ))
-                } else {
-                    crl::parse_crl_entry_ext(py, oid.clone(), ext_data)
                 }
+                _ => crl::parse_crl_entry_ext(py, oid.clone(), ext_data),
             },
         )
     }
@@ -723,7 +721,7 @@ fn create_ocsp_response(
     let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
         basic_resp_bytes = create_ocsp_basic_response(py, builder, private_key, hash_algorithm)?;
         Some(ResponseBytes {
-            response_type: (*BASIC_RESPONSE_OID).clone(),
+            response_type: (BASIC_RESPONSE_OID).clone(),
             response: &basic_resp_bytes,
         })
     } else {

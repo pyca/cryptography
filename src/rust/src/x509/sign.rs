@@ -118,11 +118,11 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
     match (key_type, hash_type) {
         (KeyType::Ed25519, HashType::None) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ED25519_OID).clone(),
+            oid: (oid::ED25519_OID).clone(),
             params: None,
         }),
         (KeyType::Ed448, HashType::None) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ED448_OID).clone(),
+            oid: (oid::ED448_OID).clone(),
             params: None,
         }),
         (KeyType::Ed25519, _) | (KeyType::Ed448, _) => {
@@ -132,101 +132,101 @@ pub(crate) fn compute_signature_algorithm<'p>(
         }
 
         (KeyType::Ec, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA1_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA1_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA224_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA224_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA256_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA384_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA384_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA512_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA3_224_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA3_224_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA3_256_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA3_256_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA3_384_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA3_384_OID).clone(),
             params: None,
         }),
         (KeyType::Ec, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::ECDSA_WITH_SHA3_512_OID).clone(),
+            oid: (oid::ECDSA_WITH_SHA3_512_OID).clone(),
             params: None,
         }),
 
         (KeyType::Rsa, HashType::Md5) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_MD5_OID).clone(),
+            oid: (oid::RSA_WITH_MD5_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA1_OID).clone(),
+            oid: (oid::RSA_WITH_SHA1_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA224_OID).clone(),
+            oid: (oid::RSA_WITH_SHA224_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA256_OID).clone(),
+            oid: (oid::RSA_WITH_SHA256_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA384_OID).clone(),
+            oid: (oid::RSA_WITH_SHA384_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA512_OID).clone(),
+            oid: (oid::RSA_WITH_SHA512_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA3_224_OID).clone(),
+            oid: (oid::RSA_WITH_SHA3_224_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA3_256_OID).clone(),
+            oid: (oid::RSA_WITH_SHA3_256_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA3_384_OID).clone(),
+            oid: (oid::RSA_WITH_SHA3_384_OID).clone(),
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::RSA_WITH_SHA3_512_OID).clone(),
+            oid: (oid::RSA_WITH_SHA3_512_OID).clone(),
             params: Some(*NULL_TLV),
         }),
 
         (KeyType::Dsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::DSA_WITH_SHA1_OID).clone(),
+            oid: (oid::DSA_WITH_SHA1_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::DSA_WITH_SHA224_OID).clone(),
+            oid: (oid::DSA_WITH_SHA224_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::DSA_WITH_SHA256_OID).clone(),
+            oid: (oid::DSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::DSA_WITH_SHA384_OID).clone(),
+            oid: (oid::DSA_WITH_SHA384_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
-            oid: (*oid::DSA_WITH_SHA512_OID).clone(),
+            oid: (oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
         (KeyType::Dsa, HashType::Sha3_224)

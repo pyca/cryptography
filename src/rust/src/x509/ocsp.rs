@@ -10,20 +10,20 @@ use std::collections::HashMap;
 lazy_static::lazy_static! {
     pub(crate) static ref OIDS_TO_HASH: HashMap<&'static asn1::ObjectIdentifier, &'static str> = {
         let mut h = HashMap::new();
-        h.insert(&*oid::SHA1_OID, "SHA1");
-        h.insert(&*oid::SHA224_OID, "SHA224");
-        h.insert(&*oid::SHA256_OID, "SHA256");
-        h.insert(&*oid::SHA384_OID, "SHA384");
-        h.insert(&*oid::SHA512_OID, "SHA512");
+        h.insert(&oid::SHA1_OID, "SHA1");
+        h.insert(&oid::SHA224_OID, "SHA224");
+        h.insert(&oid::SHA256_OID, "SHA256");
+        h.insert(&oid::SHA384_OID, "SHA384");
+        h.insert(&oid::SHA512_OID, "SHA512");
         h
     };
     pub(crate) static ref HASH_NAME_TO_OIDS: HashMap<&'static str, &'static asn1::ObjectIdentifier> = {
         let mut h = HashMap::new();
-        h.insert("sha1", &*oid::SHA1_OID);
-        h.insert("sha224", &*oid::SHA224_OID);
-        h.insert("sha256", &*oid::SHA256_OID);
-        h.insert("sha384", &*oid::SHA384_OID);
-        h.insert("sha512", &*oid::SHA512_OID);
+        h.insert("sha1", &oid::SHA1_OID);
+        h.insert("sha224", &oid::SHA224_OID);
+        h.insert("sha256", &oid::SHA256_OID);
+        h.insert("sha384", &oid::SHA384_OID);
+        h.insert("sha512", &oid::SHA512_OID);
         h
     };
 }
