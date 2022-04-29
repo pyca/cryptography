@@ -785,8 +785,7 @@ void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
 static const long Cryptography_HAS_SSL_COOKIE = 1;
 #endif
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 || \
-    CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL || \
-    defined(OPENSSL_NO_PSK)
+    CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_PSK_TLSv1_3 = 0;
 void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
                                            int (*)(
