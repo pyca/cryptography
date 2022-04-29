@@ -31,7 +31,7 @@ struct CertificationRequestInfo<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Attribute<'a> {
-    type_id: asn1::ObjectIdentifier<'a>,
+    type_id: asn1::ObjectIdentifier,
     values: x509::Asn1ReadableOrWritable<
         'a,
         asn1::SetOf<'a, asn1::Tlv<'a>>,
@@ -53,7 +53,7 @@ fn check_attribute_length<'a>(values: asn1::SetOf<'a, asn1::Tlv<'a>>) -> Result<
 // `critical` so we can avoid erroring on explicitly-encoded defaults.
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct CsrExtension<'a> {
-    pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) extn_id: asn1::ObjectIdentifier,
     pub(crate) critical: Option<bool>,
     pub(crate) extn_value: &'a [u8],
 }

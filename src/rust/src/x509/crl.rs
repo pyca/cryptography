@@ -611,7 +611,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
 
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
-    oid: asn1::ObjectIdentifier<'_>,
+    oid: asn1::ObjectIdentifier,
     data: &[u8],
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;

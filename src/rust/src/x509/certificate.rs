@@ -391,13 +391,13 @@ type SequenceOfPolicyQualifiers<'a> = x509::Asn1ReadableOrWritable<
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct PolicyInformation<'a> {
-    pub policy_identifier: asn1::ObjectIdentifier<'a>,
+    pub policy_identifier: asn1::ObjectIdentifier,
     pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct PolicyQualifierInfo<'a> {
-    pub policy_qualifier_id: asn1::ObjectIdentifier<'a>,
+    pub policy_qualifier_id: asn1::ObjectIdentifier,
     pub qualifier: Qualifier<'a>,
 }
 
@@ -762,7 +762,7 @@ pub(crate) fn parse_access_descriptions(
 
 pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
-    oid: asn1::ObjectIdentifier<'_>,
+    oid: asn1::ObjectIdentifier,
     ext_data: &[u8],
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
@@ -802,8 +802,7 @@ pub fn parse_cert_ext<'p>(
         ))
     } else if oid == *oid::EXTENDED_KEY_USAGE_OID {
         let ekus = pyo3::types::PyList::empty(py);
-        for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier<'_>>>(ext_data)?
-        {
+        for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>(ext_data)? {
             let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
             ekus.append(oid_obj)?;
         }
