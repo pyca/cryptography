@@ -156,19 +156,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3
-        timeout-minutes: 5
-        with:
-          path: |
-            ~/.cache/pip/
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/src/
-            ~/.cargo/git/db/
-            src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
-
       - uses: actions/checkout@v3.0.1
         timeout-minutes: 3
         with:
@@ -507,7 +494,7 @@ jobs:
         RUST:
           - stable
         PYTHON:
-          - 3.8
+          - 3.9
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
