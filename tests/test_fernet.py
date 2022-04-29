@@ -30,7 +30,7 @@ def json_parametrize(keys, filename):
         return pytest.mark.parametrize(
             keys,
             [tuple([entry[k] for k in keys]) for entry in data],
-            ids=[f"{filename}[{i}] for i in range(len(data))],
+            ids=[f"{filename}[{i}]" for i in range(len(data))],
         )
 
 
