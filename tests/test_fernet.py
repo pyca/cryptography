@@ -26,12 +26,6 @@ def json_parametrize(keys, filename):
     vector_file = cryptography_vectors.open_vector_file(
         os.path.join("fernet", filename), "r"
     )
-
-    def _id_gen():
-        # generate readable test identifiers
-        for idx in itertools.count():
-            yield f"{filename}[{idx}]"
-
     with vector_file:
         data = json.load(vector_file)
         return pytest.mark.parametrize(
