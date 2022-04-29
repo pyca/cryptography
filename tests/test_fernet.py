@@ -28,7 +28,9 @@ def json_parametrize(keys, filename):
     with vector_file:
         data = json.load(vector_file)
         return pytest.mark.parametrize(
-            keys, [tuple([entry[k] for k in keys]) for entry in data]
+            keys,
+            [tuple([entry[k] for k in keys]) for entry in data],
+            ids=[f"{filename}[{i}]" for i in range(len(data))],
         )
 
 
@@ -59,16 +61,29 @@ class TestFernet:
     def test_verify(
         self, secret, now, src, ttl_sec, token, backend, monkeypatch
     ):
+        # secret & token are both str
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         payload = f.decrypt_at_time(
-            token.encode("ascii"),
+            token,  # str
             ttl=ttl_sec,
             current_time=current_time,
         )
         assert payload == src.encode("ascii")
+
+        payload = f.decrypt_at_time(
+            token.encode("ascii"),  # bytes
+            ttl=ttl_sec,
+            current_time=current_time,
+        )
+        assert payload == src.encode("ascii")
+
         monkeypatch.setattr(time, "time", lambda: current_time)
-        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+
+        payload = f.decrypt(token, ttl=ttl_sec)  # str
+        assert payload == src.encode("ascii")
+
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)  # bytes
         assert payload == src.encode("ascii")
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
@@ -99,13 +114,15 @@ class TestFernet:
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
+        with pytest.raises(InvalidToken):
+            f.decrypt("nonsensetoken")
 
-    def test_unicode(self, backend):
+    def test_invalid_types(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
             f.encrypt("")  # type: ignore[arg-type]
         with pytest.raises(TypeError):
-            f.decrypt("")  # type: ignore[arg-type]
+            f.decrypt(12345)  # type: ignore[arg-type]
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -140,6 +157,7 @@ class TestFernet:
         current_time = 1526138327
         token = f.encrypt_at_time(b"encrypt me", current_time)
         assert f.extract_timestamp(token) == current_time
+        assert f.extract_timestamp(token.decode("ascii")) == current_time
         with pytest.raises(InvalidToken):
             f.extract_timestamp(b"nonsensetoken")
 
@@ -163,8 +181,13 @@ class TestMultiFernet:
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
         f = MultiFernet([f1, f2])
 
+        # token as bytes
         assert f.decrypt(f1.encrypt(b"abc")) == b"abc"
         assert f.decrypt(f2.encrypt(b"abc")) == b"abc"
+
+        # token as str
+        assert f.decrypt(f1.encrypt(b"abc").decode("ascii")) == b"abc"
+        assert f.decrypt(f2.encrypt(b"abc").decode("ascii")) == b"abc"
 
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00" * 16)
@@ -190,7 +213,7 @@ class TestMultiFernet:
         with pytest.raises(TypeError):
             MultiFernet(None)  # type: ignore[arg-type]
 
-    def test_rotate(self, backend):
+    def test_rotate_bytes(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
 
@@ -203,6 +226,25 @@ class TestMultiFernet:
         assert mf2.decrypt(mf1_ciphertext) == plaintext
 
         rotated = mf2.rotate(mf1_ciphertext)
+
+        assert rotated != mf1_ciphertext
+        assert mf2.decrypt(rotated) == plaintext
+
+        with pytest.raises(InvalidToken):
+            mf1.decrypt(rotated)
+
+    def test_rotate_str(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+
+        mf1 = MultiFernet([f1])
+        mf2 = MultiFernet([f2, f1])
+
+        plaintext = b"abc"
+        mf1_ciphertext = mf1.encrypt(plaintext).decode("ascii")
+
+        assert mf2.decrypt(mf1_ciphertext) == plaintext
+        rotated = mf2.rotate(mf1_ciphertext).decode("ascii")
 
         assert rotated != mf1_ciphertext
         assert mf2.decrypt(rotated) == plaintext
