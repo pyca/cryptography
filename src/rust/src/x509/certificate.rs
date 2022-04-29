@@ -286,12 +286,12 @@ impl Certificate {
             py,
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_cert.extensions,
-            |oid, ext_data| match oid {
-                &oid::PRECERT_POISON_OID => {
+            |oid, ext_data| match *oid {
+                oid::PRECERT_POISON_OID => {
                     asn1::parse_single::<()>(ext_data)?;
                     Ok(Some(x509_module.getattr("PrecertPoison")?.call0()?))
                 }
-                &oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
+                oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(

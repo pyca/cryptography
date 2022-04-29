@@ -264,20 +264,20 @@ impl CertificateRevocationList {
             py,
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_cert_list.crl_extensions,
-            |oid, ext_data| match oid {
-                &oid::CRL_NUMBER_OID => {
+            |oid, ext_data| match *oid {
+                oid::CRL_NUMBER_OID => {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(x509_module.getattr("CRLNumber")?.call1((pynum,))?))
                 }
-                &oid::DELTA_CRL_INDICATOR_OID => {
+                oid::DELTA_CRL_INDICATOR_OID => {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module.getattr("DeltaCRLIndicator")?.call1((pynum,))?,
                     ))
                 }
-                &oid::ISSUER_ALTERNATIVE_NAME_OID => {
+                oid::ISSUER_ALTERNATIVE_NAME_OID => {
                     let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(
                         ext_data,
                     )?;
@@ -288,7 +288,7 @@ impl CertificateRevocationList {
                             .call1((ians,))?,
                     ))
                 }
-                &oid::AUTHORITY_INFORMATION_ACCESS_OID => {
+                oid::AUTHORITY_INFORMATION_ACCESS_OID => {
                     let ads = certificate::parse_access_descriptions(py, ext_data)?;
                     Ok(Some(
                         x509_module
@@ -296,10 +296,10 @@ impl CertificateRevocationList {
                             .call1((ads,))?,
                     ))
                 }
-                &oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(
+                oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(
                     certificate::parse_authority_key_identifier(py, ext_data)?,
                 )),
-                &oid::ISSUING_DISTRIBUTION_POINT_OID => {
+                oid::ISSUING_DISTRIBUTION_POINT_OID => {
                     let idp = asn1::parse_single::<IssuingDistributionPoint<'_>>(ext_data)?;
                     let (full_name, relative_name) = match idp.distribution_point {
                         Some(data) => certificate::parse_distribution_point_name(py, data)?,
@@ -325,7 +325,7 @@ impl CertificateRevocationList {
                         ))?,
                     ))
                 }
-                &oid::FRESHEST_CRL_OID => {
+                oid::FRESHEST_CRL_OID => {
                     let dp = certificate::parse_distribution_points(py, ext_data)?;
                     Ok(Some(x509_module.getattr("FreshestCRL")?.call1((dp,))?))
                 }
