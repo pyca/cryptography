@@ -40,7 +40,7 @@ pub(crate) type Name<'a> = Asn1ReadableOrWritable<
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct AttributeTypeValue<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) type_id: asn1::ObjectIdentifier,
     pub(crate) value: RawTlv<'a>,
 }
 
@@ -161,7 +161,7 @@ impl<'a> asn1::SimpleAsn1Writable<'a> for UnvalidatedIA5String<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
 pub(crate) struct OtherName<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) type_id: asn1::ObjectIdentifier,
     #[explicit(0, required)]
     pub(crate) value: asn1::Tlv<'a>,
 }
@@ -196,7 +196,7 @@ pub(crate) enum GeneralName<'a> {
     IPAddress(&'a [u8]),
 
     #[implicit(8)]
-    RegisteredID(asn1::ObjectIdentifier<'a>),
+    RegisteredID(asn1::ObjectIdentifier),
 }
 
 pub(crate) type SequenceOfGeneralName<'a> = Asn1ReadableOrWritable<
@@ -265,7 +265,7 @@ pub(crate) fn encode_general_name<'a>(
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct AccessDescription<'a> {
-    pub(crate) access_method: asn1::ObjectIdentifier<'a>,
+    pub(crate) access_method: asn1::ObjectIdentifier,
     pub(crate) access_location: GeneralName<'a>,
 }
 
@@ -317,13 +317,13 @@ pub(crate) type Extensions<'a> = Asn1ReadableOrWritable<
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct AlgorithmIdentifier<'a> {
-    pub(crate) oid: asn1::ObjectIdentifier<'a>,
+    pub(crate) oid: asn1::ObjectIdentifier,
     pub(crate) params: Option<asn1::Tlv<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub(crate) struct Extension<'a> {
-    pub(crate) extn_id: asn1::ObjectIdentifier<'a>,
+    pub(crate) extn_id: asn1::ObjectIdentifier,
     #[default(false)]
     pub(crate) critical: bool,
     pub(crate) extn_value: &'a [u8],
@@ -526,7 +526,7 @@ fn ipv6_netmask(num: u128) -> Result<u32, PyAsn1Error> {
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
-    F: Fn(&asn1::ObjectIdentifier<'_>, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
+    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
@@ -575,7 +575,7 @@ pub(crate) fn parse_and_cache_extensions<
 
 pub(crate) fn encode_extensions<
     'p,
-    F: Fn(&asn1::ObjectIdentifier<'_>, &pyo3::PyAny) -> pyo3::PyResult<Option<Vec<u8>>>,
+    F: Fn(&asn1::ObjectIdentifier, &pyo3::PyAny) -> pyo3::PyResult<Option<Vec<u8>>>,
 >(
     py: pyo3::Python<'p>,
     py_exts: &'p pyo3::PyAny,

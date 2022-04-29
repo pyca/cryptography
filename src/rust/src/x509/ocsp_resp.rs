@@ -8,7 +8,7 @@ use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
 
 lazy_static::lazy_static! {
-    static ref BASIC_RESPONSE_OID: asn1::ObjectIdentifier<'static> = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.1").unwrap();
+    static ref BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::ObjectIdentifier::from_string("1.3.6.1.5.5.7.48.1.1").unwrap();
 }
 
 #[pyo3::prelude::pyfunction]
@@ -420,7 +420,7 @@ struct RawOCSPResponse<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct ResponseBytes<'a> {
-    response_type: asn1::ObjectIdentifier<'a>,
+    response_type: asn1::ObjectIdentifier,
     response: &'a [u8],
 }
 

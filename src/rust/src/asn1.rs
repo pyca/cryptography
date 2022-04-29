@@ -59,7 +59,7 @@ impl PyAsn1Error {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
-pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier<'_>> {
+pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier> {
     match asn1::ObjectIdentifier::from_string(py_oid.getattr("dotted_string")?.extract::<&str>()?) {
         Some(oid) => Ok(oid),
         None => Err(pyo3::exceptions::PyValueError::new_err(
@@ -70,7 +70,7 @@ pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::Object
 
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
-    _oid: asn1::ObjectIdentifier<'a>,
+    _oid: asn1::ObjectIdentifier,
     _params: Option<asn1::Tlv<'a>>,
 }
 

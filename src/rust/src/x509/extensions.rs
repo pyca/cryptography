@@ -110,7 +110,7 @@ pub(crate) fn encode_distribution_points<'p>(
 }
 
 pub(crate) fn encode_extension(
-    oid: &asn1::ObjectIdentifier<'_>,
+    oid: &asn1::ObjectIdentifier,
     ext: &pyo3::PyAny,
 ) -> pyo3::PyResult<Option<Vec<u8>>> {
     if oid == &*oid::BASIC_CONSTRAINTS_OID {
