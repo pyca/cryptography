@@ -494,7 +494,7 @@ jobs:
         RUST:
           - stable
         PYTHON:
-          - 3.8
+          - 3.9
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
