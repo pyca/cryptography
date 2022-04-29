@@ -286,11 +286,12 @@ impl Certificate {
             py,
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_cert.extensions,
-            |oid, ext_data| {
-                if oid == &*oid::PRECERT_POISON_OID {
+            |oid, ext_data| match oid {
+                &oid::PRECERT_POISON_OID => {
                     asn1::parse_single::<()>(ext_data)?;
                     Ok(Some(x509_module.getattr("PrecertPoison")?.call0()?))
-                } else if oid == &*oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID {
+                }
+                &oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
@@ -298,9 +299,8 @@ impl Certificate {
                             .getattr("PrecertificateSignedCertificateTimestamps")?
                             .call1((scts,))?,
                     ))
-                } else {
-                    parse_cert_ext(py, oid.clone(), ext_data)
                 }
+                _ => parse_cert_ext(py, oid.clone(), ext_data),
             },
         )
     }
@@ -488,7 +488,7 @@ fn parse_policy_qualifiers<'a>(
     for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
             Qualifier::CpsUri(data) => {
-                if pqi.policy_qualifier_id == *oid::CP_CPS_URI_OID {
+                if pqi.policy_qualifier_id == oid::CP_CPS_URI_OID {
                     pyo3::types::PyString::new(py, data.as_str()).to_object(py)
                 } else {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -497,7 +497,7 @@ fn parse_policy_qualifiers<'a>(
                 }
             }
             Qualifier::UserNotice(un) => {
-                if pqi.policy_qualifier_id != *oid::CP_USER_NOTICE_OID {
+                if pqi.policy_qualifier_id != oid::CP_USER_NOTICE_OID {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
                         "UserNotice ASN.1 structure found but OID did not match",
                     )));
@@ -766,139 +766,159 @@ pub fn parse_cert_ext<'p>(
     ext_data: &[u8],
 ) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
-    if oid == *oid::SUBJECT_ALTERNATIVE_NAME_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
-        let sans = x509::parse_general_names(py, &gn_seq)?;
-        Ok(Some(
-            x509_module
-                .getattr("SubjectAlternativeName")?
-                .call1((sans,))?,
-        ))
-    } else if oid == *oid::ISSUER_ALTERNATIVE_NAME_OID {
-        let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
-        let ians = x509::parse_general_names(py, &gn_seq)?;
-        Ok(Some(
-            x509_module
-                .getattr("IssuerAlternativeName")?
-                .call1((ians,))?,
-        ))
-    } else if oid == *oid::TLS_FEATURE_OID {
-        let tls_feature_type_to_enum = py
-            .import("cryptography.x509.extensions")?
-            .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
+    match oid {
+        oid::SUBJECT_ALTERNATIVE_NAME_OID => {
+            let gn_seq =
+                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+            let sans = x509::parse_general_names(py, &gn_seq)?;
+            Ok(Some(
+                x509_module
+                    .getattr("SubjectAlternativeName")?
+                    .call1((sans,))?,
+            ))
+        }
+        oid::ISSUER_ALTERNATIVE_NAME_OID => {
+            let gn_seq =
+                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+            let ians = x509::parse_general_names(py, &gn_seq)?;
+            Ok(Some(
+                x509_module
+                    .getattr("IssuerAlternativeName")?
+                    .call1((ians,))?,
+            ))
+        }
+        oid::TLS_FEATURE_OID => {
+            let tls_feature_type_to_enum = py
+                .import("cryptography.x509.extensions")?
+                .getattr("_TLS_FEATURE_TYPE_TO_ENUM")?;
 
-        let features = pyo3::types::PyList::empty(py);
-        for feature in asn1::parse_single::<asn1::SequenceOf<'_, u64>>(ext_data)? {
-            let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
-            features.append(py_feature)?;
+            let features = pyo3::types::PyList::empty(py);
+            for feature in asn1::parse_single::<asn1::SequenceOf<'_, u64>>(ext_data)? {
+                let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
+                features.append(py_feature)?;
+            }
+            Ok(Some(x509_module.getattr("TLSFeature")?.call1((features,))?))
         }
-        Ok(Some(x509_module.getattr("TLSFeature")?.call1((features,))?))
-    } else if oid == *oid::SUBJECT_KEY_IDENTIFIER_OID {
-        let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
-        Ok(Some(
-            x509_module
-                .getattr("SubjectKeyIdentifier")?
-                .call1((identifier,))?,
-        ))
-    } else if oid == *oid::EXTENDED_KEY_USAGE_OID {
-        let ekus = pyo3::types::PyList::empty(py);
-        for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>(ext_data)? {
-            let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
-            ekus.append(oid_obj)?;
+        oid::SUBJECT_KEY_IDENTIFIER_OID => {
+            let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
+            Ok(Some(
+                x509_module
+                    .getattr("SubjectKeyIdentifier")?
+                    .call1((identifier,))?,
+            ))
         }
-        Ok(Some(
-            x509_module.getattr("ExtendedKeyUsage")?.call1((ekus,))?,
-        ))
-    } else if oid == *oid::KEY_USAGE_OID {
-        let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
-        let digital_signature = kus.has_bit_set(0);
-        let content_comitment = kus.has_bit_set(1);
-        let key_encipherment = kus.has_bit_set(2);
-        let data_encipherment = kus.has_bit_set(3);
-        let key_agreement = kus.has_bit_set(4);
-        let key_cert_sign = kus.has_bit_set(5);
-        let crl_sign = kus.has_bit_set(6);
-        let encipher_only = kus.has_bit_set(7);
-        let decipher_only = kus.has_bit_set(8);
-        Ok(Some(x509_module.getattr("KeyUsage")?.call1((
-            digital_signature,
-            content_comitment,
-            key_encipherment,
-            data_encipherment,
-            key_agreement,
-            key_cert_sign,
-            crl_sign,
-            encipher_only,
-            decipher_only,
-        ))?))
-    } else if oid == *oid::AUTHORITY_INFORMATION_ACCESS_OID {
-        let ads = parse_access_descriptions(py, ext_data)?;
-        Ok(Some(
-            x509_module
-                .getattr("AuthorityInformationAccess")?
-                .call1((ads,))?,
-        ))
-    } else if oid == *oid::SUBJECT_INFORMATION_ACCESS_OID {
-        let ads = parse_access_descriptions(py, ext_data)?;
-        Ok(Some(
-            x509_module
-                .getattr("SubjectInformationAccess")?
-                .call1((ads,))?,
-        ))
-    } else if oid == *oid::CERTIFICATE_POLICIES_OID {
-        let cp = parse_cp(py, ext_data)?;
-        Ok(Some(
-            x509_module.call_method1("CertificatePolicies", (cp,))?,
-        ))
-    } else if oid == *oid::POLICY_CONSTRAINTS_OID {
-        let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
-        Ok(Some(x509_module.getattr("PolicyConstraints")?.call1((
-            pc.require_explicit_policy,
-            pc.inhibit_policy_mapping,
-        ))?))
-    } else if oid == *oid::OCSP_NO_CHECK_OID {
-        asn1::parse_single::<()>(ext_data)?;
-        Ok(Some(x509_module.getattr("OCSPNoCheck")?.call0()?))
-    } else if oid == *oid::INHIBIT_ANY_POLICY_OID {
-        let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
-        let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-        Ok(Some(
-            x509_module.getattr("InhibitAnyPolicy")?.call1((pynum,))?,
-        ))
-    } else if oid == *oid::BASIC_CONSTRAINTS_OID {
-        let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
-        Ok(Some(
-            x509_module
-                .getattr("BasicConstraints")?
-                .call1((bc.ca, bc.path_length))?,
-        ))
-    } else if oid == *oid::AUTHORITY_KEY_IDENTIFIER_OID {
-        Ok(Some(parse_authority_key_identifier(py, ext_data)?))
-    } else if oid == *oid::CRL_DISTRIBUTION_POINTS_OID {
-        let dp = parse_distribution_points(py, ext_data)?;
-        Ok(Some(
-            x509_module.getattr("CRLDistributionPoints")?.call1((dp,))?,
-        ))
-    } else if oid == *oid::FRESHEST_CRL_OID {
-        let dp = parse_distribution_points(py, ext_data)?;
-        Ok(Some(x509_module.getattr("FreshestCRL")?.call1((dp,))?))
-    } else if oid == *oid::NAME_CONSTRAINTS_OID {
-        let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
-        let permitted_subtrees = match nc.permitted_subtrees {
-            Some(data) => parse_general_subtrees(py, data)?,
-            None => py.None(),
-        };
-        let excluded_subtrees = match nc.excluded_subtrees {
-            Some(data) => parse_general_subtrees(py, data)?,
-            None => py.None(),
-        };
-        Ok(Some(
-            x509_module
-                .getattr("NameConstraints")?
-                .call1((permitted_subtrees, excluded_subtrees))?,
-        ))
-    } else {
-        Ok(None)
+        oid::EXTENDED_KEY_USAGE_OID => {
+            let ekus = pyo3::types::PyList::empty(py);
+            for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>(ext_data)?
+            {
+                let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
+                ekus.append(oid_obj)?;
+            }
+            Ok(Some(
+                x509_module.getattr("ExtendedKeyUsage")?.call1((ekus,))?,
+            ))
+        }
+        oid::KEY_USAGE_OID => {
+            let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
+            let digital_signature = kus.has_bit_set(0);
+            let content_comitment = kus.has_bit_set(1);
+            let key_encipherment = kus.has_bit_set(2);
+            let data_encipherment = kus.has_bit_set(3);
+            let key_agreement = kus.has_bit_set(4);
+            let key_cert_sign = kus.has_bit_set(5);
+            let crl_sign = kus.has_bit_set(6);
+            let encipher_only = kus.has_bit_set(7);
+            let decipher_only = kus.has_bit_set(8);
+            Ok(Some(x509_module.getattr("KeyUsage")?.call1((
+                digital_signature,
+                content_comitment,
+                key_encipherment,
+                data_encipherment,
+                key_agreement,
+                key_cert_sign,
+                crl_sign,
+                encipher_only,
+                decipher_only,
+            ))?))
+        }
+        oid::AUTHORITY_INFORMATION_ACCESS_OID => {
+            let ads = parse_access_descriptions(py, ext_data)?;
+            Ok(Some(
+                x509_module
+                    .getattr("AuthorityInformationAccess")?
+                    .call1((ads,))?,
+            ))
+        }
+        oid::SUBJECT_INFORMATION_ACCESS_OID => {
+            let ads = parse_access_descriptions(py, ext_data)?;
+            Ok(Some(
+                x509_module
+                    .getattr("SubjectInformationAccess")?
+                    .call1((ads,))?,
+            ))
+        }
+        oid::CERTIFICATE_POLICIES_OID => {
+            let cp = parse_cp(py, ext_data)?;
+            Ok(Some(
+                x509_module.call_method1("CertificatePolicies", (cp,))?,
+            ))
+        }
+        oid::POLICY_CONSTRAINTS_OID => {
+            let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
+            Ok(Some(x509_module.getattr("PolicyConstraints")?.call1((
+                pc.require_explicit_policy,
+                pc.inhibit_policy_mapping,
+            ))?))
+        }
+        oid::OCSP_NO_CHECK_OID => {
+            asn1::parse_single::<()>(ext_data)?;
+            Ok(Some(x509_module.getattr("OCSPNoCheck")?.call0()?))
+        }
+        oid::INHIBIT_ANY_POLICY_OID => {
+            let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
+            let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
+            Ok(Some(
+                x509_module.getattr("InhibitAnyPolicy")?.call1((pynum,))?,
+            ))
+        }
+        oid::BASIC_CONSTRAINTS_OID => {
+            let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
+            Ok(Some(
+                x509_module
+                    .getattr("BasicConstraints")?
+                    .call1((bc.ca, bc.path_length))?,
+            ))
+        }
+        oid::AUTHORITY_KEY_IDENTIFIER_OID => {
+            Ok(Some(parse_authority_key_identifier(py, ext_data)?))
+        }
+        oid::CRL_DISTRIBUTION_POINTS_OID => {
+            let dp = parse_distribution_points(py, ext_data)?;
+            Ok(Some(
+                x509_module.getattr("CRLDistributionPoints")?.call1((dp,))?,
+            ))
+        }
+        oid::FRESHEST_CRL_OID => {
+            let dp = parse_distribution_points(py, ext_data)?;
+            Ok(Some(x509_module.getattr("FreshestCRL")?.call1((dp,))?))
+        }
+        oid::NAME_CONSTRAINTS_OID => {
+            let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
+            let permitted_subtrees = match nc.permitted_subtrees {
+                Some(data) => parse_general_subtrees(py, data)?,
+                None => py.None(),
+            };
+            let excluded_subtrees = match nc.excluded_subtrees {
+                Some(data) => parse_general_subtrees(py, data)?,
+                None => py.None(),
+            };
+            Ok(Some(
+                x509_module
+                    .getattr("NameConstraints")?
+                    .call1((permitted_subtrees, excluded_subtrees))?,
+            ))
+        }
+        _ => Ok(None),
     }
 }
 

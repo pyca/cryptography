@@ -107,17 +107,18 @@ impl OCSPRequest {
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_request.request_extensions,
             |oid, value| {
-                if oid == &*oid::NONCE_OID {
-                    // This is a disaster. RFC 2560 says that the contents of the nonce is
-                    // just the raw extension value. This is nonsense, since they're always
-                    // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
-                    // nonce is an OCTET STRING, and so you should unwrap the TLV to get
-                    // the nonce. So we try parsing as a TLV and fall back to just using
-                    // the raw value.
-                    let nonce = asn1::parse_single::<&[u8]>(value).unwrap_or(value);
-                    Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
-                } else {
-                    Ok(None)
+                match oid {
+                    &oid::NONCE_OID => {
+                        // This is a disaster. RFC 2560 says that the contents of the nonce is
+                        // just the raw extension value. This is nonsense, since they're always
+                        // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
+                        // nonce is an OCTET STRING, and so you should unwrap the TLV to get
+                        // the nonce. So we try parsing as a TLV and fall back to just using
+                        // the raw value.
+                        let nonce = asn1::parse_single::<&[u8]>(value).unwrap_or(value);
+                        Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
+                    }
+                    _ => Ok(None),
                 }
             },
         )
