@@ -5,7 +5,6 @@
 
 import base64
 import calendar
-import itertools
 import json
 import os
 import time
