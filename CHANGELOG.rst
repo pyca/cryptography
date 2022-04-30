@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** As announced in the 39.0.0 changelog, the way
+  ``cryptography`` links OpenSSL has changed. This only impacts users who
+  build ``cryptography`` from source (i.e., not from a ``wheel``), and
+  specify their own version of OpenSSL. For those users, the ``CFLAGS``,
+  ``LDFLAGS``, ``INCLUDE``, ``LIB``, and ``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS``
+  environment variables are no longer valid. Instead, users need to configure
+  their builds `as documented here`_.
 * Support for Python 3.6 is deprecated and will be removed in the next
   release.
 * Deprecated the current minimum supported Rust version (MSRV) of 1.48.0.
@@ -25,6 +32,7 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
+* The minimum supported version of PyPy3 is now 7.3.10.
 * Added support for parsing SSH certificates in addition to public keys with
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`

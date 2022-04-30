@@ -46,9 +46,6 @@ sys.path.insert(0, src_dir)
 try:
     # See setup.cfg for most of the config metadata.
     setup(
-        cffi_modules=[
-            "src/_cffi_src/build_openssl.py:ffi",
-        ],
         rust_extensions=[
             RustExtension(
                 "cryptography.hazmat.bindings._rust",

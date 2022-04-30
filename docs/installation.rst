@@ -13,7 +13,7 @@ single most common cause of installation problems.
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 3.6+ and PyPy3 on these
+Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.10+ on these
 operating systems.
 
 * x86-64 RHEL 8.x
@@ -55,14 +55,13 @@ If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
 Be sure to download the proper version for your architecture and Python
 (VC2015 is required for 3.6 and above). Wherever you place your copy of OpenSSL
-you'll need to set the ``LIB`` and ``INCLUDE`` environment variables to include
-the proper locations. For example:
+you'll need to set the ``OPENSSL_DIR`` environment variable to include the
+proper location. For example:
 
 .. code-block:: console
 
     C:\> \path\to\vcvarsall.bat x86_amd64
-    C:\> set LIB=C:\OpenSSL-win64\lib;%LIB%
-    C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
+    C:\> set OPENSSL_DIR=C:\OpenSSL-win64
     C:\> pip install cryptography
 
 You will also need to have :ref:`Rust installed and
@@ -227,7 +226,7 @@ dependencies.
     ./config no-shared no-ssl2 no-ssl3 -fPIC --prefix=${CWD}/openssl
     make && make install
     cd ..
-    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel --no-cache-dir --no-binary cryptography cryptography
+    OPENSSL_DIR="${CWD}/openssl" pip wheel --no-cache-dir --no-binary cryptography cryptography
 
 Building cryptography on macOS
 ------------------------------
@@ -259,7 +258,9 @@ development headers.
 
 You will also need to have :ref:`Rust installed and
 available<installation:Rust>`, which can be obtained from `Homebrew`_,
-`MacPorts`_, or directly from the Rust website.
+`MacPorts`_, or directly from the Rust website. If you are linking against a
+``universal2`` archive of OpenSSL, the minimum supported Rust version is
+1.66.0.
 
 Finally you need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
 Cryptography does **not** support the OpenSSL/LibreSSL libraries Apple ships
@@ -272,14 +273,14 @@ To build cryptography and dynamically link it:
 .. code-block:: console
 
     $ brew install openssl@3 rust
-    $ env LDFLAGS="-L$(brew --prefix openssl@3)/lib" CFLAGS="-I$(brew --prefix openssl@3)/include" pip install cryptography
+    $ env OPENSSL_DIR="$(brew --prefix openssl@3)" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
     $ sudo port install openssl rust
-    $ env LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
+    $ env OPENSSL_DIR="-L/opt/local" pip install cryptography
 
 You can also build cryptography statically:
 
@@ -288,14 +289,14 @@ You can also build cryptography statically:
 .. code-block:: console
 
     $ brew install openssl@3 rust
-    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@3)/lib/libssl.a $(brew --prefix openssl@3)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@3)/include" pip install cryptography
+    $ env OPENSSL_STATIC=1 OPENSSL_DIR="$(brew --prefix openssl@3)" pip install cryptography
 
 `MacPorts`_:
 
 .. code-block:: console
 
     $ sudo port install openssl rust
-    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
+    $ env OPENSSL_STATIC=1 OPENSSL_DIR="/opt/local" pip install cryptography
 
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.

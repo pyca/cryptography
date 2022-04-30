@@ -4,6 +4,7 @@
 
 
 import os
+import platform
 import sys
 from distutils.ccompiler import new_compiler
 from distutils.dist import Distribution
@@ -70,6 +71,18 @@ def build_ffi(
     verify_source += '\n#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"'.format(
         about["__version__"]
     )
+    if platform.python_implementation() == "PyPy":
+        verify_source += r"""
+int Cryptography_make_openssl_module(void) {
+    int result;
+
+    Py_BEGIN_ALLOW_THREADS
+    result = cffi_start_python();
+    Py_END_ALLOW_THREADS
+
+    return result;
+}
+"""
     ffi.cdef(cdef_source)
     ffi.set_source(
         module_name,

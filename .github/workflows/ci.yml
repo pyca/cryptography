@@ -98,8 +98,9 @@ jobs:
         if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
       - name: Set CFLAGS/LDFLAGS
         run: |
-          echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration -I${OSSL_PATH}/include" >> $GITHUB_ENV
-          echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -L${OSSL_PATH}/lib64 -Wl,-rpath=${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=${OSSL_PATH}" >> $GITHUB_ENV
+          echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
+          echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
       - name: Build toxenv
         run: |
@@ -318,7 +319,7 @@ jobs:
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml] cffi
       - name: Create toxenv
         run: tox -vvv --notest
         env:
@@ -419,9 +420,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build toxenv
         run: |
-          CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-            LDFLAGS="$(readlink -f ../openssl-macos-universal2/lib/libcrypto.a) $(readlink -f ../openssl-macos-universal2/lib/libssl.a)" \
-            CFLAGS="-I$(readlink -f ../openssl-macos-universal2/include) -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
+          OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \
+            OPENSSL_STATIC=1 \
+            CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
             tox -vvv --notest
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
@@ -481,8 +482,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Configure
         run: |
-            echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/include;$INCLUDE" >> $GITHUB_ENV
-            echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/lib;$LIB" >> $GITHUB_ENV
+            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
             echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
         shell: bash
 

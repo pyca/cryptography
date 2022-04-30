@@ -16,7 +16,18 @@ mod pkcs7;
 mod pool;
 mod x509;
 
+#[cfg(not(python_implementation = "PyPy"))]
+use pyo3::FromPyPointer;
 use std::convert::TryInto;
+
+#[cfg(python_implementation = "PyPy")]
+extern "C" {
+    fn Cryptography_make_openssl_module() -> std::os::raw::c_int;
+}
+#[cfg(not(python_implementation = "PyPy"))]
+extern "C" {
+    fn PyInit__openssl() -> *mut pyo3::ffi::PyObject;
+}
 
 /// Returns the value of the input with the most-significant-bit copied to all
 /// of the bits.
@@ -79,6 +90,11 @@ fn check_ansix923_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
+#[pyo3::prelude::pyfunction]
+fn openssl_version() -> i64 {
+    openssl::version::number()
+}
+
 #[pyo3::prelude::pymodule]
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
@@ -101,6 +117,23 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     crate::x509::ocsp_req::add_to_module(ocsp_mod)?;
     crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
     m.add_submodule(ocsp_mod)?;
+
+    #[cfg(python_implementation = "PyPy")]
+    let openssl_mod = unsafe {
+        let res = Cryptography_make_openssl_module();
+        assert_eq!(res, 0);
+        pyo3::types::PyModule::import(py, "_openssl")?
+    };
+    #[cfg(not(python_implementation = "PyPy"))]
+    let openssl_mod = unsafe {
+        let ptr = PyInit__openssl();
+        pyo3::types::PyModule::from_owned_ptr(py, ptr)
+    };
+    m.add_submodule(openssl_mod)?;
+
+    let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
+    m.add_submodule(openssl_mod)?;
 
     Ok(())
 }

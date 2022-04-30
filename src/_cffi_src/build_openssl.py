@@ -4,6 +4,7 @@
 
 
 import os
+import platform
 import sys
 from distutils import dist
 from distutils.ccompiler import get_default_compiler
@@ -70,7 +71,7 @@ def _extra_compile_args(platform):
 
 
 ffi = build_ffi_for_binding(
-    module_name="cryptography.hazmat.bindings._openssl",
+    module_name="_openssl",
     module_prefix="_cffi_src.openssl.",
     modules=[
         # This goes first so we can define some cryptography-wide symbols.
@@ -110,3 +111,17 @@ ffi = build_ffi_for_binding(
     libraries=_get_openssl_libraries(sys.platform),
     extra_compile_args=_extra_compile_args(sys.platform),
 )
+
+if __name__ == "__main__":
+    out_dir = os.getenv("OUT_DIR")
+    module_name, source, source_extension, kwds = ffi._assigned_source
+    c_file = os.path.join(out_dir, module_name + source_extension)
+    if platform.python_implementation() == "PyPy":
+        # Necessary because CFFI will ignore this if there's no declarations.
+        ffi.embedding_api(
+            """
+            extern "Python" void Cryptography_unused(void);
+        """
+        )
+        ffi.embedding_init_code("")
+    ffi.emit_c_code(c_file)
