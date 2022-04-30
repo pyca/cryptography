@@ -342,6 +342,13 @@ jobs:
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../pytest-rust-cov.lcov
             sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../cargo-test-rust-cov.lcov
 
+      # We use codecov solely for rust coverage now, not Python
+      - run: |
+          curl -o codecov.sh -f https://codecov.io/bash || \
+            curl -o codecov.sh -f https://codecov.io/bash || \
+            curl -o codecov.sh -f https://codecov.io/bash
+          bash codecov.sh -n "Rust Coverage" -f '*.lcov' -X coveragepy
+
       - uses: ./.github/actions/upload-coverage
         with:
           name: "Rust Coverage"
@@ -507,7 +514,7 @@ jobs:
         RUST:
           - stable
         PYTHON:
-          - 3.8
+          - 3.9
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
@@ -575,6 +582,30 @@ jobs:
     needs: [linux, linux-distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-    - run: echo "😢"; exit 1
-      if: ${{ needs.linux.result != 'success' || needs.linux-distros.result != 'success' || needs.linux-rust.result != 'success' || needs.linux-rust-coverage.result != 'success' || needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux-downstream.result != 'success' }}
-    - run: echo "🎉"
+      - uses: actions/checkout@v2.4.0
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+      - run: echo "😢"; exit 1
+        if: ${{ needs.linux.result != 'success' || needs.linux-distros.result != 'success' || needs.linux-rust.result != 'success' || needs.linux-rust-coverage.result != 'success' || needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux-downstream.result != 'success' }}
+      - run: echo "🎉"
+      - name: Setup python
+        uses: actions/setup-python@v3.1.2
+        with:
+          python-version: '3.10'
+      - run: pip install coverage
+      - name: Download coverage data
+        uses: actions/download-artifact@v3.0.0
+      - run: mv **/.coverage* .
+      - name: Combine coverage and fail if it's <100%.
+        run: |
+          python -m coverage combine
+          python -m coverage html
+          python -m coverage report --fail-under=100
+      - name: Upload HTML report.
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: _html-report
+          path: htmlcov
+          if-no-files-found: ignore
+        if: ${{ always() }}
