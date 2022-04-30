@@ -24,12 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.10", TOXENV: "flake", COVERAGE: "false"}
-          - {VERSION: "3.10", TOXENV: "rust", COVERAGE: "false"}
-          - {VERSION: "3.10", TOXENV: "docs", COVERAGE: "false", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
-          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
-          - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage", COVERAGE: "false"}
+          - {VERSION: "3.10", TOXENV: "flake"}
+          - {VERSION: "3.10", TOXENV: "rust"}
+          - {VERSION: "3.10", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.2"}}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
+          - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
+          - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
           - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1n"}}
@@ -41,7 +41,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.2"}}
-          - {VERSION: "3.11-dev", TOXENV: "py311-nocoverage", COVERAGE: "false"}
+          - {VERSION: "3.11-dev", TOXENV: "py311-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
           # Latest commit on the master branch, as of April 29, 2022.
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "8b988b8b8d8f274a0f400606701df696817ab42e"}}
@@ -128,7 +128,6 @@ jobs:
       - uses: ./.github/actions/upload-coverage
         with:
           name: "tox -e ${{ matrix.PYTHON.TOXENV }} ${{ env.OSSL_INFO }}"
-        if: matrix.PYTHON.COVERAGE != 'false'
 
   linux-distros:
     runs-on: ubuntu-latest
