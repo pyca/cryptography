@@ -42,6 +42,7 @@ _NAMEOID_DEFAULT_TYPE: typing.Dict[ObjectIdentifier, _ASN1Type] = {
 
 # Type alias
 _OidNameMap = typing.Mapping[ObjectIdentifier, str]
+_NameOidMap = typing.Mapping[str, ObjectIdentifier]
 
 #: Short attribute names from RFC 4514:
 #: https://tools.ietf.org/html/rfc4514#page-7
@@ -297,8 +298,12 @@ class Name:
             )
 
     @classmethod
-    def from_rfc4514_string(cls, data: str) -> "Name":
-        return _RFC4514NameParser(data).parse()
+    def from_rfc4514_string(
+        cls,
+        data: str,
+        attr_name_overrides: typing.Optional[_NameOidMap] = None,
+    ) -> "Name":
+        return _RFC4514NameParser(data, attr_name_overrides or {}).parse()
 
     def rfc4514_string(
         self, attr_name_overrides: typing.Optional[_OidNameMap] = None
@@ -381,9 +386,11 @@ class _RFC4514NameParser:
     )
     _HEXSTRING_RE = re.compile(r"#([\da-zA-Z]{2})+")
 
-    def __init__(self, data: str) -> None:
+    def __init__(self, data: str, attr_name_overrides: _NameOidMap) -> None:
         self._data = data
         self._idx = 0
+
+        self._attr_name_overrides = attr_name_overrides
 
     def _has_data(self) -> bool:
         return self._idx < len(self._data)
@@ -428,7 +435,9 @@ class _RFC4514NameParser:
             oid_value = self._read_re(self._OID_RE)
         except ValueError:
             name = self._read_re(self._DESCR_RE)
-            oid = _NAME_TO_NAMEOID.get(name)
+            oid = self._attr_name_overrides.get(
+                name, _NAME_TO_NAMEOID.get(name)
+            )
             if oid is None:
                 raise ValueError
         else:
