@@ -164,3 +164,21 @@ class TestRFC4514:
             with subtests.test():
                 result = Name.from_rfc4514_string(value)
                 assert result == expected
+
+    def test_attr_name_override(self):
+        assert Name.from_rfc4514_string(
+            "CN=Santa Claus,E=santa@north.pole", {"E": NameOID.EMAIL_ADDRESS}
+        ) == Name(
+            [
+                NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
+                NameAttribute(NameOID.EMAIL_ADDRESS, "santa@north.pole"),
+            ]
+        )
+
+        assert Name.from_rfc4514_string(
+            "CN=Santa Claus", {"CN": NameOID.EMAIL_ADDRESS}
+        ) == Name(
+            [
+                NameAttribute(NameOID.EMAIL_ADDRESS, "Santa Claus"),
+            ]
+        )

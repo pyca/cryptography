@@ -1225,11 +1225,15 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :type: list of :class:`RelativeDistinguishedName`
 
-    .. classmethod:: from_rfc4514_string(data)
+    .. classmethod:: from_rfc4514_string(data, attr_name_overrides=None)
 
         .. versionadded: 37.0
 
         :param str data: An :rfc:`4514` string.
+        :param attr_name_overrides: Specify custom OID to name mappings, which
+            can be used to match vendor-specific extensions. See
+            :class:`~cryptography.x509.oid.NameOID` for common attribute
+            OIDs.
 
         :returns: A :class:`Name` parsed from ``data``.
 
@@ -1238,6 +1242,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
             >>> x509.Name.from_rfc4514_string("CN=cryptography.io")
             <Name(CN=cryptography.io)>
+            >>> x509.Name.from_rfc4514_string("E=pyca@cryptography.io", {"E": NameOID.EMAIL_ADDRESS})
+            <Name(1.2.840.113549.1.9.1=pyca@cryptography.io)>
 
     .. method:: get_attributes_for_oid(oid)
 
