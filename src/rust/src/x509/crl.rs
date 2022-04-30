@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+    big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
 use crate::x509::{certificate, extensions, oid};
@@ -160,11 +160,7 @@ impl CertificateRevocationList {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let x509_module = py.import("cryptography.x509")?;
-        x509_module.call_method1(
-            "ObjectIdentifier",
-            (self.raw.borrow_value().signature_algorithm.oid.to_string(),),
-        )
+        oid_to_py_oid(py, &self.raw.borrow_value().signature_algorithm.oid)
     }
 
     #[getter]

@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+    big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct};
@@ -273,10 +273,7 @@ impl Certificate {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        py.import("cryptography.x509")?.call_method1(
-            "ObjectIdentifier",
-            (self.raw.borrow_value().signature_alg.oid.to_string(),),
-        )
+        oid_to_py_oid(py, &self.raw.borrow_value().signature_alg.oid)
     }
 
     #[getter]
@@ -515,12 +512,7 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyA
     let x509_module = py.import("cryptography.x509")?;
     let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
-        let pi_oid = x509_module
-            .call_method1(
-                "ObjectIdentifier",
-                (policyinfo.policy_identifier.to_string(),),
-            )?
-            .to_object(py);
+        let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?.to_object(py);
         let py_pqis = match policyinfo.policy_qualifiers {
             Some(policy_qualifiers) => {
                 parse_policy_qualifiers(py, policy_qualifiers.unwrap_read())?
@@ -747,9 +739,7 @@ pub(crate) fn parse_access_descriptions(
     let ads = pyo3::types::PyList::empty(py);
     let parsed = asn1::parse_single::<x509::common::SequenceOfAccessDescriptions<'_>>(ext_data)?;
     for access in parsed.unwrap_read().clone() {
-        let py_oid = x509_module
-            .call_method1("ObjectIdentifier", (access.access_method.to_string(),))?
-            .to_object(py);
+        let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = x509_module
             .getattr("AccessDescription")?
@@ -811,7 +801,7 @@ pub fn parse_cert_ext<'p>(
             let ekus = pyo3::types::PyList::empty(py);
             for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>(ext_data)?
             {
-                let oid_obj = x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))?;
+                let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
             }
             Ok(Some(

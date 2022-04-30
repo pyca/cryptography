@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_oid_to_oid, PyAsn1Error};
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid, PyAsn1Error};
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
@@ -347,9 +347,7 @@ fn parse_name_attribute(
     attribute: AttributeTypeValue<'_>,
 ) -> Result<pyo3::PyObject, PyAsn1Error> {
     let x509_module = py.import("cryptography.x509")?;
-    let oid = x509_module
-        .call_method1("ObjectIdentifier", (attribute.type_id.to_string(),))?
-        .to_object(py);
+    let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
     let tag_enum = py
         .import("cryptography.x509.name")?
         .getattr("_ASN1_TYPE_TO_ENUM")?;
@@ -401,9 +399,7 @@ pub(crate) fn parse_general_name(
     let x509_module = py.import("cryptography.x509")?;
     let py_gn = match gn {
         GeneralName::OtherName(data) => {
-            let oid = x509_module
-                .call_method1("ObjectIdentifier", (data.type_id.to_string(),))?
-                .to_object(py);
+            let oid = oid_to_py_oid(py, &data.type_id)?.to_object(py);
             x509_module
                 .call_method1("OtherName", (oid, data.value.full_data()))?
                 .to_object(py)
@@ -440,9 +436,7 @@ pub(crate) fn parse_general_name(
             }
         }
         GeneralName::RegisteredID(data) => {
-            let oid = x509_module
-                .call_method1("ObjectIdentifier", (data.to_string(),))?
-                .to_object(py);
+            let oid = oid_to_py_oid(py, &data)?.to_object(py);
             x509_module
                 .call_method1("RegisteredID", (oid,))?
                 .to_object(py)
@@ -542,8 +536,7 @@ pub(crate) fn parse_and_cache_extensions<
     let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
         for raw_ext in raw_exts.unwrap_read().clone() {
-            let oid_obj =
-                x509_module.call_method1("ObjectIdentifier", (raw_ext.extn_id.to_string(),))?;
+            let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
             if seen_oids.contains(&raw_ext.extn_id) {
                 return Err(pyo3::PyErr::from_instance(x509_module.call_method1(
