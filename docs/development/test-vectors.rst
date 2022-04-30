@@ -143,7 +143,7 @@ Custom asymmetric vectors
   contain an Ed448 public key.
 * ``asymmetric/PKCS8/rsa_pss_2048.pem`` - A 2048-bit RSA PSS key with no
   explicit parameters set.
-* ``asymmetric/PKCS8/rsa_pss_2048_pub.pem`` - The public key corresponding to
+* ``asymmetric/PKCS8/rsa_pss_2048_pub.der`` - The public key corresponding to
   ``asymmetric/PKCS8/rsa_pss_2048.pem``.
 * ``asymmetric/PKCS8/rsa_pss_2048_hash.pem`` - A 2048-bit RSA PSS key with the
   hash algorithm PSS parameter set to SHA256.
