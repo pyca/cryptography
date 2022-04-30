@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_oid_to_oid, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, oid};
 use asn1::SimpleAsn1Readable;
@@ -176,10 +176,7 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        py.import("cryptography.x509")?.call_method1(
-            "ObjectIdentifier",
-            (self.raw.borrow_value().signature_alg.oid.to_string(),),
-        )
+        oid_to_py_oid(py, &self.raw.borrow_value().signature_alg.oid)
     }
 
     fn public_bytes<'p>(
@@ -274,9 +271,7 @@ impl CertificateSigningRequest {
             .clone()
         {
             check_attribute_length(attribute.values.unwrap_read().clone())?;
-            let oid = py
-                .import("cryptography.x509")?
-                .call_method1("ObjectIdentifier", (attribute.type_id.to_string(),))?;
+            let oid = oid_to_py_oid(py, &attribute.type_id)?;
             let val = attribute.values.unwrap_read().clone().next().unwrap();
             let serialized = pyo3::types::PyBytes::new(py, val.data());
             let pyattr = py

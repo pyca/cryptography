@@ -68,6 +68,14 @@ pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::Object
     }
 }
 
+pub(crate) fn oid_to_py_oid<'p>(
+    py: pyo3::Python<'p>,
+    oid: &asn1::ObjectIdentifier,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let x509_module = py.import("cryptography.x509")?;
+    x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))
+}
+
 #[derive(asn1::Asn1Read)]
 struct AlgorithmIdentifier<'a> {
     _oid: asn1::ObjectIdentifier,

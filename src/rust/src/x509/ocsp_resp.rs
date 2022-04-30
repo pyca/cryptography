@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use std::sync::Arc;
@@ -156,10 +156,7 @@ impl OCSPResponse {
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
-        py.import("cryptography.x509")?.call_method1(
-            "ObjectIdentifier",
-            (resp.signature_algorithm.oid.to_string(),),
-        )
+        oid_to_py_oid(py, &resp.signature_algorithm.oid)
     }
 
     #[getter]
