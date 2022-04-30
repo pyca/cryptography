@@ -4,71 +4,10 @@
 
 import typing
 
+from cryptography.hazmat.bindings._rust import (
+    ObjectIdentifier as ObjectIdentifier,
+)
 from cryptography.hazmat.primitives import hashes
-
-
-class ObjectIdentifier:
-    def __init__(self, dotted_string: str) -> None:
-        self._dotted_string = dotted_string
-
-        nodes = self._dotted_string.split(".")
-        intnodes = []
-
-        # There must be at least 2 nodes, the first node must be 0..2, and
-        # if less than 2, the second node cannot have a value outside the
-        # range 0..39.  All nodes must be integers.
-        for node in nodes:
-            try:
-                node_value = int(node, 10)
-            except ValueError:
-                raise ValueError(
-                    f"Malformed OID: {dotted_string} (non-integer nodes)"
-                )
-            if node_value < 0:
-                raise ValueError(
-                    f"Malformed OID: {dotted_string} (negative-integer nodes)"
-                )
-            intnodes.append(node_value)
-
-        if len(nodes) < 2:
-            raise ValueError(
-                f"Malformed OID: {dotted_string} "
-                "(insufficient number of nodes)"
-            )
-
-        if intnodes[0] > 2:
-            raise ValueError(
-                f"Malformed OID: {dotted_string} "
-                "(first node outside valid range)"
-            )
-
-        if intnodes[0] < 2 and intnodes[1] >= 40:
-            raise ValueError(
-                f"Malformed OID: {dotted_string} "
-                "(second node outside valid range)"
-            )
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, ObjectIdentifier):
-            return NotImplemented
-
-        return self.dotted_string == other.dotted_string
-
-    def __repr__(self) -> str:
-        return "<ObjectIdentifier(oid={}, name={})>".format(
-            self.dotted_string, self._name
-        )
-
-    def __hash__(self) -> int:
-        return hash(self.dotted_string)
-
-    @property
-    def _name(self) -> str:
-        return _OID_NAMES.get(self, "Unknown OID")
-
-    @property
-    def dotted_string(self) -> str:
-        return self._dotted_string
 
 
 class ExtensionOID:

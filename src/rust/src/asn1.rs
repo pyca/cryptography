@@ -60,20 +60,18 @@ impl PyAsn1Error {
 pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
 
 pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier> {
-    match asn1::ObjectIdentifier::from_string(py_oid.getattr("dotted_string")?.extract::<&str>()?) {
-        Some(oid) => Ok(oid),
-        None => Err(pyo3::exceptions::PyValueError::new_err(
-            "ObjectIdentifier was not valid (perhaps its arcs were too large)",
-        )),
-    }
+    Ok(py_oid
+        .downcast::<pyo3::PyCell<crate::oid::ObjectIdentifier>>()?
+        .borrow()
+        .oid
+        .clone())
 }
 
 pub(crate) fn oid_to_py_oid<'p>(
     py: pyo3::Python<'p>,
     oid: &asn1::ObjectIdentifier,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let x509_module = py.import("cryptography.x509")?;
-    x509_module.call_method1("ObjectIdentifier", (oid.to_string(),))
+    Ok(pyo3::Py::new(py, crate::oid::ObjectIdentifier { oid: oid.clone() })?.into_ref(py))
 }
 
 #[derive(asn1::Asn1Read)]
