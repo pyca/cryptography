@@ -301,6 +301,10 @@ def cryptography_has_300_evp_cipher() -> typing.List[str]:
     return ["EVP_CIPHER_fetch", "EVP_CIPHER_free"]
 
 
+def cryptography_has_unexpected_eof_while_reading() -> typing.List[str]:
+    return ["SSL_R_UNEXPECTED_EOF_WHILE_READING"]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -357,4 +361,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
     "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
     "Cryptography_HAS_300_EVP_CIPHER": cryptography_has_300_evp_cipher,
+    "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
+        cryptography_has_unexpected_eof_while_reading
+    ),
 }
