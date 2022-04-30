@@ -11,10 +11,13 @@ runs:
 
   steps:
     - run: |
-        PATH="/venv/bin:${PATH}"
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-
-        bash codecov.sh -n "${{ inputs.name }}"
+        COVERAGE_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
+        echo "::set-output name=COVERAGE_UUID::${COVERAGE_UUID}"
+        mv .coverage .coverage.${COVERAGE_UUID}
+      id: coverage-uuid
       shell: bash
+    - uses: actions/upload-artifact@v3.0.0
+      with:
+        name: coverage-${{ steps.coverage-uuid.outputs.COVERAGE_UUID }}
+        path: ".coverage.*"
+        if-no-files-found: ignore
