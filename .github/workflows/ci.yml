@@ -41,7 +41,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.2"}}
-          - {VERSION: "3.11-dev", TOXENV: "py311"}
+          - {VERSION: "3.11-dev", TOXENV: "py311-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
           # Latest commit on the master branch, as of April 29, 2022.
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "8b988b8b8d8f274a0f400606701df696817ab42e"}}
