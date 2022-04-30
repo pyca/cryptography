@@ -19,6 +19,10 @@ Changelog
   newer ``rustc`` if required.
 * :meth:`~cryptography.fernet.Fernet.decrypt` and related methods now accept
   both ``str`` and ``bytes`` tokens.
+* Parsing ``CertificateSigningRequest`` restores the behavior of enforcing
+  that the ``Extension`` ``critical`` field must be correctly encoded DER. See
+  `the issue <https://github.com/pyca/cryptography/issues/6368>`_ for complete
+  details.
 
 .. _v37-0-1:
 
