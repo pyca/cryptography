@@ -1532,18 +1532,8 @@ class TestRSACertificateRequest:
             x509.load_pem_x509_csr,
             backend,
         )
-        with pytest.warns(utils.DeprecatedIn36):
-            subject_alternative_name = csr.extensions.get_extension_for_class(
-                x509.SubjectAlternativeName
-            )
-        assert subject_alternative_name.critical is False
-        assert len(subject_alternative_name.value) == 3
-
-        san1 = subject_alternative_name.value[1]
-        assert san1.type_id.dotted_string == "1.3.6.1.4.1.311.20.2.3"
-
-        san2 = subject_alternative_name.value[2]
-        assert san2.type_id.dotted_string == "1.3.6.1.5.2.2"
+        with pytest.raises(ValueError):
+            csr.extensions
 
     def test_public_bytes_pem(self, backend):
         # Load an existing CSR.
