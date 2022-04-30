@@ -3634,31 +3634,6 @@ class TestCertificateBuilder:
 
         assert ext.value == unrecognized
 
-    def test_extension_with_too_large_oid(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        builder = (
-            x509.CertificateBuilder()
-            .subject_name(
-                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
-            )
-            .issuer_name(
-                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
-            )
-            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
-            .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
-            .public_key(private_key.public_key())
-            .serial_number(123)
-            .add_extension(
-                x509.UnrecognizedExtension(
-                    x509.ObjectIdentifier(f"2.25.{2**128 - 1}"), b""
-                ),
-                critical=False,
-            )
-        )
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
-
 
 class TestCertificateSigningRequestBuilder:
     def test_sign_invalid_hash_algorithm(self, backend):
@@ -5128,6 +5103,12 @@ class TestObjectIdentifier:
         assert oid1 != x509.ObjectIdentifier("2.999.2")
         assert oid1 != object()
 
+    def test_comparison(self):
+        oid1 = x509.ObjectIdentifier("2.999.1")
+        oid2 = x509.ObjectIdentifier("2.999.2")
+        with pytest.raises(TypeError):
+            oid1 < oid2  # type: ignore[operator]
+
     def test_repr(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
         assert repr(oid) == "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>"
@@ -5161,7 +5142,10 @@ class TestObjectIdentifier:
         x509.ObjectIdentifier("1.39.999")
         x509.ObjectIdentifier("2.5.29.3")
         x509.ObjectIdentifier("2.999.37.5.22.8")
-        x509.ObjectIdentifier("2.25.305821105408246119474742976030998643995")
+
+    def test_oid_arc_too_large(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier(f"2.25.{2**128 - 1}")
 
 
 class TestName:
