@@ -709,10 +709,10 @@ class TestRSAPSSCertificate:
             serialization.load_der_public_key,
             backend,
         )
-        assert (
-            cert.public_key().public_numbers()
-            == expected_pub_key.public_numbers()
-        )
+        assert isinstance(expected_pub_key, rsa.RSAPublicKey)
+        pub_key = cert.public_key()
+        assert isinstance(pub_key, rsa.RSAPublicKey)
+        assert pub_key.public_numbers() == expected_pub_key.public_numbers()
 
 
 class TestRSACertificate:
