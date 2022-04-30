@@ -29,6 +29,10 @@ static const int SSL_TLSEXT_ERR_ALERT_FATAL;
 static const int SSL_TLSEXT_ERR_NOACK;
 
 static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
+
+static const int SSL_R_UNEXPECTED_EOF_WHILE_READING;
+
+static const int Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING;
 """
 
 FUNCTIONS = """
@@ -66,5 +70,14 @@ static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM = 0;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR = 0;
 #else
 static const int CIPHER_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH = 0;
+#endif
+
+/* SSL_R_UNEXPECTED_EOF_WHILE_READING is needed for pyOpenSSL
+   with OpenSSL 3+ */
+#if defined(SSL_R_UNEXPECTED_EOF_WHILE_READING)
+#define Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING 1
+#else
+#define Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING 0
+#define SSL_R_UNEXPECTED_EOF_WHILE_READING 0
 #endif
 """
