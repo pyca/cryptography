@@ -143,6 +143,8 @@ Custom asymmetric vectors
   contain an Ed448 public key.
 * ``asymmetric/PKCS8/rsa_pss_2048.pem`` - A 2048-bit RSA PSS key with no
   explicit parameters set.
+* ``asymmetric/PKCS8/rsa_pss_2048_pub.der`` - The public key corresponding to
+  ``asymmetric/PKCS8/rsa_pss_2048.pem``.
 * ``asymmetric/PKCS8/rsa_pss_2048_hash.pem`` - A 2048-bit RSA PSS key with the
   hash algorithm PSS parameter set to SHA256.
 * ``asymmetric/PKCS8/rsa_pss_2048_hash_mask.pem`` - A 2048-bit RSA PSS key with
@@ -463,6 +465,8 @@ Custom X.509 Vectors
 * ``bad_country.pem`` - A certificate with country name and jurisdiction
   country name values in its subject and issuer distinguished names which
   are longer than 2 characters.
+* ``rsa_pss_cert.pem`` - A self-signed certificate with an RSA PSS signature
+  with ``asymmetric/PKCS8/rsa_pss_2048.pem`` as its key.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
