@@ -100,7 +100,7 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - run: |
             pip install coverage
-            python -c "from coverage.tracer import CTracer"
+            python3 -c "from coverage.tracer import CTracer"
       - name: Tests
         run: |
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
