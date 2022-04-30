@@ -432,7 +432,7 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36", CL_FLAGS: ""}
+          - {VERSION: "3.6", TOXENV: "py36-nocoverage", CL_FLAGS: ""}
           - {VERSION: "3.10", TOXENV: "py310", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         RUST:
           - stable
