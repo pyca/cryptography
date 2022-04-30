@@ -706,6 +706,19 @@ class Backend:
             self.openssl_assert(rsa_cdata != self._ffi.NULL)
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             return _RSAPublicKey(self, rsa_cdata, evp_pkey)
+        elif (
+            key_type == self._lib.EVP_PKEY_RSA_PSS
+            and not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ):
+            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
+            self.openssl_assert(rsa_cdata != self._ffi.NULL)
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            bio = self._create_mem_bio_gc()
+            res = self._lib.i2d_RSAPublicKey_bio(bio, rsa_cdata)
+            self.openssl_assert(res == 1)
+            return self.load_der_public_key(self._read_mem_bio(bio))
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             self.openssl_assert(dsa_cdata != self._ffi.NULL)
