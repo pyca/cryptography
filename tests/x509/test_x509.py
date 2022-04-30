@@ -688,6 +688,33 @@ class TestRevokedCertificate:
         assert crl[2].serial_number == 3
 
 
+class TestRSAPSSCertificate:
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ),
+        skip_message="Does not support RSA PSS loading",
+    )
+    def test_load_cert_pub_key(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss_cert.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert isinstance(cert, x509.Certificate)
+        expected_pub_key = _load_cert(
+            os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_pub.der"),
+            serialization.load_der_public_key,
+            backend,
+        )
+        assert (
+            cert.public_key().public_numbers()
+            == expected_pub_key.public_numbers()
+        )
+
+
 class TestRSACertificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(

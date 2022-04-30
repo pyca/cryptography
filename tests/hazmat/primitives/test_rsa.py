@@ -298,6 +298,30 @@ class TestRSA:
 
     @pytest.mark.supported(
         only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ),
+        skip_message="Does not support RSA PSS loading",
+    )
+    def test_load_pss_pub_keys_strips_constraints(self, backend):
+        key = load_vectors_from_file(
+            filename=os.path.join(
+                "asymmetric", "PKCS8", "rsa_pss_2048_pub.der"
+            ),
+            loader=lambda p: serialization.load_der_public_key(
+                p.read(),
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPublicKey)
+        with pytest.raises(InvalidSignature):
+            key.verify(
+                b"badsig", b"whatever", padding.PKCS1v15(), hashes.SHA256()
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
             backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
             or backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
             or backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
