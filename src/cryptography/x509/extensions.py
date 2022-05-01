@@ -724,6 +724,17 @@ _REASON_BIT_MAPPING = {
     8: ReasonFlags.aa_compromise,
 }
 
+_CRLREASONFLAGS = {
+    ReasonFlags.key_compromise: 1,
+    ReasonFlags.ca_compromise: 2,
+    ReasonFlags.affiliation_changed: 3,
+    ReasonFlags.superseded: 4,
+    ReasonFlags.cessation_of_operation: 5,
+    ReasonFlags.certificate_hold: 6,
+    ReasonFlags.privilege_withdrawn: 7,
+    ReasonFlags.aa_compromise: 8,
+}
+
 
 class PolicyConstraints(ExtensionType):
     oid = ExtensionOID.POLICY_CONSTRAINTS

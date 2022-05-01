@@ -678,7 +678,7 @@ pub(crate) fn encode_distribution_point_reasons(
     py_reasons: &pyo3::PyAny,
 ) -> pyo3::PyResult<asn1::OwnedBitString> {
     let reason_flag_mapping = py
-        .import("cryptography.hazmat.backends.openssl.encode_asn1")?
+        .import("cryptography.x509.extensions")?
         .getattr("_CRLREASONFLAGS")?;
 
     let mut bits = vec![0, 0];
