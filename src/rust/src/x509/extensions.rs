@@ -382,7 +382,3 @@ pub(crate) fn encode_extension(
         _ => Ok(None),
     }
 }
-
-pub(crate) fn add_to_module(_module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    Ok(())
-}
