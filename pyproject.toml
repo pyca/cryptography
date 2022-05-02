@@ -30,7 +30,6 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
-    "cryptography.hazmat.bindings._openssl",
     "pretend"
 ]
 ignore_missing_imports = true
