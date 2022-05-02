@@ -13,6 +13,7 @@ static const int Cryptography_HAS_ED25519;
 static const int Cryptography_HAS_POLY1305;
 
 static const int NID_undef;
+static const int NID_aes_256_cbc;
 static const int NID_pbe_WithSHA1And3_Key_TripleDES_CBC;
 static const int NID_X25519;
 static const int NID_X448;
