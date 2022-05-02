@@ -10,6 +10,12 @@ Changelog
 
 * Final deprecation of OpenSSL 1.1.0. The next release of ``cryptography``
   will drop support.
+* :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
+  has been updated to use AES 256 CBC by default on PKCS12 files. Users needing
+  compatibility with older Windows (2016 or earlier) and Java (8) versions may
+  use
+  :class:`~cryptography.hazmat.primitives.serialization.LegacyPKCS12TripleDESEncryption`
+  .
 * We no longer ship ``manylinux2010`` wheels. Users should upgrade to the
   latest ``pip`` to ensure this doesn't cause issues downloading wheels on
   their platform.

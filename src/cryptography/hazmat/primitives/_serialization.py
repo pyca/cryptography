@@ -53,3 +53,11 @@ class BestAvailableEncryption(KeySerializationEncryption):
 
 class NoEncryption(KeySerializationEncryption):
     pass
+
+
+class LegacyPKCS12TripleDESEncryption(KeySerializationEncryption):
+    def __init__(self, password: bytes):
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        self.password = password

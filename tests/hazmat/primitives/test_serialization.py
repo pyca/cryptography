@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
     KeySerializationEncryption,
+    LegacyPKCS12TripleDESEncryption,
     NoEncryption,
     PrivateFormat,
     PublicFormat,
@@ -66,6 +67,20 @@ def _skip_fips_format(key_path, password, backend):
                 "The encrypted PKCS8 DER vectors currently have encryption "
                 "that is not FIPS approved in the 3.0 provider"
             )
+
+
+def test_pkcs12_key_serialization_unsupported():
+    key = load_vectors_from_file(
+        os.path.join("asymmetric", "DER_Serialization", "testrsa.der"),
+        lambda derfile: load_der_private_key(derfile.read(), None),
+        mode="rb",
+    )
+    with pytest.raises(ValueError):
+        key.private_bytes(
+            Encoding.PEM,
+            PrivateFormat.PKCS8,
+            LegacyPKCS12TripleDESEncryption(b"password"),
+        )
 
 
 class TestBufferProtocolSerialization:

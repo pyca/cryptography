@@ -998,6 +998,18 @@ Serialization Encryption Types
 
     :param bytes password: The password to use for encryption.
 
+.. class:: LegacyPKCS12TripleDESEncryption(password)
+
+    .. versionadded:: 38.0
+
+    Encrypt a PKCS12 payload using
+    :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES`
+    encryption. This is included for compatibility with older Windows and
+    Java versions. Users should strongly prefer
+    :class:`BestAvailableEncryption` where possible.
+
+    :param bytes password: The password to use for encryption.
+
 .. class:: NoEncryption
 
     Do not encrypt.

@@ -469,6 +469,10 @@ class TestPKCS12Creation:
     @pytest.mark.parametrize(
         ("encryption_algorithm", "password"),
         [
+            (
+                serialization.LegacyPKCS12TripleDESEncryption(b"password"),
+                b"password",
+            ),
             (serialization.BestAvailableEncryption(b"password"), b"password"),
             (serialization.NoEncryption(), None),
         ],
@@ -488,6 +492,10 @@ class TestPKCS12Creation:
     @pytest.mark.parametrize(
         ("encryption_algorithm", "password"),
         [
+            (
+                serialization.LegacyPKCS12TripleDESEncryption(b"password"),
+                b"password",
+            ),
             (serialization.BestAvailableEncryption(b"password"), b"password"),
             (serialization.NoEncryption(), None),
         ],

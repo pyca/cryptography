@@ -2246,10 +2246,8 @@ class Backend:
             pkcs12_iter = 0
             mac_iter = 0
         elif isinstance(
-            encryption_algorithm, serialization.BestAvailableEncryption
+            encryption_algorithm, serialization.LegacyPKCS12TripleDESEncryption
         ):
-            # PKCS12 encryption is hopeless trash and can never be fixed.
-            # This is the least terrible option.
             nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             # At least we can set this higher than OpenSSL's default
@@ -2258,6 +2256,17 @@ class Backend:
             # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
             # Did we mention how lousy PKCS12 encryption is?
             mac_iter = 1
+            password = encryption_algorithm.password
+        elif isinstance(
+            encryption_algorithm, serialization.BestAvailableEncryption
+        ):
+            # PBES2 PBKDF2 using AES-256-CBC is the default in OpenSSL 3
+            # we set it here for all versions of OpenSSL and also use
+            # higher iteration counts than OpenSSL's default.
+            nid_cert = self._lib.NID_aes_256_cbc
+            nid_key = self._lib.NID_aes_256_cbc
+            pkcs12_iter = 50000
+            mac_iter = 50000
             password = encryption_algorithm.password
         else:
             raise ValueError("Unsupported key encryption type")

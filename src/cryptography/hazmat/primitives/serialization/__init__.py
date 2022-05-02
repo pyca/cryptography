@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives._serialization import (
     BestAvailableEncryption,
     Encoding,
     KeySerializationEncryption,
+    LegacyPKCS12TripleDESEncryption,
     NoEncryption,
     ParameterFormat,
     PrivateFormat,
@@ -41,5 +42,6 @@ __all__ = [
     "ParameterFormat",
     "KeySerializationEncryption",
     "BestAvailableEncryption",
+    "LegacyPKCS12TripleDESEncryption",
     "NoEncryption",
 ]
