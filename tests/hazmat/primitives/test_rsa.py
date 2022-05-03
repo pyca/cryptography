@@ -2286,26 +2286,30 @@ class TestRSANumbersEquality:
 
 class TestRSAPrimeFactorRecovery:
     def test_recover_prime_factors(self, subtests):
-        vectors = _flatten_pkcs1_examples(
-            load_vectors_from_file(
-                os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
-                load_pkcs1_vectors,
-            )
-        )
-        for vector in vectors:
+        for key in [
+            RSA_KEY_1024,
+            RSA_KEY_1025,
+            RSA_KEY_1026,
+            RSA_KEY_1027,
+            RSA_KEY_1028,
+            RSA_KEY_1029,
+            RSA_KEY_1030,
+            RSA_KEY_1031,
+            RSA_KEY_1536,
+            RSA_KEY_2048,
+        ]:
             with subtests.test():
-                private, public, example = vector
                 p, q = rsa.rsa_recover_prime_factors(
-                    private["modulus"],
-                    private["public_exponent"],
-                    private["private_exponent"],
+                    key.public_numbers.n,
+                    key.public_numbers.e,
+                    key.d,
                 )
                 # Unfortunately there is no convention on which prime should be
                 # p and which one q. The function we use always makes p > q,
                 # but the NIST vectors are not so consistent. Accordingly, we
                 # verify we've recovered the proper (p, q) by sorting them and
                 # asserting on that.
-                assert sorted([p, q]) == sorted([private["p"], private["q"]])
+                assert sorted([p, q]) == sorted([key.p, key.q])
                 assert p > q
 
     def test_invalid_recover_prime_factors(self):
