@@ -26,7 +26,7 @@ from ...utils import (
     load_vectors_from_file,
 )
 
-_ALGORITHMS_DICT: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
+_ALGORITHMS_DICT: typing.Dict[str, hashes.HashAlgorithm] = {
     "SHA1": hashes.SHA1(),
     "SHA224": hashes.SHA224(),
     "SHA256": hashes.SHA256(),
