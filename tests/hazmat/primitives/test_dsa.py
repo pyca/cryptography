@@ -27,11 +27,11 @@ from ...utils import (
 )
 
 _ALGORITHMS_DICT: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
-    "SHA1": hashes.SHA1,
-    "SHA224": hashes.SHA224,
-    "SHA256": hashes.SHA256,
-    "SHA384": hashes.SHA384,
-    "SHA512": hashes.SHA512,
+    "SHA1": hashes.SHA1(),
+    "SHA224": hashes.SHA224(),
+    "SHA256": hashes.SHA256(),
+    "SHA384": hashes.SHA384(),
+    "SHA512": hashes.SHA512(),
 }
 
 
@@ -397,7 +397,7 @@ class TestDSAVerification:
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = _ALGORITHMS_DICT[digest_algorithm]()
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
@@ -466,7 +466,7 @@ class TestDSASignature:
         for vector in vectors:
             with subtests.test():
                 digest_algorithm = vector["digest_algorithm"].replace("-", "")
-                algorithm = _ALGORITHMS_DICT[digest_algorithm]()
+                algorithm = _ALGORITHMS_DICT[digest_algorithm]
 
                 _skip_if_dsa_not_supported(
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
