@@ -597,6 +597,7 @@ jobs:
         uses: actions/download-artifact@v3.0.0
       - run: mv **/.coverage* .
       - name: Combine coverage and fail if it's <100%.
+        id: combinecoverage
         run: |
           python -m coverage combine
           python -m coverage html
@@ -607,4 +608,4 @@ jobs:
           name: _html-report
           path: htmlcov
           if-no-files-found: ignore
-        if: ${{ always() }}
+        if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
