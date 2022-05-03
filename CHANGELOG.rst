@@ -24,6 +24,14 @@ Changelog
   `the issue <https://github.com/pyca/cryptography/issues/6368>`_ for complete
   details.
 
+.. _v37-0-2:
+
+37.0.2 - 2022-05-03
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.2.
+* Added a constant needed for an upcoming pyOpenSSL release.
+
 .. _v37-0-1:
 
 37.0.1 - 2022-04-27
