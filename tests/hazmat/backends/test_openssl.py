@@ -17,7 +17,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dh, dsa, padding
+from cryptography.hazmat.primitives.asymmetric import dh, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -141,14 +141,6 @@ class TestOpenSSL:
         backend._lib.ERR_put_error(0, 0, 1, b"test_openssl.py", -1)
         with pytest.raises(InternalError):
             enc.finalize()
-
-    def test_large_key_size_on_new_openssl(self):
-        parameters = dsa.generate_parameters(2048, backend)
-        param_num = parameters.parameter_numbers()
-        assert param_num.p.bit_length() == 2048
-        parameters = dsa.generate_parameters(3072, backend)
-        param_num = parameters.parameter_numbers()
-        assert param_num.p.bit_length() == 3072
 
     def test_int_to_bn(self):
         value = (2**4242) - 4242
