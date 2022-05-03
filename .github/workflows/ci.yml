@@ -600,8 +600,10 @@ jobs:
         id: combinecoverage
         run: |
           python -m coverage combine
-          python -m coverage html
           python -m coverage report --fail-under=100
+      - name: Create coverage HTML
+        run: python -m coverage html
+        if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload HTML report.
         uses: actions/upload-artifact@v3.0.0
         with:
