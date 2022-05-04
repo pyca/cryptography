@@ -29,7 +29,7 @@ Changelog
 37.0.2 - 2022-05-03
 ~~~~~~~~~~~~~~~~~~~
 
-* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.2.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.3.
 * Added a constant needed for an upcoming pyOpenSSL release.
 
 .. _v37-0-1:
