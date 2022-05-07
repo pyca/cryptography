@@ -101,7 +101,7 @@ Algorithms
         ``192``, or ``256`` :term:`bits` long.
     :type key: :term:`bytes-like`
 
-.. class:: ChaCha20(key)
+.. class:: ChaCha20(key, nonce)
 
     .. versionadded:: 2.1
 
