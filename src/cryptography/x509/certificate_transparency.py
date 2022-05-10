@@ -62,4 +62,5 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         Returns the signature for this SCT.
         """
 
+
 SignedCertificateTimestamp.register(rust_x509.Sct)
