@@ -48,12 +48,16 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
     def hash_algorithm(self) -> int:
         """
         Returns the hash algorithm used for the SCT's signature.
+
+        See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
         """
 
     @abc.abstractproperty
     def signature_algorithm(self) -> int:
         """
         Returns the signing algorithm used for the SCT's signature.
+
+        See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
         """
 
     @abc.abstractproperty
