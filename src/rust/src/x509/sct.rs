@@ -254,10 +254,8 @@ pub(crate) fn parse_scts(
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
-        let hash_algorithm =
-            u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap()).try_into()?;
-        let signature_algorithm =
-            u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap()).try_into()?;
+        let hash_algorithm = sct_data.read_byte()?.try_into()?;
+        let signature_algorithm = sct_data.read_byte()?.try_into()?;
         let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
         let sct = Sct {
