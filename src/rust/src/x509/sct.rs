@@ -6,7 +6,7 @@ use crate::asn1::PyAsn1Error;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::hash::{Hash, Hasher};
 
 struct TLSReader<'a> {
@@ -49,13 +49,71 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
+#[derive(Clone)]
+pub(crate) enum HashAlgorithm {
+    None,
+    Md5,
+    Sha1,
+    Sha224,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+impl TryFrom<u8> for HashAlgorithm {
+    type Error = PyAsn1Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => HashAlgorithm::None,
+            1 => HashAlgorithm::Md5,
+            2 => HashAlgorithm::Sha1,
+            3 => HashAlgorithm::Sha224,
+            4 => HashAlgorithm::Sha256,
+            5 => HashAlgorithm::Sha384,
+            6 => HashAlgorithm::Sha512,
+            _ => {
+                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    format!("Invalid HashAlgorithm variant ({})", value),
+                )))
+            }
+        })
+    }
+}
+
+#[derive(Clone)]
+pub(crate) enum SignatureAlgorithm {
+    Anonymous,
+    Rsa,
+    Dsa,
+    Ecdsa,
+}
+
+impl TryFrom<u8> for SignatureAlgorithm {
+    type Error = PyAsn1Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => SignatureAlgorithm::Anonymous,
+            1 => SignatureAlgorithm::Rsa,
+            2 => SignatureAlgorithm::Dsa,
+            3 => SignatureAlgorithm::Ecdsa,
+            _ => {
+                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    format!("Invalid SignatureAlgorithm variant ({})", value),
+                )))
+            }
+        })
+    }
+}
+
 #[pyo3::prelude::pyclass]
 pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,
     entry_type: LogEntryType,
-    hash_algorithm: u8,
-    signature_algorithm: u8,
+    hash_algorithm: HashAlgorithm,
+    signature_algorithm: SignatureAlgorithm,
     signature: Vec<u8>,
     pub(crate) sct_data: Vec<u8>,
 }
@@ -99,13 +157,38 @@ impl Sct {
     }
 
     #[getter]
-    fn hash_algorithm(&self) -> u8 {
-        self.hash_algorithm
+    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let ha_class = py
+            .import("cryptography.x509.certificate_transparency")?
+            .getattr("HashAlgorithm")?;
+
+        let attr_name = match self.hash_algorithm {
+            HashAlgorithm::None => "NONE",
+            HashAlgorithm::Md5 => "MD5",
+            HashAlgorithm::Sha1 => "NONE",
+            HashAlgorithm::Sha224 => "SHA224",
+            HashAlgorithm::Sha256 => "SHA256",
+            HashAlgorithm::Sha384 => "SHA384",
+            HashAlgorithm::Sha512 => "SHA512",
+        };
+
+        ha_class.getattr(attr_name)
     }
 
     #[getter]
-    fn signature_algorithm(&self) -> u8 {
-        self.signature_algorithm
+    fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let sa_class = py
+            .import("cryptography.x509.certificate_transparency")?
+            .getattr("SignatureAlgorithm")?;
+
+        let attr_name = match self.signature_algorithm {
+            SignatureAlgorithm::Anonymous => "ANONYMOUS",
+            SignatureAlgorithm::Rsa => "RSA",
+            SignatureAlgorithm::Dsa => "DSA",
+            SignatureAlgorithm::Ecdsa => "ECDSA",
+        };
+
+        sa_class.getattr(attr_name)
     }
 
     #[getter]
@@ -157,8 +240,10 @@ pub(crate) fn parse_scts(
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
-        let hash_algorithm = u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap());
-        let signature_algorithm = u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap());
+        let hash_algorithm =
+            u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap()).try_into()?;
+        let signature_algorithm =
+            u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap()).try_into()?;
         let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
         let sct = Sct {

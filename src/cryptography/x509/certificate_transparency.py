@@ -19,6 +19,39 @@ class Version(utils.Enum):
     v1 = 0
 
 
+class HashAlgorithm(utils.Enum):
+    """
+    Hash algorithms that are valid for SCTs.
+
+    These are exactly the same as HashAlgorithm in RFC 5246 (TLS 1.2).
+
+    See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
+    """
+
+    NONE = 0
+    MD5 = 1
+    SHA1 = 2
+    SHA224 = 3
+    SHA256 = 4
+    SHA384 = 5
+    SHA512 = 6
+
+
+class SignatureAlgorithm(utils.Enum):
+    """
+    Signature algorithms that are valid for SCTs.
+
+    These are exactly the same as SignatureAlgorithm in RFC 5246 (TLS 1.2).
+
+    See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
+    """
+
+    ANONYMOUS = 0
+    RSA = 1
+    DSA = 2
+    ECDSA = 3
+
+
 class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def version(self) -> Version:
@@ -45,19 +78,15 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def hash_algorithm(self) -> int:
+    def hash_algorithm(self) -> HashAlgorithm:
         """
         Returns the hash algorithm used for the SCT's signature.
-
-        See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
         """
 
     @abc.abstractproperty
-    def signature_algorithm(self) -> int:
+    def signature_algorithm(self) -> SignatureAlgorithm:
         """
         Returns the signing algorithm used for the SCT's signature.
-
-        See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
         """
 
     @abc.abstractproperty
