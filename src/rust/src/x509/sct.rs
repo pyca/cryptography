@@ -49,7 +49,7 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
-#[derive(Clone)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum HashAlgorithm {
     None,
     Md5,
@@ -81,7 +81,7 @@ impl TryFrom<u8> for HashAlgorithm {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum SignatureAlgorithm {
     Anonymous,
     Rsa,
@@ -264,4 +264,42 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     module.add_class::<Sct>()?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hash_algorithm_tryfrom() {
+        for (n, ha) in &[
+            (0_u8, HashAlgorithm::None),
+            (1_u8, HashAlgorithm::Md5),
+            (2_u8, HashAlgorithm::Sha1),
+            (3_u8, HashAlgorithm::Sha224),
+            (4_u8, HashAlgorithm::Sha256),
+            (5_u8, HashAlgorithm::Sha384),
+            (6_u8, HashAlgorithm::Sha512),
+        ] {
+            let res = HashAlgorithm::try_from(*n).unwrap();
+            assert_eq!(&res, ha);
+        }
+
+        assert!(HashAlgorithm::try_from(7).is_err());
+    }
+
+    #[test]
+    fn test_signature_algorithm_tryfrom() {
+        for (n, ha) in &[
+            (0_u8, SignatureAlgorithm::Anonymous),
+            (1_u8, SignatureAlgorithm::Rsa),
+            (2_u8, SignatureAlgorithm::Dsa),
+            (3_u8, SignatureAlgorithm::Ecdsa),
+        ] {
+            let res = SignatureAlgorithm::try_from(*n).unwrap();
+            assert_eq!(&res, ha);
+        }
+
+        assert!(SignatureAlgorithm::try_from(4).is_err());
+    }
 }
