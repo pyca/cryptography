@@ -67,7 +67,7 @@ pub(crate) enum HashAlgorithm {
 }
 
 impl TryFrom<u8> for HashAlgorithm {
-    type Error = PyAsn1Error;
+    type Error = pyo3::PyErr;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -79,8 +79,9 @@ impl TryFrom<u8> for HashAlgorithm {
             5 => HashAlgorithm::Sha384,
             6 => HashAlgorithm::Sha512,
             _ => {
-                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                    format!("Invalid HashAlgorithm variant ({})", value),
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Invalid HashAlgorithm variant ({})",
+                    value
                 )))
             }
         })
@@ -121,7 +122,7 @@ impl ToAttr for SignatureAlgorithm {
 }
 
 impl TryFrom<u8> for SignatureAlgorithm {
-    type Error = PyAsn1Error;
+    type Error = pyo3::PyErr;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -130,8 +131,9 @@ impl TryFrom<u8> for SignatureAlgorithm {
             2 => SignatureAlgorithm::Dsa,
             3 => SignatureAlgorithm::Ecdsa,
             _ => {
-                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                    format!("Invalid SignatureAlgorithm variant ({})", value),
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Invalid SignatureAlgorithm variant ({})",
+                    value
                 )))
             }
         })

@@ -7,7 +7,6 @@ use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
-#[derive(Debug)]
 pub enum PyAsn1Error {
     Asn1(asn1::ParseError),
     Py(pyo3::PyErr),
